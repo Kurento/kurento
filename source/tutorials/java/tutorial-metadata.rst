@@ -2,8 +2,8 @@
 Java - Metadata
 %%%%%%%%%%%%%%%
 
-This tutorial detects and draws faces into the webcam video. The demo connects two filters,
-the KmsDetectFaces and the KmsShowFaces.
+This tutorial detects and draws faces into the webcam video. The demo connects
+two filters, the KmsDetectFaces and the KmsShowFaces.
 
 
 .. note::
@@ -28,8 +28,8 @@ is hosted, and then run the main class:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 
@@ -57,11 +57,11 @@ Understanding this example
 ==========================
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
-by one **WebRtcEndpoint** and two filters **KmsDetectFaces** and **KmsShowFaces**.
-The first one detects faces into the image and it puts the info about the face (position and dimensions)
-into the buffer metadata.
-The second one reads the buffer metadata to find info about detected faces. If there is info about faces,
-the filter draws the faces into the image.
+by one **WebRtcEndpoint** and two filters **KmsDetectFaces** and
+**KmsShowFaces**. The first one detects faces into the image and it puts the
+info about the face (position and dimensions) into the buffer metadata. The
+second one reads the buffer metadata to find info about detected faces. If
+there is info about faces, the filter draws the faces into the image.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
@@ -232,9 +232,9 @@ treated in the *switch* clause, taking the proper steps in each case.
 
 In the following snippet, we can see the ``start`` method. It handles the ICE
 candidates gathering, creates a Media Pipeline, creates the Media Elements
-(``WebRtcEndpoint``, ``KmsShowFaces`` and ``KmsDetectFaces``) and make the connections among
-them. A ``startResponse`` message is sent back to the client with the SDP
-answer.
+(``WebRtcEndpoint``, ``KmsShowFaces`` and ``KmsDetectFaces``) and make the
+connections among them. A ``startResponse`` message is sent back to the client
+with the SDP answer.
 
 .. sourcecode:: java
 
@@ -456,7 +456,8 @@ part of the
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
+client-side. Other client libraries are managed with
+`webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -464,37 +465,35 @@ client-side. Other client libraries are managed with `webjars <http://www.webjar
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-  			<groupId>org.webjars</groupId>
-  			<artifactId>webjars-locator</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>bootstrap</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>demo-console</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>adapter.js</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>jquery</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>ekko-lightbox</artifactId>
-  		</dependency>
+         <groupId>org.webjars</groupId>
+         <artifactId>webjars-locator</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>bootstrap</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>demo-console</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>adapter.js</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>jquery</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>ekko-lightbox</artifactId>
+      </dependency>
    </dependencies>
 
 .. note::

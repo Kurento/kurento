@@ -56,11 +56,11 @@ The following picture shows an screenshot of this demo running in a web browser:
 
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the local stream and other for the remote peer stream). If
-two users, A and B, are using the application, the media flow goes this
-way: The video camera stream of user A is sent to the Kurento Media Server,
-which sends it to user B. In the same way, B sends to Kurento Media Server,
-which forwards it to A. This means that KMS is providing a B2B (back-to-back)
-call service.
+two users, A and B, are using the application, the media flow goes this way:
+The video camera stream of user A is sent to the Kurento Media Server, which
+sends it to user B. In the same way, B sends to Kurento Media Server, which
+forwards it to A. This means that KMS is providing a B2B (back-to-back) call
+service.
 
 To implement this behavior, create sa `Media Pipeline`:term: composed by two
 WebRtC endpoints connected in B2B. The implemented media pipeline is
@@ -191,8 +191,8 @@ Bean.
    }
 
 This web application follows a *Single Page Application* architecture
-(`SPA`:term:), and uses a `WebSocket`:term: to communicate client with server by
-means of requests and responses. Specifically, the main app class implements
+(`SPA`:term:), and uses a `WebSocket`:term: to communicate client with server
+by means of requests and responses. Specifically, the main app class implements
 the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
 process WebSocket requests in the path ``/call``.
 
@@ -330,10 +330,10 @@ acceptance message is sent to it.
       caller.sendMessage(response);
    }
 
-In the ``call`` method, the server checks if there is a registered user with
-the name specified in ``to`` message attribute, and sends an ``incomingCall``
-message. If there is no user with that name, a ``callResponse``
-message is sent to caller rejecting the call.
+In the ``call`` method, the server checks if there is a registered user with the
+name specified in ``to`` message attribute, and sends an ``incomingCall``
+message. If there is no user with that name, a ``callResponse`` message is sent
+to caller rejecting the call.
 
 .. sourcecode :: java
 
@@ -360,9 +360,9 @@ message is sent to caller rejecting the call.
       }
    }
 
-The ``stop`` method ends the video call. It can be called both by
-caller and callee in the communication. The result is that both peers release
-the Media Pipeline and ends the video communication:
+The ``stop`` method ends the video call. It can be called both by caller and
+callee in the communication. The result is that both peers release the Media
+Pipeline and ends the video communication:
 
 .. sourcecode :: java
 
@@ -713,7 +713,8 @@ part of the
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
+client-side. Other client libraries are managed with
+`webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -721,41 +722,39 @@ client-side. Other client libraries are managed with `webjars <http://www.webjar
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-  			<groupId>org.webjars</groupId>
-  			<artifactId>webjars-locator</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>bootstrap</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>demo-console</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>draggabilly</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>adapter.js</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>jquery</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>ekko-lightbox</artifactId>
-  		</dependency>
+         <groupId>org.webjars</groupId>
+         <artifactId>webjars-locator</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>bootstrap</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>demo-console</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>draggabilly</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>adapter.js</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>jquery</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>ekko-lightbox</artifactId>
+      </dependency>
    </dependencies>
 
 .. note::

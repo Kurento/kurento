@@ -2,8 +2,9 @@
 Java - Group Call
 %%%%%%%%%%%%%%%%%
 
-This tutorial shows how to work wih the concept of rooms, allowing to connect several clients between
-them using `WebRTC`:term: technology, creating a multiconference.
+This tutorial shows how to work wih the concept of rooms, allowing to connect
+several clients between them using `WebRTC`:term: technology, creating a
+multiconference.
 
 .. note::
 
@@ -27,8 +28,8 @@ is hosted, and then run the main class:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 
@@ -45,13 +46,13 @@ WebRTC capable browser (Chrome, Firefox).
 Understanding this example
 ==========================
 
-This tutorial shows how to work with the concept of rooms. Each room will create its
-own pipeline, being isolated from the other rooms. Clients connecting to a certain room, will
-only be able to exchange media with clients in the same room.
+This tutorial shows how to work with the concept of rooms. Each room will create
+its own pipeline, being isolated from the other rooms. Clients connecting to a
+certain room, will only be able to exchange media with clients in the same room.
 
-Each client will send its own media, and in turn will receive the media from
-all the other participants. This means that there will be a total of n*n
-webrtc endpoints in each room, where n is the number of clients.
+Each client will send its own media, and in turn will receive the media from all
+the other participants. This means that there will be a total of
+n*n webrtc endpoints in each room, where n is the number of clients.
 
 When a new client enters the room, a new webrtc will be created and negotiated
 receive the media on the server. On the other hand, all participant will be
@@ -61,9 +62,9 @@ server to receive the new participant's media.
 The newcomer, in turn, gets a list of all connected participants, and requests
 the server to receive the media from all the present clients in the room.
 
-When a client leaves the room, all clients are informed by the server. Then,
-the client-side code requests the server to cancel all media elements related
-to the client that left.
+When a client leaves the room, all clients are informed by the server. Then, the
+client-side code requests the server to cancel all media elements related to
+the client that left.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
@@ -162,8 +163,8 @@ protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are five different kind of incoming messages to
 the application server: ``joinRoom``, ``receiveVideoFrom``, ``leaveRoom`` and
-``onIceCandidate``. These messages are treated in the *switch*
-clause, taking the proper steps in each case.
+``onIceCandidate``. These messages are treated in the *switch* clause, taking
+the proper steps in each case.
 
 .. sourcecode:: java
 
@@ -233,8 +234,9 @@ clause, taking the proper steps in each case.
    }
 
 
-In the following snippet, we can see the ``afterConnectionClosed`` method. Basically, it
-removes the ``userSession`` from ``registry`` and throws out the user from the room.
+In the following snippet, we can see the ``afterConnectionClosed`` method.
+Basically, it removes the ``userSession`` from ``registry`` and throws out the
+user from the room.
 
 .. sourcecode :: java
 
@@ -244,8 +246,8 @@ removes the ``userSession`` from ``registry`` and throws out the user from the r
       roomManager.getRoom(user.getRoomName()).leave(user);
    }
 
-In the ``joinRoom`` method, the server checks if there are a registered room with
-the name specified, add the user into this room and registries the user.
+In the ``joinRoom`` method, the server checks if there are a registered room
+with the name specified, add the user into this room and registries the user.
 
 .. sourcecode :: java
 
@@ -291,11 +293,12 @@ web page, and are used in the
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/groupcall``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are three incoming messages to client: ``existingParticipants``,
-``newParticipantArrived``, ``participantLeft``, ``receiveVideoAnswer`` and ``iceCandidate``. Convenient actions
-are taken to implement each step in the communication. For example, in functions ``start`` the function
-``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
-WebRTC communication.
+Notice that there are three incoming messages to client:
+``existingParticipants``, ``newParticipantArrived``, ``participantLeft``,
+``receiveVideoAnswer`` and ``iceCandidate``. Convenient actions are taken to
+implement each step in the communication. For example, in functions ``start``
+the function ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to
+start a WebRTC communication.
 
 .. sourcecode:: javascript
 
@@ -463,7 +466,8 @@ part of the
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
+client-side. Other client libraries are managed with
+`webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -471,37 +475,35 @@ client-side. Other client libraries are managed with `webjars <http://www.webjar
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-  			<groupId>org.webjars</groupId>
-  			<artifactId>webjars-locator</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>bootstrap</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>demo-console</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>adapter.js</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>jquery</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>ekko-lightbox</artifactId>
-  		</dependency>
+         <groupId>org.webjars</groupId>
+         <artifactId>webjars-locator</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>bootstrap</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>demo-console</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>adapter.js</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>jquery</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>ekko-lightbox</artifactId>
+      </dependency>
    </dependencies>
 
 .. note::

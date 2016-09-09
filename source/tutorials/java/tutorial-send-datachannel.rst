@@ -2,9 +2,8 @@
 Java - Send DataChannel
 %%%%%%%%%%%%%%%%%%%%%%%
 
-This tutorial connects a player with a QR code detection
-filter and sends output to WebRTC. Code detection events are sent to
-browser using WebRTC datachannels.
+This tutorial connects a player with a QR code detection filter and sends output
+to WebRTC. Code detection events are sent to browser using WebRTC datachannels.
 
 .. note::
 
@@ -28,8 +27,8 @@ is hosted, and then run the main class:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 
@@ -57,10 +56,11 @@ Understanding this example
 ==========================
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
-by one **PlayerEndpoint**, one **KmsSendData** and one **WebRtcEndpoint**.
-The **PlayerEnpdoint** plays a video and it detects QR codes into the images. The info about detected codes
-is sent through data channels (**KmsSendData**) from the Kurento media server to the browser (**WebRtcEndpoint**).
-The browser shows the info in a text form.
+by one **PlayerEndpoint**, one **KmsSendData** and one **WebRtcEndpoint**. The
+**PlayerEnpdoint** plays a video and it detects QR codes into the images. The
+info about detected codes is sent through data channels (**KmsSendData**) from
+the Kurento media server to the browser (**WebRtcEndpoint**). The browser shows
+the info in a text form.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
@@ -109,9 +109,9 @@ process.
         fontname = "Bitstream Vera Sans" fontsize = 8 arrowhead = "vee"
    ]
 
-   SendDataChannelApp -> SendDataChannelHandler; SendDataChannelApp -> KurentoClient;
-   SendDataChannelHandler -> KurentoClient [constraint = false] SendDataChannelHandler ->
-   UserSession;
+   SendDataChannelApp -> SendDataChannelHandler; SendDataChannelApp ->
+   KurentoClient; SendDataChannelHandler -> KurentoClient [constraint = false]
+   SendDataChannelHandler -> UserSession;
 
 The main class of this demo is
 `SendDataChannelApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-send-data-channel/src/main/java/org/kurento/tutorial/senddatachannel/SendDataChannelApp.java>`_.
@@ -160,7 +160,8 @@ This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with
 application server by means of requests and responses. Specifically, the main
 app class implements the interface ``WebSocketConfigurer`` to register a
-``WebSocketHanlder`` to process WebSocket requests in the path ``/senddatachannel``.
+``WebSocketHanlder`` to process WebSocket requests in the path
+``/senddatachannel``.
 
 `SendDataChannelHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-send-data-channel/src/main/java/org/kurento/tutorial/senddatachannel/SendDataChannelHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
@@ -231,9 +232,9 @@ treated in the *switch* clause, taking the proper steps in each case.
 
 In the following snippet, we can see the ``start`` method. It handles the ICE
 candidates gathering, creates a Media Pipeline, creates the Media Elements
-(``WebRtcEndpoint``, ``KmsSendData`` and ``PlayerEndpoint``) and make the connections among
-them. A ``startResponse`` message is sent back to the client with the SDP
-answer.
+(``WebRtcEndpoint``, ``KmsSendData`` and ``PlayerEndpoint``) and make the
+connections among them. A ``startResponse`` message is sent back to the client
+with the SDP answer.
 
 .. sourcecode:: java
 
@@ -327,13 +328,13 @@ These libraries are linked in the
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-send-data-channel/src/main/resources/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
-``ws``) in the path ``/senddatachannel``. Then, the ``onmessage`` listener of the
-WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are three incoming messages to client: ``startResponse``,
-``error``, and ``iceCandidate``. Convenient actions are taken to implement each
-step in the communication. For example, in functions ``start`` the function
-``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
-WebRTC communication.
+``ws``) in the path ``/senddatachannel``. Then, the ``onmessage`` listener of
+the WebSocket is used to implement the JSON signaling protocol in the
+client-side. Notice that there are three incoming messages to client:
+``startResponse``, ``error``, and ``iceCandidate``. Convenient actions are
+taken to implement each step in the communication. For example, in functions
+``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js*
+is used to start a WebRTC communication.
 
 .. sourcecode:: javascript
 
@@ -487,7 +488,8 @@ part of the
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
+client-side. Other client libraries are managed with
+`webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -495,37 +497,35 @@ client-side. Other client libraries are managed with `webjars <http://www.webjar
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-  			<groupId>org.webjars</groupId>
-  			<artifactId>webjars-locator</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>bootstrap</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>demo-console</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>adapter.js</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>jquery</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>ekko-lightbox</artifactId>
-  		</dependency>
+         <groupId>org.webjars</groupId>
+         <artifactId>webjars-locator</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>bootstrap</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>demo-console</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>adapter.js</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>jquery</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>ekko-lightbox</artifactId>
+      </dependency>
    </dependencies>
 
 .. note::

@@ -3,8 +3,8 @@ Java Module - Crowd Detector Filter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on a `WebRTC`:term: video communication in mirror
-(*loopback*) with a crowd detector filter. This filter detects clusters of people
-in video streams.
+(*loopback*) with a crowd detector filter. This filter detects clusters of
+people in video streams.
 
 .. note::
 
@@ -71,18 +71,18 @@ The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-crowddetector>`_.
 
 This example is a modified version of the
-:doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this
-demo uses a **CrowdDetector** instead of **FaceOverlay** filter.
+:doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this demo
+uses a **CrowdDetector** instead of **FaceOverlay** filter.
 
 To setup a ``CrowdDetectorFilter``, first we need to define one or more
-*regions of interest* (ROIs). A ROI determines the zone within the video stream,
-which are going to be monitored and analised by the filter. To define a ROI,
-we need to configure at least three points. These points are defined in relative
-terms (0 to 1) to the video width and height.
+*regions of interest* (ROIs). A ROI determines the zone within the video
+stream, which are going to be monitored and analised by the filter. To define a
+ROI, we need to configure at least three points. These points are defined in
+relative terms (0 to 1) to the video width and height.
 
-``CrowdDetectorFilter`` performs two actions in the defined ROIs. On one
-hand, the detected crowds are colored over the stream. On the other hand,
-different events are raised to the client.
+``CrowdDetectorFilter`` performs two actions in the defined ROIs. On one hand,
+the detected crowds are colored over the stream. On the other hand, different
+events are raised to the client.
 
 To understand crowd coloring, we can take a look to an screenshot of a running
 example of ``CrowdDetectorFilter``. In the picture below, we can see that there
@@ -294,7 +294,8 @@ part of the
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
+client-side. Other client libraries are managed with
+`webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -302,37 +303,35 @@ client-side. Other client libraries are managed with `webjars <http://www.webjar
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-  			<groupId>org.webjars</groupId>
-  			<artifactId>webjars-locator</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>bootstrap</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>demo-console</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>adapter.js</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>jquery</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>ekko-lightbox</artifactId>
-  		</dependency>
+         <groupId>org.webjars</groupId>
+         <artifactId>webjars-locator</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>bootstrap</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>demo-console</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>adapter.js</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>jquery</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>ekko-lightbox</artifactId>
+      </dependency>
    </dependencies>
 
 .. note::

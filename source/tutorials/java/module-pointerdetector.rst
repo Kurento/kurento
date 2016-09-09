@@ -70,13 +70,13 @@ The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-pointerdetector>`_.
 
 This example is a modified version of the
-:doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this
-demo uses a **PointerDetector** instead of **FaceOverlay** filter.
+:doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this demo
+uses a **PointerDetector** instead of **FaceOverlay** filter.
 
 In order to perform pointer detection, there must be a calibration stage, in
 which the color of the pointer is registered by the filter. To accomplish this
-step, the pointer should be placed in a square visible in the upper left corner of the
-video after going thorugh the filter, as follows:
+step, the pointer should be placed in a square visible in the upper left corner
+of the video after going thorugh the filter, as follows:
 
 .. figure:: ../../images/kurento-module-tutorial-pointerdetector-screenshot-01.png
    :align:   center
@@ -84,9 +84,9 @@ video after going thorugh the filter, as follows:
 
    *Pointer calibration stage*
 
-When the desired color to track is filling that box, a calibration message is sent
-from the client to the server. This is done by clicking on the *Calibrate* blue
-button of the GUI.
+When the desired color to track is filling that box, a calibration message is
+sent from the client to the server. This is done by clicking on the *Calibrate*
+blue button of the GUI.
 
 After that, the color of the pointer is tracked in real time by Kurento Media
 Server. ``PointerDetectorFilter`` can also define regions in the screen called
@@ -229,7 +229,8 @@ part of the
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
+client-side. Other client libraries are managed with
+`webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -237,37 +238,35 @@ client-side. Other client libraries are managed with `webjars <http://www.webjar
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-  			<groupId>org.webjars</groupId>
-  			<artifactId>webjars-locator</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>bootstrap</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>demo-console</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>adapter.js</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>jquery</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>ekko-lightbox</artifactId>
-  		</dependency>
+         <groupId>org.webjars</groupId>
+         <artifactId>webjars-locator</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>bootstrap</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>demo-console</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>adapter.js</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>jquery</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>ekko-lightbox</artifactId>
+      </dependency>
    </dependencies>
 
 .. note::

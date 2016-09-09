@@ -2,8 +2,8 @@
 Java - Player
 %%%%%%%%%%%%%
 
-This tutorial opens a URL and plays its content to WebRTC
-where it is possible to choose if it plays video and audio, only video or only audio.
+This tutorial opens a URL and plays its content to WebRTC where it is possible
+to choose if it plays video and audio, only video or only audio.
 
 .. note::
 
@@ -27,8 +27,8 @@ is hosted, and then run the main class:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 
@@ -46,8 +46,8 @@ Understanding this example
 ==========================
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
-by one **PlayerEndpoint** and one **WebRtcEndpoint**.
-The **PlayerEnpdoint** plays a video and **WebRtcEndpoint** shows it.
+by one **PlayerEndpoint** and one **WebRtcEndpoint**. The **PlayerEnpdoint**
+plays a video and **WebRtcEndpoint** shows it.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
@@ -96,9 +96,8 @@ process.
         fontname = "Bitstream Vera Sans" fontsize = 8 arrowhead = "vee"
    ]
 
-   PlayerApp -> PlayerHandler; PlayerApp -> KurentoClient;
-   PlayerHandler -> KurentoClient [constraint = false] PlayerHandler ->
-   UserSession;
+   PlayerApp -> PlayerHandler; PlayerApp -> KurentoClient; PlayerHandler ->
+   KurentoClient [constraint = false] PlayerHandler -> UserSession;
 
 The main class of this demo is
 `PlayerApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-player/src/main/java/org/kurento/tutorial/player/PlayerApp.java>`_.
@@ -155,10 +154,10 @@ method implements the actions for requests, returning responses through the
 WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
-In the designed protocol, there are seven different kinds of incoming messages to
-the *Server* : ``start``, ``stop``, ``pause``, ``resume``,
-``doSeek``, ``getPosition`` and ``onIceCandidates``. These messages are
-treated in the *switch* clause, taking the proper steps in each case.
+In the designed protocol, there are seven different kinds of incoming messages
+to the *Server* : ``start``, ``stop``, ``pause``, ``resume``, ``doSeek``,
+``getPosition`` and ``onIceCandidates``. These messages are treated in the
+*switch* clause, taking the proper steps in each case.
 
 .. sourcecode:: java
 
@@ -244,36 +243,35 @@ treated in the *switch* clause, taking the proper steps in each case.
 In the following snippet, we can see the ``start`` method. It handles the ICE
 candidates gathering, creates a Media Pipeline, creates the Media Elements
 (``WebRtcEndpoint`` and ``PlayerEndpoint``) and makes the connections between
-them and plays the video. A ``startResponse`` message is sent back to the client with the SDP
-answer. When the ``MediaConnected`` event is received, info about the video is
-retrieved and sent back to the client in a ``videoInfo`` message.
+them and plays the video. A ``startResponse`` message is sent back to the
+client with the SDP answer. When the ``MediaConnected`` event is received, info
+about the video is retrieved and sent back to the client in a ``videoInfo``
+message.
 
 .. sourcecode:: java
 
   private void start(final WebSocketSession session, JsonObject jsonMessage) {
-    final UserSession user = new UserSession();
-    MediaPipeline pipeline = kurento.createMediaPipeline();
-    user.setMediaPipeline(pipeline);
-    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
-    user.setWebRtcEndpoint(webRtcEndpoint);
-    String videourl = jsonMessage.get("videourl").getAsString();
-    final PlayerEndpoint playerEndpoint = new PlayerEndpoint.Builder(pipeline, videourl).build();
-    user.setPlayerEndpoint(playerEndpoint);
-    users.put(session.getId(), user);
+    final UserSession user = new UserSession(); MediaPipeline pipeline =
+    kurento.createMediaPipeline(); user.setMediaPipeline(pipeline);
+    WebRtcEndpoint webRtcEndpoint = new
+    WebRtcEndpoint.Builder(pipeline).build();
+    user.setWebRtcEndpoint(webRtcEndpoint); String videourl =
+    jsonMessage.get("videourl").getAsString(); final PlayerEndpoint
+    playerEndpoint = new PlayerEndpoint.Builder(pipeline, videourl).build();
+    user.setPlayerEndpoint(playerEndpoint); users.put(session.getId(), user);
 
     playerEndpoint.connect(webRtcEndpoint);
 
-    // 2. WebRtcEndpoint
-    // ICE candidates
-    webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
-      @Override
-      public void onEvent(OnIceCandidateEvent event) {
+    // 2. WebRtcEndpoint // ICE candidates
+    webRtcEndpoint.addOnIceCandidateListener(new
+    EventListener<OnIceCandidateEvent>() {
+      @Override public void onEvent(OnIceCandidateEvent event) {
         JsonObject response = new JsonObject();
-        response.addProperty("id", "iceCandidate");
-        response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
-        try {
+        response.addProperty("id", "iceCandidate"); response.add("candidate",
+        JsonUtils.toJsonObject(event.getCandidate())); try {
           synchronized (session) {
-            session.sendMessage(new TextMessage(response.toString()));
+            session.sendMessage(new
+            TextMessage(response.toString()));
           }
         } catch (IOException e) {
           log.debug(e.getMessage());
@@ -281,17 +279,16 @@ retrieved and sent back to the client in a ``videoInfo`` message.
       }
     });
 
-    String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
-    String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+    String sdpOffer = jsonMessage.get("sdpOffer").getAsString(); String
+    sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 
-    JsonObject response = new JsonObject();
-    response.addProperty("id", "startResponse");
-    response.addProperty("sdpAnswer", sdpAnswer);
+    JsonObject response = new JsonObject(); response.addProperty("id",
+    "startResponse"); response.addProperty("sdpAnswer", sdpAnswer);
     sendMessage(session, response.toString());
 
-    webRtcEndpoint.addMediaStateChangedListener(new EventListener<MediaStateChangedEvent>() {
-      @Override
-      public void onEvent(MediaStateChangedEvent event) {
+    webRtcEndpoint.addMediaStateChangedListener(new
+    EventListener<MediaStateChangedEvent>() {
+      @Override public void onEvent(MediaStateChangedEvent event) {
 
         if (event.getNewState() == MediaState.CONNECTED) {
           VideoInfo videoInfo = playerEndpoint.getVideoInfo();
@@ -309,18 +306,17 @@ retrieved and sent back to the client in a ``videoInfo`` message.
 
     webRtcEndpoint.gatherCandidates();
 
-    // 3. PlayEndpoint
-    playerEndpoint.addErrorListener(new EventListener<ErrorEvent>() {
-      @Override
-      public void onEvent(ErrorEvent event) {
+    // 3. PlayEndpoint playerEndpoint.addErrorListener(new
+    EventListener<ErrorEvent>() {
+      @Override public void onEvent(ErrorEvent event) {
         log.info("ErrorEvent: {}", event.getDescription());
         sendPlayEnd(session);
       }
     });
 
-    playerEndpoint.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-      @Override
-      public void onEvent(EndOfStreamEvent event) {
+    playerEndpoint.addEndOfStreamListener(new
+    EventListener<EndOfStreamEvent>() {
+      @Override public void onEvent(EndOfStreamEvent event) {
         log.info("EndOfStreamEvent: {}", event.getTimestamp());
         sendPlayEnd(session);
       }
@@ -331,8 +327,8 @@ retrieved and sent back to the client in a ``videoInfo`` message.
 
 
 
-The ``pause`` method retrieves the *user* associated to the current session, and invokes
-the *pause* method on the ``PlayerEndpoint``.
+The ``pause`` method retrieves the *user* associated to the current session, and
+invokes the *pause* method on the ``PlayerEndpoint``.
 
 .. sourcecode:: java
 
@@ -344,7 +340,8 @@ the *pause* method on the ``PlayerEndpoint``.
     }
   }
 
-The ``resume`` method starts the ``PlayerEndpoint`` of the current user, sending back the
+The ``resume`` method starts the ``PlayerEndpoint`` of the current user, sending
+back the
  information about the video, so the client side can refresh the stats.
 
 .. sourcecode:: java
@@ -353,22 +350,21 @@ The ``resume`` method starts the ``PlayerEndpoint`` of the current user, sending
     UserSession user = users.get(session.getId());
 
     if (user != null) {
-      user.getPlayerEndpoint().play();
-      VideoInfo videoInfo = user.getPlayerEndpoint().getVideoInfo();
+      user.getPlayerEndpoint().play(); VideoInfo videoInfo =
+      user.getPlayerEndpoint().getVideoInfo();
 
-      JsonObject response = new JsonObject();
-      response.addProperty("id", "videoInfo");
-      response.addProperty("isSeekable", videoInfo.getIsSeekable());
-      response.addProperty("initSeekable", videoInfo.getSeekableInit());
-      response.addProperty("endSeekable", videoInfo.getSeekableEnd());
-      response.addProperty("videoDuration", videoInfo.getDuration());
-      sendMessage(session, response.toString());
+      JsonObject response = new JsonObject(); response.addProperty("id",
+      "videoInfo"); response.addProperty("isSeekable",
+      videoInfo.getIsSeekable()); response.addProperty("initSeekable",
+      videoInfo.getSeekableInit()); response.addProperty("endSeekable",
+      videoInfo.getSeekableEnd()); response.addProperty("videoDuration",
+      videoInfo.getDuration()); sendMessage(session, response.toString());
     }
   }
 
-The ``doSeek`` method gets the *user* by *sessionId*, and calls the method setPosition
-of the ``PlayerEndpoint`` with the new playing position. A ``seek`` message is sent
-back to the client if the seek fails.
+The ``doSeek`` method gets the *user* by *sessionId*, and calls the method
+setPosition of the ``PlayerEndpoint`` with the new playing position. A ``seek``
+message is sent back to the client if the seek fails.
 
 .. sourcecode:: java
 
@@ -379,18 +375,17 @@ back to the client if the seek fails.
       try {
         user.getPlayerEndpoint().setPosition(jsonMessage.get("position").getAsLong());
       } catch (KurentoException e) {
-        log.debug("The seek cannot be performed");
-        JsonObject response = new JsonObject();
-        response.addProperty("id", "seek");
-        response.addProperty("message", "Seek failed");
-        sendMessage(session, response.toString());
+        log.debug("The seek cannot be performed"); JsonObject response =
+        new JsonObject(); response.addProperty("id", "seek");
+        response.addProperty("message", "Seek failed"); sendMessage(session,
+        response.toString());
       }
     }
   }
 
-The ``getPosition`` calls the method getPosition of the ``PlayerEndpoint``
-of the current *user*. A ``position`` message is sent
-back to the client with the actual position of the video.
+The ``getPosition`` calls the method getPosition of the ``PlayerEndpoint`` of
+the current *user*. A ``position`` message is sent back to the client with the
+actual position of the video.
 
 .. sourcecode:: java
 
@@ -400,16 +395,15 @@ back to the client with the actual position of the video.
     if (user != null) {
       long position = user.getPlayerEndpoint().getPosition();
 
-      JsonObject response = new JsonObject();
-      response.addProperty("id", "position");
-      response.addProperty("position", position);
+      JsonObject response = new JsonObject(); response.addProperty("id",
+      "position"); response.addProperty("position", position);
       sendMessage(session, response.toString());
     }
   }
 
 The ``stop`` method is quite simple: it searches the *user* by *sessionId* and
-stops the ``PlayerEndpoint``. Finally, it releases the media elements and removes
-the user from the list of active users.
+stops the ``PlayerEndpoint``. Finally, it releases the media elements and
+removes the user from the list of active users.
 
 .. sourcecode:: java
 
@@ -428,9 +422,8 @@ client when an exception is caught in the server-side.
 
   private void sendError(WebSocketSession session, String message) {
     try {
-      JsonObject response = new JsonObject();
-      response.addProperty("id", "error");
-      response.addProperty("message", message);
+      JsonObject response = new JsonObject(); response.addProperty("id",
+      "error"); response.addProperty("message", message);
       session.sendMessage(new TextMessage(response.toString()));
     } catch (IOException e) {
       log.error("Exception sending message", e);
@@ -457,8 +450,9 @@ In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/player``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are seven incoming messages to client: ``startResponse``,
-``playEnd``, ``error``, ``videoInfo``, ``seek``, ``position`` and ``iceCandidate``. Convenient actions are taken to implement each
-step in the communication. For example, in functions ``start`` the function
+``playEnd``, ``error``, ``videoInfo``, ``seek``, ``position`` and
+``iceCandidate``. Convenient actions are taken to implement each step in the
+communication. For example, in functions ``start`` the function
 ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
 WebRTC communication.
 
@@ -668,7 +662,8 @@ part of the
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
+client-side. Other client libraries are managed with
+`webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -676,37 +671,35 @@ client-side. Other client libraries are managed with `webjars <http://www.webjar
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-  			<groupId>org.webjars</groupId>
-  			<artifactId>webjars-locator</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>bootstrap</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>demo-console</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>adapter.js</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>jquery</artifactId>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.webjars.bower</groupId>
-  			<artifactId>ekko-lightbox</artifactId>
-  		</dependency>
+         <groupId>org.webjars</groupId>
+         <artifactId>webjars-locator</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>bootstrap</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>demo-console</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>adapter.js</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>jquery</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.webjars.bower</groupId>
+         <artifactId>ekko-lightbox</artifactId>
+      </dependency>
    </dependencies>
 
 .. note::
