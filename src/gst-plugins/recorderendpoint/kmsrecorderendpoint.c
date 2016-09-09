@@ -533,13 +533,24 @@ kms_recorder_endpoint_dispose (GObject * object)
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
   if (self->priv->mux != NULL) {
-    if (kms_base_media_muxer_get_state (self->priv->mux) != GST_STATE_NULL) {
+    GstBus *bus;
+
+    if (self->priv->playing ||
+        self->priv->transition == KMS_RECORDER_ENDPOINT_STARTING) {
       GST_ELEMENT_WARNING (self, RESOURCE, BUSY,
           ("Recorder may have buffers to save"),
           ("Disposing recorder when it isn't stopped."));
     }
 
+    /* Remove bus handler and releases all queued messages */
+    bus = kms_base_media_muxer_get_bus (self->priv->mux);
+    gst_bus_set_flushing (bus, TRUE);
+    gst_bus_set_sync_handler (bus, NULL, NULL, NULL);
+    g_object_unref (bus);
+
+    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
     kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
+    KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
     if (self->priv->sent_eos) {
       GST_WARNING_OBJECT (self, "Forcing pending stop operation to finish");
