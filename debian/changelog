@@ -1,3 +1,149 @@
+kms-elements-6.0 (6.6.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * recorderendpoint: Avoid stopping recorder more than once
+  * compositemixer: Add latency probe in videotest -> videomixer pad
+  * compositemixer: Add latency property to compositor element
+
+  [ Miguel París Díaz ]
+  * Use g_object_set|get_qdata
+  * httppostendpoint: do not set unused qdata
+  * rtpendpoint: do not connect audio, it is not expected
+  * rtpendpoint_audio: do not connect video, it is not expected
+
+  [ David Fernandez ]
+  * compositemixer: Change min latency in answer to latency query
+  * kmsavmuxer: Change qtmux by mp4mux
+
+  [ Miguel París Díaz ]
+  * webrtcbaseconnection: add ice_gathering_started attr
+
+  [ David Fernandez ]
+  * recorderendpoint: Not allow framerate renegotiation for MP4
+
+  [ Ivan Gracia ]
+  * WebRtcEndpoint: remove TODO from header
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtctransport: Turn transport struct into a GObject
+  * kmswebrtcendpointlib: Fix issues regarding includes and missing files
+  * WebRtcConnections: Add property to get transport from connections
+  * niceagent: Add method to get the component state
+  * kmswebrtcbaseconnection: Export properties
+  * kmsicebaseagent: Get controlling mode
+  * kmsicecandidate: Complete the ice candidate information provided
+  * kmsiceniceagent: Fix wrong generation of remote candidate
+  * kmsicebaseagent: Provide remote candidates
+  * kmsicecandidate: Fix wrong function name
+
+  [ Ivan Gracia ]
+  * WebRtcEndpoint: improved documentation formatting
+
+  [ Miguel París Díaz ]
+  * webrtcsession: create candidate with proper string
+  * icecandidate: "candidate:" prefix mandatory in regex
+
+  [ Santiago Carot-Nemesio ]
+  * kmsicecandidate: Fix parsing of candidates
+
+  [ Miguel París Díaz ]
+  * debian/control: update libnice version
+  * debian/control: add libssl version
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian/control: Fix libnice versions
+
+  [ Miguel París Díaz ]
+  * recorderendpoint: clear base_time_lock in finalize
+  * recorderendpoint: use a mutex for managing srcs hashtable
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian/control: Fix libssl dependency, correct package name
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtctransportsink: No use deprecated properties for funnel
+
+  [ Ivan Gracia ]
+  * WebRtcEndpoint: Remove reference to non-existing setMax/MinAudioSendBw method
+
+  [ David Fernandez ]
+  * WebRtcEndpoint: Generate a default RSA certificate
+  * WebRtcEndpoint: Generate a ECDSA certificate
+  * WebRtcEndpoint: Add a parameter to select the type of key using in dtls
+
+  [ Miguel París Díaz ]
+  * WebRtcEndpoint: improve code
+  * WebRtcEndpointImpl: fix EC parameters
+  * webrtcendpoint: test RSA and ECDSA pems
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcdatachannelbin: Fix memory leak
+
+  [ Jose Antonio Santos Cadenas ]
+  * PlayerEndpoint: Add parameter to control rtsp cache
+  * Fix clang compilation warnings
+
+  [ Santiago Carot-Nemesio ]
+  * Do not use MediaConfig
+  * Do not use media context
+  * webrtcendpoint: Do not use SdpMediaConfig in offers and answers
+  * rtpendpoint: Do not use SdpMediaConfig in offer and answers
+  * kmsrtpendpoint: Remove deprecated code
+
+  [ Jose Antonio Santos Cadenas ]
+  * recorder: Enable support for recording files in JPEG format
+
+  [ Santiago Carot-Nemesio ]
+  * RecorderEndpointImpl: Fix wrong callback to parent class on postcontructor initialization
+  * RecorderEndpoint: Depreate pause and stop signals
+
+  [ David Fernandez ]
+  * CertificateManager: Add a class to manage certificates
+  * CertificateManager: Use shared_ptr
+  * CertificateManager: Add a function to check if the certificate is valid
+  * playerendpoint: change network-cache property from readable to readwrite
+  * recorderendpoint: Set error message source to recorderendpoint
+  * playerendpoint: Set error message source to playerendpoint
+
+  [ Santiago Carot-Nemesio ]
+  * webrtcendpoint: Mix negotiation between offerers and answereres supporting/unspporting bundle indistinctly
+  * kmsrecorderendpoint: Add error message when pushing buffer without setting caps
+  * kmsrecorderendpoint: Show message on successful
+
+  [ Miguel París Díaz ]
+  * Revert "kmsplayerendpoint: Let appsrc set buffers timestamps"
+  * playerendpoint: rename mutex var
+  * playerendpoint: remove unneded comments
+  * playerendpoint: fix PTS assignment
+  * playerendpoint: use g_object_set|get|steal_qdata
+  * playerendpoint: error if sample of appsink contains BufferList
+  * playerendpoint: do not set pipeline to PLAYING for paused HACK
+
+  [ Santiago Carot-Nemesio ]
+  * Revert "kmsrecorderendpoint: Show message on successful"
+  * kmsrecorderendpoint: fix race condition
+  * kmsrecorderendpoint: Add warning message when ignoring buffer list
+  * kmsrecorderendpoint: Fix quark name
+
+  [ Miguel París Díaz ]
+  * playerendpoint: appsrc with "do-timestamp" as FALSE
+  * recorderendpoint: use buffer PTS and DTS accessor macros
+  * avmuxer: print PTS as time format
+  * avmuxer: do not drop buffers when PTS decrements
+  * avmuxer: make appsrc blocking to avoid buffer leaks
+  * (player|recorder)endpoint: use functions and callbacks for AppSink and AppSrc
+  * ChangeLog.md: Prepare release notes for 6.6.0
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.6.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 16:54:41 +0200
+
 kms-elements-6.0 (6.5.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
