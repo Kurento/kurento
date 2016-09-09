@@ -125,6 +125,8 @@ langdoc:
 	  cd $(BUILDDIR)/langdoc/kurento-utils-js && git checkout kurento-utils-js-$(UTILS_JS_VERSION) || git checkout $(UTILS_JS_VERSION) || echo "Using master branch" && npm install && node_modules/.bin/grunt --force jsdoc
 	  cp -r $(BUILDDIR)/langdoc/kurento-utils-js/doc/jsdoc/kurento-utils/$(UTILS_JS_VERSION) $(BUILDDIR)/html/langdoc/jsdoc/kurento-utils-js
 
+	  rm -rf $(BUILDDIR)/langdoc
+
 qthelp:
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
 	@echo
