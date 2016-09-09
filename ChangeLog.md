@@ -1,3 +1,13 @@
+6.6.0
+=====
+
+  * Bux fixes:
+
+    * PlayerEndpoint: Fix PTS assignment
+    * RecorderEndpoint: Fix buffer leaks
+  * WebRctEndpoint: ECDSA certificate support
+  * Documentation improvement
+
 6.5.0
 =====
 
