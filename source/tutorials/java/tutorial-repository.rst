@@ -294,9 +294,9 @@ client with the SDP answer.
          String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 
          // 4. Gather ICE candidates
-         webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         webRtcEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
            @Override
-           public void onEvent(OnIceCandidateEvent event) {
+           public void onEvent(IceCandidateFoundEvent event) {
              JsonObject response = new JsonObject();
              response.addProperty("id", "iceCandidate");
              response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
@@ -392,9 +392,9 @@ for gaps in the network communications).
          response.addProperty("sdpAnswer", sdpAnswer);
 
          // 4. Gather ICE candidates
-         webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         webRtcEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
            @Override
-           public void onEvent(OnIceCandidateEvent event) {
+           public void onEvent(IceCandidateFoundEvent event) {
              JsonObject response = new JsonObject();
              response.addProperty("id", "iceCandidate");
              response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));

@@ -430,9 +430,9 @@ moment). The methods used to generate SDP are
 
             String calleeSdpOffer = jsonMessage.get("sdpOffer").getAsString();
             callee.setWebRtcEndpoint(pipeline.getCalleeWebRtcEP());
-            pipeline.getCalleeWebRtcEP().addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+            pipeline.getCalleeWebRtcEP().addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
                @Override
-               public void onEvent(OnIceCandidateEvent event) {
+               public void onEvent(IceCandidateFoundEvent event) {
                   JsonObject response = new JsonObject();
                   response.addProperty("id", "iceCandidate");
                   response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
@@ -449,10 +449,10 @@ moment). The methods used to generate SDP are
             String calleeSdpAnswer = pipeline.generateSdpAnswerForCallee(calleeSdpOffer);
             String callerSdpOffer = registry.getByName(from).getSdpOffer();
             calleer.setWebRtcEndpoint(pipeline.getCallerWebRtcEP());
-            pipeline.getCallerWebRtcEP().addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+            pipeline.getCallerWebRtcEP().addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
                @Override
-               public void onEvent(OnIceCandidateEvent event) {
+               public void onEvent(IceCandidateFoundEvent event) {
                   JsonObject response = new JsonObject();
                   response.addProperty("id", "iceCandidate");
                   response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));

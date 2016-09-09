@@ -245,9 +245,9 @@ carrying the SDP answer.
          users.put(session.getId(), user);
 
          // ICE candidates
-         webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         webRtcEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
            @Override
-           public void onEvent(OnIceCandidateEvent event) {
+           public void onEvent(IceCandidateFoundEvent event) {
              JsonObject response = new JsonObject();
              response.addProperty("id", "iceCandidate");
              response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));

@@ -317,10 +317,10 @@ Media Pipeline and the ``WebRtcEndpoint`` for ``presenter``:
 
          WebRtcEndpoint presenterWebRtc = presenterUserSession.getWebRtcEndpoint();
 
-         presenterWebRtc.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         presenterWebRtc.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
             @Override
-            public void onEvent(OnIceCandidateEvent event) {
+            public void onEvent(IceCandidateFoundEvent event) {
                JsonObject response = new JsonObject();
                response.addProperty("id", "iceCandidate");
                response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
@@ -386,10 +386,10 @@ back to the client.
 
          WebRtcEndpoint nextWebRtc = new WebRtcEndpoint.Builder(pipeline).build();
 
-         nextWebRtc.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         nextWebRtc.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
             @Override
-            public void onEvent(OnIceCandidateEvent event) {
+            public void onEvent(IceCandidateFoundEvent event) {
                JsonObject response = new JsonObject();
                response.addProperty("id", "iceCandidate");
                response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));

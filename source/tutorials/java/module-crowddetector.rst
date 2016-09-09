@@ -165,9 +165,9 @@ All in all, the media pipeline of this demo is implemented as follows:
    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline)
          .build();
    webRtcEndpoint
-      .addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+      .addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
          @Override
-         public void onEvent(OnIceCandidateEvent event) {
+         public void onEvent(IceCandidateFoundEvent event) {
          JsonObject response = new JsonObject();
          response.addProperty("id", "iceCandidate");
          response.add("candidate",

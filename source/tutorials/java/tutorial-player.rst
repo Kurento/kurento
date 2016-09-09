@@ -263,9 +263,9 @@ message.
     playerEndpoint.connect(webRtcEndpoint);
 
     // 2. WebRtcEndpoint // ICE candidates
-    webRtcEndpoint.addOnIceCandidateListener(new
-    EventListener<OnIceCandidateEvent>() {
-      @Override public void onEvent(OnIceCandidateEvent event) {
+    webRtcEndpoint.addIceCandidateFoundListener(new
+    EventListener<IceCandidateFoundEvent>() {
+      @Override public void onEvent(IceCandidateFoundEvent event) {
         JsonObject response = new JsonObject();
         response.addProperty("id", "iceCandidate"); response.add("candidate",
         JsonUtils.toJsonObject(event.getCandidate())); try {

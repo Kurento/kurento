@@ -447,11 +447,11 @@ moment). The methods used to generate SDP are
                .generateSdpAnswerForCallee(calleeSdpOffer);
 
          callee.setWebRtcEndpoint(callMediaPipeline.getCalleeWebRtcEP());
-         callMediaPipeline.getCalleeWebRtcEP().addOnIceCandidateListener(
-               new EventListener<OnIceCandidateEvent>() {
+         callMediaPipeline.getCalleeWebRtcEP().addIceCandidateFoundListener(
+               new EventListener<IceCandidateFoundEvent>() {
 
                   @Override
-                  public void onEvent(OnIceCandidateEvent event) {
+                  public void onEvent(IceCandidateFoundEvent event) {
                      JsonObject response = new JsonObject();
                      response.addProperty("id", "iceCandidate");
                      response.add("candidate", JsonUtils
@@ -482,11 +482,11 @@ moment). The methods used to generate SDP are
          String callerSdpOffer = registry.getByName(from).getSdpOffer();
 
          calleer.setWebRtcEndpoint(callMediaPipeline.getCallerWebRtcEP());
-         callMediaPipeline.getCallerWebRtcEP().addOnIceCandidateListener(
-               new EventListener<OnIceCandidateEvent>() {
+         callMediaPipeline.getCallerWebRtcEP().addIceCandidateFoundListener(
+               new EventListener<IceCandidateFoundEvent>() {
 
                   @Override
-                  public void onEvent(OnIceCandidateEvent event) {
+                  public void onEvent(IceCandidateFoundEvent event) {
                      JsonObject response = new JsonObject();
                      response.addProperty("id", "iceCandidate");
                      response.add("candidate", JsonUtils
@@ -561,11 +561,11 @@ streams in the Kurento Media Server.
                   }
                });
 
-         playMediaPipeline.getWebRtc().addOnIceCandidateListener(
-               new EventListener<OnIceCandidateEvent>() {
+         playMediaPipeline.getWebRtc().addIceCandidateFoundListener(
+               new EventListener<IceCandidateFoundEvent>() {
 
                   @Override
-                  public void onEvent(OnIceCandidateEvent event) {
+                  public void onEvent(IceCandidateFoundEvent event) {
                      JsonObject response = new JsonObject();
                      response.addProperty("id", "iceCandidate");
                      response.add("candidate", JsonUtils

@@ -106,10 +106,10 @@ event) the windows. This is implemented in the server-side logic as follows:
    users.put(session.getId(), user);
 
    webRtcEndpoint
-         .addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         .addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
       @Override
-      public void onEvent(OnIceCandidateEvent event) {
+      public void onEvent(IceCandidateFoundEvent event) {
          JsonObject response = new JsonObject();
          response.addProperty("id", "iceCandidate");
          response.add("candidate", JsonUtils

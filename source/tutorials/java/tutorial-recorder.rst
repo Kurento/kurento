@@ -256,9 +256,9 @@ answer.
          String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 
          // 4. Gather ICE candidates
-         webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         webRtcEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
            @Override
-           public void onEvent(OnIceCandidateEvent event) {
+           public void onEvent(IceCandidateFoundEvent event) {
              JsonObject response = new JsonObject();
              response.addProperty("id", "iceCandidate");
              response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
@@ -333,9 +333,9 @@ them. It will then send the recorded media to the client.
          response.addProperty("sdpAnswer", sdpAnswer);
 
          // 4. Gather ICE candidates
-         webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         webRtcEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
            @Override
-           public void onEvent(OnIceCandidateEvent event) {
+           public void onEvent(IceCandidateFoundEvent event) {
              JsonObject response = new JsonObject();
              response.addProperty("id", "iceCandidate");
              response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
