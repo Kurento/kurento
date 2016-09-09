@@ -12,7 +12,8 @@ Build-Depends: debhelper(>=9),
                libgoogle-gson-java,
                libslf4j-java,
                junit4,
-               libcommons-cli-java
+               libcommons-cli-java,
+               libwagon-java
 Standards-Version: 3.9.4
 
 
