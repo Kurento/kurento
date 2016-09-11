@@ -1,6 +1,6 @@
 {
   "name": "kurento-recorder",
-  "version": "6.5.1-dev",
+  "version": "6.6.0",
   "description": "Kurento demo with Recorder",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -24,7 +24,7 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.3.0",
     "demo-console": "1.5.1",
-    "kurento-client": "master",
-    "kurento-utils": "master"
+    "kurento-client": "6.6.0",
+    "kurento-utils": "6.6.0"
   }
 }
