@@ -489,7 +489,9 @@ kms_recorder_endpoint_async_state_changed (KmsRecorderEndpoint * self,
 
     g_object_get (self, "state", &current, NULL);
     GST_ERROR_OBJECT (self, "Unexpected asynchronous change of state."
-        "Current state :%u, Next: %u, Transition: %s", current, state,
+        "Current state :%s, Next state: %s, Transition: %s",
+        kms_uriendpoint_state_to_string (current),
+        kms_uriendpoint_state_to_string (state),
         transition[self->priv->transition]);
   }
 
@@ -739,8 +741,8 @@ kms_recorder_endpoint_create_parent_directories (KmsRecorderEndpoint * self)
   g_free (protocol);
 }
 
-static void
-kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
+static gboolean
+kms_recorder_endpoint_stopped (KmsUriEndpoint * obj, GError ** error)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
   KmsUriEndpointState state;
@@ -749,12 +751,15 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 
   if (state == KMS_URI_ENDPOINT_STATE_STOP ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_STOPPING) {
-    GST_DEBUG_OBJECT (self, "Already set to stop");
-    return;
+    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopping");
+    return FALSE;
   } else if (self->priv->transition != KMS_RECORDER_ENDPOINT_COMPLETED) {
-    GST_WARNING_OBJECT (self, "Can not go to stop. Recorder is %s",
+    g_set_error (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION,
+        "Can not go to stop. Recorder is %s",
         transition[self->priv->transition]);
-    return;
+    return FALSE;
   }
 
   kms_recorder_endpoint_change_state (self, KMS_RECORDER_ENDPOINT_STOPPING);
@@ -789,6 +794,8 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
     kms_recorder_endpoint_sync_state_changed (self,
         KMS_URI_ENDPOINT_STATE_STOP);
   }
+
+  return TRUE;
 }
 
 static void
@@ -797,8 +804,8 @@ drop_until_key_frame_cb (GstPad * pad, gpointer data)
   kms_utils_drop_until_keyframe (pad, TRUE);
 }
 
-static void
-kms_recorder_endpoint_started (KmsUriEndpoint * obj)
+static gboolean
+kms_recorder_endpoint_started (KmsUriEndpoint * obj, GError ** error)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
   KmsUriEndpointState state;
@@ -808,12 +815,15 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
 
   if (state == KMS_URI_ENDPOINT_STATE_START ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_STARTING) {
-    GST_DEBUG_OBJECT (self, "Already set to record");
-    return;
+    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is starting");
+    return FALSE;
   } else if (self->priv->transition != KMS_RECORDER_ENDPOINT_COMPLETED) {
-    GST_WARNING_OBJECT (self, "Can not go to record. Recorder is %s",
+    g_set_error (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION,
+        "Can not go to stop. Recorder is %s",
         transition[self->priv->transition]);
-    return;
+    return FALSE;
   }
 
   was_paused = state == KMS_URI_ENDPOINT_STATE_PAUSE;
@@ -850,10 +860,12 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
     kms_recorder_endpoint_sync_state_changed (self,
         KMS_URI_ENDPOINT_STATE_START);
   }
+
+  return TRUE;
 }
 
-static void
-kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
+static gboolean
+kms_recorder_endpoint_paused (KmsUriEndpoint * obj, GError ** error)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
   KmsUriEndpointState state;
@@ -863,12 +875,15 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
 
   if (state == KMS_URI_ENDPOINT_STATE_PAUSE ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_PAUSING) {
-    GST_DEBUG_OBJECT (self, "Already set to pause");
-    return;
+    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is pausing");
+    return FALSE;
   } else if (self->priv->transition != KMS_RECORDER_ENDPOINT_COMPLETED) {
-    GST_WARNING_OBJECT (self, "Can not go to pause. Recorder is %s",
+    g_set_error (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION,
+        "Can not go to stop. Recorder is %s",
         transition[self->priv->transition]);
-    return;
+    return FALSE;
   }
 
   kms_recorder_endpoint_change_state (self, KMS_RECORDER_ENDPOINT_PAUSING);
@@ -881,6 +896,7 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
 
   kms_recorder_endpoint_sync_state_changed (self, KMS_URI_ENDPOINT_STATE_PAUSE);
 
+  return TRUE;
 }
 
 static void

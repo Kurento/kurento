@@ -886,8 +886,8 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   }
 }
 
-static void
-kms_player_endpoint_stopped (KmsUriEndpoint * obj)
+static gboolean
+kms_player_endpoint_stopped (KmsUriEndpoint * obj, GError ** error)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
 
@@ -898,10 +898,12 @@ kms_player_endpoint_stopped (KmsUriEndpoint * obj)
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       KMS_URI_ENDPOINT_STATE_STOP);
+
+  return TRUE;
 }
 
-static void
-kms_player_endpoint_started (KmsUriEndpoint * obj)
+static gboolean
+kms_player_endpoint_started (KmsUriEndpoint * obj, GError ** error)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
 
@@ -916,6 +918,8 @@ kms_player_endpoint_started (KmsUriEndpoint * obj)
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       KMS_URI_ENDPOINT_STATE_START);
+
+  return TRUE;
 }
 
 static gboolean
@@ -955,8 +959,8 @@ kms_player_endpoint_set_position (KmsPlayerEndpoint * self, gint64 position)
   return TRUE;
 }
 
-static void
-kms_player_endpoint_paused (KmsUriEndpoint * obj)
+static gboolean
+kms_player_endpoint_paused (KmsUriEndpoint * obj, GError ** error)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
   GstStateChangeReturn ret;
@@ -984,6 +988,8 @@ kms_player_endpoint_paused (KmsUriEndpoint * obj)
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       KMS_URI_ENDPOINT_STATE_PAUSE);
+
+  return TRUE;
 }
 
 static void
@@ -1110,7 +1116,7 @@ static gboolean
 kms_player_endpoint_emit_EOS_signal (gpointer data)
 {
   GST_DEBUG ("Emit EOS Signal");
-  kms_player_endpoint_stopped (KMS_URI_ENDPOINT (data));
+  kms_player_endpoint_stopped (KMS_URI_ENDPOINT (data), NULL);
   g_signal_emit (G_OBJECT (data), kms_player_endpoint_signals[SIGNAL_EOS], 0);
 
   return G_SOURCE_REMOVE;
