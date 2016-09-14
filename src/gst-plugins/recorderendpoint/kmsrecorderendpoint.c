@@ -147,6 +147,7 @@ struct _KmsRecorderEndpointPrivate
 
   gboolean sent_eos;
   gboolean playing;
+  gboolean stopped;
   GSList *pending_srcs;
 
   GHashTable *sink_pad_data;    /* <name, KmsSinkPadData> */
@@ -444,6 +445,7 @@ kms_recorder_endpoint_update_internal_state (KmsRecorderEndpoint * self,
   } else if (state == KMS_URI_ENDPOINT_STATE_STOP) {
     self->priv->playing = FALSE;
     self->priv->sent_eos = FALSE;
+    self->priv->stopped = TRUE;
   }
 
   self->priv->transition = KMS_RECORDER_ENDPOINT_COMPLETED;
@@ -749,7 +751,12 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj, GError ** error)
 
   g_object_get (self, "state", &state, NULL);
 
-  if (state == KMS_URI_ENDPOINT_STATE_STOP ||
+  if (self->priv->stopped) {
+    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopped");
+    GST_ERROR_OBJECT (self, "No stop");
+    return FALSE;
+  } else if (state == KMS_URI_ENDPOINT_STATE_STOP ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_STOPPING) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
         KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopping");
@@ -813,7 +820,12 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj, GError ** error)
 
   g_object_get (self, "state", &state, NULL);
 
-  if (state == KMS_URI_ENDPOINT_STATE_START ||
+  if (self->priv->stopped) {
+    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopped");
+    GST_ERROR_OBJECT (self, "No start");
+    return FALSE;
+  } else if (state == KMS_URI_ENDPOINT_STATE_START ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_STARTING) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
         KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is starting");
@@ -873,7 +885,12 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj, GError ** error)
 
   g_object_get (self, "state", &state, NULL);
 
-  if (state == KMS_URI_ENDPOINT_STATE_PAUSE ||
+  if (self->priv->stopped) {
+    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopped");
+    GST_ERROR_OBJECT (self, "No pause");
+    return FALSE;
+  } else if (state == KMS_URI_ENDPOINT_STATE_PAUSE ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_PAUSING) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
         KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is pausing");

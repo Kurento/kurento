@@ -52,7 +52,7 @@ struct state_controller
 
 static const struct state_controller trasnsitions0[] = {
   {KMS_URI_ENDPOINT_STATE_START, 2},
-  {KMS_URI_ENDPOINT_STATE_STOP, 1},
+  {KMS_URI_ENDPOINT_STATE_PAUSE, 1},
   {KMS_URI_ENDPOINT_STATE_START, 2},
   {KMS_URI_ENDPOINT_STATE_PAUSE, 1},
   {KMS_URI_ENDPOINT_STATE_START, 2},
@@ -61,7 +61,7 @@ static const struct state_controller trasnsitions0[] = {
 
 static const struct state_controller trasnsitions1[] = {
   {KMS_URI_ENDPOINT_STATE_START, 2},
-  {KMS_URI_ENDPOINT_STATE_STOP, 1},
+  {KMS_URI_ENDPOINT_STATE_PAUSE, 1},
   {KMS_URI_ENDPOINT_STATE_START, 1}
 };
 
