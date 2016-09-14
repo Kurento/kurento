@@ -303,7 +303,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   segment = gst_sample_get_segment (sample);
 
   KMS_ELEMENT_LOCK (self);
-  g_object_get (self, "state", &state, NULL);
+  state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (!((state == KMS_URI_ENDPOINT_STATE_START &&
               self->priv->transition == KMS_RECORDER_ENDPOINT_COMPLETED) ||
@@ -489,7 +489,7 @@ kms_recorder_endpoint_async_state_changed (KmsRecorderEndpoint * self,
   } else {
     KmsUriEndpointState current;
 
-    g_object_get (self, "state", &current, NULL);
+    current = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
     GST_ERROR_OBJECT (self, "Unexpected asynchronous change of state."
         "Current state :%s, Next state: %s, Transition: %s",
         kms_uriendpoint_state_to_string (current),
@@ -749,7 +749,7 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj, GError ** error)
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
   KmsUriEndpointState state;
 
-  g_object_get (self, "state", &state, NULL);
+  state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (self->priv->stopped) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
@@ -818,7 +818,7 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj, GError ** error)
   KmsUriEndpointState state;
   gboolean was_paused;
 
-  g_object_get (self, "state", &state, NULL);
+  state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (self->priv->stopped) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
@@ -883,7 +883,7 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj, GError ** error)
   KmsUriEndpointState state;
   GstClock *clk;
 
-  g_object_get (self, "state", &state, NULL);
+  state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (self->priv->stopped) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
@@ -1788,7 +1788,7 @@ kms_recorder_endpoint_request_new_sink_pad (KmsElement * obj,
   }
 
   kms_recorder_endpoint_add_appsink (self, type, description, name, TRUE);
-  g_object_get (self, "state", &state, NULL);
+  state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (state != KMS_URI_ENDPOINT_STATE_START) {
     goto end;
