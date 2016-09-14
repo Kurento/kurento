@@ -274,6 +274,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   BaseTimeType *base_time;
   GstClockTime offset;
   GstCaps *caps;
+  gboolean unlock_element = TRUE;
 
   appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
 
@@ -383,6 +384,10 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     gst_caps_unref (caps);
   }
 
+  KMS_ELEMENT_UNLOCK (self);
+
+  unlock_element = FALSE;
+
   ret = gst_app_src_push_buffer (appsrc, buffer);
 
   if (ret != GST_FLOW_OK) {
@@ -393,7 +398,10 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   }
 
 end:
-  KMS_ELEMENT_UNLOCK (self);
+  if (unlock_element) {
+    KMS_ELEMENT_UNLOCK (self);
+  }
+
   if (sample != NULL) {
     gst_sample_unref (sample);
   }
