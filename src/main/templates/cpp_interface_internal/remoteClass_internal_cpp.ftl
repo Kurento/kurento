@@ -21,21 +21,26 @@ ${getCppObjectType(method.return, false)} ${remoteClass.name}Method${method.name
     throw KurentoException (MEDIA_OBJECT_NOT_FOUND, "Invalid object while invoking method ${remoteClass.name}::${method.name}");
   }
 
-  <#list method.params as param>
+  <#list method.params?reverse as param>
   <#if param.optional>
   <#assign optionalParam = param>
-  if (!__isSet${param.name?cap_first}) {
-    return obj->${method.name} (<#rt>
-    <#lt><#list method.params as param>
-      <#lt><#if optionalParam == param><#break></#if><#if param_index != 0>, </#if>${param.name}<#rt>
-    <#lt></#list>);
+  if (<#assign stop_if = false><#assign first = true><#list method.params as param_if><#rt>
+      <#lt><#if stop_if><#break></#if><#rt>
+      <#lt><#if param_if.name == param.name><#assign stop_if = true></#if><#if !first> && </#if><#rt>
+      <#lt><#if param_if.optional>__isSet${param_if.name?cap_first}<#assign first =
+      false></#if></#list>) {
+    return obj->${method.name} (<#assign stop_call = false><#rt>
+      <#lt><#list method.params as param_call><#if stop_call><#break></#if>
+      <#lt><#if param_call.name == param.name><#assign stop_call = true></#if>
+      <#lt><#if param_call_index != 0>, </#if>${param_call.name}<#rt>
+      <#lt></#list>);
   }
 
   </#if>
   </#list>
   return obj->${method.name} (<#rt>
     <#lt><#list method.params as param>
-      <#lt><#if param_index != 0>, </#if>${param.name}<#rt>
+      <#lt><#if param.optional><#break></#if><#if param_index != 0>, </#if>${param.name}<#rt>
     <#lt></#list>);
 }
 
