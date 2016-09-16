@@ -206,9 +206,9 @@ kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
       (self), KMS_BASE_MEDIA_MUXER_GET_URI (self));
 
   g_object_set (self->priv->videosrc, "block", TRUE, "format", GST_FORMAT_TIME,
-      NULL);
+      "max-bytes", 0, NULL);
   g_object_set (self->priv->audiosrc, "block", TRUE, "format", GST_FORMAT_TIME,
-      NULL);
+      "max-bytes", 0, NULL);
 
   self->priv->mux = kms_av_muxer_create_muxer (self);
 
