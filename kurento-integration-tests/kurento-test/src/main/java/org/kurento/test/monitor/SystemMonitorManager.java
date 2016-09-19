@@ -197,7 +197,7 @@ public class SystemMonitorManager {
   public void startMonitoring() {
 
     final long startTime = new Date().getTime();
-    executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     thread = new Thread() {
       @Override
       public void run() {
