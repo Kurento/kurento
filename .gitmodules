@@ -1,0 +1,3 @@
+[submodule "kms-cmake-utils"]
+	path = kms-cmake-utils
+	url = ssh://code.kurento.org:12345/kms-cmake-utils
