@@ -198,6 +198,8 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
     if (channel == null || !channel.isActive() || group == null || group.isShuttingDown()
         || group.isShutdown()) {
 
+      log.info("{} Connecting native client", label);
+
       final boolean ssl = "wss".equalsIgnoreCase(this.uri.getScheme());
       final SslContext sslCtx;
       try {
@@ -208,8 +210,6 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
         throw new IllegalArgumentException(
             "Could not create SSL context. See logs for more details", e);
       }
-
-      group = new NioEventLoopGroup();
 
       final String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
       final String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
@@ -224,6 +224,16 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
         }
       } else {
         port = uri.getPort();
+      }
+
+      if (group == null || group.isShuttingDown() || group.isShutdown() || group.isTerminated()) {
+        log.info("{} Creating new NioEventLoopGroup", label);
+        group = new NioEventLoopGroup();
+      }
+
+      if (channel != null) {
+        log.info("{} Closing previously existing channel when connecting native client", label);
+        closeChannel();
       }
 
       Bootstrap b = new Bootstrap();
@@ -269,9 +279,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
 
       }
 
-      ChannelFuture closeFuture = channel.closeFuture();
-
-      closeFuture.addListener(new ChannelFutureListener() {
+      channel.closeFuture().addListener(new ChannelFutureListener() {
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {
           log.info("{} channel closed", label);
@@ -285,6 +293,18 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
 
   @Override
   public void closeNativeClient() {
+    closeChannel();
+
+    if (group != null) {
+      group.shutdownGracefully();
+    } else {
+      log.warn("{} Trying to close a JsonRpcClientNettyWebSocket with group == null", label);
+    }
+    group = null;
+    handler = null;
+  }
+
+  private void closeChannel() {
     if (channel != null) {
       log.debug("{} Closing client", label);
       try {
@@ -297,14 +317,6 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
     } else {
       log.warn("{} Trying to close a JsonRpcClientNettyWebSocket with channel == null", label);
     }
-
-    if (group != null) {
-      group.shutdownGracefully();
-    } else {
-      log.warn("{} Trying to close a JsonRpcClientNettyWebSocket with group == null", label);
-    }
-    group = null;
-    handler = null;
   }
 
 }

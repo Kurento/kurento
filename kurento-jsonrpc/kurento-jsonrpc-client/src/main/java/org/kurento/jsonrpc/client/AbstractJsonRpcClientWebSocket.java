@@ -629,7 +629,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       public void run() {
         try {
 
-          log.debug("{}JsonRpcWsClient reconnecting to {}. ", label, uri);
+          log.debug("{} JsonRpcWsClient reconnecting to {}. ", label, uri);
 
           connectIfNecessary();
 
