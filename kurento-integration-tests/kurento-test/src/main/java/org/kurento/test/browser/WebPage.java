@@ -445,11 +445,9 @@ public class WebPage {
     getProperty("recordRTC");
   }
 
-  public File saveRecordingToDisk(String fileName) {
+  public File saveRecordingToDisk(String fileName, String downloadsFolder) {
     browser.executeScript("kurentoTest.saveRecordingToDisk('" + fileName + "');");
-    String downloads = System.getProperty("user.home") + File.separator + "Downloads"
-        + File.separator;
-    File output = new File(downloads + fileName);
+    File output = new File(downloadsFolder + fileName);
     do {
       if (!output.exists()) {
         try {
