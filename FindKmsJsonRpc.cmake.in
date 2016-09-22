@@ -28,16 +28,27 @@ set(KmsJsonRpc_INCLUDE_DIRS ${KmsJsonRpc_INCLUDE_DIR} ${_JSONCPP_INCLUDE_DIRS}
   CACHE INTERNAL "Include directories for KmsJsonRpc library"
 )
 
-find_library (KmsJsonRpc_LIBRARY
-  NAMES
-    jsonrpc
-  PATH_SUFFIXES
-    build/src
+set (JSON_CPP_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
+
+if (TARGET jsonrpc)
+  #Just get the target for the library
+  set (KmsJsonRpc_LIBRARY jsonrpc)
+  set (KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
+    CACHE INTERNAL "Libraries for KmsJsonRpc"
+  )
+else ()
+  find_library (KmsJsonRpc_LIBRARY
+    NAMES
+      jsonrpc
+    PATH_SUFFIXES
+      ${JSON_CPP_BINARY_DIR_PREFIX}/src
+  )
+
+  set (KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
+    CACHE INTERNAL "Libraries for KmsJsonRpc"
 )
 
-set (KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
-  CACHE INTERNAL "Libraries for KmsJsonRpc"
-)
+endif()
 
 include (FindPackageHandleStandardArgs)
 
