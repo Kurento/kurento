@@ -15,13 +15,18 @@ set (HEADER_FILES
   jsonrpc/JsonFixes.hpp
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${JSONCPP_INCLUDE_DIRS})
-
 add_library(jsonrpc SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
 set_target_properties(jsonrpc PROPERTIES PUBLIC_HEADER "${HEADER_FILES}")
 
-include_directories(jsonrpc ${JSONCPP_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+set_property (TARGET jsonrpc
+  PROPERTY INCLUDE_DIRECTORIES
+    ${JSONCPP_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/jsonrpc
+  )
+
 target_link_libraries(jsonrpc ${JSONCPP_LIBRARIES} ${Boost_LIBRARIES})
 
 set_target_properties(jsonrpc PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
