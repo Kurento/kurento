@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(kms-cmake-utils)
 
-list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake")
+list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
 set (CMAKE_MODULES_INSTALL_DIR
   share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules
@@ -15,7 +15,7 @@ include (KurentoGitHelpers)
 get_git_version (PROJECT_VERSION 1.3.2-dev)
 
 configure_file(FindKurentoHelpers.cmake.in
-  "${CMAKE_BINARY_DIR}/FindKurentoHelpers.cmake" @ONLY)
+  "${CMAKE_CURRENT_BINARY_DIR}/FindKurentoHelpers.cmake" @ONLY)
 
 set (CMAKE_DIST_FILES
   FindGLIB-GENMARSHAL.cmake
@@ -32,7 +32,7 @@ foreach (DIST_FILE ${CMAKE_DIST_FILES})
 endforeach()
 
 install(
-  FILES "${CMAKE_BINARY_DIR}/FindKurentoHelpers.cmake"
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/FindKurentoHelpers.cmake"
   DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
 )
 
