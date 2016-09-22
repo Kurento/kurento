@@ -21,6 +21,7 @@
 #include <boost/test/unit_test.hpp>
 #include <jsonrpc/JsonSerializer.hpp>
 #include <map>
+#include <iostream>
 
 BOOST_AUTO_TEST_CASE (serialize_map)
 {
