@@ -16,7 +16,12 @@ then
   JAVA_JAR="/usr/bin/kurento-module-creator-jar-with-dependencies.jar"
 else
   echo Not system kurento-module-creator, running from $MY_PATH
-  JAVA_JAR=${MY_PATH}/../target/kurento-module-creator-jar-with-dependencies.jar
+  if [ -f ${MY_PATH}/kurento-module-creator-jar-with-dependencies.jar ]
+  then
+    JAVA_JAR=${MY_PATH}/kurento-module-creator-jar-with-dependencies.jar
+  else
+    JAVA_JAR=${MY_PATH}/../target/kurento-module-creator-jar-with-dependencies.jar
+  fi
 fi
 
 $JAVA_CMD $JAVA_OPTS -jar "$JAVA_JAR" "$@"
