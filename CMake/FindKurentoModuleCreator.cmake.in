@@ -5,7 +5,7 @@
 #
 #=============================================================================
 
-set(KurentoModuleCreator_VERSION "${project.version}")
+set(KurentoModuleCreator_VERSION "@PROJECT_VERSION@")
 set(KurentoModuleCreator_FOUND 1)
 
 include (FindPackageHandleStandardArgs)

@@ -1,6 +1,8 @@
 #!/usr/bin/make -f
+# -*- makefile -*-
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/maven.mk
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
 
-JAVA_HOME := /usr/lib/jvm/default-java
+%:
+	dh $@

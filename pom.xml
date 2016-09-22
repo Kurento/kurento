@@ -28,6 +28,7 @@
 		<wagon.artifact>wagon-ssh</wagon.artifact>
 		<wagon.version>1.0</wagon.version>
 
+		<buildDirectory>${project.basedir}/target</buildDirectory>
 	</properties>
 	<licenses>
 		<license>
@@ -47,13 +48,10 @@
 		</profile>
 	</profiles>
 	<build>
+		<directory>${buildDirectory}</directory>
 		<resources>
 			<resource>
 				<directory>src/main/templates</directory>
-			</resource>
-			<resource>
-				<filtering>true</filtering>
-				<directory>src/main/cmake</directory>
 			</resource>
 		</resources>
 		<plugins>

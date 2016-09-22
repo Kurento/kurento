@@ -5,3 +5,4 @@ target/
 .freemarker-ide.xml
 *~
 /codegen
+build
