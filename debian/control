@@ -6,9 +6,14 @@ Build-Depends: debhelper(>=9),
                cdbs,
                default-jdk (>=2:1.7),
                maven-debian-helper,
-               libxml2-utils,
-               cmake,
-               maven
+               libmaven-assembly-plugin-java,
+               libmaven-compiler-plugin-java,
+               libfreemarker-java,
+               libgoogle-gson-java,
+               libslf4j-java,
+               junit4,
+               libcommons-cli-java,
+               libwagon-java
 Standards-Version: 3.9.4
 
 
