@@ -1,3 +1,12 @@
 [submodule "kms-cmake-utils"]
 	path = kms-cmake-utils
 	url = ssh://code.kurento.org:12345/kms-cmake-utils
+[submodule "kms-jsonrpc"]
+	path = kms-jsonrpc
+	url = ssh://code.kurento.org:12345/kms-jsonrpc
+[submodule "kms-core"]
+	path = kms-core
+	url = ssh://code.kurento.org:12345/kms-core
+[submodule "kurento-module-creator"]
+	path = kurento-module-creator
+	url = ssh://code.kurento.org:12345/kurento-module-creator
