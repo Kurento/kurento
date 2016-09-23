@@ -21,7 +21,7 @@ set_property (TARGET test_constructors
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/interface
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
-    ${DEPENDENCIES_INCLUDE_DIRS}
+    ${KMSCORE_INCLUDE_DIRS}
     ${gstreamer-1.5_INCLUDE_DIRS}
 )
 target_link_libraries(test_constructors
