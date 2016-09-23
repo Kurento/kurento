@@ -1,5 +1,6 @@
 Find${module.code.implementation.lib?replace("lib", "")?upper_case}.cmake.in
-<#assign name>${module.code.implementation.lib?replace("lib", "")?upper_case}</#assign>
+<#assign name_lower>${module.code.implementation.lib?replace("lib", "")}</#assign>
+<#assign name>${name_lower?upper_case}</#assign>
 # - Try to find ${name} library
 
 #=============================================================================
@@ -29,6 +30,9 @@ set (REQUIRED_VARS
   ${name}_LIBRARIES
 )
 
+set (${name}_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
+set (${name}_SOURCE_DIR_PREFIX "" CACHE PATH "Path prefix used to look for source files")
+
 set(${name}_INCLUDE_DIRS
 <#list module.imports as import>
   <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
@@ -36,77 +40,101 @@ set(${name}_INCLUDE_DIRS
 )
 
 if (NOT "@_INTERFACE_GENERATED_HEADERS@ @_INTERFACE_INTERNAL_GENERATED_HEADERS@" STREQUAL " ")
-  find_path(${name}_INTERFACE_INCLUDE_DIR
-    NAMES
-      @_INTERFACE_GENERATED_HEADERS@
-      @_INTERFACE_INTERNAL_GENERATED_HEADERS@
-    PATH_SUFFIXES
-      @_INTERFACE_HEADERS_DIR@
-      kurento/modules/${module.name}
-  )
+  if (TARGET ${name_lower}interface)
+    set (${name}_INTERFACE_INCLUDE_DIR "@_INTERFACE_HEADERS_DIR@")
+  else ()
+    find_path(${name}_INTERFACE_INCLUDE_DIR
+      NAMES
+        @_INTERFACE_GENERATED_HEADERS@
+        @_INTERFACE_INTERNAL_GENERATED_HEADERS@
+      PATH_SUFFIXES
+        @_INTERFACE_HEADERS_DIR@
+        kurento/modules/${module.name}
+    )
+  endif ()
 
   list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_INCLUDE_DIR}</#noparse>)
   list (APPEND REQUIRED_VARS ${name}_INTERFACE_INCLUDE_DIR)
 endif ()
 
 if (NOT "@_SERVER_INTERNAL_GENERATED_HEADERS@" STREQUAL "")
-  find_path(${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
-    NAMES
-      @_SERVER_INTERNAL_GENERATED_HEADERS@
-    PATH_SUFFIXES
-      @_SERVER_INTERNAL_GENERATED_HEADERS_DIR@
-      kurento/modules/${module.name}
-  )
+  if (TARGET ${name_lower}impl)
+    set (${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR "@_SERVER_INTERNAL_GENERATED_HEADERS_DIR@")
+  else ()
+    find_path(${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
+      NAMES
+        @_SERVER_INTERNAL_GENERATED_HEADERS@
+      PATH_SUFFIXES
+        @_SERVER_INTERNAL_GENERATED_HEADERS_DIR@
+        kurento/modules/${module.name}
+    )
+  endif ()
 
   list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_INTERNAL_INCLUDE_DIR}</#noparse>)
   list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR)
 endif ()
 
 if (NOT "@_SERVER_GENERATED_HEADERS@" STREQUAL "")
-  find_path(${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
-    NAMES
-      @_SERVER_GENERATED_HEADERS@
-    PATH_SUFFIXES
-      @_PARAM_SERVER_STUB_DESTINATION@
-      kurento/modules/${module.name}
-  )
+  if (TARGET ${name_lower}impl)
+    set (${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR "<#noparse>$</#noparse>{${name}_SOURCE_DIR_PREFIX}/@_PARAM_SERVER_STUB_DESTINATION@")
+  else ()
+    find_path(${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
+      NAMES
+        @_SERVER_GENERATED_HEADERS@
+      PATH_SUFFIXES
+        @_PARAM_SERVER_STUB_DESTINATION@
+        kurento/modules/${module.name}
+    )
+  endif ()
 
   list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_GENERATED_INCLUDE_DIR}</#noparse>)
   list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR)
 endif()
 
 if (NOT "@_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@" STREQUAL "")
-  find_path(${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
-    NAMES
-      @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@
-    PATH_SUFFIXES
-      @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS_PREFIX@
-      kurento/modules/${module.name}
-  )
+  if (TARGET ${name_lower}impl)
+    set (${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR "<#noparse>$</#noparse>{${name}_SOURCE_DIR_PREFIX}/@_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS_PREFIX@")
+  else ()
+    find_path(${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
+      NAMES
+        @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@
+      PATH_SUFFIXES
+        @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS_PREFIX@
+        kurento/modules/${module.name}
+    )
+  endif ()
 
   list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>)
   list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR)
 endif ()
 
 if (NOT "@_PARAM_INTERFACE_LIB_EXTRA_HEADERS@" STREQUAL "")
-  find_path(${name}_INTERFACE_EXTRA_INCLUDE_DIR
-    NAMES
-      @_PARAM_INTERFACE_LIB_EXTRA_HEADERS@
-    PATH_SUFFIXES
-      @_PARAM_INTERFACE_LIB_EXTRA_HEADERS_PREFIX@
-      kurento/modules/${module.name}
-  )
+  if (TARGET ${name_lower}interface)
+    set (${name}_INTERFACE_EXTRA_INCLUDE_DIR "<#noparse>$</#noparse>{${name}_SOURCE_DIR_PREFIX}/@_PARAM_INTERFACE_LIB_EXTRA_HEADERS_PREFIX@")
+  else ()
+    find_path(${name}_INTERFACE_EXTRA_INCLUDE_DIR
+      NAMES
+        @_PARAM_INTERFACE_LIB_EXTRA_HEADERS@
+      PATH_SUFFIXES
+        @_PARAM_INTERFACE_LIB_EXTRA_HEADERS_PREFIX@
+        kurento/modules/${module.name}
+    )
+  endif()
 
   list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_EXTRA_INCLUDE_DIR}</#noparse>)
   list (APPEND REQUIRED_VARS ${name}_INTERFACE_EXTRA_INCLUDE_DIR)
 endif ()
 
-find_library (${name}_LIBRARY
-  NAMES
-    ${module.code.implementation.lib?replace("lib", "")}impl
-  PATH_SUFFIXES
-    build/src/server
-)
+if (TARGET ${name_lower}impl)
+  set (${name}_LIBRARY ${name_lower}impl)
+else ()
+  find_library (${name}_LIBRARY
+    NAMES
+      ${name_lower}impl
+    PATH_SUFFIXES
+      <#noparse>${</#noparse>${name}_BINARY_DIR_PREFIX<#noparse>}</#noparse>/src/server
+  )
+endif()
 
 <#noparse>
 set (REQUIRED_LIBS "@REQUIRED_LIBS@")
@@ -140,7 +168,7 @@ endforeach()
 
 set(${name}_INCLUDE_DIRS
   <#noparse>${</#noparse>${name}<#noparse>_INCLUDE_DIRS}</#noparse>
-  CACHE INTERNAL "Include directories for ${name} library"
+  CACHE INTERNAL "Include directories for ${name} library" FORCE
 )
 
 set (${name}_LIBRARIES
@@ -149,7 +177,7 @@ set (${name}_LIBRARIES
   <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_LIBRARIES}</#noparse>
 </#list>
   <#noparse>${REQUIRED_LIBRARIES}</#noparse>
-  CACHE INTERNAL "Libraries for ${name}"
+  CACHE INTERNAL "Libraries for ${name}" FORCE
 )
 
 include (FindPackageHandleStandardArgs)
