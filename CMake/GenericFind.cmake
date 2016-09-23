@@ -59,7 +59,9 @@ function(generic_find)
       endforeach()
     endif ()
 
-    if (NOT SEARCH_AGAIN)
+    set (FORCE_GENERIC_FIND FALSE CACHE BOOLEAN "Force search of libraries each time cmake is executed")
+
+    if (NOT SEARCH_AGAIN AND NOT FORCE_GENERIC_FIND)
       message (STATUS "${GF_LIBNAME} Already found")
       return ()
     endif()
