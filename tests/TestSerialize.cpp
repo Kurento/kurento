@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE (serialize_vector)
 BOOST_AUTO_TEST_CASE (serialize_int64)
 {
   int64_t data = LLONG_MAX;
-  int64_t newData;
+  int64_t newData = 0;
   kurento::JsonSerializer writer (true);
   kurento::JsonSerializer writer2 (true);
   kurento::JsonSerializer reader (false);
