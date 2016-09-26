@@ -10,3 +10,6 @@
 [submodule "kurento-module-creator"]
 	path = kurento-module-creator
 	url = ssh://code.kurento.org:12345/kurento-module-creator
+[submodule "kms-elements"]
+	path = kms-elements
+	url = ssh://code.kurento.org:12345/kms-elements
