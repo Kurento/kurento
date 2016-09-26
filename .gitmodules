@@ -16,3 +16,6 @@
 [submodule "kms-filters"]
 	path = kms-filters
 	url = ssh://code.kurento.org:12345/kms-filters
+[submodule "kurento-media-server"]
+	path = kurento-media-server
+	url = ssh://code.kurento.org:12345/kurento-media-server

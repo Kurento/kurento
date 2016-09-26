@@ -47,3 +47,5 @@ set (KMSELEMENTS_SOURCE_DIR_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Pat
 set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/kms-elements/src/server/kmd" CACHE PATH "Directory where kurento modules descriptors can be found" FORCE)
 
 add_subdirectory(kms-filters)
+
+add_subdirectory(kurento-media-server)
