@@ -52,7 +52,7 @@ GF::GF()
   boost::property_tree::ptree ac, audioCodecs, vc, videoCodecs;
   gst_init (NULL, NULL);
 
-  moduleManager.loadModulesFromDirectories ("../../src/server");
+  moduleManager.loadModulesFromDirectories ("../../src/server:../../..");
 
   mediaPipelineId = moduleManager.getFactory ("MediaPipeline")->createObject (
                       config, "",
