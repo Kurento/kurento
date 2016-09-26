@@ -1,11 +1,3 @@
-include_directories(
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-video-1.5_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${opencv_INCLUDE_DIRS}
-  ${libsoup-2.4_INCLUDE_DIRS}
-)
-
 set(IMAGEOVERLAY_SOURCES
   imageoverlay.c
   kmsimageoverlay.c kmsimageoverlay.h
@@ -18,6 +10,14 @@ target_link_libraries(imageoverlay
   ${gstreamer-video-1.5_LIBRARIES}
   ${opencv_LIBRARIES}
   ${libsoup-2.4_LIBRARIES}
+)
+
+set_property(TARGET imageoverlay
+  PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${opencv_INCLUDE_DIRS}
+    ${libsoup-2.4_INCLUDE_DIRS}
 )
 
 install(

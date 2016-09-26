@@ -1,10 +1,3 @@
-include_directories(
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-video-1.5_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${opencv_INCLUDE_DIRS}
-)
-
 set(MOVEMENTDETECTOR_SOURCES
   movementdetector.c
   kmsmovementdetector.c kmsmovementdetector.h
@@ -16,6 +9,13 @@ target_link_libraries(movementdetector
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-video-1.5_LIBRARIES}
   ${opencv_LIBRARIES}
+)
+
+set_property(TARGET movementdetector
+  PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${opencv_INCLUDE_DIRS}
 )
 
 install(

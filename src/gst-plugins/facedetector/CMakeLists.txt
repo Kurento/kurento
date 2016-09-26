@@ -1,11 +1,3 @@
-include_directories(
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-video-1.5_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${opencv_INCLUDE_DIRS}
-  ${SOUP_INCLUDE_DIRS}
-)
-
 set(FACEDETECTOR_SOURCES
   facedetector.c
   kmsfacedetector.c kmsfacedetector.h
@@ -19,6 +11,13 @@ target_link_libraries(facedetector
   ${gstreamer-video-1.5_LIBRARIES}
   ${opencv_LIBRARIES}
   ${SOUP_LIBRARIES}
+)
+
+set_property(TARGET facedetector
+  PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${opencv_INCLUDE_DIRS}
 )
 
 install(
