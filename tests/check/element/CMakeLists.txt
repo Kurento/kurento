@@ -10,7 +10,7 @@ set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
  target_link_libraries(test_faceoverlay
                        ${gstreamer-1.0_LIBRARIES}
                        ${gstreamer-check-1.5_LIBRARIES}
-                       kmstestutils)
+                       kmsfilterstestutils)
 
  add_test_program (test_movementdetector movementdetector.c)
  add_dependencies(test_movementdetector movementdetector)
@@ -22,7 +22,7 @@ set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
  target_link_libraries(test_movementdetector
                        ${gstreamer-1.5_LIBRARIES}
                        ${gstreamer-check-1.5_LIBRARIES}
-                       kmstestutils)
+                       kmsfilterstestutils)
 
 add_test_program (test_logooverlay logooverlay.c)
 add_dependencies(test_logooverlay logooverlay)
@@ -34,4 +34,4 @@ target_include_directories(test_logooverlay PRIVATE
 target_link_libraries(test_logooverlay
                      ${gstreamer-1.5_LIBRARIES}
                      ${gstreamer-check-1.5_LIBRARIES}
-                     kmstestutils)
+                     kmsfilterstestutils)

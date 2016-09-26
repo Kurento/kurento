@@ -8,9 +8,9 @@ set(KMS_TEST_UTILS_SOURCES
   kmstestutils.h kmstestutils.c
   )
 
-add_library(kmstestutils ${KMS_TEST_UTILS_SOURCES})
+add_library(kmsfilterstestutils ${KMS_TEST_UTILS_SOURCES})
 
-target_link_libraries(kmstestutils
+target_link_libraries(kmsfilterstestutils
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}
   ${gstreamer-sdp-1.5_LIBRARIES}
