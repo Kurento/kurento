@@ -18,6 +18,7 @@ target_link_libraries(opencvfilter
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-video-1.5_LIBRARIES}
   ${opencv_LIBRARIES}
+  kmsfiltersimpl
 )
 
 install(
