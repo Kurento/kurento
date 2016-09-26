@@ -26,8 +26,7 @@
 #include <ModuleManager.hpp>
 #include <MediaSet.hpp>
 
-#include <cstdio>
-#include <iostream>
+#define DIR_TEMPLATE "/tmp/recoder_test_XXXXXX"
 
 using namespace kurento;
 using namespace boost::unit_test;
@@ -88,10 +87,12 @@ createRecorderEndpoint ()
 {
   std::shared_ptr <kurento::MediaObjectImpl> recorderEndpoint;
   Json::Value constructorParams;
-  std::string tmp_file = std::tmpnam (nullptr);
+  gchar tmp_file_template[] = DIR_TEMPLATE;
+  gchar *tmp_file = mkdtemp (tmp_file_template);
 
   constructorParams ["mediaPipeline"] = mediaPipelineId;
-  constructorParams ["uri"] = "file://" + tmp_file;
+  constructorParams ["uri"] = "file://" + std::string (tmp_file) +
+                              "/recording.webm";
 
   recorderEndpoint = moduleManager.getFactory ("RecorderEndpoint")->createObject (
                        config, "",
