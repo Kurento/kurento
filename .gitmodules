@@ -13,3 +13,6 @@
 [submodule "kms-elements"]
 	path = kms-elements
 	url = ssh://code.kurento.org:12345/kms-elements
+[submodule "kms-filters"]
+	path = kms-filters
+	url = ssh://code.kurento.org:12345/kms-filters
