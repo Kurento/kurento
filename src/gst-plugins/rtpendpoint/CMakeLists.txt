@@ -27,15 +27,13 @@ add_library(rtpendpoint MODULE ${KMS_RTPENDPOINT_SOURCES} ${KMS_RTPENDPOINT_HEAD
 
 add_dependencies(rtpendpoint rtcpdemux)
 
-include_directories(
-  ${KmsGstCommons_INCLUDE_DIRS}
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-base-1.5_INCLUDE_DIRS}
-  ${gstreamer-sdp-1.5_INCLUDE_DIRS}
-  ${gstreamer-pbutils-1.5_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${nice_INCLUDE_DIRS}
+set_property(TARGET rtpendpoint
+  PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    ${KmsGstCommons_INCLUDE_DIRS}
+    ${gstreamer-1.5_INCLUDE_DIRS}
 )
 
 target_link_libraries(rtpendpoint

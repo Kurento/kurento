@@ -21,6 +21,7 @@ generate_code (
   SERVER_IMPL_LIB_EXTRA_HEADERS
       ${KMS_ELEMENTS_IMPL_HEADERS}
   SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS
+      ${CMAKE_CURRENT_BINARY_DIR}/..
       ${CMAKE_CURRENT_SOURCE_DIR}/../gst-plugins/webrtcendpoint
       ${CMAKE_CURRENT_SOURCE_DIR}/../gst-plugins
       ${KmsGstCommons_INCLUDE_DIRS}

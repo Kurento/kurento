@@ -14,9 +14,6 @@
  * limitations under the License.
  *
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <gst/check/gstcheck.h>
 #include <gst/gst.h>

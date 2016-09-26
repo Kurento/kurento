@@ -16,7 +16,7 @@
  */
 
 #include "kmsicebaseagent.h"
-#include <kmsicecandidate.h>
+#include "kmsicecandidate.h"
 
 #define GST_CAT_DEFAULT kmsicebaseagent
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);

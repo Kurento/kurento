@@ -1,11 +1,3 @@
-include_directories(
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-base-1.5_INCLUDE_DIRS}
-  ${gstreamer-rtp-1.5_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-)
-
 set(RTCPDEMUX_SOURCES
   rtcpdemux.c
   kmsrtcpdemux.c
@@ -27,6 +19,16 @@ target_link_libraries(rtcpdemux
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}
   ${gstreamer-rtp-1.5_LIBRARIES}
+)
+
+set_property (TARGET rtcpdemux
+  PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-base-1.5_INCLUDE_DIRS}
+    ${gstreamer-rtp-1.5_INCLUDE_DIRS}
 )
 
 install(

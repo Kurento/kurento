@@ -16,14 +16,11 @@ set(KMS_RECORDERENDPOINT_HEADERS
 
 add_library(recorderendpoint MODULE ${KMS_RECORDERENDPOINT_SOURCES} ${KMS_RECORDERENDPOINT_HEADERS})
 
-include_directories(
-  ${KmsGstCommons_INCLUDE_DIRS}
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-base-1.5_INCLUDE_DIRS}
-  ${gstreamer-app-1.5_INCLUDE_DIRS}
-  ${gstreamer-pbutils-1.5_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
+set_property (TARGET recorderendpoint
+  PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_BINARY_DIR}/../../..
+    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${KmsGstCommons_INCLUDE_DIRS}
 )
 
 target_link_libraries(recorderendpoint

@@ -13,7 +13,7 @@ message ("If CodeGenerator is not found, then it is necessary to install
           kms-core package from the kurento repository")
 include (CodeGenerator)
 
-get_values_from_model(PREFIX VALUE MODELS ${CMAKE_SOURCE_DIR}/src/server/interface KEYS version)
+get_values_from_model(PREFIX VALUE MODELS ${CMAKE_CURRENT_SOURCE_DIR}/src/server/interface KEYS version)
 
 get_git_version (PROJECT_VERSION ${VALUE_VERSION})
 install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
@@ -72,9 +72,6 @@ if (COMPILER_SUPPORTS_DATETIME_ERROR)
 endif ()
 
 enable_testing()
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 message(STATUS "Compiling : ${PROJECT_NAME}-${PROJECT_VERSION}")
 

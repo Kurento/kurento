@@ -1,9 +1,3 @@
-include_directories(
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-video-1.5_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 set(KMS_TEST_UTILS_SOURCES
   kmstestutils.h kmstestutils.c
   )
@@ -15,6 +9,12 @@ target_link_libraries(kmstestutils
   ${gstreamer-base-1.5_LIBRARIES}
   ${gstreamer-sdp-1.5_LIBRARIES}
   ${gstreamer-pbutils-1.5_LIBRARIES}
+)
+
+set_property (TARGET kmstestutils
+  PROPERTY INCLUDE_DIRECTORIES
+    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-video-1.5_INCLUDE_DIRS}
 )
 
 include (TestHelpers)

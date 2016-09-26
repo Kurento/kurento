@@ -7,6 +7,7 @@ endif()
 add_test_program (test_httpendpoint httpendpoint.c)
 add_dependencies(test_httpendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_httpendpoint PRIVATE
+                           ${CMAKE_CURRENT_BINARY_DIR}/../../..
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS}
@@ -30,6 +31,8 @@ target_link_libraries(test_recorderendpoint
 add_test_program (test_playerendpoint playerendpoint.c)
 add_dependencies(test_playerendpoint kmstestutils ${LIBRARY_NAME}plugins)
 target_include_directories(test_playerendpoint PRIVATE
+                           ${CMAKE_CURRENT_BINARY_DIR}/../../..
+                           ${CMAKE_CURRENT_SOURCE_DIR}/..
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS}
@@ -43,6 +46,7 @@ target_link_libraries(test_playerendpoint
 add_test_program (test_rtpendpoint rtpendpoint.c)
 add_dependencies(test_rtpendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_rtpendpoint PRIVATE
+                           ${CMAKE_CURRENT_SOURCE_DIR}/..
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS})
@@ -55,6 +59,7 @@ target_link_libraries(test_rtpendpoint
 add_test_program (test_rtpendpoint_audio rtpendpoint_audio.c)
 add_dependencies(test_rtpendpoint_audio ${LIBRARY_NAME}plugins)
 target_include_directories(test_rtpendpoint_audio PRIVATE
+                           ${CMAKE_CURRENT_SOURCE_DIR}/..
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS})
@@ -79,6 +84,7 @@ target_link_libraries(test_rtpendpoint_audio
 add_test_program (test_webrtcendpoint webrtcendpoint.c)
 add_dependencies(test_webrtcendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_webrtcendpoint PRIVATE
+                           ${CMAKE_CURRENT_BINARY_DIR}/../../..
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS}
@@ -162,6 +168,7 @@ endif()
 add_test_program (test_webrtc_data_proto webrtc_data_proto.c)
 add_dependencies(test_webrtc_data_proto ${LIBRARY_NAME}plugins)
 target_include_directories(test_webrtc_data_proto PRIVATE
+                           ${CMAKE_CURRENT_BINARY_DIR}/../../..
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS}

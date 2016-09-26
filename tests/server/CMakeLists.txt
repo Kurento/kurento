@@ -13,7 +13,7 @@ add_test_program (test_constructors constructors.cpp)
 add_dependencies(test_constructors ${LIBRARY_NAME}module ${LIBRARY_NAME}impl ${LIBRARY_NAME}plugins)
 set_property (TARGET test_constructors
   PROPERTY INCLUDE_DIRECTORIES
-    ${CMAKE_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/../..
     ${JSONRPC_INCLUDE_DIRS}
     ${SIGCPP_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/implementation/objects
