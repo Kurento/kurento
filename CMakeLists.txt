@@ -49,3 +49,8 @@ set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/kms-
 add_subdirectory(kms-filters)
 
 add_subdirectory(kurento-media-server)
+
+add_custom_target(kurento-media-server-run
+  COMMAND ${CMAKE_COMMAND} -E env GST_DEBUG=Kurento*:5 env KURENTO_MODULES_PATH=${CMAKE_CURRENT_BINARY_DIR} env GST_PLUGIN_PATH=${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/kurento-media-server/server/kurento-media-server
+  DEPENDS kurento-media-server
+  )
