@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.ElementStats;
 import org.kurento.client.MediaElement;
@@ -40,6 +41,7 @@ import org.kurento.client.MediaType;
 import org.kurento.client.PassThrough;
 import org.kurento.client.Stats;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
@@ -64,6 +66,7 @@ import com.google.common.collect.Multimaps;
  * @author Boni Garcia (boni.garcia@urjc.es)
  * @since 6.5.1
  */
+@Category(SystemFunctionalTests.class)
 public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
   private final Logger log = LoggerFactory.getLogger(AgnosticBenchmarkTest.class);
