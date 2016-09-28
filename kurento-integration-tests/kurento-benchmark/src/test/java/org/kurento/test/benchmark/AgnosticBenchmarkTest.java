@@ -163,18 +163,21 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
       @Override
       public void run() {
         while (true) {
-          for (final MediaElement passTrough : passTroughList) {
+          for (int i = 0; i < passTroughList.size(); i++) {
+            final MediaElement passTrough = passTroughList.get(i);
+            final String passTroughName = "passThrough" + i;
+            final String nextMediaElementName =
+                (i != passTroughList.size() - 1) ? "passThrough" + (i + 1) : "viewerWebRtcEndpoint";
             executor.execute(new Runnable() {
               @Override
               public void run() {
                 try {
-                  double l1 = getInputLatency(passTrough, statTimeMap);
+                  double l1 = getInputLatency(passTrough, statTimeMap, passTroughName);
                   MediaElement next = passTrough.getSinkConnections().iterator().next().getSink();
-                  double l2 = getInputLatency(next, statTimeMap);
+                  double l2 = getInputLatency(next, statTimeMap, nextMediaElementName);
                   double latency = (l2 - l1) / 1000; // nanoseconds to microseconds
-                  latencies.put(passTrough.getName() + "MicroSec", latency);
-                  log.debug("{} latency {} ns (next {})", passTrough.getName(), latency,
-                      next.getName());
+                  latencies.put(passTroughName + "MicroSec", latency);
+                  log.debug("{} latency {} ns", passTroughName, latency);
                 } catch (Exception e) {
                   log.warn("Finishing due to {}", e.getMessage());
                 }
@@ -211,11 +214,12 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
 
   }
 
-  private double getInputLatency(MediaElement mediaElement, Multimap<String, Object> statTimeMap) {
+  private double getInputLatency(MediaElement mediaElement, Multimap<String, Object> statTimeMap,
+      String mediaElementName) {
     long now = System.currentTimeMillis();
     Map<String, Stats> filterStats = mediaElement.getStats(MediaType.VIDEO);
     long time = System.currentTimeMillis() - now;
-    statTimeMap.put(mediaElement.getName() + "MiliSec", time);
+    statTimeMap.put(mediaElementName + "MiliSec", time);
 
     double inputLatency = 0;
     for (Stats s : filterStats.values()) {
