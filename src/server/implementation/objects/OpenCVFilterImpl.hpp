@@ -44,6 +44,7 @@ public:
   virtual ~OpenCVFilterImpl () {};
 
   /* Next methods are automatically implemented by code generator */
+  using FilterImpl::connect;
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);
 
