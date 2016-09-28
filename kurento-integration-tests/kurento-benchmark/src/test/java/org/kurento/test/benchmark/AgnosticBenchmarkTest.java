@@ -123,7 +123,7 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
 
     for (int i = 0; i < passTroughNumber; i++) {
       MediaElement passThrough = new PassThrough.Builder(mediaPipeline).build();
-      passThrough.setName("passThrough" + i + "microSec");
+      passThrough.setName("passThrough" + i);
       if (i == 0) {
         presenterWebRtcEndpoint.connect(passThrough);
       } else {
@@ -151,8 +151,12 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
       monitor.startMonitoring();
     }
 
-    // Thread for gathering latencies
+    // Map for gathering latencies
     final Multimap<String, Object> latencies =
+        Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, Object>create());
+
+    // Map for gathering stats time
+    final Multimap<String, Object> statTimeMap =
         Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, Object>create());
 
     final ExecutorService executor = Executors.newFixedThreadPool(10 * passTroughList.size());
@@ -165,11 +169,11 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
               @Override
               public void run() {
                 try {
-                  double l1 = getInputLatency(passTrough);
+                  double l1 = getInputLatency(passTrough, statTimeMap);
                   MediaElement next = passTrough.getSinkConnections().iterator().next().getSink();
-                  double l2 = getInputLatency(next);
+                  double l2 = getInputLatency(next, statTimeMap);
                   double latency = (l2 - l1) / 1000; // nanoseconds to microseconds
-                  latencies.put(passTrough.getName(), latency);
+                  latencies.put(passTrough.getName() + "MicroSec", latency);
                   log.debug("{} latency {} ns (next {})", passTrough.getName(), latency,
                       next.getName());
                 } catch (Exception e) {
@@ -205,11 +209,17 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
     mediaPipeline.release();
 
     writeCSV(csvPreffix + "-latency.csv", latencies, true);
+    writeCSV(csvPreffix + "-time.csv", statTimeMap, true);
+
   }
 
-  private double getInputLatency(MediaElement mediaElement) {
-    double inputLatency = 0;
+  private double getInputLatency(MediaElement mediaElement, Multimap<String, Object> statTimeMap) {
+    long now = System.currentTimeMillis();
     Map<String, Stats> filterStats = mediaElement.getStats(MediaType.VIDEO);
+    long time = System.currentTimeMillis() - now;
+    statTimeMap.put(mediaElement.getName() + "MiliSec", time);
+
+    double inputLatency = 0;
     for (Stats s : filterStats.values()) {
       if (s instanceof ElementStats) {
         List<MediaLatencyStat> inputLatencyList = ((ElementStats) s).getInputLatency();
