@@ -6,15 +6,14 @@
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-jsonrpc</artifactId>
 		<version>6.6.1-SNAPSHOT</version>
+		<relativePath>../kurento-jsonrpc-client</relativePath>
 	</parent>
 
-	<artifactId>kurento-jsonrpc-client</artifactId>
+	<artifactId>kurento-jsonrpc-client-jetty</artifactId>
+	<name>Kurento JsonRPC client with Jetty implementation</name>
+
 	<packaging>jar</packaging>
 
-	<name>Kurento JSON-RPC Client</name>
-	<description>
-			JSON-RPC Protocol client with transports based on http and websocket
-	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
@@ -48,10 +47,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.thoughtworks.paranamer</groupId>
-			<artifactId>paranamer</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
@@ -61,12 +56,8 @@
 			<artifactId>kurento-commons</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>fluent-hc</artifactId>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-jsonrpc-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -82,18 +73,9 @@
 			<artifactId>slf4j-simple</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-handler</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-transport</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-handler-proxy</artifactId>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>websocket-client</artifactId>
 		</dependency>
 	</dependencies>
 </project>

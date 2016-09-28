@@ -90,4 +90,7 @@
 
 	</dependencies>
 
+	<modules>
+		<module>kurento-jsonrpc-client-jetty</module>
+	</modules>
 </project>

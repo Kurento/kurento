@@ -21,7 +21,7 @@ import java.util.Properties;
 
 import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
 import org.kurento.jsonrpc.client.JsonRpcClient;
-import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
+import org.kurento.jsonrpc.client.JsonRpcClientNettyWebSocket;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
@@ -57,7 +57,7 @@ public class WebSocketRomTest extends AbstractRomTest {
 
     String uri = "ws://localhost:" + getPort() + "/handler";
     log.debug("Creating client in URI: " + uri);
-    return new JsonRpcClientWebSocket(uri);
+    return new JsonRpcClientNettyWebSocket(uri);
   }
 
   @Override

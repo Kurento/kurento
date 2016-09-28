@@ -21,8 +21,6 @@ import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.SSLException;
 
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +46,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContext;
@@ -157,19 +156,10 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
   private volatile JsonRpcWebSocketClientHandler handler;
 
   public JsonRpcClientNettyWebSocket(String url) {
-    this(url, null, new SslContextFactory());
-  }
-
-  public JsonRpcClientNettyWebSocket(String url, SslContextFactory sslContextFactory) {
-    this(url, null, sslContextFactory);
+    this(url, null);
   }
 
   public JsonRpcClientNettyWebSocket(String url, JsonRpcWSConnectionListener connectionListener) {
-    this(url, connectionListener, new SslContextFactory());
-  }
-
-  public JsonRpcClientNettyWebSocket(String url, JsonRpcWSConnectionListener connectionListener,
-      SslContextFactory sslContextFactory) {
     super(url, connectionListener);
     log.debug("{} Creating JsonRPC NETTY Websocket client", label);
   }
@@ -266,7 +256,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
           // This should never happen
           log.warn("{} ERROR connecting WS Netty client, opening channel", label, e);
         } catch (Exception e) {
-          if (e.getCause() instanceof UpgradeException && numRetries < maxRetries) {
+          if (e.getCause() instanceof WebSocketHandshakeException && numRetries < maxRetries) {
             log.warn(
                 "{} Upgrade exception when trying to connect to {}. Try {} of {}. Retrying in 200ms ",
                 label, uri, numRetries + 1, maxRetries);
