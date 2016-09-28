@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -159,7 +158,7 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
     final Multimap<String, Object> statTimeMap =
         Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, Object>create());
 
-    final ExecutorService executor = Executors.newFixedThreadPool(10 * passTroughList.size());
+    final ExecutorService executor = Executors.newFixedThreadPool(passTroughList.size());
     Thread latencyThread = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -192,8 +191,7 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
     waitSeconds(sessionTime);
 
     // Release latency thread/executor
-    executor.shutdown();
-    executor.awaitTermination(3 * getPresenter().getTimeout(), TimeUnit.SECONDS);
+    executor.shutdownNow();
     latencyThread.interrupt();
 
     // Stop monitor
