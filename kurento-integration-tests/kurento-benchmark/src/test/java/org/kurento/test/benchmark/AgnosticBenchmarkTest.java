@@ -79,11 +79,14 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
   private static final int SAMPLING_RATE_DEFAULT = 100; // milliseconds
   private static final String OUTPUT_FOLDER_PROP = "output.folder";
   private static final String OUTPUT_FOLDER_DEFAULT = ".";
+  private static final String MONITOR_KMS_PROP = "monitor.kms";
+  private static final boolean MONITOR_KMS_DEFAULT = false;
 
   private int passTroughNumber = getProperty(PASSTHROUGH_NUMBER_PROP, PASSTHROUGH_NUMBER_DEFAULT);
   private int sessionTime = getProperty(SESSION_TIME_PROP, SESSION_TIME_DEFAULT);
   private int samplingRate = getProperty(SAMPLING_RATE_PROP, SAMPLING_RATE_DEFAULT);
   private String outputFolder = getProperty(OUTPUT_FOLDER_PROP, OUTPUT_FOLDER_DEFAULT);
+  private boolean monitorKms = getProperty(MONITOR_KMS_PROP, MONITOR_KMS_DEFAULT);
 
   private List<MediaElement> passTroughList = new ArrayList<>(passTroughNumber);
   private SystemMonitorManager monitor;
@@ -142,9 +145,11 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
     getViewer().waitForEvent("playing");
 
     // KMS Monitor (CPU, memory, etc)
-    monitor = new SystemMonitorManager();
-    monitor.setSamplingTime(samplingRate);
-    monitor.startMonitoring();
+    if (monitorKms) {
+      monitor = new SystemMonitorManager();
+      monitor.setSamplingTime(samplingRate);
+      monitor.startMonitoring();
+    }
 
     // Thread for gathering latencies
     final Multimap<String, Object> latencies =
@@ -190,9 +195,11 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
     // Stop monitor
     String csvPreffix = outputFolder + this.getClass().getSimpleName() + "-" + passTroughNumber
         + "passTrough" + "-" + sessionTime + "seconds";
-    monitor.stop();
-    monitor.writeResults(csvPreffix + "-monitor.csv");
-    monitor.destroy();
+    if (monitorKms) {
+      monitor.stop();
+      monitor.writeResults(csvPreffix + "-monitor.csv");
+      monitor.destroy();
+    }
 
     // Release media pipeline
     mediaPipeline.release();
