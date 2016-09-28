@@ -3,6 +3,8 @@
 var http = require('http')
 
 var webdriver = require('selenium-webdriver')
+var chrome = require('selenium-webdriver/chrome')
+var firefox = require('selenium-webdriver/firefox')
 
 var install    = require('bower').commands.install
 var outputFile = require('fs-extra').outputFile
@@ -10,6 +12,18 @@ var Server     = require('node-static').Server
 var tasks      = require('grunt').tasks
 
 var parseString = require('xml2js').parseString;
+
+// firefox options
+const profile = new firefox.Profile();
+// from http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
+profile.setPreference('media.navigator.streams.fake', true)
+const ffoptions = new firefox.Options().setProfile(profile)
+// assume it's running chrome
+// http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
+const croptions = new chrome.Options()
+    .addArguments('allow-file-access-from-files')
+    .addArguments('use-fake-device-for-media-stream')
+    .addArguments('use-fake-ui-for-media-stream')
 
 
 const package_name = require('../package.json').name
@@ -61,7 +75,8 @@ function waitReport(driver, id, callback)
 
 function runTest(browser)
 {
-  var driver = new webdriver.Builder().forBrowser(browser).build()
+  var driver = new webdriver.Builder().setFirefoxOptions(ffoptions)
+      .setChromeOptions(croptions).forBrowser(browser).build()
 
   driver.get('http://localhost:'+PORT+'/test/index.html')
 
@@ -106,7 +121,7 @@ install([], undefined, {cwd: 'test'})
       request.addListener('end', listener).resume()
     }).listen(PORT);
 
-//    runTest('chrome').then(server.close.bind(server))
-    runTest('firefox').then(server.close.bind(server))
+    runTest('chrome').then(server.close.bind(server))
+//    runTest('firefox').then(server.close.bind(server))
   })
 });

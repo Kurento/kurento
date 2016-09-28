@@ -53,7 +53,8 @@
     "qunitjs": "^1.23.1",
     "selenium-webdriver": "2.53.2",
     "xml2js": "^0.4.9",
-    "sdp-translator": "^0.1.15"
+    "sdp-translator": "^0.1.15",
+    "chromedriver": "^2.21.2"
   },
   "dependencies": {
     "freeice": "^2.1.2",
