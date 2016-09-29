@@ -17,6 +17,17 @@ public class ${complexType.name} <#if complexType.extends??>extends ${complexTyp
     private ${getJavaObjectType(property.type,property.optional)} ${property.name};
    </#list>
 
+	<#assign merged =  complexType.properties + complexType.parentProperties />
+	<#list merged as property>
+		<#if !property.optional>
+ 			<@comment "Default private constructor of ${complexType.name} for serialization with Jackson" />
+			protected ${complexType.name}() {
+				super();
+			}
+			<#break>
+		</#if>
+	</#list>
+
     <@comment "Create a ${complexType.name}" />
     public ${complexType.name}(<#rt>
      <#assign first=true>
