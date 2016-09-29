@@ -437,7 +437,6 @@ def install_deb_dependencies(cache):
             if not install_dependency(cache, dep):
                 print("Dependency cannot be installed: " + PkgRelation.str([dep
                                                                             ]))
-                exit(1)
 
 
 def generate_debian_package(args, config):
