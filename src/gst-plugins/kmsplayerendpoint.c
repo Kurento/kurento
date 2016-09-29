@@ -128,6 +128,7 @@ typedef struct _KmsPtsData
 
   GstClockTime last_pts;
   GstClockTime last_pts_orig;
+  gboolean pts_handled;
 } KmsPtsData;
 
 static void
@@ -147,6 +148,7 @@ kms_pts_data_new ()
   data->offset_time = GST_CLOCK_TIME_NONE;
   data->last_pts = GST_CLOCK_TIME_NONE;
   data->last_pts_orig = GST_CLOCK_TIME_NONE;
+  data->pts_handled = FALSE;
 
   return data;
 }
@@ -445,21 +447,29 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     goto end;
   }
 
+  gst_buffer_ref (buffer);
+  buffer = gst_buffer_make_writable (buffer);
+
+  pts_data =
+      (KmsPtsData *) g_object_get_qdata (G_OBJECT (appsink), pts_quark ());
+
   if (!GST_BUFFER_PTS_IS_VALID (buffer) && !GST_BUFFER_DTS_IS_VALID (buffer)) {
-    GST_ERROR_OBJECT (appsink, "PTS and DTS are not valid.");
-    return GST_FLOW_OK;
+    if (pts_data->pts_handled) {
+      GST_ERROR_OBJECT (appsink,
+          "PTS and DTS are not valid and a previous buffer was handled.");
+      ret = GST_FLOW_OK;
+      goto end;
+    }
+
+    goto push;
   } else if (!GST_BUFFER_PTS_IS_VALID (buffer)) {
     GST_BUFFER_PTS (buffer) = GST_BUFFER_DTS (buffer);
   } else if (!GST_BUFFER_DTS_IS_VALID (buffer)) {
     GST_BUFFER_DTS (buffer) = GST_BUFFER_PTS (buffer);
   }
 
-  gst_buffer_ref (buffer);
-  buffer = gst_buffer_make_writable (buffer);
+  pts_data->pts_handled = TRUE;
   pts_orig = GST_BUFFER_PTS (buffer);
-
-  pts_data =
-      (KmsPtsData *) g_object_get_qdata (G_OBJECT (appsink), pts_quark ());
 
   if (is_preroll) {
     GST_DEBUG_OBJECT (appsink, "Preroll: reset base time");
@@ -540,6 +550,7 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
   pts_data->last_pts = GST_BUFFER_PTS (buffer);
   pts_data->last_pts_orig = pts_orig;
 
+push:
   src = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
   sink = gst_pad_get_peer (src);
   g_object_unref (src);
@@ -644,7 +655,7 @@ kms_player_end_point_add_appsrc (KmsPlayerEndpoint * self,
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
       G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
       "emit-signals", FALSE, NULL);
