@@ -25,7 +25,7 @@ if (NOT KurentoModuleCreator_FOUND)
   if (NOT "${MVN_RESULT}" STREQUAL "0")
     message (FATAL_ERROR "Cannot create module creator, mvn execution failed")
   endif ()
-  execute_process(COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator/scripts/kurento-module-creator ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator)
+  execute_process(COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator/scripts/kurento-module-creator ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/kurento-module-creator)
   execute_process(COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/kurento-module-creator.generated)
 endif ()
 
