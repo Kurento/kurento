@@ -1,3 +1,20 @@
+kms-cmake-utils (1.3.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMakeListst: Use relative directory instead of absolute
+  * GenerigFind: Allow forcing the search of libraries all the time
+  * GenericFind: Fix inclusion of more components
+  * Search for local libraries if build directory changes
+  * GenericFind: Do not print warning if library is not required
+  * GenericFind: Force research of local executables
+  * GenericFind: Delete cache variables when searching again
+  * Prepare release 1.3.2
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 11:10:44 +0200
+
 kms-cmake-utils (1.3.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
