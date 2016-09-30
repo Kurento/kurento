@@ -5,7 +5,7 @@ Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
                cmake,
                pkg-config,
-               kms-cmake-utils (>= 1.1.0),
+               kms-cmake-utils (>= 1.3.2),
                kmsjsoncpp-dev,
                libboost-dev,
                libboost-test-dev

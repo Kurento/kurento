@@ -1,3 +1,17 @@
+kms-jsonrpc-1.0 (1.1.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * TestSerialize: Add missing include
+  * FindKmsJsonRpc: Allow importing project locally
+  * CMake: Do not add includes globally
+  * TestSerialize: initialize variables properly
+  * Prepare release 1.1.2
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 11:15:38 +0200
+
 kms-jsonrpc-1.0 (1.1.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
