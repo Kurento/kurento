@@ -1,3 +1,9 @@
+6.6.1
+=====
+
+ * Improve compilation process
+ * Update kurento dependencies to 6.6.1
+
 6.6.0
 =====
 

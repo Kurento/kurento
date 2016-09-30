@@ -1,3 +1,20 @@
+kms-filters-6.0 (6.6.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMake: Add missing link library
+  * CMake: Rename library testutils to filtertestutils
+  * CMake: Rename constructor test to filters_constructors
+  * CMake: Avoid using global cmake directories
+  * constructors: Add more paths to look for modules
+  * CMake: Avoid the use of global include directories
+  * Fix compilation with clang
+  * Prepare release 6.6.1
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 12:51:25 +0200
+
 kms-filters-6.0 (6.6.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
