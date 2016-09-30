@@ -1,3 +1,37 @@
+kms-elements-6.0 (6.6.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrecorderendpoint: Neither remove pads nor change the state of the internal pipeline when going to PAUSED
+  * kmsrecorderendpoint: Fix state transitions
+  * kmsrecorderendpoind: Ignore bus messages when recorder is released in PLAYING state
+
+  [ Jose Antonio Santos Cadenas ]
+  * recorderendpoint: do not push buffers holding kms_lock
+  * avmuxer: Do not block main pipeline, store buffers internally
+  * Cmake: Use correct variable for include dirs
+  * CMake: Set include directories per target, not globally
+  * CMake: Do not add CMAKE_PREFIX_PATH to GST_PLUGIN
+  * Add more directories to look for modules
+  * test_recorderEndpoint: Get the rid of tmpnam, its usage is unsafe
+
+  [ Santiago Carot-Nemesio ]
+  * uriendpoint: Notify errors
+  * kmsrecorderendpoint: Do not allow more operations over the recorderendpoint once it is stopped
+  * kmsrecorderendpoint: Do not use GObject's get method to get the state
+
+  [ Miguel París Díaz ]
+  * playerendpoint: push buffers with invalid PTS and DTS
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.6.1
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 12:40:12 +0200
+
 kms-elements-6.0 (6.6.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]

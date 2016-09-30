@@ -1,3 +1,13 @@
+6.6.1
+=====
+
+  * Simplify recorderEndpoint internal pipeline state changes
+  * RecorderEndpoint: Fix media dead lock in avmuxer
+  * RecorderEndpoint: Do not allow recording again once stop state is
+      reached as this will erase previous recording.
+  * PlayerEndpoint: Set valid pts and dts values for pushed buffers
+  * Improve compilation process
+
 6.6.0
 =====
 
