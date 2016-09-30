@@ -1,3 +1,25 @@
+kurento-module-creator-4.0 (4.0.7) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * cpp_templates: Generate invocation of methods with optional parameters correctly
+  * Make project build driven my cmake
+
+  [ José Antonio Santos Cadenas ]
+  * Revert "Make project build driven my cmake"
+
+  [ Jose Antonio Santos Cadenas ]
+  * pom.xml: Allow defining a custom build directory by command line
+  * scripts: Try to run kurento-module-creator from the same directory
+  * tamplate: find_cmake: Allow same project imports
+  * templates: cmake_dependencies: Add different names for dependencies variables
+  * Simplify .gitignore file
+  * Prepare release 4.0.7
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 11:08:53 +0200
+
 kurento-module-creator-4.0 (4.0.6) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
