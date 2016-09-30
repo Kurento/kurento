@@ -126,7 +126,7 @@ public class RepositoryRestTest {
 
   @Test
   public void test() throws FileNotFoundException, IOException, InterruptedException {
-    Map<String, String> metadata = new HashMap<String, String>();
+    Map<String, String> metadata = new HashMap<>();
     metadata.put("restKey", "restValue");
     RepositoryItemRecorder itemRec = restService.createRepositoryItem(metadata);
     log.debug("Obtained item store: {}", itemRec);
@@ -161,7 +161,7 @@ public class RepositoryRestTest {
     assertEquals("Ids don't match", itemRec.getId(), items.iterator().next());
 
     if (RepoType.parseType(RepositoryApplicationContextConfiguration.REPO_TYPE).isMongoDB()) {
-      Map<String, String> regexValues = new HashMap<String, String>();
+      Map<String, String> regexValues = new HashMap<>();
       regexValues.put("restKey", "restVal*");
 
       items = restService.regexFindItems(regexValues);
@@ -174,7 +174,7 @@ public class RepositoryRestTest {
     Map<String, String> serverMetadata = restService.getRepositoryItemMetadata(itemRec.getId());
     assertEquals("Local metadata doesn't match saved metadata", metadata, serverMetadata);
 
-    Map<String, String> updateMetadata = new HashMap<String, String>();
+    Map<String, String> updateMetadata = new HashMap<>();
     updateMetadata.put("restKey", "newVal");
     Response response = restService.setRepositoryItemMetadata(itemRec.getId(), updateMetadata);
     assertEquals("Response status of metadata update request is not 200 OK", HttpStatus.OK.value(),
