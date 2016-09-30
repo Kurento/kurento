@@ -21,15 +21,15 @@ import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_TRANSPORT;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.IOUtils;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.KurentoTest;
@@ -53,11 +52,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.DockerClientException;
-import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.DockerClientException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
@@ -65,6 +64,7 @@ import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
@@ -182,7 +182,7 @@ public class Docker implements Closeable {
   public boolean isRunningContainer(String containerName) {
     boolean isRunning = false;
     if (existsContainer(containerName)) {
-      isRunning = inspectContainer(containerName).getState().isRunning();
+      isRunning = inspectContainer(containerName).getState().getRunning();
       log.trace("Container {} is running: {}", containerName, isRunning);
     }
 
@@ -468,7 +468,7 @@ public class Docker implements Closeable {
 
       createContainerCmd.withNetworkMode("none");
 
-      Map<String, String> labels = new HashMap<String, String>();
+      Map<String, String> labels = new HashMap<>();
       labels.put("KurentoDnat", "true");
       labels.put("Transport", getProperty(TEST_SELENIUM_TRANSPORT));
       labels.put("IpAddress", containerIp);
@@ -727,8 +727,7 @@ public class Docker implements Closeable {
     FirstObjectResultCallback<Statistics> resultCallback = new FirstObjectResultCallback<>();
 
     try {
-      return getClient().statsCmd().withContainerId(containerId).exec(resultCallback)
-          .waitForObject();
+      return getClient().statsCmd(containerId).exec(resultCallback).waitForObject();
     } catch (InterruptedException e) {
       throw new KurentoException("Interrupted while waiting for statistics");
     }
@@ -737,12 +736,13 @@ public class Docker implements Closeable {
   public String execCommand(String containerId, String... command) {
     ExecCreateCmdResponse exec = client.execCreateCmd(containerId).withCmd(command).withTty(false)
         .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).exec();
-    InputStream execInputStream = client.execStartCmd(exec.getId()).exec();
-
+    OutputStream outputStream = new ByteArrayOutputStream();
     String output = null;
     try {
-      output = IOUtils.toString(execInputStream, Charset.defaultCharset());
-    } catch (IOException e) {
+      client.execStartCmd(exec.getId()).withDetach(false).withTty(true)
+          .exec(new ExecStartResultCallback(outputStream, System.err)).awaitCompletion();
+      output = outputStream.toString();// IOUtils.toString(outputStream, Charset.defaultCharset());
+    } catch (InterruptedException e) {
       log.warn("Exception executing command {} on container {}", Arrays.toString(command),
           containerId, e);
     }
