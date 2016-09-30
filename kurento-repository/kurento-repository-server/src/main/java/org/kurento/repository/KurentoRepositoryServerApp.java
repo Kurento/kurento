@@ -22,15 +22,13 @@ import java.util.Properties;
 import org.kurento.repository.internal.RepositoryApplicationContextConfiguration;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
-@ComponentScan
-@EnableAutoConfiguration
+@SpringBootApplication
 @Import(RepositoryApplicationContextConfiguration.class)
 public class KurentoRepositoryServerApp {
 
