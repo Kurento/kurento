@@ -48,12 +48,14 @@ usv-public/kms-monitoring-java
 usv-public/nubomedia-nova-docker
 usv-public/nubomedia-autonomous-installer
 GlassOceanos/nubomedia-graphedit
+GlassOceanos/nubomedia-graphedit-doc
 nubomedia-vtt/armodule
 nubomedia-vtt/kurento-tree-client-android
 nubomedia-vtt/kurento-room-client-android
 nubomedia-vtt/jsonrpc-ws-android
 nubomedia-vtt/webrtcpeer-android
 nubomedia-vtt/msdata
+nubomedia-vtt/nubo-test
 nubomedia-vtt/nubo-test-tree
 nubomedia-vtt/msdatademopaasgraph
 nubomedia-vtt/Doc-Nubomedia-MultisensoryDataModule
@@ -64,3 +66,7 @@ nubomedia-vtt/msdatademopaastemperature
 nubomedia-vtt/msdatademopaasheartrate
 nubomedia-vtt/arfilterdemopaas
 nubomediaTI/Kurento-iOS
+nubomedia-vtt/doc-kurento-room-client-android
+nubomedia-vtt/doc-kurento-tree-client-android
+nubomedia-vtt/doc-webrtcpeer-android
+nubomediaTI/kurento-ios-documentation
