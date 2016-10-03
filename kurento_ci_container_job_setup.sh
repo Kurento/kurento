@@ -180,6 +180,7 @@ MAVEN_OPTIONS+=" -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 docker run \
   --name $BUILD_TAG-JOB_SETUP-$(date +"%s") \
   $([ "$DETACHED" = "true" ] && echo "-d" || echo "--rm") \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v $WORKSPACE$([ -n "$PROJECT_DIR" ] && echo "/$PROJECT_DIR"):$CONTAINER_WORKSPACE \
