@@ -507,11 +507,11 @@ public class KmsService extends TestService {
       log.debug("Turn Server {}", kmsTurnIp);
       createContainerCmd =
           dockerClient.getClient().createContainerCmd(kmsImageName).withName(dockerContainerName)
-              .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
-                  "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
-                  "S3_HOSTNAME=" + s3Hostname, "KMS_TURN_URL=" + kmsTurnIp,
-                  "KURENTO_GENERATE_RTP_PTS_STATS=" + getKurentoGenerateRtpPtsStats())
-              .withCmd("--gst-debug-no-color");
+          .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
+              "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
+              "S3_HOSTNAME=" + s3Hostname, "KMS_TURN_URL=" + kmsTurnIp,
+              "KURENTO_GENERATE_RTP_PTS_STATS=" + getKurentoGenerateRtpPtsStats())
+              .withCmd("--gst-debug-no-color").withVolumes(new Volume("/var/run/docker.sock"));
     } else {
       if (kmsDnat && seleniumDnat && RELAY.toString().toUpperCase().equals(seleniumCandidateType)
           && SRFLX.toString().toUpperCase().equals(kmsCandidateType)) {
@@ -532,12 +532,12 @@ public class KmsService extends TestService {
 
       createContainerCmd =
           dockerClient.getClient().createContainerCmd(kmsImageName).withName(dockerContainerName)
-              .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
-                  "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
-                  "S3_HOSTNAME=" + s3Hostname, "KMS_STUN_IP=" + kmsStunIp,
-                  "KMS_STUN_PORT=" + kmsStunPort,
-                  "KURENTO_GENERATE_RTP_PTS_STATS=" + getKurentoGenerateRtpPtsStats())
-              .withCmd("--gst-debug-no-color");
+          .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
+              "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
+              "S3_HOSTNAME=" + s3Hostname, "KMS_STUN_IP=" + kmsStunIp,
+              "KMS_STUN_PORT=" + kmsStunPort,
+              "KURENTO_GENERATE_RTP_PTS_STATS=" + getKurentoGenerateRtpPtsStats())
+          .withCmd("--gst-debug-no-color").withVolumes(new Volume("/var/run/docker.sock"));
     }
 
     if (dockerClient.isRunningInContainer()) {

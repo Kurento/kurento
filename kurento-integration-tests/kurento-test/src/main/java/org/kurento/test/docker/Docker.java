@@ -79,7 +79,7 @@ public class Docker implements Closeable {
   private static final Logger log = LoggerFactory.getLogger(Docker.class);
 
   private static final String DOCKER_SERVER_URL_PROPERTY = "docker.server.url";
-  private static final String DOCKER_SERVER_URL_DEFAULT = "http://localhost:2375";
+  private static final String DOCKER_SERVER_URL_DEFAULT = "unix:///var/run/docker.sock";
 
   public static final String DOCKER_CONTAINER_NAME_PROPERTY = "docker.container.name";
 
@@ -112,12 +112,7 @@ public class Docker implements Closeable {
   }
 
   private static String getDefaultDockerServerUrl() {
-
-    if (isRunningInContainerInternal()) {
-      return "http://" + getHostIp() + ":2375";
-    } else {
-      return DOCKER_SERVER_URL_DEFAULT;
-    }
+    return DOCKER_SERVER_URL_DEFAULT;
   }
 
   public Docker(String dockerServerUrl) {
@@ -225,7 +220,8 @@ public class Docker implements Closeable {
       log.debug("Creating container {}", containerName);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withName(containerName).withEnv(env);
+          getClient().createContainerCmd(imageId).withName(containerName).withEnv(env)
+          .withVolumes(new Volume("/var/run/docker.sock"));
 
       if (mountFolders) {
         mountDefaultFolders(createContainerCmd);
@@ -280,15 +276,18 @@ public class Docker implements Closeable {
 
       Volume configVol = new Volume("/opt/selenium/config.json");
 
+      Volume dockerSock = new Volume("/var/run/docker.sock");
+
       if (configFilePath != null) {
 
-        createContainerCmd.withVolumes(testFilesVolume, workspaceVolume, configVol).withBinds(
+        createContainerCmd.withVolumes(testFilesVolume, workspaceVolume, configVol, dockerSock)
+            .withBinds(
             new Bind(testFilesPath, testFilesVolume, AccessMode.ro),
             new Bind(workspacePath, workspaceVolume, AccessMode.rw),
             new Bind(configFilePath, configVol));
       } else {
 
-        createContainerCmd.withVolumes(testFilesVolume, workspaceVolume).withBinds(
+        createContainerCmd.withVolumes(testFilesVolume, workspaceVolume, dockerSock).withBinds(
             new Bind(testFilesPath, testFilesVolume, AccessMode.ro),
             new Bind(workspacePath, workspaceVolume, AccessMode.rw));
       }
