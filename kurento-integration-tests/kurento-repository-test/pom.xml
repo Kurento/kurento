@@ -57,15 +57,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-repository-internal</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
 			<artifactId>kurento-repository-server</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-commons</artifactId>
 		</dependency>
 	</dependencies>
 
