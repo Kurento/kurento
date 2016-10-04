@@ -34,19 +34,19 @@
     "WebRTC"
   ],
   "dependencies": {
-    "async": "~1.2.1",
+    "async": "~2.0.1",
     "error-tojson": "0.0.1",
-    "es6-promise": "^3.2.1",
-    "promise": "7.0.2",
-    "extend": "^2.0.1",
-    "inherits": "~2.0.1",
+    "es6-promise": "^4.0.5",
+    "promise": "7.1.1",
+    "extend": "^3.0.0",
+    "inherits": "~2.0.3",
     "kurento-client-core": "Kurento/kurento-client-core-js#master",
     "kurento-client-elements": "Kurento/kurento-client-elements-js#master",
     "kurento-client-filters": "Kurento/kurento-client-filters-js#master",
     "kurento-jsonrpc": "Kurento/kurento-jsonrpc-js#master",
     "promisecallback": "0.0.4",
     "reconnect-ws": "KurentoForks/reconnect-ws#0.0.1",
-    "minimist": "^1.1.1"
+    "minimist": "^1.2.0"
   },
   "devDependencies": {
     "bower": "~1.4.1",
