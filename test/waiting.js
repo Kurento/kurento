@@ -61,12 +61,12 @@ function getOnError(done) {
 }
 
 /**
- * Waiting 10 minutes and ask again for an object
+ * Waiting 2 minutes and ask again for an object
  */
-QUnit.test('Waiting 10 minutes and ask again for an object', function (assert) {
+QUnit.test('Waiting 2 minutes and ask again for an object', function (assert) {
   var self = this;
 
-  QUnit.config.testTimeout = 660000;
+  QUnit.config.testTimeout = 132000;
   QUnit.expect(2);
 
   var done = assert.async()
@@ -74,7 +74,6 @@ QUnit.test('Waiting 10 minutes and ask again for an object', function (assert) {
 
   var client = this.kurento
   var pipeline = this.pipeline
-  var sessionId = client.sessionId;
 
   setTimeout(function () {
     client.getMediaobjectById(pipeline.id, function (error, pipeline_) {
@@ -88,10 +87,10 @@ QUnit.test('Waiting 10 minutes and ask again for an object', function (assert) {
       console.log("Pipeline:", pipeline.id, " pipeline_:",
         pipeline_.id)
 
-      QUnit.config.testTimeout = 30000 * Timeout.factor;
+      QUnit.config.testTimeout = 6000 * Timeout.factor;
 
       done();
     })
-  }, 600000);
+  }, 120000);
 
 });
