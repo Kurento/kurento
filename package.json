@@ -45,7 +45,7 @@
     "kurento-client-filters": "Kurento/kurento-client-filters-js#master",
     "kurento-jsonrpc": "Kurento/kurento-jsonrpc-js#master",
     "promisecallback": "0.0.4",
-    "reconnect-ws": "KurentoForks/reconnect-ws#0.0.1",
+    "reconnect-ws": "KurentoForks/reconnect-ws#master",
     "minimist": "^1.2.0"
   },
   "devDependencies": {
