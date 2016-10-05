@@ -71,7 +71,7 @@
     "node-static": "^0.7.6",
     "npm-path": "^1.1.0",
     "qunit-cli": "KurentoForks/qunit-cli#0.2.1",
-    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit#1.0.3",
+    "qunit-reporter-junit": "JamesMGreene/qunit-reporter-junit",
     "qunit-reporter-lcov": "^1.0.2",
     "qunitjs": "1.18.0",
     "selenium-webdriver": "2.52.0",
