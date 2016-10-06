@@ -60,7 +60,6 @@ module.exports = function(grunt)
         src:  '<%= pkg.main %>',
         dest: DIST_DIR+'/<%= pkg.name %>_require.js'
       },
-
       standalone:
       {
         src:  '<%= pkg.main %>',
@@ -68,6 +67,7 @@ module.exports = function(grunt)
 
         options:
         {
+          exclude: ['ws', 'bufferutil', 'utf-8-validate' ],
           browserifyOptions: {
             debug: true,
             standalone: 'RpcBuilder'
@@ -82,6 +82,7 @@ module.exports = function(grunt)
 
         options:
         {
+          exclude: ['ws', 'bufferutil', 'utf-8-validate' ],
           debug: true,
           browserifyOptions: {
             debug: true,
@@ -104,6 +105,7 @@ module.exports = function(grunt)
 
         options:
         {
+          exclude: ['ws', 'bufferutil', 'utf-8-validate' ],
           debug: true,
           browserifyOptions: {
             debug: true,
