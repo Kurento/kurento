@@ -134,8 +134,6 @@
 		<version.servlet-api>3.0.1</version.servlet-api>
 		<version.slf4j>1.7.13</version.slf4j>
 		<version.spring-boot>1.3.6.RELEASE</version.spring-boot>
-		<version.spring>4.2.7.RELEASE</version.spring>
-		<version.tomcat-embed>8.0.28</version.tomcat-embed>
 		<version.websocket-api>1.1</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
@@ -513,41 +511,6 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-websocket</artifactId>
-				<version>${version.tomcat-embed}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>${version.tomcat-embed}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-el</artifactId>
-				<version>${version.tomcat-embed}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-jasper</artifactId>
-				<version>${version.tomcat-embed}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-logging-juli</artifactId>
-				<version>${version.tomcat-embed}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat</groupId>
-				<artifactId>tomcat-jdbc</artifactId>
-				<version>${version.tomcat-embed}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat</groupId>
-				<artifactId>tomcat-jsp-api</artifactId>
-				<version>${version.tomcat-embed}</version>
-			</dependency>
-			<dependency>
 				<groupId>javax.websocket</groupId>
 				<artifactId>javax.websocket-api</artifactId>
 				<version>${version.websocket-api}</version>
@@ -555,13 +518,6 @@
 
 			<!-- Spring -->
 			<!-- POM files to fix compatible dependencies -->
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-framework-bom</artifactId>
-				<version>${version.spring}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
