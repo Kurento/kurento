@@ -56,6 +56,12 @@
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-repository-internal</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
@@ -64,22 +70,27 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-log4j2</artifactId>
+			<artifactId>spring-boot-starter-log4j</artifactId>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
- 			<plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<mainClass>${start-class}</mainClass>
 					<layout>ZIP</layout>
-					<classifier>exec</classifier>
 				</configuration>
 				<executions>
 					<execution>
@@ -139,6 +150,6 @@
 				</includes>
 			</resource>
 		</resources>
-	</build> 
+	</build>
 
 </project>
