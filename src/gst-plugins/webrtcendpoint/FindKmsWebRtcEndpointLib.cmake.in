@@ -16,24 +16,41 @@ find_path(KmsWebRtcEndpointLib_INCLUDE_DIR
     @CUSTOM_PREFIX@
 )
 
+set (KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
+
+if (TARGET kmswebrtcendpointlib)
+
+  set (KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR "${KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins/")
+
+else ()
+
 find_path(KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR
   NAMES
     webrtcendpoint/kms-webrtc-marshal.h
   PATH_SUFFIXES
-    build/src/gst-plugins
+    ${KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins
     @CUSTOM_PREFIX@
 )
+
+endif ()
 
 set(KmsWebRtcEndpointLib_INCLUDE_DIRS ${KmsWebRtcEndpointLib_INCLUDE_DIR} ${KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR}
   CACHE INTERNAL "Include directories for KmsWebRtcEndpointLib library"
 )
 
+if (TARGET kmswebrtcendpointlib)
+  #Just get the target for the library
+  set (KmsWebRtcEndpointLib_LIBRARY kmswebrtcendpointlib)
+else()
+
 find_library (KmsWebRtcEndpointLib_LIBRARY
   NAMES
     kmswebrtcendpointlib
   PATH_SUFFIXES
-    build/src/gst-plugins/webrtcendpoint
+    ${KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins/webrtcendpoint
 )
+
+endif()
 
 set (KmsWebRtcEndpointLib_LIBRARIES ${KmsWebRtcEndpointLib_LIBRARY}
   CACHE INTERNAL "Libraries for KmsWebRtcEndpointLib"
