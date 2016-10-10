@@ -173,7 +173,6 @@ location of your Kurento Media Server instance there.
    public class MagicMirrorApp implements WebSocketConfigurer {
 
       final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
-      final static String DEFAULT_APP_SERVER_URL = "https://localhost:8443";
 
       @Bean
       public MagicMirrorHandler handler() {
@@ -182,8 +181,7 @@ location of your Kurento Media Server instance there.
 
       @Bean
       public KurentoClient kurentoClient() {
-         return KurentoClient.create(System.getProperty("kms.url",
-               DEFAULT_KMS_WS_URI));
+         return KurentoClient.create();
       }
 
       @Override

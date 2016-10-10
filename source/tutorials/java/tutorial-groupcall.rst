@@ -116,8 +116,6 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @SpringBootApplication
    public class GroupCallApp implements WebSocketConfigurer {
 
-     private static final String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
-
      @Bean
      public UserRegistry registry() {
        return new UserRegistry();
@@ -135,7 +133,7 @@ with Kurento Media Server and controlling its multimedia capabilities.
 
      @Bean
      public KurentoClient kurentoClient() {
-       return KurentoClient.create(System.getProperty("kms.url", DEFAULT_KMS_WS_URI));
+       return KurentoClient.create();
      }
 
      public static void main(String[] args) throws Exception {

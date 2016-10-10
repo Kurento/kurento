@@ -132,7 +132,6 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @SpringBootApplication
    public class SendDataChannelApp implements WebSocketConfigurer {
 
-     private static final String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
      static final String DEFAULT_APP_SERVER_URL = "https://localhost:8443";
 
      @Bean
@@ -142,7 +141,7 @@ with Kurento Media Server and controlling its multimedia capabilities.
 
      @Bean
      public KurentoClient kurentoClient() {
-       return KurentoClient.create(System.getProperty("kms.url", DEFAULT_KMS_WS_URI));
+       return KurentoClient.create();
      }
 
      @Override

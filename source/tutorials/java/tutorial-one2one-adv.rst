@@ -197,7 +197,6 @@ Bean.
    @SpringBootApplication
    public class One2OneCallAdvApp implements WebSocketConfigurer {
 
-      final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
       final static String DEFAULT_APP_SERVER_URL = "https://localhost:8443";
 
       @Bean
@@ -212,8 +211,7 @@ Bean.
 
       @Bean
       public KurentoClient kurentoClient() {
-         return KurentoClient.create(System.getProperty("kms.url",
-               DEFAULT_KMS_WS_URI));
+         return KurentoClient.create();
       }
 
       public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
