@@ -353,6 +353,12 @@ function stop(sessionId) {
 	}
 
 	clearCandidatesQueue(sessionId);
+
+	if (viewers.length < 1 && !presenter) {
+        console.log('Closing kurento client');
+        kurentoClient.close();
+        kurentoClient = null;
+    }
 }
 
 function onIceCandidate(sessionId, _candidate) {
