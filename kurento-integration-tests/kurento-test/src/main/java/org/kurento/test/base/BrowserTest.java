@@ -495,7 +495,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
     // Debug trace for latencies over 1 second (or lower than -1)
     if (latency > 1000 || latency < -1) {
-      log.warn(
+      log.trace(
           ">>> Bad latency measurement: {} ms (presenter: '{}' - viewer: '{}')"
               + "\nBase64 presenter: {}" + "\nBase64 viewer: {}",
           latency, presenterDateStr, viewerDateStr, presenterBase64, viewerBase64);
