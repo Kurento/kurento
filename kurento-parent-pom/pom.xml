@@ -98,7 +98,7 @@
 
 		<version.jetty>9.3.0.M2</version.jetty>
 		<version.netty>4.1.5.Final</version.netty>
-		
+
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.3.1</version.apache.commons-fileupload>
 		<version.apache.commons-io>2.4</version.apache.commons-io>
@@ -113,6 +113,7 @@
 		<version.apache.maven-artifact>3.3.9</version.apache.maven-artifact>
 		<version.apache.source.assembly.descriptor>1.0.6</version.apache.source.assembly.descriptor>
 		<version.bouncycastle>1.54</version.bouncycastle>
+		<version.bcpkix>1.54</version.bcpkix>
 		<version.cglib>3.2.0</version.cglib>
 		<version.cors-filter>2.5</version.cors-filter>
 		<version.exec.maven.plugin>1.4.0</version.exec.maven.plugin>
@@ -457,6 +458,16 @@
 				<version>${version.netty}</version>
 			</dependency>
 			<!-- Other dependencies -->
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpkix-jdk15on</artifactId>
+				<version>${version.bcpkix}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-jdk15on</artifactId>
+				<version>${version.bcpkix}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.thoughtworks.paranamer</groupId>
 				<artifactId>paranamer</artifactId>
