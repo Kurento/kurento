@@ -31,7 +31,6 @@
     "bower": "~1.7.9",
     "browserify": "^13.0.1",
     "browserify-optional": "^1.0.0",
-    "uuid": "~2.0.1",
     "coveralls": "~2.11.2",
     "fs-extra": "^0.30.0",
     "grunt": "^0.4.0",
@@ -53,10 +52,11 @@
     "qunitjs": "^1.23.1",
     "selenium-webdriver": "2.53.2",
     "xml2js": "^0.4.9",
-    "sdp-translator": "^0.1.15",
     "chromedriver": "^2.21.2"
   },
   "dependencies": {
+    "sdp-translator": "^0.1.15",
+    "uuid": "~2.0.1",
     "freeice": "^2.1.2",
     "inherits": "^2.0.1",
     "merge": "^1.2.0",
