@@ -74,7 +74,7 @@
 		<targetJdk>${maven.compiler.target}</targetJdk>
 
 		<version.pmd.plugin>3.6</version.pmd.plugin>
-		<version.checkstyle.plugin>3.0.1</version.checkstyle.plugin>
+		<version.checkstyle.plugin>2.17</version.checkstyle.plugin>
 		<version.findbugs.plugin>3.0.4</version.findbugs.plugin>
 		<version.s3.wagon>1.2.1</version.s3.wagon>
 		<version.qa.config>1.0.4-SNAPSHOT</version.qa.config>
