@@ -40,10 +40,6 @@ kurento/gstreamer
 kurento/libs3
 kurento/libnice
 kurento/usrsctp
-VTOOLS-FOSS/NUBOMEDIA-VCA
-VTOOLS-FOSS/NUBOMEDIA-VCA-JS-API
-VTOOLS-FOSS/NUBOMEDIA-VCA-NODE-API
-VTOOLS-FOSS/DOC-NUBOMEDIA-VCA
 usv-public/kms-monitoring-java
 usv-public/nubomedia-nova-docker
 usv-public/nubomedia-autonomous-installer
