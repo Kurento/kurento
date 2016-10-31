@@ -112,9 +112,9 @@ function ${complexType.name}(${complexTypeDict}){
   ${complexTypeDict} = ${complexTypeDict} || {}
 
   // Check ${complexTypeDict} has the required fields
-    <#list complexType.properties as property>
-  checkType('${property.type.name}', '${complexTypeDict}.${property.name}', ${complexTypeDict}.${property.name}<@checkTypeOptions param=property/>);
-    </#list>
+  // <#list complexType.properties as property>
+  // checkType('${property.type.name}', '${complexTypeDict}.${property.name}', ${complexTypeDict}.${property.name}<@checkTypeOptions param=property/>);
+  //  </#list>
   </#if>
 
   // Init parent class

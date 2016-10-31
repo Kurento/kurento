@@ -11,8 +11,6 @@ var promiseCallback = require('promisecallback');
   <#break>
   <#case "MediaObject">
 
-var Promise = require('es6-promise').Promise;
-
 var promiseCallback = require('promisecallback');
   <#break>
   <#case "MediaPipeline">

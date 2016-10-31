@@ -52,6 +52,7 @@ function throwRpcNotReady()
  */
 Object.defineProperty(MediaObject.prototype, '_invoke',
 {
+  enumerable: true,
   value: function(transaction, method, params, callback){
     var self = this;
 
@@ -285,7 +286,7 @@ MediaSource.prototype.disconnect = function(sink, callback){
 
   if(arguments.length === 1) callback = undefined;
 
-  checkType('MediaSink', 'sink', sink, {required: true});
+  // checkType('MediaSink', 'sink', sink, {required: true});
 
   var params =
   {

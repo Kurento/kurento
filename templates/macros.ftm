@@ -111,9 +111,9 @@
         <#break>
       </#if>
     </#list>
-    <#list params as param>
-  checkType('${param.type.name}', '${param.name}', ${param.name}<@checkTypeOptions param=param/>);
-    </#list>
+  //  <#list params as param>
+  // checkType('${param.type.name}', '${param.name}', ${param.name}<@checkTypeOptions param=param/>);
+  //  </#list>
 
   var params = {
     <#list params as param>
