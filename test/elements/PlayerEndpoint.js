@@ -180,7 +180,6 @@ QUnit.asyncTest('End of Stream with Promise', function (assert) {
 
       QUnit.start();
     })
-    .catch(onerror)
 
     return player.play().then(function () {
       timeout.start();

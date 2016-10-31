@@ -45,7 +45,6 @@ QUnit.test('setVideoFormat with Callback', function (assert) {
       }
     }
 
-
     caps.framerate = kurentoClient.register.complexTypes.Fraction(caps.framerate)
     caps = kurentoClient.register.complexTypes.VideoCaps(caps)
 

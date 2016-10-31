@@ -81,7 +81,7 @@ QUnit.asyncTest('End of Stream with Callback', function () {
       QUnit.notEqual(gStreamerFilter, undefined, 'GStreamerFilter');
 
       return player.connect(gStreamerFilter, function (error) {
-        QUnit.equal(error, undefined, 'connect');
+        QUnit.equal(error, null, 'connect');
 
         if (error) return onerror(error);
 
