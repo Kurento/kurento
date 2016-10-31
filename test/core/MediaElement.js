@@ -30,7 +30,7 @@ if (QUnit.config.prefix == undefined)
 QUnit.module(QUnit.config.prefix + 'MediaElement', lifecycle);
 
 QUnit.test('setVideoFormat with Callback', function (assert) {
-  assert.expect(2);
+  assert.expect(1);
 
   var done = assert.async();
 
@@ -45,11 +45,6 @@ QUnit.test('setVideoFormat with Callback', function (assert) {
       }
     }
 
-    assert.throws(function () {
-        passThrough.setVideoFormat(caps)
-      },
-      new SyntaxError('caps param should be a VideoCaps, not Object')
-    )
 
     caps.framerate = kurentoClient.register.complexTypes.Fraction(caps.framerate)
     caps = kurentoClient.register.complexTypes.VideoCaps(caps)
@@ -64,7 +59,7 @@ QUnit.test('setVideoFormat with Callback', function (assert) {
 });
 
 QUnit.test('setVideoFormat with Promise', function (assert) {
-  assert.expect(2);
+  assert.expect(1);
 
   var done = assert.async();
 
@@ -78,17 +73,11 @@ QUnit.test('setVideoFormat with Promise', function (assert) {
       }
     }
 
-    assert.throws(function () {
-        passThrough.setVideoFormat(caps)
-      },
-      new SyntaxError('caps param should be a VideoCaps, not Object')
-    )
-
     caps.framerate = kurentoClient.register.complexTypes.Fraction(caps.framerate)
     caps = kurentoClient.register.complexTypes.VideoCaps(caps)
 
     return passThrough.setVideoFormat(caps, function (error) {
-      assert.equal(error, undefined)
+      assert.equal(error, null)
 
       done();
     })

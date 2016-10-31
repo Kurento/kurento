@@ -167,59 +167,30 @@ MediaObject.prototype.release = function(callback){
 // Promise interface ("thenable")
 
 MediaObject.prototype.then = function(onFulfilled, onRejected){
-  var self = this;
+  if(this.id != null)
+    var promise = Promise.resolve(disguise.unthenable(this))
+  else if(this.id === null)
+    var promise = Promise.reject()
+  else {
+    var self = this
 
-  var promise = new Promise(function(resolve, reject)
-  {
-    function success(id)
-    {
-      var result;
+    var promise = new Promise((resolve, reject) => {
+      this.once('_id', function(error, id) {
+        if(error) return reject(error);
 
-      if(onFulfilled)
-        try
-        {
-          result = onFulfilled.call(self, id);
-        }
-        catch(exception)
-        {
-          if(!onRejected)
-            console.trace('Uncaugh exception', exception)
-
-          return reject(exception);
-        }
-
-      resolve(result);
-    };
-    function failure(error)
-    {
-      if(onRejected)
-        try
-        {
-          error = onRejected.call(self, error);
-        }
-        catch(exception)
-        {
-          return reject(exception);
-        }
-      else
-        console.trace('Uncaugh exception', error)
-
-      reject(error);
-    };
-
-    if(self.id !== undefined)
-      success(self)
-    else
-      self.once('_id', function(error, id)
-      {
-        if(error) return failure(error);
-
-        success(self);
+        resolve(disguise.unthenable(self));
       })
-  })
+    })
+  }
 
-  return disguise(promise, this)
+  promise = promise.then(onFulfilled ? onFulfilled.bind(this) :
+function(result){return Promise.resolve(result)},
+                         onRejected  ? onRejected .bind(this) :
+function(error) {return Promise.reject(error)});
+
+  return disguise(promise, this);
 }
+
 MediaObject.prototype.catch = function(onRejected)
 {
   this.then(null, onRejected);
