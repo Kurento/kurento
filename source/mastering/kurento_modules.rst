@@ -90,7 +90,7 @@ aimed to show how to use them.
 
 
 Module Tutorial - Pointer Detector Filter
-===========================================
+=========================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
 (*loopback*) with a pointer tracking filter element.
@@ -103,7 +103,7 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 
 
 Module Tutorial - Chroma Filter
-=================================
+===============================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
 (*loopback*) with a chroma filter element.
@@ -117,7 +117,7 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 
 
 Module Tutorial - Crowd Detector Filter
-=========================================
+=======================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
 (*loopback*) with a crowd detector filter. This filter detects people
@@ -131,7 +131,7 @@ agglomeration in video streams.
 
 
 Module Tutorial - Plate Detector Filter
-=========================================
+=======================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
 (*loopback*) with a plate detector filter element.
