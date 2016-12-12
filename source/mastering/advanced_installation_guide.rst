@@ -102,16 +102,46 @@ Kurento Media Server logs file are stored in the folder
 ``/var/log/kurento-media-server/``. The content of this folder is as follows:
 
 * ``media-server_<timestamp>.<log_number>.<kms_pid>.log``: Current log for
-  Kurento Media Server
+  Kurento Media Server.
 
-* ``media-server_error.log``: Third-party errors
+* ``media-server_error.log``: Third-party errors.
 
-* ``logs``: Folder that contains the KMS rotated logs
+* ``logs``: Folder that contains the KMS rotated logs.
 
-
-When KMS starts correctly, this trace is written in the log file:
+Each line in the Kurento Media Server logs has a fixed structure, as follows:
 
 .. sourcecode:: bash
 
-   [time] [0x10b2f880] [info]    KurentoMediaServer main.cpp:239 main() Mediaserver started
+   [timestamp] [pid] [memory]   [level] [component]    [filename:loc] [method] [message]
 
+... where:
+
+* ``[timestamp]`` : Date and time of the logging trace (e.g.
+  ``2016-10-26 12:04:22,493295``).
+
+* ``[pid]`` : Process identifier of *kurento-media-sever* (e.g. ``17521``).
+
+* ``[memory]`` : Memory address in which the *kurento-media-sever* component
+  is running (e.g. ``0x00007fd59f2a78c0``).
+
+* ``[level]`` : Log level. This value typically will be ``info`` and
+  ``debug``. If unexpected error situation happens, the ``error`` level will
+  contain information about the problem.
+
+* ``[component]`` : Kurento Media Server component name, for example
+  ``KurentoModuleManager``, ``KurentoLoadConfig``, or ``KurentoMediaServer``,
+  among others.
+
+* ``[filename:loc]`` : Code source file name (e.g. ``main.cp``) followed by
+  the line of code (*loc*) number.
+
+* ``[method]`` : Name of the method of function in which the log trace is
+  invoked (e.g. ``loadModule()``, ``doGarbageCollection()``, etc).
+
+* ``[message]`` : Specific log information.
+
+For example, when KMS starts correctly, this trace is written in the log file:
+
+.. sourcecode:: bash
+
+   [timestamp] [pid] [memory]  info KurentoMediaServer  main.cpp:256 main()  Mediaserver started
