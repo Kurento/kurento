@@ -63,6 +63,10 @@ through a WebRTC capable browser (Chrome, Firefox).
 
       https://localhost:8443/index.html?ws_uri=wss://kms_host:kms_port/kurento
 
+   Notice that the Kurento Media Server must connected using a **Secure WebSocket** (i.e., the KMS URI
+   starts with *wss://*). For this reason, the support for secure WebSocket must be enabled in the Kurento
+   Media Server you are using to run this tutorial. For further information about securing applications,
+   please visit the following :doc:`page <../../mastering/securing-kurento-applications>`.
 
 Understanding this example
 ==========================
@@ -74,7 +78,7 @@ implement this behavior we need to create a`Media Pipeline`:term: consisting of 
 
 The second part of this demo shows how to play recorded media. To achieve this,
 we need to create a `Media Pipeline`:term: composed by a **WebRtcEndpoint** and
-a **PlayerEndpoint**. The *uri* property of the player is the uri of the 
+a **PlayerEndpoint**. The *uri* property of the player is the uri of the
 recorded file.
 
 There are two implementations for this demo to be found in github:

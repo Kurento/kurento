@@ -59,12 +59,16 @@ through a WebRTC capable browser (Chrome, Firefox).
 
       https://localhost:8443/index.html?ws_uri=wss://kms_host:kms_port/kurento
 
+   Notice that the Kurento Media Server must connected using a **Secure WebSocket** (i.e., the KMS URI
+   starts with *wss://*). For this reason, the support for secure WebSocket must be enabled in the Kurento
+   Media Server you are using to run this tutorial. For further information about securing applications,
+   please visit the following :doc:`page <../../mastering/securing-kurento-applications>`.
 
 Understanding this example
 ==========================
 
 This application uses computer vision and augmented reality techniques to add a
-funny hat on top of detected faces. The following picture shows a screenshot 
+funny hat on top of detected faces. The following picture shows a screenshot
 of the demo running in a web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png

@@ -17,9 +17,8 @@ section before starting this tutorial.
 For the impatient: running this example
 =======================================
 
-You'll need to install Kurento Media Server before running this example.
-Read :doc:`installation guide <../../installation_guide>` for further
-information.
+You'll need to install Kurento Media Server before running this example. Read
+:doc:`installation guide <../../installation_guide>` for further information.
 
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
 an Ubuntu machine, you can install both as follows:
@@ -62,6 +61,11 @@ through a WebRTC capable browser (Chrome, Firefox).
 
       https://localhost:8443/index.html?ws_uri=wss://kms_host:kms_port/kurento
 
+   Notice that the Kurento Media Server must connected using a **Secure WebSocket** (i.e., the KMS URI
+   starts with *wss://*). For this reason, the support for secure WebSocket must be enabled in the Kurento
+   Media Server you are using to run this tutorial. For further information about securing applications,
+   please visit the following :doc:`page <../../mastering/securing-kurento-applications>`.
+
 Understanding this example
 ==========================
 
@@ -83,13 +87,13 @@ video tags: one showing the local stream (as captured by the device webcam) and
 the other showing the remote stream sent by the media server back to the client.
 
 The logic of the application is quite simple: the local stream is sent to the
-Kurento Media Server, which sends it back to the client without
-modifications. To implement this behavior, we need to create a
-`Media Pipeline`:term: composed by a single `Media Element`:term:, i.e. a
-**WebRtcEndpoint**, which holds the capability of exchanging full-duplex
-(bidirectional) WebRTC media flows. This media element is connected to itself,,
-so that the media it receives (from browser) is send back (to browser). This
-media pipeline is illustrated in the following picture:
+Kurento Media Server, which sends it back to the client without modifications.
+To implement this behavior, we need to create a `Media Pipeline`:term: composed
+by a single `Media Element`:term:, i.e. a **WebRtcEndpoint**, which holds the
+capability of exchanging full-duplex (bidirectional) WebRTC media flows. This
+media element is connected to itself,, so that the media it receives (from
+browser) is send back (to browser). This media pipeline is illustrated in the
+following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
    :align:   center
