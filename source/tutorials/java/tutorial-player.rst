@@ -341,8 +341,7 @@ invokes the *pause* method on the ``PlayerEndpoint``.
   }
 
 The ``resume`` method starts the ``PlayerEndpoint`` of the current user, sending
-back the
- information about the video, so the client side can refresh the stats.
+back the information about the video, so the client side can refresh the stats.
 
 .. sourcecode:: java
 

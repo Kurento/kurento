@@ -48,7 +48,8 @@ Configure Java applications to use HTTPS
             server.ssl.keyAlias: yourKeyAlias
 
       * You can also specify the location of the properties file. When
-      launching your Spring-Boot based app, issue the flag ``-Dspring.config.location=<path-to-properties>`` .
+        launching your Spring-Boot based app, issue the flag
+        ``-Dspring.config.location=<path-to-properties>`` .
 
 * Start application
 
