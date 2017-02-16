@@ -132,11 +132,11 @@ public class Docker implements Closeable {
 
         String line = null;
         while ((line = br.readLine()) != null) {
-          if (!line.endsWith("/")) {
-            return true;
+          if (!line.endsWith("/docker")) {
+            return false;
           }
         }
-        isRunningInContainer = false;
+        isRunningInContainer = true;
 
       } catch (IOException e) {
         isRunningInContainer = false;
