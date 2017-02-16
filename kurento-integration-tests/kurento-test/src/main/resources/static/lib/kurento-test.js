@@ -146,7 +146,7 @@ KurentoTest.prototype.capitalize = function(string) {
 KurentoTest.prototype.getVideoTime = function(videoTagId, time) {
 	if (this.ocrActive) {
 		// Clock coordinates on Chrome user media synthetic video
-		var sourceX = 0;
+		var sourceX = 40;
 		var sourceY = 0;
 		var destWidth = 440;
 		var destHeight = 61;
