@@ -50,8 +50,8 @@ if [ -f "$GNUPG_KEY" ]; then
   gpg --import $GNUPG_KEY
 fi
 
-# For backwards compatibility with kurento_clone_repo
-export KURENTO_GIT_REPOSITORY=ssh://$GERRIT_USER@$GERRIT_HOST:$GERRIT_PORT
+# For backwards compatibility with kurento_clone_repo / Update to use github instead of gerrit
+export KURENTO_GIT_REPOSITORY=${KURENTO_GIT_REPOSITORY}
 
 # Configure private bower Repository
 cat >/root/.bowerrc << EOL
