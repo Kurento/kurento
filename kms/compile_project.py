@@ -498,14 +498,14 @@ def generate_debian_package(args, config):
     old_changelog.write_to_open_file(open("debian/changelog", 'w'))
 
 
-def check_dependency_installed(cache, dependency, debian_control_str):
+def check_dependency_installed(cache, dependency, debian_control_file):
     print("Check dependency installed: " + str(dependency))
 
     ret_val = False
 
     #f = open("debian/control")
     while True:
-        debfile = Deb822(debian_control_str)
+        debfile = Deb822(debian_control_file)
 
         if len(debfile) == 0:
             break
@@ -587,11 +587,21 @@ def compile_project(args):
             else:
                 default_commit = "HEAD"
 
-            debian_control_str = os.popen("git archive --remote=" + git_url +
-                                          " " + default_commit +
-                                          " debian/control")
+            #J
+            # `cat` the contents of the file "debian/control"
+            #
+            # FIXME: GitHub doesn't have support for `git archive`!
+            # https://github.com/isaacs/github/issues/554
+            #debian_control_file = os.popen(
+            #    "git archive --remote=" + git_url
+            #    + " " + default_commit + " debian/control")
+            #
+            # Workaround: use the SVN bridge API offered by GitHub:
+            debian_control_file = os.popen(
+                "svn cat " + git_url + "/trunk/debian/control")
+
             if not check_dependency_installed(cache, dependency,
-                                              debian_control_str):
+                                              debian_control_file):
                 os.chdir("..")
                 repo = clone_repo(args, args.base_url, sub_project_name)
                 os.chdir(sub_project_name)
@@ -618,8 +628,8 @@ def compile_project(args):
                 os.chdir(workdir)
 
     if os.system ("kurento_check_version.sh true") != 0:
-        print ("Error while checking the version")
-        exit (1)
+        print("Error while checking the version")
+        exit(1)
     generate_debian_package(args, config)
 
 
