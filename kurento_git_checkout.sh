@@ -54,7 +54,8 @@ echo "##################### EXECUTE: kurento_git_checkout #####################"
 [ -n "$GERRIT_REFSPEC" ] && GERRIT_REFERENCE=$GERRIT_REFSPEC
 [ -z "$GERRIT_REFERENCE" ] && GERRIT_REFERENCE=master
 
-GERRIT_URL=ssh://$GERRIT_USER@$GERRIT_HOST:$GERRIT_PORT
+# Fix to use github instead of gerrit
+GERRIT_URL=${KURENTO_GIT_REPOSITORY}
 
 # Clone gerrit reference if provided
 if [ -n "$GERRIT_PROJECT" ]; then
