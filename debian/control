@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 8.0.0),
  uuid-dev,
  valgrind,
  openwebrtc-gst-plugins-dev,
- ffmpeg,
+ ffmpeg | libav-tools,
  libssl-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org

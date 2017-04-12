@@ -65,7 +65,7 @@ GF::~GF()
   MediaSet::deleteMediaSet();
 }
 
-std::string exec (const std::string &str)
+std::string exec (const std::string& str)
 {
   std::shared_ptr<FILE> pipe (::popen (str.c_str(), "r"), pclose);
 
@@ -263,12 +263,10 @@ recorder_state_changes ()
 
   std::string cmd = "ffprobe";
   std::string arg = " -version";
-  int rc = ::system ( (cmd + arg).c_str() );
-
+  int rc = ::system((cmd + arg).c_str());
   if (rc != 0) {
     cmd = "avprobe";
-    rc = ::system ( (cmd + arg).c_str() );
-
+    rc = ::system((cmd + arg).c_str());
     if (rc != 0) {
       BOOST_ERROR ("ffprobe or avprobe is not installed");
     }
