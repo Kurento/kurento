@@ -91,6 +91,12 @@
           "readOnly": true
         },
         {
+          "name": "elementGstreamerDot",
+          "doc": "Returns the Gstreamer DOT string for this element's private pipeline",
+          "type": "String",
+          "readOnly": true
+        },
+        {
           "name": "position",
           "doc": "Get or set the actual position of the video in ms. .. note:: Setting the position only works for seekable videos",
           "type": "int64"

@@ -50,6 +50,8 @@ public:
   virtual int64_t getPosition() override;
   virtual void setPosition (int64_t position) override;
 
+  virtual std::string getElementGstreamerDot() override;
+
   /* Next methods are automatically implemented by code generator */
   using UriEndpointImpl::connect;
   virtual bool connect (const std::string &eventType,

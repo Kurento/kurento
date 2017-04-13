@@ -100,6 +100,7 @@ enum
   PROP_VIDEO_DATA,
   PROP_POSITION,
   PROP_NETWORK_CACHE,
+  PROP_PIPELINE,
   N_PROPERTIES
 };
 
@@ -254,6 +255,9 @@ kms_player_endpoint_get_property (GObject * object, guint property_id,
       g_value_set_int64 (value, position);
       break;
     }
+    case PROP_PIPELINE:
+      g_value_set_object (value, playerendpoint->priv->pipeline);
+      break;
     case PROP_NETWORK_CACHE:
       g_value_set_int (value, playerendpoint->priv->network_cache);
       break;
@@ -1090,6 +1094,11 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
           "When using rtsp sources, the amount of ms to buffer",
           0, G_MAXINT, NETWORK_CACHE_DEFAULT,
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
+
+  g_object_class_install_property (gobject_class, PROP_PIPELINE,
+      g_param_spec_object ("pipeline", "pipeline",
+          "Players private pipeline",
+          GST_TYPE_ELEMENT, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   kms_player_endpoint_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
