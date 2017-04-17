@@ -265,7 +265,7 @@ public:
       subVal.JsonValue = JsonValue[key];
 
       for (auto k : subVal.JsonValue.getMemberNames() ) {
-        TMapValue val;
+        TMapValue val {};
 
         subVal.Serialize (k, val);
         map[k] = val;
