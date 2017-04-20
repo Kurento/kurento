@@ -42,7 +42,6 @@ if [ "$DIST" = "xenial" ]; then
   rm *deb
   wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add -
   apt-get update
-  apt-get install -y --allow-change-held-packages kurento-adm-scripts
 fi
 
 # Configure Kurento gnupg
