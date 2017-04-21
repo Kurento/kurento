@@ -1,5 +1,7 @@
 #!/bin/bash -x
 
+echo "##################### EXECUTE: kurento_container_install_deb_dependencies.sh #####################"
+
 if [ ! -s debian/control ] ; then
   echo "Warning, no debian/control file found"
   exit 1
