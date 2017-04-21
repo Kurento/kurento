@@ -16,39 +16,39 @@ find_program(VALGRIND valgrind)
 set (DISABLE_TESTS FALSE CACHE BOOL "Disable \"make check\" target")
 set (GENERATE_TESTS FALSE CACHE BOOL "Add \"make check\" to target ALL")
 
-function(create_check_target)
-  if (NOT TARGET check_build)
-    MESSAGE (STATUS "Enabling check_build target")
+function(create_test_target)
+  if (NOT TARGET test_target)
+    MESSAGE (STATUS "Adding custom target: 'test_target'")
     if (${GENERATE_TESTS})
-      add_custom_target(check_build ALL)
+      add_custom_target(test_target ALL)
     else ()
-      add_custom_target(check_build)
+      add_custom_target(test_target)
     endif()
   endif()
   if (NOT TARGET check)
-    MESSAGE (STATUS "Enabling check target")
+    MESSAGE (STATUS "Adding custom target: 'check'")
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} \${ARGS} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-    add_dependencies(check check_build)
+    add_dependencies(check test_target)
   endif()
 endfunction()
 
 function(create_valgrind_target)
   if (NOT TARGET valgrind)
-    MESSAGE (STATUS "Enabling valgrind target")
+    MESSAGE (STATUS "Adding custom target: 'valgrind'")
     add_custom_target(valgrind)
   endif()
 endfunction()
 
-## This function simplifies tests creation
+## This function simplifies tests creation.
 ##
-## If program TEST_PROPERTIES varible is defined, properties will be
-## passed to the test as environment variables
+## If the variable TEST_VARIABLES is defined with a list of names and values,
+## they will be passed to the test as environment variables.
 ##
-## If valgrind is available a valgrind target will be created for the test
+## If Valgrind is available, a valgrind target will be created for the test.
 ## To add suppression files to valgrind, just define SUPPRESSIONS variable
-## with the files to add to valgrind as suppressions
+## with the files to add to valgrind as suppressions.
 ##
-## Do not forget to enable test on your top build directory calling enable_testing
+## Do not forget to enable test on your top build directory, by calling enable_testing.
 ##
 ## Name : add_test_program
 ## Params: test_name, sources
@@ -60,25 +60,25 @@ function(add_test_program test_name sources)
     set (final_sources "${final_sources};${arg}")
   endforeach()
   add_executable (${test_name} EXCLUDE_FROM_ALL ${final_sources})
-  create_check_target()
-  add_dependencies(check_build ${test_name})
+  create_test_target()
+  add_dependencies(test_target ${test_name})
 
   if (NOT ${DISABLE_TESTS})
     add_test (${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
 
-    foreach (p ${TEST_PROPERTIES})
+    foreach (p ${TEST_VARIABLES})
       set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT ${p})
     endforeach()
   endif ()
 
   add_custom_target (${test_name}.check
-    COMMAND ${TEST_PROPERTIES} ${CMAKE_CURRENT_BINARY_DIR}/${test_name} \${ARGS}
+    COMMAND ${TEST_VARIABLES} ${CMAKE_CURRENT_BINARY_DIR}/${test_name} \${ARGS}
     DEPENDS ${test_name})
 
   if (EXISTS ${VALGRIND})
     set (SUPPS " ")
-    foreach(SUP ${SUPPRESSIONS})
-      set (SUPPS "${SUPPS} --suppressions=${SUP}")
+    foreach(SUPP ${SUPPRESSIONS})
+      set (SUPPS "${SUPPS} --suppressions=${SUPP}")
     endforeach()
     STRING(REGEX REPLACE "^ " "" SUPPS ${SUPPS})
 
@@ -123,7 +123,7 @@ endif ()
 
     add_custom_command (TARGET ${test_name}.valgrind
       COMMENT "Running valgrind for ${test_name}"
-      COMMAND VALGRIND=TRUE G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_PROPERTIES} ${VALGRING_TEST_PROPERTIES} ${CMAKE_COMMAND} -DARGS=\${ARGS} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
+      COMMAND VALGRIND=TRUE G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_VARIABLES} ${VALGRIND_TEST_VARIABLES} ${CMAKE_COMMAND} -DARGS=\${ARGS} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
     )
 
     create_valgrind_target()
