@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "##################### EXECUTE: kurento_cmake_check #####################"
+
 # export DISPLAY=:1
 mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr
 
