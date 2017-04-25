@@ -487,7 +487,7 @@ def generate_debian_package(args, config):
                 is_last = False
             if new_version.find("~") == -1 or args.force_release:
                 upload_package(args, config, dist, f, publish=is_last)
-            else if args.force_testing:
+            elif args.force_testing:
                 upload_package(args, config, dist + "-test", publish=is_last)
             upload_package(args, config, dist + "-dev", f, publish=is_last)
 
