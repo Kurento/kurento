@@ -278,6 +278,8 @@ def generate_debian_package(args, config):
                 is_last = False
             if new_version.find("~") == -1 or args.force_release:
                 upload_package(args, config, dist, afile, publish=is_last)
+            elif args.force_testing:
+                upload_package(args, config, dist + "-test", afile, publish=is_last)
             upload_package(args, config, dist + "-dev", afile, publish=is_last)
 
     if args.clean:
@@ -453,6 +455,9 @@ def main():
                         action="store_true",
                         help="Upload package to release repository"
                              " even if it is not a final release number")
+    upload.add_argument("--force_testing",
+                        action="store_true",
+                        help="Upload package to testing repository")
 
     args = parser.parse_args()
 
