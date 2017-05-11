@@ -45,10 +45,12 @@ endfunction()
 
 include(VersionHelpers)
 
+set (CALCULATE_VERSION_WITH_GIT TRUE CACHE BOOL "Use git (if available) to get project version")
+
 function(get_git_version version_output_variable default_version)
   get_git_dir(GIT_DIR)
 
-  if(EXISTS "${GIT_DIR}")
+  if(EXISTS "${GIT_DIR}" AND ${CALCULATE_VERSION_WITH_GIT})
     execute_process(COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --tags
       OUTPUT_VARIABLE LAST_TAG
       ERROR_VARIABLE DISCARD_ERROR
