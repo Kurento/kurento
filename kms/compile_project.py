@@ -65,27 +65,22 @@ def get_version_to_install(pkg, req_version, commit):
         return None
 
 
-def check_dep(cache, pkg_name, req_version, commit):
-    if cache.has_key(pkg_name):
-        pkg = cache[pkg_name]
-
-        if pkg.is_installed:
-            # Check if version is valid
-            version = get_version_to_install(pkg, req_version, commit)
-            return version == pkg.installed.version
-    return False
-
-
 def check_deb_dependency_installed(cache, dep):
+    print("Check dependency DEB installed: " + str(dep))
     for dep_alternative in dep:
-        name = dep_alternative["name"]
+        dep_name = dep_alternative["name"]
         dep_alternative.setdefault("commit")
+        dep_version = dep_alternative["version"]
+        dep_commit = dep_alternative["commit"]
 
-        if check_dep(cache, name, dep_alternative["version"],
-                     dep_alternative["commit"]):
-            return True
-
-    # If this code is reached, depdendency is not correctly installed in a valid version
+        if cache.has_key(dep_name):
+            pkg = cache[dep_name]
+            if pkg.is_installed:
+                # Check if version is valid
+                version = get_version_to_install(pkg, dep_version, dep_commit)
+                if version == pkg.installed.version:
+                    return True
+    # If this code is reached, dependency is not correctly installed in a valid version
     return False
 
 
@@ -336,7 +331,7 @@ def compile_project(args):
         # Parse dependencies config
         for dependency in config["dependencies"]:
             if not dependency.has_key("name"):
-                print("dependency: >" + str(dependency) + "<\n needs a name")
+                print("Dependency " + str(dependency) + " needs a name!")
                 exit(1)
             if dependency.has_key("version"):
                 regex = re.compile(r'(?P<relop>[>=<]+)\s*'
@@ -353,21 +348,18 @@ def compile_project(args):
 
         for dependency in config["dependencies"]:
             sub_project_name = dependency["name"]
-
-            #Only revisions are allowed
-            dependency["commit"] = None
-
             git_url = args.base_url + "/" + sub_project_name
 
             # TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
-            if (dependency["commit"] is None
-                    and dependency["version"] is None):
+            if (dependency["version"] is None
+                    and (not dependency.has_key("commit")
+                         or dependency["commit"] is None)):
                 dependency["commit"] = str(os.popen(
                     "git ls-remote " + git_url + " HEAD").read(7))
 
             #J
-            # Load from the remote repo the file "debian/control"
+            # Load the file "debian/control" from the remote repo
             #
             # REVIEW: GitHub doesn't have support for `git archive`!
             # https://github.com/isaacs/github/issues/554
