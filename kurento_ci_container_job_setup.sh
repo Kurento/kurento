@@ -99,7 +99,8 @@ CONTAINER_TEST_FILES=/opt/test-files
 
 # Verify mandatory parameters
 [ -z "$CONTAINER_IMAGE" ] && CONTAINER_IMAGE="kurento/dev-integration:jdk-8-node-0.12"
-[ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
+#[ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
+[ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$(echo $GIT_URL | cut -d"/" -f2 | cut -d"." -f 1)
 [ -z "$KURENTO_PUBLIC_PROJECT" ] && KURENTO_PUBLIC_PROJECT="no"
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
