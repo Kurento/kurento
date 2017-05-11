@@ -18,12 +18,13 @@ configure_file(FindKurentoHelpers.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/FindKurentoHelpers.cmake" @ONLY)
 
 set(CMAKE_DIST_FILES
+  DpkgBuildFlags.cmake
   FindGLIB-GENMARSHAL.cmake
   FindGLIB-MKENUMS.cmake
   GLibHelpers.cmake
-  TestHelpers.cmake
-  KurentoGitHelpers.cmake
   GenericFind.cmake
+  KurentoGitHelpers.cmake
+  TestHelpers.cmake
   VersionHelpers.cmake
 )
 
