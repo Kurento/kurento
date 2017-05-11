@@ -15,14 +15,15 @@
  *
  */
 
+#define _GNU_SOURCE // Enable GNU Extensions: 'syscall()' is not POSIX
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <linux/random.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 
+#include <linux/random.h>
 #include <glib.h>
 
 #include "kmsrandom.h"

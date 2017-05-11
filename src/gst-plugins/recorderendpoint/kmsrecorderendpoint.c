@@ -18,10 +18,12 @@
 #include "config.h"
 #endif
 
+#define _GNU_SOURCE // Enable GNU Extensions: 'ALLPERMS' is not POSIX
+#include <sys/stat.h>
+
 #include <string.h>
 #include <gst/gst.h>
 #include <gst/pbutils/encoding-profile.h>
-#include <sys/stat.h>
 
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappsink.h>
