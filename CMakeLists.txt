@@ -3,16 +3,17 @@ cmake_minimum_required(VERSION 2.8)
 project("kms-jsonrpc")
 message(STATUS "Running CMake for project: ${PROJECT_NAME}")
 
-# Set GCC flags common to all projects
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c11   -Wall -Werror")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror")
-
-# Reduce default Release optimization level from -O3 to -O2
-set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -O2")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
-
 message("If KurentoHelpers is not found, you need to install 'kms-cmake-utils' from the Kurento repository")
 find_package(KurentoHelpers REQUIRED)
+
+# Set GCC flags common to all projects
+# Note - default flags added by dpkg-buildflags for C and C++:
+# -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2
+include(DpkgBuildFlags)
+get_dpkg_buildflags_c(DPKG_BUILDFLAGS_C)
+get_dpkg_buildflags_cxx(DPKG_BUILDFLAGS_CXX)
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${DPKG_BUILDFLAGS_C}   -std=c11   -Wall -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DPKG_BUILDFLAGS_CXX} -std=c++11 -Wall -Werror")
 
 include(KurentoGitHelpers)
 get_git_version(PROJECT_VERSION 1.1.3-dev)
