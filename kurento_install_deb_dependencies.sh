@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 if [ ! -s debian/control ] ; then
   echo "Warning, no debian/control file found"
