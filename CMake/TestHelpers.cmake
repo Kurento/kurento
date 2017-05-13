@@ -11,26 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-find_program(VALGRIND valgrind)
 
-set(DISABLE_TESTS FALSE CACHE BOOL "Disable \"make check\" target")
-set(GENERATE_TESTS FALSE CACHE BOOL "Add \"make check\" to target ALL")
+find_program(VALGRIND_EXECUTABLE valgrind DOC "valgrind program")
 
-function(create_test_target)
-  if(NOT TARGET test_target)
-    MESSAGE(STATUS "Adding custom target: 'test_target'")
+set(GENERATE_TESTS FALSE CACHE BOOL "Build all tests: add a `make check_build` call to normal `make` calls")
+set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
+set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
+
+function(create_check_target)
+  if(NOT TARGET check_build)
+    MESSAGE(STATUS "Adding custom target: 'check_build'")
     if(${GENERATE_TESTS})
-      add_custom_target(test_target ALL)
+      add_custom_target(check_build ALL)
     else()
-      add_custom_target(test_target)
+      add_custom_target(check_build)
     endif()
   endif()
   if(NOT TARGET check)
     MESSAGE(STATUS "Adding custom target: 'check'")
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} \${ARGS} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-    add_dependencies(check test_target)
+    add_dependencies(check check_build)
   endif()
 endfunction()
+
 
 function(create_valgrind_target)
   if(NOT TARGET valgrind)
@@ -39,29 +42,35 @@ function(create_valgrind_target)
   endif()
 endfunction()
 
-## This function simplifies tests creation.
-##
-## If the variable TEST_VARIABLES is defined with a list of names and values,
-## they will be passed to the test as environment variables.
-##
-## If Valgrind is available, a 'valgrind' target will be created for the test.
-## To add suppression files to Valgrind, just define SUPPRESSIONS variable
-## with the suppressions files.
-##
-## Do not forget to enable test on your top build directory, by calling enable_testing.
-##
-## Name : add_test_program
-## Params: test_name, sources
+
+# This function simplifies tests creation.
+#
+# Don't forget to enable CMake testing, by calling enable_testing() in the
+# source directory root.
+#
+# Input variables:
+# - TEST_VARIABLES: A list of names and values.
+#   Passed to the test as environment variables.
+#
+# If Valgrind is installed in the system, a 'valgrind' target will be created.
+#
+# Input variables:
+# - VALGRIND_TEST_VARIABLES: A list of names and values.
+#   Passed to Valgrind as environment variables.
+# - SUPPRESSIONS: A list of suppression files for Valgrind.
+# - VALGRIND_NUM_CALLERS: Maximum number of entries shown in stack traces
+#   (option "--num-callers").
 function(add_test_program test_name sources)
-  message(STATUS "Adding tests: ${test_name}")
+  message(STATUS "Adding test: ${test_name}")
 
   set(final_sources ${sources})
   foreach(arg ${ARGN})
     set(final_sources "${final_sources};${arg}")
   endforeach()
   add_executable(${test_name} EXCLUDE_FROM_ALL ${final_sources})
-  create_test_target()
-  add_dependencies(test_target ${test_name})
+
+  create_check_target()
+  add_dependencies(check_build ${test_name})
 
   if(NOT ${DISABLE_TESTS})
     add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
@@ -75,7 +84,7 @@ function(add_test_program test_name sources)
     COMMAND ${TEST_VARIABLES} ${CMAKE_CURRENT_BINARY_DIR}/${test_name} \${ARGS}
     DEPENDS ${test_name})
 
-  if(EXISTS ${VALGRIND})
+  if(VALGRIND_EXECUTABLE)
     set(SUPPS " ")
     foreach(SUPP ${SUPPRESSIONS})
       set(SUPPS "${SUPPS} --suppressions=${SUPP}")
@@ -85,11 +94,10 @@ function(add_test_program test_name sources)
     add_custom_target(${test_name}.valgrind
       DEPENDS ${test_name})
 
-    set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Number of callers for valgrind")
-
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
 "
-execute_process(COMMAND valgrind -q
+execute_process(COMMAND ${VALGRIND_EXECUTABLE}
+  --quiet
   ${SUPPS}
   --tool=memcheck --leak-check=full --trace-children=yes
   --leak-resolution=high --show-possibly-lost=yes
@@ -101,11 +109,11 @@ execute_process(COMMAND valgrind -q
 )
 
 if(NOT \"\${out}\" STREQUAL \"\")
-  message(\"Std out:\")
+  message(\"stdout:\")
   message(\"\${out}\")
 endif()
 if(NOT \"\${err}\" STREQUAL \"\")
-  message(\"Std err:\")
+  message(\"stderr:\")
   message(\"\${err}\")
 endif()
 
@@ -122,7 +130,7 @@ endif()
     )
 
     add_custom_command(TARGET ${test_name}.valgrind
-      COMMENT "Running valgrind for ${test_name}"
+      COMMENT "Running Valgrind for ${test_name}"
       COMMAND VALGRIND=TRUE G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_VARIABLES} ${VALGRIND_TEST_VARIABLES} ${CMAKE_COMMAND} -DARGS=\${ARGS} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
     )
 

@@ -27,10 +27,7 @@
 # limitations under the License.
 #=============================================================================
 
-find_program(DBF_EXECUTABLE
-  dpkg-buildflags
-  DOC "dpkg-buildflags command"
-)
+find_program(DBF_EXECUTABLE dpkg-buildflags DOC "dpkg-buildflags program")
 mark_as_advanced(DBF_EXECUTABLE)
 
 function(get_dpkg_buildflags_c var)
