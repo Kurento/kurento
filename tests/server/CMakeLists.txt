@@ -1,8 +1,8 @@
-set (TEST_PROPERTIES
-  GST_PLUGIN_PATH=${CMAKE_BINARY_DIR}
+set(TEST_VARIABLES
+  "GST_PLUGIN_PATH=${CMAKE_BINARY_DIR}"
 )
 
-add_test_program (test_filters_constructors constructors.cpp)
+add_test_program(test_filters_constructors constructors.cpp)
 add_dependencies(test_filters_constructors
   ${LIBRARY_NAME}module
   ${LIBRARY_NAME}impl
@@ -12,7 +12,7 @@ add_dependencies(test_filters_constructors
   movementdetector
   opencvfilter
 )
-set_property (TARGET test_filters_constructors
+set_property(TARGET test_filters_constructors
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}/../..
     ${JSONRPC_INCLUDE_DIRS}
