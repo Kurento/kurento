@@ -358,6 +358,10 @@ def compile_project(args):
                 dependency["commit"] = str(os.popen(
                     "git ls-remote " + git_url + " HEAD").read(7))
 
+                print("Dependency '" + dependency["name"] + "'"
+                      " without specific version or commit;"
+                      " using Git HEAD: " + dependency["commit"])
+
             #J
             # Load the file "debian/control" from the remote repo
             #
@@ -377,12 +381,15 @@ def compile_project(args):
 
             if not check_dependency_installed(cache, dependency,
                                               debian_control_file):
+
+                print("Dependency '" + dependency["name"] + "'"
+                      " is not installed; build and install it")
+
                 os.chdir("..")
                 repo = clone_repo(args.base_url, sub_project_name)
                 os.chdir(sub_project_name)
 
-                print("dependency " + dependency["name"]
-                      + " not installed, compile it")
+
                 if (dependency["commit"] != None
                         and str(repo.commit()) != dependency["commit"]
                         and os.system("git checkout " + dependency["commit"]) != 0):
