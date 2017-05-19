@@ -10,6 +10,7 @@ echo "Preparing environment..."
 
 DIST=$(lsb_release -c)
 DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
+export DEBIAN_FRONTEND=noninteractive
 
 # Configure SSH keys
 if [ -f "$GIT_KEY" ]; then
@@ -29,20 +30,18 @@ EOF
     fi
 fi
 
-if [ "$DIST" = "xenial" ]; then
-  if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then
-    echo "AccessKeyId = $UBUNTU_PRIV_S3_ACCESS_KEY_ID
-    SecretAccessKey = $UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
-    Token = ''" >/etc/apt/s3auth.conf
-  fi
-
-  apt-get install -y wget
-  wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
-  dpkg -i *deb
-  rm *deb
-  wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add -
-  apt-get update
+if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then
+  echo "AccessKeyId = $UBUNTU_PRIV_S3_ACCESS_KEY_ID
+  SecretAccessKey = $UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
+  Token = ''" >/etc/apt/s3auth.conf
 fi
+
+apt-get install -y wget
+wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
+dpkg -i *deb
+rm *deb
+wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add -
+apt-get update
 
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
