@@ -105,11 +105,12 @@ def install_dependency(cache, dep):
 
         # Install selected dependency version
         print("Installing " + pkg_name + version)
-        if os.system("DEBIAN_FRONTEND=noninteractive sudo apt-get install"
+        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
+        if os.system("sudo apt-get install"
                      " --allow-change-held-packages"
                      " --allow-downgrades -f -y -q "
                      + pkg_name + version) != 0:
-            os.system("DEBIAN_FRONTEND=noninteractive sudo apt-get install"
+            os.system("sudo apt-get install"
                       " --force-yes -f -y -q "
                       + pkg_name + version)
         cache = apt.Cache()
@@ -255,11 +256,12 @@ def generate_debian_package(args, config):
         exit(1)
 
     if os.system("sudo dpkg -i ../*" + new_version + "_*.deb") != 0:
+        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
         if os.system(
-                "DEBIAN_FRONTEND=noninteractive sudo apt-get install"
+                "sudo apt-get install"
                 " --allow-change-held-packages"
                 " --allow-downgrades -f -y -q") != 0:
-            os.system("DEBIAN_FRONTEND=noninteractive sudo apt-get install --force-yes -f -y -q")
+            os.system("sudo apt-get install --force-yes -f -y -q")
         if os.system("sudo dpkg -i ../*" + new_version + "_*.deb") != 0:
             print("Packages are not installable")
             exit(1)
