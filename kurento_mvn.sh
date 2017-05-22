@@ -38,6 +38,9 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 #    DEFAULT: none
 #
 
+export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
+export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
+
 # Set default environment
 [ -z "$MAVEN_GOALS" ] && MAVEN_GOALS="verify"
 [ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
