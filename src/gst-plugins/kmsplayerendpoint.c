@@ -100,6 +100,7 @@ enum
   PROP_VIDEO_DATA,
   PROP_POSITION,
   PROP_NETWORK_CACHE,
+  PROP_PIPELINE,
   N_PROPERTIES
 };
 
@@ -254,6 +255,9 @@ kms_player_endpoint_get_property (GObject * object, guint property_id,
       g_value_set_int64 (value, position);
       break;
     }
+    case PROP_PIPELINE:
+      g_value_set_object (value, playerendpoint->priv->pipeline);
+      break;
     case PROP_NETWORK_CACHE:
       g_value_set_int (value, playerendpoint->priv->network_cache);
       break;
@@ -1091,6 +1095,11 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
           0, G_MAXINT, NETWORK_CACHE_DEFAULT,
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
+  g_object_class_install_property (gobject_class, PROP_PIPELINE,
+      g_param_spec_object ("pipeline", "pipeline",
+          "Players private pipeline",
+          GST_TYPE_ELEMENT, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
   kms_player_endpoint_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
       G_TYPE_FROM_CLASS (klass),
@@ -1193,8 +1202,13 @@ kms_player_endpoint_post_media_error (gpointer d)
 {
   ErrorData *data = d;
 
-  gst_element_post_message (GST_ELEMENT (data->self),
+  gboolean ok = gst_element_post_message (GST_ELEMENT (data->self),
       gst_message_ref (data->message));
+
+  if (!ok) {
+    GST_ERROR ("gst_element_post_message() FAILED");
+    gst_message_unref (data->message);
+  }
 
   return G_SOURCE_REMOVE;
 }
@@ -1269,6 +1283,12 @@ element_added (GstBin * bin, GstElement * element, gpointer data)
   }
 }
 
+static gboolean
+process_bus_message (GstBus * bus, GstMessage * message, gpointer data)
+{
+  return TRUE;
+}
+
 static void
 kms_player_endpoint_init (KmsPlayerEndpoint * self)
 {
@@ -1298,6 +1318,10 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
       G_CALLBACK (source_setup_cb), self);
   g_signal_connect (self->priv->uridecodebin, "element-added",
       G_CALLBACK (element_added), self);
+
+  /* Eat all async messages such as buffering messages */
+  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
+  gst_bus_add_watch (bus, process_bus_message, NULL);
 
   g_object_set (self->priv->uridecodebin, "download", TRUE, NULL);
 

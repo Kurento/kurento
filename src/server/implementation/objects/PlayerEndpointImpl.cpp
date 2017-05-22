@@ -19,6 +19,7 @@
 #include "VideoInfo.hpp"
 #include <PlayerEndpointImplFactory.hpp>
 #include "PlayerEndpointImpl.hpp"
+#include <DotGraph.hpp>
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 #include <gst/gst.h>
@@ -31,6 +32,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define FACTORY_NAME "playerendpoint"
 #define VIDEO_DATA "video-data"
 #define POSITION "position"
+#define PIPELINE "pipeline"
 #define SET_POSITION "set-position"
 #define NS_TO_MS 1000000
 
@@ -154,6 +156,15 @@ int64_t PlayerEndpointImpl::getPosition ()
   g_object_get (G_OBJECT (element), POSITION, &position, NULL);
 
   return position / NS_TO_MS;
+}
+
+std::string PlayerEndpointImpl::getElementGstreamerDot ()
+{
+  GValue *pipeline;
+  g_object_get (G_OBJECT (element), PIPELINE, &pipeline, NULL);
+  return generateDotGraph (GST_BIN (pipeline),
+                           std::shared_ptr <GstreamerDotDetails> (new GstreamerDotDetails (
+                                 GstreamerDotDetails::SHOW_VERBOSE) ) );
 }
 
 void PlayerEndpointImpl::setPosition (int64_t position)
