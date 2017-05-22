@@ -46,7 +46,6 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
 # Do not compile if file ignore has been added
 if [ ! -f ignore ]; then
-  cat /opt/kurento-settings.xml
   mvn --fail-at-end --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS $MAVEN_OPTIONS
 else
   exit 0
