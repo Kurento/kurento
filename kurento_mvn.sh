@@ -38,9 +38,6 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 #    DEFAULT: none
 #
 
-export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
-export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
-
 # Set default environment
 [ -z "$MAVEN_GOALS" ] && MAVEN_GOALS="verify"
 [ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
@@ -49,6 +46,7 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
 # Do not compile if file ignore has been added
 if [ ! -f ignore ]; then
+  cat /opt/kurento-settings.xml
   mvn --fail-at-end --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS $MAVEN_OPTIONS
 else
   exit 0
