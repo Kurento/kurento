@@ -31,6 +31,10 @@ if [ -n "$MAVEN_SETTINGS" ];then
 fi
 [ -z "$SIGN_ARTIFACTS" ] && SIGN_ARTIFACTS="true"
 
+# needed env vars
+export AWS_ACCESS_KEY_ID=$UBUNTU_PRIV_S3_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
+
 # Maven options
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
 
