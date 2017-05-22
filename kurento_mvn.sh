@@ -46,6 +46,8 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
 # Do not compile if file ignore has been added
 if [ ! -f ignore ]; then
+  export AWS_ACCESS_KEY_ID=$UBUNTU_PRIV_S3_ACCESS_KEY_ID
+  export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
   mvn --fail-at-end -X --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS $MAVEN_OPTIONS
 else
   exit 0
