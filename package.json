@@ -1,6 +1,6 @@
 {
   "name": "kurento-utils",
-  "version": "6.6.2-dev",
+  "version": "6.6.2",
   "description": "Kurento Utilities",
   "homepage": "http://www.kurento.org",
   "license": "ALv2",
