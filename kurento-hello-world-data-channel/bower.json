@@ -1,6 +1,6 @@
 {
   "name": "kurento-hello-world",
-  "version": "6.6.1",
+  "version": "6.6.2-dev",
   "description": "Kurento Browser JavaScript Tutorial 1: Hello World (WebRTC in loopback)",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -23,7 +23,7 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.2.3",
     "adapter.js": "v0.2.9",
-    "kurento-client": "6.6.0",
-    "kurento-utils": "6.6.2"
+    "kurento-client": "master",
+    "kurento-utils": "master"
   }
 }
