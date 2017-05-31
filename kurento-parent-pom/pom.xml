@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>1.0.3</version>
+		<version>1.0.4-SNAPSHOT</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.6.2</version>
+	<version>6.6.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Kurento Parent POM</name>
@@ -68,22 +68,22 @@
 
 	<properties>
 		<!-- Kurento versions -->
-		<version.kurento-java>6.6.2</version.kurento-java>
+		<version.kurento-java>6.6.3-SNAPSHOT</version.kurento-java>
 
-		<version.kurento-chroma>6.6.0</version.kurento-chroma>
-		<version.kurento-imageendpoint>6.6.0</version.kurento-imageendpoint>
-		<version.kurento-platedetector>6.6.0</version.kurento-platedetector>
-		<version.kurento-pointerdetector>6.6.0</version.kurento-pointerdetector>
-		<version.kurento-markerdetector>6.6.0</version.kurento-markerdetector>
-		<version.kurento-crowddetector>6.6.0</version.kurento-crowddetector>
-		<version.kurento-facesegmentator>6.6.0</version.kurento-facesegmentator>
-		<version.kurento-backgroundextractor>6.5.0</version.kurento-backgroundextractor>
-		<version.kms-api-core>6.6.0</version.kms-api-core>
-		<version.kms-api-elements>6.6.0</version.kms-api-elements>
-		<version.kms-api-filters>6.6.0</version.kms-api-filters>
-		<version.plumber-endpoint>6.6.0</version.plumber-endpoint>
-		<version.kurento-maven-plugin>2.0.2</version.kurento-maven-plugin>
-		<version.kurento-utils-js>6.6.2</version.kurento-utils-js>
+		<version.kurento-chroma>6.6.1-SNAPSHOT</version.kurento-chroma>
+		<version.kurento-imageendpoint>6.6.1-SNAPSHOT</version.kurento-imageendpoint>
+		<version.kurento-platedetector>6.6.1-SNAPSHOT</version.kurento-platedetector>
+		<version.kurento-pointerdetector>6.6.1-SNAPSHOT</version.kurento-pointerdetector>
+		<version.kurento-markerdetector>6.6.1-SNAPSHOT</version.kurento-markerdetector>
+		<version.kurento-crowddetector>6.6.1-SNAPSHOT</version.kurento-crowddetector>
+		<version.kurento-facesegmentator>6.6.1-SNAPSHOT</version.kurento-facesegmentator>
+		<version.kurento-backgroundextractor>6.5.1-SNAPSHOT</version.kurento-backgroundextractor>
+		<version.kms-api-core>6.6.1-SNAPSHOT</version.kms-api-core>
+		<version.kms-api-elements>6.6.1-SNAPSHOT</version.kms-api-elements>
+		<version.kms-api-filters>6.6.1-SNAPSHOT</version.kms-api-filters>
+		<version.plumber-endpoint>6.6.1-SNAPSHOT</version.plumber-endpoint>
+		<version.kurento-maven-plugin>2.0.3-SNAPSHOT</version.kurento-maven-plugin>
+		<version.kurento-utils-js>6.6.3-SNAPSHOT</version.kurento-utils-js>
 
 
 		<!-- External versions -->
