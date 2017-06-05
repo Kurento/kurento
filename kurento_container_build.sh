@@ -85,7 +85,7 @@ if [ "$PUSH_IMAGES" == "yes" ]; then
   docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:${TAG}-${commit}
   docker push $IMAGE_NAME:${TAG}-${commit}
 
-  docker tag $IMAGE:${TAG}-{commit} $IMAGE_NAME:$TAG
+  docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:$TAG
   docker push $IMAGE_NAME:$TAG
 
   for EXTRA_TAG in $EXTRA_TAGS
