@@ -80,7 +80,7 @@ echo "#### SPACE AVAILABLE"
 df -h
 
 # Push
-if [ "$PUSH_IMAGES" = "yes" ]; then
+if [ "$PUSH_IMAGES" == "yes" ]; then
   docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD"
   docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:${TAG}-${commit}
   docker push $IMAGE_NAME:${TAG}-${commit}
