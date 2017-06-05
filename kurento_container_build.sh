@@ -46,6 +46,8 @@ commit=$(git rev-parse --short HEAD)
 echo "Extra tags: ${image_extra_tags[@]}"
 [ -n "$EXTRA_TAGS" ] || EXTRA_TAGS="${image_extra_tags[@]}"
 
+IMAGE=$(echo $IMAGE_NAME | cut -d/ -f2)
+
 # If there's a generate.sh script, assume we need to dynamically generate the Dockerfile using it
 # This is the case of selenium images
 if [ -f generate.sh ]; then
@@ -59,16 +61,16 @@ for BUILD_ARG in $BUILD_ARGS
 do
   build_args+=("--build-arg $BUILD_ARG")
 done
-docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE_NAME:${TAG}-${commit} -f $DOCKERFILE $FOLDER || exit 1
+docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE:${TAG}-${commit} -f $DOCKERFILE $FOLDER || exit 1
 
 # Tag the resulting image using the original tag
-docker tag -f $IMAGE_NAME:${TAG}-${commit} $IMAGE_NAME:$TAG
+docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:$TAG
 
 # Apply any additional tags required
 echo "Extra tags: $EXTRA_TAGS"
 for EXTRA_TAG in $EXTRA_TAGS
 do
-  docker tag -f $IMAGE_NAME:$TAG-${commit} $IMAGE_NAME:$EXTRA_TAG
+  docker tag $IMAGE:$TAG-${commit} $IMAGE_NAME:$EXTRA_TAG
 done
 
 echo "### DOCKER IMAGES"
@@ -79,17 +81,21 @@ df -h
 
 # Push
 if [ "$PUSH_IMAGES" = "yes" ]; then
-  docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD" -e "$KURENTO_EMAIL" $KURENTO_REGISTRY_URI
-  docker tag -f $IMAGE_NAME:${TAG}-${commit} $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
-  docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
+  docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD"
+  docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:${TAG}-${commit}
+  docker push $IMAGE_NAME:${TAG}-${commit}
 
-  docker tag -f $IMAGE_NAME:${TAG} $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
-  docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
+  docker tag $IMAGE:${TAG}-{commit} $IMAGE_NAME:$TAG
+  docker push $IMAGE_NAME:$TAG
+
+  # latest tag
+  docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:latest
+  docker push $IMAGE_NAME:latest
 
   for EXTRA_TAG in $EXTRA_TAGS
   do
-    docker tag -f $IMAGE_NAME:$EXTRA_TAG $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
-    docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
+    docker tag $IMAGE:$EXTRA_TAG $IMAGE_NAME:$EXTRA_TAG
+    docker push $IMAGE_NAME:$EXTRA_TAG
   done
 
   docker logout
