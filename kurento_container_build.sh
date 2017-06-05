@@ -90,7 +90,7 @@ if [ "$PUSH_IMAGES" == "yes" ]; then
 
   for EXTRA_TAG in $EXTRA_TAGS
   do
-    docker tag $IMAGE:$EXTRA_TAG $IMAGE_NAME:$EXTRA_TAG
+    docker tag $IMAGE:$TAG $IMAGE_NAME:$EXTRA_TAG
     docker push $IMAGE_NAME:$EXTRA_TAG
   done
 
