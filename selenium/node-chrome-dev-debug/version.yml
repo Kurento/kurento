@@ -1,0 +1,3 @@
+image:
+  name: kurento/node-chrome-dev-debug
+  version: 2.47.1-dnat
