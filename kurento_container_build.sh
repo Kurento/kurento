@@ -61,16 +61,17 @@ for BUILD_ARG in $BUILD_ARGS
 do
   build_args+=("--build-arg $BUILD_ARG")
 done
-docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE:${TAG}-${commit} -f $DOCKERFILE $FOLDER || exit 1
+docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE -f $DOCKERFILE $FOLDER || exit 1
 
 # Tag the resulting image using the original tag
-docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:$TAG
+docker tag $IMAGE $IMAGE_NAME:$TAG
+docker tag $IMAGE $IMAGE_NAME:$TAG-${commit}
 
 # Apply any additional tags required
 echo "Extra tags: $EXTRA_TAGS"
 for EXTRA_TAG in $EXTRA_TAGS
 do
-  docker tag $IMAGE:$TAG-${commit} $IMAGE_NAME:$EXTRA_TAG
+  docker tag $IMAGE $IMAGE_NAME:$EXTRA_TAG
 done
 
 echo "### DOCKER IMAGES"
@@ -82,15 +83,15 @@ df -h
 # Push
 if [ "$PUSH_IMAGES" == "yes" ]; then
   docker login -u "$KURENTO_DOCKERHUB_USER" -p "$KURENTO_DOCKERHUB_PASSWD" -e "$KURENTO_EMAIL"
-  docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:${TAG}-${commit}
+  #docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:${TAG}-${commit}
   docker push $IMAGE_NAME:${TAG}-${commit}
 
-  docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:$TAG
+  #docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:$TAG
   docker push $IMAGE_NAME:$TAG
 
   for EXTRA_TAG in $EXTRA_TAGS
   do
-    docker tag $IMAGE:$TAG $IMAGE_NAME:$EXTRA_TAG
+    #docker tag $IMAGE:$TAG $IMAGE_NAME:$EXTRA_TAG
     docker push $IMAGE_NAME:$EXTRA_TAG
   done
 
