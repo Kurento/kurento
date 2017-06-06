@@ -1,0 +1,4 @@
+image:
+  name: kurento/dev-media-server
+  version: trusty-jdk-8
+  
