@@ -1,5 +1,5 @@
 image:
-  name: kurento/kurento-media-server-dev-public
+  name: kurento/kurento-media-server-dev
   version: $KMS_VERSION
   extra_tags:
     - latest
