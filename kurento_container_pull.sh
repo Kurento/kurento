@@ -1,65 +1,51 @@
 #!/bin/bash -x
 
-docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD" -e "$KURENTO_EMAIL" $KURENTO_REGISTRY_URI
-
-pullAndTag() {
-	echo "Pulling $KURENTO_REGISTRY_URI/$1"
-	docker pull $KURENTO_REGISTRY_URI/$1
-	echo "Tagging $KURENTO_REGISTRY_URI/$1 as $1"
-	docker tag $KURENTO_REGISTRY_URI/$1 $1
-}
-
 # Internal (private) images
 [ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.53.0"
-[ -n "$KURENTO_REGISTRY_URI" ] || KURENTO_REGISTRY_URI="$KURENTO_REGISTRY_URI"
 
 # dev-integration images (for Java & JS)
 NODE_VERSIONS="0.12 4.x 5.x"
 for NODE_VERSION in $NODE_VERSIONS
 do
-	pullAndTag kurento/dev-integration:jdk-7-node-$NODE_VERSION
-	pullAndTag kurento/dev-integration:jdk-8-node-$NODE_VERSION
+	docker pull kurento/dev-integration:jdk-7-node-$NODE_VERSION
+	docker pull kurento/dev-integration:jdk-8-node-$NODE_VERSION
 done
-pullAndTag kurento/dev-integration:jdk-8-node-6.x
-pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
+docker pull kurento/dev-integration:jdk-8-node-6.x
+docker pull kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
 
 # kurento-media-server development version with core dump & public modules
-pullAndTag kurento/kurento-media-server-dev:latest
+docker pull kurento/kurento-media-server-dev:latest
 
 # coturn image
-pullAndTag kurento/coturn:latest
+docker pull kurento/coturn:latest
 
 # svn-client to extract files from svn into a docker host
-pullAndTag kurento/svn-client:1.0.0
+docker pull kurento/svn-client:1.0.0
 
 # dev-documentation images (for documentation projects)
-pullAndTag kurento/dev-documentation:1.0.0-jdk-7
-pullAndTag kurento/dev-documentation:1.0.0-jdk-8
+docker pull kurento/dev-documentation:1.0.0-jdk-7
+docker pull kurento/dev-documentation:1.0.0-jdk-8
 
 # dev-media-server images (for media server projects)
-pullAndTag kurento/dev-media-server:trusty-jdk-7
-pullAndTag kurento/dev-media-server:trusty-jdk-8
-pullAndTag kurento/dev-media-server:xenial-jdk-8
-
-# dev-chef image
-pullAndTag kurento/dev-chef:1.0.0
+docker pull kurento/dev-media-server:trusty-jdk-7
+docker pull kurento/dev-media-server:trusty-jdk-8
+docker pull kurento/dev-media-server:xenial-jdk-8
 
 # Selenium images
 echo "Pulling images for selenium version $SELENIUM_VERSION"
-pullAndTag selenium/base:$SELENIUM_VERSION
-pullAndTag selenium/node-base:$SELENIUM_VERSION
-pullAndTag selenium/hub:$SELENIUM_VERSION
+docker pull selenium/base:$SELENIUM_VERSION
+docker pull selenium/node-base:$SELENIUM_VERSION
+docker pull selenium/hub:$SELENIUM_VERSION
+
 for image in node-chrome node-firefox node-chrome-beta node-chrome-dev node-firefox-beta
 do
-	pullAndTag kurento/$image:$SELENIUM_VERSION
-	pullAndTag kurento/$image:latest
-	pullAndTag kurento/$image-debug:$SELENIUM_VERSION
-	pullAndTag kurento/$image-debug:latest
-	pullAndTag kurento/$image-debug:$SELENIUM_VERSION-dnat
-	pullAndTag kurento/$image-debug:latest-dnat
+	docker pull kurento/$image:$SELENIUM_VERSION
+	docker pull kurento/$image:latest
+	docker pull kurento/$image-debug:$SELENIUM_VERSION
+	docker pull kurento/$image-debug:latest
+	docker pull kurento/$image-debug:$SELENIUM_VERSION-dnat
+	docker pull kurento/$image-debug:latest-dnat
 done
-
-
 
 # Image to record vnc sessions
 docker pull softsam/vncrecorder:latest
@@ -85,7 +71,5 @@ if [ $NUM_IMAGES -gt $KEEP_IMAGES ]; then
 			done
     done
 fi
-
-docker logout
 
 exit $status
