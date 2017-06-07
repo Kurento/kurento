@@ -329,14 +329,16 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
   guint len;
 
   if (sdp_sess->local_sdp == NULL) {
-    GST_INFO_OBJECT (self,
-        "Cannot add remote candidate until local SDP is generated");
+    GST_WARNING_OBJECT (self,
+        "Cannot add remote candidate until local SDP is generated: '%s'",
+        kms_ice_candidate_get_candidate (candidate));
     return TRUE;
   }
 
   if (!self->gather_started) {
-    GST_INFO_OBJECT (self,
-        "Cannot add remote candidate until gathering candidates starts.");
+    GST_WARNING_OBJECT (self,
+        "Cannot add remote candidate until ICE Gathering is started: '%s'",
+        kms_ice_candidate_get_candidate (candidate));
     return TRUE;                /* We do not know if the candidate is valid until it is set */
   }
 
