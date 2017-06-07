@@ -56,6 +56,13 @@ if [ -f generate.sh ]; then
   ./generate.sh ${image_parent_version}
 fi
 
+# If there's a kurento-generate.sh script, assume we need to fix the FROM line inside the Dockerfie
+# in order to use our own generates Docker Images
+if [ -f kurento-generate.sh ]; then
+  echo "Fixing FROM line in Dockerfile..."
+  ./kurento-generate.sh 
+fi
+
 # Build using a tag composed of the original tag and the short commit id
 for BUILD_ARG in $BUILD_ARGS
 do
