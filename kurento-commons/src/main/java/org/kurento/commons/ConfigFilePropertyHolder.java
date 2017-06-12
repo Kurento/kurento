@@ -30,6 +30,7 @@ import org.kurento.commons.PropertiesManager.PropertyHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -79,9 +80,7 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
     lastLoadedConfigFilePath = configFilePath;
 
     // FIXME shouldn't this be the first sentence in the method?
-    if (configFilePath == null) {
-        throw new AssertionError("configFilePath paramter must be not null.");
-    }
+    Preconditions.checkNotNull(configFilePath, "configFilePath paramter must be not null.");
 
     log.debug("Using configuration file in path '{}' ({})", configFilePath,
         configFilePath.getClass().getCanonicalName());
