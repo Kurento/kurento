@@ -121,7 +121,7 @@
 		<version.eclipse.aether>1.1.0</version.eclipse.aether>
 		<version.findbugs>3.0.1</version.findbugs>
 		<version.google.gson>2.5</version.google.gson>
-		<version.google.guava>19.0</version.google.guava>
+		<version.google.guava>22.0</version.google.guava>
 		<version.google.youtube>v3-rev153-1.21.0</version.google.youtube>
 		<version.google.http>1.21.0</version.google.http>
 		<version.google.oauth>1.21.0</version.google.oauth>
@@ -146,15 +146,15 @@
 		<version.websocket-api>1.1</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
-		<selenium-java.version>2.53.0</selenium-java.version>
-		<xml-apis.version>2.0.2</xml-apis.version>
+		<selenium-java.version>3.4.0</selenium-java.version>
+		<xml-apis.version>1.4.01</xml-apis.version>
 		<jmeter-maven-plugin.version>1.9.0</jmeter-maven-plugin.version>
 		<freemarker.version>2.3.23</freemarker.version>
 		<ApacheJMeter_core.version>2.11</ApacheJMeter_core.version>
 		<overthere.version>4.3.2</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
 		<version.ocr>3.04.01-1.2</version.ocr>
-		<webdrivermanager.version>1.4.9</webdrivermanager.version>
+		<webdrivermanager.version>1.6.2</webdrivermanager.version>
 		<docker-java.version>3.0.6</docker-java.version>
 		<jackson.version>2.7.4</jackson.version>
 		<assertj.version>2.5.0</assertj.version>
@@ -737,6 +737,21 @@
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-java</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-api</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-remote-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-chrome-driver</artifactId>
 				<version>${selenium-java.version}</version>
 			</dependency>
 			<dependency>
