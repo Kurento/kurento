@@ -1292,6 +1292,7 @@
 							</rules>
 						</configuration>
 					</execution>
+					<!--
 					<execution>
 						<id>enforce-bytecode-version</id>
 						<goals>
@@ -1306,6 +1307,7 @@
 							<fail>true</fail>
 						</configuration>
 					</execution>
+					 -->
 					<execution>
 						<id>enforce-ban-duplicate-classes</id>
 						<goals>
