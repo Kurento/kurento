@@ -33,7 +33,7 @@
 #include "kms-webrtc-data-marshal.h"
 
 #define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
-#define PLUGIN_NAME "kmswebrtcendpoint"
+#define PLUGIN_NAME "webrtcendpoint"
 
 #define GST_CAT_DEFAULT kms_webrtc_endpoint_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
