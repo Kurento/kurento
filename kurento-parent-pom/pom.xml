@@ -154,7 +154,7 @@
 		<overthere.version>4.3.2</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
 		<version.ocr>3.04.01-1.2</version.ocr>
-		<webdrivermanager.version>1.4.9</webdrivermanager.version>
+		<webdrivermanager.version>1.6.2</webdrivermanager.version>
 		<docker-java.version>3.0.6</docker-java.version>
 		<jackson.version>2.7.4</jackson.version>
 		<assertj.version>2.5.0</assertj.version>
@@ -737,6 +737,21 @@
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-java</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-api</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-remote-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-chrome-driver</artifactId>
 				<version>${selenium-java.version}</version>
 			</dependency>
 			<dependency>

@@ -408,7 +408,7 @@ public class Docker implements Closeable {
 
   public synchronized String startHub(String hubName, String imageId) {
     // Create hub if not exist
-    createContainer(imageId, hubName, false, "GRID_TIMEOUT=3600000");
+    createContainer(imageId, hubName, false, "GRID_TIMEOUT=30");
 
     // Start hub if stopped
     startContainer(hubName);
@@ -435,7 +435,8 @@ public class Docker implements Closeable {
 
       mountDefaultFolders(createContainerCmd, configFile);
 
-      createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp });
+      // TODO make this port configurable
+      createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp, "HUB_PORT_4444_TCP_PORT=4444" });
 
       createContainerCmd.exec();
 

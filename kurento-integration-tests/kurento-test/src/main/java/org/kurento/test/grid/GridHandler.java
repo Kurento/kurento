@@ -240,6 +240,7 @@ public class GridHandler {
       node.startSsh();
 
       final String chromeDriverSource = System.getProperty("webdriver.chrome.driver");
+
       final Class<?>[] classpath = { GridLauncher.class, ImmutableList.class, HttpListener.class,
           NetworkUtils.class, WebDriverException.class, LogFactory.class, HttpServlet.class,
           ChromeDriver.class, FirefoxDriver.class, JsonElement.class, HttpEntity.class,
