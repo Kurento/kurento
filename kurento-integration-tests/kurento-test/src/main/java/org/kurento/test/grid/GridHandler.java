@@ -71,6 +71,8 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.utils.Randomizer;
 import org.kurento.test.utils.Shell;
 import org.kurento.test.utils.SshConnection;
+import org.openqa.grid.selenium.GridLauncher;
+import org.openqa.jetty.http.HttpListener;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -239,8 +241,7 @@ public class GridHandler {
 
       final String chromeDriverSource = System.getProperty("webdriver.chrome.driver");
 
-      // TODO review this class list
-      final Class<?>[] classpath = { ImmutableList.class,
+      final Class<?>[] classpath = { GridLauncher.class, ImmutableList.class, HttpListener.class,
           NetworkUtils.class, WebDriverException.class, LogFactory.class, HttpServlet.class,
           ChromeDriver.class, FirefoxDriver.class, JsonElement.class, HttpEntity.class,
           HttpClient.class, WebDriverEventListener.class, ExecuteWatchdog.class };

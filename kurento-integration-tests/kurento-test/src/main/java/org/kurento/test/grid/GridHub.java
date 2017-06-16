@@ -17,7 +17,7 @@
 
 package org.kurento.test.grid;
 
-import org.openqa.grid.internal.utils.configuration.GridHubConfiguration;
+import org.openqa.grid.internal.utils.GridHubConfiguration;
 import org.openqa.grid.web.Hub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +46,9 @@ public class GridHub {
 
   public void start() throws Exception {
     GridHubConfiguration config = new GridHubConfiguration();
-    config.host = bindIp;
-    config.port = this.port;
-    config.timeout = getTimeout();
+    config.setHost(bindIp);
+    config.setPort(this.port);
+    config.setTimeout(getTimeout());
 
     hub = new Hub(config);
     log.debug("Starting hub on {}:{}", this.bindIp, this.port);
