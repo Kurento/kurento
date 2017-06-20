@@ -278,8 +278,10 @@ public class Browser implements Closeable {
 
   private void createChromeBrowser(DesiredCapabilities capabilities) throws MalformedURLException {
 
-    // Chrome driver
-    ChromeDriverManager.getInstance().setup();
+    if (scope == BrowserScope.LOCAL) {
+      // Management of chromedriver
+      ChromeDriverManager.getInstance().setup();
+    }
 
     // Chrome options
     ChromeOptions options = new ChromeOptions();
