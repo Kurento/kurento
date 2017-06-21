@@ -431,10 +431,6 @@ public class Docker implements Closeable {
       CreateContainerCmd createContainerCmd =
           getClient().createContainerCmd(imageId).withName(nodeName);
 
-      String configFile = generateConfigFile(id, browserType);
-
-      mountDefaultFolders(createContainerCmd, configFile);
-
       // TODO make this port configurable
       createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp, "HUB_PORT_4444_TCP_PORT=4444" });
 
@@ -462,10 +458,6 @@ public class Docker implements Closeable {
       CreateContainerCmd createContainerCmd =
           getClient().createContainerCmd(imageId).withName(nodeName);
 
-      String configFile = generateConfigFile(id, browserType);
-
-      mountDefaultFolders(createContainerCmd, configFile);
-
       createContainerCmd.withNetworkMode("none");
 
       Map<String, String> labels = new HashMap<>();
@@ -487,49 +479,6 @@ public class Docker implements Closeable {
 
     // Start node if stopped
     startContainer(nodeName);
-  }
-
-  private String generateConfigFile(String id, BrowserType browserType) {
-
-    try {
-
-      String workspace = PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_PROP,
-          TestConfiguration.TEST_WORKSPACE_DEFAULT);
-
-      Path config = Files.createTempFile(Paths.get(workspace), "", "-config.json",
-          PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-r--r--")));
-
-      String browserName1;
-      String browserName2;
-
-      if (browserType == BrowserType.CHROME) {
-        browserName1 = "*googlechrome";
-        browserName2 = "chrome";
-      } else if (browserType == BrowserType.FIREFOX) {
-        browserName1 = "*firefox";
-        browserName2 = "firefox";
-      } else {
-        throw new KurentoException("Unsupported browser type: " + browserType);
-      }
-
-      try (Writer w = Files.newBufferedWriter(config, StandardCharsets.UTF_8)) {
-        w.write("{\n" + "  \"capabilities\": [\n" + "    {\n" + "      \"browserName\": \""
-            + browserName1 + "\",\n" + "      \"maxInstances\": 1,\n"
-            + "      \"seleniumProtocol\": \"Selenium\",\n" + "      \"applicationName\": \"" + id
-            + "\"\n" + "    },\n" + "    {\n" + "      \"browserName\": \"" + browserName2 + "\",\n"
-            + "      \"maxInstances\": 1,\n" + "      \"seleniumProtocol\": \"WebDriver\",\n"
-            + "      \"applicationName\": \"" + id + "\"\n" + "    }\n" + "  ],\n"
-            + "  \"configuration\": {\n"
-            + "    \"proxy\": \"org.openqa.grid.selenium.proxy.DefaultRemoteProxy\",\n"
-            + "    \"maxSession\": 1,\n" + "    \"port\": 5555,\n" + "    \"register\": true,\n"
-            + "    \"registerCycle\": 5000\n" + "  }\n" + "}");
-      }
-
-      return config.toAbsolutePath().toString();
-
-    } catch (IOException e) {
-      throw new KurentoException("Exception creating config file", e);
-    }
   }
 
   public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
