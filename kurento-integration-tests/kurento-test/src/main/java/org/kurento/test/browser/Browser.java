@@ -88,7 +88,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
@@ -364,7 +363,8 @@ public class Browser implements Closeable {
     profile.setPreference("media.navigator.permission.disabled", true);
 
     // This allows to load pages with self-signed certificates
-    capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+    capabilities.setCapability("acceptInsecureCerts", true);
+    profile.setAcceptUntrustedCertificates(true);
 
     capabilities.setCapability(FirefoxDriver.PROFILE, profile);
     capabilities.setBrowserName(DesiredCapabilities.firefox().getBrowserName());
