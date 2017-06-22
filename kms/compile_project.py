@@ -167,12 +167,17 @@ def get_debian_version(args, dist):
                        + "~" + now.strftime("%Y%m%d%H%M%S")
                        + "." + num_commits
                        + "." + current_commit)
-    # else:
-    #     # This is a Release build
-    #     version = (version
-    #                + "." + dist
-    #                + "." + now.strftime("%Y%m%d%H%M%S")
-    #                + "." + current_commit)
+    else:
+        # This is a Release build
+        # FIXME - this is a hack done to allow multiple builds of a package
+        # with the same version number, a consecuence of using a linear
+        # pipeline of dependent jobs in CI.
+        # With an ideal workflow for releases, the version numbers should
+        # be something like "6.6.2" and not "6.6.2-20170605185155"
+        version = (version
+                   + "." + dist
+                   + "." + now.strftime("%Y%m%d%H%M%S")
+                   + "." + current_commit)
 
     return version
 
