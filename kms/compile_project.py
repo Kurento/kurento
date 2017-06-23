@@ -30,12 +30,12 @@ DEFAULT_CONFIG_FILE = '.build.yaml'
 def clone_repo(base_url, repo_name):
     try:
         repo = git.Repo(repo_name)
-        print("Updating repo: " + repo_name)
-        # TODO: Decide if current current branch should be updated
+        print("Update repo: " + repo_name)
+        # TODO: Decide if current branch should be updated
         for remote in repo.remotes:
             remote.update()
     except:
-        print("Cloning repo: " + repo_name)
+        print("Clone repo: " + repo_name)
         repo = git.Repo.clone_from(base_url + "/" + repo_name, repo_name)
 
     return repo
@@ -80,6 +80,14 @@ def check_deb_dependency_installed(cache, dep):
                 version = get_version_to_install(pkg, dep_version, dep_commit)
                 if version == pkg.installed.version:
                     return True
+                else:
+                    print("Dependency installed version is '"
+                          + pkg.installed.version + "' but desired is '"
+                          + str(version) + "'")
+            else:
+                print("Dependency is not installed")
+        else:
+            print("Dependency is not installable via apt-get")
     # If this code is reached, dependency is not correctly installed in a valid version
     return False
 
@@ -104,7 +112,7 @@ def install_dependency(cache, dep):
             version = "=" + version
 
         # Install selected dependency version
-        print("Installing " + pkg_name + version)
+        print("Install dependency: " + pkg_name + version)
         os.environ["DEBIAN_FRONTEND"] = "noninteractive"
         if os.system("sudo apt-get install"
                      " --allow-change-held-packages"
@@ -159,12 +167,17 @@ def get_debian_version(args, dist):
                        + "~" + now.strftime("%Y%m%d%H%M%S")
                        + "." + num_commits
                        + "." + current_commit)
-    # else:
-    #     # This is a Release build
-    #     version = (version
-    #                + "." + dist
-    #                + "." + now.strftime("%Y%m%d%H%M%S")
-    #                + "." + current_commit)
+    else:
+        # This is a Release build
+        # FIXME - this is a hack done to allow multiple builds of a package
+        # with the same version number, a consecuence of using a linear
+        # pipeline of dependent jobs in CI.
+        # With an ideal workflow for releases, the version numbers should
+        # be something like "6.6.2" and not "6.6.2-20170605185155"
+        version = (version
+                   + "." + dist
+                   + "." + now.strftime("%Y%m%d%H%M%S")
+                   + "." + current_commit)
 
     return version
 
@@ -246,9 +259,9 @@ def generate_debian_package(args, config):
 
     # Execute commands defined in config:
     if config.has_key("prebuild-command"):
-        print("Executing prebuild-command: " + str(config["prebuild-command"]))
+        print("Run 'prebuild-command': " + str(config["prebuild-command"]))
         if os.system(config["prebuild-command"]) != 0:
-            print("Failed to execute prebuild command")
+            print("Error running 'prebuild-command'")
             exit(1)
 
     if os.system("dpkg-buildpackage -uc -us") != 0:
@@ -312,7 +325,7 @@ def check_dependency_installed(cache, dependency, debian_control_file):
 
 def compile_project(args):
     workdir = os.getcwd()
-    print("Compile project: " + workdir)
+    print("Working on project: " + workdir)
 
     try:
         config_file = open(args.file, 'r')
@@ -323,12 +336,14 @@ def compile_project(args):
 
     cache = apt.Cache()
 
+    print("Check Debian dependencies (at ./debian/control)")
     install_deb_dependencies(cache)
 
     cache = apt.Cache()
     gc.collect()
 
     # Parse dependencies and check if corrects versions are found
+    print("Check project dependencies (at ./.build.yaml)")
     if config.has_key("dependencies"):
         # Parse dependencies config
         for dependency in config["dependencies"]:
@@ -340,10 +355,13 @@ def compile_project(args):
                                    r'(?P<version>[0-9a-zA-Z:\-+~.]+)')
                 match = regex.match(dependency["version"])
                 if match:
+                    print("Look for dependency '" + dependency["name"] + "'"
+                          " with version '" + dependency["version"] + "'")
                     parts = match.groupdict()
                     dependency["version"] = (parts['relop'], parts['version'])
                 else:
-                    print("Invalid version for dependency " + dependency["name"])
+                    print("Cannot parse version '" + dependency["version"] + "'"
+                          " for dependency '" + dependency["name"] + "'")
                     exit(1)
             else:
                 dependency["version"] = None
@@ -352,17 +370,22 @@ def compile_project(args):
             sub_project_name = dependency["name"]
             git_url = args.base_url + "/" + sub_project_name
 
+            print("Check sub-project Debian dependencies (at "
+                  + git_url + "/debian/control)")
+
             # TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
             if (dependency["version"] is None
                     and (not dependency.has_key("commit")
                          or dependency["commit"] is None)):
+
                 dependency["commit"] = str(os.popen(
                     "git ls-remote " + git_url + " HEAD").read(7))
 
                 print("Dependency '" + dependency["name"] + "'"
                       " without specific version or commit;"
-                      " using Git HEAD: " + dependency["commit"])
+                      " use Git HEAD: " + dependency["commit"])
+
 
             #J
             # Load the file "debian/control" from the remote repo
@@ -405,16 +428,19 @@ def compile_project(args):
     # from the current commit. But it doesn't have push permissions!
     # A tag must be done manually for now.
     # if os.system("kurento_check_version.sh true") != 0:
+    print("Check if project version is valid")
     if os.system("kurento_check_version.sh false") != 0:
         print("Error while checking the version")
         exit(1)
+
+    print("Build project and make Debian packages: " + workdir)
     generate_debian_package(args, config)
 
 
 def main():
     parser = argparse.ArgumentParser(
         description=
-        "Read configurations from .build.yaml and builds the project")
+        "Read configuration from .build.yaml and build the project")
     parser.add_argument("--file",
                         metavar="file",
                         help="File to read config from",
