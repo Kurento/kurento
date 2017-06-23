@@ -67,7 +67,10 @@ if [ -s debian/changelog ]
 fi
 
 # Check that release version conforms to semver
-kurento_check_semver.sh ${PROJECT_VERSION} || exit 1
+kurento_check_semver.sh ${PROJECT_VERSION} || {
+  echo "kurento_check_semver.sh failed"
+  exit 1
+}
 
 if [ ${CREATE_TAG} = true ]
 then
