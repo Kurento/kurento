@@ -53,6 +53,8 @@ IMAGE=$(echo $IMAGE_NAME | cut -d/ -f2)
 if [ -f generate.sh ]; then
   echo "Generating Dockerfile..."
   [ -n "${image_parent_version}" ] || image_parent_version=$TAG
+  [ -n "${image_namespace}" ] || image_namespace="kurento"
+  [ -n "${image_authors}" ] || image_authors="Kurento Team"
   ./generate.sh ${image_parent_version}
 fi
 
