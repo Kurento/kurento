@@ -379,12 +379,12 @@ def compile_project(args):
                     and (not dependency.has_key("commit")
                          or dependency["commit"] is None)):
 
+                dependency["commit"] = str(os.popen(
+                    "git ls-remote " + git_url + " HEAD").read(7))
+
                 print("Dependency '" + dependency["name"] + "'"
                       " without specific version or commit;"
                       " use Git HEAD: " + dependency["commit"])
-
-                dependency["commit"] = str(os.popen(
-                    "git ls-remote " + git_url + " HEAD").read(7))
 
 
             #J
