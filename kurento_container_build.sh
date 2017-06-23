@@ -55,7 +55,7 @@ if [ -f generate.sh ]; then
   [ -n "${image_parent_version}" ] || image_parent_version=$TAG
   [ -n "${image_namespace}" ] || image_namespace="kurento"
   [ -n "${image_authors}" ] || image_authors="Kurento Team"
-  ./generate.sh ${image_parent_version}
+  ./generate.sh ${image_parent_version} ${image_namespace} ${image_authors}
 fi
 
 # If there's a kurento-generate.sh script, assume we need to fix the FROM line inside the Dockerfie
