@@ -362,6 +362,13 @@ public class Browser implements Closeable {
     // This flag avoids granting the access to the camera
     profile.setPreference("media.navigator.permission.disabled", true);
 
+    // This flag force to use fake user media (synthetic video of multiple color)
+    profile.setPreference("media.navigator.streams.fake", true);
+
+    // This allows to load pages with self-signed certificates
+    capabilities.setCapability("acceptInsecureCerts", true);
+    profile.setAcceptUntrustedCertificates(true);
+
     capabilities.setCapability(FirefoxDriver.PROFILE, profile);
     capabilities.setBrowserName(DesiredCapabilities.firefox().getBrowserName());
 

@@ -27,6 +27,9 @@ var iceCandidates = [];
 var iceServers;
 var peerConnection;
 var channel;
+var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+var audioFlag = !isFirefox;
+
 var defaultVideoConstraints = {
 	width : {
 		max : 640
@@ -38,9 +41,8 @@ var defaultVideoConstraints = {
 	}
 };
 var userMediaConstraints = {
-	audio : true,
-	video : defaultVideoConstraints,
-	fake : true
+	audio : audioFlag,
+	video : defaultVideoConstraints
 };
 
 try {
@@ -73,25 +75,22 @@ function setIceServers(url, username, credential) {
 
 function setAudioUserMediaConstraints() {
 	userMediaConstraints = {
-		audio : true,
-		video : false,
-		fake : true
+		audio : audioFlag,
+		video : false
 	};
 }
 
 function setVideoUserMediaConstraints() {
 	userMediaConstraints = {
 		audio : false,
-		video : defaultVideoConstraints,
-		fake : true
+		video : defaultVideoConstraints
 	};
 }
 
 function setCustomAudio(audioUrl) {
 	mediaConstraints = {
-		audio : false,
-		video : defaultVideoConstraints,
-		fake : true
+		audio : audioFlag,
+		video : defaultVideoConstraints
 	};
 	getUserMedia(mediaConstraints, function(userStream) {
 		videoStream = userStream;
