@@ -42,9 +42,9 @@ commit=$(git rev-parse --short HEAD)
 
 [ -n "$DOCKERFILE" ] || DOCKERFILE=./Dockerfile
 [ -n "$IMAGE_NAME" ] || IMAGE_NAME=$image_name
-[ -n "$IMAGE_NAMESPACE" ] || IMAGE_NAMESPACE=$image_namespace
-[ -n "$IMAGE_AUTHORS" ] || IMAGE_AUTHORS=$image_authors
-[ -n "$TAG" ] || TAG=$image_version
+[ -n "$IMAGE_NAMESPACE" ] || export IMAGE_NAMESPACE=$image_namespace
+[ -n "$IMAGE_AUTHORS" ] || export IMAGE_AUTHORS=$image_authors
+[ -n "$TAG" ] || export TAG=$image_version
 echo "Extra tags: ${image_extra_tags[@]}"
 [ -n "$EXTRA_TAGS" ] || EXTRA_TAGS="${image_extra_tags[@]}"
 
