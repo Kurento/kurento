@@ -467,7 +467,7 @@ public class Docker implements Closeable {
 
       createContainerCmd.withLabels(labels);
       createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp,
-          "REMOTE_HOST=http://" + containerIp + ":5555" });
+          "SE_OPTS=\"-host " + containerIp + " -port 5555\"" });
 
       createContainerCmd.exec();
 
