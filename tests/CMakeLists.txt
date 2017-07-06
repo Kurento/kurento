@@ -1,7 +1,6 @@
 include (TestHelpers)
 
 add_test_program (test_rpc TestRpc.cpp)
-add_dependencies(test_rpc jsonrpc)
 
 set_property (TARGET test_rpc
   PROPERTY INCLUDE_DIRECTORIES
@@ -16,7 +15,6 @@ target_link_libraries(test_rpc
 )
 
 add_test_program (test_serialize TestSerialize.cpp)
-add_dependencies(test_serialize jsonrpc)
 
 set_property (TARGET test_serialize
   PROPERTY INCLUDE_DIRECTORIES

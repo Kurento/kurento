@@ -27,7 +27,10 @@ set_property (TARGET jsonrpc
     ${CMAKE_CURRENT_SOURCE_DIR}/jsonrpc
   )
 
-target_link_libraries(jsonrpc ${JSONCPP_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(jsonrpc
+  ${JSONCPP_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
 
 set_target_properties(jsonrpc PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
