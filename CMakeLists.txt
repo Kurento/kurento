@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 project ("kms-omni-build")
+message(STATUS "Running CMake for project: ${PROJECT_NAME}")
 
 enable_testing()
 
