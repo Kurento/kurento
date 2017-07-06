@@ -504,7 +504,7 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
 {
   KmsIceBaseAgent *agent = self->agent;
   char *stream_id;
-  KmsIceCandidate *rtp_default_candidate, *rtcp_default_candidate;
+  KmsIceCandidate *rtp_default_candidate = NULL, *rtcp_default_candidate = NULL;
   gchar *rtp_addr;
   gchar *rtcp_addr;
   const gchar *rtp_addr_type, *rtcp_addr_type;
@@ -537,7 +537,7 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
         NICE_COMPONENT_TYPE_RTCP);
   }
 
-  if (rtp_default_candidate == NULL || rtcp_default_candidate == NULL) {
+  if (!rtp_default_candidate || !rtcp_default_candidate) {
     GST_WARNING_OBJECT (self,
         "Error getting ICE candidates. Network can be unavailable.");
     return FALSE;
@@ -916,8 +916,10 @@ gst_media_add_remote_candidates (KmsWebrtcSession * self,
     candidate_str = g_strdup_printf ("%s:%s", SDP_CANDIDATE_ATTR, attr->value);
     candidate = kms_ice_candidate_new (candidate_str, mid, index, stream_id);
     g_free (candidate_str);
-    kms_webrtc_session_add_ice_candidate (self, candidate);
-    g_object_unref (candidate);
+    if (candidate) {
+      kms_webrtc_session_add_ice_candidate (self, candidate);
+      g_object_unref (candidate);
+    }
   }
 }
 

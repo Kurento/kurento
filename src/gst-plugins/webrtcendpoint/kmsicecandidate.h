@@ -93,6 +93,7 @@ KmsIceCandidateType kms_ice_candidate_get_candidate_type (KmsIceCandidate * self
 KmsIceTcpCandidateType kms_ice_candidate_get_candidate_tcp_type (KmsIceCandidate * self);
 gchar * kms_ice_candidate_get_related_address (KmsIceCandidate * self);
 gint kms_ice_candidate_get_related_port (KmsIceCandidate * self);
+gboolean kms_ice_candidate_get_valid (KmsIceCandidate * self);
 
 G_END_DECLS
 #endif /* __KMS_ICE_ICE_CANDIDATE_H__ */

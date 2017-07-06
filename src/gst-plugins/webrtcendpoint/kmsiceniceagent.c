@@ -96,8 +96,10 @@ kms_ice_nice_agent_new_candidate (NiceAgent * agent,
 
       g_free (stream_id_str);
 
-      g_signal_emit_by_name (parent, "on-ice-candidate", candidate);
-      g_object_unref (candidate);
+      if (candidate) {
+        g_signal_emit_by_name (parent, "on-ice-candidate", candidate);
+        g_object_unref (candidate);
+      }
     }
   }
   g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
@@ -175,26 +177,45 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
 {
   KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
   gchar *stream_id_str;
-  KmsIceCandidate *local_candidate, *remote_candidate;
+  KmsIceCandidate *local_candidate = NULL, *remote_candidate = NULL;
 
   stream_id_str = g_strdup_printf ("%d", stream_id);
 
   local_candidate = kms_ice_nice_agent_create_candidate_from_nice (agent,
       lcandidate, stream_id_str);
+  if (!local_candidate) {
+    gchar *cand_str = kms_ice_nice_agent_get_candidate_sdp_string (agent, lcandidate);
+    GST_WARNING_OBJECT (self,
+        "Invalid local candidate: '%s', stream_id: %d, component_id: %d",
+        cand_str, stream_id, component_id);
+    g_free (cand_str);
+    goto end;
+  }
+
   remote_candidate = kms_ice_nice_agent_create_candidate_from_nice (agent,
       rcandidate, stream_id_str);
+  if (!remote_candidate) {
+    gchar *cand_str = kms_ice_nice_agent_get_candidate_sdp_string (agent, rcandidate);
+    GST_WARNING_OBJECT (self,
+        "Invalid remote candidate: '%s', stream_id: %d, component_id: %d",
+        cand_str, stream_id, component_id);
+    g_free (cand_str);
+    goto end;
+  }
 
   GST_DEBUG_OBJECT (self,
-      "New pair selected stream_id: %d, component_id: %d, local candidate: %s,"
-      " remote candidate: %s", stream_id, component_id,
+      "New candidate pair selected, local: '%s', remote: '%s', stream_id: %d, component_id: %d",
       kms_ice_candidate_get_candidate (local_candidate),
-      kms_ice_candidate_get_candidate (remote_candidate));
+      kms_ice_candidate_get_candidate (remote_candidate),
+      stream_id, component_id);
 
   g_signal_emit_by_name (parent, "new-selected-pair-full", stream_id_str,
       component_id, local_candidate, remote_candidate);
+
+end:
   g_free (stream_id_str);
-  g_object_unref (local_candidate);
-  g_object_unref (remote_candidate);
+  if (local_candidate) { g_object_unref (local_candidate); }
+  if (remote_candidate) { g_object_unref (remote_candidate); }
 }
 
 KmsIceNiceAgent *
@@ -453,7 +474,9 @@ kms_ice_nice_agent_get_local_candidates (KmsIceBaseAgent * self,
         nice_cand,
         stream_id);
 
-    ret = g_slist_append (ret, candidate);
+    if (candidate) {
+      ret = g_slist_append (ret, candidate);
+    }
   }
 
   g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
@@ -482,7 +505,9 @@ kms_ice_nice_agent_get_remote_candidates (KmsIceBaseAgent * self,
         nice_cand,
         stream_id);
 
-    ret = g_slist_append (ret, candidate);
+    if (candidate) {
+      ret = g_slist_append (ret, candidate);
+    }
   }
 
   g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);

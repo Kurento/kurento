@@ -647,7 +647,7 @@ WebRtcEndpointImpl::gatherCandidates ()
 void
 WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
 {
-  gboolean ret;
+  gboolean ret = FALSE;
   std::string cand_str = candidate->getCandidate();
   std::string mid_str = candidate->getSdpMid ();
   guint8 sdp_m_line_index = candidate->getSdpMLineIndex ();
@@ -655,10 +655,11 @@ WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
                           mid_str.c_str(),
                           sdp_m_line_index, NULL);
 
-  g_signal_emit_by_name (element, "add-ice-candidate", this->sessId.c_str (),
-                         cand, &ret);
-
-  g_object_unref (cand);
+  if (cand) {
+    g_signal_emit_by_name (element, "add-ice-candidate", this->sessId.c_str (),
+                           cand, &ret);
+    g_object_unref (cand);
+  }
 
   if (!ret) {
     throw KurentoException (ICE_ADD_CANDIDATE_ERROR, "Error adding candidate");
