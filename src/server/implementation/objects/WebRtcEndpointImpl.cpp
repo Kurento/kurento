@@ -450,9 +450,9 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   //set properties
   try {
     stunPort = getConfigValue <uint, WebRtcEndpoint> ("stunServerPort");
-  } catch (std::exception &e) {
-    GST_INFO ("Setting default port %d to stun server. Reason: %s",
-              DEFAULT_STUN_PORT, e.what() );
+  } catch (std::exception &) {
+    GST_INFO ("STUN server Port not found in config;"
+              " using default value: %d", DEFAULT_STUN_PORT);
     stunPort = DEFAULT_STUN_PORT;
   }
 
@@ -460,29 +460,27 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
     try {
       stunAddress = getConfigValue
                     <std::string, WebRtcEndpoint> ("stunServerAddress");
-    } catch (boost::property_tree::ptree_error &e) {
-      GST_INFO ("Stun address not found in config, cannot operate behind a NAT" );
+    } catch (boost::property_tree::ptree_error &) {
+      GST_INFO ("STUN server IP address not found in config;"
+                " NAT traversal requires either STUN or TURN server");
     }
 
-    if (!stunAddress.empty() ) {
-      GST_INFO ("stun port %d\n", stunPort );
-      g_object_set ( G_OBJECT (element), "stun-server-port",
-                     stunPort, NULL);
+    if (!stunAddress.empty()) {
+      GST_INFO ("Using STUN reflexive server IP: %s", stunAddress.c_str());
+      GST_INFO ("Using STUN reflexive server Port: %d", stunPort);
 
-      GST_INFO ("stun address %s\n", stunAddress.c_str() );
-      g_object_set ( G_OBJECT (element), "stun-server",
-                     stunAddress.c_str(),
-                     NULL);
+      g_object_set (G_OBJECT (element), "stun-server-port", stunPort, NULL);
+      g_object_set (G_OBJECT (element), "stun-server", stunAddress.c_str(), NULL);
     }
   }
 
   try {
     turnURL = getConfigValue <std::string, WebRtcEndpoint> ("turnURL");
-    GST_INFO ("turn info: %s\n", turnURL.c_str() );
-    g_object_set ( G_OBJECT (element), "turn-url", turnURL.c_str(),
-                   NULL);
-  } catch (boost::property_tree::ptree_error &e) {
-
+    GST_INFO ("Using TURN relay server: %s", turnURL.c_str());
+    g_object_set (G_OBJECT (element), "turn-url", turnURL.c_str(), NULL);
+  } catch (boost::property_tree::ptree_error &) {
+    GST_INFO ("TURN server IP address not found in config;"
+              " NAT traversal requires either STUN or TURN server");
   }
 
   switch (certificateKeyType->getValue () ) {
