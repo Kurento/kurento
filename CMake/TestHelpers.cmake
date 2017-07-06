@@ -14,7 +14,7 @@
 
 find_program(VALGRIND_EXECUTABLE valgrind DOC "valgrind program")
 
-set(GENERATE_TESTS FALSE CACHE BOOL "Build all tests: add a `make check_build` call to normal `make` calls")
+set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
