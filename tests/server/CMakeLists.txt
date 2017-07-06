@@ -5,7 +5,6 @@ set(TEST_VARIABLES
 add_test_program(test_filters_constructors constructors.cpp)
 add_dependencies(test_filters_constructors
   ${LIBRARY_NAME}module
-  ${LIBRARY_NAME}impl
   facedetector
   faceoverlay
   imageoverlay
