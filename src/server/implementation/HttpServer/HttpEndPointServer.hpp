@@ -19,6 +19,7 @@
 #define __HTTP_END_POINT_SERVER_HPP__
 
 #include <gst/gst.h>
+#include <functional>
 #include <string>
 #include <mutex>
 #include <memory>
