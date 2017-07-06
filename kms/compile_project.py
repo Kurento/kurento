@@ -81,13 +81,15 @@ def check_deb_dependency_installed(cache, dep):
                 if version == pkg.installed.version:
                     return True
                 else:
-                    print("Dependency installed version is '"
-                          + pkg.installed.version + "' but desired is '"
-                          + str(version) + "'")
+                    print("Dependency '{}', installed version: '{}'"
+                          " but desired version: {} or commit: {}".format(
+                              pkg.shortname, pkg.installed.version,
+                              dep_version, dep_commit))
             else:
                 print("Dependency is not installed")
         else:
             print("Dependency is not installable via apt-get")
+
     # If this code is reached, dependency is not correctly installed in a valid version
     return False
 
@@ -370,8 +372,8 @@ def compile_project(args):
             sub_project_name = dependency["name"]
             git_url = args.base_url + "/" + sub_project_name
 
-            print("Check sub-project Debian dependencies (at "
-                  + git_url + "/debian/control)")
+            print("Check sub-project Debian dependencies"
+                  " (at " + git_url + "/debian/control)")
 
             # TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
