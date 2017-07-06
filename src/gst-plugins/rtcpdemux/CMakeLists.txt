@@ -11,8 +11,6 @@ include(GLibHelpers)
 
 add_glib_marshal(RTCPDEMUX_SOURCES RTCPDEMUX_HEADERS kms-marshal __kms_marshal)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
-
 add_library(rtcpdemux MODULE ${RTCPDEMUX_SOURCES} ${RTCPDEMUX_HEADERS})
 
 target_link_libraries(rtcpdemux

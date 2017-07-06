@@ -8,7 +8,7 @@ set(VALGRIND_TEST_VARIABLES
 set(SUPPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 
 add_test_program(test_constructors constructors.cpp)
-add_dependencies(test_constructors ${LIBRARY_NAME}module ${LIBRARY_NAME}impl ${LIBRARY_NAME}plugins)
+add_dependencies(test_constructors ${LIBRARY_NAME}module ${LIBRARY_NAME}plugins)
 set_property(TARGET test_constructors
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}/../..
@@ -50,7 +50,7 @@ target_link_libraries(test_constructors
 # )
 
 add_test_program(test_rtp_endpoint rtpEndpoint.cpp)
-add_dependencies(test_rtp_endpoint kmselementsplugins ${LIBRARY_NAME}impl)
+add_dependencies(test_rtp_endpoint kmselementsplugins)
 set_property(TARGET test_rtp_endpoint
   PROPERTY INCLUDE_DIRECTORIES
     ${KmsJsonRpc_INCLUDE_DIRS}
@@ -69,7 +69,7 @@ target_link_libraries(test_rtp_endpoint
 )
 
 add_test_program(test_recorder recorderEndpoint.cpp)
-add_dependencies(test_recorder kmselementsplugins ${LIBRARY_NAME}impl)
+add_dependencies(test_recorder kmselementsplugins)
 set_property(TARGET test_recorder
   PROPERTY INCLUDE_DIRECTORIES
     ${KmsJsonRpc_INCLUDE_DIRS}
@@ -88,7 +88,7 @@ target_link_libraries(test_recorder
 )
 
 add_test_program(test_player playerEndpoint.cpp)
-add_dependencies(test_player kmselementsplugins ${LIBRARY_NAME}impl)
+add_dependencies(test_player kmselementsplugins)
 set_property(TARGET test_player
   PROPERTY INCLUDE_DIRECTORIES
     ${KmsJsonRpc_INCLUDE_DIRS}

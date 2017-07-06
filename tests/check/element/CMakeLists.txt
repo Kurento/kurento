@@ -29,7 +29,7 @@ target_link_libraries(test_recorderendpoint
                       ${KmsGstCommons_LIBRARIES})
 
 add_test_program (test_playerendpoint playerendpoint.c)
-add_dependencies(test_playerendpoint kmstestutils ${LIBRARY_NAME}plugins)
+add_dependencies(test_playerendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_playerendpoint PRIVATE
                            ${CMAKE_CURRENT_BINARY_DIR}/../../..
                            ${CMAKE_CURRENT_SOURCE_DIR}/..

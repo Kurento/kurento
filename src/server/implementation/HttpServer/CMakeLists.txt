@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -DHAVE_INTTYPES_H -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_INTTYPES_H")
 
 include(GLibHelpers)
 
@@ -31,7 +31,7 @@ add_library(kmshttpep ${HTTP_EP_SOURCES})
 
 set_target_properties(kmshttpep PROPERTIES
   PUBLIC_HEADER "${HTTP_EP_HEADERS}"
-  COMPILE_FLAGS "-fPIC -Wno-deprecated-declarations"
+  COMPILE_FLAGS "-Wno-deprecated-declarations"
 )
 
 set_property (TARGET kmshttpep

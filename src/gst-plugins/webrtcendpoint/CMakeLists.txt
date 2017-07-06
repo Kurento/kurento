@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-
 set(CUSTOM_PREFIX "kurento")
 set(INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}/webrtcendpoint")
 
@@ -121,7 +119,8 @@ set(KMS_WEBRTC_HEADERS
 add_glib_marshal(KMS_WEBRTC_SOURCES KMS_WEBRTC_HEADERS kms-webrtc-marshal __kms_webrtc_marshal)
 
 add_library(kmswebrtcendpointlib SHARED ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
-add_dependencies(kmswebrtcendpointlib rtcpdemux webrtcdataproto)
+
+add_dependencies(kmswebrtcendpointlib rtcpdemux)
 
 target_link_libraries(kmswebrtcendpointlib
   webrtcdataproto
@@ -168,7 +167,6 @@ install(FILES
 )
 
 add_library(webrtcendpoint MODULE kmswebrtc.c)
-add_dependencies(webrtcendpoint kmswebrtcendpointlib)
 
 set_property (TARGET webrtcendpoint
   PROPERTY INCLUDE_DIRECTORIES
