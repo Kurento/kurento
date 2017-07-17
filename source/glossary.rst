@@ -43,15 +43,15 @@ or :term:`kurento`.
         a build stack.
 
     Builder Pattern
-        The builder pattern is an object creation software design pattern whose 
-        intention is to find a solution to the telescoping constructor 
-        anti-pattern. The telescoping 
-        constructor anti-pattern occurs when the increase of object constructor 
-        parameter combination leads to an exponential list of constructors. 
-        Instead of using numerous constructors, the builder pattern uses another 
-        object, a builder, that receives each initialization parameter step by 
+        The builder pattern is an object creation software design pattern whose
+        intention is to find a solution to the telescoping constructor
+        anti-pattern. The telescoping
+        constructor anti-pattern occurs when the increase of object constructor
+        parameter combination leads to an exponential list of constructors.
+        Instead of using numerous constructors, the builder pattern uses another
+        object, a builder, that receives each initialization parameter step by
         step and then returns the resulting constructed object at once.
-        
+
         .. seealso::
             :wikipedia:`Builder_pattern`
                 Wikipedia reference of the Builder Pattern
@@ -457,12 +457,18 @@ or :term:`kurento`.
         Secure Socket Layer. See `TLS`:term:.
 
     STUN
-    Session Traversal Utilities for NAT
-        STUN is a standardized set of methods to allow an end host to discover
-        its public IP address if it is located behind a :term:`NAT`. STUN is a
-        client-server protocol returning the public IP address to a client
-        together with information from which the client can infer the type
-        of NAT it sits behind.
+        STUN stands for **Session Traversal Utilities for NAT**. It is a standard
+        protocol (`IETF RFC 5389 <https://tools.ietf.org/html/rfc5389>`__) used
+        by :term:`NAT` traversal algorithms to assist hosts in the discovery of
+        their public network information.
+
+        If the routers between peers use full cone, address-restricted, or
+        port-restricted NAT, then a direct link can be discovered with STUN
+        alone. If either one of the routers use symmetric NAT, then a link can
+        be discovered with STUN packets only if the other router does not use
+        symmetric or port-restricted NAT. In this later case, the only
+        alternative left is to discover a relayed path through the use of
+        :term:`TURN`.
 
     Trickle ICE
         Extension to the :term:`ICE` protocol that allows ICE agents to send and receive
@@ -482,11 +488,18 @@ or :term:`kurento`.
                 Version 1.2 of the Transport Layer Security protocol
 
     TURN
-    Traversal Using Relays around NAT
-        TURN is a protocol that allows for a client behind a :term:`NAT` or
-        firewall to receive incoming data over TCP or UDP connections. TURN
-        places a third party server to relay messages between two clients
-        where peer to peer media traffic is not allowed by a firewall.
+        TURN stands for **Traversal Using Relays around NAT**. Like :term:`STUN`,
+        it is a network protocol (`IETF RFC 5766 <https://tools.ietf.org/html/rfc5766>`__)
+        used to assist in the discovery of paths between peers on the Internet.
+
+        It differs from STUN in that it uses a public intermediary relay to
+        act as a proxy for packets between peers. It is used when no other
+        option is available since it consumes server resources and has an
+        increased latency.
+
+        The only time when TURN is necessary is when one of the peers is behind
+        a symmetric NAT and the other peer is behind either a symmetric NAT or
+        a port-restricted NAT.
 
     VP8
         VP8 is a video compression format created by On2 Technologies as a

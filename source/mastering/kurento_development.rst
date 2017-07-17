@@ -37,29 +37,52 @@ components are created automatically when code is merged into source repository.
 Using development versions is not the recommended way to use Kurento, but it can
 be useful to try brand new features.
 
-.. warning:: You have to use this versions with caution, because them can be
+.. warning:: You have to use these versions with caution, because they can be
    broken. Usually they have bugs and incomplete functionalities. **Never** use
    development versions in production.
 
 Kurento Media Server
 ====================
 
-To install packages from development (unstable) repository you need to execute::
+Install packages from the development repository. Run as root:
 
-    echo "deb http://ubuntu.kurento.org trusty-dev kms6" | sudo tee /etc/apt/sources.list.d/kurento-dev.list
-    wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
-    sudo apt-get update
-    sudo apt-get install kurento-media-server-6.0
-    sudo apt-get dist-upgrade
+.. sourcecode:: bash
 
-As you can imagine, it is not possible to have installed at the same time latest
-stable version and latest development version of Kurento Media Server.
+   DIST="xenial-dev"
+   tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
+   # Kurento Packages repository
+   deb http://ubuntu.kurento.org ${DIST} kms6
+   EOF
+   wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
+   apt-get update
+   apt-get install kurento-media-server-6.0
+
+.. note::
+
+   For Ubuntu 14.04 (Trusty), use "trusty-dev":
+
+   .. sourcecode:: bash
+
+      DIST="trusty-dev"
+
+   In order to install the Release version, remove the "-dev" suffix:
+
+   .. sourcecode:: bash
+
+      DIST="xenial"
+
+It is not possible to have installed at the same time the Release and
+Development versions of Kurento Media Server.
 
 In order to install older versions of Kurento Media Server, you need to
-configure the proper repository (``trusty`` or ``xenial``) in your apt sources::
+configure the corresponding repository in your Apt source file
+(``/etc/apt/sources.list.d/kurento.list``)::
 
-    deb http://ubuntu.kurento.org/[VERSION_TAG] trusty kms6
-    deb http://ubuntu.kurento.org/[VERSION_TAG] xenial kms6
+    For Ubuntu 14.04 (Trusty):
+        deb http://ubuntu.kurento.org/[VERSION_TAG] trusty kms6
+
+    For Ubuntu 16.04 (Xenial):
+        deb http://ubuntu.kurento.org/[VERSION_TAG] xenial kms6
 
 ... where ``[VERSION_TAG]`` is the version of Kurento Media Server to be
 installed (for instance, ``6.4.0``). After that you should install KMS as
@@ -68,15 +91,12 @@ usual::
     sudo apt-get update
     sudo apt-get install kurento-media-server-6.0
 
-Notice that an old version of KMS cannot live in the same machine that a
-stable/unstable release. Therefore, if you have KMS previously installed and
+Notice that an old version of KMS cannot live in the same machine with a
+stable/unstable release. Therefore, if you have previously installed KMS, and
 you want to downgrade to a former release, first your need to purge your
 previous installation::
 
-    sudo apt-get remove kurento-media-server-6.0
-    sudo apt-get purge kurento-media-server-6.0
-    sudo apt-get autoremove
-    sudo apt-get dist-upgrade
+    sudo apt-get purge --auto-remove kurento-media-server-6.0
 
 Kurento Java Client
 ===================

@@ -4,9 +4,9 @@
    :alt:    Creating client applications through Kurento APIs
    :align:  center
 
-%%%%%%%%%%%%%%%
-What's Kurento?
-%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%
+About Kurento
+%%%%%%%%%%%%%
 
 **Kurento** is a WebRTC media server and a set of client APIs making simple the
 development of advanced video applications for WWW and smartphone platforms.
