@@ -326,6 +326,7 @@ def install_deb_dependencies():
 
 def generate_debian_package(args, buildconfig):
     global APT_CACHE
+    project_name = args.project_name
 
     changelog = Changelog(open("debian/changelog"))
     old_changelog = Changelog(open("debian/changelog"))
@@ -335,11 +336,11 @@ def generate_debian_package(args, buildconfig):
             .replace("\n", "").replace("\t", "").replace(" ", ""))
 
     print("[buildpkg::generate_debian_package] ({})"
-          " Retrieve version from the project's metadata".format(args.project_name))
+          " Retrieve version from the project's metadata".format(project_name))
     new_version = get_debian_version(args.simplify_dev_version, dist)
     if new_version is None:
         print("[buildpkg::generate_debian_package] ({}) ERROR:"
-              " No valid version in the project's metada".format(args.project_name))
+              " No valid version in the project's metada".format(project_name))
         exit(1)
 
     changelog.new_block(version=new_version,
@@ -356,35 +357,41 @@ def generate_debian_package(args, buildconfig):
     if buildconfig.has_key("prebuild-command"):
         print("[buildpkg::generate_debian_package] ({})"
               " Run 'prebuild-command': {}".format(
-                  args.project_name, str(buildconfig["prebuild-command"])))
+                  project_name, str(buildconfig["prebuild-command"])))
         if subprocess.call([buildconfig["prebuild-command"]], shell=True) != 0:
             print("[buildpkg::generate_debian_package] ({}) ERROR:"
-                  " Running 'prebuild-command'".format(args.project_name))
+                  " Running 'prebuild-command'".format(project_name))
             exit(1)
 
     print("[buildpkg::generate_debian_package] ({})"
-          " Run 'dpkg-buildpackage'".format(args.project_name))
+          " Run 'dpkg-buildpackage'".format(project_name))
     if subprocess.call(["dpkg-buildpackage", "-uc", "-us"]) != 0:
         print("[buildpkg::generate_debian_package] ({}) ERROR:"
-              " Running 'dpkg-buildpackage'".format(args.project_name))
+              " Running 'dpkg-buildpackage'".format(project_name))
         exit(1)
 
+    # Install the generated files.
+    # TODO: This installs files one by one, and they will be kept unconfigured
+    # if the order doesn't happen to be the correct. Find out how to do the
+    # equivalent of `dpkg -i *.deb`, which installs them in correct order.
     print("[buildpkg::generate_debian_package] ({})"
-          " Run 'dpkg -i'".format(args.project_name))
+          " Run 'dpkg -i'".format(project_name))
 
     files = glob.glob("../*" + new_version + "_*.deb")
 
     for afile in files:
         print("[buildpkg::generate_debian_package] ({})"
-              " Install package file: {}".format(args.project_name, afile))
+              " Install package file: {}".format(project_name, afile))
         debpkg = apt.debfile.DebPackage(afile, APT_CACHE)
 
         root_privileges_gain()
         debpkg.install()
         root_privileges_drop()
 
+    # Resolves all the package installations that (probably) failed
+    # in the previous step, due to "dpkg" not resolving dependencies.
     print("[buildpkg::generate_debian_package] ({})"
-          " Resolve package dependencies".format(args.project_name))
+          " Resolve package dependencies".format(project_name))
     root_privileges_gain()
     apt.ProblemResolver(APT_CACHE).resolve_by_keep()
     APT_CACHE.commit()
@@ -440,12 +447,13 @@ def check_dependency_installed(dependency, debian_control_file):
 
 
 def compile_project(args):
+    project_name = args.project_name
     project_workdir = os.getcwd()
     buildconfig_path = os.path.abspath(args.file)
 
     print("[buildpkg::compile_project]"
           " Project: {}, work directory: '{}'".format(
-              args.project_name, project_workdir))
+              project_name, project_workdir))
 
     try:
         buildconfig_file = open(buildconfig_path, 'r')
@@ -453,25 +461,25 @@ def compile_project(args):
     except IOError:
         print("[buildpkg::compile_project] ({}) ERROR:"
               " Opening build configuration file: '{}'".format(
-                  args.project_name, buildconfig_path))
+                  project_name, buildconfig_path))
         exit(1)
 
     print("[buildpkg::compile_project] ({})"
           " Check Debian packages (from '{}')".format(
-              args.project_name, os.path.abspath("debian/control")))
+              project_name, os.path.abspath("debian/control")))
     install_deb_dependencies()
 
     # Parse dependencies and check if corrects versions are found
     print("[buildpkg::compile_project] ({})"
           " Check build dependencies (from '{}')".format(
-              args.project_name, buildconfig_path))
+              project_name, buildconfig_path))
 
     # Parse dependencies defined in the build configuration file
     for dependency in buildconfig.get("dependencies", []):
         if not dependency.has_key("name"):
             print("[buildpkg::compile_project] ({}) ERROR:"
                   " Build dependency lacks a name: '{}'".format(
-                      args.project_name, str(dependency)))
+                      project_name, str(dependency)))
             exit(1)
         if dependency.has_key("version"):
             regex = re.compile(r'(?P<relop>[>=<]+)\s*'
@@ -480,13 +488,13 @@ def compile_project(args):
             if match:
                 print("[buildpkg::compile_project] ({})"
                       " Look for build dependency: '{}', version: {}".format(
-                          args.project_name, dependency["name"], dependency["version"]))
+                          project_name, dependency["name"], dependency["version"]))
                 parts = match.groupdict()
                 dependency["version"] = (parts['relop'], parts['version'])
             else:
                 print("[buildpkg::compile_project] ({}) ERROR:"
                       " Build dependency: '{}' with invalid version string: '{}'".format(
-                          args.project_name, dependency["name"], dependency["version"]))
+                          project_name, dependency["name"], dependency["version"]))
                 exit(1)
         else:
             dependency["version"] = None
@@ -497,7 +505,7 @@ def compile_project(args):
 
         print("[buildpkg::compile_project] ({})"
               " Build dependency: '{}', check Debian packages (from '{}')".format(
-                  args.project_name, build_dependency_name, git_url + "/debian/control"))
+                  project_name, build_dependency_name, git_url + "/debian/control"))
 
         # TODO: Consolidate versions, check if commit is compatible with
         # version requirement and also if there is a newer commit
@@ -511,7 +519,7 @@ def compile_project(args):
             print("[buildpkg::compile_project] ({})"
                   " Build dependency: '{}' with no specific version or commit,"
                   " use Git HEAD: {}".format(
-                      args.project_name, build_dependency_name, dependency["commit"]))
+                      project_name, build_dependency_name, dependency["commit"]))
 
         # Load the file "debian/control" from the remote repo
         #
@@ -533,7 +541,7 @@ def compile_project(args):
             print("[buildpkg::compile_project] ({})"
                   " Build dependency: '{}' is not installed,"
                   " download and build it".format(
-                      args.project_name, build_dependency_name))
+                      project_name, build_dependency_name))
 
             os.chdir("..")
             repo = clone_repo(args.base_url, build_dependency_name)
@@ -544,8 +552,10 @@ def compile_project(args):
                     and subprocess.call(["git", "checkout", dependency["commit"]]) != 0):
                 print("[buildpkg::compile_project] ({}) ERROR:"
                       " Checking out the commit: {} for build dependency: '{}'".format(
-                          args.project_name, dependency["commit"], build_dependency_name))
+                          project_name, dependency["commit"], build_dependency_name))
                 exit(1)
+
+            args.project_name = build_dependency_name
             compile_project(args)
             os.chdir(project_workdir)
 
@@ -554,17 +564,17 @@ def compile_project(args):
     # A tag must be done manually for now.
     # if os.system("kurento_check_version.sh true") != 0:
     print("[buildpkg::compile_project] ({})"
-          " Run 'kurento_check_version.sh'".format(args.project_name))
+          " Run 'kurento_check_version.sh'".format(project_name))
     if subprocess.call(["kurento_check_version.sh", "false"]) != 0:
         print("[buildpkg::compile_project] ({}) ERROR:"
-              " Running 'kurento_check_version.sh'".format(args.project_name))
+              " Running 'kurento_check_version.sh'".format(project_name))
         exit(1)
 
     print("[buildpkg::compile_project] ({})"
-          " Build project and make Debian packages".format(args.project_name))
+          " Build project and make Debian packages".format(project_name))
     generate_debian_package(args, buildconfig)
 
-    print("[buildpkg::compile_project] ({}) Done.".format(args.project_name))
+    print("[buildpkg::compile_project] ({}) Done.".format(project_name))
 
 
 def print_uids():
@@ -634,9 +644,6 @@ def main():
 
     args = parser.parse_args()
 
-    if not args.project_name:
-        args.project_name = os.path.basename(os.path.normpath(os.getcwd()))
-
     if not args.no_apt_get_update:
         print("[buildpkg::main] Run 'apt-get update'")
         root_privileges_gain()
@@ -644,6 +651,8 @@ def main():
         APT_CACHE.open()
         root_privileges_drop()
 
+    if not args.project_name:
+        args.project_name = os.path.basename(os.path.normpath(os.getcwd()))
     compile_project(args)
 
 
