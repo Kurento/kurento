@@ -124,9 +124,8 @@ def check_deb_dependency_installed(dep_alts):
 
         if APT_CACHE.has_key(dep_name):
             pkg = APT_CACHE[dep_name]
-            if pkg.is_installed:
-                # Check if version is valid
-                pkgversion = get_pkgversion_to_install(pkg, dep_version, dep_commit)
+            pkgversion = get_pkgversion_to_install(pkg, dep_version, dep_commit)
+            if pkgversion and pkgversion.is_installed:
                 if pkgversion == pkg.installed:
                     print("[buildpkg::check_deb_dependency_installed]"
                           " Dependency: '{}' is installed via package: {},"
