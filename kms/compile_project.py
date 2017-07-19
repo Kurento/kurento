@@ -182,6 +182,7 @@ def install_dependency(dep):
 
         root_privileges_gain()
         APT_CACHE.commit()
+        APT_CACHE.open()
         root_privileges_drop()
 
         if check_deb_dependency_installed(dep):
@@ -388,6 +389,7 @@ def generate_debian_package(args, buildconfig):
     root_privileges_gain()
     apt.ProblemResolver(APT_CACHE).resolve_by_keep()
     APT_CACHE.commit()
+    APT_CACHE.open()
     root_privileges_drop()
 
 
@@ -571,6 +573,8 @@ def print_uids():
 
 
 def main():
+    global APT_CACHE
+
     # Only raise to root privileges for the minimal time required
     # Good security practice!
     if os.geteuid() != 0:
@@ -635,8 +639,6 @@ def main():
         args.project_name = os.path.basename(os.path.normpath(os.getcwd()))
 
     if not args.no_apt_get_update:
-        global APT_CACHE
-
         print("[buildpkg::main] Run 'apt-get update'")
         root_privileges_gain()
         APT_CACHE.update()
