@@ -76,7 +76,7 @@ def clone_repo(base_url, repo_name):
 
 def get_pkgversion_to_install(pkg, req_version, req_commit):
     def check_version_req(version_str, req):
-        print("[buildpkg::check_version_req] {} {} {}".format(
+        print("[buildpkg::get_pkgversion_to_install] Test '{} {} {}'".format(
             version_str, req[0], req[1]))
         return apt_pkg.check_dep(version_str, req[0], req[1])
 
@@ -99,7 +99,7 @@ def get_pkgversion_to_install(pkg, req_version, req_commit):
         pkgversion_found = pkg.candidate
 
     print("[buildpkg::get_version_to_install]"
-          " Found complying version: {}".format(pkgversion_found.version))
+          " Found complying version: {}".format(pkgversion_found))
     return pkgversion_found
 
 
