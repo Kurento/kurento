@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/python2.7 -u
 #pylint: disable=missing-docstring
 
 # Install system tools and Python modules
