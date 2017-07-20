@@ -161,7 +161,7 @@ def check_deb_dependency_installed(dep_alts):
                           depend2str(dep_alts)))
         else:
             print("[buildpkg::check_deb_dependency_installed]"
-                  " Dependency is not installable via `apt-get`: '{}'".format(
+                  " Dependency not installable via `apt-get`: '{}'".format(
                       depend2str(dep_alts)))
 
     # Reaching here, none of the alternatives are installed in a valid version
@@ -336,6 +336,7 @@ def install_deb_dependencies():
 
 def generate_debian_package(args, buildconfig):
     global APT_CACHE
+
     project_name = args.project_name
 
     changelog = Changelog(open("debian/changelog"))
@@ -368,7 +369,7 @@ def generate_debian_package(args, buildconfig):
         print("[buildpkg::generate_debian_package] ({})"
               " Run 'prebuild-command': {}".format(
                   project_name, str(buildconfig["prebuild-command"])))
-        if subprocess.call([buildconfig["prebuild-command"]], shell=True) != 0:
+        if subprocess.call(buildconfig["prebuild-command"], shell=True) != 0:
             print("[buildpkg::generate_debian_package] ({}) ERROR:"
                   " Running 'prebuild-command'".format(project_name))
             exit(1)
@@ -380,40 +381,25 @@ def generate_debian_package(args, buildconfig):
               " Running 'dpkg-buildpackage'".format(project_name))
         exit(1)
 
-    # Install the generated files.
-    # FIXME: This installs files one by one, and they will be kept unconfigured
-    # if the order doesn't happen to be the correct. Find out how to do the
-    # equivalent of `dpkg -i *.deb`, which installs them in correct order.
+    files_glob = "../*" + new_version + "_*.deb"
+    files = glob.glob(files_glob)
+
+    # Install the generated files (plus their installation dependencies)
+    # FIXME: The Apt Python API (apt.debfile.DebPackage) doesn't have a
+    # reliable method to do this.
+    # Also there is the `gdebi` command, but it doesn't accept multiple files.
     print("[buildpkg::generate_debian_package] ({})"
-          " Run 'dpkg -i'".format(project_name))
-
-    files = glob.glob("../*" + new_version + "_*.deb")
-
-    missing_names = []
-
-    for afile in files:
-        print("[buildpkg::generate_debian_package] ({})"
-              " Install package file: {}".format(project_name, afile))
-        debpkg = apt.debfile.DebPackage(afile, APT_CACHE)
-        debpkg.check()
-        missing_names = missing_names + debpkg.missing_deps
-
+          " Run 'dpkg -i {}' with generated files: {}".format(
+              project_name, files_glob, files))
+    if files:
         root_privileges_gain()
-        debpkg.install()
+        if subprocess.call("dpkg -i " + files_glob, shell=True) != 0:
+            if subprocess.call(["apt-get", "install", "-f", "-y", "-q"]) != 0:
+                print("[buildpkg::generate_debian_package] ({}) ERROR:"
+                      " Running 'dpkg -i {}'".format(project_name, files_glob))
+                exit(1)
         APT_CACHE.open()
         root_privileges_drop()
-
-    for missing_name in missing_names:
-        if missing_name in APT_CACHE:
-            APT_CACHE[missing_name].mark_install()
-
-    # Resolve all the package installations that (probably) failed
-    # in the previous step, due to "dpkg" not resolving dependencies.
-    # FIXME: This makes use of the fact that after some failed `dpkg -i`,
-    # an `apt-get install` will fix all unconfigured packages.
-    print("[buildpkg::generate_debian_package] ({})"
-          " Resolve package dependencies".format(project_name))
-    apt_cache_commit()
 
     if args.command == "upload":
         for afile in files:
@@ -598,6 +584,8 @@ def print_uids():
 
 
 def main():
+    os.environ['DEBIAN_FRONTEND'] = "noninteractive"
+
     # Only raise to root privileges for the minimal time required
     # Good security practice!
     if os.geteuid() != 0:
