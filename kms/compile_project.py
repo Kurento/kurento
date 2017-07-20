@@ -8,7 +8,7 @@
 
 # Module documentation
 # - argparse: https://docs.python.org/2/library/argparse.html
-# - python-apt: https://apt.alioth.debian.org/python-apt-doc/library/index.html
+# - python-apt: https://apt.alioth.debian.org/python-apt-doc/contents.html
 # - python-debian: source code
 
 from __future__ import print_function
@@ -21,7 +21,7 @@ import subprocess
 from datetime import datetime
 from time import strftime, time
 
-import apt
+import apt.cache
 import apt.debfile
 import apt_pkg
 import git
@@ -32,7 +32,7 @@ from debian.deb822 import Deb822, PkgRelation
 
 
 DEFAULT_CONFIG_FILE = '.build.yaml'
-APT_CACHE = apt.Cache()
+APT_CACHE = apt.cache.Cache()
 
 
 def root_privileges_drop():
@@ -49,6 +49,22 @@ def root_privileges_gain():
     if os.geteuid() != 0:
         os.setresgid(0, 0, -1)
         os.setresuid(0, 0, -1)
+
+
+def apt_cache_update():
+    global APT_CACHE
+    root_privileges_gain()
+    APT_CACHE.update()
+    APT_CACHE.open()
+    root_privileges_drop()
+
+
+def apt_cache_commit():
+    global APT_CACHE
+    root_privileges_gain()
+    APT_CACHE.commit()
+    APT_CACHE.open()
+    root_privileges_drop()
 
 
 def depend2str(depend):
@@ -153,8 +169,6 @@ def check_deb_dependency_installed(dep_alts):
 
 
 def install_dependency(dep):
-    global APT_CACHE
-
     for dep_alternative in dep:
         pkg_name = dep_alternative["name"]
         if not APT_CACHE.has_key(pkg_name):
@@ -178,11 +192,7 @@ def install_dependency(dep):
 
         pkg.candidate = pkgversion
         pkg.mark_install()
-
-        root_privileges_gain()
-        APT_CACHE.commit()
-        APT_CACHE.open()
-        root_privileges_drop()
+        apt_cache_commit()
 
         if check_deb_dependency_installed(dep):
             return True
@@ -320,7 +330,7 @@ def install_deb_dependencies():
             else:
                 print("[buildpkg::install_deb_dependencies]"
                       " Dependency: '{}' package not available, need to"
-                      " download and built it".format(
+                      " download and build it".format(
                           depend2str(dep_alts)))
 
 
@@ -371,7 +381,7 @@ def generate_debian_package(args, buildconfig):
         exit(1)
 
     # Install the generated files.
-    # TODO: This installs files one by one, and they will be kept unconfigured
+    # FIXME: This installs files one by one, and they will be kept unconfigured
     # if the order doesn't happen to be the correct. Find out how to do the
     # equivalent of `dpkg -i *.deb`, which installs them in correct order.
     print("[buildpkg::generate_debian_package] ({})"
@@ -379,25 +389,31 @@ def generate_debian_package(args, buildconfig):
 
     files = glob.glob("../*" + new_version + "_*.deb")
 
+    missing_names = []
+
     for afile in files:
         print("[buildpkg::generate_debian_package] ({})"
               " Install package file: {}".format(project_name, afile))
         debpkg = apt.debfile.DebPackage(afile, APT_CACHE)
+        debpkg.check()
+        missing_names = missing_names + debpkg.missing_deps
 
         root_privileges_gain()
         debpkg.install()
+        APT_CACHE.open()
         root_privileges_drop()
 
-    # Resolves all the package installations that (probably) failed
+    for missing_name in missing_names:
+        if missing_name in APT_CACHE:
+            APT_CACHE[missing_name].mark_install()
+
+    # Resolve all the package installations that (probably) failed
     # in the previous step, due to "dpkg" not resolving dependencies.
+    # FIXME: This makes use of the fact that after some failed `dpkg -i`,
+    # an `apt-get install` will fix all unconfigured packages.
     print("[buildpkg::generate_debian_package] ({})"
           " Resolve package dependencies".format(project_name))
-    root_privileges_gain()
-    apt.ProblemResolver(APT_CACHE).resolve_by_keep()
-    APT_CACHE.commit()
-    APT_CACHE.open()
-    root_privileges_drop()
-
+    apt_cache_commit()
 
     if args.command == "upload":
         for afile in files:
@@ -582,8 +598,6 @@ def print_uids():
 
 
 def main():
-    global APT_CACHE
-
     # Only raise to root privileges for the minimal time required
     # Good security practice!
     if os.geteuid() != 0:
@@ -646,10 +660,7 @@ def main():
 
     if not args.no_apt_get_update:
         print("[buildpkg::main] Run 'apt-get update'")
-        root_privileges_gain()
-        APT_CACHE.update()
-        APT_CACHE.open()
-        root_privileges_drop()
+        apt_cache_update()
 
     if not args.project_name:
         args.project_name = os.path.basename(os.path.normpath(os.getcwd()))
