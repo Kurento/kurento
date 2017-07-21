@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 2.8)
 
 project("kms-cmake-utils")
-message(STATUS "Running CMake for project: ${PROJECT_NAME}")
+message(STATUS "CMake project: ${PROJECT_NAME}")
+
+# Test configuration
+set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
+set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
+set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
-
 include(KurentoGitHelpers)
 get_git_version(PROJECT_VERSION 1.3.3-dev)
+message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 
 set(CMAKE_MODULES_INSTALL_DIR
   share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules
@@ -36,8 +41,6 @@ install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/FindKurentoHelpers.cmake"
   DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
 )
-
-set(DISABLE_TESTS FALSE CACHE BOOL "Disable tests execution")
 
 if(NOT ${DISABLE_TESTS})
   add_subdirectory(test)
