@@ -1,13 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
 
 project("kms-jsonrpc")
-message(STATUS "Running CMake for project: ${PROJECT_NAME}")
+message(STATUS "CMake project: ${PROJECT_NAME}")
+
+# Test configuration
+set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
+set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
+set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
 message("If KurentoHelpers is not found, you need to install 'kms-cmake-utils' from the Kurento repository")
 find_package(KurentoHelpers REQUIRED)
 
+include(KurentoGitHelpers)
+install_git_hook(pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
+get_git_version(PROJECT_VERSION 1.1.3-dev)
+message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
+
 # Set GCC flags common to all projects
-# Note - default flags added by dpkg-buildflags for C and C++:
+# Note: Flags added from dpkg-buildflags (if installed):
 # -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2
 include(DpkgBuildFlags)
 get_dpkg_buildflags_c(DPKG_BUILDFLAGS_C)
@@ -16,13 +26,9 @@ set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${DPKG_BUILDFLAGS_C}   -std=c11   -Wall 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DPKG_BUILDFLAGS_CXX} -std=c++11 -Wall -Werror -pthread")
 set(CMAKE_C_FLAGS_DEBUG   "-g -O0") # FIXME Ideal is '-Og' but a bug in GCC prevents this,
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0") # causing "may be used uninitialized" errors: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58455
-set(CMAKE_C_FLAGS_RELEASE   "-DNDEBUG") # CMake adds '-O3' by default,
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG") # which would overwrite our '-O2' from dpkg-buildflags
+set(CMAKE_C_FLAGS_RELEASE   "-DNDEBUG -O2") # CMake adds '-O3' by default
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2") # but currently only '-O2' is tested
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # Use "-fPIC" for all targets, including static libs
-
-include(KurentoGitHelpers)
-get_git_version(PROJECT_VERSION 1.1.3-dev)
-install_git_hook(pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 
 find_package(PkgConfig)
 pkg_check_modules(JSONCPP REQUIRED kmsjsoncpp>=0.6.0)
@@ -30,7 +36,6 @@ pkg_check_modules(JSONCPP REQUIRED kmsjsoncpp>=0.6.0)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 include(GNUInstallDirs)
-
 set(CUSTOM_PREFIX "kurento")
 set(INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}/jsonrpc")
 
