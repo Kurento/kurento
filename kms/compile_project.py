@@ -207,6 +207,7 @@ def get_version():
 
     if cmd_file.close() is None:
         print("[buildpkg::get_version] Found version: " + cmd_out)
+        cmd_out = cmd_out.split("-")[0]
         return cmd_out
     else:
         print("[buildpkg::get_version] ERROR: Running 'kurento_get_version.sh'")
@@ -218,21 +219,16 @@ def get_debian_version(simplify_dev_version, dist):
     if version is None:
         return None
 
-    version = version[:version.rfind("-"):]
-
     # Get either the latest tag, or the initial commit if no tags exist yet
     last_release = (os.popen(
         "git describe --tags --abbrev=0 || git rev-list --max-parents=0 HEAD")
-                    .read())
-    last_release = last_release[:last_release.rfind("\n"):]
+                    .read().strip())
 
     current_commit = os.popen(
-        "git rev-parse --short HEAD").read()
-    current_commit = current_commit[:current_commit.rfind("\n"):]
+        "git rev-parse --short HEAD").read().strip()
 
     num_commits = os.popen(
-        "git log " + last_release + "..HEAD --oneline | wc -l").read()
-    num_commits = num_commits[:num_commits.rfind("\n"):]
+        "git log " + last_release + "..HEAD --oneline | wc -l").read().strip()
 
     now = datetime.fromtimestamp(time())
 
@@ -252,8 +248,9 @@ def get_debian_version(simplify_dev_version, dist):
     else:
         # This is a Release build
         # FIXME - this is a hack done to allow multiple builds of a package
-        # with the same version number, a consecuence of using a linear
-        # pipeline of dependent jobs in CI.
+        # with the same version number.
+        # This is due to the fact that the repos won't allow uploading
+        # a new file if another one of the same name already exists.
         # With an ideal workflow for releases, the version numbers should
         # be something like "6.6.2" and not "6.6.2-20170605185155"
         version = (version
