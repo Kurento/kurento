@@ -1,3 +1,41 @@
+kms-elements-6.0 (6.6.2) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+
+  * Added
+    - REMB: Add "COMEDIA"/automatic port discovery.
+    - Allow AppSrc pipeline DOT diagrams to be returned, by @kc7bfi
+      (David Robison).
+    - Eat all bus messages from 'queue2', by @kc7bfi (David Robison).
+
+  * Changed
+    - Old ChangeLog.md moved to the new format in this CHANGELOG.md file.
+    - CMake: Full review of all CMakeLists.txt files to tidy up and homogenize
+      code style and compiler flags.
+    - CMake: Position Independent Code flags ("-fPIC") were scattered around
+      projects, and are now removed. Instead, the more CMake-idiomatic variable
+      "CMAKE_POSITION_INDEPENDENT_CODE" is used.
+    - CMake: All projects now compile with
+      "[-std=c11|-std=c++11] -Wall -Werror -pthread".
+    - CMake: Debug builds now compile with "-g -O0" (while default CMake used
+      "-O1" for Debug builds).
+    - CMake: include() and import() commands were moved to the code areas where
+      they are actually required.
+    - CMake: Allow local inclusions in FindKmsWebRtcEndpointLib.
+    - Improve log messages when STUN or TURN config is missing.
+
+  * Fixed
+    - Bugfix: Out of bound access on SDP medias.
+    - Use format macros to fix compiler errors on 32bit systems, by @fancycode
+      (Joachim Bauch).
+    - Debian: Use either "ffmpeg" or "libav" as dependencies (which adds
+      compatibility with Ubuntu Xenial or Trusty, respectively).
+    - *FIXME* Disable failing IPv6 test.
+    - Workaround buggy libnice Foundation strings.
+    - Fix missing header in "HttpEndPointServer.hpp".
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Fri, 24 Jul 2017 11:00:00 +0200
+
 kms-elements-6.0 (6.6.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
