@@ -5,8 +5,8 @@ Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-6.0-dev (>= 6.6.1),
- kms-elements-6.0-dev (>= 6.6.1),
+ kms-core-6.0-dev (>= 6.6.2),
+ kms-elements-6.0-dev (>= 6.6.2),
  libsoup2.4-dev,
  libopencv-dev
 Standards-Version: 3.9.4

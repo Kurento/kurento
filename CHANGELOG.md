@@ -1,0 +1,55 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [6.6.2] - 2017-07-24
+
+### Changed
+- Old ChangeLog.md moved to the new format in this CHANGELOG.md file.
+- CMake: Full review of all CMakeLists.txt files to tidy up and homogenize code style and compiler flags.
+- CMake: Position Independent Code flags ("-fPIC") were scattered around projects, and are now removed. Instead, the more CMake-idiomatic variable "CMAKE_POSITION_INDEPENDENT_CODE" is used.
+- CMake: All projects now compile with "[-std=c11|-std=c++11] -Wall -Werror -pthread".
+- CMake: Debug builds now compile with "-g -O0" (while default CMake used "-O1" for Debug builds).
+- CMake: include() and import() commands were moved to the code areas where they are actually required.
+
+## [6.6.1] - 2016-09-30
+
+### Changed
+- Improve compilation process.
+- CMake: Rename library testutils to filtertestutils.
+- CMake: Rename constructor test to filters_constructors.
+- CMake: Avoid using global cmake directories.
+- CMake: Avoid the use of global include directories.
+
+## [6.6.0] - 2016-09-09
+
+## [6.5.0] - 2016-05-27
+
+### Changed
+- Changed license to Apache 2.0.
+- Updated documentation.
+- Test: Update and activate filter tests.
+- Logooverlay: Add test for kmslogooverlay filter.
+
+## [6.4.0] - 2016-02-24
+
+## [6.3.0] - 2019-01-19
+
+## 6.2.0 - 2015-11-25
+
+### Added
+- OpenCvFilter: Now exceptions raised in OpenCV code are sent to the client as errors.
+
+### Changed
+- Update GStreamer version to 1.7.
+- GStreamerFilter: Improve command parser using `gst-launch` parser.
+- KmsOpencvFilter: Convert KurentoExceptions into bus messages.
+
+[6.6.2]: https://github.com/Kurento/kms-filters/compare/6.6.1...6.6.2
+[6.6.1]: https://github.com/Kurento/kms-filters/compare/6.6.0...6.6.1
+[6.6.0]: https://github.com/Kurento/kms-filters/compare/6.5.0...6.6.0
+[6.5.0]: https://github.com/Kurento/kms-filters/compare/6.4.0...6.5.0
+[6.4.0]: https://github.com/Kurento/kms-filters/compare/6.3.0...6.4.0
+[6.3.0]: https://github.com/Kurento/kms-filters/compare/6.2.0...6.3.0
