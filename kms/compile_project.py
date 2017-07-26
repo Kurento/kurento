@@ -265,13 +265,21 @@ def get_debian_version(simplify_dev_version, dist):
 
 def request_http(url, cert, id_rsa, data=None):
     if data is None:
-        req = requests.post(url, verify=False, cert=(cert, id_rsa))
-        print(req.text)
+        try:
+            print("[buildpkg::request_http] Run HTTP request")
+            req = requests.post(url, verify=False, cert=(cert, id_rsa))
+            req.raise_for_status()
+            print("[buildpkg::request_http] DONE:"
+                  " Running HTTP request:\n{}".format(req.text))
+        except requests.RequestException:
+            print("[buildpkg::request_http] ERROR:"
+                  " Running HTTP request")
+            exit(1)
     else:
         try:
             print("[buildpkg::request_http] Run 'curl'")
             subprocess.check_call(
-                "curl --insecure --key " + id_rsa
+                "curl --fail --insecure --key " + id_rsa
                 + " --cert " + cert
                 + " -X POST \"" + url + "\""
                 + " --data-binary @" + data, shell=True)
