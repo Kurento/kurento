@@ -1,3 +1,14 @@
+kms-elements-6.0 (6.6.3) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+
+  * Changed
+    - Prevent frames from building up in the buffer if the CPU falls behind,
+      by @kc7bfi (David Robison).
+  * Prepare release 6.6.3
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Thu, 10 Aug 2017 16:07:16 +0200
+
 kms-elements-6.0 (6.6.2) testing; urgency=medium
 
   [ Juan Navarro Moreno ]
