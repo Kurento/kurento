@@ -1,0 +1,18 @@
+digraph {
+    rankdir = "RL";
+    {
+        rank = "same";
+        "kms-cmake-utils";
+        "kurento-module-creator";
+    }
+    "kms-jsonrpc" -> "kms-cmake-utils";
+    "kms-core" -> {"kms-cmake-utils" "kms-jsonrpc" "kurento-module-creator"};
+    "kms-elements" -> {"kms-core"};
+    "kms-filters" -> "kms-elements";
+    "kms-chroma" -> {"kms-core" "kms-elements" "kms-filters"};
+    "kms-crowddetector" -> {"kms-core" "kms-elements" "kms-filters"};
+    "kms-datachannelexample" -> {"kms-core" "kms-elements" "kms-filters"};
+    "kms-platedetector" -> {"kms-core" "kms-elements" "kms-filters"};
+    "kms-pointerdetector" -> {"kms-core" "kms-elements" "kms-filters"};
+    "kurento-media-server" -> {"kms-core" "kms-elements" "kms-filters"};
+}

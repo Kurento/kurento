@@ -1,0 +1,18 @@
+digraph {
+    rankdir = "RL";
+    {
+        rank = "same";
+        "gstreamer";
+        "libsrtp";
+        "openh264";
+        "usrsctp";
+        "jsoncpp";
+    }
+    "gst-plugins-base" -> "gstreamer";
+    "gst-plugins-good" -> "gst-plugins-base";
+    "gst-plugins-ugly" -> "gst-plugins-base";
+    "gst-libav" -> "gst-plugins-base";
+    "gst-plugins-bad" -> {"gst-plugins-base" "libsrtp" "openh264"};
+    "openwebrtc-gst-plugins" -> {"gstreamer" "gst-plugins-base" "usrsctp"};
+    "libnice" -> "gstreamer";
+}

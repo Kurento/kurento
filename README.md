@@ -12,6 +12,9 @@ doc-kurento
 
 Kurento Documentation. Made with [Sphinx] and [Read-the-docs] theme.
 
+This repo also hosts some static documents:
+- [KMS Development Guide](static/kms-development-guide.md)
+
 What is Kurento
 ---------------
 
