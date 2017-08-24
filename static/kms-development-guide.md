@@ -408,12 +408,13 @@ for pkg in \
 do apt-get purge --auto-remove --yes $pkg ; done
 ```
 
-Optional: Add Kurento Packages Repository (see section "**Dependency resolution**"):
+Optional: Add Kurento Packages Repository. The section [Dependency resolution](#dependency-resolution-to-repo-or-not-to-repo) explains what is the effect of doing this step:
 
 ```
-tee /etc/apt/sources.list.d/kurento-xenial-dev.list > /dev/null <<EOF
+REPO="xenial-dev"  # KMS Develop for Ubuntu 16.04 (Xenial)
+tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
 # Kurento Packages repository
-deb http://ubuntu.kurento.org xenial-dev kms6
+deb http://ubuntu.kurento.org ${REPO} kms6
 EOF
 wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
 apt-get update
@@ -496,7 +497,7 @@ KMS cannot be built in Trusty without adding the Kurento Packages Repository, be
 
 This means that it is not possible to build the whole KMS without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with `apt-get`.
 
-In the case that we want to build the whole KMS libraries and modules, the solution to this problem is to clone each module separately, and build them in the order given by their dependency graph, which is this (see section "**Repository dependency graph**"):
+In the case that we want to build the whole KMS libraries and modules, the solution to this problem is to clone each module separately, and build them in the order given by their [dependency graph](#repository-dependency-graph), which is this:
 
 1. gstreamer
 2. gst-plugins-base
