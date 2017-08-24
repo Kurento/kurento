@@ -179,7 +179,7 @@ For this reason, **kms-core**, **ffmpeg** and **libnice** libraries have to be i
 
 In KMS, we have developed a custom CMake command to search a library in several places. This command is called **`generic_find`** and it is located in the **kms-cmake-utils** repository.
 
-**kms-omni-build** is an special project because it is designed to build all KMS Main Repositories from a single entry point. **kms-omni-build** includes the other KMS Main Repositories as Git submodules: it makes KMS development easier because if you build kms-omni-build project, you don’t need to install libraries of KMS Main Repositories manually. However, all development libraries must still be installed manually.
+**kms-omni-build** is an special project because it is designed to build all KMS Main Repositories from a single entry point. This repo brings the other KMS Main Repositories as Git submodules: it makes KMS development easier because if you build this project, you don’t need to manually install the libraries of the other KMS Main Repositories. However, all other development and support libraries must still be installed manually.
 
 To build KMS from sources you first have to decide on which part you want to work:
 - **Main KMS development**: You want to make code changes in Main Repositories and test them in your development machine, to see how the changes affect KMS. Or maybe you want to debug KMS with GDB or analyze it with Valgrind.
@@ -241,21 +241,21 @@ apt-get install --no-install-recommends \
 
 #### Install KMS fork libraries
 
-Run as root:
+First, add the Kurento repository to Apt. Run as root:
 
 ```
-DIST="xenial-dev"
+REPO="xenial-dev"  # KMS Develop for Ubuntu 16.04 (Xenial)
 tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
 # Kurento Packages repository
-deb http://ubuntu.kurento.org ${DIST} kms6
+deb http://ubuntu.kurento.org ${REPO} kms6
 EOF
 wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
 apt-get update
 ```
 
-**Note 1**: For Ubuntu 14.04 (Trusty), use `trusty-dev`: `DIST="trusty-dev"`
+**Note 1**: In order to install the Release version, remove the `-dev` suffix: `REPO="xenial"`
 
-**Note 2**: In order to install the Release version, remove the `-dev` suffix: `DIST="xenial"`
+**Note 2**: For Ubuntu 14.04 (Trusty), use `trusty-dev`: `REPO="trusty-dev"`
 
 Now, the fork packages can be installed from the Kurento repo. Run as root:
 
@@ -280,6 +280,21 @@ apt-get install --no-install-recommends \
   ffmpeg
 ```
 
+Optionally, install the debugging symbols:
+
+```
+apt-get install --no-install-recommends \
+  libgstreamer1.5-0-dbg \
+  gstreamer1.5-plugins-base-dbg \
+  gstreamer1.5-plugins-good-dbg \
+  gstreamer1.5-plugins-bad-dbg \
+  gstreamer1.5-plugins-ugly-dbg \
+  gstreamer1.5-libav-dbg \
+  libnice-dbg \
+  openwebrtc-gst-plugins-dbg \
+  kmsjsoncpp-dbg
+```
+
 
 #### Download KMS
 
@@ -289,7 +304,7 @@ Run:
 git clone https://github.com/Kurento/kms-omni-build.git
 cd kms-omni-build
 git submodule init
-git submodule update --remote
+git submodule update --recursive --remote
 ```
 
 
@@ -300,7 +315,7 @@ Run:
 ```
 TYPE=Debug
 mkdir build-$TYPE && cd build-$TYPE
-cmake -DCMAKE_BUILD_TYPE=$TYPE ..
+cmake -DCMAKE_BUILD_TYPE=$TYPE -DCMAKE_VERBOSE_MAKEFILE=ON ..
 make
 ```
 
@@ -325,7 +340,8 @@ kurento-media-server/server/kurento-media-server \
   --conf-file=../kurento-media-server/kurento.conf.json \
   --gst-plugin-path=. \
   --gst-debug-level=3 \
-  --gst-debug=Kurento*:4 --gst-debug=kms*:4
+  --gst-debug=kms*:4 \
+  --gst-debug=Kurento*:4
 ```
 
 You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides, the global logging level is specified with `--gst-debug-level`.
