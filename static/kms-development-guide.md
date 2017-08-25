@@ -20,6 +20,7 @@
       - [Build KMS](#build-kms)
       - [Launch KMS](#launch-kms)
       - [Build and run KMS tests](#build-and-run-kms-tests)
+      - [Clean your system](#clean-your-system)
     - [Working on a forked library](#working-on-a-forked-library)
       - [Full cycle](#full-cycle)
       - [In-place linking](#in-place-linking)
@@ -250,7 +251,7 @@ wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
 apt-get update
 ```
 
-**Note 1**: Run only _one_ of the lines that set the variable `REPO`. The suffix `-dev` indicates a development repository, and may contain unstable packages. For a production system, choose the repo without that suffix.
+**Note**: Run only _one_ of the lines that set the variable `REPO`. The suffix `-dev` indicates a development repository, and may contain unstable packages. For a production system, choose the repo without that suffix.
 
 Now, the fork packages can be installed from the Kurento repo. Run as root:
 
@@ -353,6 +354,29 @@ If you want to analyze memory usage with Valgrind, use `make <TestName>.valgrind
 For example: `make test_agnosticbin.valgrind`
 
 
+#### Clean your system
+
+To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command, and for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option `--yes`, which makes the process automatic. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
+
+Run as root:
+
+```
+for pkg in \
+  '^(kms|kurento).*' \
+  ffmpeg \
+  '^gir1.2-gst.*1.5' \
+  '^(lib)?gstreamer.*1.5.*' \
+  '^lib(nice|s3-2|srtp|usrsctp).*' \
+  '^srtp-.*' \
+  '^openh264(-gst-plugins-bad-1.5)?' \
+  '^openwebrtc-gst-plugins.*' \
+  '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev' \
+  '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev' \
+  uuid-dev
+do apt-get purge --auto-remove $pkg ; done
+```
+
+
 ### Working on a forked library
 
 These are the two typical workflows used to work with fork libraries:
@@ -391,31 +415,11 @@ Versions number of Development packages are timestamped, so a developer is able 
 
 #### Example: kms-core
 
-Optional: Make sure the system is in a clean state, removing all KMS packages:
+**Optional**: Make sure the system is in a clean state: the section [Clean your system](#clean-your-system) explains how to do this.
 
-```
-for pkg in \
-  kurento-module-creator-4.0 kms-cmake-utils \
-  '^kmsjsoncpp.*' '^kms-jsonrpc-1.0.*' '^kms-.*-6.0.*' \
-  '^gir1.2-gst.*1.5' '^gstreamer1.5.*' '^libgstreamer.*1.5.*' \
-  '^libnice.*' '^gstreamer.*-nice' \
-  '^libboost.*-dev' '^libopencv.*-dev' ffmpeg
-do apt-get purge --auto-remove --yes $pkg ; done
-```
+**Optional**: Add Kurento Packages Repository. The section [Dependency resolution](#dependency-resolution-to-repo-or-not-to-repo) explains what is the effect of adding the repo, and the section [Install KMS fork libraries](#install-kms-fork-libraries) explains how to do this.
 
-Optional: Add Kurento Packages Repository. The section [Dependency resolution](#dependency-resolution-to-repo-or-not-to-repo) explains what is the effect of doing this step:
-
-```
-REPO="xenial-dev"  # KMS Develop for Ubuntu 16.04 (Xenial)
-tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
-# Kurento Packages repository
-deb http://ubuntu.kurento.org ${REPO} kms6
-EOF
-wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
-apt-get update
-```
-
-Install system tools and Python modules:
+Install system tools and Python modules. Run as root:
 
 ```
 apt-get install --no-install-recommends \
