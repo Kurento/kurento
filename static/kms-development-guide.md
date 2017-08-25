@@ -84,13 +84,14 @@ There are several types of repositories:
     - [usrsctp](https://github.com/Kurento/usrsctp)
 
 - **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.6, these repositories are:
-    - [kms-core](https://github.com/Kurento/kms-core)
-    - [kms-elements](https://github.com/Kurento/kms-elements)
-    - [kms-filters](https://github.com/Kurento/kms-filters)
-    - [kms-jsonrpc](https://github.com/Kurento/kms-jsonrpc)
-    - [kms-cmake-utils](https://github.com/Kurento/kms-cmake-utils)
-    - [kurento-media-server](https://github.com/Kurento/kurento-media-server)
-    - [kurento-module-creator](https://github.com/Kurento/kurento-module-creator)
+    - [kms-cmake-utils](https://github.com/Kurento/kms-cmake-utils): Contains a set of utilities for building KMS with CMake.
+    - [kms-core](https://github.com/Kurento/kms-core): Contains the core
+    GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
+    - [kms-elements](https://github.com/Kurento/kms-elements): Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
+    - [kms-filters](https://github.com/Kurento/kms-filters): Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
+    - [kms-jsonrpc](https://github.com/Kurento/kms-jsonrpc): Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
+    - [kurento-media-server](https://github.com/Kurento/kurento-media-server): Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
+    - [kurento-module-creator](https://github.com/Kurento/kurento-module-creator): It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
 
 - **Omni-Build Repository**: The [kms-omni-build](https://github.com/Kurento/kms-omni-build) repository is a dummy umbrella for the other KMS Main Repositories. It has no actual code; instead, it only has the required CMake code to allow building the whole KMS project in one go. For this, it gets a copy of the required repositories via Git submodules.
 
@@ -110,16 +111,7 @@ There are several types of repositories:
    - [kurento-tutorial-node](https://github.com/Kurento/kurento-tutorial-node)
    - [kurento-tutorial-js](https://github.com/Kurento/kurento-tutorial-js)
 
-KMS Main Repositories have the following contents:
-- **kms-core**: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
-- **kms-elements**: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
-- **kms-filters**: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
-- **kms-jsonrpc**: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
-- **kms-cmake-utils**: Contains a set of utilities for building KMS with CMake.
-- **kurento-media-server**: Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
-- **kurento-module-creator**: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
-
-A KMS developer must know how to work with KMS Fork and Main Repositories and understand that each of these have a different development lifecycle. The majority of development for KMS will occur at the KMS Main Repositories, while it's unusual to make changes in Fork Repositories except for updating their upstream versions.
+A KMS developer must know how to work with KMS Fork and Main Repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at the KMS Main Repositories, while it's unusual to make changes in Fork Repositories except for updating their upstream versions.
 
 
 ### Repository dependency graph
@@ -140,7 +132,7 @@ It is not a trivial task to configure the compiler to use a set of libraries bec
 
 For example, if you want to compile a C program which depends on GLib 2.0, you can run:
 
-```sh
+```
 gcc -o program program.c $(pkg-config --libs --cflags glib-2.0)
 ```
 
@@ -244,7 +236,12 @@ apt-get install --no-install-recommends \
 First, add the Kurento repository to Apt. Run as root:
 
 ```
+# Choose one:
+REPO="trusty"      # KMS Release for Ubuntu 14.04 (Trusty)
+REPO="trusty-dev"  # KMS Develop for Ubuntu 14.04 (Trusty)
+REPO="xenial"      # KMS Release for Ubuntu 16.04 (Xenial)
 REPO="xenial-dev"  # KMS Develop for Ubuntu 16.04 (Xenial)
+
 tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
 # Kurento Packages repository
 deb http://ubuntu.kurento.org ${REPO} kms6
@@ -253,9 +250,7 @@ wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
 apt-get update
 ```
 
-**Note 1**: In order to install the Release version, remove the `-dev` suffix: `REPO="xenial"`
-
-**Note 2**: For Ubuntu 14.04 (Trusty), use `trusty-dev`: `REPO="trusty-dev"`
+**Note 1**: Run only _one_ of the lines that set the variable `REPO`. The suffix `-dev` indicates a development repository, and may contain unstable packages. For a production system, choose the repo without that suffix.
 
 Now, the fork packages can be installed from the Kurento repo. Run as root:
 
