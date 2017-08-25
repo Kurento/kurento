@@ -130,6 +130,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - PlayerEndpoint: set correct timestamps when source does not provide them properly.
 - Composite: Fix bugs simplifying internal design.
 
+[6.6.3]: https://github.com/Kurento/kms-elements/compare/6.6.2...6.6.3
 [6.6.2]: https://github.com/Kurento/kms-elements/compare/6.6.1...6.6.2
 [6.6.1]: https://github.com/Kurento/kms-elements/compare/6.6.0...6.6.1
 [6.6.0]: https://github.com/Kurento/kms-elements/compare/6.5.0...6.6.0
