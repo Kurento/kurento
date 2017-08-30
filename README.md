@@ -14,7 +14,7 @@ Kurento Documentation. Made with [Sphinx] and [Read-the-docs] theme.
 
 This repo also hosts some static documents:
 - [KMS Development Guide](static/kms_development_guide.md)
-- [KMS WebRTC Endpoint Events](kms_webrtc_endpoint_events.md)
+- [KMS WebRTC Endpoint Events](static/kms_webrtc_endpoint_events.md)
 
 What is Kurento
 ---------------

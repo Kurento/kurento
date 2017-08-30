@@ -2,6 +2,32 @@
 
 The WebRtcEndpoint class manages a WebRTC connection between KMS and a remote peer. This includes the ICE Gathering process, used to find local and remote addresses which provide a working connection between both peers.
 
+Table of contents:
+
+<!-- TOC -->
+
+- [KMS WebRTC Endpoint Events](#kms-webrtc-endpoint-events)
+  - [Basic usage](#basic-usage)
+  - [Events](#events)
+    - [MediaElement events](#mediaelement-events)
+      - [ElementConnected](#elementconnected)
+      - [ElementDisconnected](#elementdisconnected)
+      - [MediaFlowInStateChange](#mediaflowinstatechange)
+      - [MediaFlowOutStateChange](#mediaflowoutstatechange)
+    - [BaseRtpEndpoint events](#basertpendpoint-events)
+      - [ConnectionStateChanged](#connectionstatechanged)
+      - [MediaStateChanged](#mediastatechanged)
+    - [WebRtcEndpoint events](#webrtcendpoint-events)
+      - [IceComponentStateChange](#icecomponentstatechange)
+      - [IceCandidateFound](#icecandidatefound)
+      - [NewCandidatePairSelected](#newcandidatepairselected)
+      - [IceGatheringDone](#icegatheringdone)
+      - [DataChannelClose](#datachannelclose)
+      - [DataChannelOpen](#datachannelopen)
+  - [Sample sequence of events](#sample-sequence-of-events)
+
+<!-- /TOC -->
+
 
 ## Basic usage
 
