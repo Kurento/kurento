@@ -169,6 +169,12 @@ This event carries the state values from the signal [NiceAgent::"component-state
 - State = _Ready_: All local candidates have been gathered, all pairs of local and remote candidates have been tested for connectivity, and a successful connection was established. NiceAgent state: `NICE_COMPONENT_STATE_READY`, "ICE concluded, candidate pair selection is now final".
 - State = _Failed_: All local candidates have been gathered, all pairs of local and remote candidates have been tested for connectivity, but still none of the connection checks was successful, so no connectivity was reached to the remote peer. NiceAgent state: `NICE_COMPONENT_STATE_FAILED`, "Connectivity checks have been completed, but connectivity was not established".
 
+This graph shows the possible state changes:
+
+![Source: libnice/docs/reference/libnice/states.png](kms_webrtc_endpoint_events-libnice_states.png)
+
+**Note**: The states _Ready_ and _Failed_ indicate that the ICE transport has completed gathering and is currently idle. However, since events such as adding a new interface or a new TURN server will cause the state to go back, _Ready_ and _Failed_ are **not** terminal states.
+
 
 #### IceCandidateFound
 

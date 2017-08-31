@@ -119,7 +119,7 @@ A KMS developer must know how to work with KMS Fork and Main Repositories and un
 
 This graph shows the dependencies between projects:
 
-![All dependency relationships](img/dependencies-all.png)
+![All dependency relationships](kms_development_guide-dependencies_all.png)
 
 
 ## Development 101
