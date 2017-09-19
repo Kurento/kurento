@@ -289,10 +289,11 @@ void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
   std::map<std::string, std::shared_ptr <IceCandidatePair>>::iterator it;
 
   GST_DEBUG_OBJECT (element,
-                    "New pair selected stream_id: %s, component_id: %d, local candidate: %s,"
-                    " remote candidate: %s", streamId, componentId,
-                    kms_ice_candidate_get_candidate (localCandidate),
-                    kms_ice_candidate_get_candidate (remoteCandidate) );
+      "New candidate pair selected, local: '%s', remote: '%s'"
+      ", stream_id: '%s', component_id: %d",
+      kms_ice_candidate_get_candidate (localCandidate),
+      kms_ice_candidate_get_candidate (remoteCandidate),
+      streamId, componentId);
 
   candidatePair = std::make_shared< IceCandidatePair > (streamId,
                   componentId,

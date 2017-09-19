@@ -120,8 +120,6 @@ KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * 
 gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, KmsSdpMediaHandler *handler, GstSDPMedia *media);
 gboolean kms_webrtc_session_set_ice_candidates (KmsWebrtcSession * self, KmsSdpMediaHandler * handler, GstSDPMedia *media);
 gboolean kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self, KmsSdpMediaHandler * handler, GstSDPMedia *media);
-void kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate *candidate, guint8 index);
-gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate * candidate);
 gchar * kms_webrtc_session_get_stream_id (KmsWebrtcSession * self, KmsSdpMediaHandler *handler);
 
 void kms_webrtc_session_start_transport_send (KmsWebrtcSession * self, gboolean offerer);

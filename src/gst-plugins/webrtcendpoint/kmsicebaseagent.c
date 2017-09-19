@@ -498,7 +498,7 @@ kms_ice_base_agent_class_init (KmsIceBaseAgentClass * klass)
       KMS_TYPE_ICE_CANDIDATE);
 
   /**
-  * KmsIceBaseAgent::on-ice-candidate-gathering-done:
+  * KmsIceBaseAgent::on-ice-gathering-done:
   * @self: the object which received the signal
   *
   * Notify that all candidates have been gathered for a #KmsIceBaseAgent
