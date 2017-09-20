@@ -891,12 +891,12 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
     KmsRtpBaseConnection *conn;
     guint port;
 
-    //J REVIEW: shouldn't it check for inactive instead?
-//    if (sdp_utils_media_is_inactive (media)) {
-//      GST_DEBUG_OBJECT (self, "Media is inactive (id=%u)", index);
-//      continue;
-//    }
-    if (media->port == 0) {
+    if (gst_sdp_media_get_port (media) == 0) {
+      // RFC 3264 section 5.1:
+      // A port number of zero indicates that the media stream is not wanted.
+      // We cannot use `sdp_utils_media_is_inactive()` here because
+      // medias marked as "inactive" still should send RTCP packets.
+      GST_DEBUG_OBJECT (self, "Media is unwanted (id=%u)", i);
       continue;
     }
 
