@@ -39,8 +39,6 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh \
   && apt-get install -y nodejs \
   && rm nodesource_setup.sh
 
-ENV PATH $PATH:/nodejs/bin
-
 RUN npm -g install bower
 
 RUN apt-get update \

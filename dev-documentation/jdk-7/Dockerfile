@@ -34,8 +34,6 @@ ENV MAVEN_HOME /usr/share/maven
    && apt-get install -y nodejs \
    && rm nodesource_setup.sh
 
-ENV PATH $PATH:/nodejs/bin
-
 RUN npm -g install bower
 
 RUN apt-get update \
