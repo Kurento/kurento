@@ -1,3 +1,6 @@
+# Disable error when functions are unused
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+
 set(KMS_TEST_UTILS_SOURCES
   kmstestutils.h kmstestutils.c
 )
