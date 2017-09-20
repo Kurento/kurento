@@ -250,6 +250,8 @@ kms_ice_nice_agent_new (GMainContext * context)
   g_signal_connect (self->priv->agent, "new-selected-pair-full",
       G_CALLBACK (kms_ice_nice_agent_new_selected_pair_full), self);
 
+  nice_debug_enable (TRUE);
+
   return self;
 }
 
