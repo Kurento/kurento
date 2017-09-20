@@ -2034,13 +2034,14 @@ typedef struct _CandidateRangeData
 } CandidateRangeData;
 
 static void
-on_ice_candidate_range (GstElement * self, gchar * sess_id,
+port_range_on_ice_candidate (GstElement * self, gchar * sess_id,
     KmsIceCandidate * candidate, CandidateRangeData * data)
 {
-  guint port = kms_ice_candidate_get_port (candidate);
+  const guint port = kms_ice_candidate_get_port (candidate);
 
-  GST_DEBUG ("Candidate: %s", kms_ice_candidate_get_candidate (candidate));
-  GST_DEBUG ("Port: %u", kms_ice_candidate_get_port (candidate));
+  GST_DEBUG ("Candidate: '%s'", kms_ice_candidate_get_candidate (candidate));
+  GST_DEBUG ("Port: %u, min_port: %u, max_port: %u",
+      port, data->min_port, data->max_port);
 
   // Acording to https://tools.ietf.org/html/rfc6544#section-4.5
   // port == 9 should be discarded
@@ -2075,7 +2076,7 @@ GST_START_TEST (test_port_range)
   GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
 
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate_range), &offerer_cand_data);
+      G_CALLBACK (port_range_on_ice_candidate), &offerer_cand_data);
 
   /* SDP negotiation */
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
@@ -2092,8 +2093,30 @@ GST_START_TEST (test_port_range)
   g_object_unref (offerer);
   g_free (offerer_sess_id);
 }
+GST_END_TEST
 
-GST_END_TEST;
+static void
+not_enough_ports_on_ice_candidate (GstElement * self, gchar * sess_id,
+    KmsIceCandidate * candidate, gpointer data)
+{
+  static guint udp_candidates_count = 0;
+  static guint tcp_candidates_count = 0;
+
+  KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
+
+  switch (proto) {
+    case KMS_ICE_PROTOCOL_TCP:
+      ++tcp_candidates_count;
+      break;
+    case KMS_ICE_PROTOCOL_UDP:
+    default:
+      ++udp_candidates_count;
+      break;
+  }
+
+  fail_if (udp_candidates_count > 3);
+}
+
 GST_START_TEST (test_not_enough_ports)
 {
   GArray *codecs_array;
@@ -2129,10 +2152,10 @@ GST_START_TEST (test_not_enough_ports)
       second_offerer_sess_id);
 
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate_range), &offerer_cand_data);
+      G_CALLBACK (not_enough_ports_on_ice_candidate), NULL);
 
   g_signal_connect (G_OBJECT (second_offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate_range), &offerer_cand_data);
+      G_CALLBACK (not_enough_ports_on_ice_candidate), NULL);
 
   /* SDP negotiation */
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
@@ -2152,10 +2175,22 @@ GST_START_TEST (test_not_enough_ports)
   g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
   fail_unless (ret);
 
+  /* libnice 0.1.13 should fail here because the second offerer cannot get
+   * two UDP ports for its two components.
+   *
+   * libnice 0.1.14 was improved in this regard, and shouldn't fail because
+   * even if it doesn't find UDP candidates, it should be able to find
+   * TCP-ACTIVE type ones. In this case, the test should check that not both
+   * of them are UDP.
+   */
+
   g_signal_emit_by_name (second_offerer, "gather-candidates",
       second_offerer_sess_id, &ret);
-  /* Candidates should not be get due to lack of ports */
+#ifdef HAVE_LIBNICE_0_1_14
+  fail_unless (ret);
+#else
   fail_if (ret);
+#endif
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (second_offer);

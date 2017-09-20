@@ -84,4 +84,12 @@ set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.5)
 enable_testing()
 
 add_subdirectory(src)
+
+# Used by test "webrtcendpoint", case "test_not_enough_ports"
+# Enabled if the system has libnice >=0.1.14
+if(NOT nice_VERSION VERSION_LESS "0.1.14")
+  message(STATUS "libnice version >= 0.1.14, enable specific tests")
+  add_definitions(-DHAVE_LIBNICE_0_1_14)
+endif()
+
 add_subdirectory(tests)
