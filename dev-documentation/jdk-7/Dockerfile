@@ -28,9 +28,11 @@ RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/bina
 
 ENV MAVEN_HOME /usr/share/maven
 
-RUN mkdir /nodejs \
-  && curl -sL https://deb.nodesource.com/setup_0.12 | bash - \
-  && apt-get install -y nodejs
+# Installing nodejs
+ RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh \
+   && bash nodesource_setup.sh \
+   && apt-get install -y nodejs \
+   && rm nodesource_setup.sh
 
 ENV PATH $PATH:/nodejs/bin
 
