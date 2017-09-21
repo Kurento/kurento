@@ -52,6 +52,12 @@ struct _KmsIceCandidateClass
 
 typedef enum
 {
+  KMS_ICE_COMPONENT_RTP,
+  KMS_ICE_COMPONENT_RTCP
+} KmsIceComponent;
+
+typedef enum
+{
   KMS_ICE_PROTOCOL_UDP,
   KMS_ICE_PROTOCOL_TCP
 } KmsIceProtocol;
@@ -88,6 +94,7 @@ const gchar * kms_ice_candidate_get_stream_id (KmsIceCandidate * self);
 gchar * kms_ice_candidate_get_sdp_line (KmsIceCandidate * self);
 gchar * kms_ice_candidate_get_foundation (KmsIceCandidate * self);
 guint kms_ice_candidate_get_priority (KmsIceCandidate * self);
+KmsIceComponent kms_ice_candidate_get_component (KmsIceCandidate * self);
 KmsIceProtocol kms_ice_candidate_get_protocol (KmsIceCandidate * self);
 KmsIceCandidateType kms_ice_candidate_get_candidate_type (KmsIceCandidate * self);
 KmsIceTcpCandidateType kms_ice_candidate_get_candidate_tcp_type (KmsIceCandidate * self);

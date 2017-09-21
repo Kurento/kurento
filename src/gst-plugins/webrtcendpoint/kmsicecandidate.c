@@ -52,7 +52,7 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
 
 #define CANDIDATE_EXPR "^candidate:" \
   "(?<foundation>(" ICE_CHAR_ATTR_EXPR "){1,32})" \
-  " (?<cid>(" DIGIT_ATTR_EXPR "){1,5})" \
+  " (?<componentid>(" DIGIT_ATTR_EXPR "){1,5})" \
   " (?<transport>(udp|UDP|tcp|TCP))" \
   " (?<priority>(" DIGIT_ATTR_EXPR "){1,10})" \
   " (?<addr>[0-9.:a-zA-Z]+)" \
@@ -78,6 +78,7 @@ struct _KmsIceCandidatePrivate
   gchar *sdp_mid;
   guint8 sdp_m_line_index;
   gchar *foundation;
+  KmsIceComponent component;
   guint priority;
   gchar *ip;
   KmsIceProtocol protocol;
@@ -123,6 +124,17 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
   self->priv->priority = atoi (tmp);
   g_free (tmp);
 
+  tmp = g_match_info_fetch_named (match_info, "componentid");
+  if (g_strcmp0 (tmp, "1") == 0) {
+    self->priv->component = KMS_ICE_COMPONENT_RTP;
+  } else if (g_strcmp0 (tmp, "2") == 0) {
+    self->priv->component = KMS_ICE_COMPONENT_RTCP;
+  } else {
+    GST_ERROR_OBJECT (self, "Unsupported ice candidate component %s", tmp);
+    goto end;
+  }
+  g_free (tmp);
+
   tmp = g_match_info_fetch_named (match_info, "transport");
   if (g_strcmp0 (tmp, "TCP") == 0 || g_strcmp0 (tmp, "tcp") == 0) {
     self->priv->protocol = KMS_ICE_PROTOCOL_TCP;
@@ -132,7 +144,6 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
     GST_ERROR_OBJECT (self, "Unsupported protocol %s", tmp);
     goto end;
   }
-
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "type");
@@ -148,7 +159,6 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
     GST_ERROR_OBJECT (self, "Unsupported ice candidate type %s", tmp);
     goto end;
   }
-
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "tcptype");
@@ -377,6 +387,12 @@ guint
 kms_ice_candidate_get_priority (KmsIceCandidate * self)
 {
   return self->priv->priority;
+}
+
+KmsIceComponent
+kms_ice_candidate_get_component (KmsIceCandidate * self)
+{
+  return self->priv->component;
 }
 
 KmsIceProtocol
