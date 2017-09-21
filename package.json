@@ -32,7 +32,6 @@
   "dependencies": {
     "inherits": "^2.0.1",
     "ws": "^1.1.1",
-    "sockjs-client": "1.1.1",
     "bufferutil": "1.2.x",
     "utf-8-validate": "1.2.x"
 

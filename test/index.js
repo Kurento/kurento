@@ -28,7 +28,7 @@ var ws_uri = "ws://localhost:8888/kurento";
 const METHOD = 'test';
 
 process.on('uncaughtException', function (err) {
-  console.log(err);
+  console.debug(err);
   throw(err);
 });
 
