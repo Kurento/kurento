@@ -2097,24 +2097,18 @@ GST_END_TEST
 
 static void
 not_enough_ports_on_ice_candidate (GstElement * self, gchar * sess_id,
-    KmsIceCandidate * candidate, gpointer data)
+    KmsIceCandidate * candidate, gpointer offerer_num_pt)
 {
-  static guint udp_candidates_count = 0;
-  static guint tcp_candidates_count = 0;
+  const guint offerer_num = GPOINTER_TO_UINT (offerer_num_pt);
+  const KmsIceComponent component = kms_ice_candidate_get_component (candidate);
+  const KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
+  const KmsIceTcpCandidateType tcp_type =
+      kms_ice_candidate_get_candidate_tcp_type (candidate);
 
-  KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
-
-  switch (proto) {
-    case KMS_ICE_PROTOCOL_TCP:
-      ++tcp_candidates_count;
-      break;
-    case KMS_ICE_PROTOCOL_UDP:
-    default:
-      ++udp_candidates_count;
-      break;
+  if (offerer_num == 2 && component == KMS_ICE_COMPONENT_RTCP) {
+    fail_if (proto != KMS_ICE_PROTOCOL_TCP);
+    fail_if (tcp_type != KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE);
   }
-
-  fail_if (udp_candidates_count > 3);
 }
 
 GST_START_TEST (test_not_enough_ports)
@@ -2152,10 +2146,10 @@ GST_START_TEST (test_not_enough_ports)
       second_offerer_sess_id);
 
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), NULL);
+      G_CALLBACK (not_enough_ports_on_ice_candidate), GUINT_TO_POINTER (1));
 
   g_signal_connect (G_OBJECT (second_offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), NULL);
+      G_CALLBACK (not_enough_ports_on_ice_candidate), GUINT_TO_POINTER (2));
 
   /* SDP negotiation */
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
@@ -2180,8 +2174,19 @@ GST_START_TEST (test_not_enough_ports)
    *
    * libnice 0.1.14 was improved in this regard, and shouldn't fail because
    * even if it doesn't find UDP candidates, it should be able to find
-   * TCP-ACTIVE type ones. In this case, the test should check that not both
-   * of them are UDP.
+   * TCP-ACTIVE type ones for the second component of the second offerer.
+   *
+   * Example list of candidate gathering (from libnice-0.1.14 debug log):
+   * Component 1:
+   * UDP local candidate : [192.168.56.5]:55000 for s1/c1
+   * TCP-ACT local candidate : [192.168.56.5]:0 for s1/c1
+   * TCP-PASS local candidate : [192.168.56.5]:55000 for s1/c1
+   * UDP local candidate : [192.168.1.2]:55000 for s1/c1
+   * TCP-ACT local candidate : [192.168.1.2]:0 for s1/c1
+   * TCP-PASS local candidate : [192.168.1.2]:55002 for s1/c1
+   * Component 2:
+   * TCP-ACT local candidate : [192.168.56.5]:0 for s1/c2
+   * TCP-ACT local candidate : [192.168.1.2]:0 for s1/c2
    */
 
   g_signal_emit_by_name (second_offerer, "gather-candidates",
