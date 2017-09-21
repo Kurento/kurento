@@ -69,7 +69,7 @@ function setIceCandidateCallbacks(webRtcPeer, pc, onerror) {
   webRtcPeer.on('icecandidate', bufferizeCandidates(pc, function (error) {
     if (error) return onerror(error)
 
-    console.log('Received ICE candidate from WebRtcPeerRecvonly')
+    console.debug('Received ICE candidate from WebRtcPeerRecvonly')
   }))
 
   pc.addEventListener('icecandidate', function (event) {
@@ -78,7 +78,7 @@ function setIceCandidateCallbacks(webRtcPeer, pc, onerror) {
       webRtcPeer.addIceCandidate(candidate, function (error) {
         if (error) return onerror(error)
 
-        console.log('Received ICE candidate from PeerConnection:',
+        console.debug('Received ICE candidate from PeerConnection:',
           candidate)
       })
   })
@@ -314,7 +314,7 @@ QUnit.test('processOffer', function (assert) {
   function onerror(error) {
     if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
-      console.trace(error)
+      console.debug(error)
     }
 
     done()
@@ -333,11 +333,11 @@ QUnit.test('processOffer', function (assert) {
     ctx.peerConnection.addStream(stream)
 
     ctx.peerConnection.createOffer(function (offer) {
-        console.log('peerConnection.createOffer')
+        console.debug('peerConnection.createOffer')
         ctx.peerConnection.setLocalDescription(offer, function () {
-            console.log('peerConnection.setLocalDescription')
+            console.debug('peerConnection.setLocalDescription')
             self.processOffer(offer.sdp, function (error, sdpAnswer) {
-              console.log('self.processOffer')
+              console.debug('self.processOffer')
               if (error) return onerror(error)
 
               var answer = new RTCSessionDescription({

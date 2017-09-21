@@ -37,7 +37,7 @@ function onerror(error)
 {
   if(error)
   {
-    console.trace(error)
+    console.debug(error)
     process.exit(-1)
   }
 }
@@ -54,7 +54,7 @@ function writeReport(type, data, callback)
   {
     if(error) return callback(error);
 
-    console.log(type + ' report saved at ' + path);
+    console.debug(type + ' report saved at ' + path);
 
     callback(null, data)
   });
@@ -108,7 +108,7 @@ install([], undefined, {cwd: 'test'})
   installed = Object.keys(installed)
 
   if(installed.length)
-    console.log('Installed:',installed.join(', '));
+    console.debug('Installed:',installed.join(', '));
 
   tasks(['jsdoc', 'coverage'], {}, function()
   {

@@ -36,12 +36,12 @@ const script = (process.argv.length > 2) ? process.argv[2] : 'test'
 // Remove old report
 fs.remove(REPORTS_DIR, function(error)
 {
-  if(error) console.trace(error)
+  if(error) console.debug(error)
 
   // Exec test and fetch coverage data
   child_process.execFile(pkg.scripts[script], function(error)
   {
-    if(error) return console.trace(error)
+    if(error) return console.debug(error)
 
     // Create and upload new coverage data
     if(process.env.COVERALLS_REPO_TOKEN)
@@ -50,7 +50,7 @@ fs.remove(REPORTS_DIR, function(error)
     // Create HTML coverate report
     fs.copy('lib', REPORTS_DIR+'/lib', function(err)
     {
-      if(err) return console.trace(err)
+      if(err) return console.debug(err)
 
       var args =
       [

@@ -21,9 +21,9 @@ function writeReport(ext, data) {
   var path = REPORTS_DIR + '/' + require('../package.json').name + '.' + ext
 
   require('fs-extra').outputFile(path, data, function (error) {
-    if (error) return console.trace(error);
+    if (error) return console.debug(error);
 
-    console.log(ext + ' report saved at ' + path);
+    console.debug(ext + ' report saved at ' + path);
   });
 }
 
