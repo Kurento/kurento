@@ -71,12 +71,6 @@ do
   MAVEN_KURENTO_ORG=$(getent hosts maven.kurento.org | awk '{ print $1 }')
 done
 
-CHROMEDRIVER_KURENTO_ORG=$(getent hosts chromedriver.kurento.org | awk '{ print $1 }')
-while [ -z $CHROMEDRIVER_KURENTO_ORG ]
-do
-  CHROMEDRIVER_KURENTO_ORG=$(getent hosts chromedriver.kurento.org | awk '{ print $1 }')
-done
-
 BOWER_KURENTO_ORG=$(getent hosts bower.kurento.org | awk '{ print $1 }')
 while [ -z $BOWER_KURENTO_ORG ]
 do
@@ -85,7 +79,6 @@ done
 
 echo "$CODE_KURENTO_ORG code.kurento.org" >> /etc/hosts
 echo "$MAVEN_KURENTO_ORG maven.kurento.org" >> /etc/hosts
-echo "$CHROMEDRIVER_KURENTO_ORG chromedriver.kurento.org" >> /etc/hosts
 echo "$BOWER_KURENTO_ORG bower.kurento.org" >> /etc/hosts
 
 echo "Network configuration"
