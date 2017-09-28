@@ -7,7 +7,7 @@ MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 
 RUN apt-get update \
   && apt-get -y dist-upgrade \
-	&& apt-get install -y wget
+	&& apt-get install -y wget curl
 
 RUN	echo "deb http://ubuntu.kurento.org/ trusty kms6" | tee /etc/apt/sources.list.d/kurento.list \
 	&& wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add - \
