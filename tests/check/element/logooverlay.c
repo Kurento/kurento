@@ -25,7 +25,7 @@
 
 #include <kmstestutils.h>
 
-#define IMG_PATH BINARY_LOCATION "/imgs/mario-wings.png"
+#define IMG_PATH BINARY_LOCATION "/img/mario-wings.png"
 #define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
 
 #define IMAGES_TO_OVERLAY "images-to-overlay"
@@ -79,27 +79,54 @@ GST_START_TEST (set_properties)
   gst_structure_free (imageSt);
   g_object_unref (logooverlay);
 }
+GST_END_TEST
 
-GST_END_TEST static void
-bus_msg (GstBus * bus, GstMessage * msg, gpointer pipe)
+static void
+bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
 {
   switch (GST_MESSAGE_TYPE (msg)) {
-    case GST_MESSAGE_ERROR:{
-      GST_ERROR ("Error: %" GST_PTR_FORMAT, msg);
-      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipe),
-          GST_DEBUG_GRAPH_SHOW_ALL, "error");
-      fail ("Error received on bus");
+    case GST_MESSAGE_ERROR: {
+      GError *err = NULL;
+      gchar *dbg_info = NULL;
+
+      gst_message_parse_error (msg, &err, &dbg_info);
+      GST_ERROR ("Pipeline '%s': Bus error %d: %s",
+          GST_ELEMENT_NAME (pipeline), err->code, err->message);
+      GST_ERROR ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+      g_error_free (err);
+      g_free (dbg_info);
+
+      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+          GST_DEBUG_GRAPH_SHOW_ALL, "bus_error");
+
+      fail ("Pipeline '%s': Bus error", GST_ELEMENT_NAME (pipeline));
+
       break;
     }
-    case GST_MESSAGE_EOS:{
+    case GST_MESSAGE_WARNING: {
+      GError *err = NULL;
+      gchar *dbg_info = NULL;
+
+      gst_message_parse_error (msg, &err, &dbg_info);
+      GST_WARNING ("Pipeline '%s': Bus warning %d: %s",
+          GST_ELEMENT_NAME (pipeline), err->code, err->message);
+      GST_WARNING ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+      g_error_free (err);
+      g_free (dbg_info);
+
+      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+          GST_DEBUG_GRAPH_SHOW_ALL, "bus_warning");
+
+      fail ("Pipeline '%s': Bus warning", GST_ELEMENT_NAME (pipeline));
+
+      break;
+    }
+    case GST_MESSAGE_EOS: {
+      GST_DEBUG ("Pipeline '%s': Bus event: EOS (%s)",
+          GST_ELEMENT_NAME (pipeline), GST_OBJECT_NAME (msg->src));
+
       g_main_loop_quit (loop);
-      break;
-    }
-    case GST_MESSAGE_WARNING:{
-      GST_ERROR ("Warning: %" GST_PTR_FORMAT, msg);
-      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipe),
-          GST_DEBUG_GRAPH_SHOW_ALL, "error");
-      fail ("Warning received on bus");
+
       break;
     }
     default:
@@ -164,7 +191,7 @@ GST_START_TEST (player_with_filter)
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg_cb), pipeline);
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH, NULL);
@@ -264,7 +291,7 @@ GST_START_TEST (player_with_filter_many_changes)
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg_cb), pipeline);
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH, NULL);
