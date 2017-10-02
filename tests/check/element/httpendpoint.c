@@ -44,25 +44,51 @@ typedef struct _KmsConnectData
 static void
 bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
 {
-  switch (msg->type) {
-    case GST_MESSAGE_ERROR:{
-      GST_ERROR ("%s bus error: %" GST_PTR_FORMAT, GST_ELEMENT_NAME (pipeline),
-          msg);
+  switch (GST_MESSAGE_TYPE (msg)) {
+    case GST_MESSAGE_ERROR: {
+      GError *err = NULL;
+      gchar *dbg_info = NULL;
+
+      gst_message_parse_error (msg, &err, &dbg_info);
+      GST_ERROR ("Pipeline '%s': Bus error %d: %s",
+          GST_ELEMENT_NAME (pipeline), err->code, err->message);
+      GST_ERROR ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+      g_error_free (err);
+      g_free (dbg_info);
+
       GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
           GST_DEBUG_GRAPH_SHOW_ALL, "bus_error");
-      fail ("Error received on %s bus", GST_ELEMENT_NAME (pipeline));
+
+      fail ("Pipeline '%s': Bus error", GST_ELEMENT_NAME (pipeline));
+
       break;
     }
-    case GST_MESSAGE_WARNING:{
-      GST_WARNING ("%s bus: %" GST_PTR_FORMAT, GST_ELEMENT_NAME (pipeline),
-          msg);
+    case GST_MESSAGE_WARNING: {
+      GError *err = NULL;
+      gchar *dbg_info = NULL;
+
+      gst_message_parse_error (msg, &err, &dbg_info);
+      GST_WARNING ("Pipeline '%s': Bus warning %d: %s",
+          GST_ELEMENT_NAME (pipeline), err->code, err->message);
+      GST_WARNING ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+      g_error_free (err);
+      g_free (dbg_info);
+
       GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-          GST_DEBUG_GRAPH_SHOW_ALL, "warning");
+          GST_DEBUG_GRAPH_SHOW_ALL, "bus_warning");
+
       break;
     }
-    case GST_MESSAGE_STATE_CHANGED:{
-      GST_TRACE ("%s bus event: %" GST_PTR_FORMAT, GST_ELEMENT_NAME (pipeline),
-          msg);
+    case GST_MESSAGE_STATE_CHANGED: {
+      GstState old_state, new_state;
+
+      gst_message_parse_state_changed (msg, &old_state, &new_state, NULL);
+
+      GST_DEBUG ("Pipeline '%s': Bus event: State change (%s) %s -> %s",
+          GST_ELEMENT_NAME (pipeline), GST_OBJECT_NAME (msg->src),
+          gst_element_state_get_name (old_state),
+          gst_element_state_get_name (new_state));
+
       break;
     }
     default:

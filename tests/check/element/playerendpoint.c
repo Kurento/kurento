@@ -93,21 +93,41 @@ print_timedout_pipeline (gpointer data)
 }
 
 static void
-bus_msg (GstBus * bus, GstMessage * msg, gpointer pipe)
+bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
 {
+  switch (GST_MESSAGE_TYPE (msg)) {
+    case GST_MESSAGE_ERROR: {
+      GError *err = NULL;
+      gchar *dbg_info = NULL;
 
-  switch (msg->type) {
-    case GST_MESSAGE_ERROR:{
-      GST_ERROR ("Error: %" GST_PTR_FORMAT, msg);
-      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipe),
+      gst_message_parse_error (msg, &err, &dbg_info);
+      GST_ERROR ("Pipeline '%s': Bus error %d: %s",
+          GST_ELEMENT_NAME (pipeline), err->code, err->message);
+      GST_ERROR ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+      g_error_free (err);
+      g_free (dbg_info);
+
+      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
           GST_DEBUG_GRAPH_SHOW_ALL, "bus_error");
-      fail ("Error received on bus");
+
+      fail ("Pipeline '%s': Bus error", GST_ELEMENT_NAME (pipeline));
+
       break;
     }
-    case GST_MESSAGE_WARNING:{
-      GST_WARNING ("Warning: %" GST_PTR_FORMAT, msg);
-      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipe),
-          GST_DEBUG_GRAPH_SHOW_ALL, "warning");
+    case GST_MESSAGE_WARNING: {
+      GError *err = NULL;
+      gchar *dbg_info = NULL;
+
+      gst_message_parse_error (msg, &err, &dbg_info);
+      GST_WARNING ("Pipeline '%s': Bus warning %d: %s",
+          GST_ELEMENT_NAME (pipeline), err->code, err->message);
+      GST_WARNING ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+      g_error_free (err);
+      g_free (dbg_info);
+
+      GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+          GST_DEBUG_GRAPH_SHOW_ALL, "bus_warning");
+
       break;
     }
     default:
@@ -226,7 +246,7 @@ GST_START_TEST (check_states)
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg_cb), pipeline);
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH, NULL);
@@ -371,7 +391,7 @@ GST_START_TEST (check_live_stream)
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg_cb), pipeline);
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH2, NULL);
@@ -441,7 +461,7 @@ GST_START_TEST (check_eos)
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg_cb), pipeline);
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH3, NULL);
@@ -482,7 +502,7 @@ GST_START_TEST (check_set_encoded_media)
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg_cb), pipeline);
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH3, NULL);
