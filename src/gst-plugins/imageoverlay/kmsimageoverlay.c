@@ -87,51 +87,112 @@ G_DEFINE_TYPE_WITH_CODE (KmsImageOverlay, kms_image_overlay,
     GST_DEBUG_CATEGORY_INIT (kms_image_overlay_debug_category, PLUGIN_NAME,
         0, "debug category for imageoverlay element"));
 
-static gboolean
-kms_image_overlay_is_valid_uri (const gchar * url)
+/* Converts GTlsCertificateFlags to a translated string representation
+ * of the first set error flag. */
+static const gchar *
+tls_certificate_flags_to_reason (GTlsCertificateFlags flags)
 {
-  gboolean ret;
-  GRegex *regex;
-
-  regex = g_regex_new ("^(?:((?:https?):)\\/\\/)([^:\\/\\s]+)(?::(\\d*))?(?:\\/"
-      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", 0, 0, NULL);
-  ret = g_regex_match (regex, url, G_REGEX_MATCH_ANCHORED, NULL);
-  g_regex_unref (regex);
-
-  return ret;
+  if (flags & G_TLS_CERTIFICATE_UNKNOWN_CA) {
+    return "The signing Certificate Authority is not known";
+  } else if (flags & G_TLS_CERTIFICATE_BAD_IDENTITY) {
+    return "The certificate was not issued to this domain";
+  } else if (flags & G_TLS_CERTIFICATE_NOT_ACTIVATED) {
+    return "The certificate is not valid yet; check that your"
+        " computer's date and time are accurate";
+  } else if (flags & G_TLS_CERTIFICATE_EXPIRED) {
+    return "The certificate has expired";
+  } else if (flags & G_TLS_CERTIFICATE_REVOKED) {
+    return "The certificate has been revoked";
+  } else if (flags & G_TLS_CERTIFICATE_INSECURE) {
+    return "The certificate's algorithm is considered insecure";
+  } else {
+    /* Also catches G_TLS_CERTIFICATE_GENERIC_ERROR here */
+    return "An unknown certificate error occurred";
+  }
 }
 
-static void
+static gboolean
 load_from_url (gchar * file_name, gchar * url)
 {
   SoupSession *session;
   SoupMessage *msg;
   FILE *dst;
+  gboolean ok = FALSE;
 
-  session = soup_session_sync_new ();
+  session = soup_session_new_with_options (
+      SOUP_SESSION_SSL_USE_SYSTEM_CA_FILE, TRUE,
+      SOUP_SESSION_SSL_STRICT, FALSE,
+      NULL);
+
   msg = soup_message_new ("GET", url);
-  soup_session_send_message (session, msg);
-
-  dst = fopen (file_name, "w+");
-
-  if (dst == NULL) {
-    GST_ERROR ("It is not possible to create the file");
+  if (!msg) {
+    GST_ERROR ("Cannot parse URL: %s", url);
     goto end;
   }
+
+  soup_session_send_message (session, msg);
+  if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code)) {
+    GST_ERROR ("HTTP error code %u: %s", msg->status_code, msg->reason_phrase);
+
+    if (msg->status_code == SOUP_STATUS_SSL_FAILED) {
+      GTlsCertificate *certificate;
+      GTlsCertificateFlags errors;
+
+      soup_message_get_https_status (msg, &certificate, &errors);
+      GST_ERROR ("SSL error code 0x%X: %s", errors,
+          tls_certificate_flags_to_reason (errors));
+    }
+
+    goto end;
+  } else {
+    // "ssl-strict" is FALSE, so HTTP status will be OK even if HTTPS fails;
+    // in that case, issue a warning.
+    GTlsCertificate *certificate;
+    GTlsCertificateFlags errors;
+
+    if (soup_message_get_https_status (msg, &certificate, &errors)
+        && errors != 0) {
+      GST_WARNING ("HTTPS is NOT SECURE, error 0x%X: %s", errors,
+          tls_certificate_flags_to_reason (errors));
+    }
+  }
+
+  if (msg->response_body->length <= 0) {
+    GST_ERROR ("Write 0 bytes: No data contained in HTTP response");
+    goto end;
+  }
+
+  dst = fopen (file_name, "w+");
+  if (!dst) {
+    GST_ERROR ("Cannot create temp file: %s", file_name);
+    goto end;
+  }
+
+  GST_DEBUG ("Write %ld bytes to temp file: %s",
+      msg->response_body->length, file_name);
   fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
-  fclose (dst);
+
+  if (fclose (dst) != 0) {
+    GST_ERROR ("Error writing temp file: %s", file_name);
+    goto end;
+  }
+
+  ok = TRUE;
 
 end:
   g_object_unref (msg);
   g_object_unref (session);
+  return ok;
 }
 
 static void
 kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
 {
   gchar *url = NULL;
-  IplImage *costumeAux = NULL;
   gboolean fields_ok = TRUE;
+
+  IplImage *imageAux = NULL;
+  gchar *file_name = NULL;
 
   fields_ok = fields_ok
       && gst_structure_get (imageoverlay->priv->image_to_overlay,
@@ -152,53 +213,67 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
       G_TYPE_STRING, &url, NULL);
 
   if (!fields_ok) {
-    GST_WARNING_OBJECT (imageoverlay, "Invalid image structure received");
+    GST_ERROR_OBJECT (imageoverlay, "Invalid image structure received");
     goto end;
   }
 
   if (url == NULL) {
-    GST_DEBUG ("Unset the image overlay");
+    GST_INFO ("Unset the image overlay");
     goto end;
+  } else {
+    GST_INFO ("Try to load image: %s", url);
+  }
+
+  imageAux = cvLoadImage (url, CV_LOAD_IMAGE_UNCHANGED);
+  if (imageAux) {
+    GST_INFO ("Loaded successfully from local file");
+    goto end;
+  } else {
+    GST_INFO ("Not a local file, try to download first");
   }
 
   if (!imageoverlay->priv->dir_created) {
     gchar *d = g_strdup (TEMP_PATH);
 
     imageoverlay->priv->dir = g_mkdtemp (d);
+    if (!imageoverlay->priv->dir) {
+      GST_ERROR ("Cannot create temp dir: %s", TEMP_PATH);
+      goto end;
+    }
+
     imageoverlay->priv->dir_created = TRUE;
+
+    GST_DEBUG ("Created temp dir: %s", imageoverlay->priv->dir);
   }
 
-  costumeAux = cvLoadImage (url, CV_LOAD_IMAGE_UNCHANGED);
+  file_name = g_strconcat (imageoverlay->priv->dir, "/image.png", NULL);
 
-  if (costumeAux != NULL) {
-    GST_DEBUG ("Image loaded from file");
+  if (!load_from_url (file_name, url)) {
+    GST_ERROR ("Failed downloading from URL");
     goto end;
   }
 
-  if (kms_image_overlay_is_valid_uri (url)) {
-    gchar *file_name =
-        g_strconcat (imageoverlay->priv->dir, "/image.png", NULL);
-    load_from_url (file_name, url);
-    costumeAux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+  imageAux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+  if (!imageAux) {
+    GST_ERROR ("Failed loading from URL");
+    goto end;
+  }
+
+  GST_INFO ("Loaded successfully from URL");
+
+end:
+  if (file_name) {
     g_remove (file_name);
     g_free (file_name);
   }
-
-  if (costumeAux == NULL) {
-    GST_DEBUG ("Image not loaded");
-  } else {
-    GST_DEBUG ("Image loaded from URL");
-  }
-
-end:
 
   if (imageoverlay->priv->costume != NULL) {
     cvReleaseImage (&imageoverlay->priv->costume);
     imageoverlay->priv->costume = NULL;
   }
 
-  if (costumeAux != NULL) {
-    imageoverlay->priv->costume = costumeAux;
+  if (imageAux != NULL) {
+    imageoverlay->priv->costume = imageAux;
   }
 
   g_free (url);

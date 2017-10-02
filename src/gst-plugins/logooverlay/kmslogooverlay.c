@@ -113,64 +113,140 @@ kms_logo_overlay_dispose_image_layout_list (KmsLogoOverlay * logooverlay)
   logooverlay->priv->image_layout_list = NULL;
 }
 
-static gboolean
-is_valid_uri (const gchar * url)
+/* Converts GTlsCertificateFlags to a translated string representation
+ * of the first set error flag. */
+static const gchar *
+tls_certificate_flags_to_reason (GTlsCertificateFlags flags)
 {
-  gboolean ret;
-  GRegex *regex;
-
-  regex = g_regex_new ("^(?:((?:https?):)\\/\\/)([^:\\/\\s]+)(?::(\\d*))?(?:\\/"
-      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", 0, 0, NULL);
-  ret = g_regex_match (regex, url, G_REGEX_MATCH_ANCHORED, NULL);
-  g_regex_unref (regex);
-
-  return ret;
+  if (flags & G_TLS_CERTIFICATE_UNKNOWN_CA) {
+    return "The signing Certificate Authority is not known";
+  } else if (flags & G_TLS_CERTIFICATE_BAD_IDENTITY) {
+    return "The certificate was not issued to this domain";
+  } else if (flags & G_TLS_CERTIFICATE_NOT_ACTIVATED) {
+    return "The certificate is not valid yet; check that your"
+        " computer's date and time are accurate";
+  } else if (flags & G_TLS_CERTIFICATE_EXPIRED) {
+    return "The certificate has expired";
+  } else if (flags & G_TLS_CERTIFICATE_REVOKED) {
+    return "The certificate has been revoked";
+  } else if (flags & G_TLS_CERTIFICATE_INSECURE) {
+    return "The certificate's algorithm is considered insecure";
+  } else {
+    /* Also catches G_TLS_CERTIFICATE_GENERIC_ERROR here */
+    return "An unknown certificate error occurred";
+  }
 }
 
-static void
+static gboolean
 load_from_url (gchar * file_name, gchar * url)
 {
   SoupSession *session;
   SoupMessage *msg;
   FILE *dst;
+  gboolean ok = FALSE;
 
-  session = soup_session_sync_new ();
+  session = soup_session_new_with_options (
+      SOUP_SESSION_SSL_USE_SYSTEM_CA_FILE, TRUE,
+      SOUP_SESSION_SSL_STRICT, FALSE,
+      NULL);
+
   msg = soup_message_new ("GET", url);
-  soup_session_send_message (session, msg);
-
-  dst = fopen (file_name, "w+");
-
-  if (dst == NULL) {
-    GST_ERROR ("It is not possible to create the file");
+  if (!msg) {
+    GST_ERROR ("Cannot parse URL: %s", url);
     goto end;
   }
+
+  soup_session_send_message (session, msg);
+  if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code)) {
+    GST_ERROR ("HTTP error code %u: %s", msg->status_code, msg->reason_phrase);
+
+    if (msg->status_code == SOUP_STATUS_SSL_FAILED) {
+      GTlsCertificate *certificate;
+      GTlsCertificateFlags errors;
+
+      soup_message_get_https_status (msg, &certificate, &errors);
+      GST_ERROR ("SSL error code 0x%X: %s", errors,
+          tls_certificate_flags_to_reason (errors));
+    }
+
+    goto end;
+  } else {
+    // "ssl-strict" is FALSE, so HTTP status will be OK even if HTTPS fails;
+    // in that case, issue a warning.
+    GTlsCertificate *certificate;
+    GTlsCertificateFlags errors;
+
+    if (soup_message_get_https_status (msg, &certificate, &errors)
+        && errors != 0) {
+      GST_WARNING ("HTTPS is NOT SECURE, error 0x%X: %s", errors,
+          tls_certificate_flags_to_reason (errors));
+    }
+  }
+
+  if (msg->response_body->length <= 0) {
+    GST_ERROR ("Write 0 bytes: No data contained in HTTP response");
+    goto end;
+  }
+
+  dst = fopen (file_name, "w+");
+  if (!dst) {
+    GST_ERROR ("Cannot create temp file: %s", file_name);
+    goto end;
+  }
+
+  GST_DEBUG ("Write %ld bytes to temp file: %s",
+      msg->response_body->length, file_name);
   fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
-  fclose (dst);
+
+  if (fclose (dst) != 0) {
+    GST_ERROR ("Error writing temp file: %s", file_name);
+    goto end;
+  }
+
+  ok = TRUE;
 
 end:
   g_object_unref (msg);
   g_object_unref (session);
+  return ok;
 }
 
 static IplImage *
-load_image (gchar * uri, gchar * dir, gchar * image_name)
+load_image (gchar * url, gchar * dir, gchar * image_name)
 {
-  IplImage *aux;
+  IplImage *imageAux = NULL;
+  gchar *file_name = NULL;
 
-  aux = cvLoadImage (uri, CV_LOAD_IMAGE_UNCHANGED);
-  if (aux == NULL) {
-    if (is_valid_uri (uri)) {
-      gchar *file_name;
-
-      file_name = g_strconcat (dir, "/", image_name, ".png", NULL);
-      load_from_url (file_name, uri);
-      aux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
-      g_remove (file_name);
-      g_free (file_name);
-    }
+  imageAux = cvLoadImage (url, CV_LOAD_IMAGE_UNCHANGED);
+  if (imageAux) {
+    GST_INFO ("Loaded successfully from local file");
+    goto end;
+  } else {
+    GST_INFO ("Not a local file, try to download first");
   }
 
-  return aux;
+  file_name = g_strconcat (dir, "/", image_name, ".png", NULL);
+
+  if (!load_from_url (file_name, url)) {
+    GST_ERROR ("Failed downloading from URL");
+    goto end;
+  }
+
+  imageAux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+  if (!imageAux) {
+    GST_ERROR ("Failed loading from URL");
+    goto end;
+  }
+
+  GST_INFO ("Loaded successfully from URL");
+
+end:
+  if (file_name) {
+    g_remove (file_name);
+    g_free (file_name);
+  }
+
+  return imageAux;
 }
 
 static void
