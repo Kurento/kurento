@@ -482,11 +482,18 @@ def compile_project(args):
               project_name, project_workdir))
 
     try:
-        buildconfig_file = open(buildconfig_path, 'r')
-        buildconfig = yaml.load(buildconfig_file)
-    except IOError:
+        buildconfig_text = open(buildconfig_path, 'r').read()
+    except IOError as e:
         print("[buildpkg::compile_project] ({}) ERROR:"
-              " Opening build configuration file: '{}'".format(
+              " Reading build configuration file: '{}', error: {}".format(
+                  project_name, buildconfig_path, e.strerror))
+        exit(1)
+
+    try:
+        buildconfig = yaml.load(buildconfig_text)
+    except yaml.YAMLError:
+        print("[buildpkg::compile_project] ({}) ERROR:"
+              " Parsing build configuration file: '{}'".format(
                   project_name, buildconfig_path))
         exit(1)
 
