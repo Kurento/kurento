@@ -80,12 +80,12 @@ def depend2str(depend):
 def clone_repo(base_url, repo_name):
     try:
         repo = git.Repo(repo_name)
-        print("[buildpkg::clone_repo] Update repo: " + repo_name)
+        print("[buildpkg::clone_repo] Update repo:", repo_name)
         # TODO: Decide if current branch should be updated
         for remote in repo.remotes:
             remote.update()
     except:
-        print("[buildpkg::clone_repo] Clone repo: " + repo_name)
+        print("[buildpkg::clone_repo] Clone repo:", repo_name)
         repo = git.Repo.clone_from(base_url + "/" + repo_name, repo_name)
 
     return repo
@@ -132,7 +132,7 @@ def check_deb_dependency_installable(dep):
 
 def check_deb_dependency_installed(dep_alts):
     print("[buildpkg::check_deb_dependency_installed]"
-          " Check Debian dependency installed: " + depend2str(dep_alts))
+          " Check Debian dependency installed:", depend2str(dep_alts))
 
     for dep_alt in dep_alts:
         dep_name = dep_alt["name"]
@@ -205,7 +205,7 @@ def get_version():
     try:
         print("[buildpkg::get_version] Run 'kurento_get_version.sh'")
         cmd_out = subprocess.check_output(["kurento_get_version.sh"]).strip()
-        print("[buildpkg::get_version] Found version: " + cmd_out)
+        print("[buildpkg::get_version] Found version:", cmd_out)
         cmd_out = cmd_out.split("-")[0]
         return cmd_out
     except subprocess.CalledProcessError:
@@ -301,14 +301,14 @@ def request_http(url, cert, id_rsa, file_path=None):
         exit(1)
 
     try:
-        print("[buildpkg::request_http] Run request, URL: " + url)
+        print("[buildpkg::request_http] Run request, URL:", url)
         res = requests.post(url, data=file_obj, verify=False, cert=(cert, id_rsa))
         res.raise_for_status()
     except requests.RequestException as e:
-        print("[buildpkg::request_http] Request ERROR: " + e)
+        print("[buildpkg::request_http] Request ERROR:", e)
         exit(1)
     else:
-        print("[buildpkg::request_http] Request DONE, response:\n" + res.text)
+        print("[buildpkg::request_http] Request DONE, response:\n", res.text)
 
 
 def upload_package(args, buildconfig, dist, file_path, publish=False):
@@ -381,7 +381,7 @@ def generate_debian_package(args, buildconfig):
     try:
         print("[buildpkg::generate_debian_package] Run 'lsb_release'")
         dist = subprocess.check_output(["lsb_release", "-sc"]).strip()
-        print("[buildpkg::get_version] Found distro: " + dist)
+        print("[buildpkg::get_version] Found distro:", dist)
     except subprocess.CalledProcessError:
         print("[buildpkg::generate_debian_package] ERROR: Running 'lsb_release'")
         exit(1)
