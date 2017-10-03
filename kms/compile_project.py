@@ -10,6 +10,7 @@
 # - argparse: https://docs.python.org/2/library/argparse.html
 # - python-apt: https://apt.alioth.debian.org/python-apt-doc/contents.html
 # - python-debian: source code
+# - python-requests: http://docs.python-requests.org/en/master/api/
 
 from __future__ import print_function
 
@@ -263,32 +264,54 @@ def get_debian_version(simplify_dev_version, dist):
     return version
 
 
-def request_http(url, cert, id_rsa, data=None):
-    if data is None:
-        try:
-            print("[buildpkg::request_http] Run HTTP request")
-            req = requests.post(url, verify=False, cert=(cert, id_rsa))
-            req.raise_for_status()
-            print("[buildpkg::request_http] DONE:"
-                  " Running HTTP request:\n{}".format(req.text))
-        except requests.RequestException:
-            print("[buildpkg::request_http] ERROR:"
-                  " Running HTTP request")
-            exit(1)
+# def request_http(url, cert, id_rsa, file_path=None):
+#     if file_path is None:
+#         try:
+#             print("[buildpkg::request_http] Run HTTP request")
+#             req = requests.post(url, verify=False, cert=(cert, id_rsa))
+#             req.raise_for_status()
+#             print("[buildpkg::request_http] DONE:"
+#                   " Running HTTP request:\n{}".format(req.text))
+#         except requests.RequestException:
+#             print("[buildpkg::request_http] ERROR:"
+#                   " Running HTTP request")
+#             exit(1)
+#     else:
+#         try:
+#             print("[buildpkg::request_http] Run 'curl'")
+#             subprocess.check_call(
+#                 "curl --fail --insecure --key " + id_rsa
+#                 + " --cert " + cert
+#                 + " -X POST \"" + url + "\""
+#                 + " --data-binary @" + file_path, shell=True)
+#         except subprocess.CalledProcessError:
+#             print("[buildpkg::request_http] ERROR: Running 'curl'")
+#             exit(1)
+
+
+def request_http(url, cert, id_rsa, file_path=None):
+    file_obj = None
+    try:
+        file_obj = open(file_path, 'rb')
+    except TypeError:
+        pass  # file_path is None
+    except IOError as e:
+        print("[buildpkg::request_http] ERROR:"
+              " Opening file: '{}', error: {}".format(file_path, e.strerror))
+        exit(1)
+
+    try:
+        print("[buildpkg::request_http] Run request, URL: " + url)
+        res = requests.post(url, data=file_obj, verify=False, cert=(cert, id_rsa))
+        res.raise_for_status()
+    except requests.RequestException as e:
+        print("[buildpkg::request_http] Request ERROR: " + e)
+        exit(1)
     else:
-        try:
-            print("[buildpkg::request_http] Run 'curl'")
-            subprocess.check_call(
-                "curl --fail --insecure --key " + id_rsa
-                + " --cert " + cert
-                + " -X POST \"" + url + "\""
-                + " --data-binary @" + data, shell=True)
-        except subprocess.CalledProcessError:
-            print("[buildpkg::request_http] ERROR: Running 'curl'")
-            exit(1)
+        print("[buildpkg::request_http] Request DONE, response:\n" + res.text)
 
 
-def upload_package(args, buildconfig, dist, package, publish=False):
+def upload_package(args, buildconfig, dist, file_path, publish=False):
     if buildconfig.has_key("private") and buildconfig["private"] is True:
         repo = "ubuntu-priv"
     else:
@@ -299,15 +322,15 @@ def upload_package(args, buildconfig, dist, package, publish=False):
                 + "&dist=" + dist
                 + "&comp=" + args.component)
     upload_url = (base_url
-                  + "&name=" + os.path.basename(package)
+                  + "&name=" + os.path.basename(file_path)
                   + "&cmd=add")
-    print("[buildpkg::upload_package] Upload URL: " + upload_url)
+    print("[buildpkg::upload_package] Request HTTP upload")
 
-    request_http(upload_url, args.cert.name, args.id_rsa.name, package)
+    request_http(upload_url, args.cert.name, args.id_rsa.name, file_path)
 
     if publish:
         publish_url = base_url + "&cmd=publish"
-        print("[buildpkg::upload_package] Publish URL: " + publish_url)
+        print("[buildpkg::upload_package] Request HTTP publish")
 
         request_http(publish_url, args.cert.name, args.id_rsa.name)
 
@@ -402,8 +425,8 @@ def generate_debian_package(args, buildconfig):
               " Running 'dpkg-buildpackage'".format(project_name))
         exit(1)
 
-    files_glob = "../*" + new_version + "_*.deb"
-    files = glob.glob(files_glob)
+    paths_glob = "../*" + new_version + "_*.deb"
+    file_paths = glob.glob(paths_glob)
 
     # Install the generated files (plus their installation dependencies)
     # FIXME: The Apt Python API (apt.debfile.DebPackage) doesn't have a
@@ -411,11 +434,11 @@ def generate_debian_package(args, buildconfig):
     # Also there is the `gdebi` command, but it doesn't accept multiple files.
     print("[buildpkg::generate_debian_package] ({})"
           " Run 'dpkg -i {}' with generated files: {}".format(
-              project_name, files_glob, files))
-    if files:
+              project_name, paths_glob, file_paths))
+    if file_paths:
         root_privileges_gain()
         try:
-            subprocess.check_call("dpkg -i " + files_glob, shell=True)
+            subprocess.check_call("dpkg -i " + paths_glob, shell=True)
         except subprocess.CalledProcessError:
             # `dpkg -i` left unconfigured packages; try to solve that
             if subprocess.call(["apt-get", "install", "-f", "-y", "-q"]) != 0:
@@ -426,25 +449,26 @@ def generate_debian_package(args, buildconfig):
         root_privileges_drop()
 
     if args.command == "upload":
-        for afile in files:
-            if afile is files[-1]:
+        for file_path in file_paths:
+            if file_path is file_paths[-1]:
                 is_last = True
             else:
                 is_last = False
 
             if new_version.find("~") == -1 or args.force_release:
-                upload_package(args, buildconfig, dist, afile, publish=is_last)
+                upload_package(args, buildconfig, dist,
+                               file_path, publish=is_last)
             elif args.force_testing:
                 upload_package(args, buildconfig, dist+"-test",
-                               afile, publish=is_last)
+                               file_path, publish=is_last)
 
             upload_package(args, buildconfig, dist+"-dev",
-                           afile, publish=is_last)
+                           file_path, publish=is_last)
 
     if args.clean:
-        files = glob.glob("../*" + new_version + "*")
-        for afile in files:
-            os.remove(afile)
+        file_paths = glob.glob("../*" + new_version + "*")
+        for file_path in file_paths:
+            os.remove(file_path)
 
     # Write old changelog to let everything as it was
     old_changelog.write_to_open_file(open("debian/changelog", 'w'))
