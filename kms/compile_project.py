@@ -289,8 +289,33 @@ def get_debian_version(simplify_dev_version, dist):
 #             exit(1)
 
 
+# def request_http(url, cert, id_rsa, file_path=None):
+#     file_obj = None
+#
+#     try:
+#         file_obj = open(file_path, 'rb')
+#     except TypeError:
+#         pass  # file_path is None
+#     except IOError as e:
+#         print("[buildpkg::request_http] ERROR:"
+#               " Opening file: '{}', error: {}".format(file_path, e.strerror))
+#         exit(1)
+
+#     try:
+#         print("[buildpkg::request_http] Run request, URL:", url)
+#         res = requests.post(url, data=file_obj,
+#                             verify=False, cert=(cert, id_rsa))
+#         res.raise_for_status()
+#     except requests.RequestException as e:
+#         print("[buildpkg::request_http] Request ERROR:", e)
+#         exit(1)
+#     else:
+#         print("[buildpkg::request_http] Request DONE, response:\n", res.text)
+
+
 def request_http(url, cert, id_rsa, file_path=None):
-    file_obj = None
+    files_dict = None
+
     try:
         file_obj = open(file_path, 'rb')
     except TypeError:
@@ -299,10 +324,13 @@ def request_http(url, cert, id_rsa, file_path=None):
         print("[buildpkg::request_http] ERROR:"
               " Opening file: '{}', error: {}".format(file_path, e.strerror))
         exit(1)
+    else:
+        files_dict = {'post': file_obj}
 
     try:
         print("[buildpkg::request_http] Run request, URL:", url)
-        res = requests.post(url, data=file_obj, verify=False, cert=(cert, id_rsa))
+        res = requests.post(url, files=files_dict,
+                            verify=False, cert=(cert, id_rsa))
         res.raise_for_status()
     except requests.RequestException as e:
         print("[buildpkg::request_http] Request ERROR:", e)
