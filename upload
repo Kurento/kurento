@@ -26,7 +26,7 @@ if [ -z "$DIST" -o -z "$COMP" ]; then
 else
   if [ "$CMD" = 'add' ]; then
     mkdir -p /tmp/$DIST/$COMP
-    UPLOAD_FILE=$([ -n "$NAME" ] && echo /tmp/$DIST/$COMP/$NAME || mktemp --suffix .deb)
+    UPLOAD_FILE=$( { [ -n "$NAME" ] && echo /tmp/$DIST/$COMP/$NAME; } || mktemp --suffix .deb )
     cat - > $UPLOAD_FILE
     if echo $REPO | grep -qiv priv ; then
       echo "Upload to reprepro" > $UPLOAD_FILE.reprepro.msg
@@ -43,7 +43,7 @@ else
     # Upload aptly tu ubuntu in background because pararllel uploads are not possible.
     # Requires package task-spooler
     pkg_name=$(dpkg --info $UPLOAD_FILE | grep "Package:" |awk '{print $2}')
-    purge_id=$(tsp aptly repo remove $repo $REPO-$DIST-$COMP $pkg_name)
+    purge_id=$(tsp aptly repo remove $REPO $REPO-$DIST-$COMP $pkg_name)
     tsp -w $purge_id
     add_id=$(tsp aptly repo add $REPO-$DIST-$COMP $UPLOAD_FILE)
     tsp -w $add_id
