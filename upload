@@ -53,7 +53,7 @@ else
     tsp -r $add_id
     [ "$result" -eq 0 ] && result=$add_res
     rm -f $UPLOAD_FILE.*
-  else
+  elif [ "$CMD" = 'publish' ]; then
     BODY+=$(echo ' --- Aptly publish:')
     # Delete scheduled updates before inserting new one
     for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update -force-overwrite=false $DIST s3:$REPO:" | awk '{print $1}'); do
@@ -69,7 +69,14 @@ else
     result=$?
     [ $result -eq 255 ] && result=0 # task removed by other upload ==> success
     tsp -r $publish_id
+  elif [ "$CMD" = 'touch' ]; then
+    BODY="OK"
+    result=0
+  else
+    BODY=""
+    result=1
   fi
+
   if [ "$result" -eq 0 ]; then
       STATUS="Status: 200 OK"
       TITLE="REQUEST ACCEPTED"
