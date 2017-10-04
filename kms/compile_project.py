@@ -71,23 +71,23 @@ def apt_cache_commit():
 def depend2str(depend):
     if isinstance(depend[0], dict):
         return PkgRelation.str([depend])
-    elif isinstance(depend[0], list):
+    if isinstance(depend[0], list):
         return PkgRelation.str(depend)
-    else:
-        return ""
+    return ""
 
 
 def clone_repo(base_url, repo_name):
     try:
         repo = git.Repo(repo_name)
-        print("[buildpkg::clone_repo] Update repo:", repo_name)
+    except git.InvalidGitRepositoryError:
+        repo_url = base_url + "/" + repo_name
+        print("[buildpkg::clone_repo] Clone URL:", repo_url)
+        repo = git.Repo.clone_from(repo_url, repo_name)
+    else:
         # TODO: Decide if current branch should be updated
+        print("[buildpkg::clone_repo] Update repo:", repo_name)
         for remote in repo.remotes:
             remote.update()
-    except:
-        print("[buildpkg::clone_repo] Clone repo:", repo_name)
-        repo = git.Repo.clone_from(base_url + "/" + repo_name, repo_name)
-
     return repo
 
 
@@ -202,15 +202,16 @@ def install_dependency(dep):
 
 
 def get_version():
+    print("[buildpkg::get_version] Run 'kurento_get_version.sh'")
     try:
-        print("[buildpkg::get_version] Run 'kurento_get_version.sh'")
         cmd_out = subprocess.check_output(["kurento_get_version.sh"]).strip()
-        print("[buildpkg::get_version] Found version:", cmd_out)
-        cmd_out = cmd_out.split("-")[0]
-        return cmd_out
     except subprocess.CalledProcessError:
         print("[buildpkg::get_version] ERROR: Running 'kurento_get_version.sh'")
         return None
+    else:
+        print("[buildpkg::get_version] Found version:", cmd_out)
+        cmd_out = cmd_out.split("-")[0]
+        return cmd_out
 
 
 def get_debian_version(simplify_dev_version, dist):
@@ -337,14 +338,14 @@ def upload_package(args, buildconfig, dist, file_path, publish=False):
     upload_url = (base_url
                   + "&name=" + os.path.basename(file_path)
                   + "&cmd=add")
-    print("[buildpkg::upload_package] Request HTTP upload")
 
+    print("[buildpkg::upload_package] Request HTTP upload")
     request_http(upload_url, args.cert.name, args.id_rsa.name, file_path)
 
     if publish:
         publish_url = base_url + "&cmd=publish"
-        print("[buildpkg::upload_package] Request HTTP publish")
 
+        print("[buildpkg::upload_package] Request HTTP publish")
         request_http(publish_url, args.cert.name, args.id_rsa.name)
 
 
@@ -391,13 +392,14 @@ def generate_debian_package(args, buildconfig):
     changelog = Changelog(open("debian/changelog"))
     old_changelog = Changelog(open("debian/changelog"))
 
+    print("[buildpkg::generate_debian_package] Run 'lsb_release'")
     try:
-        print("[buildpkg::generate_debian_package] Run 'lsb_release'")
         dist = subprocess.check_output(["lsb_release", "-sc"]).strip()
-        print("[buildpkg::get_version] Found distro:", dist)
     except subprocess.CalledProcessError:
         print("[buildpkg::generate_debian_package] ERROR: Running 'lsb_release'")
         exit(1)
+    else:
+        print("[buildpkg::get_version] Found distro:", dist)
 
     print("[buildpkg::generate_debian_package] ({})"
           " Retrieve version from the project's metadata".format(project_name))
@@ -419,19 +421,19 @@ def generate_debian_package(args, buildconfig):
 
     # Execute commands defined in the build configuration file
     if buildconfig.has_key("prebuild-command"):
+        print("[buildpkg::generate_debian_package] ({})"
+              " Run prebuild-command: '{}'".format(
+                  project_name, str(buildconfig["prebuild-command"])))
         try:
-            print("[buildpkg::generate_debian_package] ({})"
-                  " Run prebuild-command: '{}'".format(
-                      project_name, str(buildconfig["prebuild-command"])))
             subprocess.check_call(buildconfig["prebuild-command"], shell=True)
         except subprocess.CalledProcessError:
             print("[buildpkg::generate_debian_package] ({}) ERROR:"
                   " Running prebuild-command".format(project_name))
             exit(1)
 
+    print("[buildpkg::generate_debian_package] ({})"
+          " Run 'dpkg-buildpackage'".format(project_name))
     try:
-        print("[buildpkg::generate_debian_package] ({})"
-              " Run 'dpkg-buildpackage'".format(project_name))
         subprocess.check_call(["dpkg-buildpackage", "-uc", "-us"])
     except subprocess.CalledProcessError:
         print("[buildpkg::generate_debian_package] ({}) ERROR:"
@@ -463,10 +465,7 @@ def generate_debian_package(args, buildconfig):
 
     if args.command == "upload":
         for file_path in file_paths:
-            if file_path is file_paths[-1]:
-                is_last = True
-            else:
-                is_last = False
+            is_last = bool(file_path is file_paths[-1])
 
             if new_version.find("~") == -1 or args.force_release:
                 upload_package(args, buildconfig, dist,
@@ -520,10 +519,10 @@ def compile_project(args):
 
     try:
         buildconfig_text = open(buildconfig_path, 'r').read()
-    except IOError as e:
+    except IOError as err:
         print("[buildpkg::compile_project] ({}) ERROR:"
               " Reading build configuration file: '{}', error: {}".format(
-                  project_name, buildconfig_path, e.strerror))
+                  project_name, buildconfig_path, err.strerror))
         exit(1)
 
     try:
@@ -583,16 +582,17 @@ def compile_project(args):
                 and (not dependency.has_key("commit")
                      or dependency["commit"] is None)):
 
+            print("[buildpkg::compile_project] ({})"
+                  " Run 'git ls-remote' ({})".format(project_name, git_url))
             try:
-                print("[buildpkg::compile_project] ({})"
-                      " Run 'git ls-remote' ({})".format(project_name, git_url))
                 cmd_out = subprocess.check_output(
                     "git ls-remote " + git_url + " HEAD", shell=True).strip()
-                dependency["commit"] = cmd_out.split()[0]
             except subprocess.CalledProcessError:
                 print("[buildpkg::compile_project] ({}) ERROR:"
                       " Running 'git ls-remote'".format(project_name))
                 exit(1)
+            else:
+                dependency["commit"] = cmd_out.split()[0]
 
             print("[buildpkg::compile_project] ({})"
                   " Build dependency: '{}' with no specific version or commit,"
@@ -613,10 +613,10 @@ def compile_project(args):
         #
         # Workaround: use the SVN bridge API offered by GitHub:
 
+        svn_url = git_url + "/trunk/debian/control"
+        print("[buildpkg::compile_project] ({})"
+              " Run 'svn cat' ({})".format(project_name, svn_url))
         try:
-            svn_url = git_url + "/trunk/debian/control"
-            print("[buildpkg::compile_project] ({})"
-                  " Run 'svn cat' ({})".format(project_name, svn_url))
             debian_control_file = subprocess.Popen(
                 "svn cat " + svn_url, shell=True, stdout=subprocess.PIPE).stdout
         except OSError:
@@ -650,9 +650,9 @@ def compile_project(args):
     # from the current commit. But it doesn't have push permissions!
     # A tag must be done manually for now.
     # if os.system("kurento_check_version.sh true") != 0:
+    print("[buildpkg::compile_project] ({})"
+          " Run 'kurento_check_version.sh'".format(project_name))
     try:
-        print("[buildpkg::compile_project] ({})"
-              " Run 'kurento_check_version.sh'".format(project_name))
         subprocess.check_call(["kurento_check_version.sh", "false"])
     except subprocess.CalledProcessError:
         print("[buildpkg::compile_project] ({}) ERROR:"
