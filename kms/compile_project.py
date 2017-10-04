@@ -264,79 +264,64 @@ def get_debian_version(simplify_dev_version, dist):
     return version
 
 
-# def request_http(url, cert, id_rsa, file_path=None):
-#     if file_path is None:
-#         try:
-#             print("[buildpkg::request_http] Run HTTP request")
-#             req = requests.post(url, verify=False, cert=(cert, id_rsa))
-#             req.raise_for_status()
-#             print("[buildpkg::request_http] DONE:"
-#                   " Running HTTP request:\n{}".format(req.text))
-#         except requests.RequestException:
-#             print("[buildpkg::request_http] ERROR:"
-#                   " Running HTTP request")
-#             exit(1)
-#     else:
-#         try:
-#             print("[buildpkg::request_http] Run 'curl'")
-#             subprocess.check_call(
-#                 "curl --fail --insecure --key " + id_rsa
-#                 + " --cert " + cert
-#                 + " -X POST \"" + url + "\""
-#                 + " --data-binary @" + file_path, shell=True)
-#         except subprocess.CalledProcessError:
-#             print("[buildpkg::request_http] ERROR: Running 'curl'")
-#             exit(1)
+def request_http(url, cert_path, key_path, file_path=None):
+    if file_path is None:
+        print("[buildpkg::request_http] Run request,"
+              " URL: {}, cert file: {}, key file: {}".format(url, cert_path, key_path))
+        try:
+            res = requests.post(url, verify=False, cert=(cert_path, key_path))
+            res.raise_for_status()
+        except requests.RequestException as err:
+            print("[buildpkg::request_http] ERROR: Running request:", err)
+            exit(1)
+        else:
+            print("[buildpkg::request_http] DONE: Running request:\n", res.text)
+    else:
+        curl_cmd = ("curl --fail --insecure --key " + key_path
+        + " --cert " + cert_path
+        + " -X POST \"" + url + "\""
+        + " --data-binary @" + file_path)
+        print("[buildpkg::request_http] Run command:", curl_cmd)
+        try:
+            curl_out = subprocess.check_output(curl_cmd, shell=True).strip()
+        except subprocess.CalledProcessError:
+            print("[buildpkg::request_http] ERROR: Running 'curl':\n", curl_out)
+            exit(1)
+        else:
+            print("[buildpkg::request_http] DONE: Running 'curl':\n", curl_out)
 
 
-# def request_http(url, cert, id_rsa, file_path=None):
+# Current code performs a 'form-encoded' upload ('Content-Type: application/x-www-form-urlencoded')
+# Commented lines do a 'multipart' upload ('Content-Type: multipart/form-data')
+# def request_http(url, cert_path, key_path, file_path=None):
 #     file_obj = None
-#
+#     # files_dict = None
+
 #     try:
 #         file_obj = open(file_path, 'rb')
 #     except TypeError:
 #         pass  # file_path is None
-#     except IOError as e:
+#     except IOError as err:
 #         print("[buildpkg::request_http] ERROR:"
-#               " Opening file: '{}', error: {}".format(file_path, e.strerror))
-#         exit(1)
-
-#     try:
-#         print("[buildpkg::request_http] Run request, URL:", url)
-#         res = requests.post(url, data=file_obj,
-#                             verify=False, cert=(cert, id_rsa))
-#         res.raise_for_status()
-#     except requests.RequestException as e:
-#         print("[buildpkg::request_http] Request ERROR:", e)
+#               " Opening file: '{}', error: {}".format(file_path, err.strerror))
 #         exit(1)
 #     else:
-#         print("[buildpkg::request_http] Request DONE, response:\n", res.text)
+#         print("[buildpkg::request_http] File opened:", file_path)
+#         # files_dict = {os.path.basename(file_path): file_obj}
 
-
-def request_http(url, cert, id_rsa, file_path=None):
-    files_dict = None
-
-    try:
-        file_obj = open(file_path, 'rb')
-    except TypeError:
-        pass  # file_path is None
-    except IOError as e:
-        print("[buildpkg::request_http] ERROR:"
-              " Opening file: '{}', error: {}".format(file_path, e.strerror))
-        exit(1)
-    else:
-        files_dict = {'post': file_obj}
-
-    try:
-        print("[buildpkg::request_http] Run request, URL:", url)
-        res = requests.post(url, files=files_dict,
-                            verify=False, cert=(cert, id_rsa))
-        res.raise_for_status()
-    except requests.RequestException as e:
-        print("[buildpkg::request_http] Request ERROR:", e)
-        exit(1)
-    else:
-        print("[buildpkg::request_http] Request DONE, response:\n", res.text)
+#     print("[buildpkg::request_http] Run request,"
+#           " URL: {}, cert file: {}, key file: {}".format(url, cert_path, key_path))
+#     try:
+#         res = requests.post(url, data=file_obj,
+#                             verify=False, cert=(cert_path, key_path))
+#         # res = requests.post(url, files=files_dict,
+#         #                     verify=False, cert=(cert_path, key_path))
+#         res.raise_for_status()
+#     except requests.RequestException as err:
+#         print("[buildpkg::request_http] ERROR: Running request:", err)
+#         exit(1)
+#     else:
+#         print("[buildpkg::request_http] DONE: Running request:\n", res.text)
 
 
 def upload_package(args, buildconfig, dist, file_path, publish=False):
