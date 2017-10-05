@@ -16,6 +16,7 @@ from __future__ import print_function
 
 import argparse
 import glob
+import multiprocessing
 import os
 import re
 import subprocess
@@ -439,10 +440,13 @@ def generate_debian_package(args, buildconfig):
                   " Running prebuild-command".format(project_name))
             exit(1)
 
+    cpu_count = multiprocessing.cpu_count()
+
     print("[buildpkg::generate_debian_package] ({})"
-          " Run 'dpkg-buildpackage'".format(project_name))
+          " Run 'dpkg-buildpackage', jobs: {}".format(project_name, cpu_count))
     try:
-        subprocess.check_call(["dpkg-buildpackage", "-uc", "-us"])
+        subprocess.check_call(
+            ["dpkg-buildpackage", "-uc", "-us", "-j" + str(cpu_count)])
     except subprocess.CalledProcessError:
         print("[buildpkg::generate_debian_package] ({}) ERROR:"
               " Running 'dpkg-buildpackage'".format(project_name))
