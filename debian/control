@@ -1,7 +1,7 @@
 Source: opencv-plugin-sample
 Section: utils
 Priority: optional
-Maintainer: Maintainer Name
+Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
