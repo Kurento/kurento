@@ -1,7 +1,7 @@
 Source: kms-markerdetector-6.0
 Section: utils
 Priority: optional
-Maintainer: Petri Honkamaa
+Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
