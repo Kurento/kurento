@@ -55,7 +55,11 @@ def root_privileges_gain():
 def apt_cache_update():
     global APT_CACHE
     root_privileges_gain()
-    APT_CACHE.update()
+    try:
+        APT_CACHE.update()
+    except IOError as err:
+        print("[buildpkg::apt_cache_update] ERROR:", err)
+        exit(1)
     APT_CACHE.open()
     root_privileges_drop()
 
@@ -63,7 +67,11 @@ def apt_cache_update():
 def apt_cache_commit():
     global APT_CACHE
     root_privileges_gain()
-    APT_CACHE.commit()
+    try:
+        APT_CACHE.commit()
+    except SystemError as err:
+        print("[buildpkg::apt_cache_commit] ERROR:", err)
+        exit(1)
     APT_CACHE.open()
     root_privileges_drop()
 
@@ -671,6 +679,10 @@ def print_uids():
 
 
 def main():
+    # Suppress requests for information during package configuration.
+    # A completely unattended installation of a Debian package with 'apt-get'
+    # is achieved by defining 'DEBIAN_FRONTEND="noninteractive"' and using
+    # the options '--yes' and '--quiet' (ie. 'apt-get install -yq <...>').
     os.environ['DEBIAN_FRONTEND'] = "noninteractive"
 
     # Only raise to root privileges for the minimal time required
