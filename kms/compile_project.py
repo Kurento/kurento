@@ -16,6 +16,7 @@ from __future__ import print_function
 
 import argparse
 import glob
+import io
 import multiprocessing
 import os
 import re
@@ -26,11 +27,11 @@ from time import strftime, time
 import apt.cache
 import apt.debfile
 import apt_pkg
+from debian import changelog
+from debian import deb822
 import git
 import requests
 import yaml
-from debian.changelog import Changelog
-from debian.deb822 import Deb822, PkgRelation
 
 
 DEFAULT_CONFIG_FILE = '.build.yaml'
@@ -77,11 +78,12 @@ def apt_cache_commit():
     root_privileges_drop()
 
 
-def depend2str(depend):
-    if isinstance(depend[0], dict):
-        return PkgRelation.str([depend])
-    if isinstance(depend[0], list):
-        return PkgRelation.str(depend)
+# Input of this function is a single dependency, which is a list of alternatives
+def dep2str(dep_alts):
+    if isinstance(dep_alts[0], dict):
+        return deb822.PkgRelation.str([dep_alts])
+    if isinstance(dep_alts[0], list):
+        return deb822.PkgRelation.str(dep_alts)
     return ""
 
 
@@ -101,10 +103,10 @@ def clone_repo(base_url, repo_name):
 
 
 def get_pkgversion_to_install(pkg, req_version, req_commit):
-    def check_version_req(version_str, req):
+    def check_req_version(version_str, req_version):
         print("[buildpkg::get_pkgversion_to_install] Test '{} {} {}'".format(
-            version_str, req[0], req[1]))
-        return apt_pkg.check_dep(version_str, req[0], req[1])
+            version_str, req_version[0], req_version[1]))
+        return apt_pkg.check_dep(version_str, req_version[0], req_version[1])
 
     pkgversion_found = None
 
@@ -114,13 +116,18 @@ def get_pkgversion_to_install(pkg, req_version, req_commit):
                 pkgversion_found = pkgversion
                 break
     elif req_version:
-        # Sort by priority (as seen with `apt-cache policy <PackageName>`)
-        pkgversions = sorted(pkg.versions,
-                             key=lambda v: v.policy_priority, reverse=True)
-        for pkgversion in pkgversions:
-            if check_version_req(pkgversion.version, req_version):
-                pkgversion_found = pkgversion
-                break
+        if check_req_version(pkg.candidate.version, req_version):
+            # First check the current candidate (might be already installed)
+            pkgversion_found = pkg.candidate
+        else:
+            # Sort by priority (as seen with `apt-cache policy <PackageName>`)
+            pkgversions = sorted(pkg.versions, key=lambda v: v.policy_priority,
+                                 reverse=True)
+            for pkgversion in pkgversions:
+                # Choose the first one that complies with required version
+                if check_req_version(pkgversion.version, req_version):
+                    pkgversion_found = pkgversion
+                    break
     else:
         pkgversion_found = pkg.candidate
 
@@ -129,9 +136,10 @@ def get_pkgversion_to_install(pkg, req_version, req_commit):
     return pkgversion_found
 
 
-def check_deb_dependency_installable(dep):
-    for dep_alternative in dep:
-        dep_name = dep_alternative["name"]
+# Input of this function is a single dependency, which is a list of alternatives
+def check_deb_dependency_installable(dep_alts):
+    for dep_alt in dep_alts:
+        dep_name = dep_alt["name"]
         if APT_CACHE.has_key(dep_name):
             return True
 
@@ -139,9 +147,10 @@ def check_deb_dependency_installable(dep):
     return False
 
 
+# Input of this function is a single dependency, which is a list of alternatives
 def check_deb_dependency_installed(dep_alts):
     print("[buildpkg::check_deb_dependency_installed]"
-          " Check Debian dependency installed:", depend2str(dep_alts))
+          " Check Debian dependency installed:", dep2str(dep_alts))
 
     for dep_alt in dep_alts:
         dep_name = dep_alt["name"]
@@ -156,38 +165,40 @@ def check_deb_dependency_installed(dep_alts):
                     print("[buildpkg::check_deb_dependency_installed]"
                           " Dependency: '{}' is installed via package: {},"
                           " version: {}".format(
-                              depend2str(dep_alts), pkg.shortname, pkg.installed.version))
+                              dep2str(dep_alts), pkg.shortname, pkg.installed.version))
                     return True
                 else:
                     print("[buildpkg::check_deb_dependency_installed] WARNING:"
                           " Dependency: '{}' is installed via package: {},"
                           " version: {}, but doesn't match requested version: {}"
                           " or commit: {}".format(
-                              depend2str(dep_alts), pkg.shortname, pkg.installed.version,
+                              dep2str(
+                                  dep_alts), pkg.shortname, pkg.installed.version,
                               dep_version, dep_commit))
             else:
                 print("[buildpkg::check_deb_dependency_installed]"
                       " Dependency not installed yet: '{}'".format(
-                          depend2str(dep_alts)))
+                          dep2str(dep_alts)))
         else:
             print("[buildpkg::check_deb_dependency_installed]"
                   " Dependency not installable via `apt-get`: '{}'".format(
-                      depend2str(dep_alts)))
+                      dep2str(dep_alts)))
 
     # Reaching here, none of the alternatives are installed in a valid version
     return False
 
 
-def install_dependency(dep):
-    for dep_alternative in dep:
-        pkg_name = dep_alternative["name"]
+# Input of this function is a single dependency, which is a list of alternatives
+def install_dependency(dep_alts):
+    for dep_alt in dep_alts:
+        pkg_name = dep_alt["name"]
         if not APT_CACHE.has_key(pkg_name):
             continue
 
         # Get package version to install that matches commit or version
         pkg = APT_CACHE[pkg_name]
         pkgversion = get_pkgversion_to_install(
-            pkg, dep_alternative["version"], dep_alternative.setdefault("commit", None))
+            pkg, dep_alt["version"], dep_alt.setdefault("commit", None))
 
         if pkgversion is None:
             print("[buildpkg::install_dependency]"
@@ -204,7 +215,7 @@ def install_dependency(dep):
         pkg.mark_install()
         apt_cache_commit()
 
-        if check_deb_dependency_installed(dep):
+        if check_deb_dependency_installed(dep_alts):
             return True
 
     return False
@@ -288,17 +299,17 @@ def request_http(url, cert_path, key_path, file_path=None):
             print("[buildpkg::request_http] DONE: Running request:\n", res.text)
     else:
         curl_cmd = ("curl --fail --insecure --key " + key_path
-        + " --cert " + cert_path
-        + " -X POST \"" + url + "\""
-        + " --data-binary @" + file_path)
+                    + " --cert " + cert_path
+                    + " -X POST \"" + url + "\""
+                    + " --data-binary @" + file_path)
         print("[buildpkg::request_http] Run command:", curl_cmd)
         try:
-            curl_out = subprocess.check_output(curl_cmd, shell=True).strip()
+            curl_text = subprocess.check_output(curl_cmd, shell=True).strip()
         except subprocess.CalledProcessError:
-            print("[buildpkg::request_http] ERROR: Running 'curl':\n", curl_out)
+            print("[buildpkg::request_http] ERROR: Running 'curl':\n", curl_text)
             exit(1)
         else:
-            print("[buildpkg::request_http] DONE: Running 'curl':\n", curl_out)
+            print("[buildpkg::request_http] DONE: Running 'curl':\n", curl_text)
 
 
 # Current code performs a 'form-encoded' upload ('Content-Type: application/x-www-form-urlencoded')
@@ -358,8 +369,8 @@ def upload_package(args, buildconfig, dist, file_path, publish=False):
         request_http(publish_url, args.cert.name, args.id_rsa.name)
 
 
-def install_deb_dependencies():
-    debctl = Deb822(
+def install_build_dependencies():
+    debctl = deb822.Deb822(
         open("debian/control"),
         fields=["Build-Depends", "Build-Depends-Indep"])
 
@@ -367,30 +378,30 @@ def install_deb_dependencies():
     if debctl.has_key("Build-Depends-Indep"):
         builddep_str = builddep_str + "," + debctl.get("Build-Depends-Indep")
 
-    # PkgRelation.parse_relations returns a list that contains all
+    # PkgRelation.parse_relations() returns a list that contains all
     # dependencies. Each one of these dependencies is a list of alternatives.
-    relations = PkgRelation.parse_relations(builddep_str)
+    relations = deb822.PkgRelation.parse_relations(builddep_str)
 
-    print("[buildpkg::install_deb_dependencies]"
-          " Process dependencies: '{}'".format(depend2str(relations)))
+    print("[buildpkg::install_build_dependencies]"
+          " Process dependencies: '{}'".format(dep2str(relations)))
 
     # Check if all required packages are installed
     for dep_alts in relations:
         if not check_deb_dependency_installed(dep_alts):
             if check_deb_dependency_installable(dep_alts):
                 # Try to install missing dependencies
-                print("[buildpkg::install_deb_dependencies]"
+                print("[buildpkg::install_build_dependencies]"
                       " Try to install dependency: '{}'".format(
-                          depend2str(dep_alts)))
+                          dep2str(dep_alts)))
                 if not install_dependency(dep_alts):
-                    print("[buildpkg::install_deb_dependencies] ERROR:"
+                    print("[buildpkg::install_build_dependencies] ERROR:"
                           " Installing dependency: '{}'".format(
-                              depend2str(dep_alts)))
+                              dep2str(dep_alts)))
             else:
-                print("[buildpkg::install_deb_dependencies]"
+                print("[buildpkg::install_build_dependencies]"
                       " Dependency: '{}' package not available, need to"
                       " download and build it".format(
-                          depend2str(dep_alts)))
+                          dep2str(dep_alts)))
 
 
 def generate_debian_package(args, buildconfig):
@@ -398,8 +409,8 @@ def generate_debian_package(args, buildconfig):
 
     project_name = args.project_name
 
-    changelog = Changelog(open("debian/changelog"))
-    old_changelog = Changelog(open("debian/changelog"))
+    chglog = changelog.Changelog(open("debian/changelog"))
+    old_chglog = changelog.Changelog(open("debian/changelog"))
 
     print("[buildpkg::generate_debian_package] Run 'lsb_release'")
     try:
@@ -418,15 +429,15 @@ def generate_debian_package(args, buildconfig):
               " No valid version in the project's metada".format(project_name))
         exit(1)
 
-    changelog.new_block(version=new_version,
-                        package=changelog.package,
-                        distributions="testing",
-                        changes=["\n  Generating new package version\n"],
-                        author=changelog.author,
-                        date=strftime("%a, %d %b %Y %H:%M:%S %z"),
-                        urgency=changelog.urgency)
+    chglog.new_block(version=new_version,
+                     package=chglog.package,
+                     distributions="testing",
+                     changes=["\n  Generating new package version\n"],
+                     author=chglog.author,
+                     date=strftime("%a, %d %b %Y %H:%M:%S %z"),
+                     urgency=chglog.urgency)
 
-    changelog.write_to_open_file(open("debian/changelog", 'w'))
+    chglog.write_to_open_file(open("debian/changelog", 'w'))
 
     # Execute commands defined in the build configuration file
     if buildconfig.has_key("prebuild-command"):
@@ -495,7 +506,7 @@ def generate_debian_package(args, buildconfig):
             os.remove(file_path)
 
     # Write old changelog to let everything as it was
-    old_changelog.write_to_open_file(open("debian/changelog", 'w'))
+    old_chglog.write_to_open_file(open("debian/changelog", 'w'))
 
 
 def check_dependency_installed(dependency, debian_control_file):
@@ -505,7 +516,7 @@ def check_dependency_installed(dependency, debian_control_file):
     ret_val = False
 
     while True:
-        debctl = Deb822(debian_control_file)
+        debctl = deb822.Deb822(debian_control_file)
 
         if len(debctl) == 0:
             break
@@ -546,9 +557,9 @@ def compile_project(args):
         exit(1)
 
     print("[buildpkg::compile_project] ({})"
-          " Check Debian packages (from '{}')".format(
+          " Check Debian build dependencies (from '{}')".format(
               project_name, os.path.abspath("debian/control")))
-    install_deb_dependencies()
+    install_build_dependencies()
 
     # Parse dependencies and check if corrects versions are found
     print("[buildpkg::compile_project] ({})"
@@ -568,13 +579,13 @@ def compile_project(args):
             match = regex.match(dependency["version"])
             if match:
                 print("[buildpkg::compile_project] ({})"
-                      " Look for build dependency: '{}', version: {}".format(
+                      " Parsed project dependency: '{}', version: {}".format(
                           project_name, dependency["name"], dependency["version"]))
                 parts = match.groupdict()
                 dependency["version"] = (parts['relop'], parts['version'])
             else:
                 print("[buildpkg::compile_project] ({}) ERROR:"
-                      " Build dependency: '{}' with invalid version string: '{}'".format(
+                      " Project dependency: '{}' with invalid version string: '{}'".format(
                           project_name, dependency["name"], dependency["version"]))
                 exit(1)
         else:
@@ -585,7 +596,7 @@ def compile_project(args):
         git_url = args.base_url + "/" + build_dependency_name
 
         print("[buildpkg::compile_project] ({})"
-              " Build dependency: '{}', check Debian packages (from '{}')".format(
+              " Project dependency: '{}', check Debian packages (from '{}')".format(
                   project_name, build_dependency_name, git_url + "/debian/control"))
 
         # TODO: Consolidate versions, check if commit is compatible with
@@ -607,7 +618,7 @@ def compile_project(args):
                 dependency["commit"] = cmd_out.split()[0]
 
             print("[buildpkg::compile_project] ({})"
-                  " Build dependency: '{}' with no specific version or commit,"
+                  " Project dependency '{}' with no specific version or commit,"
                   " use Git HEAD: {}".format(
                       project_name, build_dependency_name, dependency["commit"]))
 
@@ -633,7 +644,7 @@ def compile_project(args):
                 "svn cat " + svn_url, shell=True).strip()
         except subprocess.CalledProcessError:
             print("[buildpkg::compile_project] ({}) ERROR:"
-                  " Running 'svn cat'".format(project_name))
+                  " Running 'svn cat':\n{}".format(project_name, cmd_out))
             exit(1)
         else:
             # Convert byte string from UTF-8 to Unicode text stream
