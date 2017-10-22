@@ -88,7 +88,7 @@ def depend2str(depend):
 def clone_repo(base_url, repo_name):
     try:
         repo = git.Repo(repo_name)
-    except git.InvalidGitRepositoryError:
+    except git.NoSuchPathError:
         repo_url = base_url + "/" + repo_name
         print("[buildpkg::clone_repo] Clone URL:", repo_url)
         repo = git.Repo.clone_from(repo_url, repo_name)
@@ -629,12 +629,15 @@ def compile_project(args):
         print("[buildpkg::compile_project] ({})"
               " Run 'svn cat' ({})".format(project_name, svn_url))
         try:
-            debian_control_file = subprocess.Popen(
-                "svn cat " + svn_url, shell=True, stdout=subprocess.PIPE).stdout
-        except OSError:
+            cmd_out = subprocess.check_output(
+                "svn cat " + svn_url, shell=True).strip()
+        except subprocess.CalledProcessError:
             print("[buildpkg::compile_project] ({}) ERROR:"
                   " Running 'svn cat'".format(project_name))
             exit(1)
+        else:
+            # Convert byte string from UTF-8 to Unicode text stream
+            debian_control_file = io.StringIO(cmd_out.decode('utf-8'))
 
         if not check_dependency_installed(dependency, debian_control_file):
             print("[buildpkg::compile_project] ({})"
