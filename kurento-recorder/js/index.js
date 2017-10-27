@@ -130,28 +130,32 @@ function startRecording() {
             webRtcPeer.processAnswer(answer);
           });
 
-          client.connect(webRtc, webRtc, recorder, function(error) {
-            if (error) return onError(error);
+          client.connect(webRtc, webRtc, function(error) {
+            if (error) {
+              return onError(error);
+            }
 
-            console.log("Connected");
+            client.connect(webRtc, recorder, function(error) {
+              console.log("Connected");
 
-            recorder.record(function(error) {
-              if (error) return onError(error);
+              recorder.record(function(error) {
+                if (error) return onError(error);
 
-              console.log("record");
+                console.log("record");
 
-              stopRecordButton.addEventListener("click", function(event){
-                recorder.stop();
-                pipeline.release();
-                webRtcPeer.dispose();
-                videoInput.src = "";
-                videoOutput.src = "";
+                stopRecordButton.addEventListener("click", function(event){
+                  recorder.stop();
+                  pipeline.release();
+                  webRtcPeer.dispose();
+                  videoInput.src = "";
+                  videoOutput.src = "";
 
-                hideSpinner(videoInput, videoOutput);
+                  hideSpinner(videoInput, videoOutput);
 
-                var playButton = document.getElementById('play');
-                playButton.addEventListener('click', startPlaying);
-              })
+                  var playButton = document.getElementById('play');
+                  playButton.addEventListener('click', startPlaying);
+                })
+              });
             });
           });
         });
