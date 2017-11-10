@@ -19,7 +19,9 @@
       - [Download KMS](#download-kms)
       - [Build KMS](#build-kms)
       - [Launch KMS](#launch-kms)
-      - [Build and run KMS tests](#build-and-run-kms-tests)
+        - [Logging levels and categories](#logging-levels-and-categories)
+        - [[1] 'libnice' debug log](#1-libnice-debug-log)
+      - [Build and run KMS unit tests](#build-and-run-kms-unit-tests)
       - [Clean your system](#clean-your-system)
     - [Working on a forked library](#working-on-a-forked-library)
       - [Full cycle](#full-cycle)
@@ -71,36 +73,35 @@ Kurento source code is stored in several GitHub repositories at https://github.c
 There are several types of repositories:
 
 - **Fork Repositories**: KMS depends on several open source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries. The repositories that contain these forked libraries are called "Fork Repositories". These are the current Fork Repositories, as of KMS version 6.6.1:
-    - [gstreamer](https://github.com/Kurento/gstreamer) (libgstreamer1.5)
-    - [gst-plugins-base](https://github.com/Kurento/gst-plugins-base)
-    - [gst-plugins-good](https://github.com/Kurento/gst-plugins-good)
-    - [gst-plugins-bad](https://github.com/Kurento/gst-plugins-bad)
-    - [gst-plugins-ugly](https://github.com/Kurento/gst-plugins-ugly)
-    - [gst-libav](https://github.com/Kurento/gst-libav)
-    - [jsoncpp](https://github.com/Kurento/jsoncpp)
-    - [libsrtp](https://github.com/Kurento/libsrtp)
-    - [libnice](https://github.com/Kurento/libnice) (gstreamer1.0-nice, gstreamer1.5-nice)
-    - [openwebrtc-gst-plugins](https://github.com/Kurento/openwebrtc-gst-plugins)
-    - [openh264](https://github.com/Kurento/openh264)
-    - [usrsctp](https://github.com/Kurento/usrsctp)
+  - [gstreamer](https://github.com/Kurento/gstreamer) (libgstreamer1.5)
+  - [gst-plugins-base](https://github.com/Kurento/gst-plugins-base)
+  - [gst-plugins-good](https://github.com/Kurento/gst-plugins-good)
+  - [gst-plugins-bad](https://github.com/Kurento/gst-plugins-bad)
+  - [gst-plugins-ugly](https://github.com/Kurento/gst-plugins-ugly)
+  - [gst-libav](https://github.com/Kurento/gst-libav)
+  - [jsoncpp](https://github.com/Kurento/jsoncpp)
+  - [libsrtp](https://github.com/Kurento/libsrtp)
+  - [libnice](https://github.com/Kurento/libnice) (gstreamer1.0-nice, gstreamer1.5-nice)
+  - [openwebrtc-gst-plugins](https://github.com/Kurento/openwebrtc-gst-plugins)
+  - [openh264](https://github.com/Kurento/openh264)
+  - [usrsctp](https://github.com/Kurento/usrsctp)
 
 - **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.6, these repositories are:
-    - [kms-cmake-utils](https://github.com/Kurento/kms-cmake-utils): Contains a set of utilities for building KMS with CMake.
-    - [kms-core](https://github.com/Kurento/kms-core): Contains the core
-    GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
-    - [kms-elements](https://github.com/Kurento/kms-elements): Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
-    - [kms-filters](https://github.com/Kurento/kms-filters): Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
-    - [kms-jsonrpc](https://github.com/Kurento/kms-jsonrpc): Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
-    - [kurento-media-server](https://github.com/Kurento/kurento-media-server): Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
-    - [kurento-module-creator](https://github.com/Kurento/kurento-module-creator): It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
+  - [kms-cmake-utils](https://github.com/Kurento/kms-cmake-utils): Contains a set of utilities for building KMS with CMake.
+  - [kms-core](https://github.com/Kurento/kms-core): Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
+  - [kms-elements](https://github.com/Kurento/kms-elements): Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
+  - [kms-filters](https://github.com/Kurento/kms-filters): Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
+  - [kms-jsonrpc](https://github.com/Kurento/kms-jsonrpc): Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
+  - [kurento-media-server](https://github.com/Kurento/kurento-media-server): Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
+  - [kurento-module-creator](https://github.com/Kurento/kurento-module-creator): It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
 
 - **Omni-Build Repository**: The [kms-omni-build](https://github.com/Kurento/kms-omni-build) repository is a dummy umbrella for the other KMS Main Repositories. It has no actual code; instead, it only has the required CMake code to allow building the whole KMS project in one go. For this, it gets a copy of the required repositories via Git submodules.
 
 - **Module Repositories**: KMS is distributed with some basic GStreamer pipeline elements, but other elements are available in form of modules. These modules are stored individually in Module Repositories. Currently, we have the following ones:
-    - [kms-crowddetector](https://github.com/Kurento/kms-crowddetector)
-    - [kms-chroma](https://github.com/Kurento/kms-chroma)
-    - [kms-pointerdetector](https://github.com/Kurento/kms-pointerdetector)
-    - [kms-platedetector](https://github.com/Kurento/kms-platedetector)
+  - [kms-crowddetector](https://github.com/Kurento/kms-crowddetector)
+  - [kms-chroma](https://github.com/Kurento/kms-chroma)
+  - [kms-pointerdetector](https://github.com/Kurento/kms-pointerdetector)
+  - [kms-platedetector](https://github.com/Kurento/kms-platedetector)
 
 - **Client Repositories**: Client Applications can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their support tools made available in their respective repositories.
 
@@ -177,8 +178,8 @@ In KMS, we have developed a custom CMake command to search a library in several 
 To build KMS from sources you first have to decide on which part you want to work:
 - **Main KMS development**: You want to make code changes in Main Repositories and test them in your development machine, to see how the changes affect KMS. Or maybe you want to debug KMS with GDB or analyze it with Valgrind.
 - **Change a forked library**: You want to update a Fork Repository and check if all is working as expected. In this case, you have two options:
-    - Change code in the current fork.
-    - Synchronize the fork with a new release of forked library.
+  - Change code in the current fork.
+  - Synchronize the fork with a new release of forked library.
 - **Generate Debian packages**: To distribute KMS is necessary to generate Debian packages from KMS Fork and Main Repositories.
 
 As you can see, there are a lot of possibilities. In the next sections we’ll explain the best way to build KMS in these different contexts.
@@ -186,9 +187,7 @@ As you can see, there are a lot of possibilities. In the next sections we’ll e
 
 ### Developing KMS
 
-To work with KMS Main Repositories the easiest way is using the module **kms-omni-build**.
-
-To work with the KMS codebase you should follow the next steps:
+To work with KMS Main Repositories the easiest way is using the module **kms-omni-build**. Just follow these steps:
 - Install development tools (Git, C Compiler, CMake, etc…).
 - Install KMS development libraries.
 - Install KMS fork libraries.
@@ -243,9 +242,10 @@ REPO="trusty-dev"  # KMS Develop for Ubuntu 14.04 (Trusty)
 REPO="xenial"      # KMS Release for Ubuntu 16.04 (Xenial)
 REPO="xenial-dev"  # KMS Develop for Ubuntu 16.04 (Xenial)
 
+# Now run:
 tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
 # Kurento Packages repository
-deb http://ubuntu.kurento.org ${REPO} kms6
+deb http://ubuntu.kurento.org $REPO kms6
 EOF
 wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
 apt-get update
@@ -253,7 +253,7 @@ apt-get update
 
 **Note**: Run only _one_ of the lines that set the variable `REPO`. The suffix `-dev` indicates a development repository, and may contain unstable packages. For a production system, choose the repo without that suffix.
 
-Now, the fork packages can be installed from the Kurento repo. Run as root:
+Now the fork packages can be installed from the Kurento repo. Run as root:
 
 ```
 apt-get install --no-install-recommends \
@@ -276,7 +276,7 @@ apt-get install --no-install-recommends \
   ffmpeg
 ```
 
-Optionally, install the debugging symbols:
+Optionally, install the debugging symbols if you will be using a debugger to troubleshoot bugs in KMS:
 
 ```
 apt-get install --no-install-recommends \
@@ -297,11 +297,21 @@ apt-get install --no-install-recommends \
 Run:
 
 ```
-git clone https://github.com/Kurento/kms-omni-build.git
-cd kms-omni-build
-git submodule init
-git submodule update --recursive --remote
+git clone https://github.com/Kurento/kms-omni-build.git \
+  && cd kms-omni-build \
+  && git submodule init \
+  && git submodule update --recursive --remote
 ```
+
+Optionally, change to the master branch of each submodule, if you will be developing on each one of those:
+
+```
+REF=master
+for d in $(find . -maxdepth 1 -mindepth 1 -type d)
+do pushd $d ; git checkout "$REF" ; popd ; done
+```
+
+You can also set `REF` to any other branch or tag, such as `REF=6.6.1`. This will bring the code to the state it had in that version.
 
 
 #### Build KMS
@@ -310,19 +320,24 @@ Run:
 
 ```
 TYPE=Debug
-mkdir build-$TYPE && cd build-$TYPE
-cmake -DCMAKE_BUILD_TYPE=$TYPE -DCMAKE_VERBOSE_MAKEFILE=ON ..
-make
+mkdir build-$TYPE \
+  && cd build-$TYPE \
+  && cmake -DCMAKE_BUILD_TYPE=$TYPE -DCMAKE_VERBOSE_MAKEFILE=ON .. \
+  && make
 ```
 
-CMake accepts the following build types, to be used in the first line above:
-- `Debug`
-- `Release`
-- `RelWithDebInfo`
-
-So, for a Release build, you would run `TYPE=Release` instead of `TYPE=Debug`.
+CMake accepts the following build types: `Debug`, `Release`, `RelWithDebInfo`. So, for a Release build, you would run `TYPE=Release` instead of `TYPE=Debug`.
 
 **Important note**: the standard way of compiling a project with CMake is to create a `build` directory and run the `cmake` and `make` commands from there. This allows the developer to have different build folders for different purposes. However **do not use this technique** if you are trying to compile a subdirectory of **kms-omni-build**. For example, if you do this to build `kms-ombi-build/kms-core`, no more that one build folder can be present at a time in `kms-ombi-build/kms-core/build`. If you want to keep several builds of a single module, it is better to just work on a separate Git clone of that repository.
+
+It is also possible to enable GCC's AddressSanitizer or ThreadSanitizer with these flags:
+
+    -DENABLE_ANALYZER_ASAN=ON  # Enable the AddressSanitizer (aka ASan) memory error detector. Implies CMAKE_BUILD_TYPE=Release.
+    -DSANITIZE_ADDRESS=ON
+    -DSANITIZE_THREAD=ON
+    -DSANITIZE_LINK_STATIC=ON
+
+[TODO: finish testing that these modes do actually work]
 
 
 #### Launch KMS
@@ -336,16 +351,67 @@ kurento-media-server/server/kurento-media-server \
   --conf-file=../kurento-media-server/kurento.conf.json \
   --gst-plugin-path=. \
   --gst-debug-level=3 \
+  --gst-debug=Kurento*:4 \
   --gst-debug=kms*:4 \
-  --gst-debug=Kurento*:4
+  --gst-debug=rtpendpoint:4 \
+  --gst-debug=webrtcendpoint:4
 ```
 
-You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides, the global logging level is specified with `--gst-debug-level`.
+You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides that, the global logging level is specified with `--gst-debug-level`.
+
+Other launch options that could be useful:
+
+    --logs-path, -d <Path> : Path where rotating log files will be stored
+    --log-file-size, -s <Number> : Maximum file size for log files, in MB
+    --number-log-files, -n <Number> : Maximum number of log files to keep
+
+More launch options, handled by GStreamer:
+https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-running.html
 
 
-#### Build and run KMS tests
+##### Logging levels and categories
 
-KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). To build and run all tests, change the last one of the build commands: `make check`.
+Logging messages are generated per-category, where each different module of KMS is able to create its own one (but it's not obliged to do so). Besides that, each individual logging message has an importance rating, which defines how critical (or verbose) the given message is. These are the different levels, as per defined by the GStreamer logging library:
+1. **ERROR**: Logs all fatal errors. These are errors that do not allow the core or elements to perform the requested action. The application can still recover if programmed to handle the conditions that triggered the error.
+2. **WARNING**: Logs all warnings. Typically these are non-fatal, but user-visible problems are expected to happen.
+3. **FIXME**: Logs all fixme messages. Fixme messages are messages that indicate that something in the executed code path is not fully implemented or handled yet. The purpose of this message is to make it easier to spot incomplete/unfinished pieces of code when reading the debug log.
+4. **INFO**: Logs all informational messages. These are typically used for events in the system that only happen once, or are important and rare enough to be logged at this level.
+5. **DEBUG**: Logs all debug messages. These are general debug messages for events that happen only a limited number of times during an object's lifetime; these include setup, teardown, change of parameters, ...
+6. **LOG**: Logs all log messages. These are messages for events that happen repeatedly during an object's lifetime; these include streaming and steady-state conditions.
+7. **TRACE**: Logs all trace messages. These messages for events that happen repeatedly during an object's lifetime such as the ref/unref cycles.
+9. **MEMDUMP**: Log all memory dump messages. Memory dump messages are used to log (small) chunks of data as memory dumps in the log. They will be displayed as hexdump with ASCII characters.
+
+These are some tips on what logging categories and logging levels could be most useful depending on what is the issue to be analyzed:
+- Global level: 3 (higher than 3 would mean too much noise from GStreamer).
+- Unit tests: `check:5`.
+- SDP processing: `kmssdpsession:4`.
+- COMEDIA port discovery: `rtpendpoint:4`.
+- ICE candidate gathering:
+  - At the Nice Agent (handling of candidates) [1]: `kmsiceniceagent:5`.
+  - At the KMS WebRtcSession (decision logic): `kmswebrtcsession:5`.
+  - At the WebRtcEndpoint (very basic logging): `webrtcendpoint:4`.
+- REMB congestion control:
+  - Only effective REMB send/recv values: `kmsremb:5`.
+  - Full handling of all source SSRCs: `kmsremb:6`.
+- MediaFlow{In|Out} state changes: `KurentoMediaElementImpl:5`.
+- RPC calls: `KurentoWebSocketTransport:5`.
+- RTP Sync: `kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5`.
+
+
+##### [1] 'libnice' debug log
+
+Run with these environment variables: `G_MESSAGES_DEBUG`, `NICE_DEBUG`. They must have one or more of these values: `libnice`, `libnice-stun`, `libnice-tests`, `libnice-socket`, `libnice-pseudotcp`, `libnice-pseudotcp-verbose`, `all`.
+
+Example:
+
+    export G_MESSAGES_DEBUG="libnice,libnice-stun"
+    export NICE_DEBUG="$G_MESSAGES_DEBUG"
+    kurento-media-server/server/kurento-media-server <...>
+
+
+#### Build and run KMS unit tests
+
+KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). To build and run all tests, change the last one of the build commands from `make` to `make check`.
 
 To build and run one specific test, use `make <TestName>.check`.
 For example: `make test_agnosticbin.check`
@@ -353,10 +419,14 @@ For example: `make test_agnosticbin.check`
 If you want to analyze memory usage with Valgrind, use `make <TestName>.valgrind`.
 For example: `make test_agnosticbin.valgrind`
 
+Each test has some amount of debug logging which will get printed; check these messages in the file `./Testing/Temporary/LastTest.log` after running a test suite. To find the starting point of each individual test in this log file, look for the words "*test start*". Example:
+
+    webrtcendpoint.c:1848:test_vp8_sendrecv: test start
+
 
 #### Clean your system
 
-To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command, and for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option `--yes`, which makes the process automatic. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
+To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command and, for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option `--yes` -which makes the process automatic-, so if should be fairly safe to use. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
 
 Run as root:
 
@@ -479,24 +549,24 @@ This is the full procedure followed by the `compile_project.py` script:
 KMS cannot be built in Trusty without adding the Kurento Packages Repository, because some of the system development libraries are required in a more recent version than the one available by default in the official Ubuntu Trusty repos. This is a non exhaustive list of those required libraries, compared with the versions available in Xenial and in the Kurento repo:
 
 - **kms-core**
-    - libglib2.0-dev (>= 2.46); 14.04 = (2.40); 16.04 = (2.48); Kurento = (2.46). It actually builds and works fine with 2.40, but the required version of glib was first raised from 2.40 to 2.42 and later to 2.46 in commits `b10d318b` and `7f703bed`, justified as providing huge performance improvement in `mutex` and `g_object_ref`.
+  - libglib2.0-dev (>= 2.46) | 14.04: (= 2.40) | 16.04: (= 2.48) | Kurento: (= 2.46). It actually builds and works fine with 2.40, but the required version of glib was first raised from 2.40 to 2.42 and later to 2.46 in commits `b10d318b` and `7f703bed`, justified as providing huge performance improvements in `mutex` and `g_object_ref`.
 - **gst-plugins-base**
-    - libsoup2.4-dev (>= 2.48); 14.04 = (2.44); 16.04 = (2.52); Kurento = (2.50).
+  - libsoup2.4-dev (>= 2.48) | 14.04: (= 2.44) | 16.04: (= 2.52) | Kurento: (= 2.50).
 - **libsrtp**
-    - libssl-dev (>= 1.0.2); 14.04 = (1.0.1f); 16.04 = (1.0.2g); Kurento = (1.0.2g).
+  - libssl-dev (>= 1.0.2) | 14.04: (= 1.0.1f) | 16.04: (= 1.0.2g) | Kurento: (= 1.0.2g).
 - **gst-plugins-bad**
-    - libde265-dev (Any); 14.04 = (None); 16.04 = (1.0.2); Kurento = (0.9).
-    - libx265-dev (Any); 14.04 = (None); 16.04 = (1.9); Kurento = (1.7).
-    - libass-dev (>= 0.10.2); 14.04 = (0.10.1); 16.04 = (0.13.1); Kurento = (0.10.2).
-    - libgnutls28-dev and librtmp-dev; the latter depends on libgnutls-dev, which conflicts with the former (only in 14.04). Solution: use librtmp-dev from Kurento repo, which doesn't depend on libgnutls-dev.
+  - libde265-dev (any) | 14.04: (none) | 16.04: (= 1.0.2) | Kurento: (= 0.9).
+  - libx265-dev (any) | 14.04: (none) | 16.04: (= 1.9) | Kurento: (= 1.7).
+  - libass-dev (>= 0.10.2) | 14.04: (= 0.10.1) | 16.04: (= 0.13.1) | Kurento: (= 0.10.2).
+  - libgnutls28-dev, librtmp-dev; the latter depends on 'libgnutls-dev', which conflicts with the former (only in 14.04). Solution: use 'librtmp-dev' from Kurento repo, which doesn't depend on 'libgnutls-dev'.
 - **kms-elements**
-    - libnice-dev (>= 0.1.13); 14.04 = (0.1.4); 16.04 = (0.1.13); Kurento = (0.1.13).
+  - libnice-dev (>= 0.1.13) | 14.04: (= 0.1.4) | 16.04: (= 0.1.13) | Kurento: (= 0.1.13).
 - **libnice**
-    - libgupnp-igd-1.0-dev (>= 0.2.4); 14.04 = (0.2.2); 16.04 = (0.2.4); Kurento = (0.2.4).
+  - libgupnp-igd-1.0-dev (>= 0.2.4) | 14.04: (= 0.2.2) | 16.04: (= 0.2.4) | Kurento: (= 0.2.4).
 
 This means that it is not possible to build the whole KMS without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with `apt-get`.
 
-In the case that we want to build the whole KMS libraries and modules, the solution to this problem is to clone each module separately, and build them in the order given by their [dependency graph](#repository-dependency-graph), which is this:
+In the case that we want to force building the whole KMS libraries and modules -as opposed to downloading them from the repo- the solution to this problem is to clone each module separately, and build them in the order given by their [dependency graph](#repository-dependency-graph), which is this:
 
 1. gstreamer
 2. gst-plugins-base
@@ -529,21 +599,20 @@ In the case that we want to build the whole KMS libraries and modules, the solut
 
 ### How to add or update an external library to kurento
 
-Add it to/Change it in:
-   - Add dependency to debian/control in the project that uses it
-   - Add dependency to CMakeLists.txt in the project that uses it
+Add or change it in these files:
+- 'debian/control'.
+- 'CMakeLists.txt'.
 
 
 ### How to add a new fork library to kurento
 
-   - Fork the repository
-   - Create a .build.yaml in this repository with build instructions
-   - Add dependency to debian/control in the project that uses it
-   - Add dependency to CMakeLists.txt in the project that uses it
-   - Add dependency to .build.yaml in the project that uses it
+1. Fork the repository.
+2. Create a '.build.yaml' file in this repository, listing its project dependencies (if any).
+3. Add dependency to 'debian/control' in the project that uses it.
+4. Add dependency to 'CMakeLists.txt' in the project that uses it.
 
 
 ### Known problems
 
-   - Sometimes gstreamer fork doesn't compile correctly. Try again.
-   - Some tests are failing sometimes. If tests fail, packages are not generated. To change it, edit debian/rules file to disable testing generation and testing execution.
+- Sometimes the GStreamer fork doesn't compile correctly. Try again.
+- Some unit tests can fail, especially if the storage server (which contains some required input files) is having connectivity issues. If tests fail, packages are not generated. To skip tests, edit the file 'debian/rules' and change `-DGENERATE_TESTS=TRUE` to `-DGENERATE_TESTS=FALSE -DDISABLE_TESTS=TRUE`.
