@@ -237,10 +237,10 @@ First, add the Kurento repository to Apt. Run as root:
 
 ```
 # Choose one:
-REPO="trusty"      # KMS Release for Ubuntu 14.04 (Trusty)
-REPO="trusty-dev"  # KMS Develop for Ubuntu 14.04 (Trusty)
-REPO="xenial"      # KMS Release for Ubuntu 16.04 (Xenial)
-REPO="xenial-dev"  # KMS Develop for Ubuntu 16.04 (Xenial)
+REPO="trusty"      # KMS Release     - Ubuntu 14.04 (Trusty)
+REPO="trusty-dev"  # KMS Development - Ubuntu 14.04 (Trusty)
+REPO="xenial"      # KMS Release     - Ubuntu 16.04 (Xenial)
+REPO="xenial-dev"  # KMS Development - Ubuntu 16.04 (Xenial)
 
 # Now run:
 tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
