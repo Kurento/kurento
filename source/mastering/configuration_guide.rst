@@ -68,7 +68,7 @@ To verify that KMS is up and running use the command:
 
 The output should include the ``kurento-media-server`` process:
 
-.. sourcecode:: bash
+.. code-block:: text
 
    nobody    1270     1  0 08:52 ?        00:01:00 /usr/bin/kurento-media-server
 
@@ -87,7 +87,7 @@ execute the following command:
 
 The output should be similar to the following:
 
-.. sourcecode:: bash
+.. code-block:: text
 
    tcp6    0    0 :::8888    :::*    LISTEN    1270/kurento-media-server
 
@@ -107,7 +107,7 @@ Kurento Media Server logs file are stored in the folder
 
 Each line in the Kurento Media Server logs has a fixed structure, as follows:
 
-.. sourcecode:: bash
+.. code-block:: text
 
    [timestamp] [pid] [memory] [level] [component] [filename:loc] [method] [message]
 
@@ -139,6 +139,6 @@ Each line in the Kurento Media Server logs has a fixed structure, as follows:
 
 For example, when KMS starts correctly, this trace is written in the log file:
 
-.. sourcecode:: bash
+.. code-block:: text
 
    [timestamp] [pid] [memory]  info KurentoMediaServer  main.cpp:256 main()  Mediaserver started
