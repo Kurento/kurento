@@ -1,9 +1,6 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Kurento Media Server Advanced Installation guide
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Kurento Media Server Configuration
-==================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Kurento Media Server Configuration Guide
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The main KMS configuration file is located in
 ``/etc/kurento/kurento.conf.json``. After a fresh installation this file is the
@@ -95,8 +92,8 @@ The output should be similar to the following:
    tcp6    0    0 :::8888    :::*    LISTEN    1270/kurento-media-server
 
 
-Kurento Media Server Log
-------------------------
+Server Logging
+==============
 
 Kurento Media Server logs file are stored in the folder
 ``/var/log/kurento-media-server/``. The content of this folder is as follows:
@@ -112,33 +109,33 @@ Each line in the Kurento Media Server logs has a fixed structure, as follows:
 
 .. sourcecode:: bash
 
-   [timestamp] [pid] [memory]   [level] [component]    [filename:loc] [method] [message]
+   [timestamp] [pid] [memory] [level] [component] [filename:loc] [method] [message]
 
 ... where:
 
-* ``[timestamp]`` : Date and time of the logging trace (e.g.
+* ``[timestamp]``: Date and time of the logging trace (e.g.
   ``2016-10-26 12:04:22,493295``).
 
-* ``[pid]`` : Process identifier of *kurento-media-sever* (e.g. ``17521``).
+* ``[pid]``: Process identifier of *kurento-media-sever* (e.g. ``17521``).
 
-* ``[memory]`` : Memory address in which the *kurento-media-sever* component
+* ``[memory]``: Memory address in which the *kurento-media-sever* component
   is running (e.g. ``0x00007fd59f2a78c0``).
 
-* ``[level]`` : Log level. This value typically will be ``info`` and
-  ``debug``. If unexpected error situation happens, the ``error`` level will
+* ``[level]``: Log level. This value typically will be ``info`` and
+  ``debug``. If unexpected error situations happen, the ``error`` level will
   contain information about the problem.
 
-* ``[component]`` : Kurento Media Server component name, for example
+* ``[component]``: Kurento Media Server component name, for example
   ``KurentoModuleManager``, ``KurentoLoadConfig``, or ``KurentoMediaServer``,
   among others.
 
-* ``[filename:loc]`` : Code source file name (e.g. ``main.cp``) followed by
+* ``[filename:loc]``: Code source file name (e.g. ``main.cp``) followed by
   the line of code (*loc*) number.
 
-* ``[method]`` : Name of the method of function in which the log trace is
+* ``[method]``: Name of the method of function in which the log trace is
   invoked (e.g. ``loadModule()``, ``doGarbageCollection()``, etc).
 
-* ``[message]`` : Specific log information.
+* ``[message]``: Specific log information.
 
 For example, when KMS starts correctly, this trace is written in the log file:
 

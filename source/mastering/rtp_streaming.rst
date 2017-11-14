@@ -2,9 +2,6 @@
 RTP Streaming
 %%%%%%%%%%%%%
 
-Introduction
-============
-
 Besides WebRTC connections, Kurento Media Server is able to manage standard RTP
 streams, allowing to connect an instance of KMS to a wide variety of devides.
 

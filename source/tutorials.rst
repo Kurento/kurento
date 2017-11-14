@@ -6,13 +6,13 @@ This section contains tutorials showing how to use Kurento framework to build
 different types of `WebRTC`:term: and multimedia applications. Tutorials come
 in three flavors:
 
-- **Java**: These show applications where clients interact with Spring-Boot based
-  application, that host the logic orchestrating the communication among 
+- **Java**: These show applications where clients interact with Spring Boot -based
+  applications, that host the logic orchestrating the communication among
   clients and controlling Kurento Media Server capabilities.
 
 - **Browser JavaScript**: These show applications executing at the browser and
-  communicating directly with the Kurento Media Server. In these tutorial all
-  logic is directly hosted by browser. Hence, no application server is
+  communicating directly with the Kurento Media Server. In these tutorials all
+  logic is directly hosted by the browser. Hence, no application server is
   necessary.
 
 - **Node.js**: These show applications where clients interact with an
@@ -28,8 +28,8 @@ in three flavors:
 
 .. note::
 
-   These tutorials require https in order to use WebRTC. Following
-   `instructions <mastering/securing-kurento-applications.html>`_ will provided
+   These tutorials require ``https`` in order to use WebRTC. Following
+   `instructions <mastering/securing-kurento-applications.html>`_ will provide
    further information about how to enable application security.
 
 
@@ -38,7 +38,7 @@ Hello world
 
 This is one of the simplest WebRTC applications you can create with Kurento. It
 implements a `WebRTC`:term: *loopback* (a WebRTC media stream going from client
-to Kurento and back to the client)
+to Kurento Media Server and back to the client)
 
 .. toctree::
    :maxdepth: 1
@@ -99,8 +99,8 @@ WebRTC many-to-many video call (Group call)
 ===========================================
 
 This tutorial connects several participants to the same video conference. A group
-call will ocnsist, in the media server side, in N*N WebRTC endpoints, where N is the
-number of clients connected to that conference.
+call will consist -in the media server side- in N*N WebRTC endpoints, where N is
+the number of clients connected to that conference.
 
 .. toctree::
    :maxdepth: 1
@@ -110,8 +110,8 @@ number of clients connected to that conference.
 Media Elements metadata
 =======================
 
-This tutorial detects and draws faces present in the webcam video. It connects filters:
-KmsDetectFaces and the KmsShowFaces.
+This tutorial detects and draws faces present in the webcam video. It connects
+filters: KmsDetectFaces and the KmsShowFaces.
 
 .. toctree::
    :maxdepth: 1
@@ -131,8 +131,9 @@ This tutorial reads a file from disk and plays the video to WebRTC.
 WebRTC outgoing data channels
 =============================
 
-This tutorial injects video to a QR filter and then sends the stream to WebRTC. QR detection
-events are delivered by means of WebRTC data channels, to be displayed in browser.
+This tutorial injects video to a QR filter and then sends the stream to WebRTC.
+QR detection events are delivered by means of WebRTC data channels, to be
+displayed in browser.
 
 .. toctree::
    :maxdepth: 1
@@ -142,8 +143,8 @@ events are delivered by means of WebRTC data channels, to be displayed in browse
 WebRTC incoming data channel
 ============================
 
-This tutorial shows how text messages sent from browser can be delivered by data channels,
-to be displayed together with loopback video.
+This tutorial shows how text messages sent from browser can be delivered by data
+channels, to be displayed together with loopback video.
 
 .. toctree::
    :maxdepth: 1
@@ -167,7 +168,8 @@ can choose which type of media to send and record: audio, video or both.
 WebRTC repository
 =================
 
-This is similar to the recording tutorial, but using the repository to store metadata.
+This is similar to the recording tutorial, but using the repository to store
+metadata.
 
 .. toctree::
    :maxdepth: 1
@@ -178,7 +180,8 @@ This is similar to the recording tutorial, but using the repository to store met
 WebRTC statistics
 =================
 
-This tutorial implements a `WebRTC`:term: *loopback* and shows how to collect WebRTC statistics.
+This tutorial implements a `WebRTC`:term: *loopback* and shows how to collect
+WebRTC statistics.
 
 .. toctree::
    :maxdepth: 1
