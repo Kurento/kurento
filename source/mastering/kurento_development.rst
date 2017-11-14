@@ -1,102 +1,54 @@
 .. _Kurento_Development:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Working with nightly builds
+Working with Nightly Builds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Kurento is composed by several components. Each component is being developed
 with very different technologies.
 
 * **Kurento Media Server:** This is the core component of Kurento. It is
-  implemented using C/C++ and GStreamer platform.
-* **Kurento Java Client:** This Kurento Client is implemented in Java with
-  Maven and Sprint.
-* **Kurento JavaScript Client:** This Kurento Client is implemented in
-  JavaScript with Node.js and NPM.
+  implemented using C/C++ languages, and the GStreamer Framework.
+* **Kurento Java Client:** This is implemented in Java with Maven and Spring.
+* **Kurento JavaScript Client:** This component is implemented in JavaScript
+  with Node.js and NPM.
 
 In this section, we will see how to use nightly compiled versions of Kurento
 code base. This is not the recommended way to use Kurento, but can be useful if
 you are testing brand new features.
 
-We'll also explain in detail how Kurento can be built from sources. This is a
-complex task because Kurento uses several technologies, although it can be very
-funny ;)
+We'll also explain in detail how Kurento can be built from sources.
+
 
 .. _using_nightly_versions:
 
 Using development versions
 --------------------------
 
-In this section we are going to explain how to use development versions of
-Kurento. We build every Kurento component at least once a day as we follow the
-*Continuous Integration* principles.
-
-Some components are build nightly, with the code developed that day. Other
-components are created automatically when code is merged into source repository.
-
-Using development versions is not the recommended way to use Kurento, but it can
-be useful to try brand new features.
+Some components of KMS are build nightly, with the code developed during that
+same day. Other components are created automatically when code is merged into
+the source repositories.
 
 .. warning:: You have to use these versions with caution, because they can be
    broken. Usually they have bugs and incomplete functionalities. **Never** use
    development versions in production.
 
+
 Kurento Media Server
 ====================
 
-Install packages from the development repository. Run as root:
+Documentation for developers is being slowly added directly to the source
+repositories of Kurento. If you are a developer and you'd like to read further
+about the organization of Kurento components, together with instructions for
+installing all required development requirements, please check this document:
 
-.. sourcecode:: bash
+https://github.com/Kurento/doc-kurento/blob/master/static/kms_development_guide.md
 
-   DIST="xenial-dev"
-   tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
-   # Kurento Packages repository
-   deb http://ubuntu.kurento.org ${DIST} kms6
-   EOF
-   wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
-   apt-get update
-   apt-get install kurento-media-server-6.0
+Also, there is a document which outlines all the Events that can be raised by
+KMS through the WebRTCEndpoint, and received by a Client application:
 
-.. note::
+https://github.com/Kurento/doc-kurento/blob/master/static/kms_webrtc_endpoint_events.md
 
-   For Ubuntu 14.04 (Trusty), use "trusty-dev":
-
-   .. sourcecode:: bash
-
-      DIST="trusty-dev"
-
-   In order to install the Release version, remove the "-dev" suffix:
-
-   .. sourcecode:: bash
-
-      DIST="xenial"
-
-It is not possible to have installed at the same time the Release and
-Development versions of Kurento Media Server.
-
-In order to install older versions of Kurento Media Server, you need to
-configure the corresponding repository in your Apt source file
-(``/etc/apt/sources.list.d/kurento.list``)::
-
-    For Ubuntu 14.04 (Trusty):
-        deb http://ubuntu.kurento.org/[VERSION_TAG] trusty kms6
-
-    For Ubuntu 16.04 (Xenial):
-        deb http://ubuntu.kurento.org/[VERSION_TAG] xenial kms6
-
-... where ``[VERSION_TAG]`` is the version of Kurento Media Server to be
-installed (for instance, ``6.4.0``). After that you should install KMS as
-usual::
-
-    sudo apt-get update
-    sudo apt-get install kurento-media-server-6.0
-
-Notice that an old version of KMS cannot live in the same machine with a
-stable/unstable release. Therefore, if you have previously installed KMS, and
-you want to downgrade to a former release, first your need to purge your
-previous installation::
-
-    sudo apt-get purge --auto-remove kurento-media-server-6.0
 
 Kurento Java Client
 ===================
@@ -155,13 +107,13 @@ application's pom.xml the following dependency:
        <version>latest-version-SNAPSHOT</version>
    </dependency>
 
+
 Kurento JavaScript Client
 =========================
 
 JavaScript is special because in some cases there is no need to build anything.
 JavaScript is a scripting language that can execute directly from sources. But
-in some cases, the code have to be "processed" to be used from client
-applications.
+in some cases, the code has to be "processed" to be used by client applications.
 
 Node.js development
 ~~~~~~~~~~~~~~~~~~~
