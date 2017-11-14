@@ -26,13 +26,13 @@ Kurento Protocol
 
    Kurento Protocol <mastering/kurento_protocol>
 
-Advanced Installation Guide
-===========================
+Configuration Guide
+===================
 
 .. toctree::
    :maxdepth: 1
 
-   Advanced Installation Guide <mastering/advanced_installation_guide>
+   Configuration Guide <mastering/configuration_guide>
 
 Working with Nightly Builds
 ===========================
