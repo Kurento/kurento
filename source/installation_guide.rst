@@ -1,23 +1,50 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Kurento Media Server Installation
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+Kurento Installation Guide
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Kurento Media Server (KMS) has to be installed on **Ubuntu 14.04 LTS** (64 bits).
+Kurento Media Server (KMS) has explicit support for two Long-Term Support (*LTS*)
+distributions of Ubuntu: **Ubuntu 14.04 (Trusty)** and **Ubuntu 16.04 (Xenial)**.
+Only the 64-bits editions are supported.
 
-In order to install the latest stable Kurento Media Server version
-(**|KMS_VERSION|**) you have to type the following commands, one at a time and
-in the same order as listed here. When asked for any kind of confirmation,
-reply affirmatively:
+Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial),
+so if you are in doubt, this is the preferred Ubuntu distribution to choose.
+However, all features and bugfixes are still being backported and tested on
+Ubuntu 14.04 (Trusty), so you can continue running this version if needed.
+
+KMS is made available in *four* different editions. The difference between them
+is just whether they are packaged to work on *Trusty* or *Xenial*, and there is
+also the choice of using *Release* or *Development* versions:
+
+- Use the *Release* version for any kind of service or product intended to reach
+  a **Production** stage. Also use this version if you are not a developer.
+- The *Development* version is a representation of the current state on the
+  software development for Kurento, so it can include undocumented changes,
+  regressions, bugs or deprecations. Use this if you want to develop KMS itself.
+
+In order to install Kurento Media Server, you need to decide what combination
+of distribution and version you need. Open a terminal and type **only one** of
+these lines:
 
 .. sourcecode:: console
 
-   echo "deb http://ubuntu.kurento.org trusty kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
-   wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
+   # Choose one:
+   REPO="trusty"      # KMS Release     - Ubuntu 14.04 (Trusty)
+   REPO="trusty-dev"  # KMS Development - Ubuntu 14.04 (Trusty)
+   REPO="xenial"      # KMS Release     - Ubuntu 16.04 (Xenial)
+   REPO="xenial-dev"  # KMS Development - Ubuntu 16.04 (Xenial)
+
+Now type the following commands, **one at a time and in the same order as listed
+here**. When asked for any kind of confirmation, reply affirmatively:
+
+.. sourcecode:: console
+
+   echo "deb http://ubuntu.kurento.org $REPO kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
+   wget http://ubuntu.kurento.org/kurento.gpg.key -O - | sudo apt-key add -
    sudo apt-get update
    sudo apt-get install kurento-media-server-6.0
 
 Now, Kurento Media Server has been installed. Use the following commands to
-start and stop it respectively:
+start and stop it, respectively:
 
 .. sourcecode:: console
 
@@ -25,47 +52,11 @@ start and stop it respectively:
    sudo service kurento-media-server-6.0 stop
 
 
-Migrating from KMS v5 to v6
-===========================
-
-The current stable version of Kurento Media Server uses the **Trickle ICE**
-protocol for WebRTC connections. :term:`Trickle ICE` is the name given to the
-extension to the :term:`Interactive Connectivity Establishment` (ICE) protocol
-that allows ICE agents (in this case Kurento Media Server and Kurento Client)
-to send and receive candidates incrementally rather than exchanging complete
-lists. In short, Trickle ICE allows to begin WebRTC connectivity much more
-faster.
-
-This feature makes the Kurento Media Server 6 **incompatible** with the former
-versions. If you are using Kurento Media Server 5.1 or lower, it is strongly
-recommended to upgrade your KMS. To do that, first you need to uninstall KMS as
-follows:
-
-.. sourcecode:: console
-
-   sudo apt-get remove kurento-media-server
-   sudo apt-get purge kurento-media-server
-   sudo apt-get autoremove
-
-Finally, the references to the Kurento Media Server in the APT sources should be
-removed:
-
-.. sourcecode:: console
-
-   # Delete any file in /etc/apt/sources.list.d folder related to kurento
-   sudo rm /etc/apt/sources.list.d/kurento*
-
-   # Edit sources.list and remove references to kurento
-   sudo vi /etc/apt/sources.list
-
-After that, install Kurento Media Server 6 as depicted at the top of this page.
-
-
 STUN and TURN servers
 =====================
 
-If Kurento Media Server or any of its cliens are located behind a :term:`NAT`,
-you need to use a :term:`STUN` or :term:`TURN` server in order to achieve
+If Kurento Media Server or any of its clients are located behind a :term:`NAT`,
+you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve
 :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT
 issue with most consumer network devices (routers). However, it doesn't work for
 many corporate networks, so a TURN server becomes necessary.
@@ -74,7 +65,7 @@ In order to setup a **STUN** server you should uncomment the following lines in
 the Kurento Media Server configuration file, located at
 ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
 
-.. sourcecode:: javascript
+.. sourcecode:: bash
 
    stunServerAddress=<serverIpAddress>
    stunServerPort=<serverPort>
@@ -82,19 +73,20 @@ the Kurento Media Server configuration file, located at
 .. note::
 
    Be careful since comments inline (with ``;``) are not allowed for parameters
-   such as ``stunServerAddress``. Thus, the following configuration **is not correct**:
+   in the configuration files. Thus, the following line **is not correct**:
 
    .. sourcecode:: bash
 
       stunServerAddress=<serverIpAddress> ; Only IP addresses are supported
 
-   ... and must be:
+   ... and must be changed to something like this:
 
    .. sourcecode:: bash
 
+      ; Only IP addresses are supported
       stunServerAddress=<serverIpAddress>
 
-The parameter ``stunServerAddress`` should be an IP address (not a domain name).
+The parameter ``serverIpAddress`` should be an IP address (not a domain name).
 There is plenty of public STUN servers available, for example:
 
 .. sourcecode:: javascript
@@ -132,12 +124,12 @@ the Kurento Media Server configuration file located at
 
    turnURL=<user>:<password>@<serverIpAddress>:<serverPort>
 
-As before, TURN address should be an IP address (not a domain name). See some
-examples of TURN configuration below:
+As before, ``serverIpAddress`` should be an IP address (not a domain name). See
+some examples of TURN configuration below:
 
 .. code-block:: javascript
 
-   turnURL=kurento:kurento@193.147.51.36:3478
+   turnURL=kurento:kurento@111.222.333.444:3478
 
 ... or using a free access `numb <http://numb.viagenie.ca/>`__ STUN/TURN server
 as follows:
@@ -145,6 +137,13 @@ as follows:
 .. code-block:: javascript
 
    turnURL=user:password@66.228.45.110:3478
+
+Note that it is somewhat easy to find free STUN servers available on the net,
+because their functionality is pretty limited and it is not costly to keep them
+working for free. However this doesn't happen with TURN servers, which act as
+a proxy between peers and thus the cost of maintaining one are much higher. It
+is rare to find a TURN server which works for free while being performant;
+usually each user opts to maintain their own private TURN server instances.
 
 An open source implementation of a TURN server is
 `coturn <http://coturn.net/>`__. In the :doc:`FAQ <./faq>`
