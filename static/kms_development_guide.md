@@ -20,7 +20,7 @@
       - [Build KMS](#build-kms)
       - [Launch KMS](#launch-kms)
         - [Logging levels and categories](#logging-levels-and-categories)
-        - [[1] 'libnice' debug log](#1-libnice-debug-log)
+        - [ICE troubleshooting: libnice debug log](#ice-troubleshooting-libnice-debug-log)
       - [Build and run KMS unit tests](#build-and-run-kms-unit-tests)
       - [Clean your system](#clean-your-system)
     - [Working on a forked library](#working-on-a-forked-library)
@@ -387,7 +387,7 @@ These are some tips on what logging categories and logging levels could be most 
 - SDP processing: `kmssdpsession:4`.
 - COMEDIA port discovery: `rtpendpoint:4`.
 - ICE candidate gathering:
-  - At the Nice Agent (handling of candidates) [1]: `kmsiceniceagent:5`.
+  - At the Nice Agent (handling of candidates): `kmsiceniceagent:5`.
   - At the KMS WebRtcSession (decision logic): `kmswebrtcsession:5`.
   - At the WebRtcEndpoint (very basic logging): `webrtcendpoint:4`.
 - REMB congestion control:
@@ -398,9 +398,13 @@ These are some tips on what logging categories and logging levels could be most 
 - RTP Sync: `kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5`.
 
 
-##### [1] 'libnice' debug log
+##### ICE troubleshooting: libnice debug log
 
-Run with these environment variables: `G_MESSAGES_DEBUG`, `NICE_DEBUG`. They must have one or more of these values: `libnice`, `libnice-stun`, `libnice-tests`, `libnice-socket`, `libnice-pseudotcp`, `libnice-pseudotcp-verbose`, `all`.
+The ICE protocol is used together with STUN and TURN servers to discover the public IP and ports of all peers in a WebRTC call; in KMS, all this process is managed by a 3rd-party library called 'libnice'.
+
+This library has its own logging system, but it comes disabled by default. A developer can enable it easily, which can prove useful in situations where a developer is studying an issue with the ICE process. However, the debug output of 'libnice' is very verbose, so it makes sense that it comes disabled by default for production systems.
+
+Run KMS with these environment variables defined: `G_MESSAGES_DEBUG` and `NICE_DEBUG`. They must have one or more of these values: `libnice`, `libnice-stun`, `libnice-tests`, `libnice-socket`, `libnice-pseudotcp`, `libnice-pseudotcp-verbose`, `all`.
 
 Example:
 
