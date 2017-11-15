@@ -307,11 +307,17 @@ GST_START_TEST (check_states_pipeline)
   /* Create gstreamer elements */
   pipeline = gst_pipeline_new ("recorderendpoint0-test");
   videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  fail_unless (videotestsrc != NULL);
   vencoder = gst_element_factory_make ("vp8enc", NULL);
+  fail_unless (vencoder != NULL);
   aencoder = gst_element_factory_make ("vorbisenc", NULL);
+  fail_unless (aencoder != NULL);
   timeoverlay = gst_element_factory_make ("timeoverlay", NULL);
+  fail_unless (timeoverlay != NULL);
   audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
+  fail_unless (audiotestsrc != NULL);
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
+  fail_unless (recorder != NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
       "file:///tmp/state_recorder.webm", "profile", 0 /* WEBM */ , NULL);
@@ -354,8 +360,8 @@ GST_START_TEST (check_states_pipeline)
   g_source_remove (bus_watch_id);
   g_main_loop_unref (loop);
 }
-
 GST_END_TEST
+
 GST_START_TEST (warning_pipeline)
 {
   GstElement *pipeline, *videotestsrc, *vencoder, *aencoder, *audiotestsrc,
@@ -373,11 +379,17 @@ GST_START_TEST (warning_pipeline)
   /* Create gstreamer elements */
   pipeline = gst_pipeline_new ("recorderendpoint0-test");
   videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  fail_unless (videotestsrc != NULL);
   vencoder = gst_element_factory_make ("vp8enc", NULL);
+  fail_unless (vencoder != NULL);
   aencoder = gst_element_factory_make ("vorbisenc", NULL);
+  fail_unless (aencoder != NULL);
   timeoverlay = gst_element_factory_make ("timeoverlay", NULL);
+  fail_unless (timeoverlay != NULL);
   audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
+  fail_unless (audiotestsrc != NULL);
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
+  fail_unless (recorder != NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
       "file:///tmp/warning_pipeline.webm", "profile", 0 /* WEBM */ , NULL);
@@ -477,9 +489,13 @@ GST_START_TEST (check_video_only)
   /* Create gstreamer elements */
   pipeline = gst_pipeline_new ("recorderendpoint0-test");
   videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  fail_unless (videotestsrc != NULL);
   vencoder = gst_element_factory_make ("vp8enc", NULL);
+  fail_unless (vencoder != NULL);
   timeoverlay = gst_element_factory_make ("timeoverlay", NULL);
+  fail_unless (timeoverlay != NULL);
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
+  fail_unless (recorder != NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
       "file:///tmp/check_video_only.webm", "profile", 2 /* WEBM_VIDEO_ONLY */ ,
