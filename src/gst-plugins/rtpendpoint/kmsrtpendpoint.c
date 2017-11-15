@@ -772,12 +772,32 @@ static void
 kms_rtp_endpoint_comedia_on_ssrc_active(GObject *rtpsession,
     GObject *rtpsource, KmsRtpEndpoint *self)
 {
-  GstStructure* source_stats;
-  gboolean ok;
+  GstStructure* source_stats = NULL;
   gchar *rtp_from = NULL;
   gchar *rtcp_from = NULL;
   GNetworkAddress *rtp_addr = NULL;
   GNetworkAddress *rtcp_addr = NULL;
+  gboolean ok;
+
+  guint ssrc;
+  gboolean is_validated;
+  gboolean is_sender;
+
+  // Each session has a minimum of 2 source SSRCs: sender and receiver.
+  // Here we look for stats from the sender which had COMEDIA enabled
+  // (by setting "a=direction:active" in the SDP negotiation).
+
+  // Property RTPSource::ssrc, doc: GStreamer/rtpsource.c
+  g_object_get (rtpsource,
+      "ssrc", &ssrc, "is-validated", &is_validated, "is-sender", &is_sender, NULL);
+
+  if (!is_validated || !is_sender) {
+    GST_DEBUG_OBJECT (rtpsession,
+        "Ignore uninteresting RTPSource, SSRC: %u", ssrc);
+    return;
+  }
+
+  GST_INFO_OBJECT (rtpsession, "COMEDIA: Get port info, SSRC: %u", ssrc);
 
   g_object_get (rtpsource, "stats", &source_stats, NULL);
   if (!source_stats) {
@@ -788,27 +808,31 @@ kms_rtp_endpoint_comedia_on_ssrc_active(GObject *rtpsession,
   ok = gst_structure_get (source_stats,
       "rtp-from", G_TYPE_STRING, &rtp_from, NULL);
   if (!ok) {
-    GST_WARNING_OBJECT (rtpsession, "COMEDIA: 'rtp-from' not available yet in stats");
+    GST_WARNING_OBJECT (rtpsession, "COMEDIA: 'rtp-from' not available yet");
     goto end;
+  } else {
+    GST_INFO_OBJECT (rtpsession, "COMEDIA: 'rtp-from' found: '%s'", rtp_from);
   }
 
   ok = gst_structure_get (source_stats,
       "rtcp-from", G_TYPE_STRING, &rtcp_from, NULL);
   if (!ok) {
-    GST_WARNING_OBJECT (rtpsession, "COMEDIA: 'rtcp-from' not available yet in stats");
+    GST_WARNING_OBJECT (rtpsession, "COMEDIA: 'rtcp-from' not available yet");
+    goto end;
+  } else {
+    GST_INFO_OBJECT (rtpsession, "COMEDIA: 'rtcp-from' found: '%s'", rtcp_from);
+  }
+
+  rtp_addr = G_NETWORK_ADDRESS (g_network_address_parse (rtp_from, 5004, NULL));
+  if (!rtp_addr) {
+    GST_ERROR_OBJECT (rtpsession, "COMEDIA: Cannot parse 'rtp-from'");
     goto end;
   }
 
-  GST_INFO_OBJECT (rtpsession, "COMEDIA: 'rtp-from' became available:  '%s'", rtp_from);
-  GST_INFO_OBJECT (rtpsession, "COMEDIA: 'rtcp-from' became available: '%s'", rtcp_from);
-
-  rtp_addr = G_NETWORK_ADDRESS (
-        g_network_address_parse (rtp_from, 5004, NULL));
   rtcp_addr = G_NETWORK_ADDRESS (
-        g_network_address_parse (rtcp_from, 5005, NULL));
-
-  if (!rtp_addr || !rtcp_addr) {
-    GST_ERROR_OBJECT (rtpsession, "COMEDIA: Cannot parse 'rtp-from' or 'rtcp-from'");
+      g_network_address_parse (rtcp_from, 5005, NULL));
+  if (!rtcp_addr) {
+    GST_ERROR_OBJECT (rtpsession, "COMEDIA: Cannot parse 'rtcp-from'");
     goto end;
   }
 
@@ -859,6 +883,11 @@ kms_rtp_endpoint_comedia_manager_create(KmsRtpEndpoint *self,
 
   GObject *rtpsession = kms_base_rtp_endpoint_get_internal_session (
       KMS_BASE_RTP_ENDPOINT(self), session_id);
+  if (!rtpsession) {
+    GST_WARNING_OBJECT (self,
+        "Abort: No RTP Session with ID %u", session_id);
+    return;
+  }
 
   gulong signal_id = g_signal_connect (rtpsession, "on-ssrc-active",
       G_CALLBACK (kms_rtp_endpoint_comedia_on_ssrc_active), self);
@@ -895,8 +924,8 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
       // RFC 3264 section 5.1:
       // A port number of zero indicates that the media stream is not wanted.
       // We cannot use `sdp_utils_media_is_inactive()` here because
-      // medias marked as "inactive" still should send RTCP packets.
-      GST_DEBUG_OBJECT (self, "Media is unwanted (id=%u)", i);
+      // medias marked with "a=inactive" still should send RTCP packets.
+      GST_INFO_OBJECT (self, "Media is unwanted (id=%u)", i);
       continue;
     }
 
@@ -928,9 +957,9 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
       continue;
     }
 
-    //J Check if connection-oriented mode ("COMEDIA") is used and we are
-    // the passive peer (so the remote IP and port will be discovered
-    // when packets start arriving from the other end).
+    // Check if connection-oriented mode ("COMEDIA") is used and we are
+    // the passive peer, so the remote IP and port will be discovered
+    // when packets start arriving from the other end.
     gboolean comedia_enabled =
         g_strcmp0(gst_sdp_media_get_attribute_val(media, "direction"),
                    "active") == 0;
@@ -1109,10 +1138,6 @@ kms_rtp_endpoint_init (KmsRtpEndpoint * self)
   self->priv->sdes_keys = g_hash_table_new_full (g_str_hash, g_str_equal,
       g_free, (GDestroyNotify) kms_ref_struct_unref);
 
-//  self->priv->comedia.rtp_conns = g_hash_table_new_full (
-//      g_direct_hash, NULL, NULL, g_object_unref);
-//  self->priv->comedia.signal_ids = g_hash_table_new_full (
-//      g_direct_hash, NULL, NULL, g_object_unref);
   self->priv->comedia.rtp_conns = g_hash_table_new (g_direct_hash, NULL);
   self->priv->comedia.signal_ids = g_hash_table_new (g_direct_hash, NULL);
 
