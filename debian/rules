@@ -5,7 +5,7 @@
 #export DH_VERBOSE=1
 
 %:
-	dh $@
+	dh $@ --parallel
 
 override_dh_auto_configure:
 	dh_auto_configure -- -DGENERATE_TESTS=TRUE
@@ -14,3 +14,6 @@ override_dh_auto_configure:
 
 override_dh_strip:
 	dh_strip --dbg-package=kms-filters-6.0-dbg
+
+override_dh_auto_test:
+	dh_auto_build -- check ARGS=-j10
