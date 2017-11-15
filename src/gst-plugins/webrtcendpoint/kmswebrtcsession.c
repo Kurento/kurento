@@ -750,7 +750,7 @@ kms_webrtc_session_component_state_change (KmsIceBaseAgent * agent,
     char *stream_id, guint component_id, IceState state,
     KmsWebrtcSession * self)
 {
-  GST_TRACE_OBJECT (self,
+  GST_LOG_OBJECT (self,
       "state: %s, stream_id: '%s', component_id: %d",
       kms_ice_base_agent_state_to_string (state), stream_id, component_id);
 
@@ -1493,7 +1493,7 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
     KmsSdpMediaHandler *handler;
 
     if (sdp_utils_media_is_inactive (neg_media)) {
-      GST_DEBUG_OBJECT (self,
+      GST_INFO_OBJECT (self,
           "Starting transport: Media is inactive: %s, index: %u",
           gst_sdp_media_get_media (neg_media), index);
       continue;
@@ -1524,7 +1524,7 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
 
     gst_media_add_remote_candidates (self, index, rem_media, conn, ufrag, pwd);
 
-    GST_DEBUG_OBJECT (self,
+    GST_INFO_OBJECT (self,
         "Started transport for media: %s, index: %u",
         gst_sdp_media_get_media (neg_media), index);
   }

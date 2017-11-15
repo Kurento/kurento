@@ -270,7 +270,7 @@ new_selected_pair_full (KmsWebrtcSession * sess,
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
-  GST_DEBUG_OBJECT (self,
+  GST_INFO_OBJECT (self,
       "New candidate pair selected, local: '%s', remote: '%s'"
       ", stream_id: '%s', component_id: %d",
       kms_ice_candidate_get_candidate (lcandidate),
@@ -412,7 +412,7 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
   KmsWebrtcSession *webrtc_sess;
   gboolean ret = TRUE;
 
-  GST_DEBUG_OBJECT (self, "Gather candidates for session '%s'", sess_id);
+  GST_INFO_OBJECT (self, "Gather candidates for session '%s'", sess_id);
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
@@ -435,7 +435,7 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
   KmsWebrtcSession *webrtc_sess;
   gboolean ret;
 
-  GST_DEBUG_OBJECT (self, "Add ICE candidate '%s' for session '%s'",
+  GST_INFO_OBJECT (self, "Add ICE candidate '%s' for session '%s'",
       kms_ice_candidate_get_candidate (candidate), sess_id);
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);

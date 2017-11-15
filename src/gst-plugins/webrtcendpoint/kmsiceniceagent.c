@@ -265,7 +265,7 @@ kms_ice_nice_agent_finalize (GObject * object)
 {
   KmsIceNiceAgent *self = KMS_ICE_NICE_AGENT (object);
 
-  GST_TRACE_OBJECT (self, "finalize");
+  GST_DEBUG_OBJECT (self, "finalize");
 
   g_clear_object (&self->priv->agent);
   g_slist_free_full (self->priv->remote_candidates, g_object_unref);
@@ -287,7 +287,7 @@ kms_ice_nice_agent_init (KmsIceNiceAgent * self)
 //{
 ////  ((void)0); // Nothing to do, noop
 //  KmsIceBaseAgent *self = user_data;
-//  GST_TRACE_OBJECT (self, "Callback data received");
+//  GST_DEBUG_OBJECT (self, "Callback data received");
 //}
 
 static char *
@@ -305,7 +305,7 @@ kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
     return NULL;
   }
 
-  GST_TRACE_OBJECT (self, "Added data stream, ID: %d, stream_id: %s",
+  GST_DEBUG_OBJECT (self, "Added data stream, ID: %d, stream_id: %s",
       id, stream_id);
 
   GST_DEBUG_OBJECT (self, "Set port range: [%d, %d]", min_port, max_port);
@@ -315,7 +315,7 @@ kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
   }
 
 // TODO Ask in libnice mail lists if attaching a callback function is really needed
-//  GST_TRACE_OBJECT (self, "Attach recv callback to mainloop");
+//  GST_DEBUG_OBJECT (self, "Attach recv callback to mainloop");
 //  for (i = 1; i <= KMS_NICE_N_COMPONENTS; i++) {
 //    nice_agent_attach_recv (nice_agent->priv->agent, id, i,
 //        nice_agent->priv->context, kms_ice_nice_agent_recv_cb, self);
@@ -330,7 +330,7 @@ kms_ice_nice_agent_remove_stream (KmsIceBaseAgent * self, const char *stream_id)
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   guint id = atoi (stream_id);
 
-  GST_TRACE_OBJECT (self, "Remove data stream, stream_id: %d", id);
+  GST_DEBUG_OBJECT (self, "Remove data stream, stream_id: %d", id);
 
   nice_agent_remove_stream (nice_agent->priv->agent, id);
 }
@@ -342,7 +342,7 @@ kms_ice_nice_agent_set_remote_credentials (KmsIceBaseAgent * self,
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   guint id = atoi (stream_id);
 
-  GST_TRACE_OBJECT (self, "Set remote credentials, stream_id: %d", id);
+  GST_DEBUG_OBJECT (self, "Set remote credentials, stream_id: %d", id);
 
   return nice_agent_set_remote_credentials (nice_agent->priv->agent,
       id, ufrag, pwd);
@@ -355,7 +355,7 @@ kms_ice_nice_agent_get_local_credentials (KmsIceBaseAgent * self,
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   guint id = atoi (stream_id);
 
-  GST_TRACE_OBJECT (self, "Set local credentials, stream_id: %d", id);
+  GST_DEBUG_OBJECT (self, "Set local credentials, stream_id: %d", id);
 
   nice_agent_get_local_credentials (nice_agent->priv->agent, id, ufrag, pwd);
 }
@@ -364,14 +364,14 @@ static void
 kms_ice_nice_agent_set_remote_description (KmsIceBaseAgent * self,
     const char *remote_description)
 {
-  GST_TRACE_OBJECT (self, "Nothing to do in set_remote_description");
+  GST_LOG_OBJECT (self, "Nothing to do in set_remote_description");
 }
 
 static void
 kms_ice_nice_agent_set_local_description (KmsIceBaseAgent * self,
     const char *local_description)
 {
-  GST_TRACE_OBJECT (self, "Nothing to do in set_local_description");
+  GST_LOG_OBJECT (self, "Nothing to do in set_local_description");
 }
 
 static NiceRelayType
@@ -618,7 +618,7 @@ kms_ice_nice_agent_get_controlling_mode (KmsIceBaseAgent * self)
 static void
 kms_ice_nice_agent_run_agent (KmsIceBaseAgent * self)
 {
-  GST_TRACE_OBJECT (self, "Nothing to do in run_agent");
+  GST_LOG_OBJECT (self, "Nothing to do in run_agent");
 }
 
 NiceAgent *
