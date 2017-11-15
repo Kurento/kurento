@@ -357,7 +357,7 @@ kurento-media-server/server/kurento-media-server \
   --gst-debug=webrtcendpoint:4
 ```
 
-You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides that, the global logging level is specified with `--gst-debug-level`.
+You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides that, the global logging level is specified with `--gst-debug-level`. These values can also be defined in the environment variable `GST_DEBUG` (see the next section for more info).
 
 Other launch options that could be useful:
 
@@ -371,7 +371,9 @@ https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-run
 
 ##### Logging levels and categories
 
-Logging messages are generated per-category, where each different module of KMS is able to create its own one (but it's not obliged to do so). Besides that, each individual logging message has an importance rating, which defines how critical (or verbose) the given message is. These are the different levels, as per defined by the GStreamer logging library:
+Logging messages are generated per-category, where each different module of KMS is able to create its own one.
+
+Besides that, each individual logging message has an importance rating, which defines how critical (or verbose) the given message is. These are the different levels, as defined by the GStreamer logging library:
 1. **ERROR**: Logs all fatal errors. These are errors that do not allow the core or elements to perform the requested action. The application can still recover if programmed to handle the conditions that triggered the error.
 2. **WARNING**: Logs all warnings. Typically these are non-fatal, but user-visible problems are expected to happen.
 3. **FIXME**: Logs all fixme messages. Fixme messages are messages that indicate that something in the executed code path is not fully implemented or handled yet. The purpose of this message is to make it easier to spot incomplete/unfinished pieces of code when reading the debug log.
@@ -380,6 +382,20 @@ Logging messages are generated per-category, where each different module of KMS 
 6. **LOG**: Logs all log messages. These are messages for events that happen repeatedly during an object's lifetime; these include streaming and steady-state conditions.
 7. **TRACE**: Logs all trace messages. These messages for events that happen repeatedly during an object's lifetime such as the ref/unref cycles.
 9. **MEMDUMP**: Log all memory dump messages. Memory dump messages are used to log (small) chunks of data as memory dumps in the log. They will be displayed as hexdump with ASCII characters.
+
+Logging categories and levels can be set by two methods:
+- Use the specific command-line argument while launching KMS. For example:
+
+  ```
+  --gst-debug-level=3 \
+  --gst-debug=Kurento*:4 \
+  --gst-debug=kms*:4
+  ```
+- Use the environment variable `GST_DEBUG`. For example:
+
+  ```
+  export GST_DEBUG="3,Kurento*:4,kms*:4"
+  ```
 
 These are some tips on what logging categories and logging levels could be most useful depending on what is the issue to be analyzed:
 - Global level: 3 (higher than 3 would mean too much noise from GStreamer).
