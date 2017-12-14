@@ -162,7 +162,7 @@ kms_pts_data_reset (KmsPtsData * data)
 }
 
 static void
-kms_player_endpoint_set_caps (KmsPlayerEndpoint * self)
+kms_player_endpoint_disable_decoding (KmsPlayerEndpoint * self)
 {
   GstCaps *deco_caps;
 
@@ -181,7 +181,7 @@ kms_player_endpoint_set_property (GObject * object, guint property_id,
     case PROP_USE_ENCODED_MEDIA:{
       playerendpoint->priv->use_encoded_media = g_value_get_boolean (value);
       if (playerendpoint->priv->use_encoded_media) {
-        kms_player_endpoint_set_caps (playerendpoint);
+        kms_player_endpoint_disable_decoding (playerendpoint);
       }
       break;
     }
@@ -670,38 +670,15 @@ kms_player_end_point_add_appsrc (KmsPlayerEndpoint * self,
   g_object_unref (srcpad);
 
   gst_bin_add (GST_BIN (self), appsrc);
+
   if (!gst_element_link (appsrc, agnosticbin)) {
-    GST_ERROR ("Could not link %s to element %s", GST_ELEMENT_NAME (appsrc),
+    GST_ERROR ("Cannot link elements: %s to %s", GST_ELEMENT_NAME (appsrc),
         GST_ELEMENT_NAME (agnosticbin));
   }
 
   gst_element_sync_state_with_parent (appsrc);
 
   return appsrc;
-}
-
-static GstPadProbeReturn
-set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
-{
-  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
-  GstElement *appsrc = GST_ELEMENT (element);
-  GstCaps *caps;
-
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
-    return GST_PAD_PROBE_OK;
-  }
-
-  gst_event_parse_caps (event, &caps);
-  if (caps == NULL) {
-    GST_ERROR_OBJECT (pad, "Invalid caps received");
-    return GST_PAD_PROBE_OK;
-  }
-
-  GST_DEBUG_OBJECT (appsrc, "Setting caps %" GST_PTR_FORMAT, caps);
-
-  g_object_set (G_OBJECT (appsrc), "caps", caps, NULL);
-
-  return GST_PAD_PROBE_OK;
 }
 
 static void
@@ -749,11 +726,15 @@ kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
   video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
 
+  GST_DEBUG_OBJECT (pad, "Check required caps: %" GST_PTR_FORMAT, caps);
+
   /* TODO: Update latency probe to set valid and media type */
   if (gst_caps_can_intersect (audio_caps, caps)) {
     agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
+    GST_DEBUG_OBJECT (pad, "Detected audio caps");
     kms_player_end_point_add_stat_probe (self, pad, KMS_MEDIA_TYPE_AUDIO);
   } else if (gst_caps_can_intersect (video_caps, caps)) {
+    GST_DEBUG_OBJECT (pad, "Detected video caps");
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
     kms_player_end_point_add_stat_probe (self, pad, KMS_MEDIA_TYPE_VIDEO);
   }
@@ -763,6 +744,30 @@ kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
   gst_caps_unref (video_caps);
 
   return agnosticbin;
+}
+
+static GstPadProbeReturn
+set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+{
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+  GstElement *appsrc = GST_ELEMENT (element);
+  GstCaps *caps;
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  gst_event_parse_caps (event, &caps);
+  if (caps == NULL) {
+    GST_ERROR_OBJECT (pad, "Invalid caps received");
+    return GST_PAD_PROBE_OK;
+  }
+
+  GST_DEBUG_OBJECT (appsrc, "Setting caps %" GST_PTR_FORMAT, caps);
+
+  g_object_set (G_OBJECT (appsrc), "caps", caps, NULL);
+
+  return GST_PAD_PROBE_OK;
 }
 
 static GstPadProbeReturn
@@ -805,11 +810,13 @@ internal_pipeline_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 }
 
 static void
-pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
+kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
+    KmsPlayerEndpoint * self)
 {
   GstElement *appsink, *appsrc;
   GstElement *agnosticbin;
   GstPad *sinkpad;
+  GstPadLinkReturn link_ret;
 
   GST_DEBUG_OBJECT (pad, "Pad added");
 
@@ -854,7 +861,15 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   }
 
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
-  gst_pad_link (pad, sinkpad);
+
+  link_ret = gst_pad_link (pad, sinkpad);
+
+  if (GST_PAD_LINK_FAILED (link_ret)) {
+    GST_ERROR ("Cannot link elements: %s to %s: %s",
+        GST_ELEMENT_NAME (GST_PAD_PARENT (pad)),
+        GST_ELEMENT_NAME (GST_PAD_PARENT (sinkpad)),
+        gst_pad_link_get_name (link_ret));
+  }
 
   g_object_unref (sinkpad);
 
@@ -876,7 +891,8 @@ kms_remove_element_from_bin (GstBin * bin, GstElement * element)
 }
 
 static void
-pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
+kms_player_endpoint_uridecodebin_pad_removed (GstElement * element,
+    GstPad * pad, KmsPlayerEndpoint * self)
 {
   GstElement *appsink, *appsrc;
 
@@ -1223,6 +1239,7 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
         kms_player_endpoint_emit_EOS_signal, g_object_ref (self),
         g_object_unref);
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
+    GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
 
     if (g_str_has_prefix (GST_OBJECT_NAME (msg->src), "decodebin")) {
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
@@ -1235,7 +1252,6 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
     } else {
       ErrorData *data = create_error_data (self, msg);
 
-      GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
           kms_player_endpoint_post_media_error, data, delete_error_data);
     }
@@ -1244,8 +1260,8 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 }
 
 static void
-source_setup_cb (GstElement * uridecodebin, GstElement * source,
-    KmsPlayerEndpoint * self)
+kms_player_endpoint_uridecodebin_source_setup (GstElement * uridecodebin,
+    GstElement * source, KmsPlayerEndpoint * self)
 {
   GstPad *srcpad;
 
@@ -1272,7 +1288,8 @@ source_setup_cb (GstElement * uridecodebin, GstElement * source,
 }
 
 static void
-element_added (GstBin * bin, GstElement * element, gpointer data)
+kms_player_endpoint_uridecodebin_element_added (GstBin * bin,
+    GstElement * element, gpointer data)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
 
@@ -1311,13 +1328,13 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
 
   /* Connect to signals */
   g_signal_connect (self->priv->uridecodebin, "pad-added",
-      G_CALLBACK (pad_added), self);
+      G_CALLBACK (kms_player_endpoint_uridecodebin_pad_added), self);
   g_signal_connect (self->priv->uridecodebin, "pad-removed",
-      G_CALLBACK (pad_removed), self);
+      G_CALLBACK (kms_player_endpoint_uridecodebin_pad_removed), self);
   g_signal_connect (self->priv->uridecodebin, "source-setup",
-      G_CALLBACK (source_setup_cb), self);
+      G_CALLBACK (kms_player_endpoint_uridecodebin_source_setup), self);
   g_signal_connect (self->priv->uridecodebin, "element-added",
-      G_CALLBACK (element_added), self);
+      G_CALLBACK (kms_player_endpoint_uridecodebin_element_added), self);
 
   /* Eat all async messages such as buffering messages */
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
