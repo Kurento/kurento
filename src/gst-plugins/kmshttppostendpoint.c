@@ -332,7 +332,7 @@ kms_http_post_endpoint_init_pipeline (KmsHttpPostEndpoint * self)
 
   /* configure decodebin */
   if (self->priv->use_encoded_media) {
-    deco_caps = gst_caps_from_string (KMS_AGNOSTIC_CAPS_CAPS);
+    deco_caps = gst_caps_from_string (KMS_AGNOSTIC_NO_RTP_CAPS);
     g_object_set (G_OBJECT (decodebin), "caps", deco_caps, NULL);
     gst_caps_unref (deco_caps);
   }

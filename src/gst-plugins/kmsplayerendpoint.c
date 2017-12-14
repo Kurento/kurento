@@ -164,9 +164,15 @@ kms_pts_data_reset (KmsPtsData * data)
 static void
 kms_player_endpoint_disable_decoding (KmsPlayerEndpoint * self)
 {
-  GstCaps *deco_caps;
+  /* By setting the caps of the uridecodebin element, with all formats
+   * except 'application/x-rtp', what we achieve is that all incoming formats
+   * will be passed directly to the media pipeline (as is expected of the
+   * 'useEncodedMedia' mode), but incoming RTP streams will still be depayloaded.
+   * Passing RTP packets directly to the pipeline, without depayloading,
+   * is not supported. */
 
-  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_CAPS_CAPS);
+  GstCaps *deco_caps;
+  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_NO_RTP_CAPS);
   g_object_set (G_OBJECT (self->priv->uridecodebin), "caps", deco_caps, NULL);
   gst_caps_unref (deco_caps);
 }
