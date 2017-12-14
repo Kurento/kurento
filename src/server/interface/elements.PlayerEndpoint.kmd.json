@@ -69,7 +69,12 @@
             },
             {
               "name": "useEncodedMedia",
-              "doc": "use encoded instead of raw media. If the parameter is false then the element uses raw media. Changing this parameter can affect stability severely, as lost key frames will not be regenerated. Enabling this flag does not affect the overall behaviour, but has an impact in performance (just in case where original media and target media are the same). It will help solve the problem with lost key frames. We strongly recommended not to use this parameter because correct behaviour is not guarantied.",
+              "doc": "Feed the input stream as-is to the media pipeline, instead of first decoding it.
+              By default, the input media gets decoded into a raw format before being processed by the media pipeline, because this allows Kurento to keep track of lost keyframes among other quality-control measurements. This of course has a cost in terms of processing power, but ensures that the output streaming will be robust and reliable. It is possible to disable this behavior by using this method, and in that case the encoded stream will be provided directly to the media pipeline, without prior decoding. Enabling this could have a severe effect on stability, because lost video keyframes will not be regenerated; however, this can be very useful to improve performance by greatly reducing the processing load.
+
+              Keep in mind that if this option is enabled, the source media and target media MUST share the same format and codec configurations.
+
+              We strongly recommend to avoid using this option, because correct behavior cannot be guaranteed.",
               "type": "boolean",
               "optional": true,
               "defaultValue": false
