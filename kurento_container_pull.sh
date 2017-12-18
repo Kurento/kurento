@@ -54,8 +54,8 @@ docker pull softsam/vncrecorder:latest
 docker pull mongo:2.6.11
 
 echo "Generating report"
-echo $PWD
-docker images > ${PWD}/container_images.txt
+cd $WORKDIR
+docker images > container_images.txt
 
 # Keep just KEEP_IMAGES last kms dev images
 KEEP_IMAGES=3
