@@ -14,8 +14,8 @@
   - [Working with KMS sources](#working-with-kms-sources)
     - [Developing KMS](#developing-kms)
       - [Install development tools](#install-development-tools)
-      - [Install development libraries for KMS](#install-development-libraries-for-kms)
       - [Install KMS fork libraries](#install-kms-fork-libraries)
+      - [Install development libraries for KMS](#install-development-libraries-for-kms)
       - [Download KMS](#download-kms)
       - [Build KMS](#build-kms)
       - [Launch KMS](#launch-kms)
@@ -209,28 +209,6 @@ apt-get install --no-install-recommends \
 ```
 
 
-#### Install development libraries for KMS
-
-Run as root:
-
-```
-apt-get install --no-install-recommends \
-  libboost-dev \
-  libboost-filesystem-dev \
-  libboost-log-dev \
-  libboost-program-options-dev \
-  libboost-regex-dev \
-  libboost-system-dev \
-  libboost-test-dev \
-  libboost-thread-dev \
-  libevent-dev \
-  libglib2.0-dev \
-  libglibmm-2.4-dev \
-  libsigc++-2.0-dev \
-  libopencv-dev
-```
-
-
 #### Install KMS fork libraries
 
 First, add the Kurento repository to Apt. Run as root:
@@ -253,39 +231,65 @@ apt-get update
 
 **Note**: Run only _one_ of the lines that set the variable `REPO`. The suffix `-dev` indicates a development repository, and may contain unstable packages. For a production system, choose the repo without that suffix.
 
-Now the fork packages can be installed from the Kurento repo. Run as root:
+Now all packages can be installed from both official and Kurento repos.:
+
+
+#### Install development libraries for KMS
+
+Run as root:
 
 ```
 apt-get install --no-install-recommends \
-  libgstreamer1.5-dev \
-  libgstreamer-plugins-base1.5-dev \
-  gstreamer1.5-plugins-base \
-  gstreamer1.5-plugins-good \
-  gstreamer1.5-plugins-bad \
-  gstreamer1.5-plugins-ugly \
-  gstreamer1.5-libav \
-  gstreamer1.5-nice \
-  libnice-dev \
-  openwebrtc-gst-plugins-dev \
-  libvpx-dev \
-  libxml2-utils \
-  uuid-dev \
+  libboost-dev \
+  libboost-filesystem-dev \
+  libboost-log-dev \
+  libboost-program-options-dev \
+  libboost-regex-dev \
+  libboost-system-dev \
+  libboost-test-dev \
+  libboost-thread-dev \
+  libevent-dev \
+  libglib2.0-dev \
+  libglibmm-2.4-dev \
+  libopencv-dev \
+  libsigc++-2.0-dev \
   libsoup2.4-dev \
   libssl-dev \
+  libvpx-dev \
+  libxml2-utils \
+  uuid-dev
+```
+
+```
+apt-get install --no-install-recommends \
+  gstreamer1.5-libav \
+  gstreamer1.5-nice \
+  gstreamer1.5-plugins-bad \
+  gstreamer1.5-plugins-base \
+  gstreamer1.5-plugins-good \
+  gstreamer1.5-plugins-ugly \
+  gstreamer1.5-x \
+  libgstreamer1.5-dev \
+  libgstreamer-plugins-base1.5-dev \
+  libnice-dev \
+  openh264-gst-plugins-bad-1.5 \
+  openwebrtc-gst-plugins-dev \
   kmsjsoncpp-dev \
   ffmpeg
 ```
+
+**Note**: "gstreamer1.5-x" is needed for the "timeoverlay" GStreamer plugin, used by some tests in kms-elements. We could see if it is worth removing this dependency.
 
 Optionally, install the debugging symbols if you will be using a debugger to troubleshoot bugs in KMS:
 
 ```
 apt-get install --no-install-recommends \
-  libgstreamer1.5-0-dbg \
+  gstreamer1.5-libav-dbg \
+  gstreamer1.5-plugins-bad-dbg \
   gstreamer1.5-plugins-base-dbg \
   gstreamer1.5-plugins-good-dbg \
-  gstreamer1.5-plugins-bad-dbg \
   gstreamer1.5-plugins-ugly-dbg \
-  gstreamer1.5-libav-dbg \
+  libgstreamer1.5-0-dbg \
   libnice-dbg \
   openwebrtc-gst-plugins-dbg \
   kmsjsoncpp-dbg
@@ -345,16 +349,13 @@ It is also possible to enable GCC's AddressSanitizer or ThreadSanitizer with the
 Run:
 
 ```
+export GST_DEBUG="3,Kurento*:4,kms*:4,rtpendpoint:4,webrtcendpoint:4"
+
 kurento-media-server/server/kurento-media-server \
   --modules-path=. \
-  --modules-config-path=./modules_config \
-  --conf-file=../kurento-media-server/kurento.conf.json \
-  --gst-plugin-path=. \
-  --gst-debug-level=3 \
-  --gst-debug=Kurento*:4 \
-  --gst-debug=kms*:4 \
-  --gst-debug=rtpendpoint:4 \
-  --gst-debug=webrtcendpoint:4
+  --modules-config-path=./config \
+  --conf-file=./config/kurento.conf.json \
+  --gst-plugin-path=.
 ```
 
 You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides that, the global logging level is specified with `--gst-debug-level`. These values can also be defined in the environment variable `GST_DEBUG` (see the next section for more info).
@@ -382,13 +383,14 @@ Each different **component** of KMS is able to create its own logging messages. 
 - **(9) MEMDUMP**: Log all memory dump messages. Memory dump messages are used to log (small) chunks of data as memory dumps in the log. They will be displayed as hexdump with ASCII characters.
 
 Logging categories and levels can be set by two methods:
+
 - Use the specific command-line argument while launching KMS. For example:
 
   ```
   --gst-debug-level=3 \
-  --gst-debug=Kurento*:4 \
-  --gst-debug=kms*:4
+  --gst-debug=Kurento*:4,kms*:4
   ```
+
 - Use the environment variable `GST_DEBUG`. For example:
 
   ```
@@ -396,6 +398,7 @@ Logging categories and levels can be set by two methods:
   ```
 
 Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed:
+
 - Global level: **3** (higher than 3 would mean too much noise from GStreamer).
 - Unit tests: `check:5`.
 - SDP processing: `kmssdpsession:4`.
