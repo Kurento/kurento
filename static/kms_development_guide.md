@@ -31,7 +31,7 @@
       - [Dependency resolution: to repo or not to repo](#dependency-resolution-to-repo-or-not-to-repo)
       - [Package generation script](#package-generation-script)
       - [Building KMS on Ubuntu 14.04 (Trusty)](#building-kms-on-ubuntu-1404-trusty)
-  - [How-to’s](#how-tos)
+  - [How-To](#how-to)
     - [How to add or update an external library to kurento](#how-to-add-or-update-an-external-library-to-kurento)
     - [How to add a new fork library to kurento](#how-to-add-a-new-fork-library-to-kurento)
     - [Known problems](#known-problems)
@@ -371,17 +371,15 @@ https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-run
 
 ##### Logging levels and categories
 
-Logging messages are generated per-category, where each different module of KMS is able to create its own one.
-
-Besides that, each individual logging message has an importance rating, which defines how critical (or verbose) the given message is. These are the different levels, as defined by the GStreamer logging library:
-1. **ERROR**: Logs all fatal errors. These are errors that do not allow the core or elements to perform the requested action. The application can still recover if programmed to handle the conditions that triggered the error.
-2. **WARNING**: Logs all warnings. Typically these are non-fatal, but user-visible problems are expected to happen.
-3. **FIXME**: Logs all fixme messages. Fixme messages are messages that indicate that something in the executed code path is not fully implemented or handled yet. The purpose of this message is to make it easier to spot incomplete/unfinished pieces of code when reading the debug log.
-4. **INFO**: Logs all informational messages. These are typically used for events in the system that only happen once, or are important and rare enough to be logged at this level.
-5. **DEBUG**: Logs all debug messages. These are general debug messages for events that happen only a limited number of times during an object's lifetime; these include setup, teardown, change of parameters, ...
-6. **LOG**: Logs all log messages. These are messages for events that happen repeatedly during an object's lifetime; these include streaming and steady-state conditions.
-7. **TRACE**: Logs all trace messages. These messages for events that happen repeatedly during an object's lifetime such as the ref/unref cycles.
-9. **MEMDUMP**: Log all memory dump messages. Memory dump messages are used to log (small) chunks of data as memory dumps in the log. They will be displayed as hexdump with ASCII characters.
+Each different **component** of KMS is able to create its own logging messages. Besides that, each individual logging message has an importance **level**, which defines how critical (or verbose) the message is. These are the different message levels, as defined by the GStreamer logging library:
+- **(1) ERROR**: Logs all fatal errors. These are errors that do not allow the core or elements to perform the requested action. The application can still recover if programmed to handle the conditions that triggered the error.
+- **(2) WARNING**: Logs all warnings. Typically these are non-fatal, but user-visible problems are expected to happen.
+- **(3) FIXME**: Logs all fixme messages. Fixme messages are messages that indicate that something in the executed code path is not fully implemented or handled yet. The purpose of this message is to make it easier to spot incomplete/unfinished pieces of code when reading the debug log.
+- **(4) INFO**: Logs all informational messages. These are typically used for events in the system that only happen once, or are important and rare enough to be logged at this level.
+- **(5) DEBUG**: Logs all debug messages. These are general debug messages for events that happen only a limited number of times during an object's lifetime; these include setup, teardown, change of parameters, ...
+- **(6) LOG**: Logs all log messages. These are messages for events that happen repeatedly during an object's lifetime; these include streaming and steady-state conditions.
+- **(7) TRACE**: Logs all trace messages. These messages for events that happen repeatedly during an object's lifetime such as the ref/unref cycles.
+- **(9) MEMDUMP**: Log all memory dump messages. Memory dump messages are used to log (small) chunks of data as memory dumps in the log. They will be displayed as hexdump with ASCII characters.
 
 Logging categories and levels can be set by two methods:
 - Use the specific command-line argument while launching KMS. For example:
@@ -397,8 +395,8 @@ Logging categories and levels can be set by two methods:
   export GST_DEBUG="3,Kurento*:4,kms*:4"
   ```
 
-These are some tips on what logging categories and logging levels could be most useful depending on what is the issue to be analyzed:
-- Global level: 3 (higher than 3 would mean too much noise from GStreamer).
+Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed:
+- Global level: **3** (higher than 3 would mean too much noise from GStreamer).
 - Unit tests: `check:5`.
 - SDP processing: `kmssdpsession:4`.
 - COMEDIA port discovery: `rtpendpoint:4`.
@@ -412,6 +410,8 @@ These are some tips on what logging categories and logging levels could be most 
 - MediaFlow{In|Out} state changes: `KurentoMediaElementImpl:5`.
 - RPC calls: `KurentoWebSocketTransport:5`.
 - RTP Sync: `kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5`.
+- Player: `playerendpoint:5`.
+- Recorder: `KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5`.
 
 
 ##### ICE troubleshooting: libnice debug log
@@ -561,30 +561,30 @@ This is the full procedure followed by the `compile_project.py` script:
 2. If some dependencies are not installed, `apt-get` tries to install them.
 3. For each dependency defined in the file `.build.yaml`, the script checks if it got installed during the previous step. If it wasn't, then the script checks if these dependencies can be found in the source code repository given as argument. The script then proceeds to find this dependency's real name and requirements by checking its online copy of the `debian/control` file.
 4. Every dependency with source repository, as found in the previous step, is cloned and the script is run recursively with that module.
-5. When all development dependencies are installed (either from package repositories or compiling from source code), the requested module is built, and its Debian packages are generated and installed.
+5. When all development dependencies are installed (either from package repositories or compiling from source code), the initially requested module is built, and its Debian packages are generated and installed.
 
 
 #### Building KMS on Ubuntu 14.04 (Trusty)
 
 KMS cannot be built in Trusty without adding the Kurento Packages Repository, because some of the system development libraries are required in a more recent version than the one available by default in the official Ubuntu Trusty repos. This is a non exhaustive list of those required libraries, compared with the versions available in Xenial and in the Kurento repo:
 
-- **kms-core**
-  - libglib2.0-dev (>= 2.46) | 14.04: (= 2.40) | 16.04: (= 2.48) | Kurento: (= 2.46). It actually builds and works fine with 2.40, but the required version of glib was first raised from 2.40 to 2.42 and later to 2.46 in commits `b10d318b` and `7f703bed`, justified as providing huge performance improvements in `mutex` and `g_object_ref`.
-- **gst-plugins-base**
-  - libsoup2.4-dev (>= 2.48) | 14.04: (= 2.44) | 16.04: (= 2.52) | Kurento: (= 2.50).
-- **libsrtp**
-  - libssl-dev (>= 1.0.2) | 14.04: (= 1.0.1f) | 16.04: (= 1.0.2g) | Kurento: (= 1.0.2g).
-- **gst-plugins-bad**
-  - libde265-dev (any) | 14.04: (none) | 16.04: (= 1.0.2) | Kurento: (= 0.9).
-  - libx265-dev (any) | 14.04: (none) | 16.04: (= 1.9) | Kurento: (= 1.7).
-  - libass-dev (>= 0.10.2) | 14.04: (= 0.10.1) | 16.04: (= 0.13.1) | Kurento: (= 0.10.2).
-  - libgnutls28-dev, librtmp-dev; the latter depends on 'libgnutls-dev', which conflicts with the former (only in 14.04). Solution: use 'librtmp-dev' from Kurento repo, which doesn't depend on 'libgnutls-dev'.
-- **kms-elements**
-  - libnice-dev (>= 0.1.13) | 14.04: (= 0.1.4) | 16.04: (= 0.1.13) | Kurento: (= 0.1.13).
-- **libnice**
-  - libgupnp-igd-1.0-dev (>= 0.2.4) | 14.04: (= 0.2.2) | 16.04: (= 0.2.4) | Kurento: (= 0.2.4).
+| Name             | Requirement                     | In Trusty repo | In Xenial repo | In Kurento repo | Notes |
+| ---------------- | ------------------------------- | -------------- | -------------- | --------------- | ----- |
+| kms-core         | libglib2.0-dev (>= 2.46)        | 2.40           | 2.48           | 2.46            | [1]   |
+| gst-plugins-base | libsoup2.4-dev (>= 2.48)        | 2.44           | 2.52           | 2.50            |       |
+| libsrtp          | libssl-dev (>= 1.0.2)           | 1.0.1f         | 1.0.2g         | 1.0.2g          |       |
+| gst-plugins-bad  | libde265-dev (any)              | none           | 1.0.2          | 0.9             |       |
+|                  | libx265-dev (any)               | none           | 1.9            | 1.7             |       |
+|                  | libass-dev (>= 0.10.2)          | 0.10.1         | 0.13.1         | 0.10.2          |       |
+|                  | libgnutls28-dev, librtmp-dev    |                |                |                 | [2]   |
+| kms-elements     | libnice-dev (>= 0.1.13)         | 0.1.4          | 0.1.13         | 0.1.13          |       |
+| libnice          | libgupnp-igd-1.0-dev (>= 0.2.4) | 0.2.2          | 0.2.4          | 0.2.4           |       |
 
-This means that it is not possible to build the whole KMS without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with `apt-get`.
+[1] It actually builds and works fine with 2.40, but the required version of GLib was first raised from 2.40 to 2.42 and later to 2.46 in commits `b10d318b` and `7f703bed`, justified as providing huge performance improvements in `mutex` and `g_object_ref`.
+
+[2] The latter depends on 'libgnutls-dev', which conflicts with the former (only in 14.04). Solution: use 'librtmp-dev' from Kurento repo, which doesn't depend on 'libgnutls-dev'.
+
+This list of dependencies means that it is not possible to build the whole KMS on Ubuntu Trusty, at least not without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with `apt-get`.
 
 In the case that we want to force building the whole KMS libraries and modules -as opposed to downloading them from the repo- the solution to this problem is to clone each module separately, and build them in the order given by their [dependency graph](#repository-dependency-graph), which is this:
 
@@ -614,7 +614,7 @@ In the case that we want to force building the whole KMS libraries and modules -
 24. kms-pointerdetector
 
 
-## How-to’s
+## How-To
 
 
 ### How to add or update an external library to kurento
