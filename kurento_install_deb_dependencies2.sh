@@ -1,4 +1,4 @@
 #!/bin/bash -x
 
-DEBIAN_FRONTEND=noninteractive apt-get install --force-yes -y wget iproute lsb-release
+DEBIAN_FRONTEND=noninteractive apt-get install --force-yes -y wget iproute lsb-release python
 
