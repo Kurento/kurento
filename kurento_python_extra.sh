@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "##################### EXECUTE: kurento_python_extra #####################"
+
 apt-get update
 # Python needs those packages
 echo "Intalling python packages..."
