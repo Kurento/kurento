@@ -2,6 +2,8 @@
 
 # Argument = -t test -r server -p password -v
 
+echo "##################### EXECUTE: kurento_clone_reprepro #####################"
+
 usage()
 {
 cat << EOF
