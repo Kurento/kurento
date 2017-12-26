@@ -412,14 +412,17 @@ def generate_debian_package(args, buildconfig):
     chglog = changelog.Changelog(open("debian/changelog"))
     old_chglog = changelog.Changelog(open("debian/changelog"))
 
-    print("[buildpkg::generate_debian_package] Run 'lsb_release'")
+    print("[buildpkg::generate_debian_package] ({})"
+          " Run 'lsb_release'".format(project_name))
     try:
         dist = subprocess.check_output(["lsb_release", "-sc"]).strip()
     except subprocess.CalledProcessError:
-        print("[buildpkg::generate_debian_package] ERROR: Running 'lsb_release'")
+        print("[buildpkg::generate_debian_package] ({})"
+              " ERROR: Running 'lsb_release'".format(project_name))
         exit(1)
     else:
-        print("[buildpkg::get_version] Found distro:", dist)
+        print("[buildpkg::get_version] ({})"
+              " Found distro: {}".format(project_name, dist))
 
     print("[buildpkg::generate_debian_package] ({})"
           " Retrieve version from the project's metadata".format(project_name))
@@ -589,6 +592,9 @@ def compile_project(args):
                           project_name, dependency["name"], dependency["version"]))
                 exit(1)
         else:
+            print("[buildpkg::compile_project] ({})"
+                  " Parsed project dependency: '{}', version: {}".format(
+                      project_name, dependency["name"], "any"))
             dependency["version"] = None
 
     for dependency in buildconfig.get("dependencies", []):
@@ -656,6 +662,9 @@ def compile_project(args):
                   " download and build it".format(
                       project_name, build_dependency_name))
 
+
+            # ==== Change project: Compile the dependency ====
+
             os.chdir("..")
             repo = clone_repo(args.base_url, build_dependency_name)
             os.chdir(build_dependency_name)
@@ -670,7 +679,13 @@ def compile_project(args):
 
             args.project_name = build_dependency_name
             compile_project(args)
+
+
+            # ==== Change project: Resume working on the parent ====
+
             os.chdir(project_workdir)
+            args.project_name = project_name
+
 
     #J REVIEW - With "true", kurento_check_version.sh creates and pushes a tag
     # from the current commit. But it doesn't have push permissions!
