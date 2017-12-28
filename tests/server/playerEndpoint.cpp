@@ -37,7 +37,7 @@ std::string mediaPipelineId;
 ModuleManager moduleManager;
 
 #define EXPECTED_LEN 1.0
-#define PLAYED_FILE "http://files.kurento.org/video/format/small.webm"
+#define PLAYED_FILE "http://files.openvidu.io/video/format/small.webm"
 #define TIME 15 * G_TIME_SPAN_SECOND
 
 struct GF {
