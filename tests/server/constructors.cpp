@@ -46,7 +46,7 @@ testPlayerEndPoint (kurento::ModuleManager &moduleManager,
                     std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
-  std::string uri ("http://kurento.org");
+  std::string uri ("http://openvidu.io");
 
   w.SerializeNVP (mediaPipeline);
   w.SerializeNVP (uri);
@@ -62,7 +62,7 @@ testRecorderEndPoint (kurento::ModuleManager &moduleManager,
                       std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
-  std::string uri ("http://kurento.org");
+  std::string uri ("http://openvidu.io");
 
   w.SerializeNVP (mediaPipeline);
   w.SerializeNVP (uri);
