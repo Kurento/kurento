@@ -308,3 +308,7 @@ linkcheck_ignore = [r'http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_ar
 latex_elements = {
     'preamble': "\\usepackage{enumitem}\n\\setlistdepth{99}",
 }
+
+# Default language for the 'wikipedia' extension.
+# If not specified, this defaults to "en".
+wikipedia_lang = "en"  # English

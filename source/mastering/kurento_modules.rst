@@ -20,28 +20,28 @@ We classify Kurento modules into three groups, namely:
    * ``kms-pointerdetector``: Filter that detects pointers in video streams
      based on color tracking. The command to install this module is:
 
-     .. sourcecode:: console
+     .. sourcecode:: bash
 
         sudo apt-get install kms-pointerdetector-6.0
 
    * ``kms-chroma``: Filter that makes transparent a color range in the top
      layer, revealing another image behind.
 
-     .. sourcecode:: console
+     .. sourcecode:: bash
 
         sudo apt-get install kms-chroma-6.0
 
    * ``kms-crowddetector``: Filter that detects people agglomeration in
      video streams.
 
-     .. sourcecode:: console
+     .. sourcecode:: bash
 
         sudo apt-get install kms-crowddetector-6.0
 
    * ``kms-platedetector``: Filter that detects vehicle plates in video
      streams.
 
-     .. sourcecode:: console
+     .. sourcecode:: bash
 
         sudo apt-get install kms-platedetector-6.0
 
@@ -92,7 +92,7 @@ aimed to show how to use them.
 Module Tutorial - Pointer Detector Filter
 =========================================
 
-This web application consists on a `WebRTC`:term: video communication in mirror
+This web application consists on a :term:`WebRTC` video communication in mirror
 (*loopback*) with a pointer tracking filter element.
 
 .. toctree:: :maxdepth: 1
@@ -105,7 +105,7 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 Module Tutorial - Chroma Filter
 ===============================
 
-This web application consists on a `WebRTC`:term: video communication in mirror
+This web application consists on a :term:`WebRTC` video communication in mirror
 (*loopback*) with a chroma filter element.
 
 
@@ -119,7 +119,7 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 Module Tutorial - Crowd Detector Filter
 =======================================
 
-This web application consists on a `WebRTC`:term: video communication in mirror
+This web application consists on a :term:`WebRTC` video communication in mirror
 (*loopback*) with a crowd detector filter. This filter detects people
 agglomeration in video streams.
 
@@ -133,7 +133,7 @@ agglomeration in video streams.
 Module Tutorial - Plate Detector Filter
 =======================================
 
-This web application consists on a `WebRTC`:term: video communication in mirror
+This web application consists on a :term:`WebRTC` video communication in mirror
 (*loopback*) with a plate detector filter element.
 
 .. toctree:: :maxdepth: 1

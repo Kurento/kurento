@@ -40,7 +40,7 @@ Working with Nightly Builds
 .. toctree::
    :maxdepth: 1
 
-   Working with nightly builds <mastering/kurento_development>
+   Working with Nightly Builds <mastering/kurento_development>
 
 Kurento Modules
 ===============

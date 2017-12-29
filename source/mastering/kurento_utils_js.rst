@@ -26,7 +26,7 @@ How to use it
      npm install kurento-utils
 
 
-  .. code-block:: javascript
+  .. sourcecode:: javascript
 
      var utils = require('kurento-utils');
 
@@ -38,7 +38,7 @@ How to use it
 
   Import the library in your *html* page
 
-  .. code-block:: html
+  .. sourcecode:: html
 
      <script
      src="bower_components/kurento-utils/js/kurento-utils.js"></script>
@@ -69,7 +69,7 @@ captured by your own client browser, and the media received from the other
 peer. The constructor receives a property that holds all the information needed
 for the configuration.
 
-.. code-block:: javascript
+.. sourcecode:: javascript
 
     var videoInput = document.getElementById('videoInput');
     var videoOutput = document.getElementById('videoOutput');
@@ -122,7 +122,7 @@ could be the implementation of the ``onOffer`` callback function. We've assumed
 that there's a function somewhere in the scope, that allows sending the SDP to
 the remote peer.
 
-.. code-block:: javascript
+.. sourcecode:: javascript
 
   function onOffer(error, sdpOffer) {
     if (error) return onError(error);
@@ -139,7 +139,7 @@ complete the connection between both peers. In the configuration of the
 The library will use this function to send ICE candidates to the remote peer.
 Since this is particular to each application, we will just show the signature
 
-.. code-block:: javascript
+.. sourcecode:: javascript
 
   function onIceCandidate(candidate) {
     // Send the candidate to the remote peer
@@ -150,7 +150,7 @@ remote peer. Assuming the signaling takes care of receiving those candidates,
 it is enough to invoke the following method in the ``webRtcPeer`` to consider
 the ICE candidate
 
-.. code-block:: javascript
+.. sourcecode:: javascript
 
        webRtcPeer.addIceCandidate(candidate);
 
@@ -175,7 +175,7 @@ WebRTC data channels lets you send text or binary data over an active WebRTC con
 
 The use of data channels in the ``WebRtcPeer`` object is indicated by passing the ``dataChannels`` flag in the options bag, along with the desired options.
 
-.. code-block:: javascript
+.. sourcecode:: javascript
    :emphasize-lines: 4-12
 
     var options = {
@@ -197,7 +197,7 @@ The use of data channels in the ``WebRtcPeer`` object is indicated by passing th
 
 The values in ``dataChannelConfig`` are all optional. Once the ``webRtcPeer`` object is created, and after the connection has been successfully negotiated, users can send data through the data channel
 
-.. code-block:: javascript
+.. sourcecode:: javascript
 
     webRtcPeer.send('your data stream here');
 
@@ -407,7 +407,7 @@ Souce code
 
 The code is at `github <https://github.com/kurento/kurento-utils-js>`_.
 
-Be sure to have `Node.js`:term: and `Bower`:term: installed in your system:
+Be sure to have :term:`Node.js` and :term:`Bower` installed in your system:
 
 .. sourcecode:: bash
 

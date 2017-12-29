@@ -14,7 +14,7 @@ programming language, you can use the
 In the following sections we will describe the Kurento API in a high level way.
 We will show the media capabilities exposed by Kurento Media Server to clients.
 If you want see working demos using Kurento, please refer to
-:doc:`Tutorials section<../tutorials>`.
+:doc:`Tutorials section</tutorials>`.
 
 .. index::
     single: Media; Element
@@ -59,7 +59,7 @@ developers:
    other elements input streams (sinks). Hence, the pipeline represents a
    “machine” capable of performing a sequence of operations over a stream.
 
-.. figure:: ../images/kurento-java-tutorial-2-magicmirror-pipeline.png
+.. figure:: /images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:  center
    :alt:    Media Pipeline Example
 
@@ -75,15 +75,15 @@ classes, inheriting operations from parent classes to children ones.
 The following class diagram shows some of the relationships of the main classes
 in the Kurento API.
 
-.. figure:: ../images/digraphs/Media_Objects.png
+.. figure:: /images/digraphs/Media_Objects.png
    :align: center
    :alt:   Class diagram of main classes in Kurento API
 
-   *Class diagram of main classes in Kurento API*
+   * JJ1 Class diagram of main classes in Kurento API*
 
 ..
  digraph:: Media_Objects
-   :caption: Class diagram of main classes in Kurento API
+   :caption: JJ2 Class diagram of main classes in Kurento API
 
    size="12,8";
    fontname = "Bitstream Vera Sans"
@@ -147,39 +147,39 @@ A **WebRtcEndpoint** is an output and input endpoint that provides media
 streaming for Real Time Communications (RTC) through the web. It implements
 :term:`WebRTC` technology to communicate with browsers.
 
-.. image:: ../images/toolbox/WebRtcEndpoint.png
+.. image:: /images/toolbox/WebRtcEndpoint.png
    :align:  center
 
-A **RtpEndpoint** is an output and input endpoint. That is, provides
+An **RtpEndpoint** is an output and input endpoint. That is, provides
 bidirectional content delivery capabilities with remote networked peers through
 RTP protocol. As you can imagine, to send and receive media through the network
 it uses :term:`RTP` protocol and :term:`SDP` for media negotiation.
 
-.. image:: ../images/toolbox/RtpEndpoint.png
+.. image:: /images/toolbox/RtpEndpoint.png
    :align:  center
 
 An **HttpPostEndpoint** is an input endpoint that accepts media using http POST
 requests like HTTP file upload function.
 
-.. image:: ../images/toolbox/HttpPostEndpoint.png
+.. image:: /images/toolbox/HttpPostEndpoint.png
    :align:  center
 
 A **PlayerEndpoint** is an input endpoint that retrieves content from file
 system, http URL or RTSP url and inject it into the media pipeline.
 
-.. image:: ../images/toolbox/PlayerEndpoint.png
+.. image:: /images/toolbox/PlayerEndpoint.png
    :align:  center
 
 A **RecorderEndpoint** is an output endpoint that provides function to store
 contents in reliable mode (doesn't discard data). It contains ``Media Sink``
 pads for audio and video.
 
-.. image:: ../images/toolbox/RecorderEndpoint.png
+.. image:: /images/toolbox/RecorderEndpoint.png
    :align:  center
 
 The following class diagram shows the relationships of the main endpoint classes.
 
-.. figure:: ../images/digraphs/Endpoints.png
+.. figure:: /images/digraphs/Endpoints.png
    :align: center
    :alt:   Class diagram of main Endpoints in Kurento API
 
@@ -234,26 +234,26 @@ The **ZBarFilter** filter detects QR and bar codes in a video stream. When a
 code is found, the filter raises a ``CodeFoundEvent``. Clients can add a
 listener to this event to execute some action.
 
-.. image:: ../images/toolbox/ZBarFilter.png
+.. image:: /images/toolbox/ZBarFilter.png
    :align:  center
 
 The **FaceOverlayFilter** filter detects faces in a video stream and overlaid it
 with a configurable image.
 
-.. image:: ../images/toolbox/FaceOverlayFilter.png
+.. image:: /images/toolbox/FaceOverlayFilter.png
    :align:  center
 
 
 **GStreamerFilter** is a generic filter interface that allow use GStreamer
 filter in Kurento Media Pipelines.
 
-.. image:: ../images/toolbox/GStreamerFilter.png
+.. image:: /images/toolbox/GStreamerFilter.png
    :align:  center
 
 
 The following class diagram shows the relationships of the main filter classes.
 
-.. figure:: ../images/digraphs/Filters.png
+.. figure:: /images/digraphs/Filters.png
    :align: center
    :alt:   Class diagram of main Filters in Kurento API
 
@@ -297,24 +297,24 @@ the available hubs in Kurento:
 **Composite** is a hub that mixes the audio stream of its connected inputs and
 constructs a grid with the video streams of them.
 
-.. image:: ../images/toolbox/Composite.png
+.. image:: /images/toolbox/Composite.png
    :align:  center
 
 **DispatcherOneToMany** is a Hub that sends a given input to all the connected
 output HubPorts.
 
-.. image:: ../images/toolbox/DispatcherOneToMany.png
+.. image:: /images/toolbox/DispatcherOneToMany.png
    :align:  center
 
 **Dispatcher** is a hub that allows routing between arbitrary input-output
 HubPort pairs.
 
-.. image:: ../images/toolbox/Dispatcher.png
+.. image:: /images/toolbox/Dispatcher.png
    :align:  center
 
 The following class diagram shows the relationships of the hubs.
 
-.. figure:: ../images/digraphs/Hubs.png
+.. figure:: /images/digraphs/Hubs.png
    :align: center
    :alt:   Class diagram of main Hubs in Kurento API
 
@@ -357,12 +357,12 @@ The following class diagram shows the relationships of the hubs.
 
 You see the details of the Kurento Clients see the JavaDoc/JsDoc:
 
-- `kurento-client-java <../langdoc/javadoc/index.html>`_ : JavaDoc of Kurento
+- `kurento-client-java </langdoc/javadoc/index.html>`_ : JavaDoc of Kurento
   Java Client.
 
-- `kurento-client-js <../langdoc/jsdoc/kurento-client-js/index.html>`_ : JsDoc
+- `kurento-client-js </langdoc/jsdoc/kurento-client-js/index.html>`_ : JsDoc
   of Kurento JavaScript Client.
 
-- `kurento-utils-js <../langdoc/jsdoc/kurento-utils-js/index.html>`_ : JsDoc
+- `kurento-utils-js </langdoc/jsdoc/kurento-utils-js/index.html>`_ : JsDoc
   of an utility JavaScript library aimed to simplify the development of WebRTC
   applications.

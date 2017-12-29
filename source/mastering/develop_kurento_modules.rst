@@ -26,7 +26,7 @@ The tool usage is different depending on the chosen flavor:
 1. OpenCV module:
 
 .. sourcecode:: bash
- 
+
    kurento-module-scaffold.sh <module_name> <output_directory> opencv_filter
 
 2. Gstreamer module:
@@ -44,7 +44,7 @@ Once, ``kmd`` files are completed we can generate code. The tool
 ``kurento-module-creator`` generates glue code to server-side. From the root
 directory:
 
-.. sourcecode:: bash 
+.. sourcecode:: bash
 
    cd build
    cmake ..
@@ -57,7 +57,7 @@ OpenCV module
 
 We have four files in ``src/server/implementation``:
 
-.. sourcecode:: bash 
+.. sourcecode:: bash
 
    ModuleNameImpl.cpp
    ModuleNameImpl.hpp
@@ -160,7 +160,7 @@ the client-side.
   ``cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE``. This command generates a
   ``js`` folder with client code. Now you can add the JavaScript library to use
   your module in your application manually. Alternatively, you can use
-  `Bower`:term: (for JavaScript for browser) or `NPM`:term: (for JavaScript for
+  :term:`Bower` (for JavaScript for browser) or :term:`NPM` (for JavaScript for
   Node.js). To do that, you should add your JavaScript module as a dependency
   in your ``bower.json`` or ``package.json`` file respectively, as follows:
 

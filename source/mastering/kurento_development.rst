@@ -25,8 +25,8 @@ We'll also explain in detail how Kurento can be built from sources.
 Using development versions
 --------------------------
 
-Some components of KMS are build nightly, with the code developed during that
-same day. Other components are created automatically when code is merged into
+Some components of KMS are built nightly, with the code developed during that
+same day. Other components are built immediately when code is merged into
 the source repositories.
 
 .. warning:: You have to use these versions with caution, because they can be

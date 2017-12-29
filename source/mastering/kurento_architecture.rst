@@ -23,7 +23,7 @@ architecture of Kurento.
 .. figure:: ../images/Architecture.png
    :alt: Kurento Architecture
    :align: center
-   
+
    *Kurento Architecture. Kurento architecture follows the traditional separation
    between signaling and media planes.*
 
@@ -32,10 +32,10 @@ The **right side** of the picture shows the application, which is in charge of
 the signaling plane and contains the business logic and connectors of the
 particular multimedia application being deployed. It can be build with any
 programming technology like Java, Node.js, PHP, Ruby, .NET, etc. The
-application can use mature technologies such as `HTTP`:term: and `SIP`:term:
+application can use mature technologies such as :term:`HTTP` and :term:`SIP`
 Servlets, Web Services, database connectors, messaging services, etc. Thanks to
 this, this plane provides access to the multimedia signaling protocols commonly
-used by end-clients such as `SIP`:term:, RESTful and raw HTTP based formats,
+used by end-clients such as :term:`SIP`, RESTful and raw HTTP based formats,
 SOAP, RMI, CORBA or JMS. These signaling protocols are used by client side of
 applications to command the creation of media sessions and to negotiate their
 desired characteristics on their behalf. Hence, this is the part of the
@@ -60,7 +60,7 @@ Following this, the role of the different APIs can be summarized in the
 following way:
 
 - **Kurento Protocol**: Is a network protocol exposing the Kurento Media
-  Server capabilities through `WebSocket`:term: (read more in
+  Server capabilities through :term:`WebSocket` (read more in
   :doc:`Kurento Protocol section <kurento_protocol>`).
 
 - **Kurento API**: Is the object oriented view of the Kurento Protocol. This
@@ -148,7 +148,7 @@ also be implemented with the same architecture:
    representation and multimedia capture. It is usually based on specific
    build-in capabilities of the client. For example, when creating a
    browser-based application, the presentation layer will use capabilities such
-   as the ``<video>`` HTML tag or the `WebRTC`:term: JavaScript APIs.
+   as the ``<video>`` HTML tag or the :term:`WebRTC` JavaScript APIs.
 
 -  **Application logic**: This layer provides the specific multimedia logic.
    In other words, this layer is in charge of building the appropriate pipeline
@@ -282,14 +282,14 @@ Real time WebRTC applications with Kurento
 
 Kurento allows the establishment of real time multimedia session between a
 browser and the Kurento Media Server directly through the use of
-`WebRTC`:term:. In addition, Kurento Media Server can be used to act as media
+:term:`WebRTC`. In addition, Kurento Media Server can be used to act as media
 proxy for making possible the communication among different clients, which are
 mediated by the kurento infrastructure. Hence, Kurento Media Server can act as
 a conference bridge (Multi-Conference Unit, MCU), as a machine-to-machine
 communication system, as a video call recording system, etc.
 
 As shown in the picture, the client exposes its media capabilities through an
-`SDP`:term: (Session Description Protocol) sent in a request. Hence, the
+:term:`SDP` (Session Description Protocol) sent in a request. Hence, the
 application is able to instantiate the appropriate WebRTC endpoint, and to
 require it to generate a response SDP based on its own capabilities and on the
 offered SDP. When the answer SDP is obtained, it is given back to the client

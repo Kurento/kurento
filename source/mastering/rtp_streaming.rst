@@ -112,7 +112,7 @@ Example
 This is a minimal example of the SDP Offer that a machine would send to KMS from
 behind a NAT router:
 
-.. code-block:: text
+.. sourcecode:: text
 
     v=0
     o=- 0 0 IN IP4 0.0.0.0
@@ -132,7 +132,7 @@ behind a NAT router:
 
 This is what KMS would answer:
 
-.. code-block:: text
+.. sourcecode:: text
 
     v=0
     o=- 3696336115 3696336115 IN IP4 80.28.30.32
