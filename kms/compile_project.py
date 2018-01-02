@@ -110,14 +110,22 @@ def get_pkgversion_to_install(pkg, req_version, req_commit):
 
     pkgversion_found = None
 
+    # If a specific commit is required, enforce that.
+    # Else if a version is required, try that one.
+    # Else upon no restrictions on version or commit, use the installed one
+    # if any, or install the current candidate.
     if req_commit:
         for pkgversion in pkg.versions:
             if pkgversion.version.find(req_commit[:7]) >= 0:
                 pkgversion_found = pkgversion
                 break
     elif req_version:
-        if check_req_version(pkg.candidate.version, req_version):
-            # First check the current candidate (might be already installed)
+        # First check the installed version, if any.
+        # As a second option, resort to the current candidate.
+        # If that still doesn't work, review all other versions available.
+        if pkg.is_installed and check_req_version(pkg.installed.version, req_version):
+            pkgversion_found = pkg.installed
+        elif check_req_version(pkg.candidate.version, req_version):
             pkgversion_found = pkg.candidate
         else:
             # Sort by priority (as seen with `apt-cache policy <PackageName>`)
@@ -128,6 +136,8 @@ def get_pkgversion_to_install(pkg, req_version, req_commit):
                 if check_req_version(pkgversion.version, req_version):
                     pkgversion_found = pkgversion
                     break
+    elif pkg.is_installed:
+        pkgversion_found = pkg.installed
     else:
         pkgversion_found = pkg.candidate
 
@@ -163,17 +173,16 @@ def check_deb_dependency_installed(dep_alts):
             if pkg.is_installed:
                 if pkgversion == pkg.installed:
                     print("[buildpkg::check_deb_dependency_installed]"
-                          " Dependency: '{}' is installed via package: {},"
-                          " version: {}".format(
+                          " Dependency: '{}' is installed via package '{}'"
+                          " version '{}'".format(
                               dep2str(dep_alts), pkg.shortname, pkg.installed.version))
                     return True
                 else:
                     print("[buildpkg::check_deb_dependency_installed] WARNING:"
-                          " Dependency: '{}' is installed via package: {},"
-                          " version: {}, but doesn't match requested version: {}"
-                          " or commit: {}".format(
-                              dep2str(
-                                  dep_alts), pkg.shortname, pkg.installed.version,
+                          " Dependency: '{}' is installed via package '{}'"
+                          " version '{}', but doesn't match requested version '{}'"
+                          " or commit '{}'".format(
+                              dep2str(dep_alts), pkg.shortname, pkg.installed.version,
                               dep_version, dep_commit))
             else:
                 print("[buildpkg::check_deb_dependency_installed]"
