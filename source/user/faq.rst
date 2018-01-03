@@ -15,7 +15,7 @@ Apart from that, you need to open all UDP ports in your security group, as STUN/
 
 On Ubuntu 16.04 (Xenial), Coturn can be installed directly from the package repositories:
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    sudo apt-get install coturn
 
@@ -25,7 +25,7 @@ However, Ubuntu 14.04 (Trusty) lacks this package, but it can be downloaded and 
 
 2. Install it, together with all dependencies.
 
-   .. sourcecode:: bash
+   .. code-block:: bash
 
       sudo apt-get update
       sudo apt-get install gdebi-core
@@ -54,7 +54,7 @@ However, Ubuntu 14.04 (Trusty) lacks this package, but it can be downloaded and 
 
 5. Configure KMS and point it to where the TURN server is listening for connections. Edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set the ``turnURL`` parameter:
 
-   .. sourcecode:: bash
+   .. code-block:: bash
 
       turnURL=<user>:<password>@<serverIp>:<serverPort>
       turnURL=kurento:kurentopw@<serverIp>:3478
@@ -71,7 +71,7 @@ However, Ubuntu 14.04 (Trusty) lacks this package, but it can be downloaded and 
 
 6. Lastly, start the ``Coturn`` server and the media server:
 
-   .. sourcecode:: bash
+   .. code-block:: bash
 
       sudo service coturn start
       sudo service kurento-media-server-6.0 restart
@@ -115,7 +115,7 @@ Why do I get the error ...
 
 This is a typical error which happens when you update Kurento Media Server from version 4 to 5. The problem is related to the GStreamer dependency version. The solution is the following:
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    sudo apt-get remove kurento*
    sudo apt-get autoremove

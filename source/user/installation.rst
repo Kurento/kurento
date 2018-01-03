@@ -4,11 +4,26 @@ Installation Guide
 
 **Kurento Media Server (KMS)** can be made available through two different methods: either a local native installation, or an EC2 instance in the `Amazon Web Services`_ (AWS) cloud service.
 
-The local installation will make use of public package repositories that hold the latest released versions of KMS. Besides that, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT`. This document includes some details about that topic.
+Using AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
 
-On the other hand, the alternative to use AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
+On the other hand, the local installation will allow to have total control of the installation process. This method makes use of public package repositories that hold the latest released versions of KMS. Besides that, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT`. This document includes some details about that topic.
 
 
+
+.. _installation-aws:
+
+Amazon Web Services
+===================
+
+The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server:
+
+``https://s3-eu-west-1.amazonaws.com/aws.openvidu.io/TODO.json`` [TODO]
+
+`Deploying on AWS`_ is our most up-to-date documentation about deploying on AWS. Please follow the steps outlined in the linked document in order to deploy Kurento Media Server. However, make sure to use the Kurento CloudFormation template file, indicated above this paragraph.
+
+
+
+.. _installation-local:
 
 Local Installation
 ==================
@@ -19,11 +34,9 @@ KMS has explicit support for two Long-Term Support (*LTS*) distributions of Ubun
 
 Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if required.
 
-**First Step**. Define which version of Ubuntu will be used for your system.
+**First Step**. Define which version of Ubuntu will be used for your system. Open a terminal and copy **only one** of these lines:
 
-Open a terminal and copy **only one** of these lines:
-
-.. sourcecode:: bash
+.. code-block:: bash
 
    # Choose one:
    REPO="trusty"  # KMS Releases - Ubuntu 14.04 (Trusty)
@@ -31,52 +44,19 @@ Open a terminal and copy **only one** of these lines:
 
 **Second Step**. Type the following commands, **one at a time and in the same order as listed here**. When asked for any kind of confirmation, reply affirmatively:
 
-.. sourcecode:: text
+.. code-block:: text
 
-   sudo tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
-   # Kurento Packages repository
-   deb http://ubuntu.kurento.org $REPO kms6
-   EOF
+   echo "deb http://ubuntu.kurento.org $REPO kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
    wget http://ubuntu.kurento.org/kurento.gpg.key -O - | sudo apt-key add -
    sudo apt-get update
    sudo apt-get install kurento-media-server-6.0
 
-At this point, Kurento Media Server has been installed. The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
+At this point, Kurento Media Server has been installed. The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it (respectively):
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    sudo service kurento-media-server-6.0 start
    sudo service kurento-media-server-6.0 stop
-
-
-
-Check your installation
------------------------
-
-To verify that KMS is up and running, use this command:
-
-.. sourcecode:: bash
-
-   ps -ef | grep kurento-media-server
-
-The output should include the ``kurento-media-server`` process:
-
-.. sourcecode:: text
-
-   nobody    1270     1  0 08:52 ?        00:01:00 /usr/bin/kurento-media-server
-
-Unless configured otherwise, KMS will open the port ``8888`` to receive requests and send responses by means of the :doc:`Kurento Protocol<kurento_protocol>`.
-Verify this port by running this command:
-
-.. sourcecode:: bash
-
-   sudo netstat -putan | grep kurento
-
-The output should be similar to this:
-
-.. sourcecode:: text
-
-   tcp6    0    0 :::8888    :::*    LISTEN    1270/kurento-media-server
 
 
 
@@ -85,14 +65,14 @@ Pre-Release Builds
 
 Some components of KMS are built nightly, with the code developed during that same day. Other components are built immediately when code is merged into the source repositories.
 
-These builds end up being uploaded to a *Development* repository so they can be installed by anyone. Use this if you want to develop KMS itself, or if you want to try the latest changes before they are officially released.
+These builds end up being uploaded to a *Development* repository so they can be installed by anyone. Use this if you want to develop *Kurento itself*, or if you want to try the latest changes before they are officially released.
 
 .. warning::
-   The *Development* version is a representation of the current state on the software development for Kurento, so it can include undocumented changes, regressions, bugs or deprecations. **Never** use pre-release builds of Kurento in a production environment.
+   The *Development* version represents the current state on the software development, so it can include undocumented changes, regressions, bugs or deprecations. **Never** use pre-release builds in a production environment.
 
-To install a pre-release version of Kurento, follow the steps described in `Local Installation`_, but choose one of these options during the first step:
+To install a pre-release version of Kurento, follow the steps described in :ref:`installation-local`, but choose one of these options during the first step:
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    # Choose one:
    REPO="trusty-dev"  # KMS Development - Ubuntu 14.04 (Trusty)
@@ -105,11 +85,12 @@ STUN and TURN servers
 
 If Kurento Media Server or any of its clients are located behind a :term:`NAT` (eg. in any cloud provider), you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
 
-Apart from that, you need to open all UDP ports in your system configuration, as TURN/STUN will use any port available from the whole [0-65535] range.
+Apart from that, you need to open all UDP ports in your system configuration, as STUN will use any random port from the whole [0-65535] range.
 
 .. note::
 
-   The features provided by TURN are a superset of those provided by STUN. What this means is that you don't need to configure a STUN server if you are already using a TURN server.
+   The features provided by TURN are a superset of those provided by STUN. What this means is that *you don't need to configure a STUN server if you are already using a TURN server*.
+
 
 
 STUN server
@@ -117,7 +98,7 @@ STUN server
 
 To configure a STUN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    stunServerAddress=<serverIp>
    stunServerPort=<serverPort>
@@ -126,13 +107,13 @@ To configure a STUN server in KMS, uncomment the following lines in the WebRtcEn
 
    Be careful since comments inline (with ``;``) are not allowed for parameters in the configuration files. Thus, the following line **is not correct**:
 
-   .. sourcecode:: bash
+   .. code-block:: bash
 
       stunServerAddress=<serverIp> ; Only IP addresses are supported
 
    ... and must be changed to something like this:
 
-   .. sourcecode:: bash
+   .. code-block:: bash
 
       ; Only IP addresses are supported
       stunServerAddress=<serverIp>
@@ -141,7 +122,7 @@ The parameter ``serverIp`` should be the public IP address of the STUN server. I
 
 It should be easy to find some public STUN servers that are made available for free. For example:
 
-.. sourcecode:: text
+.. code-block:: text
 
    173.194.66.127:19302
    173.194.71.127:19302
@@ -169,12 +150,13 @@ It should be easy to find some public STUN servers that are made available for f
    54.172.47.69:3478
 
 
+
 TURN server
 -----------
 
 To configure a TURN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    turnURL=<user>:<password>@<serverIp>:<serverPort>
 
@@ -182,13 +164,13 @@ The parameter ``serverIp`` should be the public IP address of the TURN server. I
 
 See some examples of TURN configuration below:
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    turnURL=kurento:kurento@111.222.333.444:3478
 
 ... or using a free access `Numb`_ TURN/STUN server:
 
-.. sourcecode:: bash
+.. code-block:: bash
 
    turnURL=user:password@66.228.45.110:3478
 
@@ -196,23 +178,32 @@ Note that it is somewhat easy to find free STUN servers available on the net, be
 
 It is rare to find a TURN server which works for free while offering good performance. Usually, each user opts to maintain their own private TURN server instances.
 
-`Coturn`_ is an open source implementation of a TURN/STUN server. In the :doc:`FAQ </faq>` section there is a description about how to install and configure it.
+`Coturn`_ is an open source implementation of a TURN/STUN server. In the :doc:`FAQ </user/faq>` section there is a description about how to install and configure it.
 
 
 
-Amazon Web Services
-===================
+Check your installation
+=======================
 
-The Kurento project provides an `AWS CloudFormation`_ template file, which can be used to create an EC2 instance. It comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server:
+To verify that KMS is up and running, use this command to check that the ``kurento-media-server`` process is included:
 
-``https://s3-eu-west-1.amazonaws.com/aws.openvidu.io/TODO.json`` [TODO]
+.. code-block:: text
 
-`Deploying on AWS`_ is our most up-to-date documentation about deploying on AWS. Please follow the steps outlined in the linked document in order to deploy a Kurento Media Server. However, make sure to use the Kurento CloudFormation template file, indicated above this paragraph.
+   ps -ef | grep kurento-media-server
+
+   > nobody  1270  1  0 08:52 ?  00:01:00  /usr/bin/kurento-media-server
+
+Unless configured otherwise, KMS will open the port ``8888`` to receive requests and send responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Verify that this port is listening for incoming packets:
+
+.. code-block:: text
+
+   sudo netstat -tupan | grep kurento
+
+   > tcp6  0  0 :::8888  :::*  LISTEN  1270/kurento-media-server
 
 
 
 .. _Amazon Web Services: https://aws.amazon.com
-.. _AWS CloudFormation: https://aws.amazon.com/cloudformation/
 .. _Coturn: http://coturn.net
 .. _Deploying on AWS: http://openvidu.io/docs/deployment/deploying-demos-aws/
 .. _Numb: http://numb.viagenie.ca/

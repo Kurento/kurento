@@ -7,7 +7,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 .. glossary::
 
    Agnostic media
-       One of the big problems of media is that the number of variants of video and audio codecs, formats and variants quickly creates high complexity in heterogeneous applications. So kurento developed the concept of an automatic converter of media formats that enables development of *agnostic* elements. Whenever a media element’s source is connected to another media element’s sink, the kurento framework verifies if media adaption and transcoding is necessary and, if needed, it transparently incorporates the appropriate transformations making possible the  chaining of the two elements into the resulting :term:`Pipeline <Media Pipeline>`.
+       One of the big problems of media is that the number of variants of video and audio codecs, formats and variants quickly creates high complexity in heterogeneous applications. So Kurento developed the concept of an automatic converter of media formats that enables development of *agnostic* elements. Whenever a media element’s source is connected to another media element’s sink, the Kurento framework verifies if media adaption and transcoding is necessary and, if needed, it transparently incorporates the appropriate transformations making possible the  chaining of the two elements into the resulting :term:`Pipeline <Media Pipeline>`.
 
    AVI
        Audio Video Interleaved, known by its initials AVI, is a multimedia container format introduced by Microsoft in November 1992 as part of its Video for Windows technology. AVI files can contain both audio and video data in a file container that allows synchronous audio-with-video playback. AVI is a derivative of the Resource Interchange File Format (RIFF).
@@ -36,11 +36,10 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               Information on the relevance of CORS and how and when to enable it.
 
    DOM
-   Document Object Model
        Document Object Model is a cross-platform and language-independent convention for representing and interacting with objects in HTML, XHTML and XML documents.
 
    EOS
-       Acronym of End Of Stream. In Kurento some elements will raise an ``EndOfStream`` event when the media they are processing is finished.
+       End Of Stream is an event that occurs when playback of some media source has finished. In Kurento, some elements will raise an ``EndOfStream`` event.
 
    GStreamer
        `GStreamer <http://gstreamer.freedesktop.org/>`_ is a pipeline-based multimedia framework written in the C programming language.
@@ -66,8 +65,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               Hypertext Transfer Protocol -- HTTP/1.1
 
    ICE
-   Interactive Connectivity Establishment
-       Interactive Connectivity Establishment (ICE) is a technique used to achieve :term:`NAT Traversal`. ICE makes use of the :term:`STUN` protocol and its extension, :term:`TURN`. ICE can be used by any protocol utilizing the offer/answer model.
+       Interactive Connectivity Establishment (ICE) is a technique used to achieve :term:`NAT Traversal`. ICE makes use of the :term:`STUN` protocol and its extension, :term:`TURN`. ICE can be used by any aplication that makes use of the SDP Offer/Answer model..
 
        .. seealso::
           :wikipedia:`Interactive Connectivity Establishment`
@@ -86,37 +84,28 @@ This is a glossary of terms that often appear in discussion about multimedia tra
           :rfc:`3574`
               Transition Scenarios for 3GPP Networks
 
-   Java EE
-       Java Platform, Enterprise Edition (`Java EE`_) is a standardized set of Java APIs for Enterprise software development.
-
-       .. _Java EE: http://www.oracle.com/technetwork/java/javaee/overview/index.html
-
-       .. seealso::
-          :wikipedia:`Java Platform, Enterprise Edition <en,Java_Platform,_Enterprise_Edition>`
-
-
-
    jQuery
        `jQuery <http://jquery.com/>`_ is a cross-platform JavaScript library designed to simplify the client-side scripting of HTML.
 
    JSON
-       `JSON <http://json.org>`_ (JavaScript Object Notation) is a lightweight data-interchange format. It is designed to be easy to understand and write for humans and easy to parse for machines.
+       `JSON <http://json.org/>`_ (JavaScript Object Notation) is a lightweight data-interchange format. It is designed to be easy to understand and write for humans and easy to parse for machines.
 
    JSON-RPC
-       `JSON-RPC <http://json-rpc.org/>`_ is a simple remote procedure call protocol encoded in JSON. JSON-RPC allows for notifications and for multiple calls to be sent to the server which may be answered out of order.
+       `JSON-RPC <http://www.jsonrpc.org/>`_ is a simple remote procedure call protocol encoded in JSON. JSON-RPC allows for notifications and for multiple calls to be sent to the server which may be answered out of order.
 
    Kurento
-       `Kurento <http://kurento.org>`_ is a platform for the development of multimedia enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Kurento is open source, released under Apache 2.0, and has several components, providing solutions to most multimedia common services requirements. Those components include: :term:`Kurento Media Server`, :term:`Kurento API`, :term:`Kurento Protocol`, and :term:`Kurento Client`.
+       `Kurento <http://kurento.org>`_ is a platform for the development of multimedia-enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Some components of Kurento are the :term:`Kurento Media Server`, the :term:`Kurento API`, the :term:`Kurento Protocol`, and the :term:`Kurento Client`.
 
    Kurento API
         An object oriented API to create media pipelines to control media. It can be seen as and interface to Kurento Media Server. It can be used from the Kurento Protocol or from Kurento Clients.
 
    Kurento Client
-        A programming library (Java or JavaScript) used to control an instance of **Kurento Media Server** from an application. For example, with this library, any developer can create a web application that uses Kurento Media Server to receive audio and video from the user web browser, process it and send it back again over Internet. Kurento Client exposes the :term:`Kurento API <Kurento API>` to app developers.
+        A programming library (Java or JavaScript) used to control an instance of **Kurento Media Server** from an application. For example, with this library, any developer can create a web application that uses Kurento Media Server to receive audio and video from the user web browser, process it and send it back again over Internet. The Kurento Client libraries expose the :term:`Kurento API` to application developers.
 
    Kurento Protocol
-        Communication between KMS and clients by means of :term:`JSON-RPC` messages. It is based on :term:`WebSocket` that uses :term:`JSON-RPC` V2.0 messages for making requests and sending responses.
+        Communication between KMS and clients by means of :term:`JSON-RPC` messages. It is based on :term:`WebSocket` that uses :term:`JSON-RPC` v2.0 messages for making requests and sending responses.
 
+   KMS
    Kurento Media Server
         **Kurento Media Server** is the core element of Kurento since it responsible for media transmission, processing, loading and recording.
 
@@ -127,7 +116,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        A **Media Element** is a module that encapsulates a specific media capability.  For example **RecorderEndpoint**, **PlayerEndpoint**, etc.
 
    Media Pipeline
-       A :index:`Media Pipeline <single: Media; Pipeline>` is a chain of media elements, where the output stream generated by one element (source) is fed into one or more other elements input streams (sinks). Hence, the pipeline represents a “machine” capable of performing a sequence of operations over a stream.
+       A :index:`Media Pipeline <single: Media; Pipeline>` is a chain of media elements, where the output stream generated by one element (source) is fed into one or more other elements input streams (sinks). Hence, the pipeline represents a "machine" capable of performing a sequence of operations over a stream.
 
    Media Plane
        In a traditional IP Multimedia Subsystem, the handling of media is conceptually splitted in two layers. The layer that handles the media itself -with functionalities such as media transport, encoding/decoding, and processing- is called :index:`Media Plane <single: Plane; Media>`.
@@ -173,6 +162,9 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        NAT traversal (sometimes abbreviated as NAT-T) is a general term for techniques that establish and maintain Internet protocol connections traversing network address translation (NAT) gateways, which break end-to-end connectivity. Intercepting and modifying traffic can only be performed transparently in the absence of secure encryption and authentication.
 
        .. seealso::
+          :doc:`/knowledge/nat`
+              Entry in our Knowledge Base.
+
           `NAT Traversal White Paper <http://www.nattraversal.com/>`_
               White paper on NAT-T and solutions for end-to-end connectivity in its presence
 
@@ -203,6 +195,20 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 
        .. seealso::
           :wikipedia:`QR code`
+
+   REMB
+       **Receiver Estimated Maximum Bitrate (REMB)** is a type of RTCP feedback message that a RTP receiver can use to inform the sender about what is the estimated reception bandwidth currently available for the stream itself. Upon reception of this message, the RTP sender will be able to adjust its own video bitrate to the conditions of the network. This message is a crucial part of the *Google Congestion Control (GCC)* algorithm, which provides any RTP session with the ability to adapt in cases of network congestion.
+
+       The *GCC* algorithm is one of several proposed algorithms that have been proposed by an IETF Working Group named *RTP Media Congestion Avoidance Techniques (RMCAT)*.
+
+       .. seealso::
+          `What is RMCAT congestion control, and how will it affect WebRTC? <https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/>`_
+
+          `draft-alvestrand-rmcat-remb <https://tools.ietf.org/html/draft-alvestrand-rmcat-remb-03>`_
+              RTCP message for Receiver Estimated Maximum Bitrate
+
+          `draft-ietf-rmcat-gcc <https://tools.ietf.org/html/draft-ietf-rmcat-gcc-02>`_
+              A Google Congestion Control Algorithm for Real-Time Communication
 
    REST
        Representational state transfer (REST) is an architectural style consisting of a coordinated set of constraints applied to components, connectors, and data elements, within a distributed hypermedia system. The term representational state transfer was introduced and defined in 2000 by Roy Fielding in his `doctoral dissertation <http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm>`_.
@@ -238,10 +244,51 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 
    SDP
    Session Description Protocol
-       The Session Description Protocol (SDP) describes initialization parameters for a streaming media session. Both parties of a streaming media session exchange SDP files to negotiate and agree in the parameters to be used for the streaming.
+   SDP Offer/Answer
+       The **Session Description Protocol (SDP)** is a text document that describes the parameters of a streaming media session. It is commonly used to describe the characteristics of RTP streams (and related protocols such as RTSP).
+
+       The **SDP Offer/Answer** model is a negotiation between two peers of a unicast stream, by which the sender and the receiver share the set of media streams and codecs they wish to use, along with the IP addresses and ports they would like to use to receive the media.
+
+       This is an example SDP Offer/Answer negotiation. First, there must be a peer that wishes to initiate the negotiation; we´ll call it the *offerer*. It composes the following SDP Offer and sends it to the other peer -which we´ll call the *answerer*-:
+
+       .. code-block:: text
+
+          v=0
+          o=- 0 0 IN IP4 127.0.0.1
+          s=Example sender
+          c=IN IP4 127.0.0.1
+          t=0 0
+          m=audio 5006 RTP/AVP 96
+          a=rtpmap:96 opus/48000/2
+          a=sendonly
+          m=video 5004 RTP/AVP 103
+          a=rtpmap:103 H264/90000
+          a=sendonly
+
+       Upon receiving that Offer, the *answerer* studies the parameters requested by the *offerer*, decides if they can be satisfied, and composes an appropriate SDP Answer that is sent back to the *offerer*:
+
+       .. code-block:: text
+
+          v=0
+          o=- 3696336115 3696336115 IN IP4 192.168.56.1
+          s=Example receiver
+          c=IN IP4 192.168.56.1
+          t=0 0
+          m=audio 0 RTP/AVP 96
+          a=rtpmap:96 opus/48000/2
+          a=recvonly
+          m=video 31278 RTP/AVP 103
+          a=rtpmap:103 H264/90000
+          a=recvonly
+
+       The SDP Answer is the final step of the SDP Offer/Answer Model. With it, the *answerer* agrees to some of the parameter requested by the *offerer*, but not all.
+
+       In this example, ``audio 0`` means that the *answerer* rejects the audio stream that the *offerer* intended to send; also, it accepts the video stream, and the ``a=recvonly`` acknowledges that the *answerer* will exclusively act as a receiver, and won´t send any stream back to the other peer.
 
        .. seealso::
           :wikipedia:`Session Description Protocol`
+
+          `Anatomy of a WebRTC SDP <https://webrtchacks.com/anatomy-webrtc-sdp/>`_
 
           :rfc:`4566`
               SDP: Session Description Protocol
@@ -281,7 +328,8 @@ This is a glossary of terms that often appear in discussion about multimedia tra
       A single-page application is a web application that fits on a single web page with the goal of providing a more fluid user experience akin to a desktop application.
 
    Sphinx
-       Documentation generation system used for kurento documentation
+       `Sphinx <http://www.sphinx-doc.org/en/stable/>`_ is a documentation generation system. Text is first written using `reStructuredText <http://docutils.sourceforge.net/rst.html>`_ markup language, which then is transformed by Sphinx into different formats such as PDF or HTML.
+       This is the documentation tool of choice for the Kurento project.
 
        .. seealso::
           `Easy and beautiful documentation with Sphinx <http://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html?ca=dat>`_
@@ -316,7 +364,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Extension to the :term:`ICE` protocol that allows ICE agents to send and receive candidates incrementally rather than exchanging complete lists. With such incremental provisioning, ICE agents can begin connectivity checks while they are still gathering candidates and considerably shorten the time necessary for ICE processing to complete.
 
        .. seealso::
-          `draft-ietf-ice-trickle-15 <https://tools.ietf.org/html/draft-ietf-ice-trickle-15>`_
+          `draft-ietf-ice-trickle <https://tools.ietf.org/html/draft-ietf-ice-trickle-15>`_
               Trickle ICE: Incremental Provisioning of Candidates for the Interactive Connectivity Establishment (ICE) Protocol
 
    TLS
@@ -346,7 +394,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        `WebM <http://www.webmproject.org/>`_ is an open media file format designed for the web. WebM files consist of video streams compressed with the VP8 video codec and audio streams compressed with the Vorbis audio codec. The WebM file structure is based on the Matroska media container.
 
    WebRTC
-       `WebRTC <http://www.webrtc.org/>`_ is an open source project that provides rich Real-Time Communcations capabilities to web browsers via Javascript and HTML5 APIs and components. These APIs are being drafted by the World Wide Web Consortium (W3C).
+       `WebRTC <https://webrtc.org/>`_ is a set of protocols, mechanisms and APIs that provide browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections.
 
        .. seealso::
           `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`_

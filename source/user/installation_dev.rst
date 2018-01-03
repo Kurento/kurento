@@ -1,8 +1,12 @@
 .. _Kurento_Development:
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Working with Nightly Builds
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Installing Pre-Release Builds
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+[TODO full review]
+[TODO move "pre-release install" from /user/installation to here]
+[TODO check links]
 
 Kurento is composed by several components. Each component is being developed
 with very different technologies.

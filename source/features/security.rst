@@ -4,6 +4,8 @@
 Securing Kurento Applications
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+[TODO full review]
+
 Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or
 localhost). Check their
 `release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`_

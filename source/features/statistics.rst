@@ -4,6 +4,8 @@
 WebRTC Statistics
 %%%%%%%%%%%%%%%%%
 
+[TODO full review]
+
 Introduction
 ============
 

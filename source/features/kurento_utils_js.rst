@@ -2,6 +2,8 @@
 Kurento Utils JS
 %%%%%%%%%%%%%%%%
 
+[TODO full review]
+
 Overview
 ========
 
