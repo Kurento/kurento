@@ -1623,7 +1623,16 @@ kms_webrtc_session_parse_turn_url (KmsWebrtcSession * self)
       g_free (turn_transport);
     }
 
-    GST_INFO_OBJECT (self, "TURN server info set (%s)", self->turn_url);
+    GString *safe_url = g_string_new ("<user:password>");
+    gchar *separated_url = g_strrstr (self->turn_url, "@");
+    if (separated_url == NULL) {
+      g_string_append_c (safe_url, '@');
+      g_string_append (safe_url, self->turn_url);
+    } else {
+      g_string_append (safe_url, separated_url);
+    }
+    GST_INFO_OBJECT (self, "TURN server info set: %s", safe_url->str);
+    g_string_free (safe_url, TRUE);
   } else {
     GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
         ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
