@@ -30,7 +30,7 @@
       In case of unidirectional connections (i.e. only one peer is going to send media), the process is more simple, as only the emitter needs to process an SDP. On top of the information about media codecs and types, the SDP must contain the IP of the remote peer, and the port where it will be listening. This way, the SDP can be mangled without needing to go through the exchange process, as the receiving peer does not need to process any answer.
       </p>
       <p>
-      While there is no congestion control in this endpoint, the user can set some bandwidth limits that will be used during the negotiation process.
+      The user can set some bandwidth limits that will be used during the negotiation process.
       The default bandwidth range of the endpoint is 100kbps-500kbps, but it can be changed separately for input/output directions and for audio/video streams.
       <ul style='list-style-type:circle'>
         <li>
@@ -60,7 +60,7 @@
       TODO: What happens if the b=as tag form the SDP has a lower value than the one set in setMinVideoSendBandwidth?
       </p>
       <p>
-      Having no congestion ocntrol implementation means that the bitrate will remain constant. This is something to take into consideration when setting upper limits for the output bandwidth, or the local network connection can be overflooded.
+      Take into consideration that setting a too high upper limit for the output bandwidth can be a reason for the local network connection to be overflooded.
       </p>
       ",
       "constructor":
@@ -126,7 +126,31 @@
       "properties": [
         {
           "name": "key",
-          "doc": " A string representing the cryptographic key used. The length varies depending on the cryptographic method used (30 bytes length for AES_128_CM, or 46 bytes length for AES_256_CM). If no key is provided a random one will be generated using the `getrandom` system call",
+          "doc": "<p>Master key and salt (plain text)</p>
+          <p>
+          This field provides the the cryptographic master key appended with the master salt, in plain text format. This allows to provide a key that is composed of readable ASCII characters.
+          </p>
+          <p>
+          The expected length of the key (as provided to this parameter) is determined by the crypto-suite for which the key applies (30 characters for AES_CM_128, 46 characters for AES_CM_256). If the length does not match the expected value, the key will be considered invalid.
+          </p>
+          <p>
+          If no key is provided, a random one will be generated using the `getrandom` system call.
+          </p>",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "keyBase64",
+          "doc": "<p>Master key and salt (base64 encoded)</p>
+          <p>
+          This field provides the cryptographic master key appended with the master salt, encoded in base64. This allows to provide a binary key that is not limited to the ASCII character set.
+          </p>
+          <p>
+          The expected length of the key (after being decoded from base64) is determined by the crypto-suite for which the key applies (30 bytes for AES_CM_128, 46 bytes for AES_CM_256). If the length does not match the expected value, the key will be considered invalid.
+          </p>
+          <p>
+          If no key is provided, a random one will be generated using the `getrandom` system call.
+          </p>",
           "type": "String",
           "optional": true
         },

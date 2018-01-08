@@ -48,12 +48,12 @@ G_DEFINE_TYPE (KmsRtpEndpoint, kms_rtp_endpoint, KMS_TYPE_BASE_RTP_ENDPOINT);
 #define DEFAULT_CRYPTO_SUITE KMS_RTP_SDES_CRYPTO_SUITE_NONE
 #define DEFAULT_KEY_TAG 1
 
-#define KMS_SRTP_CIPHER_AES_128_ICM 1
-#define KMS_SRTP_CIPHER_AES_256_ICM 2
 #define KMS_SRTP_AUTH_HMAC_SHA1_32 1
 #define KMS_SRTP_AUTH_HMAC_SHA1_80 2
-#define KMS_SRTP_CIPHER_AES_128_ICM_SIZE 30
-#define KMS_SRTP_CIPHER_AES_256_ICM_SIZE 46
+#define KMS_SRTP_CIPHER_AES_CM_128 1
+#define KMS_SRTP_CIPHER_AES_CM_256 2
+#define KMS_SRTP_CIPHER_AES_CM_128_SIZE 30
+#define KMS_SRTP_CIPHER_AES_CM_256_SIZE 46
 
 #define KMS_RTP_ENDPOINT_GET_PRIVATE(obj) (  \
   G_TYPE_INSTANCE_GET_PRIVATE (              \
@@ -91,7 +91,7 @@ struct _KmsRtpEndpointPrivate
   gboolean use_sdes;
   GHashTable *sdes_keys;
 
-  gchar *master_key;
+  gchar *master_key;  // SRTP Master Key, base64 encoded
   KmsRtpSDESCryptoSuite crypto;
 
   /* COMEDIA (passive port discovery) */
@@ -178,19 +178,19 @@ get_auth_cipher_from_crypto (SrtpCryptoSuite crypto, guint * auth,
   switch (crypto) {
     case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_32:
       *auth = KMS_SRTP_AUTH_HMAC_SHA1_32;
-      *cipher = KMS_SRTP_CIPHER_AES_128_ICM;
+      *cipher = KMS_SRTP_CIPHER_AES_CM_128;
       return TRUE;
     case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_80:
       *auth = KMS_SRTP_AUTH_HMAC_SHA1_80;
-      *cipher = KMS_SRTP_CIPHER_AES_128_ICM;
+      *cipher = KMS_SRTP_CIPHER_AES_CM_128;
       return TRUE;
     case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_32:
       *auth = KMS_SRTP_AUTH_HMAC_SHA1_32;
-      *cipher = KMS_SRTP_CIPHER_AES_256_ICM;
+      *cipher = KMS_SRTP_CIPHER_AES_CM_256;
       return TRUE;
     case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_80:
       *auth = KMS_SRTP_AUTH_HMAC_SHA1_80;
-      *cipher = KMS_SRTP_CIPHER_AES_256_ICM;
+      *cipher = KMS_SRTP_CIPHER_AES_CM_256;
       return TRUE;
     default:
       *auth = *cipher = 0;
@@ -403,10 +403,10 @@ get_max_key_size (SrtpCryptoSuite crypto)
   switch (crypto) {
     case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_32:
     case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_80:
-      return KMS_SRTP_CIPHER_AES_128_ICM_SIZE;
+      return KMS_SRTP_CIPHER_AES_CM_128_SIZE;
     case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_32:
     case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_80:
-      return KMS_SRTP_CIPHER_AES_256_ICM_SIZE;
+      return KMS_SRTP_CIPHER_AES_CM_256_SIZE;
     default:
       return 0;
   }
@@ -432,6 +432,8 @@ kms_rtp_endpoint_create_new_key (KmsRtpEndpoint * self, guint tag, GValue * key)
 
   if (self->priv->master_key == NULL) {
     guint size;
+
+    GST_INFO_OBJECT (self, "Master key unset, generate random one");
 
     size = get_max_key_size ((SrtpCryptoSuite) self->priv->crypto);
     self->priv->master_key = generate_random_key (size);
@@ -989,26 +991,27 @@ kms_rtp_endpoint_set_property (GObject * object, guint prop_id,
 
   switch (prop_id) {
     case PROP_MASTER_KEY:{
-      gchar *key;
-      guint len;
-
-      key = g_value_dup_string (value);
-      if (key == NULL) {
+      const gchar *key_b64 = g_value_get_string (value);
+      if (key_b64 == NULL) {
         break;
       }
 
-      len = strlen (key);
+      gsize key_data_size;
+      guchar *tmp_b64 = g_base64_decode (key_b64, &key_data_size);
+      if (!tmp_b64) {
+        GST_ERROR_OBJECT (self, "Master key is not valid base64");
+        break;
+      }
+      g_free (tmp_b64);
 
-      if (len < KMS_SRTP_CIPHER_AES_128_ICM_SIZE ||
-          len > KMS_SRTP_CIPHER_AES_256_ICM_SIZE) {
-        GST_ERROR_OBJECT (self, "key size out of range");
-        g_free (key);
+      if (key_data_size != KMS_SRTP_CIPHER_AES_CM_128_SIZE
+          && key_data_size != KMS_SRTP_CIPHER_AES_CM_256_SIZE) {
+        GST_ERROR_OBJECT (self, "Master key size is wrong");
         break;
       }
 
       g_free (self->priv->master_key);
-      self->priv->master_key = g_base64_encode ((guchar *) key, len);
-      g_free (key);
+      self->priv->master_key = g_value_dup_string (value);
       break;
     }
     case PROP_CRYPTO_SUITE:
@@ -1101,13 +1104,14 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
 
   g_object_class_install_property (gobject_class, PROP_USE_SDES,
       g_param_spec_boolean ("use-sdes",
-          "Use SDES", "If session description protocol security descriptions "
-          "(SDES) is used or not", DEFAULT_USE_SDES,
+          "Use SDES", "Set if Session Description Protocol Decurity"
+          " Description (SDES) is used", DEFAULT_USE_SDES,
           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_MASTER_KEY,
       g_param_spec_string ("master-key",
-          "Master key", "Master key (minimum of 30 and maximum of 46 bytes)",
+          "Master key", "Master key (either 30 or 46 bytes, depending on the"
+          " crypto-suite used)",
           DEFAULT_MASTER_KEY,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
