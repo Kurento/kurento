@@ -172,6 +172,7 @@ kms_player_endpoint_disable_decoding (KmsPlayerEndpoint * self)
    * is not supported. */
 
   GstCaps *deco_caps;
+
   deco_caps = gst_caps_from_string (KMS_AGNOSTIC_NO_RTP_CAPS);
   g_object_set (G_OBJECT (self->priv->uridecodebin), "caps", deco_caps, NULL);
   gst_caps_unref (deco_caps);
@@ -665,6 +666,7 @@ kms_player_end_point_add_appsrc (KmsPlayerEndpoint * self,
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
+
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
       G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
@@ -1306,9 +1308,56 @@ kms_player_endpoint_uridecodebin_element_added (GstBin * bin,
   }
 }
 
-static gboolean
-process_bus_message (GstBus * bus, GstMessage * message, gpointer data)
+static void
+log_bus_issue (GstElement * self, GstBin * bin, GstBus * bus,
+    GstMessage * msg, gboolean is_error)
 {
+  gchar *type;
+  GError *err = NULL;
+  gchar *dbg_info = NULL;
+  gchar *dot_name;
+  GstDebugLevel log_level;
+
+  if (is_error) {
+    log_level = GST_LEVEL_ERROR;
+    type = g_strdup ("error");
+  } else {
+    log_level = GST_LEVEL_WARNING;
+    type = g_strdup ("warning");
+  }
+
+  GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
+      "Element '%s': Bus %s %d: %s", GST_ELEMENT_NAME (bin), type, err->code,
+      err->message);
+  GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
+      "Debugging info: %s", ((dbg_info) ? dbg_info : "None"));
+
+  g_error_free (err);
+  g_free (dbg_info);
+
+  dot_name = g_strdup_printf ("%s_bus_%s", GST_ELEMENT_NAME (self), type);
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (bin, GST_DEBUG_GRAPH_SHOW_ALL, dot_name);
+  g_free(dot_name);
+
+  g_free(type);
+}
+
+static gboolean
+process_bus_message (GstBus * bus, GstMessage * msg, KmsPlayerEndpoint * self)
+{
+  switch (GST_MESSAGE_TYPE (msg)) {
+    case GST_MESSAGE_ERROR:
+      log_bus_issue (GST_ELEMENT (self), GST_BIN (self->priv->pipeline),
+          bus, msg, TRUE);
+      break;
+    case GST_MESSAGE_WARNING:
+      log_bus_issue (GST_ELEMENT (self), GST_BIN (self->priv->pipeline),
+          bus, msg, FALSE);
+      break;
+    default:
+      break;
+  }
+
   return TRUE;
 }
 
@@ -1344,7 +1393,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
 
   /* Eat all async messages such as buffering messages */
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
-  gst_bus_add_watch (bus, process_bus_message, NULL);
+  gst_bus_add_watch (bus, (GstBusFunc)process_bus_message, self);
 
   g_object_set (self->priv->uridecodebin, "download", TRUE, NULL);
 
@@ -1358,7 +1407,6 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
 gboolean
 kms_player_endpoint_plugin_init (GstPlugin * plugin)
 {
-
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
       KMS_TYPE_PLAYER_ENDPOINT);
 }
