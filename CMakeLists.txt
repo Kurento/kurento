@@ -24,6 +24,7 @@ configure_file(FindKurentoHelpers.cmake.in
 
 set(CMAKE_DIST_FILES
   DpkgBuildFlags.cmake
+  CommonBuildFlags.cmake
   FindGLIB-GENMARSHAL.cmake
   FindGLIB-MKENUMS.cmake
   GLibHelpers.cmake
