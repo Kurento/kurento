@@ -43,7 +43,6 @@ Client::sendRequest (const std::string &method, Json::Value &params,
                      Continuation cont)
 {
   Json::Value request;
-  Json::FastWriter writer;
   std::string reqId = std::to_string (id++);
 
   request [JSON_RPC_ID] = reqId;
@@ -56,14 +55,15 @@ Client::sendRequest (const std::string &method, Json::Value &params,
 
   responseHandlers [reqId] = cont;
 
-  transport->sendMessage (writer.write (request) );
+  Json::StreamWriterBuilder writerFactory;
+  writerFactory["indentation"] = "";
+  transport->sendMessage (Json::writeString (writerFactory, request) );
 }
 
 void
 Client::sendNotification (const std::string &method, Json::Value &params)
 {
   Json::Value request;
-  Json::FastWriter writer;
 
   request [JSON_RPC_PROTO] = JSON_RPC_PROTO_VERSION;
   request [JSON_RPC_METHOD] = method;
@@ -72,7 +72,9 @@ Client::sendNotification (const std::string &method, Json::Value &params)
     request [JSON_RPC_PARAMS] = params;
   }
 
-  transport->sendMessage (writer.write (request) );
+  Json::StreamWriterBuilder writerFactory;
+  writerFactory["indentation"] = "";
+  transport->sendMessage (Json::writeString (writerFactory, request) );
 }
 
 bool

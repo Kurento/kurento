@@ -206,8 +206,10 @@ Handler::process (const std::string &msg, std::string &_responseMsg)
   Json::Value error;
   bool parse = false;
   Json::Reader reader;
-  Json::FastWriter writer;
   bool ret;
+
+  Json::StreamWriterBuilder writerFactory;
+  writerFactory["indentation"] = "";
 
   parse = reader.parse (msg, request);
 
@@ -218,14 +220,14 @@ Handler::process (const std::string &msg, std::string &_responseMsg)
     error[JSON_RPC_ERROR_CODE] = PARSE_ERROR;
     error[JSON_RPC_ERROR_MESSAGE] = "Parse error.";
     response[JSON_RPC_ERROR] = error;
-    _responseMsg = writer.write (response);
+    _responseMsg = Json::writeString (writerFactory, response);
     return false;
   }
 
   ret = process (request, response);
 
   if (response != Json::Value::null) {
-    _responseMsg = writer.write (response);
+    _responseMsg = Json::writeString (writerFactory, response);
   }
 
   return ret;
