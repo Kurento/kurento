@@ -8,6 +8,8 @@ Using AWS is suggested to users who don't want to worry about properly configuri
 
 On the other hand, the local installation will allow to have total control of the installation process. This method makes use of public package repositories that hold the latest released versions of KMS. Besides that, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT`. This document includes some details about that topic.
 
+If you want to try pre-release builds of KMS, then head to the section :doc:`user/installation_dev`.
+
 
 
 .. _installation-aws:
@@ -57,26 +59,6 @@ At this point, Kurento Media Server has been installed. The server includes serv
 
    sudo service kurento-media-server-6.0 start
    sudo service kurento-media-server-6.0 stop
-
-
-
-Pre-Release Builds
-==================
-
-Some components of KMS are built nightly, with the code developed during that same day. Other components are built immediately when code is merged into the source repositories.
-
-These builds end up being uploaded to a *Development* repository so they can be installed by anyone. Use this if you want to develop *Kurento itself*, or if you want to try the latest changes before they are officially released.
-
-.. warning::
-   The *Development* version represents the current state on the software development, so it can include undocumented changes, regressions, bugs or deprecations. **Never** use pre-release builds in a production environment.
-
-To install a pre-release version of Kurento, follow the steps described in :ref:`installation-local`, but choose one of these options during the first step:
-
-.. code-block:: bash
-
-   # Choose one:
-   REPO="trusty-dev"  # KMS Development - Ubuntu 14.04 (Trusty)
-   REPO="xenial-dev"  # KMS Development - Ubuntu 16.04 (Xenial)
 
 
 
