@@ -44,7 +44,7 @@ is hosted, install it and run it:
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-platedetector
-    git checkout |TUTORIAL_NODE_VERSION|
+    git checkout |VERSION|
     npm install
 
 If you have problems installing any of the dependencies, please remove them and
@@ -223,7 +223,7 @@ file for managing this dependency is:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client" : "|CLIENT_JS_VERSION|"
+      "kurento-client" : "|VERSION|"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
@@ -233,8 +233,8 @@ file and pay attention to the following section:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-utils" : "|UTILS_JS_VERSION|",
-      "kurento-module-pointerdetector": "|CLIENT_JS_VERSION|"
+      "kurento-utils" : "|VERSION|",
+      "kurento-module-pointerdetector": "|VERSION|"
    }
 
 .. note::

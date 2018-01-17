@@ -19,7 +19,7 @@ How to use it
 =============
 
 * **Minified file** - Download the file from
-  `here <http://builds.kurento.org/release/|UTILS_JS_VERSION|/js/kurento-utils.min.js>`__.
+  `here <http://builds.kurento.org/release/|VERSION|/js/kurento-utils.min.js>`__.
 
 * **NPM** - Install and use library in your NodeJS files.
 

@@ -38,7 +38,7 @@ is hosted, install it and run it:
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-hello-world
-    git checkout |TUTORIAL_NODE_VERSION|
+    git checkout |VERSION|
     npm install
     npm start
 
@@ -508,7 +508,7 @@ file for managing this dependency is:
 
    "dependencies": {
       [...]
-      "kurento-client" : "|CLIENT_JS_VERSION|"
+      "kurento-client" : "|VERSION|"
    }
 
 At the client side, dependencies are managed using :term:`Bower`. Take a look to
@@ -520,7 +520,7 @@ file and pay attention to the following section:
 
    "dependencies": {
       [...]
-      "kurento-utils" : "|UTILS_JS_VERSION|"
+      "kurento-utils" : "|VERSION|"
    }
 
 .. note::

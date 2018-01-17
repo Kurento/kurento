@@ -38,7 +38,7 @@ web server.
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-recorder
-    git checkout |TUTORIAL_JS_VERSION|
+    git checkout |VERSION|
     bower install
     http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
@@ -46,7 +46,7 @@ web server.
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-hello-world-recorder-generator
-    git checkout |TUTORIAL_JS_VERSION|
+    git checkout |VERSION|
     bower install
     http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
@@ -297,8 +297,8 @@ Demo dependencies are located in file `bower.json <https://github.com/Kurento/ku
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "|CLIENT_JS_VERSION|",
-      "kurento-utils": "|UTILS_JS_VERSION|"
+      "kurento-client": "|VERSION|",
+      "kurento-utils": "|VERSION|"
    }
 
 .. note::

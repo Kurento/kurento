@@ -24,7 +24,7 @@ is hosted, and then run the main class:
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-one2one-call
-    git checkout |TUTORIAL_JAVA_VERSION|
+    git checkout |VERSION|
     mvn compile exec:java
 
 The web application starts on port 8443 in the localhost by default. Therefore,
