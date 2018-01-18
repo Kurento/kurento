@@ -65,13 +65,22 @@ author = u'Kurento'
 # built documents.
 #
 # The short X.Y version.
-version_path = 'VERSION'
-try:
-    with open(version_path, 'r') as f:
-        version = f.read().strip()
-except IOError as err:
-    print "ERROR reading version file '{}': {}".format(version_path, err.strerror)
+version = None
+version_files = ['./VERSION', '../VERSION']
+version_paths = [os.path.abspath(f) for f in version_files]  # Make absolute
+for version_path in version_paths:
+    try:
+        with open(version_path, 'r') as f:
+            print "Found VERSION file: '{}'".format(version_path)
+            version = f.read().strip()
+            break
+    except IOError as err:
+        print "Failed reading '{}': {}".format(version_path, err.strerror)
+
+if version is None:
+    print "ERROR reading VERSION: File not found"
     exit(1)
+
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -128,6 +137,12 @@ html_logo = 'images/kurento-white.png'
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 html_favicon = 'images/favicon.ico'
+
+# A list of paths that contain custom static files (such as style sheets or
+# script files). Relative paths are taken as relative to the configuration
+# directory. They are copied to the output's _static directory after the theme's
+# static files, so a file named default.css will overwrite the theme's default.css.
+html_static_path = ['langdoc']
 
 
 # -- Options for HTMLHelp output ------------------------------------------

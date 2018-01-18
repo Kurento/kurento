@@ -8,10 +8,11 @@ SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = Kurento
 SOURCEDIR     = source
 BUILDDIR      = build
+WORKDIR       = $(BUILDDIR)/$(SOURCEDIR)
 
 .NOTPARALLEL:
 .ONESHELL:
-.PHONY: help Makefile
+.PHONY: Makefile help substitutions
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -32,12 +33,22 @@ help:
 	@echo "- texlive-latex-recommended"
 	@echo "- texlive-latex-extra"
 
+# Replace all instances of '|VERSION|' with the appropriate value
+substitutions:
+	mkdir -p $(WORKDIR)
+	rsync -a $(SOURCEDIR)/ $(WORKDIR)
+	rsync -a VERSION $(WORKDIR)
+	grep -rlZ "|VERSION|" $(WORKDIR) | xargs -0rL1 sed -i -e "s/|VERSION|/$(VERSION)/g"
+
 langdoc:
 	# Care must be taken because the Current Directory changes in this target,
 	# so it's better to use absolute paths for destination dirs.
-	$(eval WORKPATH    := $(CURDIR)/$(BUILDDIR)/langdoc)
-	$(eval JAVADOCPATH := $(CURDIR)/$(BUILDDIR)/html/features/javadoc)
-	$(eval JSDOCPATH   := $(CURDIR)/$(BUILDDIR)/html/features/jsdoc)
+	$(eval WORKPATH    := $(CURDIR)/$(BUILDDIR)/langdoc-src)
+
+	# The 'langdoc' part must match the setting 'html_static_path' in 'conf.py',
+	# and the last part must match the URLs used in the documentation files.
+	$(eval JAVADOCPATH := $(CURDIR)/$(BUILDDIR)/langdoc/javadoc)
+	$(eval JSDOCPATH   := $(CURDIR)/$(BUILDDIR)/langdoc/jsdoc)
 
 	mkdir -p $(WORKPATH)
 	mkdir -p $(JAVADOCPATH)
@@ -89,19 +100,16 @@ dist: langdoc html epub latexpdf
 		$(BUILDDIR)/latex/Kurento.pdf $(DISTDIR)
 	tar zcf $(DISTDIR).tgz -C $(DISTDIR) .
 
-# readthedocs: langdoc
-	#J TODO REVIEW grep -rlZ "langdoc/" $(SOURCEDIR) | xargs -0 -L1 sed -i -e "s|langdoc/|_static/langdoc/|g"
-	# rsync -a $(BUILDDIR)/html/langdoc $(SOURCEDIR)/themes/sphinx_rtd_theme/static
+# Target to be run by CI. It modifies the source directory,
+# so the worspace should get deleted afterwards.
+ci-readthedocs: langdoc substitutions
+	rsync -a $(WORKDIR)/ $(SOURCEDIR)
+	rsync -a $(BUILDDIR)/langdoc $(SOURCEDIR)
 
 # Comment this target to disable generation of JavaDoc & JsDoc
-html: langdoc
+#html: langdoc
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option. $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	$(eval WORKDIR := $(BUILDDIR)/$(SOURCEDIR))
-	mkdir -p $(WORKDIR)
-	rsync -a $(SOURCEDIR)/ $(WORKDIR)
-	rsync -a VERSION $(WORKDIR)
-	grep -rlZ "|VERSION|" $(WORKDIR) | xargs -0 -L1 sed -i -e "s/|VERSION|/$(VERSION)/g"
+%: Makefile substitutions
 	$(SPHINXBUILD) -M $@ "$(WORKDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
