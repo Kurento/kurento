@@ -45,16 +45,12 @@ init-workdir:
 langdoc:
 	# Care must be taken because the Current Directory changes in this target,
 	# so it's better to use absolute paths for destination dirs.
-	$(eval WORKPATH    := $(CURDIR)/$(BUILDDIR)/langdoc-src)
-
-	# The 'langdoc' part must match the setting 'html_static_path' in 'conf.py',
-	# and the last part must match the URLs used in the documentation files.
-	$(eval JAVADOCPATH := $(CURDIR)/$(BUILDDIR)/langdoc/javadoc)
-	$(eval JSDOCPATH   := $(CURDIR)/$(BUILDDIR)/langdoc/jsdoc)
-
+	# The 'client-doc' part must match the setting 'html_static_path' in 'conf.py',
+	# and its contents must match the URLs used in the documentation files.
+	$(eval WORKPATH := $(CURDIR)/$(BUILDDIR)/client-src)
+	$(eval DESTPATH := $(CURDIR)/$(BUILDDIR)/langdoc)
 	mkdir -p $(WORKPATH)
-	mkdir -p $(JAVADOCPATH)
-	mkdir -p $(JSDOCPATH)
+	mkdir -p $(DESTPATH)
 
 	# kurento-client javadoc
 	cd $(WORKPATH)
@@ -63,7 +59,7 @@ langdoc:
 	git checkout $(VERSION) || echo "Using master branch"
 	cd kurento-client
 	mvn clean package -DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
-	mvn javadoc:javadoc -DdestDir="$(JAVADOCPATH)" \
+	mvn javadoc:javadoc -DreportOutputDirectory="$(DESTPATH)" -DdestDir="client-javadoc" \
 		-Dsourcepath="src/main/java:target/generated-sources/kmd" \
 		-Dsubpackages="org.kurento.client" -DexcludePackageNames="*.internal" \
 		|| { echo "ERROR: 'mvn javadoc' failed"; exit 1; }
@@ -76,7 +72,7 @@ langdoc:
 	npm install
 	node_modules/.bin/grunt --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
-	rsync -a doc/jsdoc/ $(JSDOCPATH)/kurento-client-js
+	rsync -a doc/jsdoc/ $(DESTPATH)/client-jsdoc
 
 	# kurento-utils-js jsdoc
 	cd $(WORKPATH)
@@ -86,7 +82,7 @@ langdoc:
 	npm install
 	node_modules/.bin/grunt --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
-	rsync -a doc/jsdoc/kurento-utils/*/ $(JSDOCPATH)/kurento-utils-js
+	rsync -a doc/jsdoc/kurento-utils/*/ $(DESTPATH)/utils-jsdoc
 
 dist: langdoc html epub latexpdf
 	$(eval DISTDIR := $(BUILDDIR)/dist/kurento-doc-$(VERSION))
