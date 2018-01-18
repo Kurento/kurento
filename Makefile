@@ -12,7 +12,7 @@ WORKDIR       = $(BUILDDIR)/$(SOURCEDIR)
 
 .NOTPARALLEL:
 .ONESHELL:
-.PHONY: Makefile help substitutions
+.PHONY: help init-workdir Makefile*
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -23,21 +23,23 @@ help:
 	@echo "  readthedocs to make <langdoc> and then copy the results to the"
 	@echo "              Sphinx theme's static folder"
 	@echo ""
-	@echo "Dependencies:"
+	@echo "apt-get dependencies:"
 	@echo "- javadoc (java-sdk-headless)"
 	@echo "- npm"
-	@echo "- python-sphinx"
-	@echo "- python-sphinx-rtd-theme"
 	@echo "- latexmk"
 	@echo "- texlive-fonts-recommended"
 	@echo "- texlive-latex-recommended"
 	@echo "- texlive-latex-extra"
+	@echo ""
+	@echo "python pip dependencies:"
+	@echo "- sphinx >= 1.5.0 (Tested: 1.6.6)"
+	@echo "- sphinx_rtd_theme"
 
-# Replace all instances of '|VERSION|' with the appropriate value
-substitutions:
+init-workdir:
 	mkdir -p $(WORKDIR)
 	rsync -a $(SOURCEDIR)/ $(WORKDIR)
 	rsync -a VERSION $(WORKDIR)
+	# Replace all instances of '|VERSION|' with the appropriate value
 	grep -rlZ "|VERSION|" $(WORKDIR) | xargs -0rL1 sed -i -e "s/|VERSION|/$(VERSION)/g"
 
 langdoc:
@@ -58,39 +60,32 @@ langdoc:
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-java.git
 	cd kurento-java
-	git checkout kurento-java-$(VERSION) \
-		|| git checkout $(VERSION) \
-		|| echo "Using master branch"
+	git checkout $(VERSION) || echo "Using master branch"
 	cd kurento-client
-	mvn clean package -DskipTests || { echo "ERROR: Maven failed"; exit 1; }
-	#J
-	rsync -a target/generated-sources/kmd/* src/main/java
-	javadoc -d $(JAVADOCPATH) -sourcepath src/main/java org.kurento.client
-	#
-	# mvn javadoc:javadoc -DdestDir="$(JAVADOCPATH)" \
-	# 	-Dsourcepath="src/main/java:target/generated-sources/kmd" \
-	# 	-Dsubpackages="org.kurento.client" -DexcludePackageNames="*.internal"
+	mvn clean package -DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
+	mvn javadoc:javadoc -DdestDir="$(JAVADOCPATH)" \
+		-Dsourcepath="src/main/java:target/generated-sources/kmd" \
+		-Dsubpackages="org.kurento.client" -DexcludePackageNames="*.internal" \
+		|| { echo "ERROR: 'mvn javadoc' failed"; exit 1; }
 
 	# kurento-client-js jsdoc
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-client-js.git
 	cd kurento-client-js
-	git checkout kurento-client-js-$(VERSION) \
-		|| git checkout $(VERSION) \
-		|| echo "Using master branch"
+	git checkout $(VERSION) || echo "Using master branch"
 	npm install
-	node_modules/.bin/grunt --force jsdoc
+	node_modules/.bin/grunt --force jsdoc \
+		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
 	rsync -a doc/jsdoc/ $(JSDOCPATH)/kurento-client-js
 
 	# kurento-utils-js jsdoc
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-utils-js.git
 	cd kurento-utils-js
-	git checkout kurento-utils-js-$(VERSION) \
-		|| git checkout $(VERSION) \
-		|| echo "Using master branch"
+	git checkout $(VERSION) || echo "Using master branch"
 	npm install
-	node_modules/.bin/grunt --force jsdoc
+	node_modules/.bin/grunt --force jsdoc \
+		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
 	rsync -a doc/jsdoc/kurento-utils/*/ $(JSDOCPATH)/kurento-utils-js
 
 dist: langdoc html epub latexpdf
@@ -102,7 +97,7 @@ dist: langdoc html epub latexpdf
 
 # Target to be run by CI. It modifies the source directory,
 # so the worspace should get deleted afterwards.
-ci-readthedocs: langdoc substitutions
+ci-readthedocs: init-workdir langdoc
 	rsync -a $(WORKDIR)/ $(SOURCEDIR)
 	rsync -a $(BUILDDIR)/langdoc $(SOURCEDIR)
 
@@ -111,5 +106,5 @@ ci-readthedocs: langdoc substitutions
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option. $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile substitutions
+%: init-workdir Makefile*
 	$(SPHINXBUILD) -M $@ "$(WORKDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
