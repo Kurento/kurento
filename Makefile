@@ -54,8 +54,8 @@ langdoc:
 
 	# kurento-client javadoc
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-java.git
-	cd kurento-java
+	git clone https://github.com/Kurento/kurento-java.git \
+		&& cd kurento-java
 	git checkout $(VERSION) || echo "Using master branch"
 	cd kurento-client || { echo "ERROR: 'cd' failed. ls:"; ls; exit 1; }
 	mvn clean package -DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
@@ -66,8 +66,8 @@ langdoc:
 
 	# kurento-client-js jsdoc
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-client-js.git
-	cd kurento-client-js
+	git clone https://github.com/Kurento/kurento-client-js.git \
+		&& cd kurento-client-js
 	git checkout $(VERSION) || echo "Using master branch"
 	npm install
 	node_modules/.bin/grunt --force jsdoc \
@@ -76,8 +76,8 @@ langdoc:
 
 	# kurento-utils-js jsdoc
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-utils-js.git
-	cd kurento-utils-js
+	git clone https://github.com/Kurento/kurento-utils-js.git \
+		&& cd kurento-utils-js
 	git checkout $(VERSION) || echo "Using master branch"
 	npm install
 	node_modules/.bin/grunt --force jsdoc \
