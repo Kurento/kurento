@@ -55,6 +55,6 @@ RUN pip install \
   lxml \
   javalang \
   docutils\
-  sphinx==1.2.3
+  sphinx==1.6.6
 
 RUN apt-get install -y texlive-full
