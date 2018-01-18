@@ -90,6 +90,16 @@
 						<param>elements</param>
 						<param>filters</param>
 					</generateCodeForModules>
+
+					<!-- Input directory where Kurento MediaElement Definition files (*.kmd.json) can be located -->
+					<sourceDirectory>
+						${basedir}/src/main/kmd
+					</sourceDirectory>
+
+					<!-- Output directory where the generated Java files are stored -->
+					<generatedSourceOutputFolder>
+						${project.build.directory}/generated-sources/kmd
+					</generatedSourceOutputFolder>
 				</configuration>
 				<executions>
 					<execution>
