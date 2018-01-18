@@ -57,7 +57,7 @@ langdoc:
 	git clone https://github.com/Kurento/kurento-java.git
 	cd kurento-java
 	git checkout $(VERSION) || echo "Using master branch"
-	cd kurento-client
+	cd kurento-client || { echo "ERROR: 'cd' failed. ls:"; ls; exit 1; }
 	mvn clean package -DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
 	mvn javadoc:javadoc -DreportOutputDirectory="$(DESTPATH)" -DdestDir="client-javadoc" \
 		-Dsourcepath="src/main/java:target/generated-sources/kmd" \
