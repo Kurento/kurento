@@ -4,7 +4,11 @@
 
 exec 3>&1 >/dev/tty || exec 3>&1 >./get_version_logs
 
-if [ -f CMakeLists.txt ]
+if [ -f VERSION ]
+then
+  echo "Getting version from VERSION file"
+  PROJECT_VERSION="$(cat VERSION | tr -d '[[:space:]]')"
+elif [ -f CMakeLists.txt ]
 then
   echo "Getting version from CMakeLists.txt"
   mkdir check_version
