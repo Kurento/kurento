@@ -181,7 +181,7 @@
 		<version.help.plugin>2.2</version.help.plugin>
 		<version.install.plugin>2.5.2</version.install.plugin>
 		<version.jar.plugin>2.6</version.jar.plugin>
-		<version.javadoc.plugin>2.10.3</version.javadoc.plugin>
+		<version.javadoc.plugin>3.0.0</version.javadoc.plugin>
 		<version.javancss.plugin>2.1</version.javancss.plugin>
 		<version.jdepend.plugin>2.0</version.jdepend.plugin>
 		<version.jxr.plugin>2.5</version.jxr.plugin>

@@ -99,6 +99,16 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<!--configuration>
+					Pass your config in the command line, for example:
+					mvn javadoc:javadoc -DdestDir="/dest/dir" \
+					-Dsourcepath="/src/dir1:/src/dir2" \
+					-Dsubpackages="my.package" -DexcludePackageNames="*.internal"
+				</configuration-->
+			</plugin>
 		</plugins>
 	</build>
 </project>
