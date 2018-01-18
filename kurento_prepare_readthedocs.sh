@@ -28,11 +28,15 @@ if [ -n $GERRIT_REFSPEC ] ; then
 else
   kurento_clone_repo.sh $KURENTO_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $KURENTO_PROJECT repository"; exit 1; }
 fi
-pushd $KURENTO_PROJECT
-COMMIT_MSG=$(git log -1 --pretty=format:%s)
-sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
-make -f Makefile.jenkins clean readthedocs || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
 
+pushd $KURENTO_PROJECT
+LAST_RELEASE="$(git describe --tags --abbrev=0)"
+COMMIT_MSG="Commits since release $LAST_RELEASE
+
+$(git log $LAST_RELEASE..HEAD --oneline)"
+sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
+make -f Makefile.jenkins clean ci-readthedocs || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
+rm Makefile.jenkins
 popd
 
 echo "Preparing readthedocs project: $KURENTO_PROJECT-readthedocs"
@@ -46,12 +50,7 @@ cp -r $KURENTO_PROJECT/* $READTHEDOCS_PROJECT/
 pushd $READTHEDOCS_PROJECT
 echo "Commiting changes to $READTHEDOCS_PROJECT repository"
 git add --all .
-git st
+git status
 git commit -m "$COMMIT_MSG" || exit 1
-
-# Build
-sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
-make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc || { echo "Building $READTHEDOCS_PROJECT failed"; exit 1; }
-make -f Makefile.jenkins html || { echo "Building $READTHEDOCS_PROJECT failed"; exit 1; }
-
+git push origin "$GERRIT_REFNAME" || { echo "Couldn't push changes to $READTHEDOCS_PROJECT repository"; exit 1; }
 popd
