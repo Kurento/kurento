@@ -34,9 +34,9 @@ LAST_RELEASE="$(git describe --tags --abbrev=0)"
 COMMIT_MSG="Commits since release $LAST_RELEASE
 
 $(git log $LAST_RELEASE..HEAD --oneline)"
-sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
-make -f Makefile.jenkins clean ci-readthedocs || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
-rm Makefile.jenkins
+sed -e "s/mvn/mvn --batch-mode --settings $MAVEN_SETTINGS/g" Makefile > Makefile.ci
+make --file="Makefile.ci" clean ci-readthedocs || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
+rm Makefile.ci
 popd
 
 echo "Preparing readthedocs project: $KURENTO_PROJECT-readthedocs"
