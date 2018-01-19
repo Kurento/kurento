@@ -13,7 +13,7 @@ Kurento Java Client
 
 **Kurento Java Client** is a Java SE layer which consumes the Kurento API and exposes its capabilities through a simple-to-use interface based on Java POJOs representing Media Elements and Media Pipelines.
 
-This API is abstract in the sense that all the non-intuitive inherent complexities of the internal Kurento Protocol workings are abstracted and developers do not need to deal with them when creating applications. Using the Kurento Java Client only requires adding the appropriate dependency to a *Maven* project or to download the corresponding *jar* into the application´s *Java Classpath*.
+This API is abstract in the sense that all the non-intuitive inherent complexities of the internal Kurento Protocol workings are abstracted and developers do not need to deal with them when creating applications. Using the Kurento Java Client only requires adding the appropriate dependency to a *Maven* project or to download the corresponding *jar* into the application's *Java Classpath*.
 
 It is important to remark that the Kurento Java Client is a media-plane control API. In other words, its objective is to expose the capability of managing media objects, but it does not provide any signaling plane capabilities.
 

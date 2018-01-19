@@ -74,7 +74,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               Interactive Connectivity Establishment (ICE): A Protocol for Network Address Translator (NAT) Traversal for Offer/Answer Protocols
 
    IMS
-       IP Multimedia Subsystem (IMS) is the 3GPP´s Mobile Architectural Framework for delivering IP Multimedia Services in 3G (and beyond) Mobile Networks.
+       IP Multimedia Subsystem (IMS) is the 3GPP's Mobile Architectural Framework for delivering IP Multimedia Services in 3G (and beyond) Mobile Networks.
 
        .. seealso::
           :wikipedia:`IP Multimedia Subsystem`
@@ -181,7 +181,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        OpenCV (Open Source Computer Vision Library) is a BSD-licensed open source computer vision and machine learning software library. OpenCV aims to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception.
 
    Pad, Media
-       A :index:`Media Pad <single: Media; Pad>` is is an element´s interface with the outside world. Data streams from the MediaSource pad to another element’s MediaSink pad.
+       A :index:`Media Pad <single: Media; Pad>` is is an element's interface with the outside world. Data streams from the MediaSource pad to another element’s MediaSink pad.
 
        .. seealso::
           `GStreamer Pad <https://gstreamer.freedesktop.org/documentation/application-development/basics/pads.html>`_
@@ -237,7 +237,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               RTP: A Transport Protocol for Real-Time Applications
 
    Same-origin policy
-       The "same-origin policy" is a web application security model. The policy permits scripts running on pages originating from the same domain to access each other´s :term:`DOM` with no specific restrictions, but prevents access to :term:`DOM` on different domains.
+       The "same-origin policy" is a web application security model. The policy permits scripts running on pages originating from the same domain to access each other's :term:`DOM` with no specific restrictions, but prevents access to :term:`DOM` on different domains.
 
        .. seealso::
           :wikipedia:`Same-origin policy`
@@ -249,7 +249,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 
        The **SDP Offer/Answer** model is a negotiation between two peers of a unicast stream, by which the sender and the receiver share the set of media streams and codecs they wish to use, along with the IP addresses and ports they would like to use to receive the media.
 
-       This is an example SDP Offer/Answer negotiation. First, there must be a peer that wishes to initiate the negotiation; we´ll call it the *offerer*. It composes the following SDP Offer and sends it to the other peer -which we´ll call the *answerer*-:
+       This is an example SDP Offer/Answer negotiation. First, there must be a peer that wishes to initiate the negotiation; we'll call it the *offerer*. It composes the following SDP Offer and sends it to the other peer -which we'll call the *answerer*-:
 
        .. code-block:: text
 
@@ -283,7 +283,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 
        The SDP Answer is the final step of the SDP Offer/Answer Model. With it, the *answerer* agrees to some of the parameter requested by the *offerer*, but not all.
 
-       In this example, ``audio 0`` means that the *answerer* rejects the audio stream that the *offerer* intended to send; also, it accepts the video stream, and the ``a=recvonly`` acknowledges that the *answerer* will exclusively act as a receiver, and won´t send any stream back to the other peer.
+       In this example, ``audio 0`` means that the *answerer* rejects the audio stream that the *offerer* intended to send; also, it accepts the video stream, and the ``a=recvonly`` acknowledges that the *answerer* will exclusively act as a receiver, and won't send any stream back to the other peer.
 
        .. seealso::
           :wikipedia:`Session Description Protocol`

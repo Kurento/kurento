@@ -11,7 +11,7 @@ The code is open source, released under the terms of `Apache License Version 2.0
 
 Kurento follows an architecture based on composable modules that can be mix-and-matched, activated, or deactivated at any point in time. Developers can create additional modules to add new functionalities that will be able to be plugged-in dynamically.
 
-With Kurento, it´s an easy task to add third-party media processing algorithms to any WebRTC application, like integrating Computer Vision, Augmented Reality, video indexing, and speech analysis. For example, features such as speech recognition, sentiment analysis or face recognition can be developed by specialized teams, and then seamlessly added to Kurento as new modules.
+With Kurento, it's an easy task to add third-party media processing algorithms to any WebRTC application, like integrating Computer Vision, Augmented Reality, video indexing, and speech analysis. For example, features such as speech recognition, sentiment analysis or face recognition can be developed by specialized teams, and then seamlessly added to Kurento as new modules.
 
 
 
@@ -46,7 +46,7 @@ Media servers are capable of processing incoming media streams and offer differe
 Kurento Media Server
 ====================
 
-Kurento´s main component is the **Kurento Media Server (KMS)**, responsible for media transmission, processing, recording, and playback. KMS is built on top of the fantastic :term:`GStreamer` multimedia library, and provides the following features:
+Kurento's main component is the **Kurento Media Server (KMS)**, responsible for media transmission, processing, recording, and playback. KMS is built on top of the fantastic :term:`GStreamer` multimedia library, and provides the following features:
 
 -  Networked streaming protocols, including :term:`HTTP`, :term:`RTP` and :term:`WebRTC`.
 -  Group communications (MCU and SFU functionality) supporting both media mixing and media routing/dispatching.

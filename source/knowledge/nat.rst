@@ -47,7 +47,7 @@ A NAT establishes **inbound** rules which are used to convert an IP tuple existi
 
 In other words, a NAT creates an equivalence between external combinations of IP addresses and ports, and internal IP addresses and ports.
 
-Typically, these NAT rules were created automatically during an earlier outbound connection from the LAN to some external machine: it´s at that moment when the NAT inserts a new entry into its table. Later, this entry in the NAT table is used to know which local machine needs to receive the response that the external machine might send. Rules created in this way are called "dynamic rules"; on the other hand, "static rules" can be created by the administrator in order to set a fixed table for a given local machine.
+Typically, these NAT rules were created automatically during an earlier outbound connection from the LAN to some external machine: it's at that moment when the NAT inserts a new entry into its table. Later, this entry in the NAT table is used to know which local machine needs to receive the response that the external machine might send. Rules created in this way are called "dynamic rules"; on the other hand, "static rules" can be created by the administrator in order to set a fixed table for a given local machine.
 
 Also, it is worth noting that the port number used in the internal side of the network will also be kept by the NAT on the external side, and it won't change for each new connection that the local machine does to any external server. This is the crucial difference between Cone NAT and Symmetric NAT, as explained later.
 
