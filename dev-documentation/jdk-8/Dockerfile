@@ -1,4 +1,4 @@
-FROM buildpack-deps:trusty-scm
+FROM buildpack-deps:xenial-scm
 
 # Configure Kurento's apt proxy
 RUN echo 'Acquire::http::Proxy "http://proxy.kurento.org:3142";' > /etc/apt/apt.conf.d/01proxy \
@@ -19,8 +19,8 @@ RUN apt-get update \
 ENV LANG C.UTF-8
 
 RUN gpg --keyserver keyserver.ubuntu.com --recv EB9B1D8886F44E2A \
-	&& gpg --export --armor EB9B1D8886F44E2A | sudo apt-key add - \
-	&& echo 'deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main ' > /etc/apt/sources.list.d/openjdk-8.list \
+	&& gpg --export --armor EB9B1D8886F44E2A | apt-key add - \
+	&& echo 'deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu xenial main ' > /etc/apt/sources.list.d/openjdk-8.list \
   && apt-get update \
 	&& apt-get install -y --force-yes openjdk-8-jdk \
 	&& rm -rf /var/lib/apt/lists/*
