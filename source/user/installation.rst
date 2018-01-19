@@ -8,7 +8,7 @@ Using AWS is suggested to users who don't want to worry about properly configuri
 
 On the other hand, the local installation will allow to have total control of the installation process. This method makes use of public package repositories that hold the latest released versions of KMS. Besides that, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT`. This document includes some details about that topic.
 
-If you want to try pre-release builds of KMS, then head to the section :doc:`user/installation_dev`.
+If you want to try pre-release builds of KMS, then head to the section :doc:`/user/installation_dev`.
 
 
 

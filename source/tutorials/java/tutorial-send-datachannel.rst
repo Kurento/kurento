@@ -7,14 +7,14 @@ to WebRTC. Code detection events are sent to browser using WebRTC datachannels.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
+   This tutorial has been configured to use https. Follow the `instructions </features/security.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
 =======================================
 
 You need to have installed the Kurento Media Server before running this example.
-Read the :doc:`installation guide <../../installation_guide>` for further
+Read the :doc:`installation guide </user/installation>` for further
 information.
 
 To launch the application, you need to clone the GitHub project where this demo
@@ -73,7 +73,7 @@ protocol. Second, another WebSocket is used to perform the communication
 between the Kurento Java Client and the Kurento Media Server. This
 communication takes place using the **Kurento Protocol**. For further
 information on it, please see this
-:doc:`page <../../mastering/kurento_protocol>` of the documentation.
+:doc:`page </features/kurento_protocol>` of the documentation.
 
 The following sections analyze in depth the server (Java) and client-side
 (JavaScript) code of this application. The complete source code can be found in

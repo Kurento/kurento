@@ -14,7 +14,7 @@ These builds end up being uploaded to *Development* repositories so they can be 
 Kurento Media Server
 ====================
 
-The steps to install a pre-release version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository. If you are looking to build KMS from the source code, then you should instead go to the developer documentation: :doc:`dev/development`.
+The steps to install a pre-release version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository. If you are looking to build KMS from the source code, then you should instead go to the developer documentation: :doc:`/dev/development`.
 
 **First Step**. Define which version of Ubuntu will be used for your system. Open a terminal and copy **only one** of these lines:
 
@@ -159,19 +159,20 @@ If you are using the Kurento JavaScript Client from a Node.js application and wa
 .. code-block:: js
 
    "dependencies": {
-       "kurento-client": "Kurento/kurento-client-js#master"
+       "kurento-client": "Kurento/kurento-client-js#master",
    }
+
 
 Browser JavaScript
 ------------------
 
-If you are using the Kurento JavaScript Client from a browser application, with Bower to handle JS dependencies, and want to use the latest development version of this library, you have to change the *dependencies* section in the application's *bower.json*. This way, Bower will point directly to the development repository::
+If you are using the Kurento JavaScript Client from a browser application, with Bower to handle JS dependencies, and want to use the latest development version of this library, you have to change the *dependencies* section in the application's *bower.json*. This way, Bower will point directly to the development repository:
 
 .. code-block:: js
 
    "dependencies": {
        "kurento-client": "master",
-       "kurento-utils": "master"
+       "kurento-utils": "master",
    }
 
 Alternatively, if your browser application is pointing directly to JavaScript libraries from HTML resources, then you have to change to development URLs:

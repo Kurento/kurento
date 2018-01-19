@@ -7,19 +7,19 @@ programming with Kurento for Node.js developers. It consists on a
 `WebRTC`:term: video communication in mirror (*loopback*). This tutorial
 assumes you have basic knowledge of JavaScript, Node.js, HTML and WebRTC. We
 also recommend reading the
-:doc:`Introducing Kurento <../../introducing_kurento>` section before starting
+:doc:`Introducing Kurento </user/about>` section before starting
 this tutorial.
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions <../../mastering/securing-kurento-applications.html#configure-node-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_ 
    for securing your application.
 
 For the impatient: running this example
 =======================================
 
 You need to have installed the Kurento Media Server before running this example.
-Read the :doc:`installation guide <../../installation_guide>` for further
+Read the :doc:`installation guide </user/installation>` for further
 information.
 
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
@@ -116,7 +116,7 @@ custom signaling protocol. Second, another WebSocket is used to perform the
 communication between the Kurento Java Client and the Kurento Media Server.
 This communication takes place using the **Kurento Protocol**. For further
 information on it, please see this
-:doc:`page <../../mastering/kurento_protocol>` of the documentation.
+:doc:`page </features/kurento_protocol>` of the documentation.
 
 The diagram below shows an complete sequence diagram from the interactions with
 the application interface to: i) JavaScript logic; ii) Application server logic

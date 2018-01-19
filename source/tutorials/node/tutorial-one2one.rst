@@ -7,14 +7,14 @@ technology. In other words, this application provides a simple video softphone.
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions <../../mastering/securing-kurento-applications.html#configure-node-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_ 
    for securing your application.
 
 For the impatient: running this example
 =======================================
 
 First of all, you should install Kurento Media Server to run this demo. Please
-visit the :doc:`installation guide <../../installation_guide>` for further
+visit the :doc:`installation guide </user/installation>` for further
 information.
 
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
