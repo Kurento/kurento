@@ -1,11 +1,18 @@
 # Makefile for Sphinx documentation
 
-VERSION := $(shell cat VERSION)
-
 # Special Make configuration:
+# - Run all targets sequentially (disable parallel jobs)
+#   See: https://www.gnu.org/software/make/manual/html_node/Parallel.html
+# - Run all commands in the same shell (disable one shell per command)
+#   See: https://www.gnu.org/software/make/manual/html_node/One-Shell.html
 .NOTPARALLEL:
 .ONESHELL:
 .PHONY: help init-workdir Makefile*
+
+# Check required features
+ifeq ($(filter oneshell,$(.FEATURES)),)
+$(error This Make doesn't support '.ONESHELL', use Make >= 3.82)
+endif
 
 # You can set these variables from the command line.
 SPHINXOPTS  :=
@@ -16,6 +23,12 @@ BUILDDIR    := build
 WORKDIR     := $(CURDIR)/$(BUILDDIR)/$(SOURCEDIR)
 
 # Get the version number
+VERSION := $(strip $(shell cat VERSION))
+# FIXME: '.SHELLSTATUS' requires Make >= 4.2 (Xenial has 4.1)
+# ifneq ($(.SHELLSTATUS),0)
+# $(error Cannot read 'VERSION', make sure it exists)
+# endif
+
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
@@ -26,6 +39,7 @@ help:
 	@echo "              Sphinx theme's static folder"
 	@echo ""
 	@echo "apt-get dependencies:"
+	@echo "- make >= 3.82"
 	@echo "- javadoc (java-sdk-headless)"
 	@echo "- npm"
 	@echo "- latexmk"
