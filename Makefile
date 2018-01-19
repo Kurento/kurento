@@ -2,18 +2,20 @@
 
 VERSION := $(shell cat VERSION)
 
-# You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = Kurento
-SOURCEDIR     = source
-BUILDDIR      = build
-WORKDIR       = $(BUILDDIR)/$(SOURCEDIR)
-
+# Special Make configuration:
 .NOTPARALLEL:
 .ONESHELL:
 .PHONY: help init-workdir Makefile*
 
+# You can set these variables from the command line.
+SPHINXOPTS  :=
+SPHINXBUILD := sphinx-build
+SPHINXPROJ  := Kurento
+SOURCEDIR   := source
+BUILDDIR    := build
+WORKDIR     := $(CURDIR)/$(BUILDDIR)/$(SOURCEDIR)
+
+# Get the version number
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
