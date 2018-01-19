@@ -105,12 +105,12 @@ Information about development *of Kurento itself* is also available:
 
    /knowledge/congestion_rmcat
    /knowledge/nat
+   glossary
 
 
 
 Indices and tables
 ==================
 
-- :doc:`glossary`
 - :ref:`genindex`
 - :ref:`search`
