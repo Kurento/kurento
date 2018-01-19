@@ -17,11 +17,23 @@ If you want to try pre-release builds of KMS, then head to the section :doc:`/us
 Amazon Web Services
 ===================
 
-The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server:
+The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server; follow these instructions to use it.
 
-``https://s3-eu-west-1.amazonaws.com/aws.openvidu.io/TODO.json`` [TODO]
+1. Access the `AWS CloudFormation Console <https://console.aws.amazon.com/cloudformation>`_.
 
-`Deploying on AWS`_ is our most up-to-date documentation about deploying on AWS. Please follow the steps outlined in the linked document in order to deploy Kurento Media Server. However, make sure to use the Kurento CloudFormation template file, indicated above this paragraph.
+2. Click on *Create Stack*.
+
+3. Look for the section *Choose a template*, and choose the option *Specify an Amazon S3 template URL*. Then, in the text field that enables, paste this URL: ``https://s3-eu-west-1.amazonaws.com/aws.kurento.org/KMS-Coturn-cfn.yaml``.
+
+4. Follow through the steps of the configuration wizard.
+
+   .. note::
+
+      The template file includes a *Coturn* server. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
+
+5. Finish the Stack creation process. Wait until the status of the newly created Stack reads *CREATE_COMPLETE*.
+
+6. Select the Stack and then open the *Outputs* tab, where you'll find the instance's public IP address, and the Kurento Media Server endpoint URL that must be used by :doc:`Client Applications </user/writing_applications>`.
 
 
 
@@ -187,5 +199,4 @@ Unless configured otherwise, KMS will open the port ``8888`` to receive requests
 
 .. _Amazon Web Services: https://aws.amazon.com
 .. _Coturn: http://coturn.net
-.. _Deploying on AWS: http://openvidu.io/docs/deployment/deploying-demos-aws/
 .. _Numb: http://numb.viagenie.ca/
