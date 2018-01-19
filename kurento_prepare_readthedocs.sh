@@ -47,6 +47,7 @@ echo "Preparing readthedocs project: $KURENTO_PROJECT-readthedocs"
 
 # Our ReadTheDocs account is configured to watch the 'master' branch of
 # https://github.com/Kurento/doc-kurento-readthedocs
+
 READTHEDOCS_PROJECT=$KURENTO_PROJECT-readthedocs
 kurento_clone_repo.sh $READTHEDOCS_PROJECT master || { echo "Couldn't clone $READTHEDOCS_PROJECT repository"; exit 1; }
 
@@ -58,5 +59,5 @@ echo "Commiting changes to $READTHEDOCS_PROJECT repository"
 git add --all .
 git status
 git commit -m "$COMMIT_MSG" || exit 1
-git push origin "$GERRIT_REFNAME" || { echo "Couldn't push changes to $READTHEDOCS_PROJECT repository"; exit 1; }
+git push origin master || { echo "Couldn't push changes to $READTHEDOCS_PROJECT repository"; exit 1; }
 popd
