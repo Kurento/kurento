@@ -97,7 +97,7 @@ df -h
 
 # Push
 if [ "$PUSH_IMAGES" == "yes" ]; then
-  docker login -u "$KURENTO_DOCKERHUB_USER" -p "$KURENTO_DOCKERHUB_PASSWD" -e "$KURENTO_EMAIL"
+  docker login -u "$KURENTO_DOCKERHUB_USER" -p "$KURENTO_DOCKERHUB_PASSWD"
   #docker tag $IMAGE:${TAG}-${commit} $IMAGE_NAME:${TAG}-${commit}
   docker push $IMAGE_NAME:${TAG}-${commit}
 
