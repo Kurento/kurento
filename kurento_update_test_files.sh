@@ -6,7 +6,7 @@ echo "##################### EXECUTE: kurento_update_test_files #################
 
 
 if [ ! -d .svn ]; then
-	svn checkout http://files.kurento.org/svn/kurento . || exit 1
+	svn checkout http://files.openvidu.io/svn/kurento . || exit 1
 fi
 
 for i in {1..3}
