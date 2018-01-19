@@ -65,7 +65,7 @@ Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so
    sudo apt-get update
    sudo apt-get install kurento-media-server-6.0
 
-At this point, Kurento Media Server has been installed. The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it (respectively):
+At this point, Kurento Media Server has been installed. The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 
 .. code-block:: bash
 
@@ -179,7 +179,7 @@ It is rare to find a TURN server which works for free while offering good perfor
 Check your installation
 =======================
 
-To verify that KMS is up and running, use this command to check that the ``kurento-media-server`` process is included:
+To verify that KMS is up and running, use this command and look for the ``kurento-media-server`` process:
 
 .. code-block:: text
 
@@ -187,7 +187,7 @@ To verify that KMS is up and running, use this command to check that the ``kuren
 
    > nobody  1270  1  0 08:52 ?  00:01:00  /usr/bin/kurento-media-server
 
-Unless configured otherwise, KMS will open the port ``8888`` to receive requests and send responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Verify that this port is listening for incoming packets:
+Unless configured otherwise, KMS will open the port ``8888`` to receive requests and send responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is listening for incoming packets:
 
 .. code-block:: text
 
