@@ -8,14 +8,14 @@ application.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
+   This tutorial has been configured to use https. Follow the `instructions </features/security.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
 =======================================
 
 First of all, you should install Kurento Media Server to run this demo. Please
-visit the :doc:`installation guide <../../installation_guide>` for further
+visit the :doc:`installation guide </user/installation>` for further
 information.
 
 To launch the application, you need to clone the GitHub project where this demo
@@ -26,7 +26,7 @@ is hosted, and then run the main class:
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-one2many-call
-    git checkout |TUTORIAL_JAVA_VERSION|
+    git checkout |VERSION|
     mvn compile exec:java
 
 The web application starts on port 8443 in the localhost by default. Therefore,
@@ -81,7 +81,7 @@ created between client and server-side to implement a custom signaling
 protocol. Second, another WebSocket is used to perform the communication
 between the Kurento Java Client and the Kurento Media Server. This
 communication is implemented by the **Kurento Protocol**. For further
-information, please see this :doc:`page <../../mastering/kurento_protocol>`.
+information, please see this :doc:`page </features/kurento_protocol>`.
 
 Client and application server communicate using a signaling protocol based on
 `JSON`:term: messages over `WebSocket`:term: 's. The normal sequence between

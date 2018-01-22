@@ -7,14 +7,14 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions <../../mastering/securing-kurento-applications.html#configure-javascript-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-javascript-applications-to-use-https>`_ 
    for securing your application.
 
 For the impatient: running this example
 =======================================
 
 First of all, you should install Kurento Media Server to run this demo. Please
-visit the :doc:`installation guide <../../installation_guide>` for further
+visit the :doc:`installation guide </user/installation>` for further
 information. In addition, the built-in module ``kms-chroma-6.0`` should be also
 installed:
 
@@ -46,7 +46,7 @@ start the HTTP server:
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-chroma
-    git checkout |TUTORIAL_JS_VERSION|
+    git checkout |VERSION|
     bower install
     http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
@@ -67,7 +67,7 @@ through a WebRTC capable browser (Chrome, Firefox).
    Notice that the Kurento Media Server must connected using a **Secure WebSocket** (i.e., the KMS URI
    starts with *wss://*). For this reason, the support for secure WebSocket must be enabled in the Kurento
    Media Server you are using to run this tutorial. For further information about securing applications,
-   please visit the following :doc:`page <../../mastering/securing-kurento-applications>`.
+   please visit the following :doc:`page </features/security>`.
 
 Understanding this example
 ==========================
@@ -212,9 +212,9 @@ file, as follows:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "|CLIENT_JS_VERSION|",
-      "kurento-utils": "|UTILS_JS_VERSION|"
-      "kurento-module-pointerdetector": "|CLIENT_JS_VERSION|"
+      "kurento-client": "|VERSION|",
+      "kurento-utils": "|VERSION|"
+      "kurento-module-pointerdetector": "|VERSION|"
    }
 
 To get these dependencies, just run the following shell command:

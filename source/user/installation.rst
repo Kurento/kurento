@@ -1,0 +1,202 @@
+==================
+Installation Guide
+==================
+
+**Kurento Media Server (KMS)** can be made available through two different methods: either a local native installation, or an EC2 instance in the `Amazon Web Services`_ (AWS) cloud service.
+
+Using AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
+
+On the other hand, the local installation will allow to have total control of the installation process. This method makes use of public package repositories that hold the latest released versions of KMS. Besides that, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT`. This document includes some details about that topic.
+
+If you want to try pre-release builds of KMS, then head to the section :doc:`/user/installation_dev`.
+
+
+
+.. _installation-aws:
+
+Amazon Web Services
+===================
+
+The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server; follow these instructions to use it.
+
+1. Access the `AWS CloudFormation Console <https://console.aws.amazon.com/cloudformation>`_.
+
+2. Click on *Create Stack*.
+
+3. Look for the section *Choose a template*, and choose the option *Specify an Amazon S3 template URL*. Then, in the text field that enables, paste this URL: ``https://s3-eu-west-1.amazonaws.com/aws.kurento.org/KMS-Coturn-cfn.yaml``.
+
+4. Follow through the steps of the configuration wizard.
+
+   .. note::
+
+      The template file includes a *Coturn* server. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
+
+5. Finish the Stack creation process. Wait until the status of the newly created Stack reads *CREATE_COMPLETE*.
+
+6. Select the Stack and then open the *Outputs* tab, where you'll find the instance's public IP address, and the Kurento Media Server endpoint URL that must be used by :doc:`Client Applications </user/writing_applications>`.
+
+
+
+.. _installation-local:
+
+Local Installation
+==================
+
+With this method, you will install KMS from the native package repositories made available by the Kurento project.
+
+KMS has explicit support for two Long-Term Support (*LTS*) distributions of Ubuntu: **Ubuntu 14.04 (Trusty)** and **Ubuntu 16.04 (Xenial)**. Only the 64-bits editions are supported.
+
+Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if required.
+
+**First Step**. Define which version of Ubuntu will be used for your system. Open a terminal and copy **only one** of these lines:
+
+.. code-block:: bash
+
+   # Choose one:
+   REPO="trusty"  # KMS Releases - Ubuntu 14.04 (Trusty)
+   REPO="xenial"  # KMS Releases - Ubuntu 16.04 (Xenial)
+
+**Second Step**. Type the following commands, **one at a time and in the same order as listed here**. When asked for any kind of confirmation, reply affirmatively:
+
+.. code-block:: text
+
+   echo "deb http://ubuntu.kurento.org $REPO kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
+   wget http://ubuntu.kurento.org/kurento.gpg.key -O - | sudo apt-key add -
+   sudo apt-get update
+   sudo apt-get install kurento-media-server-6.0
+
+At this point, Kurento Media Server has been installed. The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
+
+.. code-block:: bash
+
+   sudo service kurento-media-server-6.0 start
+   sudo service kurento-media-server-6.0 stop
+
+
+
+STUN and TURN servers
+=====================
+
+If Kurento Media Server or any of its clients are located behind a :term:`NAT` (eg. in any cloud provider), you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
+
+Apart from that, you need to open all UDP ports in your system configuration, as STUN will use any random port from the whole [0-65535] range.
+
+.. note::
+
+   The features provided by TURN are a superset of those provided by STUN. What this means is that *you don't need to configure a STUN server if you are already using a TURN server*.
+
+
+
+STUN server
+-----------
+
+To configure a STUN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
+
+.. code-block:: bash
+
+   stunServerAddress=<serverIp>
+   stunServerPort=<serverPort>
+
+.. note::
+
+   Be careful since comments inline (with ``;``) are not allowed for parameters in the configuration files. Thus, the following line **is not correct**:
+
+   .. code-block:: bash
+
+      stunServerAddress=<serverIp> ; Only IP addresses are supported
+
+   ... and must be changed to something like this:
+
+   .. code-block:: bash
+
+      ; Only IP addresses are supported
+      stunServerAddress=<serverIp>
+
+The parameter ``serverIp`` should be the public IP address of the STUN server. It must be an IP address, **not a domain name**.
+
+It should be easy to find some public STUN servers that are made available for free. For example:
+
+.. code-block:: text
+
+   173.194.66.127:19302
+   173.194.71.127:19302
+   74.125.200.127:19302
+   74.125.204.127:19302
+   173.194.72.127:19302
+   74.125.23.127:3478
+   77.72.174.163:3478
+   77.72.174.165:3478
+   77.72.174.167:3478
+   77.72.174.161:3478
+   208.97.25.20:3478
+   62.71.2.168:3478
+   212.227.67.194:3478
+   212.227.67.195:3478
+   107.23.150.92:3478
+   77.72.169.155:3478
+   77.72.169.156:3478
+   77.72.169.164:3478
+   77.72.169.166:3478
+   77.72.174.162:3478
+   77.72.174.164:3478
+   77.72.174.166:3478
+   77.72.174.160:3478
+   54.172.47.69:3478
+
+
+
+TURN server
+-----------
+
+To configure a TURN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
+
+.. code-block:: bash
+
+   turnURL=<user>:<password>@<serverIp>:<serverPort>
+
+The parameter ``serverIp`` should be the public IP address of the TURN server. It must be an IP address, **not a domain name**.
+
+See some examples of TURN configuration below:
+
+.. code-block:: bash
+
+   turnURL=kurento:kurento@111.222.333.444:3478
+
+... or using a free access `Numb`_ TURN/STUN server:
+
+.. code-block:: bash
+
+   turnURL=user:password@66.228.45.110:3478
+
+Note that it is somewhat easy to find free STUN servers available on the net, because their functionality is pretty limited and it is not costly to keep them working for free. However, this doesn't happen with TURN servers, which act as a media proxy between peers and thus the cost of maintaining one is much higher.
+
+It is rare to find a TURN server which works for free while offering good performance. Usually, each user opts to maintain their own private TURN server instances.
+
+`Coturn`_ is an open source implementation of a TURN/STUN server. In the :doc:`FAQ </user/faq>` section there is a description about how to install and configure it.
+
+
+
+Check your installation
+=======================
+
+To verify that KMS is up and running, use this command and look for the ``kurento-media-server`` process:
+
+.. code-block:: text
+
+   ps -ef | grep kurento-media-server
+
+   > nobody  1270  1  0 08:52 ?  00:01:00  /usr/bin/kurento-media-server
+
+Unless configured otherwise, KMS will open the port ``8888`` to receive requests and send responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is listening for incoming packets:
+
+.. code-block:: text
+
+   sudo netstat -tupan | grep kurento
+
+   > tcp6  0  0 :::8888  :::*  LISTEN  1270/kurento-media-server
+
+
+
+.. _Amazon Web Services: https://aws.amazon.com
+.. _Coturn: http://coturn.net
+.. _Numb: http://numb.viagenie.ca/

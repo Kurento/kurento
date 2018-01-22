@@ -7,14 +7,14 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
+   This tutorial has been configured to use https. Follow the `instructions </features/security.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
 =======================================
 
 First of all, you should install Kurento Media Server to run this demo. Please
-visit the :doc:`installation guide <../../installation_guide>` for further
+visit the :doc:`installation guide </user/installation>` for further
 information. In addition, the built-in module ``kms-chroma-6.0`` should be also
 installed:
 
@@ -29,7 +29,7 @@ is hosted, and then run the main class:
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-chroma
-    git checkout |TUTORIAL_JAVA_VERSION|
+    git checkout |VERSION|
     mvn compile exec:java
 
 The web application starts on port 8443 in the localhost by default. Therefore,

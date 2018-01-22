@@ -7,14 +7,14 @@ media processing to the basic `WebRTC`:term: loopback.
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions <../../mastering/securing-kurento-applications.html#configure-javascript-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-javascript-applications-to-use-https>`_ 
    for securing your application.
 
 For the impatient: running this example
 =======================================
 
 You'll need to install Kurento Media Server before running this example.
-Read :doc:`installation guide <../../installation_guide>` for further
+Read :doc:`installation guide </user/installation>` for further
 information.
 
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
@@ -41,7 +41,7 @@ start the HTTP server:
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-magic-mirror
-    git checkout |TUTORIAL_JS_VERSION|
+    git checkout |VERSION|
     bower install
     http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
@@ -62,7 +62,7 @@ through a WebRTC capable browser (Chrome, Firefox).
    Notice that the Kurento Media Server must connected using a **Secure WebSocket** (i.e., the KMS URI
    starts with *wss://*). For this reason, the support for secure WebSocket must be enabled in the Kurento
    Media Server you are using to run this tutorial. For further information about securing applications,
-   please visit the following :doc:`page <../../mastering/securing-kurento-applications>`.
+   please visit the following :doc:`page </features/security>`.
 
 Understanding this example
 ==========================
@@ -255,8 +255,8 @@ file, as follows:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "|CLIENT_JS_VERSION|",
-      "kurento-utils": "|UTILS_JS_VERSION|"
+      "kurento-client": "|VERSION|",
+      "kurento-utils": "|VERSION|"
    }
 
 .. note::
