@@ -1,4 +1,5 @@
 #!/bin/bash -x
+set -e
 
 echo "##################### EXECUTE: kurento_install_deb_dependencies #####################"
 
@@ -9,10 +10,8 @@ fi
 
 DEBIAN_FRONTEND=noninteractive apt-get update || echo "Error updating packages"
 
-if [ -f *deb ]; then
-  dpkg -i *deb
-  apt-get install -f
-fi
+dpkg -i *deb
+apt-get install -f
 
 pkgs=$(cat debian/control | sed -e "s/$/\!\!/g" | tr -d '\n' | sed "s/\!\![[:space:]]/ /g" | sed "s/\!\!/\n/g" | grep "Build-Depends" | sed "s/Build-Depends://g" | sed "s/Build-Depends-Indep://g" | sed "s/([^)]*)//g" | sed "s/,\([^,^|]*\)[^,]*/\1/g" | sed 's/\[[^]]*\]//g' | sed "s/[[:space:]]+/ /g")
 echo "Installing packages: $pkgs"
