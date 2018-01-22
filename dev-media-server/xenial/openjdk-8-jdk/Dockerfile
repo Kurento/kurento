@@ -30,8 +30,6 @@ ENV PATH $PATH:/nodejs/bin
 
 RUN npm -g install bower
 
-RUN echo "deb http://ubuntuci.kurento.org xenial-dev kms6" | tee /etc/apt/sources.list.d/kurento.list 
-
 # Configure Kurento's apt proxy
 RUN echo 'Acquire::http::Proxy "http://proxy.kurento.org:3142";' > /etc/apt/apt.conf.d/01proxy \
   && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy

@@ -41,4 +41,3 @@ ENV PATH $PATH:/nodejs/bin
 
 RUN npm -g install bower
 
-RUN echo "deb http://ubuntuci.kurento.org trusty-dev kms6" | tee /etc/apt/sources.list.d/kurento.list
