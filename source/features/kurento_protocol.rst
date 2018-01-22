@@ -230,9 +230,9 @@ The following example shows a request message for the invocation of the operatio
       "jsonrpc": "2.0"
     }
 
-The response message contains the value returned while executing the operation invoked in the object, or nothing if the operation doesn’t return any value.
+The response message contains the value returned while executing the operation invoked in the object, or nothing if the operation doesn't return any value.
 
-This is the typical response while invoking the operation ``connect`` (that doesn’t return anything)::
+This is the typical response while invoking the operation ``connect`` (that doesn't return anything)::
 
     {
       "id": 5,

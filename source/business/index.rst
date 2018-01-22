@@ -2,12 +2,7 @@
 Kurento Business Features
 =========================
 
-[TODO]
+Commercial Support
+==================
 
-Things inside this section are specific to our business offering.
-
-.. toctree::
-
-   organizations
-   sharing
-   analytics
+We offer commercial support for Kurento, custom features, as well as consulting around all media server issues. You can contact us at openvidu@gmail.com to learn more.

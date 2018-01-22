@@ -13,14 +13,14 @@ You can read more on our page :doc:`About Kurento and WebRTC </user/about>`. Che
 
 The main documentation for the project is organized into different sections:
 
-* :ref:`user-docs`
-* :ref:`feature-docs`
-* :ref:`project-docs`
-* :ref:`business-docs`
+- :ref:`user-docs`
+- :ref:`feature-docs`
+- :ref:`project-docs`
+- :ref:`business-docs`
 
 Information about development *of Kurento itself* is also available:
 
-* :ref:`dev-docs`
+- :ref:`dev-docs`
 
 
 .. _user-docs:
@@ -94,7 +94,7 @@ Information about development *of Kurento itself* is also available:
    /dev/testing
    /dev/ci
    /dev/hardening
-   /dev/documentation
+   /dev/writing_documentation
 
 
 .. _knowledge-docs:
@@ -105,7 +105,7 @@ Information about development *of Kurento itself* is also available:
 
    /knowledge/congestion_rmcat
    /knowledge/nat
-   glossary
+   /glossary
 
 
 

@@ -170,7 +170,7 @@ For this reason, **kms-core**, **ffmpeg** and **libnice** libraries have to be i
 
 In KMS, we have developed a custom CMake command to search a library in several places. This command is called **`generic_find`** and it is located in the **kms-cmake-utils** repository.
 
-**kms-omni-build** is an special project because it is designed to build all KMS Main Repositories from a single entry point. This repo brings the other KMS Main Repositories as Git submodules: it makes KMS development easier because if you build this project, you don’t need to manually install the libraries of the other KMS Main Repositories. However, all other development and support libraries must still be installed manually.
+**kms-omni-build** is an special project because it is designed to build all KMS Main Repositories from a single entry point. This repo brings the other KMS Main Repositories as Git submodules: it makes KMS development easier because if you build this project, you don't need to manually install the libraries of the other KMS Main Repositories. However, all other development and support libraries must still be installed manually.
 
 To build KMS from sources you first have to decide on which part you want to work:
 
@@ -183,7 +183,7 @@ To build KMS from sources you first have to decide on which part you want to wor
 
 - **Generate Debian packages**: To distribute KMS is necessary to generate Debian packages from KMS Fork and Main Repositories.
 
-As you can see, there are a lot of possibilities. In the next sections we’ll explain the best way to build KMS in these different contexts.
+As you can see, there are a lot of possibilities. In the next sections we'll explain the best way to build KMS in these different contexts.
 
 
 

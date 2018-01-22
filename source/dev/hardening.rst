@@ -16,7 +16,7 @@ Kurento Media Server had been lagging in this respect, and old releases only imp
 
 Starting from version **6.7.0**, KMS also implements these extra hardening measurements:
 
-- **Position Independent Code** (``-fPIC``) / Position Independent Executable (``-fPIE -pie``) [#pie]_. Allows taking advantage of the :wikipedia:`Address Space Layout Randomization (ASLR) <en,Address_space_layout_randomization>` protection offered by the Kernel. This protects against :wikipedia:`Return-Oriented Programming (ROP) <en,Return-oriented_programming>` attacks and generally frustrates memory corruption attacks. This option was initially made the default in Ubuntu 16.10 for some selected architectures, and in Ubuntu 17.10 was finally enabled by default across all architectures supported by Ubuntu.
+- **Position Independent Code** (``-fPIC``) / **Position Independent Executable** (``-fPIE -pie``) [#pie]_. Allows taking advantage of the :wikipedia:`Address Space Layout Randomization (ASLR) <en,Address_space_layout_randomization>` protection offered by the Kernel. This protects against :wikipedia:`Return-Oriented Programming (ROP) <en,Return-oriented_programming>` attacks and generally frustrates memory corruption attacks. This option was initially made the default in Ubuntu 16.10 for some selected architectures, and in Ubuntu 17.10 was finally enabled by default across all architectures supported by Ubuntu.
 
   .. note::
 

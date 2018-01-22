@@ -7,7 +7,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 .. glossary::
 
    Agnostic media
-       One of the big problems of media is that the number of variants of video and audio codecs, formats and variants quickly creates high complexity in heterogeneous applications. So Kurento developed the concept of an automatic converter of media formats that enables development of *agnostic* elements. Whenever a media element’s source is connected to another media element’s sink, the Kurento framework verifies if media adaption and transcoding is necessary and, if needed, it transparently incorporates the appropriate transformations making possible the  chaining of the two elements into the resulting :term:`Pipeline <Media Pipeline>`.
+       One of the big problems of media is that the number of variants of video and audio codecs, formats and variants quickly creates high complexity in heterogeneous applications. So Kurento developed the concept of an automatic converter of media formats that enables development of *agnostic* elements. Whenever a media element's source is connected to another media element's sink, the Kurento framework verifies if media adaption and transcoding is necessary and, if needed, it transparently incorporates the appropriate transformations making possible the  chaining of the two elements into the resulting :term:`Pipeline <Media Pipeline>`.
 
    AVI
        Audio Video Interleaved, known by its initials AVI, is a multimedia container format introduced by Microsoft in November 1992 as part of its Video for Windows technology. AVI files can contain both audio and video data in a file container that allows synchronous audio-with-video playback. AVI is a derivative of the Resource Interchange File Format (RIFF).
@@ -181,7 +181,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        OpenCV (Open Source Computer Vision Library) is a BSD-licensed open source computer vision and machine learning software library. OpenCV aims to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception.
 
    Pad, Media
-       A :index:`Media Pad <single: Media; Pad>` is is an element's interface with the outside world. Data streams from the MediaSource pad to another element’s MediaSink pad.
+       A :index:`Media Pad <single: Media; Pad>` is is an element's interface with the outside world. Data streams from the MediaSource pad to another element's MediaSink pad.
 
        .. seealso::
           `GStreamer Pad <https://gstreamer.freedesktop.org/documentation/application-development/basics/pads.html>`_
@@ -308,7 +308,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 
    Sink, Media
        A :index:`Media Sink <single: Media; Sink>` is a MediaPad that outputs a Media Stream.
-       Data streams from a MediaSource pad to another element’s MediaSink pad.
+       Data streams from a MediaSource pad to another element's MediaSink pad.
 
    SIP
        Session Initiation Protocol (SIP) is a :term:`signaling plane` protocol widely used for controlling multimedia communication sessions such as voice and video calls over Internet Protocol (IP) networks. SIP works in conjunction with several other application layer protocols:
