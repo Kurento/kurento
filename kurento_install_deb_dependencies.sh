@@ -1,5 +1,4 @@
 #!/bin/bash -x
-set -e
 
 echo "##################### EXECUTE: kurento_install_deb_dependencies #####################"
 
