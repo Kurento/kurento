@@ -38,10 +38,8 @@ fi
 
 apt-get install -y wget iproute
 wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
-dpkg -i *deb
-rm *deb
-wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add -
-apt-get update
+dpkg -i libtimedate*deb
+rm libtimedate*deb
 
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
