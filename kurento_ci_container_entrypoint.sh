@@ -41,6 +41,9 @@ wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedat
 dpkg -i libtimedate*deb
 rm libtimedate*deb
 
+wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add -
+apt-get update
+
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
   gpg --import $GNUPG_KEY
