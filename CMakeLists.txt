@@ -20,7 +20,8 @@ install_git_hook(pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 get_git_version(PROJECT_VERSION ${VALUE_VERSION})
 message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 
-# Compiler flagsinclude(CommonBuildFlags)
+# Compiler flags
+include(CommonBuildFlags)
 common_buildflags_set()
 
 # FIXME Disable error when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered
