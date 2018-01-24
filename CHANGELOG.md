@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.7.0] - 2018-01-24
+
+### Changed
+- Stop using deprecated `Json::FastWriter`, and use `StreamWriterBuilder` instead.
+- Debian: Align all version numbers of KMS-related modules.
+- Debian: Remove version numbers from package names.
+- Debian: Configure builds to use parallel compilation jobs.
+
 ## [1.1.3] - 2017-07-24
 
 ### Changed
@@ -42,6 +50,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updated README.md according to FIWARE guidelines.
 - Added links to readthedocs.org and apiary.io in README.
 
+[6.7.0]: https://github.com/Kurento/kms-jsonrpc/compare/1.1.3...6.7.0
 [1.1.3]: https://github.com/Kurento/kms-jsonrpc/compare/1.1.2...1.1.3
 [1.1.2]: https://github.com/Kurento/kms-jsonrpc/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/Kurento/kms-jsonrpc/compare/1.1.0...1.1.1
