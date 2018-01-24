@@ -81,43 +81,5 @@ function(dpkg_buildflags_get_ldflags var)
     set(${var} "${ldflags}" CACHE INTERNAL "dpkg-buildflags for linker")
 
     unset(ldflags)
-    unset(dbf_cppflags)
-  endif()
-endfunction()
-
-
-function(get_dpkg_buildflags_c var)
-  if(FLAGS_EXECUTABLE)
-    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CFLAGS
-        OUTPUT_VARIABLE dbf_flags
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CPPFLAGS
-        OUTPUT_VARIABLE dbf_cppflags
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    set(${var} "${dbf_flags} ${dbf_cppflags}" CACHE INTERNAL "dpkg-buildflags for C")
-
-    unset(dbf_flags)
-    unset(dbf_cppflags)
-  endif()
-endfunction()
-
-function(get_dpkg_buildflags_cxx var)
-  if(FLAGS_EXECUTABLE)
-    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CXXFLAGS
-        OUTPUT_VARIABLE dbf_flags
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CPPFLAGS
-        OUTPUT_VARIABLE dbf_cppflags
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    set(${var} "${dbf_flags} ${dbf_cppflags}" CACHE INTERNAL "dpkg-buildflags for C++")
-
-    unset(dbf_flags)
-    unset(dbf_cppflags)
   endif()
 endfunction()
