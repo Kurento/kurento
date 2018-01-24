@@ -1,29 +1,32 @@
-Source: kurento-module-creator-4.0
+Source: kurento-module-creator
 Section: devel
 Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
-Build-Depends: debhelper(>=9),
-               cdbs,
-               default-jdk (>=2:1.7),
-               maven-debian-helper,
-               libmaven-assembly-plugin-java,
-               libmaven-compiler-plugin-java,
-               libfreemarker-java,
-               libgoogle-gson-java,
-               libslf4j-java,
-               junit4,
-               libcommons-cli-java,
-               libwagon-java
+Build-Depends: debhelper (>= 9),
+  cdbs,
+  default-jdk (>= 2:1.7),
+  maven-debian-helper,
+  libmaven-assembly-plugin-java,
+  libmaven-compiler-plugin-java,
+  libfreemarker-java,
+  libgoogle-gson-java,
+  libslf4j-java,
+  junit4,
+  libcommons-cli-java,
+  libwagon-java
 Standards-Version: 3.9.4
+Homepage: www.kurento.org
+Vcs-Git: git://github.com/Kurento/kurento-module-creator.git
+Vcs-Browser: https://github.com/Kurento/kurento-module-creator.git
 
-
-Package: kurento-module-creator-4.0
+Package: kurento-module-creator
 Architecture: all
-Depends: default-jre (>=2:1.7),
-         ${maven:Depends},
-         ${misc:Depends}
-Breaks: kurento-module-creator
-Description: Kurento module creator
- This tools generates stubs in different languages for communication
- with the Kurento Media server using a json-rpc model and
- language-dependent templates.
+Depends: ${maven:Depends},
+  ${misc:Depends},
+  default-jre (>= 2:1.7)
+Breaks: kurento-module-creator-4.0
+Replaces: kurento-module-creator-4.0
+Description: Kurento Module Creator
+  This tools generates stubs in different languages for communication
+  with the Kurento Media server using a JSON-RPC model and
+  language-dependent templates.
