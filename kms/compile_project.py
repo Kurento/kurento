@@ -125,7 +125,8 @@ def get_pkgversion_to_install(pkg, req_version, req_commit):
         # If that still doesn't work, review all other versions available.
         if pkg.is_installed and check_req_version(pkg.installed.version, req_version):
             pkgversion_found = pkg.installed
-        elif check_req_version(pkg.candidate.version, req_version):
+        elif (pkg.candidate is not None
+                  and check_req_version(pkg.candidate.version, req_version)):
             pkgversion_found = pkg.candidate
         else:
             # Sort by priority (as seen with `apt-cache policy <PackageName>`)
