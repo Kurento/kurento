@@ -1,1 +1,7 @@
-Copyright VTT 2015
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: kms-markerdetector
+Upstream-Contact: Kurento <kurento@googlegroups.com>
+Source: https://github.com/Kurento/kms-markerdetector
+
+Files: *
+Copyright: Copyright VTT 2015
