@@ -1,9 +1,10 @@
+name: kms-elements
 dependencies:
-  - name: kms-cmake-utils
-    version: ">= 1.5.0"
-  - name: kms-core
-    version: ">= 6.6.2"
   - name: libnice
     version: ">= 0.1.13"
   - name: openwebrtc-gst-plugins
     version: ">= 0.10.0"
+  - name: kms-cmake-utils
+    version: ">= 6.7.0"
+  - name: kms-core
+    version: ">= 6.7.0"

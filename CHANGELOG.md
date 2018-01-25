@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.7.0] - 2018-01-24
+
+### Added
+- libnice: Enable debug logging (requires NICE_DEBUG, G_MESSAGES_DEBUG).
+- RtpEndpoint/API: Add property 'keyBase64' for binary keys.
+
+### Changed
+- CMake: Compile and link as Position Independent Code ('-fPIC').
+- Add more verbose logging in some areas that required it.
+- WebRtcEndpoint: Warn if the H.264 plugin is not correctly installed.
+- WebRtc: Hide private info from log: TURN user/password.
+- Debian: Align all version numbers of KMS-related modules.
+- Debian: Remove version numbers from package names.
+- Debian: Configure builds to use parallel compilation jobs.
+
 ## [6.6.3] - 2017-08-10
 
 ### Changed
@@ -130,6 +145,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - PlayerEndpoint: set correct timestamps when source does not provide them properly.
 - Composite: Fix bugs simplifying internal design.
 
+[6.7.0]: https://github.com/Kurento/kms-elements/compare/6.6.3...6.7.0
 [6.6.3]: https://github.com/Kurento/kms-elements/compare/6.6.2...6.6.3
 [6.6.2]: https://github.com/Kurento/kms-elements/compare/6.6.1...6.6.2
 [6.6.1]: https://github.com/Kurento/kms-elements/compare/6.6.0...6.6.1
