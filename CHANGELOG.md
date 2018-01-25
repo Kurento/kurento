@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [6.7.0] - 2018-01-24
 
 ### Changed
-- Stop using deprecated `Json::FastWriter`, and use `StreamWriterBuilder` instead.
+- CMake: Compile and link as Position Independent Code ('-fPIC').
 - Debian: Align all version numbers of KMS-related modules.
 - Debian: Remove version numbers from package names.
 - Debian: Configure builds to use parallel compilation jobs.
