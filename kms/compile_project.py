@@ -173,24 +173,24 @@ def check_deb_dependency_installed(dep_alts):
             if pkg.is_installed:
                 if pkgversion == pkg.installed:
                     print("[buildpkg::check_deb_dependency_installed]"
-                          " Dependency: '{}' is installed via package '{}'"
+                          " Dependency '{}' is installed via package '{}'"
                           " version '{}'".format(
                               dep2str(dep_alts), pkg.shortname, pkg.installed.version))
                     return True
                 else:
                     print("[buildpkg::check_deb_dependency_installed] WARNING:"
-                          " Dependency: '{}' is installed via package '{}'"
+                          " Dependency '{}' is installed via package '{}'"
                           " version '{}', but doesn't match requested version '{}'"
                           " or commit '{}'".format(
                               dep2str(dep_alts), pkg.shortname, pkg.installed.version,
                               dep_version, dep_commit))
             else:
                 print("[buildpkg::check_deb_dependency_installed]"
-                      " Dependency not installed yet: '{}'".format(
+                      " Dependency '{}' is not installed yet".format(
                           dep2str(dep_alts)))
         else:
             print("[buildpkg::check_deb_dependency_installed]"
-                  " Dependency not installable via `apt-get`: '{}'".format(
+                  " Dependency '{}' is not installable via `apt-get`".format(
                       dep2str(dep_alts)))
 
     # Reaching here, none of the alternatives are installed in a valid version
@@ -611,8 +611,8 @@ def compile_project(args):
         git_url = args.base_url + "/" + build_dependency_name
 
         print("[buildpkg::compile_project] ({})"
-              " Project dependency: '{}', check Debian packages (from '{}')".format(
-                  project_name, build_dependency_name, git_url + "/debian/control"))
+              " Project dependency: '{}', check Debian info".format(
+                  project_name, build_dependency_name))
 
         # TODO: Consolidate versions, check if commit is compatible with
         # version requirement and also if there is a newer commit
