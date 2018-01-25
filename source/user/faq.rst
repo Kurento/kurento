@@ -74,7 +74,7 @@ However, Ubuntu 14.04 (Trusty) lacks this package, but it can be downloaded and 
    .. code-block:: bash
 
       sudo service coturn start
-      sudo service kurento-media-server-6.0 restart
+      sudo service kurento-media-server restart
 
 .. note::
 
@@ -121,4 +121,4 @@ This is a typical error which happens when you update Kurento Media Server from 
    sudo apt-get autoremove
    sudo apt-get update
    sudo apt-get dist-upgrade
-   sudo apt-get install kurento-media-server-6.0
+   sudo apt-get install kurento-media-server

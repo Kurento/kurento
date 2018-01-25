@@ -63,14 +63,14 @@ Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so
    echo "deb http://ubuntu.kurento.org $REPO kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
    wget http://ubuntu.kurento.org/kurento.gpg.key -O - | sudo apt-key add -
    sudo apt-get update
-   sudo apt-get install kurento-media-server-6.0
+   sudo apt-get install kurento-media-server
 
 At this point, Kurento Media Server has been installed. The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 
 .. code-block:: bash
 
-   sudo service kurento-media-server-6.0 start
-   sudo service kurento-media-server-6.0 stop
+   sudo service kurento-media-server start
+   sudo service kurento-media-server stop
 
 
 

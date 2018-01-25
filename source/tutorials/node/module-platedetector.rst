@@ -15,12 +15,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide </user/installation>` for further
-information. In addition, the built-in module ``kms-platedetector-6.0`` should
+information. In addition, the built-in module ``kms-platedetector`` should
 be also installed:
 
 .. sourcecode:: bash
 
-    sudo apt-get install kms-platedetector-6.0
+    sudo apt-get install kms-platedetector
 
 .. warning::
 

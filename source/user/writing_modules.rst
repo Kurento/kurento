@@ -12,11 +12,11 @@ You can expand the Kurento Media Server developing your own modules. There are t
 
 - Modules based on :term:`GStreamer`. This kind of modules provide a generic entry point for media processing with the GStreamer framework. Such modules are more powerful but also they are more difficult to develop. Skills in GStreamer development are necessary.
 
-The starting point to develop a filter is to create the filter structure. For this task, you can use the ``kurento-module-scaffold`` tool. This tool is distributed with the ``kurento-media-server-6.0-dev`` package. To install this tool run this command:
+The starting point to develop a filter is to create the filter structure. For this task, you can use the ``kurento-module-scaffold`` tool. This tool is distributed with the ``kurento-media-server-dev`` package. To install this tool run this command:
 
 .. sourcecode:: bash
 
-   sudo apt-get install kurento-media-server-6.0-dev
+   sudo apt-get install kurento-media-server-dev
 
 The tool usage is different depending on the chosen flavor:
 

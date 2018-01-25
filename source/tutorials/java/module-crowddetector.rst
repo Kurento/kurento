@@ -16,12 +16,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide </user/installation>` for further
-information. In addition, the built-in module ``kms-crowddetector-6.0`` should
+information. In addition, the built-in module ``kms-crowddetector`` should
 be also installed:
 
 .. sourcecode:: bash
 
-    sudo apt-get install kms-crowddetector-6.0
+    sudo apt-get install kms-crowddetector
 
 To launch the application, you need to clone the GitHub project where this demo
 is hosted, and then run the main class:
