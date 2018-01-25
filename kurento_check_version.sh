@@ -2,15 +2,14 @@
 
 echo "##################### EXECUTE: kurento_check_version #####################"
 
-# Create tag
-if [ -n "$1" ]
-then
+# Force creating a Git tag when a Release version is detected.
+# This is default 'false' because sometimes we need to do several actual
+# changes before being able to mark a commit as an official "Release".
+if [ -n "$1" ]; then
   CREATE_TAG="$1"
 else
-  if [ -z "$CREATE_TAG" ]
-  then
-    echo "Missing first parameter create tag (true/false)"
-    exit 1
+  if [ -z "$CREATE_TAG" ]; then
+    CREATE_TAG="false"
   fi
 fi
 
