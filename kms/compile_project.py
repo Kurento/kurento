@@ -484,14 +484,16 @@ def generate_debian_package(args, buildconfig):
     # reliable method to do this.
     # Also there is the `gdebi` command, but it doesn't accept multiple files.
     print("[buildpkg::generate_debian_package] ({})"
-          " Run 'dpkg -i {}' with generated files: {}".format(
-              project_name, paths_glob, file_paths))
+          " Run 'dpkg -i' with generated files: {}".format(
+              project_name, file_paths))
     if file_paths:
         root_privileges_gain()
         try:
             subprocess.check_call("dpkg -i " + paths_glob, shell=True)
         except subprocess.CalledProcessError:
-            # `dpkg -i` left unconfigured packages; try to solve that
+            print("[buildpkg::generate_debian_package] ({})"
+                  " 'dpkg -i' left unconfigured packages; try to solve that".format(
+                      project_name))
             if subprocess.call(["apt-get", "install", "-f", "-y", "-q"]) != 0:
                 print("[buildpkg::generate_debian_package] ({}) ERROR:"
                       " Running 'apt-get install -f'".format(project_name))
