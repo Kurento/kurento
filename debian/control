@@ -19,7 +19,7 @@ Architecture: any
 Section: libs
 Depends: ${shlibs:Depends},
  ${misc:Depends},
- kms-elements-6.0 (>= 6.6.1),
+ kms-elements (>= 6.7.0),
  opencv-data
 Breaks: kms-filters-6.0
 Replaces: kms-filters-6.0
