@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.7.0] - 2018-01-24
+
+### Changed
+- CMake: Compile and link as Position Independent Code ('-fPIC').
+- Add more verbose logging in some areas that required it.
+- Debian: Align all version numbers of KMS-related modules.
+- Debian: Remove version numbers from package names.
+- Debian: Configure builds to use parallel compilation jobs.
+
 ## [6.6.2] - 2017-07-24
 
 ### Changed
@@ -47,6 +56,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - GStreamerFilter: Improve command parser using `gst-launch` parser.
 - KmsOpencvFilter: Convert KurentoExceptions into bus messages.
 
+[6.7.0]: https://github.com/Kurento/kms-filters/compare/6.6.2...6.7.0
 [6.6.2]: https://github.com/Kurento/kms-filters/compare/6.6.1...6.6.2
 [6.6.1]: https://github.com/Kurento/kms-filters/compare/6.6.0...6.6.1
 [6.6.0]: https://github.com/Kurento/kms-filters/compare/6.5.0...6.6.0
