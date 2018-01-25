@@ -1,14 +1,4 @@
 build/
 CMakeLists.txt.user
-debian/files
-debian/kms-datachannelexample-dev.debhelper.log
-debian/kms-datachannelexample-dev.substvars
-debian/kms-datachannelexample-dev/
-debian/kms-datachannelexample.debhelper.log
-debian/kms-datachannelexample.postinst.debhelper
-debian/kms-datachannelexample.postrm.debhelper
-debian/kms-datachannelexample.substvars
-debian/kms-datachannelexample/
-debian/tmp/
 obj-x86_64-linux-gnu/
 

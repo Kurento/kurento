@@ -1,26 +1,31 @@
 Source: kms-datachannelexample
-Section: utils
+Maintainer: Kurento <kurento@googlegroups.com>
 Priority: optional
-Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
-Build-Depends: debhelper (>= 8.0.0),
+Build-Depends: debhelper (>= 9),
  cmake,
  pkg-config,
- kms-core-6.0-dev,
- kms-elements-6.0-dev,
- kms-filters-6.0-dev,
- libopencv-dev
-Standards-Version: 3.9.4
+ libopencv-dev,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev
+Standards-Version: 4.0.0
+Homepage: www.kurento.org
+Vcs-Browser: https://github.com/Kurento/kms-datachannelexample
+Vcs-Git: https://github.com/Kurento/kms-datachannelexample.git
 
 Package: kms-datachannelexample
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-Description: package description
+Section: libs
+Depends: ${shlibs:Depends},
+ ${misc:Depends}
+Description: Kurento WebRTC DataChannel example
 
 Package: kms-datachannelexample-dev
 Architecture: any
+Section: libdevel
 Depends: kms-datachannelexample (= ${binary:Version}),
-  kms-core-6.0-dev,
-  kms-elements-6.0-dev,
-  kms-filters-6.0-dev,
-  libopencv-dev
-Description: dev package description
+ libopencv-dev,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev
+Description: Kurento WebRTC DataChannel example - Development files
