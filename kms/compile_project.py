@@ -316,7 +316,7 @@ def request_http(url, cert_path, key_path, file_path=None):
         try:
             curl_text = subprocess.check_output(curl_cmd, shell=True).strip()
         except subprocess.CalledProcessError:
-            print("[buildpkg::request_http] ERROR: Running 'curl':\n", curl_text)
+            print("[buildpkg::request_http] ERROR: Running 'curl'")
             exit(1)
         else:
             print("[buildpkg::request_http] DONE: Running 'curl':\n", curl_text)
