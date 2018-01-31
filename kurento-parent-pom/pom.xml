@@ -91,7 +91,7 @@
 		<webjars.bootstrap.version>3.3.6</webjars.bootstrap.version>
 		<webjars.draggabilly.version>2.1.0</webjars.draggabilly.version>
 		<webjars.demo-console.version>1.5.1</webjars.demo-console.version>
-		<webjars.adapter.js.version>0.2.9</webjars.adapter.js.version>
+		<webjars.webrtc-adapter.version>6.1.0</webjars.webrtc-adapter.version>
 		<webjars.jquery.version>1.12.3</webjars.jquery.version>
 		<webjars.ekko-lightbox.version>4.0.2</webjars.ekko-lightbox.version>
 		<webjars.event-emitter.version>4.3.0</webjars.event-emitter.version>
@@ -403,8 +403,8 @@
 			</dependency>
 			<dependency>
 				<groupId>org.webjars.bower</groupId>
-				<artifactId>adapter.js</artifactId>
-				<version>${webjars.adapter.js.version}</version>
+				<artifactId>webrtc-adapter</artifactId>
+				<version>${webjars.webrtc-adapter.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.webjars.bower</groupId>
