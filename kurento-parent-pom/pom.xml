@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.6.3-SNAPSHOT</version>
+	<version>6.7.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Kurento Parent POM</name>
@@ -83,7 +83,7 @@
 		<version.kms-api-filters>6.6.1-SNAPSHOT</version.kms-api-filters>
 		<version.plumber-endpoint>6.6.1-SNAPSHOT</version.plumber-endpoint>
 		<version.kurento-maven-plugin>2.0.3-SNAPSHOT</version.kurento-maven-plugin>
-		<version.kurento-utils-js>6.6.3-SNAPSHOT</version.kurento-utils-js>
+		<version.kurento-utils-js>6.7.0-SNAPSHOT</version.kurento-utils-js>
 
 
 		<!-- External versions -->
