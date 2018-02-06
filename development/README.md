@@ -14,3 +14,8 @@ Description of each script:
 - `kurento-repo-*.sh` are a set of scripts that configure the Kurento package repositories for usage with *apt-get*.
 
 - `kurento-uninstall-all.sh` can be used to quickly uninstall all packages related to KMS and its development. This includes every package that might get installed from a previous call to `kurento-install-development.sh`, or from older installations of Kurento. **Warning**: it uses the flag `--yes`, so no confirmation will be asked before proceeding; this could end up uninstalling half of your system if you don't know what you're doing! (but it works fine in a clean Ubuntu installation).
+
+- `aptly_management` At the end of the release pipeline this script will upload and publish the new generated packages to our Release repository.
+
+- `aptly_dev_management` is in charge of the dev branch in out Debian repository.
+
