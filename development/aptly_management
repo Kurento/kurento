@@ -1,0 +1,16 @@
+#!/bin/bash -x
+set -eu -o pipefail 
+
+echo "##################### EXECUTE: aptly_management #####################"
+
+KMS_DEB_PKG=$(ls -1 kurento-media-server* | head -n 1)
+[ ! -z "$KMS_DEB_PKG" ] || exit 1 
+
+RELEASE=$(dpkg -f "$KMS_DEB_PKG" Version | grep -Po '^\d.\d.\d')
+[ ! -z "$RELEASE" ] || exit 1
+
+aptly repo create -distribution=$DISTRIBUTION -component=kms6 kurento-$DISTRIBUTION-$RELEASE
+aptly repo add kurento-$DISTRIBUTION-$RELEASE *.deb 
+aptly snapshot create snap-kurento-$DISTRIBUTION-$RELEASE from repo kurento-$DISTRIBUTION-$RELEASE
+aptly -gpg-key=$GPGKEY publish snapshot snap-kurento-$DISTRIBUTION-$RELEASE s3:ubuntu:$RELEASE
+

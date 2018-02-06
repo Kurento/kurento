@@ -1,0 +1,8 @@
+#!/bin/bash -x
+set -eu -o pipefail 
+
+echo "##################### EXECUTE: aptly_dev_management #####################"
+
+aptly repo add -force-replace kurento-openvidu-$DISTRIBUTION-dev *.deb 
+aptly -gpg-key=$GPGKEY publish update $DISTRIBUTION s3:ubuntu:dev
+
