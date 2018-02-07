@@ -4,9 +4,6 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
 # Configure the Kurento package repository for `apt-get`.
 #
-# Sources:
-# - kurento_build_run.txt
-#
 # Changes:
 # 2017-10-03 Juan Navarro <juan.navarro@gmx.es>
 # - Initial version.
@@ -27,4 +24,3 @@ apt-get update
 
 echo ""
 echo "[$0] Done."
-
