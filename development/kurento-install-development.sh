@@ -5,17 +5,16 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # Install dependencies required for development of KMS.
 #
 # Notes:
-# - "gstreamer1.5-x" is needed for the "timeoverlay" GStreamer plugin,
-# used by some tests in kms-elements.
-#
-# Sources:
-# - kurento_build_run.txt
+# - gstreamer1.5-x is needed for the "timeoverlay" GStreamer plugin,
+#   used by some tests in kms-elements.
 #
 # Changes:
 # 2017-10-03 Juan Navarro <juan.navarro@gmx.es>
 # - Initial version.
 # 2018-02-02
 # - Use a Bash Array to define all packages; run a single `apt-get` command.
+# 2018-02-07
+# - Add package: gstreamer1.5-tools.
 
 # Check root permissions
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
@@ -61,6 +60,7 @@ PACKAGES=(
   gstreamer1.5-plugins-base
   gstreamer1.5-plugins-good
   gstreamer1.5-plugins-ugly
+  gstreamer1.5-tools
   gstreamer1.5-x
   libgstreamer1.5-dev
   libgstreamer-plugins-base1.5-dev
