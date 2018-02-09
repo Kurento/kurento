@@ -18,7 +18,7 @@ The main documentation for the project is organized into different sections:
 - :ref:`project-docs`
 - :ref:`business-docs`
 
-Information about development *of Kurento itself* is also available:
+Information about development of *Kurento itself* is also available:
 
 - :ref:`dev-docs`
 
@@ -34,12 +34,12 @@ Information about development *of Kurento itself* is also available:
    /user/quickstart
    /user/installation
    /user/installation_dev
+   /user/tutorials
    /user/configuration
    /user/writing_applications
    /user/writing_modules
    /user/support
    /user/faq
-   /user/tutorials
 
 
 .. _feature-docs:
