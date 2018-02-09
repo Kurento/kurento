@@ -93,6 +93,7 @@ Information about development of *Kurento itself* is also available:
    /dev/changelog
    /dev/testing
    /dev/ci
+   /dev/release
    /dev/hardening
    /dev/writing_documentation
 
