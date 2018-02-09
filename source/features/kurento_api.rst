@@ -36,68 +36,9 @@ Kurento API is an object-oriented API. That is, there are classes that can be in
 
 The following class diagram shows some of the relationships of the main classes in the Kurento API:
 
-.. figure:: /images/digraphs/Media_Objects.png
+.. graphviz:: /images/graphs/Media_Objects.dot
    :align: center
-   :alt:   Class diagram of main classes in Kurento API
-
-   *JJ1 Class diagram of main classes in Kurento API*
-
-.. digraph:: Media_Objects
-   :align: center
-   :caption: JJ2 Class diagram of main classes in Kurento API
-
-   size="12,8";
-   fontname = "Bitstream Vera Sans"
-   fontsize = 8
-
-   node [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        shape = "record"
-         style=filled
-        fillcolor = "#E7F2FA"
-   ]
-
-   edge [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        arrowtail = "empty"
-        dir = back;
-   ]
-
-   MediaObject [
-        label = "{MediaObject|" +
-                "+ getMediaPipeline() : MediaPipeline\l" +
-                "+ getParent() : MediaObject[]\l}"
-        labelurl = "MediaObject"
-        href = "com/kurento/kmf/media/MediaObject.html"
-   ]
-
-   MediaElement [
-        label = "{MediaElement|" +
-                "+ connect(...) : void\l" +
-                "+ getMediaSinks(...) : MediaSink[]\l" +
-                "+ getMediaSrcs(...) : MediaSource[]\l}"
-        urllabel = "MediaElement"
-        href = "com/kurento/kmf/media/MediaElement.html"
-   ]
-
-
-   MediaObject -> MediaPipeline;
-   MediaObject -> MediaElement;
-   MediaObject -> Hub;
-
-   MediaObject -> MediaObject [label = "parent", constraint=false, dir = normal, arrowhead="vee"]
-
-   MediaObject -> MediaPipeline [label = "pipeline", constraint=false, dir = normal, arrowhead="vee"]
-
-   MediaPipeline -> MediaElement [headlabel="*" label = "elements", constraint=false, dir = normal, arrowhead="vee"]
-
-   MediaElement -> Endpoint;
-   MediaElement -> Filter;
-   MediaElement -> HubPort;
-
-   "Hub" -> "HubPort" [headlabel = "*", constraint=false, dir = normal, arrowhead="vee"]
+   :caption: Class diagram of main classes in Kurento API
 
 
 
@@ -131,49 +72,9 @@ A **RecorderEndpoint** is an output endpoint that provides function to store con
 
 The following class diagram shows the relationships of the main endpoint classes:
 
-.. figure:: /images/digraphs/Endpoints.png
+.. graphviz:: /images/graphs/Endpoints.dot
    :align: center
-   :alt:   Class diagram of main Endpoints in Kurento API
-
-   *JJ3 Class diagram of main Endpoints in Kurento API*
-
-.. digraph:: Endpoints
-   :align: center
-   :caption: JJ4 Class diagram of Endpoints in Kurento API
-
-   size="12,8";
-   fontname = "Bitstream Vera Sans"
-   fontsize = 8
-
-   node [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        shape = "record"
-         style=filled
-        fillcolor = "#E7F2FA"
-   ]
-
-   edge [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        arrowtail = "empty"
-        dir = back;
-   ]
-
-   "MediaElement" -> "Endpoint";
-   Endpoint -> SessionEndpoint;
-   Endpoint -> UriEndpoint;
-
-   SessionEndpoint -> HttpEndpoint;
-   SessionEndpoint -> SdpEndpoint;
-
-   HttpEndpoint -> HttpPostEndpoint;
-
-   SdpEndpoint -> RtpEndpoint;
-   SdpEndpoint -> WebRtcEndpoint;
-
-   UriEndpoint -> PlayerEndpoint;
-   UriEndpoint -> RecorderEndpoint;
+   :caption: Class diagram of main Endpoints in Kurento API
 
 
 
@@ -199,39 +100,9 @@ The **FaceOverlayFilter** filter detects faces in a video stream and overlaid it
 
 The following class diagram shows the relationships of the main filter classes:
 
-.. figure:: /images/digraphs/Filters.png
+.. graphviz:: /images/graphs/Filters.dot
    :align: center
-   :alt:   Class diagram of main Filters in Kurento API
-
-   *JJ5 Class diagram of main Filters in Kurento API*
-
-.. digraph:: Filters
-   :align: center
-   :caption: JJ6 Class diagram of Filters in Kurento API
-
-   size="12,8";
-   fontname = "Bitstream Vera Sans"
-   fontsize = 8
-
-   node [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        shape = "record"
-         style=filled
-        fillcolor = "#E7F2FA"
-   ]
-
-   edge [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        arrowtail = "empty"
-        dir = back;
-   ]
-
-   "MediaElement" -> "Filter";
-   "Filter" -> "ZBarFilter";
-   "Filter" -> "FaceOverlayFilter";
-   "Filter" -> "GStreamerFilter";
+   :caption: Class diagram of main Filters in Kurento API
 
 
 
@@ -257,42 +128,6 @@ Hubs are media objects in charge of managing multiple media flows in a pipeline.
 
 The following class diagram shows the relationships of the hubs:
 
-.. figure:: /images/digraphs/Hubs.png
+.. graphviz:: /images/graphs/Hubs.dot
    :align: center
-   :alt:   Class diagram of main Hubs in Kurento API
-
-   *JJ7 Class diagram of main Hubs in Kurento API*
-
-.. digraph:: Hubs
-   :align: center
-   :caption: JJ8 Class diagram of Hubs in Kurento API
-
-   size="12,8";
-   fontname = "Bitstream Vera Sans"
-   fontsize = 8
-
-   node [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        shape = "record"
-         style=filled
-        fillcolor = "#E7F2FA"
-   ]
-
-   edge [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        arrowtail = "empty"
-        dir = back;
-   ]
-
-   "MediaObject" -> "Hub";
-   "MediaObject" -> "MediaElement";
-
-   "Hub" -> "HubPort" [headlabel = "*", constraint=false, dir = normal, arrowhead="vee", labelangle=60]
-
-   "MediaElement" -> "HubPort";
-
-   "Hub" -> "Composite";
-   "Hub" -> "Dispatcher";
-   "Hub" -> "DispatcherOneToMany";
+   :caption: Class diagram of main Hubs in Kurento API

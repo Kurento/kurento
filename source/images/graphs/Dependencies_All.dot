@@ -1,0 +1,38 @@
+digraph Dependencies_All {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  rankdir = "RL";
+
+  // Kurento external libraries
+  "gstreamer";
+  "libsrtp";
+  "openh264";
+  "usrsctp";
+  "jsoncpp";
+  "gst-plugins-base" -> "gstreamer";
+  "gst-plugins-good" -> "gst-plugins-base";
+  "gst-plugins-ugly" -> "gst-plugins-base";
+  "gst-plugins-bad" -> {"gst-plugins-base" "libsrtp" "openh264"};
+  "gst-libav" -> "gst-plugins-base";
+  "openwebrtc-gst-plugins" -> {"gstreamer" "gst-plugins-base" "usrsctp"};
+  "libnice" -> "gstreamer";
+
+  // KMS main components
+  "kurento-module-creator";
+  "kms-cmake-utils";
+  "kms-jsonrpc" -> {"jsoncpp" "kms-cmake-utils"};
+  "kms-core" -> {"gstreamer" "gst-plugins-base" "gst-plugins-good" "gst-plugins-ugly" "gst-libav" "gst-plugins-bad" "kms-cmake-utils" "kms-jsonrpc" "kurento-module-creator"};
+  "kms-elements" -> {"openwebrtc-gst-plugins" "libnice" "kms-core"};
+  "kms-filters" -> "kms-elements";
+  "kurento-media-server" -> {"kms-core" "kms-elements" "kms-filters"};
+
+  // KMS extra modules
+  "kms-chroma" -> {"kms-core" "kms-elements" "kms-filters"};
+  "kms-crowddetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  "kms-datachannelexample" -> {"kms-core" "kms-elements" "kms-filters"};
+  "kms-platedetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  "kms-pointerdetector" -> {"kms-core" "kms-elements" "kms-filters"};
+}

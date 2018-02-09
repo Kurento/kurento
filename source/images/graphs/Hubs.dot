@@ -1,0 +1,32 @@
+digraph Filters {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  node [
+    fillcolor = "#E7F2FA";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+    shape = "record";
+    style = "filled";
+  ]
+
+  edge [
+    arrowtail = "empty";
+    dir = "back";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+  ]
+
+  "MediaObject" -> "Hub";
+  "MediaObject" -> "MediaElement";
+
+  "Hub" -> "HubPort" [headlabel = "*", constraint = false, dir = normal, arrowhead = "vee", labelangle = 60];
+
+  "MediaElement" -> "HubPort";
+
+  "Hub" -> "Composite";
+  "Hub" -> "Dispatcher";
+  "Hub" -> "DispatcherOneToMany";
+}

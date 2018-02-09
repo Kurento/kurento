@@ -1,0 +1,22 @@
+digraph Dependencies_Externals {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  rankdir = "RL";
+
+  // Kurento external libraries
+  "gstreamer";
+  "libsrtp";
+  "openh264";
+  "usrsctp";
+  "jsoncpp";
+  "gst-plugins-base" -> "gstreamer";
+  "gst-plugins-good" -> "gst-plugins-base";
+  "gst-plugins-ugly" -> "gst-plugins-base";
+  "gst-plugins-bad" -> {"gst-plugins-base" "libsrtp" "openh264"};
+  "gst-libav" -> "gst-plugins-base";
+  "openwebrtc-gst-plugins" -> {"gstreamer" "gst-plugins-base" "usrsctp"};
+  "libnice" -> "gstreamer";
+}
