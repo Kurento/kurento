@@ -2,40 +2,50 @@
 Writing this documentation
 ==========================
 
-Although each of the Kurento repositories contains a *README* file, the main source of truth for up-to-date information about Kurento is this documentation, hosted at Read The Docs.
+Although each of the Kurento repositories contains a *README* file, the main source of truth for up-to-date information about Kurento is *this* documentation you are reading right now, hosted at Read The Docs.
 
-The documentation you are reading right now is obtained by following a 3-step process:
+The final deliverable form of the documentation is obtained by following a 3-step process:
 
-1. The source files are written in a markup language called *reStructuredText (reST)*. This is less known that the popular Markdown format, but it is much more powerful and adequate for long-form documentation writing.
+1. The source files are written in a markup language called *reStructuredText* (reST). This format is less known that the popular Markdown, but it is much more powerful and adequate for long-form documentation writing.
 
-2. The source files, written in reST format, are processed and converted to other deliverable formats by `Sphinx`_, a documentation processing tool which adds some layers of useful syntax to the reST baseline and also takes care of generating all the documents in their final form.
+2. The source files, written in *reST* format, are processed and converted to other deliverable formats by `Sphinx`_, a documentation processing tool which adds some layers of useful syntax to the *reST* baseline, and also takes care of generating all the documents in their final form.
 
 .. _Sphinx: http://www.sphinx-doc.org/en/stable/index.html
 
-3. Finally, the generated HTML files are hosted in Read The Docs, the service of choice for lots of open source projects. Actually Read The Docs is not only the hosting, but they also perform the Sphinx generation step itself: they provide a Continuous Integration system that watches a Git repository and triggers a new documentation build each time it detects changes.
+3. Finally, the generated HTML files are hosted in Read The Docs, the service of choice for lots of open-source projects. Actually Read The Docs is not only the hosting, but they also perform the Sphinx generation step itself: they provide a Continuous Integration system that watches a Git repository and triggers a new documentation build each time it detects changes.
 
-
-
-Writing reST documents
-======================
-
-Our documentation files are written using both the basic features of reST, and the extra features that are provided by Sphinx. The reST language itself can be learned by checking any reference documents such as the `reStructuredText quick reference`_ and the `reStructuredText Primer`_.
+Kurento documentation files are written using both the basic features of *reST*, and the extra features that are provided by Sphinx. The *reST* language itself can be learned by checking any reference documents such as the `reStructuredText quick reference`_ and the `reStructuredText Primer`_.
 
 .. _reStructuredText quick reference: http://docutils.sourceforge.net/docs/user/rst/quickref.html
 .. _reStructuredText Primer: http://www.sphinx-doc.org/en/stable/rest.html
 
-Sphinx adds useful markup of itself, to make reST even more useful for writing documentation. To learn more about this, the most relevant section in their documentation is `Sphinx Markup Constructs`_.
+Sphinx adds its own set of useful markup elements, to make *reST* even more useful for writing documentation. To learn more about this, the most relevant section in their documentation is `Sphinx Markup Constructs`_.
 
 .. _Sphinx Markup Constructs: http://www.sphinx-doc.org/en/stable/markup/index.html
 
-Besides the extra markup added by Sphinx, there is also the possibility to use Sphinx Extensions, which each one does in turn add its own markup to extend even more the capabilities of the language. For example, as of this writing we are using Wikipedia and Graphviz extensions, to easily insert links to Wikipedia articles and embedded diagrams in the documents.
+Besides the extra markup added by Sphinx, there is also the possibility to use *Sphinx Extensions*, which each one does in turn add its own markup to extend even more the capabilities of the language. For example, as of this writing we are using `sphinx.ext.graphviz`_ and `sphinx-ext-wikipedia`_ extensions, to easily insert links to Wikipedia articles and embedded diagrams in the documents.
+
+.. _sphinx.ext.graphviz: http://www.sphinx-doc.org/en/stable/ext/graphviz.html
+.. _sphinx-ext-wikipedia: https://github.com/quiver/sphinx-ext-wikipedia
 
 
 
-Header format conventions
--------------------------
+Kurento documentation Style Guide
+=================================
 
-reST allows to express section headers with any kind of characters that form an underline below the section title. We follow these conventions for Kurento documentation files:
+Paragraph conventions
+---------------------
+
+**Line breaks**: *Don't* break the lines. The documentation is a prose text, and not source code, so the typical restrictions of line length don't apply here. Use automatic line breaks in your editor, if you want. The overall flow of the text should be dictated by the width of the screen where the text is being presented, and not by some arbitrary line length limit.
+
+
+
+Header conventions
+------------------
+
+**Header separation**: Always separate each header from the preceding paragraph, by using **3** empty lines. The only exception to this rule is when two headers come together (e.g. a document title followed by a section title); in that case, they are separated by just **1** empty line.
+
+**Header shape**: *reST* allows to express section headers with any kind of characters that form an underline shape below the section title. We follow these conventions for Kurento documentation files:
 
 1. Level 1 (Document title). Use ``=`` above and below:
 

@@ -12,11 +12,11 @@ Having said this, it is also clear that complying with a minimum set of netiquet
 
 - **Make your homework**. Asking questions such as "*I want to create a system like Skype, please explain me the steps*" may require very extensive answers and you'll probably find that nobody in the community is willing to invest the time to write them, save the case that someone happens to be writing a book on the topic. In general, *don't ask others to make your work*.
 
-- **Follow the :ref:`reporting guidelines <support-reporting>`**. When creating a new bug report, following these guidelines will greatly help others to study your issue and look for solutions, which in the end is a positive net for you.
+- **Follow the** :ref:`reporting guidelines <support-reporting>`. When creating a new bug report, following these guidelines will greatly help others to study your issue and look for solutions, which in the end is a positive net for you.
 
 - **Read the documentation first**. Requesting help on issues that are clearly addressed in :doc:`the documentation </user/quickstart>` is, in general, a bad practice.
 
-- **Check the :ref:`Community Support <support-community>`**. Things like opening a new discussion thread on the mailing list dealing with a problem that has already been discussed in another thread, will be probably perceived as slackness by the rest of the community. Avoid this and remember that Google is your friend.
+- **Check the** :ref:`Community Support <support-community>`. Things like opening a new discussion thread on the mailing list dealing with a problem that has already been discussed in another thread, will be probably perceived as slackness by the rest of the community. Avoid this and remember that Google is your friend.
 
 - **Beware of cross-posting**. In general, cross-posting is not considered as a good practice. If for some reason you need to send the same request to different mailing lists, inform in all of them about that providing links to the corresponding threads in the other lists so that the rest of users can check where answers finally arrived.
 

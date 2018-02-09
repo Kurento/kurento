@@ -7,7 +7,7 @@ Some components of KMS are built nightly, with the code developed during that sa
 These builds end up being uploaded to *Development* repositories so they can be installed by anyone. Use these if you want to develop *Kurento itself*, or if you want to try the latest changes before they are officially released.
 
 .. warning::
-   The pre-release versions represent the current state on the software development, so it can include undocumented changes, regressions, bugs or deprecations. **Never** use pre-release builds in a production environment.
+   The pre-release version always represents the current state on the software development, so it can include undocumented changes, regressions, bugs or deprecations. **Never** use pre-release builds in a production environment.
 
 
 

@@ -46,7 +46,7 @@ Media servers are capable of processing incoming media streams and offer differe
 Kurento Media Server
 ====================
 
-Kurento's main component is the **Kurento Media Server (KMS)**, responsible for media transmission, processing, recording, and playback. KMS is built on top of the fantastic :term:`GStreamer` multimedia library, and provides the following features:
+Kurento's main component is the **Kurento Media Server** (KMS), responsible for media transmission, processing, recording, and playback. KMS is built on top of the fantastic :term:`GStreamer` multimedia library, and provides the following features:
 
 -  Networked streaming protocols, including :term:`HTTP`, :term:`RTP` and :term:`WebRTC`.
 -  Group communications (MCU and SFU functionality) supporting both media mixing and media routing/dispatching.

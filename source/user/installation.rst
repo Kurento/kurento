@@ -17,13 +17,13 @@ If you want to try pre-release builds of KMS, then head to the section :doc:`/us
 Amazon Web Services
 ===================
 
-The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server; follow these instructions to use it.
+The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server. Follow these steps to use it:
 
 1. Access the `AWS CloudFormation Console <https://console.aws.amazon.com/cloudformation>`_.
 
 2. Click on *Create Stack*.
 
-3. Look for the section *Choose a template*, and choose the option *Specify an Amazon S3 template URL*. Then, in the text field that enables, paste this URL: ``https://s3-eu-west-1.amazonaws.com/aws.kurento.org/KMS-Coturn-cfn.yaml``.
+3. Look for the section *Choose a template*, and choose the option *Specify an Amazon S3 template URL*. Then, in the text field that gets enabled, paste this URL: ``https://s3-eu-west-1.amazonaws.com/aws.kurento.org/KMS-Coturn-cfn.yaml``.
 
 4. Follow through the steps of the configuration wizard.
 
@@ -48,20 +48,21 @@ KMS has explicit support for two Long-Term Support (*LTS*) distributions of Ubun
 
 Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if required.
 
-**First Step**. Define which version of Ubuntu will be used for your system. Open a terminal and copy **only one** of these lines:
+**First Step**. Add the Kurento package repositories to your system configuration. Run this whole command into a terminal:
 
 .. code-block:: bash
 
-   # Choose one:
-   REPO="trusty"  # KMS Releases - Ubuntu 14.04 (Trusty)
-   REPO="xenial"  # KMS Releases - Ubuntu 16.04 (Xenial)
+   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+   # Packages for Kurento Media Server - Release |VERSION|
+   deb [arch=amd64] http://ubuntu.openvidu.io/|VERSION| xenial kms6
+   deb [arch=amd64] http://ubuntu.openvidu.io/externals xenial kms6-externals
+   EOF
 
 **Second Step**. Type the following commands, **one at a time and in the same order as listed here**. When asked for any kind of confirmation, reply affirmatively:
 
 .. code-block:: text
 
-   echo "deb http://ubuntu.kurento.org $REPO kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
-   wget http://ubuntu.kurento.org/kurento.gpg.key -O - | sudo apt-key add -
+   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
    sudo apt-get update
    sudo apt-get install kurento-media-server
 
@@ -77,13 +78,13 @@ At this point, Kurento Media Server has been installed. The server includes serv
 STUN and TURN servers
 =====================
 
-If Kurento Media Server or any of its clients are located behind a :term:`NAT` (eg. in any cloud provider), you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
+If Kurento Media Server or its client application are located behind a :term:`NAT` (e.g. in any cloud provider), you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
 
 Apart from that, you need to open all UDP ports in your system configuration, as STUN will use any random port from the whole [0-65535] range.
 
 .. note::
 
-   The features provided by TURN are a superset of those provided by STUN. What this means is that *you don't need to configure a STUN server if you are already using a TURN server*.
+   The features provided by TURN are a superset of those provided by STUN. This means that *you don't need to configure a STUN server if you are already using a TURN server*.
 
 
 

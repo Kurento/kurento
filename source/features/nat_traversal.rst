@@ -20,9 +20,9 @@ Refer to the :ref:`logging documentation <logging-libnice>` if you need to enabl
 RTP without ICE
 ===============
 
-KMS is able to automatically infer what is the public IP and port of any remote peer which is communicating with it through an RTP connection. This removes the need to use ICE in some specific situations, where that complicated mechanism is not desired. This new automatic port discovery was inspired by the **Connection-Oriented Media Transport (COMEDIA)** as presented by the early Drafts of what finally would become the RFC 4145.
+KMS is able to automatically infer what is the public IP and port of any remote peer which is communicating with it through an RTP connection. This removes the need to use ICE in some specific situations, where that complicated mechanism is not desired. This new automatic port discovery was inspired by the **Connection-Oriented Media Transport** (COMEDIA) as presented by the early Drafts of what finally would become the RFC 4145.
 
-**TCP-Based Media Transport in the Session Description Protocol (SDP)** (`IETF RFC 4145 <https://tools.ietf.org/html/rfc4145>`_) defines an SDP extension which adds TCP connections and procedures, such as how a passive machine would wait for connections from a remote active machine and be able to obtain connection information from the active one, upon reception of an initial connection.
+**TCP-Based Media Transport in the Session Description Protocol** (SDP) (`IETF RFC 4145 <https://tools.ietf.org/html/rfc4145>`_) defines an SDP extension which adds TCP connections and procedures, such as how a passive machine would wait for connections from a remote active machine and be able to obtain connection information from the active one, upon reception of an initial connection.
 
 Early Drafts of RFC 4145 (up to `Draft 05 <https://tools.ietf.org/html/draft-ietf-mmusic-sdp-comedia-05>`_) also contemplated the usage of this same concept of "Connection-Oriented Media Transport in SDP" with UDP connections, as a way of aiding NAT traversal. This is what has been used as a basis for the implementation of automatic port discovery in KMS.
 

@@ -22,7 +22,7 @@ Starting from version **6.7.0**, KMS also implements these extra hardening measu
 
      The *PIC*/*PIE* feature adds a very valuable protection against attacks, but has one important requisite: *all shared objects must be compiled as position-independent code**. If your shared library has stopped linking with KMS, or your plugin stopped loading at run-time, try recompiling your code with the ``-fPIC`` option.
 
-- **Immediate Binding** (``-Wl,-z,now``). This linker option improves upon the *Read-Only Relocations (RELRO)* option, by forcing that all dynamic symbols get resolved at start-up (instead of on-demand). Combined with the RELRO flag, this means that the GOT can be made entirely read-only, which prevents even more types of *GOT-overwrite* memory corruption attacks.
+- **Immediate Binding** (``-Wl,-z,now``). This linker option improves upon the *Read-Only Relocations* (RELRO) option, by forcing that all dynamic symbols get resolved at start-up (instead of on-demand). Combined with the RELRO flag, this means that the GOT can be made entirely read-only, which prevents even more types of *GOT-overwrite* memory corruption attacks.
 
 
 

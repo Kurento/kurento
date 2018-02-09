@@ -28,8 +28,8 @@ Google Congestion Control
 
 Google's GCC is the RMCAT algorithm of choice for WebRTC, and it's used by WebRTC-compatible web browsers. In GCC, both sender and receiver of an RTP session collaborate to find out a realistic estimation of the network bandwidth that is available:
 
-- The RTP sender generates special timestamps called ``abs-send-time``, and sends them as part of the RTP packet's ``Header Extension``.
-- The RTP receiver generates a new type of RTCP feedback message called `Receiver Estimated Maximum Bitrate (REMB)`.
+- The RTP sender generates special timestamps called ``abs-send-time``, and sends them as part of the RTP packet's Header Extension.
+- The RTP receiver generates a new type of RTCP feedback message called *Receiver Estimated Maximum Bitrate* (REMB).
 
 
 

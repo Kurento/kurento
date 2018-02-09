@@ -96,16 +96,53 @@ A KMS developer must know how to work with KMS Fork and Main Repositories and un
 
 
 
-Repository dependency graph
----------------------------
+Module dependency graph
+-----------------------
 
-This graph shows the dependencies between projects:
+This graph shows the dependencies between all modules that form part of Kurento:
 
-.. figure:: /images/development-dependencies-all.png
+.. graphviz:: /images/graphs/Dependencies_All.dot
    :align: center
-   :alt: All dependency relationships
+   :caption: All dependency relationships
 
-   *All dependency relationships*
+
+
+.. _development-dependency-list:
+
+Module dependency list
+----------------------
+
+As the dependency graph is not strictly linear, there are multiple possible ways to order all modules into a linear dependency list; one possible order would be this one:
+
+**Externals**:
+
+1. gstreamer
+2. libsrtp
+3. openh264
+4. usrsctp
+5. jsoncpp
+6. gst-plugins-base
+7. gst-plugins-good
+8. gst-plugins-ugly
+9. gst-plugins-bad
+10. gst-libav
+11. openwebrtc-gst-plugins
+12. libnice
+
+**KMS Main + Extra**:
+
+1. kurento-module-creator
+2. kms-cmake-utils
+3. kms-jsonrpc
+4. kms-core
+5. kms-elements
+6. kms-filters
+7. kurento-media-server
+8. kms-chroma
+9. kms-crowddetector
+10. kms-datachannelexample
+11. kms-platedetector
+12. kms-pointerdetector
 
 
 
@@ -421,25 +458,35 @@ Each test has some amount of debug logging which will get printed; check these m
 Clean your system
 ~~~~~~~~~~~~~~~~~
 
-To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command and, for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option `--yes` -which makes the process automatic-, so if should be fairly safe to use. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
+To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command and, for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option ``--yes`` -which makes the process automatic-, so if should be fairly safe to use. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
 
 Run as root:
 
-.. code-block:: bash
+.. code-block:: text
 
-   for pkg in \
-     '^(kms|kurento).*' \
-     ffmpeg \
-     '^gir1.2-gst.*1.5' \
-     '^(lib)?gstreamer.*1.5.*' \
-     '^lib(nice|s3-2|srtp|usrsctp).*' \
-     '^srtp-.*' \
-     '^openh264(-gst-plugins-bad-1.5)?' \
-     '^openwebrtc-gst-plugins.*' \
-     '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev' \
-     '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev' \
+   PACKAGES=(
+     # KMS main components + extra modules
+     '^(kms|kurento).*'
+
+     # Kurento external libraries
+     ffmpeg
+     '^gir1.2-gst.*1.5'
+     gir1.2-nice-0.1
+     '^(lib)?gstreamer.*1.5.*'
+     '^lib(nice|s3-2|srtp|usrsctp).*'
+     '^srtp-.*'
+     '^openh264(-gst-plugins-bad-1.5)?'
+     '^openwebrtc-gst-plugins.*'
+
+     # System development libraries
+     '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
+     '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
      uuid-dev
-   do apt-get purge --auto-remove $pkg ; done
+   )
+
+   for PACKAGE in "${PACKAGES[@]}"; do
+     apt-get purge --auto-remove "$PACKAGE" || { echo "Ignore unexisting"; }
+   done
 
 
 
@@ -568,19 +615,19 @@ Building KMS on Ubuntu 14.04 (Trusty)
 
 KMS cannot be built in Trusty without adding the Kurento Packages Repository, because some of the system development libraries are required in a more recent version than the one available by default in the official Ubuntu Trusty repos. This is a non exhaustive list of those required libraries, compared with the versions available in Xenial and in the Kurento repo:
 
-[TODO] Fix Table
-
-| Name             | Requirement                     | In Trusty repo | In Xenial repo | In Kurento repo | Notes |
-| ---------------- | ------------------------------- | -------------- | -------------- | --------------- | ----- |
-| kms-core         | libglib2.0-dev (>= 2.46)        | 2.40           | 2.48           | 2.46            | [1]   |
-| gst-plugins-base | libsoup2.4-dev (>= 2.48)        | 2.44           | 2.52           | 2.50            |       |
-| libsrtp          | libssl-dev (>= 1.0.2)           | 1.0.1f         | 1.0.2g         | 1.0.2g          |       |
-| gst-plugins-bad  | libde265-dev (any)              | none           | 1.0.2          | 0.9             |       |
-|                  | libx265-dev (any)               | none           | 1.9            | 1.7             |       |
-|                  | libass-dev (>= 0.10.2)          | 0.10.1         | 0.13.1         | 0.10.2          |       |
-|                  | libgnutls28-dev, librtmp-dev    |                |                |                 | [2]   |
-| kms-elements     | libnice-dev (>= 0.1.13)         | 0.1.4          | 0.1.13         | 0.1.13          |       |
-| libnice          | libgupnp-igd-1.0-dev (>= 0.2.4) | 0.2.2          | 0.2.4          | 0.2.4           |       |
+================  ===============================  ==============  ==============  ===============  =====
+Name              Requirement                      In Trusty repo  In Xenial repo  In Kurento repo  Notes
+================  ===============================  ==============  ==============  ===============  =====
+kms-core          libglib2.0-dev (>= 2.46)         2.40            2.48            2.46             [1]
+gst-plugins-base  libsoup2.4-dev (>= 2.48)         2.44            2.52            2.50
+libsrtp           libssl-dev (>= 1.0.2)            1.0.1f          1.0.2g          1.0.2g
+gst-plugins-bad   libde265-dev (any)               none            1.0.2           0.9
+                  libx265-dev (any)                none            1.9             1.7
+                  libass-dev (>= 0.10.2)           0.10.1          0.13.1          0.10.2
+                  libgnutls28-dev, librtmp-dev                                                      [2]
+kms-elements      libnice-dev (>= 0.1.13)          0.1.4           0.1.13          0.1.13
+libnice           libgupnp-igd-1.0-dev (>= 0.2.4)  0.2.2           0.2.4           0.2.4
+================  ===============================  ==============  ==============  ===============  =====
 
 [1] It actually builds and works fine with 2.40, but the required version of GLib was first raised from 2.40 to 2.42 and later to 2.46 in commits `b10d318b` and `7f703bed`, justified as providing huge performance improvements in `mutex` and `g_object_ref`.
 
@@ -588,32 +635,7 @@ KMS cannot be built in Trusty without adding the Kurento Packages Repository, be
 
 This list of dependencies means that it is not possible to build the whole KMS on Ubuntu Trusty, at least not without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with `apt-get`.
 
-In the case that we want to force building the whole KMS libraries and modules -as opposed to downloading them from the repo- the solution to this problem is to clone each module separately, and build them in the order given by their [dependency graph](#repository-dependency-graph), which is this:
-
-1. gstreamer
-2. gst-plugins-base
-3. gst-plugins-good
-4. gst-plugins-ugly
-5. libsrtp
-6. openh264
-7. gst-plugins-bad
-8. gst-libav
-9. usrsctp
-10. openwebrtc-gst-plugins
-11. jsoncpp
-12. libnice
-13. kms-cmake-utils
-14. kurento-module-creator
-15. kms-jsonrpc
-16. kms-core
-17. kms-elements
-18. kms-filters
-19. kurento-media-server
-20. kms-chroma
-21. kms-crowddetector
-22. kms-datachannelexample
-23. kms-platedetector
-24. kms-pointerdetector
+In the case that we want to force building the whole KMS libraries and modules -*as opposed to downloading them from the repo*- the solution to this problem is to clone each module separately, and manually build them one by one, in the order given by their :ref:`development-dependency-list`.
 
 
 
