@@ -102,7 +102,9 @@ pygments_style = 'sphinx'
 
 # -- Extensions configuration ---------------------------------------------
 
-graphviz_output_format = 'svg'
+# 'svg' would be preferred, but then graphs appear too big and don't adjust
+# their width to the available space (overflows the paragraph size).
+graphviz_output_format = 'png'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -203,7 +205,6 @@ texinfo_documents = [
      author, 'Kurento', 'Kurento is a WebRTC media server',
      'Miscellaneous'),
 ]
-
 
 
 # -- Options for Epub output ----------------------------------------------
