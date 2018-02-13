@@ -2,7 +2,7 @@
 set -eu -o pipefail  # Abort on errors, disallow undefined variables
 IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
-# Install dependencies required for development of KMS.
+# Install every package related to development of Kurento Media Server.
 #
 # Notes:
 # - gstreamer1.5-x is needed for the "timeoverlay" GStreamer plugin,
@@ -15,6 +15,8 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # - Use a Bash Array to define all packages; run a single `apt-get` command.
 # 2018-02-07
 # - Add package: gstreamer1.5-tools.
+# 2018-02-12
+# - Moved debugging packages to their own install script.
 
 # Check root permissions
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
@@ -33,7 +35,7 @@ PACKAGES=(
   maven
   default-jdk
 
-  # Development libraries for KMS
+  # System development libraries
   libboost-dev
   libboost-filesystem-dev
   libboost-log-dev
@@ -53,13 +55,13 @@ PACKAGES=(
   libxml2-utils
   uuid-dev
 
-  # KMS fork libraries & rest of tools
-  gstreamer1.5-libav
-  gstreamer1.5-nice
-  gstreamer1.5-plugins-bad
+  # Kurento external libraries
   gstreamer1.5-plugins-base
   gstreamer1.5-plugins-good
   gstreamer1.5-plugins-ugly
+  gstreamer1.5-plugins-bad
+  gstreamer1.5-libav
+  gstreamer1.5-nice
   gstreamer1.5-tools
   gstreamer1.5-x
   libgstreamer1.5-dev
@@ -69,17 +71,6 @@ PACKAGES=(
   openwebrtc-gst-plugins-dev
   kmsjsoncpp-dev
   ffmpeg
-
-  # [Optional] Debug symbols
-  gstreamer1.5-libav-dbg
-  gstreamer1.5-plugins-bad-dbg
-  gstreamer1.5-plugins-base-dbg
-  gstreamer1.5-plugins-good-dbg
-  gstreamer1.5-plugins-ugly-dbg
-  libgstreamer1.5-0-dbg
-  libnice-dbg
-  openwebrtc-gst-plugins-dbg
-  kmsjsoncpp-dbg
 )
 
 apt-get update
