@@ -652,7 +652,9 @@ def compile_project(args):
         #     "git archive --remote=" + git_url
         #     + " " + default_commit + " debian/control")
         #
-        # Workaround: use the SVN bridge API offered by GitHub:
+        # Workaround: use the SVN bridge API offered by GitHub.
+        # TODO: Don't use "trunk", instead see if specific commit or version
+        # can be used in the URL.
 
         svn_url = git_url + "/trunk/debian/control"
         print("[buildpkg::compile_project] ({})"
