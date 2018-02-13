@@ -2,53 +2,59 @@
 set -eu -o pipefail  # Abort on errors, disallow undefined variables
 IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
-# Clone all Git repos that are related to Kurento Media Server.
+# Clone all Git repos related to Kurento Media Server.
 #
 # Changes:
 # 2018-01-24 Juan Navarro <juan.navarro@gmx.es>
 # - Initial version.
 # 2018-02-02
 # - Use a Bash Array to define all repos.
+# 2018-02-13
+# - Print the list of repos that will get cloned.
+# - Don't hide stderr from `git clone`.
 
 # Settings
 BASE_URL="https://github.com/Kurento"
 
 REPOS=(
-  # Main repositories of Kurento Media Server
+  # KMS main components
   kms-omni-build
+  kurento-module-creator
   kms-cmake-utils
   kms-jsonrpc
   kms-core
   kms-elements
   kms-filters
+  kurento-media-server
 
-  # Extra repos, not a core part of KMS
-  kms-pointerdetector
-  kms-platedetector
-  kms-crowddetector
+  # KMS extra modules
   kms-chroma
-  kms-opencv-plugin-sample
-  kms-markerdetector
+  kms-crowddetector
   kms-datachannelexample
+  kms-platedetector
+  kms-pointerdetector
+
+  # Additional sample modules
+  kms-markerdetector
+  kms-opencv-plugin-sample
   kms-plugin-sample
 
   # Tools and documentation
   adm-scripts
   bugtracker
   doc-kurento
-  kurento-module-creator
 
-  # Client-related repos
-  kurento-java
-  kurento-tutorial-java
-  kurento-media-server
-  kurento-tutorial-test
+  # Client Applications related repos
   kurento-maven-plugin
   kurento-qa-pom
+  kurento-java
+  kurento-tutorial-java
+  kurento-tutorial-test
 )
 
 echo "==== Clone Git repositories ===="
-echo "This script will clone all KMS repos"
+echo "This script will clone all Kurento repos:"
+printf '%s\n' "${REPOS[@]}"
 read -p "Are you sure? Type 'yes': " -r SURE
 [ "$SURE" != "yes" ] && [ "$SURE" != "YES" ] && { echo "Aborting"; exit 1; }
 
@@ -57,10 +63,10 @@ echo "Working..."
 for REPO in "${REPOS[@]}"; do
   REPO_URL="${BASE_URL}/${REPO}"
   if [ -d "$REPO" ]; then
-    echo "Skip repository: $REPO"
+    echo "Skip already existing: $REPO"
   else
     echo "Clone repository: $REPO"
-    git clone "$REPO_URL" >/dev/null 2>&1
+    git clone "$REPO_URL" >/dev/null
   fi
 done
 
