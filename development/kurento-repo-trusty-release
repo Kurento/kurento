@@ -15,6 +15,8 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 FILE="/etc/apt/sources.list.d/kurento.list"
 REPO="trusty"  # KMS release - Ubuntu 14.04 (Trusty)
 
+apt-get update && apt-get install -y wget
+
 tee "$FILE" >/dev/null <<EOF
 # Packages for Kurento Media Server
 deb http://ubuntu.kurento.org ${REPO} kms6
