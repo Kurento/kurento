@@ -4,7 +4,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-module-creator</artifactId>
-	<version>6.7.0</version>
+	<version>6.7.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>kurento-module-creator</name>
@@ -22,12 +22,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<wagon-ssh.version>2.0</wagon-ssh.version>
-
-		<wagon.groupId>org.apache.maven.wagon</wagon.groupId>
-		<wagon.artifact>wagon-ssh</wagon.artifact>
-		<wagon.version>1.0</wagon.version>
-
 		<buildDirectory>${project.basedir}/target</buildDirectory>
 	</properties>
 	<licenses>
@@ -37,17 +31,8 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	<profiles>
-		<profile>
-			<id>release</id>
-			<properties>
-				<wagon.groupId>org.kuali.maven.wagons</wagon.groupId>
-				<wagon.artifact>maven-s3-wagon</wagon.artifact>
-				<wagon.version>1.2.1</wagon.version>
-			</properties>
-		</profile>
-	</profiles>
-	<build>
+
+    <build>
 		<directory>${buildDirectory}</directory>
 
 		<resources>
@@ -97,9 +82,9 @@
 		</plugins>
 		<extensions>
 			<extension>
-				<groupId>${wagon.groupId}</groupId>
-				<artifactId>${wagon.artifact}</artifactId>
-				<version>${wagon.version}</version>
+				<groupId>org.kuali.maven.wagons</groupId>
+				<artifactId>maven-s3-wagon</artifactId>
+				<version>1.2.1</version>
 			</extension>
 		</extensions>
 	</build>
