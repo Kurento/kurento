@@ -25,9 +25,12 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 [ -n "$3" ] && SIGN_ARTIFACTS=$3
 
 # Validate parameters
-if [ -n "$MAVEN_SETTINGS" ];then
-  [ -f "$MAVEN_SETTINGS" ] || exit 1
-  PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
+if [ -n "$MAVEN_SETTINGS" ]; then
+    [ -f "$MAVEN_SETTINGS" ] || {
+        echo "[kurento_maven_deploy] ERROR: Cannot read file: $MAVEN_SETTINGS"
+        exit 1
+    }
+    PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
 fi
 [ -z "$SIGN_ARTIFACTS" ] && SIGN_ARTIFACTS="true"
 
@@ -39,36 +42,63 @@ export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
 
 PROJECT_VERSION=$(kurento_get_version.sh)
-echo "Deploying version $PROJECT_VERSION"
+echo "[kurento_maven_deploy] Deploy version: $PROJECT_VERSION"
+
 # Build all packages
 mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package $OPTS || exit 1
+
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
-	echo "Deploying SNAPSHOT version"
-	mvn --batch-mode $PARAM_MAVEN_SETTINGS package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Pdefault $OPTS -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || exit 1
+    echo "[kurento_maven_deploy] Version to deploy is SNAPSHOT"
+    mvn --batch-mode $PARAM_MAVEN_SETTINGS package \
+        org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
+        -Pdefault \
+        $OPTS \
+        -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || {
+            echo "[kurento_maven_deploy] ERROR: Command failed: mvn package (snapshot)"
+            exit 1
+        }
 elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; then
-	OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
-	if [[ $SIGN_ARTIFACTS == "true" ]]; then
-		echo "Deploying release version signing artifacts"
-		# Deploy signing artifacts
-		mvn --batch-mode $PARAM_MAVEN_SETTINGS package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
+    echo "[kurento_maven_deploy] Version to deploy is RELEASE"
+    OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
+    if [[ $SIGN_ARTIFACTS == "true" ]]; then
+        echo "[kurento_maven_deploy] Artifact signing on deploy is ENABLED"
+        # Deploy signing artifacts
+        mvn --batch-mode $PARAM_MAVEN_SETTINGS package \
+            javadoc:jar source:jar gpg:sign \
+            org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
+            $OPTS \
+            -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || {
+                echo "[kurento_maven_deploy] ERROR: Command failed: mvn package (signed release)"
+                exit 1
+            }
 
-		#Verify signed files (if any)
-		SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
+        #Verify signed files (if any)
+        SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
 
-		if [ -z "$SIGNED_FILES" ]; then
-			echo "No signed files found"
-			exit 0
-		fi
+        [ -z "$SIGNED_FILES" ] && {
+          echo "[kurento_maven_deploy] Exit: No signed files found"
+          exit 0
+        }
 
-		for FILE in $SIGNED_FILES
-		do
-		    SIGNED_FILE=`echo $FILE | sed 's/.asc\+$//'`
-		    gpg --verify $FILE $SIGNED_FILE || exit 1
-		done
+        for FILE in $SIGNED_FILES; do
+            SIGNED_FILE=`echo $FILE | sed 's/.asc\+$//'`
+            gpg --verify $FILE $SIGNED_FILE || {
+                echo "[kurento_maven_deploy] ERROR: Command failed: gpg verify"
+                exit 1
+            }
+        done
 
-	else
-		echo "Deploying release version without signing artifacts"
-		# Deploy without signing artifacts
-		mvn --batch-mode $PARAM_MAVEN_SETTINGS package javadoc:jar source:jar org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -U $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
-	fi
+    else
+        echo "[kurento_maven_deploy] Artifact signing on deploy is DISABLED"
+        # Deploy without signing artifacts
+        mvn --batch-mode $PARAM_MAVEN_SETTINGS package \
+            javadoc:jar source:jar \
+            org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
+            -U \
+            $OPTS \
+            -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || {
+                echo "[kurento_maven_deploy] ERROR: Command failed: mvn package (unsigned release)"
+                exit 1
+            }
+    fi
 fi

@@ -67,6 +67,8 @@ trap cleanup EXIT
 #
 
 cleanup () {
+  echo "[kurento_ci_container_job_setup] Clean up on exit"
+
   # Stop detached containers if started
   # MONGO
   [ -n "$MONGO_CONTAINER_ID" ] && \
@@ -102,7 +104,7 @@ CONTAINER_TEST_FILES=/opt/test-files
 #[ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
 [ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$(echo $GIT_URL | cut -d"/" -f2 | cut -d"." -f 1)
 [ -z "$KURENTO_PUBLIC_PROJECT" ] && KURENTO_PUBLIC_PROJECT="no"
-[ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
+[ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && { echo "[kurento_ci_container_job_setup] ERROR: Missing variable: KURENTO_GIT_REPOSITORY_SERVER"; exit 1; }
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
 [ -z "$BUILD_COMMAND" ] && BUILD_COMMAND="kurento_merge_js_project.sh"
 
@@ -122,19 +124,25 @@ CONTAINER_TEST_FILES=/opt/test-files
 [ -d /var/lib/jenkins/test-files ] && mkdir -p /var/lib/jenkins/test-files
 docker run \
   --rm \
-	--name $BUILD_TAG-TEST-FILES-$(date +"%s") \
+  --name $BUILD_TAG-TEST-FILES-$(date +"%s") \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
   -w $CONTAINER_TEST_FILES \
   kurento/svn-client:1.0.0 \
-  /opt/adm-scripts/kurento_update_test_files.sh || exit
+  /opt/adm-scripts/kurento_update_test_files.sh || {
+    echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run kurento_update_test_files"
+    exit $?
+  }
 #     kurento/svn-client:1.0.0 svn checkout http://files.kurento.org/svn/kurento . || exit
 
 # Verify if Mongo container must be started
 if [ "$START_MONGO_CONTAINER" == 'true' ]; then
     MONGO_CONTAINER_ID=$(docker run -d \
       --name $BUILD_TAG-MONGO-$(date +"%s") \
-      mongo:2.6.11) || exit
+      mongo:2.6.11) || {
+        echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run mongo"
+        exit $?
+      }
     # Guard time for mongo startup
     sleep 10
 fi
@@ -143,7 +151,10 @@ fi
 if [ "$START_KMS_CONTAINER" == 'true' ]; then
     KMS_CONTAINER_ID=$(docker run -d \
       --name $BUILD_TAG-KMS-$(date +"%s") \
-      kurento/kurento-media-server-dev:latest) || exit
+      kurento/kurento-media-server-dev:latest) || {
+        echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run kurento-media-server-dev"
+        exit $?
+      }
     KMS_AUTOSTART=false
 fi
 
