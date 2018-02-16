@@ -1,3 +1,5 @@
+- Prepare release 6.7.0
+- Normalize version numbers of all Kurento projects
 - Prepare release 2.0.2
 - Change license to Apache 2.0
 - Add badges into all README.md
