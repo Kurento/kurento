@@ -51,7 +51,7 @@ if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
     echo "[kurento_maven_deploy] Version to deploy is SNAPSHOT"
     mvn --batch-mode $PARAM_MAVEN_SETTINGS package \
         org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
-        -Pdefault \
+        -Pdefault -Pdeploy \
         $OPTS \
         -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || {
             echo "[kurento_maven_deploy] ERROR: Command failed: mvn package (snapshot)"
