@@ -1,6 +1,7 @@
 pom.xml
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 <#if module.code.kmd?? >
@@ -14,8 +15,12 @@ pom.xml
 </#if>
 	<packaging>jar</packaging>
 
+	<!-- Project-level information -->
 	<name>${module.name}</name>
-	<url>http://maven.apache.org</url>
+	<description></description>
+	<url>https://maven.apache.org</url>
+
+	<!-- Project configuration -->
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -48,7 +53,7 @@ pom.xml
 			<plugin>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>
-				<version>2.0.2</version>
+				<version>6.7.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -58,13 +63,13 @@ pom.xml
 				</executions>
 			</plugin>
 		</plugins>
-    <extensions>
-      <extension>
-        <groupId>org.kuali.maven.wagons</groupId>
-        <artifactId>maven-s3-wagon</artifactId>
-        <version>1.2.1</version>
-      </extension>
-    </extensions>
+		<extensions>
+			<extension>
+				<groupId>org.kuali.maven.wagons</groupId>
+				<artifactId>maven-s3-wagon</artifactId>
+				<version>1.2.1</version>
+			</extension>
+		</extensions>
 	</build>
 
 </project>
