@@ -17,7 +17,6 @@ apt-get update
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 apt-get install -y software-properties-common
 add-apt-repository "deb http://ubuntu.openvidu.io/dev trusty kms6"
-add-apt-repository "deb http://ubuntu.openvidu.io/externals trusty kms6-externals"
 apt-get update
 
 # ------------
