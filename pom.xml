@@ -5,7 +5,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-module-creator</artifactId>
-	<version>6.7.0</version>
+	<version>6.7.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<!-- Project-level information -->
@@ -59,6 +59,11 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<buildDirectory>${project.basedir}/target</buildDirectory>
+
+		<!-- See explanation below -->
+		<extension.groupId>org.apache.maven.wagon</extension.groupId>
+		<extension.artifactId>wagon-ssh</extension.artifactId>
+		<extension.version>1.0</extension.version>
 	</properties>
 
 	<dependencies>
@@ -144,11 +149,36 @@
 		</plugins>
 		<extensions>
 			<extension>
-				<groupId>org.kuali.maven.wagons</groupId>
-				<artifactId>maven-s3-wagon</artifactId>
-				<version>1.2.1</version>
+				<groupId>${extension.groupId}</groupId>
+				<artifactId>${extension.artifactId}</artifactId>
+				<version>${extension.version}</version>
 			</extension>
 		</extensions>
 	</build>
+
+	<!--
+	Maven has the limitation that it doesn't allow to define new <extensions>
+	as part of a <profile>, which means that we cannot easily inject the
+	'maven-s3-wagon' extension when the profile 'deploy' gets enabled.
+
+	There is a clever trick to overcome this limitation: have an harmless
+	extension added by default, and then swap it with the actually desired one,
+	by defining its Maven coordinates as properties in the profile.
+	Source: https://stackoverflow.com/questions/17639778/maven-3-profile-with-extensions/36253007#36253007
+
+	The default extension we are using here is 'org.apache.maven.wagon/wagon-ssh/1.0',
+	because it is already provided in the Debian package 'libwagon-java', thus
+	it doesn't introduce additional package dependencies at build time.
+	-->
+	<profiles>
+		<profile>
+			<id>deploy</id>
+			<properties>
+				<extension.groupId>org.kuali.maven.wagons</extension.groupId>
+				<extension.artifactId>maven-s3-wagon</extension.artifactId>
+				<extension.version>1.2.1</extension.version>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>
