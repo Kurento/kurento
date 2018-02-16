@@ -1,48 +1,60 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-maven-plugin</artifactId>
-	<version>2.0.3-SNAPSHOT</version>
+	<version>6.7.0-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
-	<name>kurento-maven-plugin</name>
-	<url>http://maven.apache.org</url>
-	<description>Generates Java and Javascript client code of Kurento Media Server modules</description>
+	<!-- Project-level information -->
+	<name>Kurento Maven Plugin</name>
+	<description>
+		Generates Java and Javascript client code from Kurento Media Server
+		module description files.
+	</description>
+	<url>https://www.kurento.org/docs/${project.version}</url>
+	<scm>
+		<url>https://github.com/Kurento/kurento-maven-plugin</url>
+		<connection>scm:git:git://github.com/Kurento/kurento-maven-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</developerConnection>
+	</scm>
 
-        <organization>
-                <name>Kurento</name>
-                <url>http://www.kurento.org</url>
-        </organization>
+	<!-- Organization-level information -->
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>Kurento Community</name>
+			<organization>Kurento</organization>
+			<organizationUrl>https://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/Kurento/bugtracker/issues</url>
+	</issueManagement>
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<mailingLists>
+		<mailingList>
+			<name>Kurento List</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+	</mailingLists>
+	<organization>
+		<name>Kurento</name>
+		<url>https://www.kurento.org</url>
+	</organization>
 
-        <issueManagement>
-                <system>Redmine</system>
-                <url>https://repository.kurento.org/redmine/</url>
-        </issueManagement>
-
-        <licenses>
-                <license>
-                        <name>Apache 2.0</name>
-                        <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-                        <distribution>repo</distribution>
-                </license>
-        </licenses>
-
-        <scm>
-                <url>https://github.com/Kurento/kurento-maven-plugin</url>
-                <connection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</connection>
-                <developerConnection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</developerConnection>
-          <tag>HEAD</tag>
-  </scm>
-
-        <developers>
-                <developer>
-                        <id>kurento.org</id>
-                        <name>-kurento.org Community</name>
-                        <organization>Kurento.org</organization>
-                        <organizationUrl>http://www.kurento.org</organizationUrl>
-                </developer>
-        </developers>
+	<!-- Project configuration -->
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -53,7 +65,6 @@
 	</properties>
 
 	<build>
-
 		<defaultGoal>install</defaultGoal>
 		<resources>
 			<resource>
@@ -90,68 +101,62 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
-
-                <extensions>
-                        <extension>
-                                <groupId>org.kuali.maven.wagons</groupId>
-                                <artifactId>maven-s3-wagon</artifactId>
-                                <version>1.2.1</version>
-                        </extension>
-                </extensions>
+		<extensions>
+			<extension>
+				<groupId>org.kuali.maven.wagons</groupId>
+				<artifactId>maven-s3-wagon</artifactId>
+				<version>1.2.1</version>
+			</extension>
+		</extensions>
 	</build>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
 			<version>3.0.5</version>
 			<scope>compile</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-project</artifactId>
 			<version>2.2.1</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-compiler-api</artifactId>
-			<version>2.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.sonatype.plexus</groupId>
-			<artifactId>plexus-build-api</artifactId>
-			<version>0.0.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>17.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-module-creator</artifactId>
-			<version>4.0.5</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
 			<version>3.2</version>
 			<scope>provided</scope><!-- annotations are needed only to build the plugin -->
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-compiler-api</artifactId>
+			<version>2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.sonatype.plexus</groupId>
+			<artifactId>plexus-build-api</artifactId>
+			<version>0.0.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>17.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Kurento -->
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-module-creator</artifactId>
+			<version>6.7.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
+
 </project>
