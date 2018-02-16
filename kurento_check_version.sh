@@ -22,23 +22,23 @@ echo "[kurento_check_version] Create tag is '$CREATE_TAG'"
 PROJECT_VERSION=`kurento_get_version.sh`
 
 if [ "${PROJECT_VERSION}x" = "x" ]; then
-  echo "[kurento_check_version] Could not find project version"
+  echo "[kurento_check_version] ERROR: Could not find project version"
   exit 1
 fi
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]]; then
-  echo "[kurento_check_version] SNAPSHOT version ${PROJECT_VERSION}"
+  echo "[kurento_check_version] Exit: Version is SNAPSHOT: ${PROJECT_VERSION}"
   exit 0
 fi
 
 if [[ ${PROJECT_VERSION} == *-dev ]]; then
-  echo "[kurento_check_version] dev version"
+  echo "[kurento_check_version] Exit: Version is DEV"
   exit 0
 fi
 
 if [[ $(echo $PROJECT_VERSION | grep -o '\.' | wc -l) -gt 2 ]]
 then
-  echo "[kurento_check_version] Found more than two dots, should be a configure.ac dev version"
+  echo "[kurento_check_version] Exit: Found more than two dots, should be a configure.ac dev version"
   exit 0
 fi
 
@@ -50,7 +50,7 @@ if [[ ${CHECK_SUBMODULES} == yes ]]; then
     fi
   "
   if [ $? -eq 1 ]; then
-    echo "[kurento_check_version] Not all the projects are in a tag"
+    echo "[kurento_check_version] ERROR: Not all the projects are in a tag"
     exit 1
   fi
 fi
@@ -60,14 +60,14 @@ if [ -s debian/changelog ]
   # check changelog version
   ver=$(head -1 debian/changelog | sed -e "s@.* (\(.*\)) .*@\1@")
   if [[ $ver != ${PROJECT_VERSION} ]]; then
-    echo "[kurento_check_version] Version in changelog is different to current version"
+    echo "[kurento_check_version] ERROR: Version in changelog is different to current version"
     exit 1
   fi
 fi
 
 # Check that release version conforms to semver
 kurento_check_semver.sh ${PROJECT_VERSION} || {
-  echo "[kurento_check_version] kurento_check_semver failed"
+  echo "[kurento_check_version] ERROR: kurento_check_semver failed"
   exit 1
 }
 
