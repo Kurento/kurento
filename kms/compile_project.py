@@ -212,13 +212,13 @@ def install_dependency(dep_alts):
 
         if pkgversion is None:
             print("[buildpkg::install_dependency]"
-                  " Dependency: '{}' without any valid package version".format(
+                  " Dependency '{}' without any valid package version".format(
                       pkg_name))
             return False
 
         # Install selected dependency version
         print("[buildpkg::install_dependency]"
-              " Install dependency: '{}' via package: {}, version: {}".format(
+              " Install dependency '{}' via package '{}' version '{}'".format(
                   pkg_name, pkg.shortname, pkgversion.version))
 
         pkg.candidate = pkgversion
@@ -334,7 +334,7 @@ def request_http(url, cert_path, key_path, file_path=None):
 #         pass  # file_path is None
 #     except IOError as err:
 #         print("[buildpkg::request_http] ERROR:"
-#               " Opening file: '{}', error: {}".format(file_path, err.strerror))
+#               " Opening file '{}', error: {}".format(file_path, err.strerror))
 #         exit(1)
 #     else:
 #         print("[buildpkg::request_http] File opened:", file_path)
@@ -401,15 +401,15 @@ def install_build_dependencies():
             if check_deb_dependency_installable(dep_alts):
                 # Try to install missing dependencies
                 print("[buildpkg::install_build_dependencies]"
-                      " Try to install dependency: '{}'".format(
+                      " Try to install dependency '{}'".format(
                           dep2str(dep_alts)))
                 if not install_dependency(dep_alts):
                     print("[buildpkg::install_build_dependencies] ERROR:"
-                          " Installing dependency: '{}'".format(
+                          " Installing dependency '{}'".format(
                               dep2str(dep_alts)))
             else:
                 print("[buildpkg::install_build_dependencies]"
-                      " Dependency: '{}' package not available, need to"
+                      " Dependency '{}' has no package available, need to"
                       " download and build it".format(
                           dep2str(dep_alts)))
 
@@ -552,7 +552,7 @@ def compile_project(args):
     buildconfig_path = os.path.abspath(args.file)
 
     print("[buildpkg::compile_project]"
-          " Project: {}, work directory: '{}'".format(
+          " Project: '{}', work directory: '{}'".format(
               project_name, project_workdir))
 
     try:
@@ -585,7 +585,7 @@ def compile_project(args):
     for dependency in buildconfig.get("dependencies", []):
         if not dependency.has_key("name"):
             print("[buildpkg::compile_project] ({}) ERROR:"
-                  " Build dependency lacks a name: '{}'".format(
+                  " Build dependency '{}' lacks a proper name".format(
                       project_name, str(dependency)))
             exit(1)
         if dependency.has_key("version"):
@@ -594,13 +594,13 @@ def compile_project(args):
             match = regex.match(dependency["version"])
             if match:
                 print("[buildpkg::compile_project] ({})"
-                      " Parsed project dependency: '{}', version: {}".format(
+                      " Parsed project dependency: '{}', version '{}'".format(
                           project_name, dependency["name"], dependency["version"]))
                 parts = match.groupdict()
                 dependency["version"] = (parts['relop'], parts['version'])
             else:
                 print("[buildpkg::compile_project] ({}) ERROR:"
-                      " Project dependency: '{}' with invalid version string: '{}'".format(
+                      " Project dependency '{}' with invalid version string: '{}'".format(
                           project_name, dependency["name"], dependency["version"]))
                 exit(1)
         else:
@@ -672,7 +672,7 @@ def compile_project(args):
 
         if not check_dependency_installed(dependency, debian_control_file):
             print("[buildpkg::compile_project] ({})"
-                  " Build dependency: '{}' is not installed,"
+                  " Build dependency '{}' is not installed,"
                   " download and build it".format(
                       project_name, build_dependency_name))
 
@@ -687,7 +687,7 @@ def compile_project(args):
                     and str(repo.commit()) != dependency["commit"]
                     and subprocess.call(["git", "checkout", dependency["commit"]]) != 0):
                 print("[buildpkg::compile_project] ({}) ERROR:"
-                      " Checking out the commit: {} for build dependency: '{}'".format(
+                      " Checking out the commit '{}' for build dependency '{}'".format(
                           project_name, dependency["commit"], build_dependency_name))
                 exit(1)
 
