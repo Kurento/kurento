@@ -69,28 +69,90 @@ Logging categories and levels can be set by two methods:
 Suggested levels
 ================
 
-Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed:
+Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed. They are given in the environment variable form, so they can be copied directly into the KMS configuration file, */etc/default/kurento-media-server*:
 
-- Global level: **3** (higher than 3 would mean too much noise from GStreamer)
-- Unit tests: ``check:5``
-- SDP processing: ``kmssdpsession:4``
-- COMEDIA port discovery: ``rtpendpoint:4``
+- Default suggested levels:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,Kurento*:4,kms*:4"
+
+- COMEDIA port discovery:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,rtpendpoint:4"
+
 - ICE candidate gathering:
 
-  - At the Nice Agent (handling of candidates): ``kmsiceniceagent:5``
-  - At the KMS WebRtcSession (decision logic): ``kmswebrtcsession:5``
-  - At the WebRtcEndpoint (very basic logging): ``webrtcendpoint:4``
+  .. code-block:: text
+
+     export GST_DEBUG="3,kmsiceniceagent:5,kmswebrtcsession:5,webrtcendpoint:4"
+
+  Notes:
+
+  - *kmsiceniceagent* shows messages from the Nice Agent (handling of candidates).
+  - *kmswebrtcsession* shows messages from the KMS WebRtcSession (decision logic).
+  - *webrtcendpoint* shows messages from the WebRtcEndpoint (very basic logging).
+
+- Event MediaFlow{In|Out} state changes:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,KurentoMediaElementImpl:5"
+
+- Player:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,playerendpoint:5"
+
+- Recorder:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5"
 
 - REMB congestion control:
 
-  - Only effective REMB send/recv values: ``kmsremb:5``
-  - Full handling of all source SSRCs: ``kmsremb:6``
+  .. code-block:: text
 
-- MediaFlow{In|Out} state changes: ``KurentoMediaElementImpl:5``
-- RPC calls: ``KurentoWebSocketTransport:5``
-- RTP Sync: ``kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5``
-- Player: ``playerendpoint:5``
-- Recorder: ``KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5``
+     export GST_DEBUG="3,kmsremb:5"
+
+  Notes:
+
+  - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
+  - *kmsremb:6* (debug level 6) shows full handling of all source SSRCs.
+
+- RPC calls:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,KurentoWebSocketTransport:5"
+
+- RTP Sync:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
+
+- SDP processing:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,kmssdpsession:4"
+
+- Transcoding of media:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,Kurento*:5,kms*:4,agnosticbin*:7"
+
+- Unit tests:
+
+  .. code-block:: text
+
+     export GST_DEBUG="3,check:5"
 
 
 
