@@ -56,7 +56,7 @@ Adding a repository to Maven can be done at three scope levels:
          <repository>
            <id>kurento-snapshots</id>
            <name>Kurento Snapshots</name>
-           <url>http://maven.kurento.org/snapshots/</url>
+           <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
            <releases>
              <enabled>false</enabled>
            </releases>
@@ -69,7 +69,7 @@ Adding a repository to Maven can be done at three scope levels:
          <pluginRepository>
            <id>kurento-snapshots</id>
            <name>Kurento Snapshots</name>
-           <url>http://maven.kurento.org/snapshots/</url>
+           <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
            <releases>
              <enabled>false</enabled>
            </releases>
@@ -115,7 +115,7 @@ Adding a repository to Maven can be done at three scope levels:
              <repository>
                <id>kurento-snapshots</id>
                <name>Kurento Snapshots</name>
-               <url>http://maven.kurento.org/snapshots/</url>
+               <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
                <releases>
                  <enabled>false</enabled>
                </releases>
@@ -128,7 +128,7 @@ Adding a repository to Maven can be done at three scope levels:
              <pluginRepository>
                <id>kurento-snapshots</id>
                <name>Kurento Snapshots</name>
-               <url>http://maven.kurento.org/snapshots/</url>
+               <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
                <releases>
                  <enabled>false</enabled>
                </releases>
@@ -144,7 +144,7 @@ Adding a repository to Maven can be done at three scope levels:
 
   After this is included, use the ``-Pkurento`` switch in your next Maven run to enable the new profile, so all artifacts get downloaded into you local repository. Once in your local repository, Maven can successfully resolve the dependencies and the profile no longer needs to be activated in future runs.
 
-For more information about adding snapshot repositories in Maven, check their official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`_.
+For more information about adding snapshot repositories to Maven, check their official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`_.
 
 
 
