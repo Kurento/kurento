@@ -67,7 +67,7 @@ fi
 
 # Check that release version conforms to semver
 kurento_check_semver.sh ${PROJECT_VERSION} || {
-  echo "[kurento_check_version] ERROR: kurento_check_semver failed"
+  echo "[kurento_check_version] ERROR: Command failed: kurento_check_semver"
   exit 1
 }
 

@@ -29,7 +29,7 @@ kurento_maven_deploy.sh || {
   exit 1
 }
 
-# Deploy to Central (only release)
+# Deploy to Maven Central (only release)
 export SNAPSHOT_REPOSITORY=
 export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
 kurento_maven_deploy.sh || {
@@ -37,18 +37,19 @@ kurento_maven_deploy.sh || {
   exit 1
 }
 
-# Deploy to builds only when it is release
+# Deploy to Kurento Builds only when it is release
 VERSION=$(kurento_get_version.sh)
 if [[ $VERSION != *-SNAPSHOT ]]; then
-  echo "[kurento_merge_java_project] Version is RELEASE: Publish HTTP"
-  # Create version file
-  echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > project.version
+  echo "[kurento_merge_java_project] Version is RELEASE: HTTP publish"
 
-  [ -n "$FILES" ] && {
-    FILES=$FILES kurento_http_publish.sh || echo "No files provided. Skipping."
-  }
+  if [[ -n "$FILES" ]]; then
+    echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > project.version
+    FILES=$FILES kurento_http_publish.sh
+  else
+    echo "[kurento_merge_java_project] No FILES provided, skip HTTP publish"
+  fi
 else
-  echo "[kurento_merge_java_project] Version is SNAPSHOT: Don't publish HTTP"
+  echo "[kurento_merge_java_project] Version is SNAPSHOT, skip HTTP publish"
 fi
 
 # Only create a tag if the deployment process was successful
