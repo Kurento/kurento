@@ -30,7 +30,8 @@ Depends: ${shlibs:Depends},
  libssl1.0.0 (>= 1.0.2d),
  gstreamer1.5-nice (>= 0.1.13.1~0),
  kms-core (>= 6.7.0),
- openwebrtc-gst-plugins
+ openwebrtc-gst-plugins,
+ openh264-gst-plugins-bad-1.5
 Breaks: kms-elements-6.0
 Replaces: kms-elements-6.0
 Description: Kurento Elements module
