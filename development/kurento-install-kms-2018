@@ -53,7 +53,7 @@ PACKAGES=(
 )
 
 apt-get update
-apt-get install --no-install-recommends --yes "${PACKAGES[@]}"
+apt-get install --yes "${PACKAGES[@]}"
 
 echo "All packages installed successfully"
 
