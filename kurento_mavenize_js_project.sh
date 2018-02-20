@@ -3,14 +3,14 @@
 echo "##################### EXECUTE: kurento_mavenice_js_project #####################"
 
 # PROJECT_NAME string
-#		Project name used in pom.xml
+#   Project name used in pom.xml
 #
 # MAVEN_SHELL_SCRIPT string
-#		Script to be included in maven shell plugin
+#   Script to be included in maven shell plugin
 #
 # ASSEMBLY_FILE path
-#		Location of the assembly file to be used by maven. If not present a new
-#		one will be created
+#   Location of the assembly file to be used by maven. If not present a new
+#   one will be created
 
 # Get input parameters for backward compatibility
 [ -n "$1" ] && PROJECT_NAME=$1
@@ -18,30 +18,46 @@ echo "##################### EXECUTE: kurento_mavenice_js_project ###############
 [ -n "$3" ] && ASSEMBLY_FILE=$3
 
 # Validate parameters
-[ -z "$PROJECT_NAME" ] && exit 1
+[ -z "$PROJECT_NAME" ] && {
+  echo "[kurento_mavenize_js_project] ERROR: Undefined variable: PROJECT_NAME"
+  exit 1
+}
 [ -z "$MAVEN_SHELL_SCRIPT" ] && MAVEN_SHELL_SCRIPT="\
-	npm install npm -g || exit 1; \
-	cd \${basedir}; \
-	npm -d install || exit 1; \
-	node_modules/.bin/grunt || exit 1; \
-	node_modules/.bin/grunt sync:bower || exit 1; \
-	mkdir -p src/main/resources/META-INF/resources/js/ || exit 1; \
-	cp dist/* src/main/resources/META-INF/resources/js/"
+  npm install npm -g || exit 1; \
+  cd \${basedir}; \
+  npm -d install || exit 1; \
+  node_modules/.bin/grunt || exit 1; \
+  node_modules/.bin/grunt sync:bower || exit 1; \
+  mkdir -p src/main/resources/META-INF/resources/js/ || exit 1; \
+  cp dist/* src/main/resources/META-INF/resources/js/"
 [ -z "$ASSEMBLY_FILE" ] && ASSEMBLY_FILE="assembly.xml"
 
 # Validate project structure
-[ -f package.json ] || exit 1
+[ -f package.json ] || {
+  echo "[kurento_mavenize_js_project] ERROR: Cannot read file: package.json"
+  exit 1
+}
 
 # Build maven version from package.json
-VERSION=$(jshon -e version -u < package.json)
+VERSION=$(jshon -e version -u < package.json) || {
+  echo "[kurento_mavenize_js_project] ERROR: Command failed: jshon -e version"
+  exit 1
+}
 
 # Version must be semver compliant
-echo $VERSION | grep -q -P "^\d+\.\d+\.\d+" || exit 1
+echo $VERSION | grep -q -P "^\d+\.\d+\.\d+" || {
+  echo "[kurento_mavenize_js_project] ERROR: VERSION doesn't seem to follow semver"
+  exit 1
+}
+
 RELEASE=$(echo $VERSION | awk -F"-" '{print $1}')
 [ -n "$(echo $VERSION | awk -F"-" '{print $2}')" ] && VERSION=$RELEASE-SNAPSHOT
 
-# Exit silently if pom already present with correct version
-[ -f pom.xml ] && [ $VERSION == `mvn help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v "Down"` ] && exit 0
+# Exit if pom already present with correct version
+[ -f pom.xml ] && [ $VERSION == `mvn help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v "Down"` ] && {
+  echo "[kurento_mavenize_js_project] Exit: pom.xml already exists"
+  exit 0
+}
 
 # Add pom file
 cat >pom.xml <<-EOF
@@ -165,7 +181,10 @@ cat >pom.xml <<-EOF
 EOF
 
 # If there's an assembly file elsewhere, stop and use the file specified. It should be placed on the root of the workspace
-[ -n $ASSEMBLY_FILE ] && exit 0
+[ -n $ASSEMBLY_FILE ] && {
+  echo "[kurento_mavenize_js_project] Exit: Assembly file already exists: $ASSEMBLY_FILE"
+  exit 0
+}
 
 # Add assembly file
 cat >$ASSEMBLY_FILE <<-EOF

@@ -37,24 +37,46 @@ vercomp () {
 }
 
 # Get project data
-projectName=$(jshon -e name -u < package.json)  || exit 1
-localVersion=$(jshon -e version -u < package.json ) || exit 1
-pubVersion=$(npm info --json $projectName| jshon -e version -u || echo "0.0.0") || exit 1
+projectName=$(jshon -e name -u < package.json) || {
+  echo "[kurento_npm_publish] ERROR: Command failed: jshon -e name"
+  exit 1
+}
+localVersion=$(jshon -e version -u < package.json ) || {
+  echo "[kurento_npm_publish] ERROR: Command failed: jshon -e version"
+  exit 1
+}
+pubVersion=$(npm info --json $projectName | jshon -e version -u || echo "0.0.0") || {
+  echo "[kurento_npm_publish] ERROR: Command failed: npm info"
+  exit 1
+}
 
-localRelease=$(echo $localVersion | awk -F"-" '{print $1}') || exit 1
-pubRelease=$(echo $pubVersion | awk -F"-" '{print $1}') || exit 1
+localRelease=$(echo $localVersion | awk -F"-" '{print $1}') || {
+  echo "[kurento_npm_publish] ERROR: Command failed: awk localVersion"
+  exit 1
+}
+pubRelease=$(echo $pubVersion | awk -F"-" '{print $1}') || {
+  echo "[kurento_npm_publish] ERROR: Command failed: awk pubVersion"
+  exit 1
+}
 
 echo "Local version found, V: $localVersion, R: $localRelease"
 echo "Public version found, V: $pubVersion, R: $pubRelease"
 
-[[ $localRelease != $localVersion ]] && { echo "Do not publish development versions"; exit 0; }
+[[ $localRelease != $localVersion ]] && {
+  echo "[kurento_npm_publish] Exit: Version is development"
+  exit 0
+}
 
 # Publish release only if greater than published
 vercomp $localRelease $pubRelease
 different=$?
 if [ $different -eq 1 ]; then
   echo "Publishing to npm $projectName version $localVersion"
-	npm publish || exit 1
+  npm publish || {
+    echo "[kurento_npm_publish] ERROR: Command failed: npm publish"
+    exit 1
+  }
 else
-	echo "Do not publish as public version is already greater or equal than local"
+  echo "[kurento_npm_publish] Exit: public version is already greater or equal than local"
+  exit 0
 fi

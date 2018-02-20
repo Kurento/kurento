@@ -1,4 +1,5 @@
 #!/bin/bash -x
+
 echo "##################### EXECUTE: kurento_merge_js_project #####################"
 
 # KURENTO_PROJECT string
@@ -21,24 +22,37 @@ echo "##################### EXECUTE: kurento_merge_js_project ##################
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
-# Verify mandatory parameters
-[ -z "$KURENTO_PROJECT" ] && exit 1
-[ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
-
 # Verify project structure
-[ -f package.json ] || exit 1
+kurento_check_version.sh false || {
+  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging disabled)"
+  exit 1
+}
+[ -f package.json ] || {
+  echo "[kurento_merge_js_project] ERROR: Cannot read file: package.json"
+  exit 1
+}
 
-# Deploy to maven repository
-kurento_check_version.sh true
-kurento_mavenize_js_project.sh $KURENTO_PROJECT
-# Deploy to snapshot or kurento release
+# Deploy to Maven Central
+kurento_mavenize_js_project.sh $KURENTO_PROJECT || {
+  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_mavenize_js_project"
+  exit 1
+}
+
+# Deploy to Kurento repositories
 export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
 export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
-kurento_maven_deploy.sh || exit 1
-# Deploy to Maven Central
+kurento_maven_deploy.sh || {
+  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_maven_deploy (Kurento)"
+  exit 1
+}
+
+# Deploy to Maven Central (only release)
 export SNAPSHOT_REPOSITORY=
 export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
-kurento_maven_deploy.sh || exit 1
+kurento_maven_deploy.sh || {
+  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
+  exit 1
+}
 
 # Deploy to NPM
 kurento_npm_publish.sh
@@ -89,3 +103,9 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
   export FILES
   kurento_http_publish.sh
 fi
+
+# Only create a tag if the deployment process was successful
+kurento_check_version.sh true || {
+  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging enabled)"
+  exit 1
+}
