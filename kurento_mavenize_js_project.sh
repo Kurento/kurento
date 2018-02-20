@@ -60,7 +60,7 @@ RELEASE=$(echo $VERSION | awk -F"-" '{print $1}')
 }
 
 # Add pom file
-cat >pom.xml <<-EOF
+cat >pom.xml <<EOF
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -76,7 +76,7 @@ cat >pom.xml <<-EOF
 	<description>
 		Kurento Media Server, module ${PROJECT_NAME} JavaScript client code.
 	</description>
-	<url>https://www.kurento.org/docs/${project.version}</url>
+	<url>https://www.kurento.org/docs/\${project.version}</url>
 	<scm>
 		<url>https://github.com/Kurento/${PROJECT_NAME}</url>
 		<connection>scm:git:git://github.com/Kurento/${PROJECT_NAME}.git</connection>
