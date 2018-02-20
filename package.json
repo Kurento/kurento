@@ -2,35 +2,59 @@
   "name": "kurento-utils",
   "version": "6.7.0-dev",
   "description": "Kurento Utilities",
-  "homepage": "http://www.kurento.org",
-  "license": "ALv2",
-  "author": "Kurento <info@kurento.org> (http://kurento.org)",
+  "keywords": [
+    "kurento",
+    "webrtc",
+    "rtp",
+    "srtp",
+    "audio",
+    "video",
+    "videoconference",
+    "broadcast",
+    "mediaserver",
+    "recording",
+    "stream",
+    "streaming",
+    "mcu",
+    "sfu",
+    "h264",
+    "vp8",
+    "stun",
+    "turn"
+  ],
+  "homepage": "https://www.kurento.org",
+  "bugs": {
+    "url": "https://github.com/Kurento/bugtracker/issues",
+    "email": "kurento@googlegroups.com"
+  },
+  "license": "Apache-2.0",
+  "author": "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
   "contributors": [
-    "Ivan Gracia <izanmail@gmail.com>",
-    "Jesus Leganes 'piranna' <piranna@gmail.com>"
+    "Kurento Community <openvidu@gmail.com> (https://www.kurento.org)"
   ],
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "Kurento/kurento-utils-js"
+    "url": "github:Kurento/kurento-utils-js"
   },
-  "bugs": {
-    "url": "https://github.com/Kurento/kurento-utils-js/issues",
-    "email": "info@kurento.com"
-  },
-  "keywords": [
-    "API",
-    "Kurento",
-    "WebRTC"
-  ],
   "scripts": {
     "coveralls": "scripts/coveralls",
     "test": "scripts/test"
+  },
+  "dependencies": {
+    "freeice": "^2.1.2",
+    "hark": "1.1.3",
+    "inherits": "^2.0.1",
+    "merge": "^1.2.0",
+    "sdp-translator": "^0.1.15",
+    "ua-parser-js": "^0.7.7",
+    "uuid": "~2.0.1"
   },
   "devDependencies": {
     "bower": "~1.7.9",
     "browserify": "^13.0.1",
     "browserify-optional": "^1.0.0",
+    "chromedriver": "^2.21.2",
     "coveralls": "~2.11.2",
     "fs-extra": "^0.30.0",
     "grunt": "^0.4.0",
@@ -51,17 +75,7 @@
     "qunit-reporter-lcov": "^1.0.2",
     "qunitjs": "^1.23.1",
     "selenium-webdriver": "2.53.2",
-    "xml2js": "^0.4.9",
-    "chromedriver": "^2.21.2"
-  },
-  "dependencies": {
-    "sdp-translator": "^0.1.15",
-    "uuid": "~2.0.1",
-    "freeice": "^2.1.2",
-    "inherits": "^2.0.1",
-    "merge": "^1.2.0",
-    "ua-parser-js": "^0.7.7",
-    "hark": "1.1.3"
+    "xml2js": "^0.4.9"
   },
   "optionalDependencies": {
     "kurento-browser-extensions": "*"
