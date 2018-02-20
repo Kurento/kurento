@@ -1,40 +1,56 @@
 #!/bin/bash -x
 
-if [ -z "$KURENTO_PUBLIC_PROJECT" ];
-then
-  [ -n $2 ] && PUBLIC=$2 || PUBLIC=no
-else
-  PUBLIC=$KURENTO_PUBLIC_PROJECT
-fi
+echo "##################### EXECUTE: kurento_generate_java_module #####################"
+
+# MAVEN_KURENTO_SNAPSHOTS url
+#   URL of Kurento repository for maven snapshots
+#
+# MAVEN_KURENTO_RELEASES url
+#   URL of Kurento repository for maven releases
+#
+# MAVEN_SONATYPE_NEXUS_STAGING url
+#   URL of Central staging repositories.
+#   Pass it empty to avoid deploying to nexus (private projects):
+#   export MAVEN_SONATYPE_NEXUS_STAGING=
+#   kurento_merge_java_project.sh
+
+PATH=$PATH:${KURENTO_SCRIPTS_HOME}
+
+kurento_check_version.sh false || {
+  echo "[kurento_generate_java_module] ERROR: Command failed: kurento_check_version (tagging disabled)"
+  exit 1
+}
 
 rm -rf build
 mkdir build && cd build
-cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || exit 1
+cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
+  echo "[kurento_generate_java_module] ERROR: Command failed: cmake"
+  exit 1
+}
 
-cd java || exit 1
-PATH=$PATH:$(realpath $(dirname "$0"))
-PROJECT_VERSION=`kurento_get_version.sh`
+cd java || {
+  echo "[kurento_generate_java_module] ERROR: Expected directory doesn't exist: java/"
+  exit 1
+}
 
-GOALS="clean package"
-if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
-  [ "$PUBLIC" == "yes" ] && GOALS+=" javadoc:jar source:jar gpg:sign"
-fi
-GOALS+=" org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy"
-OPTS="$OPTS -Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -U"
+# Deploy to Kurento repositories
+export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
+export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
+kurento_maven_deploy.sh || {
+  echo "[kurento_generate_java_module] ERROR: Command failed: kurento_maven_deploy (Kurento)"
+  exit 1
+}
 
-echo $OPTS
+# Deploy to Maven Central (only release)
+export SNAPSHOT_REPOSITORY=
+export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
+kurento_maven_deploy.sh || {
+  echo "[kurento_generate_java_module] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
+  exit 1
+}
 
-if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
-  echo "Deploying release version to ${MAVEN_S3_KURENTO_RELEASES} and ${MAVEN_SONATYPE_NEXUS_STAGING}"
-  echo "Deploying with options $OPTS"
-  # We need to unset AWS* env variables, because that would take precedence over S3 credentials in MAVEN_SETTINGS file
-  # But we don't want to remove them from the environment, so we use a subshell (parenthesis)
-  (unset AWS_ACCESS_KEY_ID; unset AWS_SECRET_KEY; mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltReleaseDeploymentRepository=${MAVEN_S3_KURENTO_RELEASES} || exit 1)
-  if [ "$PUBLIC" == "yes" ]
-  then
-  (unset AWS_ACCESS_KEY_ID; unset AWS_SECRET_KEY; mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltReleaseDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || exit 1)
-  fi
-else
-  echo "Deploying snapshot version to ${MAVEN_S3_KURENTO_SNAPSHOTS}"
-  (unset AWS_ACCESS_KEY_ID; unset AWS_SECRET_KEY; mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltSnapshotDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} || exit 1)
-fi
+# Only create a tag if the deployment process was successful
+# kurento_check_version.sh true || {
+#   echo "[kurento_generate_java_module] ERROR: Command failed: kurento_check_version (tagging enabled)"
+#   exit 1
+# }
