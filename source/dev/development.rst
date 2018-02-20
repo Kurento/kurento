@@ -224,123 +224,145 @@ As you can see, there are a lot of possibilities. In the next sections we'll exp
 
 
 
+.. _development-kms:
+
 Developing KMS
 --------------
 
-To work with KMS Main Repositories the easiest way is using the module **kms-omni-build**. Just follow these steps:
+To work directly with KMS source code, or to just build KMS from sources, the easiest way is using the module **kms-omni-build**. Just follow these steps:
 
-- Install development tools (Git, C Compiler, CMake, etc…).
-- Install KMS development libraries.
-- Install KMS fork libraries.
-- Clone **kms-omni-build** and update submodules.
-- Run CMake and Make.
+- Add the Kurento repository to your system configuration.
+- Install development packages: tools like Git, GCC, CMake, etc., and KMS development libraries.
+- Clone **kms-omni-build**.
+- Build with CMake and Make.
 - Run the newly compiled KMS.
 - Run KMS tests.
 
 
 
-Install development tools
-~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _development-repository:
 
-Run as root:
+Add Kurento repository
+~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: bash
+These steps are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
-   apt-get install --no-install-recommends \
-     build-essential gdb pkg-config cmake \
-     clang debhelper valgrind \
-     git wget maven 'openjdk-[8|7]-jdk'
-
-
-
-.. _development-install-fork:
-
-Install KMS fork libraries
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-First, add the Kurento repository to Apt. Run as root:
+**First Step**. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these lines:
 
 .. code-block:: bash
 
    # Choose one:
-   REPO="trusty"      # KMS Release     - Ubuntu 14.04 (Trusty)
-   REPO="trusty-dev"  # KMS Development - Ubuntu 14.04 (Trusty)
-   REPO="xenial"      # KMS Release     - Ubuntu 16.04 (Xenial)
-   REPO="xenial-dev"  # KMS Development - Ubuntu 16.04 (Xenial)
+   DISTRO="trusty"  # KMS for Ubuntu 14.04 (Trusty)
+   DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
 
-   # Now run:
-   tee /etc/apt/sources.list.d/kurento.list > /dev/null <<EOF
-   # Kurento Packages repository
-   deb http://ubuntu.kurento.org $REPO kms6
+**Second Step**. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
+
+.. code-block:: text
+
+   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+
+   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+   # Packages for Kurento Media Server - Pre-Release versions
+   deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
    EOF
-   wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
-   apt-get update
-
-**Note**: Run only _one_ of the lines that set the variable `REPO`. The suffix `-dev` indicates a development repository, and may contain unstable packages. For a production system, choose the repo without that suffix.
-
-Now all packages can be installed from both official and Kurento repos.:
 
 
 
-Install development libraries for KMS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install development packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run as root:
+Run:
 
 .. code-block:: bash
 
-   apt-get install --no-install-recommends \
-     libboost-dev \
-     libboost-filesystem-dev \
-     libboost-log-dev \
-     libboost-program-options-dev \
-     libboost-regex-dev \
-     libboost-system-dev \
-     libboost-test-dev \
-     libboost-thread-dev \
-     libevent-dev \
-     libglib2.0-dev \
-     libglibmm-2.4-dev \
-     libopencv-dev \
-     libsigc++-2.0-dev \
-     libsoup2.4-dev \
-     libssl-dev \
-     libvpx-dev \
-     libxml2-utils \
+   PACKAGES=(
+     # Development tools
+     build-essential
+     gdb
+     pkg-config
+     cmake
+     clang
+     debhelper
+     valgrind
+     git
+     wget
+     maven
+     default-jdk
+
+     # System development libraries
+     libboost-dev
+     libboost-filesystem-dev
+     libboost-log-dev
+     libboost-program-options-dev
+     libboost-regex-dev
+     libboost-system-dev
+     libboost-test-dev
+     libboost-thread-dev
+     libevent-dev
+     libglib2.0-dev
+     libglibmm-2.4-dev
+     libopencv-dev
+     libsigc++-2.0-dev
+     libsoup2.4-dev
+     libssl-dev
+     libvpx-dev
+     libxml2-utils
      uuid-dev
 
-   apt-get install --no-install-recommends \
-     gstreamer1.5-libav \
-     gstreamer1.5-nice \
-     gstreamer1.5-plugins-bad \
-     gstreamer1.5-plugins-base \
-     gstreamer1.5-plugins-good \
-     gstreamer1.5-plugins-ugly \
-     gstreamer1.5-x \
-     libgstreamer1.5-dev \
-     libgstreamer-plugins-base1.5-dev \
-     libnice-dev \
-     openh264-gst-plugins-bad-1.5 \
-     openwebrtc-gst-plugins-dev \
-     kmsjsoncpp-dev \
+     # Kurento external libraries
+     gstreamer1.5-plugins-base
+     gstreamer1.5-plugins-good
+     gstreamer1.5-plugins-ugly
+     gstreamer1.5-plugins-bad
+     gstreamer1.5-libav
+     gstreamer1.5-nice
+     gstreamer1.5-tools
+     gstreamer1.5-x
+     libgstreamer1.5-dev
+     libgstreamer-plugins-base1.5-dev
+     libnice-dev
+     openh264-gst-plugins-bad-1.5
+     openwebrtc-gst-plugins-dev
+     kmsjsoncpp-dev
      ffmpeg
+   )
 
-**Note**: "gstreamer1.5-x" is needed for the "timeoverlay" GStreamer plugin, used by some tests in kms-elements. We could see if it is worth removing this dependency.
+   sudo apt-get update
+   sudo apt-get install "${PACKAGES[@]}"
 
-Optionally, install the debugging symbols if you will be using a debugger to troubleshoot bugs in KMS:
+Optionally, install the debugging symbols if you will be using a debugger to troubleshoot bugs in KMS. Run:
 
 .. code-block:: bash
 
-   apt-get install --no-install-recommends \
-     gstreamer1.5-libav-dbg \
-     gstreamer1.5-plugins-bad-dbg \
-     gstreamer1.5-plugins-base-dbg \
-     gstreamer1.5-plugins-good-dbg \
-     gstreamer1.5-plugins-ugly-dbg \
-     libgstreamer1.5-0-dbg \
-     libnice-dbg \
-     openwebrtc-gst-plugins-dbg \
+   PACKAGES=(
+     # Kurento external libraries
+     gstreamer1.5-plugins-base-dbg
+     gstreamer1.5-plugins-good-dbg
+     gstreamer1.5-plugins-ugly-dbg
+     gstreamer1.5-plugins-bad-dbg
+     gstreamer1.5-libav-dbg
+     libgstreamer1.5-0-dbg
+     libnice-dbg
+     libsrtp1-dbg
+     openwebrtc-gst-plugins-dbg
      kmsjsoncpp-dbg
+
+     # KMS main components
+     kms-jsonrpc-dbg
+     kms-core-dbg
+     kms-elements-dbg
+     kms-filters-dbg
+     kurento-media-server-dbg
+
+     # KMS extra modules
+     kms-chroma-dbg
+     kms-crowddetector-dbg
+     kms-platedetector-dbg
+     kms-pointerdetector-dbg
+   )
+
+   sudo apt-get update
+   sudo apt-get install "${PACKAGES[@]}"
 
 
 
@@ -413,7 +435,7 @@ Run:
      --conf-file=./config/kurento.conf.json \
      --gst-plugin-path=.
 
-You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides that, the global logging level is specified with `--gst-debug-level`. These values can also be defined in the environment variable `GST_DEBUG` (see the next section for more info).
+You can set the logging level of specific categories with the option `--gst-debug`, which can be used multiple times, once for each category. Besides that, the global logging level is specified with `--gst-debug-level`. These values can also be defined in the environment variable ``GST_DEBUG`` (see :doc:`/features/logging`).
 
 Other launch options that could be useful:
 
@@ -460,7 +482,7 @@ Clean your system
 
 To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command and, for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option ``--yes`` -which makes the process automatic-, so if should be fairly safe to use. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
 
-Run as root:
+Run:
 
 .. code-block:: text
 
@@ -484,8 +506,9 @@ Run as root:
      uuid-dev
    )
 
+   # Run a loop over all package names and uninstall them.
    for PACKAGE in "${PACKAGES[@]}"; do
-     apt-get purge --auto-remove "$PACKAGE" || { echo "Ignore unexisting"; }
+     sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unexisting"; }
    done
 
 
@@ -543,15 +566,34 @@ Example: kms-core
 
 **Optional**: Make sure the system is in a clean state: the section :ref:`development-clean` explains how to do this.
 
-**Optional**: Add Kurento Packages Repository. The section about :ref:`Dependency resolution <development-depresolution>` explains what is the effect of adding the repo, and the section :ref:`development-install-fork` explains how to do this.
+**Optional**: Add Kurento Packages Repository. The section about :ref:`Dependency resolution <development-depresolution>` explains what is the effect of adding the repo, and the section :ref:`development-repository` explains how to do this.
 
-Install system tools and Python modules. Run as root:
+Install system tools and Python modules. Run:
 
 .. code-block:: bash
 
-   apt-get install --no-install-recommends \
-     curl wget git build-essential fakeroot debhelper subversion flex realpath \
-     python python-apt python-debian python-git python-requests python-yaml
+   PACKAGES=(
+     # Packaging tools
+     build-essential
+     debhelper
+     curl
+     fakeroot
+     flex
+     git
+     libcommons-validator-java
+     python
+     python-apt
+     python-debian
+     python-git
+     python-requests
+     python-yaml
+     realpath
+     subversion
+     wget
+   )
+
+   sudo apt-get update
+   sudo apt-get install "${PACKAGES[@]}"
 
 Download and setup packaging tools:
 

@@ -48,26 +48,37 @@ KMS has explicit support for two Long-Term Support (*LTS*) distributions of Ubun
 
 Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if required.
 
-**First Step**. Add the Kurento package repositories to your system configuration. Run this whole command into a terminal:
+**First Step**. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these lines:
 
-.. code-block:: text
+.. code-block:: bash
 
-   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Packages for Kurento Media Server - Release 6.7.0
-   deb [arch=amd64] http://ubuntu.openvidu.io/6.7.0 xenial kms6
-   EOF
+   # Choose one:
+   DISTRO="trusty"  # KMS for Ubuntu 14.04 (Trusty)
+   DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
 
-**Second Step**. Type the following commands, **one at a time and in the same order as listed here**. When asked for any kind of confirmation, reply affirmatively:
+**Second Step**. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
 
 .. code-block:: text
 
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+
+   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+   # Packages for Kurento Media Server - Release 6.7.0
+   deb [arch=amd64] http://ubuntu.openvidu.io/6.7.0 $DISTRO kms6
+   EOF
+
+**Third Step**. Finally, install KMS:
+
+.. code-block:: text
+
    sudo apt-get update
    sudo apt-get install kurento-media-server
 
-At this point, Kurento Media Server has been installed. The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
+The command *apt-get install* will install KMS at the version specified in the file */etc/apt/sources.list.d/kurento.list*.
 
-.. code-block:: bash
+The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
+
+.. code-block:: text
 
    sudo service kurento-media-server start
    sudo service kurento-media-server stop
