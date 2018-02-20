@@ -50,17 +50,6 @@ PACKAGES=(
 
   # Optional but recommended packages
   openh264-gst-plugins-bad-1.5
-
-  # [Optional] Debug symbols
-  kms-jsonrpc-dbg
-  kms-core-dbg
-  kms-elements-dbg
-  kms-filters-dbg
-  kurento-media-server-dbg
-  kms-chroma-dbg
-  kms-crowddetector-dbg
-  kms-platedetector-dbg
-  kms-pointerdetector-dbg
 )
 
 apt-get update
