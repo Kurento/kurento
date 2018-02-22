@@ -2,21 +2,31 @@
 set -eu -o pipefail  # Abort on errors, disallow undefined variables
 IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
-# Configure the Kurento package repository for `apt-get`.
+# Configure the Kurento packages repository for `apt-get`.
 #
 # Changes:
 # 2017-10-03 Juan Navarro <juan.navarro@gmx.es>
 # - Initial version.
 # 2018-02-06 Fede Diaz <nordri@gmail.com>
-# - New version for the new repositories
+# - New version for the new repositories.
+# 2018-02-06 Juan Navarro
+# - Do not depend on extra tools: don't use 'software-properties-common'.
+# - Ensure that 'kurento.list' is always the repository source file.
 
 # Check root permissions
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
 
-apt-get update
+# Settings
+FILE="/etc/apt/sources.list.d/kurento.list"
+DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
+
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
-apt-get install -y software-properties-common
-add-apt-repository "deb http://ubuntu.openvidu.io/6.7.0 xenial kms6"
+
+tee "$FILE" >/dev/null <<EOF
+# Kurento Media Server - Release packages
+deb [arch=amd64] http://ubuntu.openvidu.io/6.7.0 $DISTRO kms6
+EOF
+
 apt-get update
 
 # ------------
