@@ -1312,34 +1312,25 @@ static void
 log_bus_issue (GstElement * self, GstBin * bin, GstBus * bus,
     GstMessage * msg, gboolean is_error)
 {
-  gchar *type;
+  GstDebugLevel log_level = is_error ? GST_LEVEL_ERROR : GST_LEVEL_WARNING;
+
   GError *err = NULL;
   gchar *dbg_info = NULL;
-  gchar *dot_name;
-  GstDebugLevel log_level;
-
-  if (is_error) {
-    log_level = GST_LEVEL_ERROR;
-    type = g_strdup ("error");
-  } else {
-    log_level = GST_LEVEL_WARNING;
-    type = g_strdup ("warning");
-  }
+  gst_message_parse_error (msg, &err, &dbg_info);
 
   GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
-      "Element '%s': Bus %s %d: %s", GST_ELEMENT_NAME (bin), type, err->code,
+      "Element '%s' issue code %d: %s", GST_ELEMENT_NAME (bin), err->code,
       err->message);
   GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
       "Debugging info: %s", ((dbg_info) ? dbg_info : "None"));
 
+  gchar *dot_name = g_strdup_printf ("%s_bus_%d", GST_ELEMENT_NAME (self),
+      err->code);
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (bin, GST_DEBUG_GRAPH_SHOW_ALL, dot_name);
+  g_free (dot_name);
+
   g_error_free (err);
   g_free (dbg_info);
-
-  dot_name = g_strdup_printf ("%s_bus_%s", GST_ELEMENT_NAME (self), type);
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (bin, GST_DEBUG_GRAPH_SHOW_ALL, dot_name);
-  g_free(dot_name);
-
-  g_free(type);
 }
 
 static gboolean
@@ -1393,7 +1384,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
 
   /* Eat all async messages such as buffering messages */
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
-  gst_bus_add_watch (bus, (GstBusFunc)process_bus_message, self);
+  gst_bus_add_watch (bus, (GstBusFunc) process_bus_message, self);
 
   g_object_set (self->priv->uridecodebin, "download", TRUE, NULL);
 
