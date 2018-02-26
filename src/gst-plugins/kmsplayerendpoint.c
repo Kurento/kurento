@@ -1318,19 +1318,23 @@ log_bus_issue (GstElement * self, GstBin * bin, GstBus * bus,
   gchar *dbg_info = NULL;
   gst_message_parse_error (msg, &err, &dbg_info);
 
+  gint err_code = (err ? err->code : -1);
+  gchar *err_msg = (err ? g_strdup (err->message) : g_strdup ("None"));
+
   GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
-      "Element '%s' issue code %d: %s", GST_ELEMENT_NAME (bin), err->code,
-      err->message);
+      "Element '%s' issue code %d: %s", GST_ELEMENT_NAME (bin), err_code,
+      err_msg);
   GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
       "Debugging info: %s", ((dbg_info) ? dbg_info : "None"));
 
   gchar *dot_name = g_strdup_printf ("%s_bus_%d", GST_ELEMENT_NAME (self),
-      err->code);
+      err_code);
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (bin, GST_DEBUG_GRAPH_SHOW_ALL, dot_name);
   g_free (dot_name);
 
   g_error_free (err);
   g_free (dbg_info);
+  g_free (err_msg);
 }
 
 static gboolean
