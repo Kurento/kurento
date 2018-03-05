@@ -16,7 +16,9 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-02-07
 # - Add package: gstreamer1.5-tools.
 # 2018-02-12
-# - Moved debugging packages to their own install script.
+# - Move debugging packages to their own install script.
+# 2018-02-25
+# - Remove 'clang' and sort dev tools by name.
 
 # Check root permissions
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
@@ -24,16 +26,15 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 PACKAGES=(
   # Development tools
   build-essential
-  gdb
-  pkg-config
   cmake
-  clang
   debhelper
-  valgrind
-  git
-  wget
-  maven
   default-jdk
+  gdb
+  git
+  maven
+  pkg-config
+  valgrind
+  wget
 
   # System development libraries
   libboost-dev
