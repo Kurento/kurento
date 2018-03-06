@@ -10,6 +10,7 @@
 	</parent>
 
 	<artifactId>kurento-qa-config</artifactId>
+	<version>6.7.1-SNAPSHOT</version>
 
 	<!-- Project-level information -->
 	<name>Kurento QA Config files</name>
