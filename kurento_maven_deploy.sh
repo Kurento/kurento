@@ -25,6 +25,7 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 [ -n "$3" ] && SIGN_ARTIFACTS=$3
 
 # Validate parameters
+echo "[kurento_maven_deploy] Validate parameters"
 if [ -n "$MAVEN_SETTINGS" ]; then
     [ -f "$MAVEN_SETTINGS" ] || {
         echo "[kurento_maven_deploy] ERROR: Cannot read file: $MAVEN_SETTINGS"
@@ -41,10 +42,12 @@ export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
 # Maven options
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
 
+echo "[kurento_maven_deploy] Command: kurento_get_version"
 PROJECT_VERSION=$(kurento_get_version.sh)
 echo "[kurento_maven_deploy] Deploy version: $PROJECT_VERSION"
 
 # Build all packages
+echo "[kurento_maven_deploy] Build all packages"
 mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package $OPTS || exit 1
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
@@ -102,3 +105,5 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
             }
     fi
 fi
+
+echo "[kurento_maven_deploy] Done"

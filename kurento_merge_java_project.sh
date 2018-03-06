@@ -16,6 +16,7 @@ echo "##################### EXECUTE: kurento_merge_java_project ################
 
 PATH=$PATH:${KURENTO_SCRIPTS_HOME}
 
+echo "[kurento_merge_java_project] Command: kurento_check_version (tagging disabled)"
 kurento_check_version.sh false || {
   echo "[kurento_merge_java_project] ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
@@ -24,6 +25,7 @@ kurento_check_version.sh false || {
 # Deploy to Kurento repositories
 export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
 export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
+echo "[kurento_merge_java_project] Command: kurento_maven_deploy (Kurento)"
 kurento_maven_deploy.sh || {
   echo "[kurento_merge_java_project] ERROR: Command failed: kurento_maven_deploy (Kurento)"
   exit 1
@@ -32,6 +34,7 @@ kurento_maven_deploy.sh || {
 # Deploy to Maven Central (only release)
 export SNAPSHOT_REPOSITORY=
 export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
+echo "[kurento_merge_java_project] Command: kurento_maven_deploy (Sonatype)"
 kurento_maven_deploy.sh || {
   echo "[kurento_merge_java_project] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
   exit 1
@@ -44,6 +47,7 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
 
   if [[ -n "$FILES" ]]; then
     echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > project.version
+    echo "[kurento_merge_java_project] Command: kurento_http_publish"
     FILES=$FILES kurento_http_publish.sh
   else
     echo "[kurento_merge_java_project] No FILES provided, skip HTTP publish"
@@ -53,7 +57,10 @@ else
 fi
 
 # Only create a tag if the deployment process was successful
+echo "[kurento_merge_java_project] Command: kurento_check_version (tagging enabled)"
 kurento_check_version.sh true || {
   echo "[kurento_merge_java_project] ERROR: Command failed: kurento_check_version (tagging enabled)"
   exit 1
 }
+
+echo "[kurento_merge_java_project] Done"
