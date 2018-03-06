@@ -35,6 +35,16 @@ PACKAGES=(
   '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
   '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
   uuid-dev
+
+  # Packages installed by kurento-module-creator
+  libmaven-assembly-plugin-java
+  libmaven-compiler-plugin-java
+  libfreemarker-java
+  libgoogle-gson-java
+  libslf4j-java
+  junit4
+  libcommons-cli-java
+  libwagon-java
 )
 
 # Run a loop over all package names and uninstall them.
