@@ -1,21 +1,25 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Maven coordinates -->
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
-		<version>6.6.3-SNAPSHOT</version>
+		<version>6.7.0</version>
 	</parent>
-
 	<artifactId>kurento-test</artifactId>
 	<packaging>jar</packaging>
 
+	<!-- Project-level information -->
 	<name>Kurento Integration tests - Kurento Tests</name>
 	<description>
 		This project contains test cases for testing Kurento
 		Java Client and Kurento Media Server.
 	</description>
+
+	<!-- Project configuration -->
 
 	<properties>
 		<start-class>org.kurento.test.base.BrowserKurentoClientTest</start-class>

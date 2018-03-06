@@ -3,17 +3,17 @@
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Maven coordinates -->
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>6.7.0-SNAPSHOT</version>
+		<version>6.7.0</version>
 		<relativePath>kurento-parent-pom</relativePath>
 	</parent>
-
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-java</artifactId>
-	<version>${version.kurento-java}</version>
 	<packaging>pom</packaging>
+
+	<version>${version.kurento-java}</version>
 
 	<!-- Project-level information -->
 	<name>Kurento Java</name>

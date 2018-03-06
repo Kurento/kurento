@@ -6,8 +6,7 @@
 
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%20.20t{9}] %-5level - %-40.40logger{39} -
-				%msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%20.20t{9}] %-5level - %-40.40logger{39} - %msg%n</pattern>
 		</encoder>
 	</appender>
 
@@ -15,8 +14,7 @@
 		<appender-ref ref="CONSOLE" />
 	</root>
 
-	<logger name="org.apache.catalina.startup.DigesterFactory"
-		level="ERROR" />
+	<logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR" />
 	<logger name="org.kurento.test.Shell" level="WARN" />
 	<logger name="org.apache" level="WARN" />
 	<logger name="org.springframework" level="WARN" />
