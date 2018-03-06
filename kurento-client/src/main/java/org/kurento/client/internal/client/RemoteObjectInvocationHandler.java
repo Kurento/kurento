@@ -258,7 +258,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
   @Override
   public String toString() {
     return "[RemoteObject: type=" + this.remoteObject.getType() + " remoteRef="
-        + remoteObject.getObjectRef() + "";
+        + remoteObject.getObjectRef() + "]";
   }
 
   @Override
