@@ -13,8 +13,6 @@
 	<artifactId>kurento-java</artifactId>
 	<packaging>pom</packaging>
 
-	<version>${version.kurento-java}</version>
-
 	<!-- Project-level information -->
 	<name>Kurento Java</name>
 	<description>
