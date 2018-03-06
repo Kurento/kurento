@@ -74,15 +74,11 @@
 		<version.kms-api-filters>6.7.0</version.kms-api-filters>
 
 		<!-- Kurento add-on modules -->
-		<version.kurento-backgroundextractor>6.5.1-SNAPSHOT</version.kurento-backgroundextractor>
-		<version.kurento-chroma>6.6.1-SNAPSHOT</version.kurento-chroma>
-		<version.kurento-crowddetector>6.6.1-SNAPSHOT</version.kurento-crowddetector>
-		<version.kurento-facesegmentator>6.6.1-SNAPSHOT</version.kurento-facesegmentator>
-		<version.kurento-imageendpoint>6.6.1-SNAPSHOT</version.kurento-imageendpoint>
-		<version.kurento-markerdetector>6.6.1-SNAPSHOT</version.kurento-markerdetector>
-		<version.kurento-platedetector>6.6.1-SNAPSHOT</version.kurento-platedetector>
-		<version.kurento-pointerdetector>6.6.1-SNAPSHOT</version.kurento-pointerdetector>
-		<version.plumber-endpoint>6.6.1-SNAPSHOT</version.plumber-endpoint>
+		<version.kurento-chroma>6.6.0</version.kurento-chroma>
+		<version.kurento-crowddetector>6.6.0</version.kurento-crowddetector>
+		<!--<version.kurento-markerdetector>6.6.0</version.kurento-markerdetector>-->
+		<version.kurento-platedetector>6.6.0</version.kurento-platedetector>
+		<version.kurento-pointerdetector>6.6.0</version.kurento-pointerdetector>
 
 		<!-- External versions -->
 		<webjars-locator.version>0.32</webjars-locator.version>
