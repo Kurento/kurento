@@ -32,10 +32,13 @@ PACKAGES=(
   gdb
   git
   maven
-  maven-debian-helper-
   pkg-config
   valgrind
   wget
+
+  # 'maven-debian-helper' installs an old Maven version in Ubuntu 14.04 (Trusty),
+  # so this ensures that the effective version is the one from 'maven'.
+  maven-debian-helper-
 
   # System development libraries
   libboost-dev
