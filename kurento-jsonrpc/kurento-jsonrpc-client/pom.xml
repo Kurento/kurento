@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-jsonrpc</artifactId>
-		<version>6.7.0</version>
+		<version>6.7.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>kurento-jsonrpc-client</artifactId>
 	<packaging>jar</packaging>
@@ -29,7 +29,6 @@
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons</artifactId>
@@ -56,7 +55,6 @@
 			<artifactId>slf4j-simple</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-handler</artifactId>
