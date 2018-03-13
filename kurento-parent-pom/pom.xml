@@ -64,14 +64,15 @@
 	<!-- Project configuration -->
 
 	<properties>
-		<!-- Kurento versions -->
-		<version.kurento-java>6.7.0</version.kurento-java>
-		<version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
-		<version.kurento-utils-js>6.7.0</version.kurento-utils-js>
+		<!-- Kurento core components -->
+		<version.kurento-java>${project.version}</version.kurento-java>
+		<version.kms-api-core>${project.version}</version.kms-api-core>
+		<version.kms-api-elements>${project.version}</version.kms-api-elements>
+		<version.kms-api-filters>${project.version}</version.kms-api-filters>
 
-		<version.kms-api-core>6.7.0</version.kms-api-core>
-		<version.kms-api-elements>6.7.0</version.kms-api-elements>
-		<version.kms-api-filters>6.7.0</version.kms-api-filters>
+		<version.kurento-utils-js>6.7.0</version.kurento-utils-js>
+		<version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
+
 
 		<!-- Kurento add-on modules -->
 		<version.kurento-chroma>6.6.0</version.kurento-chroma>
