@@ -3,4 +3,3 @@ image:
   version: $KMS_VERSION
   extra_tags:
     - latest
-    - 6.6.3
