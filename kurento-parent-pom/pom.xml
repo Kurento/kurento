@@ -73,8 +73,7 @@
 		<version.kurento-utils-js>6.7.0</version.kurento-utils-js>
 		<version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
 
-
-		<!-- Kurento add-on modules -->
+		<!-- Kurento extra modules -->
 		<version.kurento-chroma>6.6.0</version.kurento-chroma>
 		<version.kurento-crowddetector>6.6.0</version.kurento-crowddetector>
 		<!--<version.kurento-markerdetector>6.6.0</version.kurento-markerdetector>-->
@@ -1168,20 +1167,17 @@
 					<version>${version.war.plugin}</version>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings
-					only. It has no influence on the Maven build itself. -->
+				<!-- This plugin's configuration is used to store Eclipse m2e
+				settings only. It has no influence on the Maven build itself. -->
 				<plugin>
-					<!--This plugin's configuration is used to store Eclipse m2e settings
-						only. It has no influence on the Maven build itself. -->
-
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
 					<version>${version.org.eclipse.m2e.lifecycle-mapping}</version>
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<!-- Configure m2e to execute the manifest goal of the bundle plugin,
-									if present. -->
+								<!-- Configure m2e to execute the manifest goal
+								of the bundle plugin, if present. -->
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>org.apache.felix</groupId>
@@ -1222,7 +1218,7 @@
 										<ignore />
 									</action>
 								</pluginExecution>
-								<!-- Configure m2e to ignore the buildnumber-maven-plugin. -->
+								<!-- Configure m2e to ignore the buildnumber-maven-plugin -->
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>org.codehaus.mojo</groupId>
