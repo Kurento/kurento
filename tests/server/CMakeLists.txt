@@ -8,7 +8,10 @@ set(VALGRIND_TEST_VARIABLES
 set(SUPPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 
 add_test_program(test_constructors constructors.cpp)
-add_dependencies(test_constructors ${LIBRARY_NAME}module ${LIBRARY_NAME}plugins)
+if(TARGET ${LIBRARY_NAME}module)
+  add_dependencies(test_constructors ${LIBRARY_NAME}module)
+endif()
+add_dependencies(test_constructors ${LIBRARY_NAME}plugins)
 set_property(TARGET test_constructors
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}/../..
