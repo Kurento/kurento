@@ -1257,8 +1257,7 @@
 						<configuration>
 							<rules>
 								<requireJavaVersion>
-									<message>To build this project JDK ${jdk.min.version} (or
-										greater) is required. Please install it.</message>
+									<message>To build this project, JDK ${jdk.min.version} (or greater) is required. Please install it.</message>
 									<version>${jdk.min.version}</version>
 								</requireJavaVersion>
 							</rules>
@@ -1272,8 +1271,7 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<message>To build this project Maven ${maven.min.version} (or
-										greater) is required. Please install it.</message>
+									<message>To build this project, Maven ${maven.min.version} (or greater) is required. Please install it.</message>
 									<version>${maven.min.version}</version>
 								</requireMavenVersion>
 							</rules>
