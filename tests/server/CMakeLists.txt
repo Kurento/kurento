@@ -3,8 +3,10 @@ set(TEST_VARIABLES
 )
 
 add_test_program(test_filters_constructors constructors.cpp)
+if(TARGET ${LIBRARY_NAME}module)
+  add_dependencies(test_filters_constructors ${LIBRARY_NAME}module)
+endif()
 add_dependencies(test_filters_constructors
-  ${LIBRARY_NAME}module
   facedetector
   faceoverlay
   imageoverlay
