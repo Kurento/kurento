@@ -49,48 +49,48 @@ There are several types of repositories:
 
   These are the current Fork Repositories, as of KMS version 6.7.0:
 
-  - `gstreamer <https://github.com/Kurento/gstreamer>`_ (libgstreamer1.5)
-  - `gst-plugins-base <https://github.com/Kurento/gst-plugins-base>`_
-  - `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`_
-  - `gst-plugins-bad <https://github.com/Kurento/gst-plugins-bad>`_
-  - `gst-plugins-ugly <https://github.com/Kurento/gst-plugins-ugly>`_
-  - `gst-libav <https://github.com/Kurento/gst-libav>`_
-  - `jsoncpp <https://github.com/Kurento/jsoncpp>`_
-  - `libsrtp <https://github.com/Kurento/libsrtp>`_
-  - `libnice <https://github.com/Kurento/libnice>`_ (gstreamer1.0-nice, gstreamer1.5-nice)
-  - `openwebrtc-gst-plugins <https://github.com/Kurento/openwebrtc-gst-plugins>`_
-  - `openh264 <https://github.com/Kurento/openh264>`_
-  - `usrsctp <https://github.com/Kurento/usrsctp>`_
+  - `gstreamer <https://github.com/Kurento/gstreamer>`__ (libgstreamer1.5)
+  - `gst-plugins-base <https://github.com/Kurento/gst-plugins-base>`__
+  - `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
+  - `gst-plugins-bad <https://github.com/Kurento/gst-plugins-bad>`__
+  - `gst-plugins-ugly <https://github.com/Kurento/gst-plugins-ugly>`__
+  - `gst-libav <https://github.com/Kurento/gst-libav>`__
+  - `jsoncpp <https://github.com/Kurento/jsoncpp>`__
+  - `libsrtp <https://github.com/Kurento/libsrtp>`__
+  - `libnice <https://github.com/Kurento/libnice>`__ (gstreamer1.0-nice, gstreamer1.5-nice)
+  - `openwebrtc-gst-plugins <https://github.com/Kurento/openwebrtc-gst-plugins>`__
+  - `openh264 <https://github.com/Kurento/openh264>`__
+  - `usrsctp <https://github.com/Kurento/usrsctp>`__
 
 - **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.7.0, these repositories are:
 
-  - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`_: Contains a set of utilities for building KMS with CMake.
-  - `kms-core <https://github.com/Kurento/kms-core>`_: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
-  - `kms-elements <https://github.com/Kurento/kms-elements>`_: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
-  - `kms-filters <https://github.com/Kurento/kms-filters>`_: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
-  - `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`_: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
-  - `kurento-media-server <https://github.com/Kurento/kurento-media-server>`_: Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
-  - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`_: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
+  - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
+  - `kms-core <https://github.com/Kurento/kms-core>`__: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
+  - `kms-elements <https://github.com/Kurento/kms-elements>`__: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
+  - `kms-filters <https://github.com/Kurento/kms-filters>`__: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
+  - `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
+  - `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__: Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
+  - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
 
-- **Omni-Build Repository**: The `kms-omni-build <https://github.com/Kurento/kms-omni-build>`_ repository is a dummy umbrella for the other KMS Main Repositories. It has no actual code; instead, it only has the required CMake code to allow building the whole KMS project in one go. For this, it gets a copy of the required repositories via Git submodules.
+- **Omni-Build Repository**: The `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__ repository is a dummy umbrella for the other KMS Main Repositories. It has no actual code; instead, it only has the required CMake code to allow building the whole KMS project in one go. For this, it gets a copy of the required repositories via Git submodules.
 
 - **Module Repositories**: KMS is distributed with some basic GStreamer pipeline elements, but other elements are available in form of modules. These modules are stored individually in Module Repositories. Currently, we have the following ones:
 
-  - `kms-crowddetector <https://github.com/Kurento/kms-crowddetector>`_
-  - `kms-chroma <https://github.com/Kurento/kms-chroma>`_
-  - `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`_
-  - `kms-platedetector <https://github.com/Kurento/kms-platedetector>`_
+  - `kms-crowddetector <https://github.com/Kurento/kms-crowddetector>`__
+  - `kms-chroma <https://github.com/Kurento/kms-chroma>`__
+  - `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`__
+  - `kms-platedetector <https://github.com/Kurento/kms-platedetector>`__
 
 - **Client Repositories**: Client Applications can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their support tools made available in their respective repositories.
 
 - **Tutorial or demo repositories**: There are several repositories that contain sample code for developers that use Kurento or want to develop a custom Kurento module. Currently these are:
 
-   - `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`_
-   - `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`_
-   - `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`_
-   - `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`_
-   - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`_
-   - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`_
+   - `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`__
+   - `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`__
+   - `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__
+   - `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__
+   - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
+   - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
 
 A KMS developer must know how to work with KMS Fork and Main Repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at the KMS Main Repositories, while it's unusual to make changes in Fork Repositories except for updating their upstream versions.
 
@@ -156,7 +156,7 @@ KMS is a C/C++ project developed with an Ubuntu system as main target, which mea
 Libraries
 ---------
 
-It is not a trivial task to configure the compiler to use a set of libraries because a library can be composed of several `.so` and `.h` files. To make this task easier, `pkg-config <https://www.freedesktop.org/wiki/Software/pkg-config>`_ is a helper tool used when compiling applications and libraries. In short: when a library is installed in a system, it registers itself in the `pkg-config` database with all its required files, which allows to later query those values in order to compile with the library in question.
+It is not a trivial task to configure the compiler to use a set of libraries because a library can be composed of several `.so` and `.h` files. To make this task easier, `pkg-config <https://www.freedesktop.org/wiki/Software/pkg-config>`__ is a helper tool used when compiling applications and libraries. In short: when a library is installed in a system, it registers itself in the `pkg-config` database with all its required files, which allows to later query those values in order to compile with the library in question.
 
 For example, if you want to compile a C program which depends on GLib 2.0, you can run:
 
@@ -184,7 +184,7 @@ When a library is packaged, the result usually consists of several packages. The
 Build tools
 -----------
 
-There are several tools for building C/C++ projects: Autotools, Make, CMake, Gradle, etc. The most prominent tool for building projects is the Makefile, and all the other tools tend to be simply wrappers around this one. KMS uses CMake, which generates native Makefiles to build and package the project. There are some IDEs that recognize CMake projects directly, such as `JetBrains CLion <https://www.jetbrains.com/clion/>`_ or `Qt Creator <https://www.qt.io/ide/>`_.
+There are several tools for building C/C++ projects: Autotools, Make, CMake, Gradle, etc. The most prominent tool for building projects is the Makefile, and all the other tools tend to be simply wrappers around this one. KMS uses CMake, which generates native Makefiles to build and package the project. There are some IDEs that recognize CMake projects directly, such as `JetBrains CLion <https://www.jetbrains.com/clion/>`__ or `Qt Creator <https://www.qt.io/ide/>`__.
 
 A CMake projects consists of several `CMakeLists.txt` files, which define how to compile and package native code into binaries and shared libraries. These files also contain a list of the libraries (dependencies) needed to build the code.
 
@@ -262,7 +262,7 @@ These steps are pretty much the same as those explained in :ref:`installation-lo
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
    sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Packages for Kurento Media Server - Pre-Release versions
+   # Kurento Media Server - Pre-Release packages
    deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
    EOF
 
@@ -555,9 +555,9 @@ You can create Debian packages for KMS itself and for forked libraries. We have 
    - Release: `http://ubuntu.kurento.org xenial kms6`
    - Development: `http://ubuntu.kurento.org xenial-dev kms6`
 
-We also have several Continuous-Integration ("CI") jobs such that every time a patch is accepted in Git's `master` branch, a new development package of that repository is generated and uploaded to the development repositories. Packages are generated by a Python script called `compile_project.py`, which is stored in the `adm-scripts <https://github.com/Kurento/adm-scripts>`_ repository, and you can use it to generate Debian packages locally in your machine.
+We also have several Continuous-Integration ("CI") jobs such that every time a patch is accepted in Git's `master` branch, a new development package of that repository is generated and uploaded to the development repositories. Packages are generated by a Python script called `compile_project.py`, which is stored in the `adm-scripts <https://github.com/Kurento/adm-scripts>`__ repository, and you can use it to generate Debian packages locally in your machine.
 
-Versions number of Development packages are timestamped, so a developer is able to know explicitly which version of each package has been installed at any given time. On the other hand, Release packages follow the `Semantic Versioning <http://semver.org>`_ system.
+Versions number of Development packages are timestamped, so a developer is able to know explicitly which version of each package has been installed at any given time. On the other hand, Release packages follow the `Semantic Versioning <http://semver.org>`__ system.
 
 
 

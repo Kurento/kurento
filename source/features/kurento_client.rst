@@ -29,6 +29,6 @@ Kurento JavaScript Client
 Reference Documentation
 =======================
 
-- `Kurento Client JavaDoc <../_static/client-javadoc/index.html>`_
-- `Kurento Client JsDoc <../_static/client-jsdoc/index.html>`_
-- `Kurento Js Utils <../_static/utils-jsdoc/index.html>`_: a JavaScript utility library aimed to simplify the development of WebRTC applications.
+- `Kurento Client JavaDoc <../_static/client-javadoc/index.html>`__
+- `Kurento Client JsDoc <../_static/client-jsdoc/index.html>`__
+- `Kurento Js Utils <../_static/utils-jsdoc/index.html>`__: a JavaScript utility library aimed to simplify the development of WebRTC applications.

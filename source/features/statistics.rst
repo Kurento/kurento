@@ -89,7 +89,7 @@ statistic, with a given value at the reading time. Take into account that these
 values make reference to real-time properties, and so these values vary in time
 depending on multiple factors (for instance network performance, KMS load, and
 so on). The complete description of the statistics are defined in the
-`KMD interface <https://github.com/Kurento/kms-core/blob/master/src/server/interface/core.kmd.json>`_
+`KMD interface <https://github.com/Kurento/kms-core/blob/master/src/server/interface/core.kmd.json>`__
 description. The most relevant statistics are listed below:
 
 - ``ssrc``: The synchronized source (SSRC).
@@ -152,7 +152,7 @@ Example
 There is a running tutorial which uses the WebRTC gathering as described before.
 This demo has been implemented using the JavaScript client and it is available
 on GitHub:
-`kurento-loopback-stats <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-loopback-stats>`_.
+`kurento-loopback-stats <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-loopback-stats>`__.
 
 From a the Media Pipeline point of view, this demo application consists in a
 ``WebRtcEndpoint`` in loopback. Once the demo is up and running, WebRTC are
@@ -162,7 +162,7 @@ In addition to the KMS WebRTC statistics, the client-side (i.e. browser WebRtc
 peer) are also gathered by the application. This is done using the standard
 method provided by the ``peerConnection`` object, i.e using its method
 ``getStats``. Please check out the JavaScript logic located in the
-`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-loopback-stats/js/index.js>`_
+`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-loopback-stats/js/index.js>`__
 file for implementation details.
 
 Both kinds of WebRTC statistics values (i.e. browser and KMS side) are updated

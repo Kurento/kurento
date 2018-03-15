@@ -18,7 +18,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
           :wikipedia:`Resource Interchange File Format`
 
    Bower
-       `Bower <http://bower.io/>`_ is a package manager for the web. It offers a generic solution to the problem of front-end package management, while exposing the package dependency model via an API that can be consumed by a build stack.
+       `Bower <http://bower.io/>`__ is a package manager for the web. It offers a generic solution to the problem of front-end package management, while exposing the package dependency model via an API that can be consumed by a build stack.
 
    Builder Pattern
        The builder pattern is an object creation software design pattern whose intention is to find a solution to the telescoping constructor anti-pattern. The telescoping constructor anti-pattern occurs when the increase of object constructor parameter combination leads to an exponential list of constructors. Instead of using numerous constructors, the builder pattern uses another object, a builder, that receives each initialization parameter step by step and then returns the resulting constructed object at once.
@@ -32,7 +32,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        .. seealso::
           :wikipedia:`Cross-origin resource sharing`
 
-          `enable-cors.org <http://enable-cors.org/>`_
+          `enable-cors.org <http://enable-cors.org/>`__
               Information on the relevance of CORS and how and when to enable it.
 
    DOM
@@ -42,7 +42,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        End Of Stream is an event that occurs when playback of some media source has finished. In Kurento, some elements will raise an ``EndOfStream`` event.
 
    GStreamer
-       `GStreamer <http://gstreamer.freedesktop.org/>`_ is a pipeline-based multimedia framework written in the C programming language.
+       `GStreamer <http://gstreamer.freedesktop.org/>`__ is a pipeline-based multimedia framework written in the C programming language.
 
    H.264
        A Video Compression Format. The H.264 standard can be viewed as a "family of standards" composed of a number of profiles. Each specific decoder deals with at least one such profiles, but not necessarily all.
@@ -85,16 +85,16 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               Transition Scenarios for 3GPP Networks
 
    jQuery
-       `jQuery <http://jquery.com/>`_ is a cross-platform JavaScript library designed to simplify the client-side scripting of HTML.
+       `jQuery <http://jquery.com/>`__ is a cross-platform JavaScript library designed to simplify the client-side scripting of HTML.
 
    JSON
-       `JSON <http://json.org/>`_ (JavaScript Object Notation) is a lightweight data-interchange format. It is designed to be easy to understand and write for humans and easy to parse for machines.
+       `JSON <http://json.org/>`__ (JavaScript Object Notation) is a lightweight data-interchange format. It is designed to be easy to understand and write for humans and easy to parse for machines.
 
    JSON-RPC
-       `JSON-RPC <http://www.jsonrpc.org/>`_ is a simple remote procedure call protocol encoded in JSON. JSON-RPC allows for notifications and for multiple calls to be sent to the server which may be answered out of order.
+       `JSON-RPC <http://www.jsonrpc.org/>`__ is a simple remote procedure call protocol encoded in JSON. JSON-RPC allows for notifications and for multiple calls to be sent to the server which may be answered out of order.
 
    Kurento
-       `Kurento <http://kurento.org>`_ is a platform for the development of multimedia-enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Some components of Kurento are the :term:`Kurento Media Server`, the :term:`Kurento API`, the :term:`Kurento Protocol`, and the :term:`Kurento Client`.
+       `Kurento <http://kurento.org>`__ is a platform for the development of multimedia-enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Some components of Kurento are the :term:`Kurento Media Server`, the :term:`Kurento API`, the :term:`Kurento Protocol`, and the :term:`Kurento Client`.
 
    Kurento API
         An object oriented API to create media pipelines to control media. It can be seen as and interface to Kurento Media Server. It can be used from the Kurento Protocol or from Kurento Clients.
@@ -110,7 +110,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
         **Kurento Media Server** is the core element of Kurento since it responsible for media transmission, processing, loading and recording.
 
    Maven
-       `Maven <http://maven.apache.org/>`_ is a build automation tool used primarily for Java projects.
+       `Maven <http://maven.apache.org/>`__ is a build automation tool used primarily for Java projects.
 
    Media Element
        A **Media Element** is a module that encapsulates a specific media capability.  For example **RecorderEndpoint**, **PlayerEndpoint**, etc.
@@ -165,17 +165,17 @@ This is a glossary of terms that often appear in discussion about multimedia tra
           :doc:`/knowledge/nat`
               Entry in our Knowledge Base.
 
-          `NAT Traversal White Paper <http://www.nattraversal.com/>`_
+          `NAT Traversal White Paper <http://www.nattraversal.com/>`__
               White paper on NAT-T and solutions for end-to-end connectivity in its presence
 
    Node.js
-       `Node.js <http://www.nodejs.org/>`_ is a cross-platform runtime environment for server-side and networking applications. Node.js applications are written in JavaScript, and can be run within the Node.js runtime on OS X, Microsoft Windows and Linux with no changes.
+       `Node.js <http://www.nodejs.org/>`__ is a cross-platform runtime environment for server-side and networking applications. Node.js applications are written in JavaScript, and can be run within the Node.js runtime on OS X, Microsoft Windows and Linux with no changes.
 
    npm
-       `npm <https://www.npmjs.org/>`_ is the official package manager for :term:`Node.js`.
+       `npm <https://www.npmjs.org/>`__ is the official package manager for :term:`Node.js`.
 
    OpenCL
-       `OpenCL <http://www.khronos.org/opencl/>`_ is the standard framework for  cross-platform, parallel programming of heterogeneous platforms consisting of central processing units (CPUs), graphics processing units (GPUs), digital signal processors (DSPs), field-programmable gate arrays (FPGAs) and other processors.
+       `OpenCL <http://www.khronos.org/opencl/>`__ is the standard framework for  cross-platform, parallel programming of heterogeneous platforms consisting of central processing units (CPUs), graphics processing units (GPUs), digital signal processors (DSPs), field-programmable gate arrays (FPGAs) and other processors.
 
    OpenCV
        OpenCV (Open Source Computer Vision Library) is a BSD-licensed open source computer vision and machine learning software library. OpenCV aims to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception.
@@ -184,11 +184,11 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        A :index:`Media Pad <single: Media; Pad>` is is an element's interface with the outside world. Data streams from the MediaSource pad to another element's MediaSink pad.
 
        .. seealso::
-          `GStreamer Pad <https://gstreamer.freedesktop.org/documentation/application-development/basics/pads.html>`_
+          `GStreamer Pad <https://gstreamer.freedesktop.org/documentation/application-development/basics/pads.html>`__
               Definition of the Pad structure in GStreamer
 
    PubNub
-       `PubNub <http://www.pubnub.com/>`_ is a publish/subscribe cloud service for sending and routing data. It streams data to global audiences on any device using persistent socket connections. PubNub has been designed to deliver data with low latencies to end-user devices. These devices can be behind firewalls, NAT environments, and other hard-to-reach network environments. PubNub provides message caching for retransmission of lost signals over unreliable network environments. This is accomplished by maintaining an always open socket connection to every device.
+       `PubNub <http://www.pubnub.com/>`__ is a publish/subscribe cloud service for sending and routing data. It streams data to global audiences on any device using persistent socket connections. PubNub has been designed to deliver data with low latencies to end-user devices. These devices can be behind firewalls, NAT environments, and other hard-to-reach network environments. PubNub provides message caching for retransmission of lost signals over unreliable network environments. This is accomplished by maintaining an always open socket connection to every device.
 
    QR
        QR code (Quick Response Code) is a type of two-dimensional barcode. that became popular in the mobile phone industry due to its fast readability and greater storage capacity compared to standard UPC barcodes.
@@ -202,16 +202,16 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        The *GCC* algorithm is one of several proposed algorithms that have been proposed by an IETF Working Group named *RTP Media Congestion Avoidance Techniques* (RMCAT).
 
        .. seealso::
-          `What is RMCAT congestion control, and how will it affect WebRTC? <https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/>`_
+          `What is RMCAT congestion control, and how will it affect WebRTC? <https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/>`__
 
-          `draft-alvestrand-rmcat-remb <https://tools.ietf.org/html/draft-alvestrand-rmcat-remb-03>`_
+          `draft-alvestrand-rmcat-remb <https://tools.ietf.org/html/draft-alvestrand-rmcat-remb-03>`__
               RTCP message for Receiver Estimated Maximum Bitrate
 
-          `draft-ietf-rmcat-gcc <https://tools.ietf.org/html/draft-ietf-rmcat-gcc-02>`_
+          `draft-ietf-rmcat-gcc <https://tools.ietf.org/html/draft-ietf-rmcat-gcc-02>`__
               A Google Congestion Control Algorithm for Real-Time Communication
 
    REST
-       Representational state transfer (REST) is an architectural style consisting of a coordinated set of constraints applied to components, connectors, and data elements, within a distributed hypermedia system. The term representational state transfer was introduced and defined in 2000 by Roy Fielding in his `doctoral dissertation <http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm>`_.
+       Representational state transfer (REST) is an architectural style consisting of a coordinated set of constraints applied to components, connectors, and data elements, within a distributed hypermedia system. The term representational state transfer was introduced and defined in 2000 by Roy Fielding in his `doctoral dissertation <http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm>`__.
 
        .. seealso::
           :wikipedia:`Representational state transfer`
@@ -288,7 +288,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        .. seealso::
           :wikipedia:`Session Description Protocol`
 
-          `Anatomy of a WebRTC SDP <https://webrtchacks.com/anatomy-webrtc-sdp/>`_
+          `Anatomy of a WebRTC SDP <https://webrtchacks.com/anatomy-webrtc-sdp/>`__
 
           :rfc:`4566`
               SDP: Session Description Protocol
@@ -297,7 +297,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               Session Description Protocol (SDP) Security Descriptions for Media Streams
 
    Semantic Versioning
-      `Semantic Versioning <http://semver.org/>`_ is a formal convention for specifying compatibility using a three-part version number: major version; minor version; and patch.
+      `Semantic Versioning <http://semver.org/>`__ is a formal convention for specifying compatibility using a three-part version number: major version; minor version; and patch.
 
    Signaling Plane
        It is the layer of a media system in charge of the information exchanges concerning the establishment and control of the different media circuits and the management of the network, in contrast to the transfer of media, done by the :index:`Signaling Plane <single: Plane; Signaling>`.
@@ -328,14 +328,14 @@ This is a glossary of terms that often appear in discussion about multimedia tra
       A single-page application is a web application that fits on a single web page with the goal of providing a more fluid user experience akin to a desktop application.
 
    Sphinx
-       `Sphinx <http://www.sphinx-doc.org/en/stable/>`_ is a documentation generation system. Text is first written using `reStructuredText <http://docutils.sourceforge.net/rst.html>`_ markup language, which then is transformed by Sphinx into different formats such as PDF or HTML.
+       `Sphinx <http://www.sphinx-doc.org/en/stable/>`__ is a documentation generation system. Text is first written using `reStructuredText <http://docutils.sourceforge.net/rst.html>`__ markup language, which then is transformed by Sphinx into different formats such as PDF or HTML.
        This is the documentation tool of choice for the Kurento project.
 
        .. seealso::
-          `Easy and beautiful documentation with Sphinx <http://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html?ca=dat>`_
+          `Easy and beautiful documentation with Sphinx <http://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html?ca=dat>`__
 
    Spring Boot
-       `Spring Boot <http://projects.spring.io/spring-boot/>`_ is Spring's convention-over-configuration solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
+       `Spring Boot <http://projects.spring.io/spring-boot/>`__ is Spring's convention-over-configuration solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
        It embeds Tomcat or Jetty directly and so there is no need to deploy WAR files in order to run web applications.
 
    SRTCP
@@ -357,14 +357,14 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Secure Socket Layer. See :term:`TLS`.
 
    STUN
-       STUN stands for **Session Traversal Utilities for NAT**. It is a standard protocol (`IETF RFC 5389 <https://tools.ietf.org/html/rfc5389>`_) used by :term:`NAT` traversal algorithms to assist hosts in the discovery of their public network information.
+       STUN stands for **Session Traversal Utilities for NAT**. It is a standard protocol (`IETF RFC 5389 <https://tools.ietf.org/html/rfc5389>`__) used by :term:`NAT` traversal algorithms to assist hosts in the discovery of their public network information.
        If the routers between peers use full cone, address-restricted, or port-restricted NAT, then a direct link can be discovered with STUN alone. If either one of the routers use symmetric NAT, then a link can be discovered with STUN packets only if the other router does not use symmetric or port-restricted NAT. In this later case, the only alternative left is to discover a relayed path through the use of :term:`TURN`.
 
    Trickle ICE
        Extension to the :term:`ICE` protocol that allows ICE agents to send and receive candidates incrementally rather than exchanging complete lists. With such incremental provisioning, ICE agents can begin connectivity checks while they are still gathering candidates and considerably shorten the time necessary for ICE processing to complete.
 
        .. seealso::
-          `draft-ietf-ice-trickle <https://tools.ietf.org/html/draft-ietf-ice-trickle-15>`_
+          `draft-ietf-ice-trickle <https://tools.ietf.org/html/draft-ietf-ice-trickle-15>`__
               Trickle ICE: Incremental Provisioning of Candidates for the Interactive Connectivity Establishment (ICE) Protocol
 
    TLS
@@ -377,12 +377,12 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               The Transport Layer Security (TLS) Protocol Version 1.2
 
    TURN
-       TURN stands for **Traversal Using Relays around NAT**. Like :term:`STUN`, it is a network protocol (`IETF RFC 5766 <https://tools.ietf.org/html/rfc5766>`_) used to assist in the discovery of paths between peers on the Internet.
+       TURN stands for **Traversal Using Relays around NAT**. Like :term:`STUN`, it is a network protocol (`IETF RFC 5766 <https://tools.ietf.org/html/rfc5766>`__) used to assist in the discovery of paths between peers on the Internet.
        It differs from STUN in that it uses a public intermediary relay to act as a proxy for packets between peers. It is used when no other option is available since it consumes server resources and has an increased latency.
        The only time when TURN is necessary is when one of the peers is behind a symmetric NAT and the other peer is behind either a symmetric NAT or a port-restricted NAT.
 
    VP8
-       VP8 is a video compression format created by On2 Technologies as a successor to VP7. Its  patents rights are owned by Google, who made an irrevocable patent promise on its patents for implementing it and released a specification under the `Creative Commons Attribution 3.0 license <https://creativecommons.org/licenses/by/3.0/>`_.
+       VP8 is a video compression format created by On2 Technologies as a successor to VP7. Its  patents rights are owned by Google, who made an irrevocable patent promise on its patents for implementing it and released a specification under the `Creative Commons Attribution 3.0 license <https://creativecommons.org/licenses/by/3.0/>`__.
 
        .. seealso::
           :wikipedia:`VP8`
@@ -391,13 +391,13 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               VP8 Data Format and Decoding Guide
 
    WebM
-       `WebM <http://www.webmproject.org/>`_ is an open media file format designed for the web. WebM files consist of video streams compressed with the VP8 video codec and audio streams compressed with the Vorbis audio codec. The WebM file structure is based on the Matroska media container.
+       `WebM <http://www.webmproject.org/>`__ is an open media file format designed for the web. WebM files consist of video streams compressed with the VP8 video codec and audio streams compressed with the Vorbis audio codec. The WebM file structure is based on the Matroska media container.
 
    WebRTC
-       `WebRTC <https://webrtc.org/>`_ is a set of protocols, mechanisms and APIs that provide browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections.
+       `WebRTC <https://webrtc.org/>`__ is a set of protocols, mechanisms and APIs that provide browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections.
 
        .. seealso::
-          `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`_
+          `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`__
 
    WebSocket
-       `WebSocket <https://www.websocket.org/>`_ specification (developed as part of the HTML5 initiative) defines a full-duplex single socket connection over which messages can be sent between client and server.
+       `WebSocket <https://www.websocket.org/>`__ specification (developed as part of the HTML5 initiative) defines a full-duplex single socket connection over which messages can be sent between client and server.

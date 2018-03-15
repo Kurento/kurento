@@ -156,7 +156,7 @@ Adding a repository to Maven can be done at three scope levels:
 
   After this is included, use the ``-Pkurento`` switch in your next Maven run to enable the new profile, so all artifacts get downloaded into you local repository. Once in your local repository, Maven can successfully resolve the dependencies and the profile no longer needs to be activated in future runs.
 
-For more information about adding snapshot repositories to Maven, check their official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`_.
+For more information about adding snapshot repositories to Maven, check their official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`__.
 
 
 

@@ -11,7 +11,7 @@ There are different types of NAT, depending on how they behave: **Full Cone**, *
 WebRTC with ICE
 ===============
 
-:term:`ICE` is the standard method used by :term:`WebRTC` to solve the issue of NAT Traversal. Kurento supports ICE by means of a 3rd-party library: `libnice, The GLib ICE implementation <https://nice.freedesktop.org>`_.
+:term:`ICE` is the standard method used by :term:`WebRTC` to solve the issue of NAT Traversal. Kurento supports ICE by means of a 3rd-party library: `libnice, The GLib ICE implementation <https://nice.freedesktop.org>`__.
 
 Refer to the :ref:`logging documentation <logging-libnice>` if you need to enable the debug logging for this library.
 
@@ -22,9 +22,9 @@ RTP without ICE
 
 KMS is able to automatically infer what is the public IP and port of any remote peer which is communicating with it through an RTP connection. This removes the need to use ICE in some specific situations, where that complicated mechanism is not desired. This new automatic port discovery was inspired by the **Connection-Oriented Media Transport** (COMEDIA) as presented by the early Drafts of what finally would become the RFC 4145.
 
-**TCP-Based Media Transport in the Session Description Protocol** (SDP) (`IETF RFC 4145 <https://tools.ietf.org/html/rfc4145>`_) defines an SDP extension which adds TCP connections and procedures, such as how a passive machine would wait for connections from a remote active machine and be able to obtain connection information from the active one, upon reception of an initial connection.
+**TCP-Based Media Transport in the Session Description Protocol** (SDP) (`IETF RFC 4145 <https://tools.ietf.org/html/rfc4145>`__) defines an SDP extension which adds TCP connections and procedures, such as how a passive machine would wait for connections from a remote active machine and be able to obtain connection information from the active one, upon reception of an initial connection.
 
-Early Drafts of RFC 4145 (up to `Draft 05 <https://tools.ietf.org/html/draft-ietf-mmusic-sdp-comedia-05>`_) also contemplated the usage of this same concept of "Connection-Oriented Media Transport in SDP" with UDP connections, as a way of aiding NAT traversal. This is what has been used as a basis for the implementation of automatic port discovery in KMS.
+Early Drafts of RFC 4145 (up to `Draft 05 <https://tools.ietf.org/html/draft-ietf-mmusic-sdp-comedia-05>`__) also contemplated the usage of this same concept of "Connection-Oriented Media Transport in SDP" with UDP connections, as a way of aiding NAT traversal. This is what has been used as a basis for the implementation of automatic port discovery in KMS.
 
 It works as follows:
 
@@ -42,7 +42,7 @@ It works as follows:
 This mechanism has the following requisites and/or limitations:
 
 - Only the active peer can be behind a NAT router. The passive peer must have a publicly accessible IP and port for RTP.
-- The active peer must be able to receive RTP/RTCP packets at the same ports that are used to send RTP/RTCP packets. In other words, the active peer must be compatible with *Symmetric RTP and RTCP* as defined in `IETF RFC 4961 <https://tools.ietf.org/html/rfc4961>`_.
+- The active peer must be able to receive RTP/RTCP packets at the same ports that are used to send RTP/RTCP packets. In other words, the active peer must be compatible with *Symmetric RTP and RTCP* as defined in `IETF RFC 4961 <https://tools.ietf.org/html/rfc4961>`__.
 - The active peer must actually do send some RTP/RTCP packets before the passive peer is able to send any data back. In other words, it is not possible to establish a one-way stream where only the passive peer sends data to the active peer.
 
 This is how to enable the Connection-Oriented Media Transport mode:
@@ -51,7 +51,7 @@ This is how to enable the Connection-Oriented Media Transport mode:
 - The IP stated in the SDP Offer can be anything (as it will be ignored), so ``0.0.0.0`` can be used.
 - The Port stated in the SDP Offer should be ``9`` (*Discard port*).
 - The active peer must include the media-level attribute ``a=direction:active`` in the SDP Offer, for each media that requires automatic port discovery.
-- The passive peer must acknowledge that it supports the automatic port discovery mode, by including the media-level attribute ``a=direction:passive`` in its SDP Answer. As per normal rules of the SDP Offer/Answer Model (`IETF RFC 3264 <https://tools.ietf.org/html/rfc3264>`_), if this attribute is not present in the SDP Answer, then the active peer must assume that the passive peer is not compatible with this functionality and should react to this fact as whatever is deemed appropriate by the application developer.
+- The passive peer must acknowledge that it supports the automatic port discovery mode, by including the media-level attribute ``a=direction:passive`` in its SDP Answer. As per normal rules of the SDP Offer/Answer Model (`IETF RFC 3264 <https://tools.ietf.org/html/rfc3264>`__), if this attribute is not present in the SDP Answer, then the active peer must assume that the passive peer is not compatible with this functionality and should react to this fact as whatever is deemed appropriate by the application developer.
 
 
 

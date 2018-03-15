@@ -18,7 +18,7 @@ With Kurento, it's an easy task to add third-party media processing algorithms t
 WebRTC media servers
 ====================
 
-`WebRTC <https://webrtc.org/>`_ is a set of protocols, mechanisms and APIs that provide browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections. It has been conceived as a technology that allows browsers to communicate directly without the mediation of any kind of infrastructure. However, this model is only enough for creating basic web applications; features such as group communications, media stream recording, media broadcasting, or media transcoding are difficult to implement on top of it. For this reason, many applications end up requiring an intermediate media server.
+`WebRTC <https://webrtc.org/>`__ is a set of protocols, mechanisms and APIs that provide browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections. It has been conceived as a technology that allows browsers to communicate directly without the mediation of any kind of infrastructure. However, this model is only enough for creating basic web applications; features such as group communications, media stream recording, media broadcasting, or media transcoding are difficult to implement on top of it. For this reason, many applications end up requiring an intermediate media server.
 
 .. figure:: /images/media-server-intro.png
    :align: center

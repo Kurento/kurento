@@ -8,11 +8,11 @@ Overview
 ========
 
 Kurento Utils is a wrapper object of an
-`RTCPeerConnection <https://w3c.github.io/webrtc-pc/>`_. This object is aimed
+`RTCPeerConnection <https://w3c.github.io/webrtc-pc/>`__. This object is aimed
 to simplify the development of WebRTC-based applications.
 
 The source code of this project can be cloned from the
-`GitHub repository <https://github.com/kurento/kurento-utils>`_.
+`GitHub repository <https://github.com/kurento/kurento-utils>`__.
 
 
 How to use it
@@ -107,7 +107,7 @@ peers. This process implies exchanging SDPs offer and answer and, since
 :term:`Trickle ICE` is used, a number of candidates describing the capabilities
 of each peer. How the negotiation works is out of the scope of this document.
 More info can be found in
-`this <https://tools.ietf.org/id/draft-nandakumar-rtcweb-sdp-01.html>`_ link.
+`this <https://tools.ietf.org/id/draft-nandakumar-rtcweb-sdp-01.html>`__ link.
 
 In the previous piece of code, when the *webRtcPeer* object gets created, the
 SDP offer is generated with ``this.generateOffer(onOffer)``. The only argument
@@ -173,7 +173,7 @@ bidirectional WebRTC media exchange between both peers.
 Using data channels
 ===================
 
-WebRTC data channels lets you send text or binary data over an active WebRTC connection. The **WebRtcPeer** object can provide access to this functionality by using the `RTCDataChannel <https://developer.mozilla.org/en-US/docs/Games/Techniques/WebRTC_data_channels>`_ form the wrapped **RTCPeerConnection** object. This allows you to inject into and consume data from the pipeline. This data can be treated by each endpoint differently. For instance, a ``WebRtcPeer`` object in the browser, will have the same behavior as the ``RTCDataChannel`` (you can see a description `here <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/WebRTC_basics#DataChannel>`_). Other endpoints could make use of this channel to send information: a filter that detects QR codes in a video stream, could send the detected code to the clients through a data channel. This special behavior should be specified in the filter.
+WebRTC data channels lets you send text or binary data over an active WebRTC connection. The **WebRtcPeer** object can provide access to this functionality by using the `RTCDataChannel <https://developer.mozilla.org/en-US/docs/Games/Techniques/WebRTC_data_channels>`__ form the wrapped **RTCPeerConnection** object. This allows you to inject into and consume data from the pipeline. This data can be treated by each endpoint differently. For instance, a ``WebRtcPeer`` object in the browser, will have the same behavior as the ``RTCDataChannel`` (you can see a description `here <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/WebRTC_basics#DataChannel>`__). Other endpoints could make use of this channel to send information: a filter that detects QR codes in a video stream, could send the detected code to the clients through a data channel. This special behavior should be specified in the filter.
 
 The use of data channels in the ``WebRtcPeer`` object is indicated by passing the ``dataChannels`` flag in the options bag, along with the desired options.
 
@@ -262,7 +262,7 @@ The constructor for WebRtcPeer is WebRtcPeer(**mode, options, callback**) where:
    * *configuration*: It is a JSON object where ICE Servers are defined
      using
 
-      * `iceServers <https://w3c.github.io/webrtc-pc/#idl-def-RTCIceServer>`_:
+      * `iceServers <https://w3c.github.io/webrtc-pc/#idl-def-RTCIceServer>`__:
         The format for this variable is like::
 
                [{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
@@ -407,7 +407,7 @@ screen or a window content it will throw an exception.
 Souce code
 ==========
 
-The code is at `github <https://github.com/kurento/kurento-utils-js>`_.
+The code is at `github <https://github.com/kurento/kurento-utils-js>`__.
 
 Be sure to have :term:`Node.js` and :term:`Bower` installed in your system:
 
@@ -418,7 +418,7 @@ Be sure to have :term:`Node.js` and :term:`Bower` installed in your system:
    sudo npm install -g bower
 
 To install the library, it is recommended to do that from the
-`NPM repository <https://www.npmjs.org/package/kurento-utils>`_:
+`NPM repository <https://www.npmjs.org/package/kurento-utils>`__:
 
 .. sourcecode:: bash
 
@@ -438,7 +438,7 @@ Build for browser
 =================
 
 After you download the project, to build the browser version of the library
-you'll only need to execute the `grunt <http://gruntjs.com/>`_ task runner. The
+you'll only need to execute the `grunt <http://gruntjs.com/>`__ task runner. The
 file needed will be generated on the *dist* folder. Alternatively, if you don't
 have it globally installed, you can run a local copy by executing:
 

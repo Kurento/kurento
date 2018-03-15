@@ -18,7 +18,7 @@ This section contains tutorials showing how to use Kurento framework to build di
 
 .. note::
 
-   These tutorials require ``https`` in order to use WebRTC. Following `instructions </mastering/securing-kurento-applications.html>`_ will provide further information about how to enable application security.
+   These tutorials require ``HTTPS`` in order to use WebRTC. Following instructions will provide further information about how to enable application security.
 
 
 

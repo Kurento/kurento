@@ -537,11 +537,11 @@ In order to implement a Kurento Client you need to follow the reference document
 
 We have defined a custom IDL format based on JSON. From it, we automatically generate the client code for the Kurento Client libraries:
 
-- `KMS core <https://github.com/Kurento/kms-core/blob/master/src/server/interface/core.kmd.json>`_
+- `KMS core <https://github.com/Kurento/kms-core/blob/master/src/server/interface/core.kmd.json>`__
 
-- `KMS elements <https://github.com/Kurento/kms-elements/tree/master/src/server/interface>`_
+- `KMS elements <https://github.com/Kurento/kms-elements/tree/master/src/server/interface>`__
 
-- `KMS filters <https://github.com/Kurento/kms-filters/tree/master/src/server/interface>`_
+- `KMS filters <https://github.com/Kurento/kms-filters/tree/master/src/server/interface>`__
 
 
 
@@ -557,7 +557,7 @@ Kurento Module Creator can be installed in an Ubuntu machine using the  followin
    sudo apt-get install kurento-module-creator
 
 The aim of this tool is to generate the client code and also the glue code
-needed in the server-side. For code generation it uses `Freemarker <http://freemarker.org/>`_ as the template engine. The typical way to use Kurento Module Creator is by running a command like this:
+needed in the server-side. For code generation it uses `Freemarker <http://freemarker.org/>`__ as the template engine. The typical way to use Kurento Module Creator is by running a command like this:
 
 .. sourcecode:: bash
 
@@ -566,6 +566,6 @@ needed in the server-side. For code generation it uses `Freemarker <http://freem
 Where:
 
 - ``CODEGEN_DIR``: Destination directory for generated files.
-- ``ROM_FILE``: A space-separated list of *Kurento Media Element Description* (kmd files), or folders containing these files. For example, you can take a look to the kmd files within the `Kurento Media Server <https://github.com/Kurento/kurento-media-server/tree/master/scaffold>`_ source code.
+- ``ROM_FILE``: A space-separated list of *Kurento Media Element Description* (kmd files), or folders containing these files. For example, you can take a look to the kmd files within the `Kurento Media Server <https://github.com/Kurento/kurento-media-server/tree/master/scaffold>`__ source code.
 - ``TEMPLATES_DIR``: Directory that contains template files. As an example,
-  you can take a look to the internal `Java templates <https://github.com/Kurento/kurento-java/tree/master/kurento-client/src/main/resources/templates>`_ and `JavaScript templates <https://github.com/Kurento/kurento-client-js/tree/master/templates>`_ directories.
+  you can take a look to the internal `Java templates <https://github.com/Kurento/kurento-java/tree/master/kurento-client/src/main/resources/templates>`__ and `JavaScript templates <https://github.com/Kurento/kurento-client-js/tree/master/templates>`__ directories.

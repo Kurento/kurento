@@ -2,24 +2,24 @@
 Congestion Control (RMCAT)
 ==========================
 
-*RTP Media Congestion Avoidance Techniques* (RMCAT) is an `IETF Working Group`_ that aims to develop new protocols which can manage network congestion in the context of RTP streaming. The goals for any congestion control algorithm are:
+*RTP Media Congestion Avoidance Techniques* (RMCAT) is an `IETF Working Group`__ that aims to develop new protocols which can manage network congestion in the context of RTP streaming. The goals for any congestion control algorithm are:
 
 - Preventing network collapse due to congestion.
 - Allowing multiple flows to share the network fairly.
 
-A good introduction to RMCAT, its history and its context can be found in this blog post by Mozilla: `What is RMCAT congestion control, and how will it affect WebRTC?`_.
+A good introduction to RMCAT, its history and its context can be found in this blog post by Mozilla: `What is RMCAT congestion control, and how will it affect WebRTC?`__.
 
 As a result of this Working Group, several algorithms have been proposed so far by different vendors:
 
--  By Cisco: `NADA`_, *A Unified Congestion Control Scheme for Real-Time Media*.
--  By Ericsson: `SCReAM`_, *Self-Clocked Rate Adaptation for Multimedia*.
--  By Google: `GCC`_, *Google Congestion Control Algorithm for Real-Time Communication*.
+-  By Cisco: `NADA`__, *A Unified Congestion Control Scheme for Real-Time Media*.
+-  By Ericsson: `SCReAM`__, *Self-Clocked Rate Adaptation for Multimedia*.
+-  By Google: `GCC`__, *Google Congestion Control Algorithm for Real-Time Communication*.
 
-.. _IETF Working Group:  https://tools.ietf.org/html/rfc7295
-.. _What is RMCAT congestion control, and how will it affect WebRTC?:  https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/
-.. _NADA: https://tools.ietf.org/html/draft-ietf-rmcat-nada
-.. _SCReAM: https://tools.ietf.org/html/rfc8298
-.. _GCC: https://tools.ietf.org/html/draft-ietf-rmcat-gcc
+.. __: https://tools.ietf.org/html/rfc7295
+.. __: https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/
+.. __: https://tools.ietf.org/html/draft-ietf-rmcat-nada
+.. __: https://tools.ietf.org/html/rfc8298
+.. __: https://tools.ietf.org/html/draft-ietf-rmcat-gcc
 
 
 

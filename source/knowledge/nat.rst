@@ -6,9 +6,9 @@ NAT Types and NAT Traversal
 
 Sources:
 
-- `Symmetric NAT and It's Problems <http://www.think-like-a-computer.com/2011/09/19/symmetric-nat/>`_
-- `Peer-to-Peer Communication Across Network Address Translators <http://www.brynosaurus.com/pub/net/p2pnat/>`_
-- `The hole trick - How Skype & Co. get round firewalls <http://www.h-online.com/security/features/How-Skype-Co-get-round-firewalls-747197.html>`_
+- `Symmetric NAT and It's Problems <http://www.think-like-a-computer.com/2011/09/19/symmetric-nat/>`__
+- `Peer-to-Peer Communication Across Network Address Translators <http://www.brynosaurus.com/pub/net/p2pnat/>`__
+- `The hole trick - How Skype & Co. get round firewalls <http://www.h-online.com/security/features/How-Skype-Co-get-round-firewalls-747197.html>`__
 
 
 

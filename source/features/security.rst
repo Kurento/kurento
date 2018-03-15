@@ -8,7 +8,7 @@ Securing Kurento Applications
 
 Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or
 localhost). Check their
-`release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`_
+`release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`__
 for further information about this issue.
 
 .. note::
@@ -61,7 +61,7 @@ Configure Java applications to use HTTPS
 
 .. note::
 
-      If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <http://docs.spring.io/spring/docs/current/spring-framework-reference/html/websocket.html#websocket-server-allowed-origins>`_ entry for more info.
+      If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <http://docs.spring.io/spring/docs/current/spring-framework-reference/html/websocket.html#websocket-server-allowed-origins>`__ entry for more info.
 
 
 
@@ -73,7 +73,7 @@ Configure Node applications to use HTTPS
    * Request a certificate from a local certification authority.
 
    * Create your own self-signed certificate as explained
-     `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This
+     `here <http://www.akadia.com/services/ssh_test_certificate.html>`__. This
      will show you how to create the required files: *server.crt*, *server.key*
      and *server.csr*.
 
@@ -124,7 +124,7 @@ Configure Javascript applications to use HTTPS
    * Request a certificate from a local certification authority.
 
    * Create your own self-signed certificate as explained
-     `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This
+     `here <http://www.akadia.com/services/ssh_test_certificate.html>`__. This
      will show you how to create the required files: *server.crt*, *server.key*
      and *server.csr*.
 
@@ -172,7 +172,7 @@ by default. For this reason, you'll need to force them to accept it.
   https://localhost:8433/kurento and accepting the certificate in the browser.
 
 * Java applications, follow the instructions of this
-  `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_
+  `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__
   (get ``InstallCert.java`` from
   `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`__).
   You'll need to instruct the ``KurentoClient`` needs to be configured to allow
@@ -187,23 +187,23 @@ by default. For this reason, you'll need to force them to accept it.
    KurentoClient kuretoClient = KurentoClient.createFromJsonRpcClient(rpcClient);
 
 * Node applications, please take a look to this
-  `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
+  `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`__.
 
 Second, you have to change the WebSocket URI in your application logic. For
 instance, in the *hello-world* application within the tutorials, this would be
 done as follows:
 
 * Java: Changing this line in
-  `HelloWorldApp.java <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`_::
+  `HelloWorldApp.java <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`__::
 
    final static String DEFAULT_KMS_WS_URI = "wss://localhost:8433/kurento";
 
 * Browser JavaScript: Changing this line in
-  `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/js/index.js>`_::
+  `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/js/index.js>`__::
 
    const ws_uri = 'wss://' + location.hostname + ':8433/kurento';
 
 * Node.js: Changing this line in
-  `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`_::
+  `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`__::
 
    const ws_uri = "wss://localhost:8433/kurento";

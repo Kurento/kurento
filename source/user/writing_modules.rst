@@ -156,19 +156,19 @@ Examples
 
 Simple examples for both kind of modules are available in GitHub:
 
-- `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample>`_.
-- `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`_.
+- `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample>`__.
+- `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`__.
 
 There are a lot of examples showking how to define methods, parameters or events in
 all our public built-in modules:
 
-- `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector/tree/master/src/server/interface>`_.
-- `kms-crowddetector <https://github.com/Kurento/kms-crowddetector/tree/master/src/server/interface>`_.
-- `kms-chroma <https://github.com/Kurento/kms-chroma/tree/master/src/server/interface>`_.
-- `kms-platedetector <https://github.com/Kurento/kms-platedetector/tree/master/src/server/interface>`_.
+- `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector/tree/master/src/server/interface>`__.
+- `kms-crowddetector <https://github.com/Kurento/kms-crowddetector/tree/master/src/server/interface>`__.
+- `kms-chroma <https://github.com/Kurento/kms-chroma/tree/master/src/server/interface>`__.
+- `kms-platedetector <https://github.com/Kurento/kms-platedetector/tree/master/src/server/interface>`__.
 
 Moreover, all our modules are developed using this methodology. For that reason you can take a look to our main modules:
 
-- `kms-core <https://github.com/Kurento/kms-core>`_.
-- `kms-elements <https://github.com/Kurento/kms-elements>`_.
-- `kms-filters <https://github.com/Kurento/kms-filters>`_.
+- `kms-core <https://github.com/Kurento/kms-core>`__.
+- `kms-elements <https://github.com/Kurento/kms-elements>`__.
+- `kms-filters <https://github.com/Kurento/kms-filters>`__.

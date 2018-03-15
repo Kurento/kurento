@@ -2,7 +2,7 @@
 Security Hardening
 ==================
 
-*Hardening* is a set of mechanisms that can be activated by turning on several compiler flags, and are commonly used to protect resulting programs against memory corruption attacks. These mechanism have been standard practice since at least 2011, when the Debian project set on the goal of releasing all their packages with the security hardening build flags enabled [#Debian]_. Ubuntu has also followed the same policy regarding their own build procedures [#Ubuntu]_.
+*Hardening* is a set of mechanisms that can be activated by turning on several compiler flags, and are commonly used to protect resulting programs against memory corruption attacks. These mechanisms have been standard practice since at least 2011, when the Debian project set on the goal of releasing all their packages with the security hardening build flags enabled [#Debian]_. Ubuntu has also followed the same policy regarding their own build procedures [#Ubuntu]_.
 
 Kurento Media Server had been lagging in this respect, and old releases only implemented the standard `Debian hardening options`_ that are applied by the *dpkg-buildflags* tool by default:
 
@@ -20,7 +20,7 @@ Starting from version **6.7.0**, KMS also implements these extra hardening measu
 
   .. note::
 
-     The *PIC*/*PIE* feature adds a very valuable protection against attacks, but has one important requisite: *all shared objects must be compiled as position-independent code**. If your shared library has stopped linking with KMS, or your plugin stopped loading at run-time, try recompiling your code with the ``-fPIC`` option.
+     The *PIC*/*PIE* feature adds a very valuable protection against attacks, but has one important requisite: *all shared objects must be compiled as position-independent code*. If your shared library has stopped linking with KMS, or your plugin stopped loading at run-time, try recompiling your code with the ``-fPIC`` option.
 
 - **Immediate Binding** (``-Wl,-z,now``). This linker option improves upon the *Read-Only Relocations* (RELRO) option, by forcing that all dynamic symbols get resolved at start-up (instead of on-demand). Combined with the RELRO flag, this means that the GOT can be made entirely read-only, which prevents even more types of *GOT-overwrite* memory corruption attacks.
 
@@ -84,13 +84,13 @@ Now follows some examples of applying these rules into an hypothetical project c
 
 .. seealso::
 
-   `Options for Code Generation Conventions <https://gcc.gnu.org/onlinedocs/gcc-7.2.0/gcc/Code-Gen-Options.html>`_
+   `Options for Code Generation Conventions <https://gcc.gnu.org/onlinedocs/gcc-7.2.0/gcc/Code-Gen-Options.html>`__
        See ``-fPIC``, ``-fPIE``.
 
-   `Options for Linking <https://gcc.gnu.org/onlinedocs/gcc-7.2.0/gcc/Link-Options.html>`_
+   `Options for Linking <https://gcc.gnu.org/onlinedocs/gcc-7.2.0/gcc/Link-Options.html>`__
        See ``-shared``, ``-pie``.
 
-   `dpkg-buildflags <http://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html>`_
+   `dpkg-buildflags <http://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html>`__
        See ``FEATURE AREAS > hardening > pie``.
 
 
@@ -100,7 +100,7 @@ PIC/PIE in CMake
 
 CMake has *partial* native support to enable PIC/PIE in a project, via the *POSITION_INDEPENDENT_CODE* and *CMAKE_POSITION_INDEPENDENT_CODE* variables. We consider it "partial" because these variables add the corresponding flags for the compilation steps, but the flag ``-pie`` is not automatically added to the linker step.
 
-We raised awareness about this issue in their bug tracker: `POSITION_INDEPENDENT_CODE does not add -pie <https://gitlab.kitware.com/cmake/cmake/issues/14983>`_.
+We raised awareness about this issue in their bug tracker: `POSITION_INDEPENDENT_CODE does not add -pie <https://gitlab.kitware.com/cmake/cmake/issues/14983>`__.
 
 The effect of setting *POSITION_INDEPENDENT_CODE* to *ON* for a CMake target (or setting *CMAKE_POSITION_INDEPENDENT_CODE* for the whole project), is the following:
 

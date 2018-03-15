@@ -19,7 +19,7 @@ Amazon Web Services
 
 The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server. Follow these steps to use it:
 
-1. Access the `AWS CloudFormation Console <https://console.aws.amazon.com/cloudformation>`_.
+1. Access the `AWS CloudFormation Console <https://console.aws.amazon.com/cloudformation>`__.
 
 2. Click on *Create Stack*.
 
