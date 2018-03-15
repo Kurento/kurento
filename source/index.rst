@@ -53,10 +53,10 @@ Information about development of *Kurento itself* is also available:
    /features/kurento_protocol
    /features/kurento_modules
    /features/kurento_utils_js
-   /features/logging
    /features/nat_traversal
    /features/security
    /features/statistics
+   /features/logging
 
 
 .. _project-docs:
