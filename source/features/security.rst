@@ -18,6 +18,8 @@ for further information about this issue.
 Securing client applications
 ============================
 
+.. _features-security-java-https:
+
 Configure Java applications to use HTTPS
 ----------------------------------------
 

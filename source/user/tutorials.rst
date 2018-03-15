@@ -50,6 +50,18 @@ This web application consists on a :term:`WebRTC` *loopback* video communication
 
 
 
+RTP Receiver
+============
+
+This web application showcases reception of an incoming RTP or SRTP stream, and playback via a WebRTC connection.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/tutorial-rtp-receiver>
+
+
+
 WebRTC One-To-Many broadcast
 ============================
 
