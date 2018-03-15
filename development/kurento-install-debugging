@@ -13,6 +13,10 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
 
 PACKAGES=(
+  # Third-party libraries
+  libglib2.0-0-dbg
+  libssl1.0.0-dbg
+
   # Kurento external libraries
   gstreamer1.5-plugins-base-dbg
   gstreamer1.5-plugins-good-dbg

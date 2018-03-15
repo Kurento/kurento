@@ -50,6 +50,9 @@ REPOS=(
   kurento-java
   kurento-tutorial-java
   kurento-tutorial-test
+
+  # Miscellaneous experiments
+  experiments
 )
 
 echo "==== Clone Git repositories ===="
