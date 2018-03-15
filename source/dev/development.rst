@@ -101,7 +101,7 @@ Module dependency graph
 
 This graph shows the dependencies between all modules that form part of Kurento:
 
-.. graphviz:: /images/graphs/Dependencies_All.dot
+.. graphviz:: /images/graphs/dependencies-all.dot
    :align: center
    :caption: All dependency relationships
 

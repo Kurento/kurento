@@ -36,7 +36,7 @@ Kurento API is an object-oriented API. That is, there are classes that can be in
 
 The following class diagram shows some of the relationships of the main classes in the Kurento API:
 
-.. graphviz:: /images/graphs/Media_Objects.dot
+.. graphviz:: /images/graphs/mediaobjects.dot
    :align: center
    :caption: Class diagram of main classes in Kurento API
 
@@ -72,7 +72,7 @@ A **RecorderEndpoint** is an output endpoint that provides function to store con
 
 The following class diagram shows the relationships of the main endpoint classes:
 
-.. graphviz:: /images/graphs/Endpoints.dot
+.. graphviz:: /images/graphs/endpoints.dot
    :align: center
    :caption: Class diagram of main Endpoints in Kurento API
 
@@ -100,7 +100,7 @@ The **FaceOverlayFilter** filter detects faces in a video stream and overlaid it
 
 The following class diagram shows the relationships of the main filter classes:
 
-.. graphviz:: /images/graphs/Filters.dot
+.. graphviz:: /images/graphs/filters.dot
    :align: center
    :caption: Class diagram of main Filters in Kurento API
 
@@ -128,6 +128,6 @@ Hubs are media objects in charge of managing multiple media flows in a pipeline.
 
 The following class diagram shows the relationships of the hubs:
 
-.. graphviz:: /images/graphs/Hubs.dot
+.. graphviz:: /images/graphs/hubs.dot
    :align: center
    :caption: Class diagram of main Hubs in Kurento API

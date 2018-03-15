@@ -1,4 +1,4 @@
-digraph Dependencies_Externals {
+digraph dependencies_externals {
   bgcolor = "transparent";
   fontname = "Bitstream Vera Sans";
   fontsize = 8;

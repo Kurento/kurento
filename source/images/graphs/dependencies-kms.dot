@@ -1,4 +1,4 @@
-digraph Dependencies_KMS {
+digraph dependencies_kms {
   bgcolor = "transparent";
   fontname = "Bitstream Vera Sans";
   fontsize = 8;
