@@ -34,7 +34,7 @@ The steps to install a pre-release version of KMS are pretty much the same as th
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
    sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Packages for Kurento Media Server - Pre-Release versions
+   # Kurento Media Server - Pre-Release packages
    deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
    EOF
 
