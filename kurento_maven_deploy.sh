@@ -48,7 +48,10 @@ echo "[kurento_maven_deploy] Deploy version: $PROJECT_VERSION"
 
 # Build all packages
 echo "[kurento_maven_deploy] Build all packages"
-mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package $OPTS || exit 1
+mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package $OPTS || {
+    echo "[kurento_maven_deploy] ERROR: Command failed: mvn clean package"
+    exit 1
+}
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
     echo "[kurento_maven_deploy] Version to deploy is SNAPSHOT"

@@ -29,7 +29,7 @@ cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
 }
 
 cd java || {
-  echo "[kurento_generate_java_module] ERROR: Expected directory doesn't exist: java/"
+  echo "[kurento_generate_java_module] ERROR: Expected directory doesn't exist: $PWD/java"
   exit 1
 }
 
