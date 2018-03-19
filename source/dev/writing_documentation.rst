@@ -36,52 +36,77 @@ Kurento documentation Style Guide
 Paragraph conventions
 ---------------------
 
-**Line breaks**: *Don't* break the lines. The documentation is a prose text, and not source code, so the typical restrictions of line length don't apply here. Use automatic line breaks in your editor, if you want. The overall flow of the text should be dictated by the width of the screen where the text is being presented, and not by some arbitrary line length limit.
+- **Line breaks**: *Don't* break the lines. The documentation is a prose text, and not source code, so the typical restrictions of line length don't apply here. Use automatic line breaks in your editor, if you want. The overall flow of the text should be dictated by the width of the screen where the text is being presented, and not by some arbitrary line length limit.
+
+
+
+Inline markup
+-------------
+
+- Paths, file names, package names, acronyms, and in general human-oriented words are emphasized with single asterisks (as in ``*word*``). Sample phrases:
+
+  .. code-block:: text
+
+     This document talks about Kurento Media Server (*KMS*).
+     All dependency targets are defined in the *CMakeLists.txt* file.
+     You need to install *libboost-dev* for development.
+
+- Code, commands, arguments, environment variables, commit hashes, and in general machine-oriented keywords are emphasized with double backquotes (as in ````word````). Sample phrases:
+
+  .. code-block:: text
+
+     Use ``apt-get install`` to set up all required packages.
+     Set ``CMAKE_BUILD_TYPE=Debug`` to build with debugging symbols.
+     The argument ``--gst-debug`` can be used to control the logging level.
+
+- There is no difference between using *single asterisks* (``*word*``), and `single backquotes` (```word```); they get rendered as *italic text*. So, always use asterisks when wanting to emphasize some text.
+
+- As opposed to Markdown, underscores (as in ``_word_``) *don't get rendered*, so don't use them to emphasize text.
 
 
 
 Header conventions
 ------------------
 
-**Header separation**: Always separate each header from the preceding paragraph, by using **3** empty lines. The only exception to this rule is when two headers come together (e.g. a document title followed by a section title); in that case, they are separated by just **1** empty line.
+- **Header separation**: Always separate each header from the preceding paragraph, by using **3** empty lines. The only exception to this rule is when two headers come together (e.g. a document title followed by a section title); in that case, they are separated by just **1** empty line.
 
-**Header shape**: *reST* allows to express section headers with any kind of characters that form an underline shape below the section title. We follow these conventions for Kurento documentation files:
+- **Header shape**: *reST* allows to express section headers with any kind of characters that form an underline shape below the section title. We follow these conventions for Kurento documentation files:
 
-1. Level 1 (Document title). Use ``=`` above and below:
+  1. Level 1 (Document title). Use ``=`` above and below:
 
-   .. code-block:: text
+  .. code-block:: text
 
-      =======
-      Level 1
-      =======
+        =======
+        Level 1
+        =======
 
-2. Level 2. Use ``=``:
+  2. Level 2. Use ``=`` below:
 
-   .. code-block:: text
+  .. code-block:: text
 
-      Level 2
-      =======
+        Level 2
+        =======
 
-3. Level 3. Use ``-``:
+  3. Level 3. Use ``-``:
 
-   .. code-block:: text
+  .. code-block:: text
 
-      Level 3
-      -------
+        Level 3
+        -------
 
-4. Level 4. Use ``~``:
+  4. Level 4. Use ``~``:
 
-   .. code-block:: text
+  .. code-block:: text
 
-      Level 4
-      ~~~~~~~
+        Level 4
+        ~~~~~~~
 
-5. Level 5. Use ``"``:
+  5. Level 5. Use ``"``:
 
-   .. code-block:: text
+  .. code-block:: text
 
-      Level 5
-      """""""
+        Level 5
+        """""""
 
 
 
@@ -92,7 +117,9 @@ Our Sphinx-based project is hosted in the `doc-kurento`_ repository. Here, the m
 
 .. _doc-kurento: https://github.com/Kurento/doc-kurento
 
-- **init-workdir**. This target constitutes the first step to be run before most other targets. Our documentation source files contain substitution keywords in some parts, in the form ``| KEYWORD |``, which is expected to be substituted by some actual value during the generation process. Currently, the only keyword in use is ``VERSION``, which must be expanded to the actual version of the documentation being built. For example, here is the *VERSION* keyword when substituted with its final value: ``|VERSION|``.
+- **init-workdir**. This target constitutes the first step to be run before most other targets. Our documentation source files contain substitution keywords in some parts, in the form ``| KEYWORD |``, which is expected to be substituted by some actual value during the generation process. Currently, the only keyword in use is ``VERSION``, which must be expanded to the actual version of the documentation being built.
+
+  For example, here is the *VERSION* keyword when substituted with its final value: ``|VERSION|``.
 
   Yes, Sphinx does already include a substitutions feature by itself, and the keyword ``VERSION`` is precisely one of the supported substitutions. Sadly, this feature of Sphinx is very unreliable. For example, it won't work if the keyword is located inside a literal code block, or inside an URL. So, we must resort to performing the substitutions by ourselves if we want reliable results.
 
