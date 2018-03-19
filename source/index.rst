@@ -1,3 +1,21 @@
+.. raw:: html
+
+    <a href="user/about_openvidu.html" style="color: #0088aa;">
+    <div style="margin-top: 30px;
+                margin-bottom: 30px;
+                text-align: center;
+                padding: 20px;
+                background-color: rgba(0, 136, 170, 0.05);
+                border: solid 3px #0088aa;
+                border-radius: 4px;">
+      <img src="http://openvidu.io/img/logos/openvidu_vert_grey_bg_transp_cropped.png"
+           style="width: 350px;">
+      <p style="font-size: 19px; margin-top: 20px; margin-bottom: 0;">
+        Discover the new easier way to develop Kurento video applications
+      </p>
+    </div>
+    </a>
+
 ==================
 Welcome to Kurento
 ==================
@@ -30,11 +48,12 @@ Information about development of *Kurento itself* is also available:
    :caption: User Documentation
 
    /user/about
-   /user/features
+   /user/about_openvidu
    /user/quickstart
    /user/installation
    /user/installation_dev
    /user/tutorials
+   /user/features
    /user/configuration
    /user/writing_applications
    /user/writing_modules
