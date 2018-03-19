@@ -1,6 +1,10 @@
-=================
-Development Guide
-=================
+===============
+Developer Guide
+===============
+
+This section is a comprehensive guide for development of *Kurento itself*. The intended reader of this text is any person who wants to get involved in writing code for the Kurento project, or to understand how the source code of this project is structured.
+
+If you are looking to write applications that make use of Kurento, then you should read :doc:`/user/writing_applications`.
 
 .. contents:: Table of Contents
 
@@ -64,22 +68,22 @@ There are several types of repositories:
 
 - **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.7.0, these repositories are:
 
+  - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
   - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
   - `kms-core <https://github.com/Kurento/kms-core>`__: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
   - `kms-elements <https://github.com/Kurento/kms-elements>`__: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
   - `kms-filters <https://github.com/Kurento/kms-filters>`__: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
   - `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
   - `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__: Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
-  - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
 
 - **Omni-Build Repository**: The `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__ repository is a dummy umbrella for the other KMS Main Repositories. It has no actual code; instead, it only has the required CMake code to allow building the whole KMS project in one go. For this, it gets a copy of the required repositories via Git submodules.
 
 - **Module Repositories**: KMS is distributed with some basic GStreamer pipeline elements, but other elements are available in form of modules. These modules are stored individually in Module Repositories. Currently, we have the following ones:
 
-  - `kms-crowddetector <https://github.com/Kurento/kms-crowddetector>`__
   - `kms-chroma <https://github.com/Kurento/kms-chroma>`__
-  - `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`__
+  - `kms-crowddetector <https://github.com/Kurento/kms-crowddetector>`__
   - `kms-platedetector <https://github.com/Kurento/kms-platedetector>`__
+  - `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`__
 
 - **Client Repositories**: Client Applications can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their support tools made available in their respective repositories.
 
@@ -89,8 +93,8 @@ There are several types of repositories:
    - `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`__
    - `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__
    - `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__
-   - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
    - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
+   - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
 
 A KMS developer must know how to work with KMS Fork and Main Repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at the KMS Main Repositories, while it's unusual to make changes in Fork Repositories except for updating their upstream versions.
 
@@ -107,7 +111,7 @@ This graph shows the dependencies between all modules that form part of Kurento:
 
 
 
-.. _development-dependency-list:
+.. _dev-dependency-list:
 
 Module dependency list
 ----------------------
@@ -224,7 +228,7 @@ As you can see, there are a lot of possibilities. In the next sections we'll exp
 
 
 
-.. _development-kms:
+.. _dev-kms:
 
 Developing KMS
 --------------
@@ -240,7 +244,7 @@ To work directly with KMS source code, or to just build KMS from sources, the ea
 
 
 
-.. _development-repository:
+.. _dev-repository:
 
 Add Kurento repository
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -275,94 +279,101 @@ Run:
 
 .. code-block:: bash
 
-   PACKAGES=(
-     # Development tools
-     build-essential
-     gdb
-     pkg-config
-     cmake
-     clang
-     debhelper
-     valgrind
-     git
-     wget
-     maven
-     default-jdk
+    PACKAGES=(
+      # Development tools
+      build-essential
+      cmake
+      debhelper
+      default-jdk
+      gdb
+      git
+      maven
+      pkg-config
+      valgrind
+      wget
 
-     # System development libraries
-     libboost-dev
-     libboost-filesystem-dev
-     libboost-log-dev
-     libboost-program-options-dev
-     libboost-regex-dev
-     libboost-system-dev
-     libboost-test-dev
-     libboost-thread-dev
-     libevent-dev
-     libglib2.0-dev
-     libglibmm-2.4-dev
-     libopencv-dev
-     libsigc++-2.0-dev
-     libsoup2.4-dev
-     libssl-dev
-     libvpx-dev
-     libxml2-utils
-     uuid-dev
+      # 'maven-debian-helper' installs an old Maven version in Ubuntu 14.04 (Trusty),
+      # so this ensures that the effective version is the one from 'maven'.
+      maven-debian-helper-
 
-     # Kurento external libraries
-     gstreamer1.5-plugins-base
-     gstreamer1.5-plugins-good
-     gstreamer1.5-plugins-ugly
-     gstreamer1.5-plugins-bad
-     gstreamer1.5-libav
-     gstreamer1.5-nice
-     gstreamer1.5-tools
-     gstreamer1.5-x
-     libgstreamer1.5-dev
-     libgstreamer-plugins-base1.5-dev
-     libnice-dev
-     openh264-gst-plugins-bad-1.5
-     openwebrtc-gst-plugins-dev
-     kmsjsoncpp-dev
-     ffmpeg
-   )
+      # System development libraries
+      libboost-dev
+      libboost-filesystem-dev
+      libboost-log-dev
+      libboost-program-options-dev
+      libboost-regex-dev
+      libboost-system-dev
+      libboost-test-dev
+      libboost-thread-dev
+      libevent-dev
+      libglib2.0-dev
+      libglibmm-2.4-dev
+      libopencv-dev
+      libsigc++-2.0-dev
+      libsoup2.4-dev
+      libssl-dev
+      libvpx-dev
+      libxml2-utils
+      uuid-dev
 
-   sudo apt-get update
-   sudo apt-get install "${PACKAGES[@]}"
+      # Kurento external libraries
+      gstreamer1.5-plugins-base
+      gstreamer1.5-plugins-good
+      gstreamer1.5-plugins-ugly
+      gstreamer1.5-plugins-bad
+      gstreamer1.5-libav
+      gstreamer1.5-nice
+      gstreamer1.5-tools
+      gstreamer1.5-x
+      libgstreamer1.5-dev
+      libgstreamer-plugins-base1.5-dev
+      libnice-dev
+      openh264-gst-plugins-bad-1.5
+      openwebrtc-gst-plugins-dev
+      kmsjsoncpp-dev
+      ffmpeg
+    )
+
+    sudo apt-get update
+    sudo apt-get install "${PACKAGES[@]}"
 
 Optionally, install the debugging symbols if you will be using a debugger to troubleshoot bugs in KMS. Run:
 
 .. code-block:: bash
 
-   PACKAGES=(
-     # Kurento external libraries
-     gstreamer1.5-plugins-base-dbg
-     gstreamer1.5-plugins-good-dbg
-     gstreamer1.5-plugins-ugly-dbg
-     gstreamer1.5-plugins-bad-dbg
-     gstreamer1.5-libav-dbg
-     libgstreamer1.5-0-dbg
-     libnice-dbg
-     libsrtp1-dbg
-     openwebrtc-gst-plugins-dbg
-     kmsjsoncpp-dbg
+    PACKAGES=(
+      # Third-party libraries
+      libglib2.0-0-dbg
+      libssl1.0.0-dbg
 
-     # KMS main components
-     kms-jsonrpc-dbg
-     kms-core-dbg
-     kms-elements-dbg
-     kms-filters-dbg
-     kurento-media-server-dbg
+      # Kurento external libraries
+      #gstreamer1.5-plugins-base-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
+      gstreamer1.5-plugins-good-dbg
+      gstreamer1.5-plugins-ugly-dbg
+      gstreamer1.5-plugins-bad-dbg
+      gstreamer1.5-libav-dbg
+      #libgstreamer1.5-0-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
+      libnice-dbg
+      libsrtp1-dbg
+      #openwebrtc-gst-plugins-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
+      kmsjsoncpp-dbg
 
-     # KMS extra modules
-     kms-chroma-dbg
-     kms-crowddetector-dbg
-     kms-platedetector-dbg
-     kms-pointerdetector-dbg
-   )
+      # KMS main components
+      kms-jsonrpc-dbg
+      kms-core-dbg
+      kms-elements-dbg
+      kms-filters-dbg
+      kurento-media-server-dbg
 
-   sudo apt-get update
-   sudo apt-get install "${PACKAGES[@]}"
+      # KMS extra modules
+      kms-chroma-dbg
+      kms-crowddetector-dbg
+      kms-platedetector-dbg
+      kms-pointerdetector-dbg
+    )
+
+    sudo apt-get update
+    sudo apt-get install "${PACKAGES[@]}"
 
 
 
@@ -380,7 +391,7 @@ Run:
 
 Optionally, change to the master branch of each submodule, if you will be developing on each one of those:
 
-.. code-block:: bash
+.. code-block:: text
 
    REF=master
    for d in $(find . -maxdepth 1 -mindepth 1 -type d)
@@ -395,7 +406,7 @@ Build KMS
 
 Run:
 
-.. code-block:: bash
+.. code-block:: text
 
    TYPE=Debug
    mkdir build-$TYPE \
@@ -427,7 +438,7 @@ Run:
 
 .. code-block:: bash
 
-   export GST_DEBUG="3,Kurento*:4,kms*:4,rtpendpoint:4,webrtcendpoint:4"
+   export GST_DEBUG='3,Kurento*:4,kms*:4,rtpendpoint:4,webrtcendpoint:4'
 
    kurento-media-server/server/kurento-media-server \
      --modules-path=. \
@@ -457,25 +468,25 @@ KMS uses the Check unit testing framework for C (https://libcheck.github.io/chec
 
 To build and run one specific test, use `make <TestName>.check`. For example:
 
-.. code-block:: bash
+.. code-block:: text
 
    make test_agnosticbin.check
 
 If you want to analyze memory usage with Valgrind, use `make <TestName>.valgrind`. For example:
 
-.. code-block:: bash
+.. code-block:: text
 
    make test_agnosticbin.valgrind
 
 Each test has some amount of debug logging which will get printed; check these messages in the file `./Testing/Temporary/LastTest.log` after running a test suite. To find the starting point of each individual test in this log file, look for the words "*test start*". Example:
 
-.. code-block:: bash
+.. code-block:: text
 
    webrtcendpoint.c:1848:test_vp8_sendrecv: test start
 
 
 
-.. _development-clean:
+.. _dev-clean:
 
 Clean your system
 ~~~~~~~~~~~~~~~~~
@@ -486,30 +497,30 @@ Run:
 
 .. code-block:: text
 
-   PACKAGES=(
-     # KMS main components + extra modules
-     '^(kms|kurento).*'
+    PACKAGES=(
+      # KMS main components + extra modules
+      '^(kms|kurento).*'
 
-     # Kurento external libraries
-     ffmpeg
-     '^gir1.2-gst.*1.5'
-     gir1.2-nice-0.1
-     '^(lib)?gstreamer.*1.5.*'
-     '^lib(nice|s3-2|srtp|usrsctp).*'
-     '^srtp-.*'
-     '^openh264(-gst-plugins-bad-1.5)?'
-     '^openwebrtc-gst-plugins.*'
+      # Kurento external libraries
+      ffmpeg
+      '^gir1.2-gst.*1.5'
+      gir1.2-nice-0.1
+      '^(lib)?gstreamer.*1.5.*'
+      '^lib(nice|s3-2|srtp|usrsctp).*'
+      '^srtp-.*'
+      '^openh264(-gst-plugins-bad-1.5)?'
+      '^openwebrtc-gst-plugins.*'
 
-     # System development libraries
-     '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
-     '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
-     uuid-dev
-   )
+      # System development libraries
+      '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
+      '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
+      uuid-dev
+    )
 
-   # Run a loop over all package names and uninstall them.
-   for PACKAGE in "${PACKAGES[@]}"; do
-     sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unexisting"; }
-   done
+    # Run a loop over all package names and uninstall them.
+    for PACKAGE in "${PACKAGES[@]}"; do
+      sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unexisting"; }
+    done
 
 
 
@@ -543,84 +554,67 @@ This allows for the fastest development cycle, however the specific instructions
 Generating Debian packages
 --------------------------
 
-You can create Debian packages for KMS itself and for forked libraries. We have four public repositories, containing packages generated from KMS Main Repositories and KMS Fork Repositories:
+You can easily create Debian packages for KMS itself and for any of the forked libraries. Packages are generated by a Python script called `compile_project.py`, which can be found in the `adm-scripts <https://github.com/Kurento/adm-scripts>`__ repository, and you can use it to generate Debian packages locally in your machine. Versions number of all packages are timestamped, so a developer is able to know explicitly which version of each package has been installed at any given time.
 
-- Repositories for Ubuntu 14.04 (Trusty):
+Follow these steps to generate Debian packages from any of the Kurento repositories:
 
-   - Release: `http://ubuntu.kurento.org trusty kms6`
-   - Development: `http://ubuntu.kurento.org trusty-dev kms6`
+1. (**Optional**) Make sure the system is in a clean state. The section :ref:`dev-clean` explains how to do this.
 
-- Repositories for Ubuntu 16.04 (Xenial):
+2. (**Optional**) Add Kurento Packages Repository. The section about :ref:`Dependency resolution <dev-depresolution>` explains what is the effect of adding the repo, and the section :ref:`dev-repository` explains how to do this.
 
-   - Release: `http://ubuntu.kurento.org xenial kms6`
-   - Development: `http://ubuntu.kurento.org xenial-dev kms6`
+3. Install system tools and Python modules. Run:
 
-We also have several Continuous-Integration ("CI") jobs such that every time a patch is accepted in Git's `master` branch, a new development package of that repository is generated and uploaded to the development repositories. Packages are generated by a Python script called `compile_project.py`, which is stored in the `adm-scripts <https://github.com/Kurento/adm-scripts>`__ repository, and you can use it to generate Debian packages locally in your machine.
+   .. code-block:: bash
 
-Versions number of Development packages are timestamped, so a developer is able to know explicitly which version of each package has been installed at any given time. On the other hand, Release packages follow the `Semantic Versioning <http://semver.org>`__ system.
+      PACKAGES=(
+        # Packaging tools
+        build-essential
+        debhelper
+        curl
+        fakeroot
+        flex
+        git
+        libcommons-validator-java
+        python
+        python-apt
+        python-debian
+        python-git
+        python-requests
+        python-yaml
+        realpath
+        subversion
+        wget
+      )
 
+      sudo apt-get update
+      sudo apt-get install "${PACKAGES[@]}"
 
+   .. note::
 
-Example: kms-core
-~~~~~~~~~~~~~~~~~
+      - `subversion` (svn) is used by `compile_project.py` due to GitHub's lack of support for the `git-archive` protocol (see https://github.com/isaacs/github/issues/554).
+      - `flex` should be automatically installed by gstreamer, but a bug in package version detection needs to get fixed.
+      - `realpath` is used by `adm-scripts/kurento_check_version.sh`.
 
-**Optional**: Make sure the system is in a clean state: the section :ref:`development-clean` explains how to do this.
+4. Download the Kurento CI tools. Run:
 
-**Optional**: Add Kurento Packages Repository. The section about :ref:`Dependency resolution <development-depresolution>` explains what is the effect of adding the repo, and the section :ref:`development-repository` explains how to do this.
+   .. code-block:: text
 
-Install system tools and Python modules. Run:
+      git clone https://github.com/Kurento/adm-scripts.git
+      export PATH="$PWD/adm-scripts:$PATH"
 
-.. code-block:: bash
+5. Download and build packages for the desired module. Run:
 
-   PACKAGES=(
-     # Packaging tools
-     build-essential
-     debhelper
-     curl
-     fakeroot
-     flex
-     git
-     libcommons-validator-java
-     python
-     python-apt
-     python-debian
-     python-git
-     python-requests
-     python-yaml
-     realpath
-     subversion
-     wget
-   )
+   .. code-block:: text
 
-   sudo apt-get update
-   sudo apt-get install "${PACKAGES[@]}"
-
-Download and setup packaging tools:
-
-.. code-block:: bash
-
-   git clone https://github.com/Kurento/adm-scripts.git
-   export PATH="$PWD/adm-scripts:$PATH"
-
-Download and build packages for the desired module:
-
-.. code-block:: bash
-
-   git clone https://github.com/Kurento/kms-core.git
-   cd kms-core
-   sudo PATH="$PWD/../adm-scripts:$PATH" PYTHONUNBUFFERED=1 \
-     ../adm-scripts/kms/compile_project.py \
-     --base_url https://github.com/Kurento compile
-
-.. note::
-
-   - `subversion` (svn) is used by `compile_project.py` due to GitHub's lack of support for the `git-archive` protocol (see https://github.com/isaacs/github/issues/554).
-   - `flex` should be installed by gstreamer, but a bug in package version detection needs to get fixed.
-   - `realpath` is used by `adm-scripts/kurento_check_version.sh`.
+      git clone https://github.com/Kurento/kms-core.git
+      cd kms-core
+      sudo PATH="$PWD/../adm-scripts:$PATH" PYTHONUNBUFFERED=1 \
+        ../adm-scripts/kms/compile_project.py \
+        --base_url https://github.com/Kurento compile
 
 
 
-.. _development-depresolution:
+.. _dev-depresolution:
 
 Dependency resolution: to repo or not to repo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -635,7 +629,9 @@ It is very important to keep in mind the dependency resolution mechanism that ha
 
 This can have a very big impact on the amount of modules that need to be built to satisfy the dependencies of a given project. The most prominent example is **kurento-media-server**: it basically depends on _everything_ else. If the Kurento repo is available to `apt-get`, then all of KMS libraries will be downloaded and installed. If the repo is not available, then all source code of KMS will get downloaded and built, including the whole GStreamer libraries and other forked libraries.
 
-**Important Note**: This only applies to Ubuntu 16.04 (Xenial), for which the official package repositories already contain all required development libraries to build the whole KMS. However, for Ubuntu 14.04 (Trusty) the official repos are missing some required packages, so the Kurento Packages Repository must be configured in the system in order to build all of KMS. Refer to the following sections.
+.. note::
+
+   This only applies to Ubuntu 16.04 (Xenial), for which the official package repositories already contain all required development libraries to build the whole KMS. However, for Ubuntu 14.04 (Trusty) the official repos are missing some required packages, so the Kurento Packages Repository must be configured in the system in order to build all of KMS. Refer to the following sections.
 
 
 
@@ -664,9 +660,9 @@ kms-core          libglib2.0-dev (>= 2.46)         2.40            2.48         
 gst-plugins-base  libsoup2.4-dev (>= 2.48)         2.44            2.52            2.50
 libsrtp           libssl-dev (>= 1.0.2)            1.0.1f          1.0.2g          1.0.2g
 gst-plugins-bad   libde265-dev (any)               none            1.0.2           0.9
-                  libx265-dev (any)                none            1.9             1.7
-                  libass-dev (>= 0.10.2)           0.10.1          0.13.1          0.10.2
-                  libgnutls28-dev, librtmp-dev                                                      [2]
+gst-plugins-bad   libx265-dev (any)                none            1.9             1.7
+gst-plugins-bad   libass-dev (>= 0.10.2)           0.10.1          0.13.1          0.10.2
+gst-plugins-bad   libgnutls28-dev, librtmp-dev                                                      [2]
 kms-elements      libnice-dev (>= 0.1.13)          0.1.4           0.1.13          0.1.13
 libnice           libgupnp-igd-1.0-dev (>= 0.2.4)  0.2.2           0.2.4           0.2.4
 ================  ===============================  ==============  ==============  ===============  =====
@@ -677,7 +673,7 @@ libnice           libgupnp-igd-1.0-dev (>= 0.2.4)  0.2.2           0.2.4        
 
 This list of dependencies means that it is not possible to build the whole KMS on Ubuntu Trusty, at least not without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with `apt-get`.
 
-In the case that we want to force building the whole KMS libraries and modules -*as opposed to downloading them from the repo*- the solution to this problem is to clone each module separately, and manually build them one by one, in the order given by their :ref:`development-dependency-list`.
+In case that we want to force building the whole KMS libraries and modules -*as opposed to downloading them from the repo*- the solution to this problem is to clone each module separately, and manually build them one by one, in the order given by their :ref:`dev-dependency-list`.
 
 
 
