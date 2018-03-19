@@ -88,7 +88,7 @@ Information about development of *Kurento itself* is also available:
    :maxdepth: 2
    :caption: Developer Documentation
 
-   /dev/development
+   /dev/dev_guide
    /dev/architecture
    /dev/changelog
    /dev/testing

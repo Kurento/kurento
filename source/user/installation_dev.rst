@@ -10,7 +10,7 @@ These builds end up being uploaded to *Development* repositories so they can be 
    The pre-release version always represents the current state on the software development, so it can include undocumented changes, regressions, bugs or deprecations. **Never** use pre-release builds in a production environment.
 
 .. note::
-   If you are looking to build KMS from the source code, then you should check the section :ref:`development-kms` in the developer documentation.
+   If you are looking to build KMS from the source code, then you should check the section :ref:`dev-kms` in the developer documentation.
 
 
 
