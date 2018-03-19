@@ -42,39 +42,45 @@ The Kurento project provides an *AWS CloudFormation* template file. It can be us
 Local Installation
 ==================
 
-With this method, you will install KMS from the native package repositories made available by the Kurento project.
+With this method, you will install KMS from the native Ubuntu package repositories made available by the Kurento project.
 
 KMS has explicit support for two Long-Term Support (*LTS*) distributions of Ubuntu: **Ubuntu 14.04 (Trusty)** and **Ubuntu 16.04 (Xenial)**. Only the 64-bits editions are supported.
 
 Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if required.
 
-**First Step**. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these lines:
+1. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these commands:
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   # Choose one:
-   DISTRO="trusty"  # KMS for Ubuntu 14.04 (Trusty)
-   DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
+      # KMS for Ubuntu 14.04 (Trusty)
+      DISTRO="trusty"
 
-**Second Step**. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
+   .. code-block:: bash
 
-.. code-block:: text
+      # KMS for Ubuntu 16.04 (Xenial)
+      DISTRO="xenial"
 
-   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+2. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
 
-   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Kurento Media Server - Release packages
-   deb [arch=amd64] http://ubuntu.openvidu.io/6.7.1 $DISTRO kms6
-   EOF
+   .. code-block:: text
 
-**Third Step**. Finally, install KMS:
+      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-.. code-block:: text
+   .. code-block:: text
 
-   sudo apt-get update
-   sudo apt-get install kurento-media-server
+      sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+      # Kurento Media Server - Release packages
+      deb [arch=amd64] http://ubuntu.openvidu.io/6.7.1 $DISTRO kms6
+      EOF
 
-The command *apt-get install* will install KMS at the version specified in the file */etc/apt/sources.list.d/kurento.list*.
+3. Install KMS:
+
+   .. code-block:: text
+
+      sudo apt-get update
+      sudo apt-get install kurento-media-server
+
+This will install the KMS release version that was specified in the previous commands.
 
 The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 

@@ -7,10 +7,12 @@ Some components of KMS are built nightly, with the code developed during that sa
 These builds end up being uploaded to *Development* repositories so they can be installed by anyone. Use these if you want to develop *Kurento itself*, or if you want to try the latest changes before they are officially released.
 
 .. warning::
-   The pre-release version always represents the current state on the software development, so it can include undocumented changes, regressions, bugs or deprecations. **Never** use pre-release builds in a production environment.
+   Pre-release builds always represent the current state on the software development; 99% of the time this is stable code, very close to what will end up being released.
+
+   However, in the other 1% of cases it might include undocumented changes, regressions, bugs or deprecations. It's safer to be conservative and **never** use pre-release builds in a production environment.
 
 .. note::
-   If you are looking to build KMS from the source code, then you should check the section :ref:`dev-kms` in the developer documentation.
+   If you are looking to build KMS from the source code, then you should check the section aimed at development of *KMS itself*: :ref:`dev-kms`.
 
 
 
@@ -19,33 +21,39 @@ Kurento Media Server
 
 The steps to install a pre-release version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
-**First Step**. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these lines:
+1. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these commands:
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   # Choose one:
-   DISTRO="trusty"  # KMS for Ubuntu 14.04 (Trusty)
-   DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
+      # KMS for Ubuntu 14.04 (Trusty)
+      DISTRO="trusty"
 
-**Second Step**. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
+   .. code-block:: bash
 
-.. code-block:: text
+      # KMS for Ubuntu 16.04 (Xenial)
+      DISTRO="xenial"
 
-   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+2. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
 
-   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Kurento Media Server - Pre-Release packages
-   deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
-   EOF
+   .. code-block:: text
 
-**Third Step**. Finally, install KMS:
+      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-.. code-block:: text
+   .. code-block:: text
 
-   sudo apt-get update
-   sudo apt-get install kurento-media-server
+      sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+      # Kurento Media Server - Nightly packages
+      deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
+      EOF
 
-The command *apt-get install* will install KMS at its latest pre-release (unstable) version.
+3. Install KMS:
+
+   .. code-block:: text
+
+      sudo apt-get update
+      sudo apt-get install kurento-media-server
+
+This will install the latest KMS pre-release (potentially unstable) version.
 
 
 
