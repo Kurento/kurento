@@ -20,7 +20,7 @@ About OpenVidu
     </div>
     </a>
 
-`OpenVidu`_ is a new project from the same team that created Kurento. It acts as a wrapper around an installation of Kurento Media Server and encapsulates most of its features, in order to greatly simplify some of the most typical use cases of WebRTC -such as conference rooms-.
+`OpenVidu`_ is a new project from the same team that created Kurento. It acts as a wrapper around an installation of Kurento Media Server and encapsulates most of its features, in order to greatly simplify some of the most typical use cases of WebRTC, such as conference rooms.
 
 An application developer using OpenVidu doesn't need to worry about all the low-level technologies and protocols that form part of typical WebRTC communications. The main goal of this project is to provide a simple, effective, easy-to-use API; just include the OpenVidu client-side and OpenVidu Server for handling the media flows, and you'll have a full-featured WebRTC-capable application.
 
