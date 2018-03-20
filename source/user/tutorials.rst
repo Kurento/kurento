@@ -103,7 +103,7 @@ This is an enhanced version of the the One-To-One application with video recordi
 WebRTC Many-To-Many video call (Group Call)
 ===========================================
 
-This tutorial connects several participants to the same video conference. A group call will consist -in the media server side- in N*N WebRTC endpoints, where N is the number of clients connected to that conference.
+This tutorial connects several participants to the same video conference. A group call will consist (in the media server side) in N*N WebRTC endpoints, where N is the number of clients connected to that conference.
 
 .. toctree::
    :maxdepth: 1

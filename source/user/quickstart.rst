@@ -14,7 +14,7 @@ Generally speaking, these are the first steps that any user interested in Kurent
 
    If your intended application consists of a complex setup with different kinds of sources and varied use cases, then Kurento is the best leverage you can use.
 
-   However, if you intend to solve a simpler use case -such as those of video conference applications-, the `OpenVidu`_ project builds on top of Kurento to offer a simpler and easier to use solution that will save you time and development effort.
+   However, if you intend to solve a simpler use case, such as those of video conference applications, the `OpenVidu`_ project builds on top of Kurento to offer a simpler and easier to use solution that will save you time and development effort.
 
 2. **Install KMS**
 
