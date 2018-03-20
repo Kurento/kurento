@@ -8,6 +8,20 @@ This is a list of all events that can be emitted by an instance of *WebRtcEndpoi
 
 
 
+MediaObject events
+==================
+
+This is the base interface used to manage capabilities common to all Kurento elements, including both *MediaElement* and *MediaPipeline*.
+
+
+
+Error
+-----
+
+Some error has occurred. Check the event parameters (such as *description*, *errorCode*, and *type*) to get information about what happened.
+
+
+
 MediaElement events
 ===================
 
@@ -46,6 +60,19 @@ MediaFlowOutStateChange
 - State = *Flowing*: There is data flowing **from** the Endpoint towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Endpoint's ``src`` pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
 
 - State = *NotFlowing*: The element is not sending any output data to the Pipeline.
+
+
+
+MediaTranscodingStateChange
+---------------------------
+
+When media starts flowing through a *MediaElement*, an internal dynamic configuration is done in order to match the incoming media format with the requested outgoing media format. If both input and output formats are compatible (at the codec level), then the media can be transferred directly without any extra processing. However, if the input and output media formats are not compatible, then the internal transcoding module will get enabled, which converts the input media format to be compatible with the required output.
+
+For example, if a WebRtcEndpoint receives a *VP8* video stream from a Chrome browser, and then has to send the stream to a Safari browser which only accepts *H.264*, then the media will need to be transcoded.
+
+- State = *Transcoding*: The *MediaElement* will transcode the incoming media, because its format is not compatible with the requested output format.
+
+- State = *NotTranscoding*: The *MediaElement* will *not* transcode the incoming media, because its format is compatible with the requested output format.
 
 
 
