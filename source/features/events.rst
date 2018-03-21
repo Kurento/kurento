@@ -66,7 +66,9 @@ MediaFlowOutStateChange
 MediaTranscodingStateChange
 ---------------------------
 
-When media starts flowing through a *MediaElement*, an internal dynamic configuration is done in order to match the incoming media format with the requested outgoing media format. If both input and output formats are compatible (at the codec level), then the media can be transferred directly without any extra processing. However, if the input and output media formats are not compatible, then the internal transcoding module will get enabled, which converts the input media format to be compatible with the required output.
+All Endpoint objects in Kurento Media Server embed a custom-made GStreamer element called `agnosticbin`. This element is used to provide seamless interconnection of components in the *MediaPipeline*, regardless of the format and codec configuration of the input and poutput media streams.
+
+When media starts flowing through any *MediaElement*-derived object, an internal dynamic configuration is done in order to match the incoming media format with the requested output media format. If both input and output formats are compatible (at the codec level), then the media can be transferred directly without any extra processing. However, if the input and output media formats are not compatible, the internal transcoding module will get enabled to convert the input media format to be compatible with the required output.
 
 For example, if a WebRtcEndpoint receives a *VP8* video stream from a Chrome browser, and then has to send the stream to a Safari browser which only accepts *H.264*, then the media will need to be transcoded.
 
