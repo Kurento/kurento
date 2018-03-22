@@ -51,7 +51,7 @@ There are several types of repositories:
 
 - **Fork Repositories**: KMS depends on several open source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries. The repositories that contain these forked libraries are called "Fork Repositories".
 
-  These are the current Fork Repositories, as of KMS version 6.7.0:
+  These are the current Fork Repositories, as of KMS version 6.7:
 
   - `gstreamer <https://github.com/Kurento/gstreamer>`__ (libgstreamer1.5)
   - `gst-plugins-base <https://github.com/Kurento/gst-plugins-base>`__
@@ -66,7 +66,7 @@ There are several types of repositories:
   - `openh264 <https://github.com/Kurento/openh264>`__
   - `usrsctp <https://github.com/Kurento/usrsctp>`__
 
-- **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.7.0, these repositories are:
+- **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.7, these repositories are:
 
   - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
   - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
@@ -397,7 +397,7 @@ Optionally, change to the master branch of each submodule, if you will be develo
    for d in $(find . -maxdepth 1 -mindepth 1 -type d)
    do pushd $d ; git checkout "$REF" ; popd ; done
 
-You can also set ``REF`` to any other branch or tag, such as ``REF=6.7.0``. This will bring the code to the state it had in that version.
+You can also set ``REF`` to any other branch or tag, such as ``REF=6.7.1``. This will bring the code to the state it had in that version.
 
 
 

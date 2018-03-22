@@ -14,7 +14,7 @@ Kurento Media Server had been lagging in this respect, and old releases only imp
 
 - **Read-Only Relocations** (RELRO) (``-Wl,-z,relro``). This linker option marks any regions of the relocation table as "read-only" if they were resolved before execution begins. This reduces the possible areas of memory in a program that can be used by an attacker that performs a successful *GOT-overwrite* memory corruption exploit. This option works best with the linker's *Immediate Binding* mode, which forces *all* regions of the relocation table to be resolved before execution begins. However, immediate binding is disabled by default.
 
-Starting from version **6.7.0**, KMS also implements these extra hardening measurements:
+Starting from version **6.7**, KMS also implements these extra hardening measurements:
 
 - **Position Independent Code** (``-fPIC``) / **Position Independent Executable** (``-fPIE -pie``) [#pie]_. Allows taking advantage of the :wikipedia:`Address Space Layout Randomization (ASLR) <en,Address_space_layout_randomization>` protection offered by the Kernel. This protects against :wikipedia:`Return-Oriented Programming (ROP) <en,Return-oriented_programming>` attacks and generally frustrates memory corruption attacks. This option was initially made the default in Ubuntu 16.10 for some selected architectures, and in Ubuntu 17.10 was finally enabled by default across all architectures supported by Ubuntu.
 
@@ -46,7 +46,7 @@ Debian-based distributions provide the *hardening-check* tool (package *hardenin
 Hardening in Kurento
 ====================
 
-Since version 6.7.0, Kurento Media Server is built with all the mentioned hardening measurements. All required flags are added in the Debian package generation step, by setting the environment variable *DEB_BUILD_MAINT_OPTIONS* to ``hardening=+all``, as described by `Debian hardening options`_. This variable is injected into the build environment by the CMake module ``kms-cmake-utils/CMake/CommonBuildFlags.cmake``, which is included by all modules of KMS.
+Since version 6.7, Kurento Media Server is built with all the mentioned hardening measurements. All required flags are added in the Debian package generation step, by setting the environment variable *DEB_BUILD_MAINT_OPTIONS* to ``hardening=+all``, as described by `Debian hardening options`_. This variable is injected into the build environment by the CMake module ``kms-cmake-utils/CMake/CommonBuildFlags.cmake``, which is included by all modules of KMS.
 
 
 
