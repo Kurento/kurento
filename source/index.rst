@@ -41,6 +41,7 @@ Information about development of *Kurento itself* is also available:
 - :ref:`dev-docs`
 
 
+
 .. _user-docs:
 
 .. toctree::
@@ -61,6 +62,7 @@ Information about development of *Kurento itself* is also available:
    /user/faq
 
 
+
 .. _feature-docs:
 
 .. toctree::
@@ -79,6 +81,7 @@ Information about development of *Kurento itself* is also available:
    /features/logging
 
 
+
 .. _project-docs:
 
 .. toctree::
@@ -88,9 +91,13 @@ Information about development of *Kurento itself* is also available:
    /project/contribute
    /project/team
    /project/conduct
+
+..
+   This sections are commented out, for now:
    /project/sponsors
    /project/opensource
    /project/story
+
 
 
 .. _business-docs:
@@ -102,6 +109,7 @@ Information about development of *Kurento itself* is also available:
    /business/index
 
 
+
 .. _dev-docs:
 
 .. toctree::
@@ -109,13 +117,17 @@ Information about development of *Kurento itself* is also available:
    :caption: Developer Documentation
 
    /dev/dev_guide
-   /dev/architecture
-   /dev/changelog
-   /dev/testing
    /dev/ci
    /dev/release
    /dev/hardening
    /dev/writing_documentation
+
+..
+   This sections are commented out, for now:
+   /dev/changelog
+   /dev/architecture
+   /dev/testing
+
 
 
 .. _knowledge-docs:
