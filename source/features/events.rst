@@ -34,14 +34,14 @@ Note that the ``MediaFlowInStateChange`` and ``MediaFlowOutStateChange`` events 
 ElementConnected
 ----------------
 
-[TODO]
+[TODO - add contents]
 
 
 
 ElementDisconnected
 -------------------
 
-[TODO]
+[TODO - add contents]
 
 
 
@@ -150,14 +150,14 @@ For further reference, see the libnice's `Agent documentation <https://nice.free
 DataChannelClose
 ----------------
 
-[TODO]
+[TODO - add contents]
 
 
 
 DataChannelOpen
 ---------------
 
-[TODO]
+[TODO - add contents]
 
 
 

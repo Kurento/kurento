@@ -26,4 +26,4 @@ Having said this, it is also clear that complying with a minimum set of netiquet
 
 Complying with these rules will contribute to improve the quality of the Kurento Community as a whole, making it the most helpful source of help and support.
 
-Bests, and nice code.
+Bests, and have a nice coding time.
