@@ -269,11 +269,14 @@ def get_debian_version(simplify_dev_version, dist):
     if int(num_commits) > 0:
         # This is a Development build
         if simplify_dev_version:
+            # Use "0" as the timestamp
             version = (version
                        + "." + dist
-                       + "~0." + num_commits
+                       + "~0"
+                       + "." + num_commits
                        + "." + current_commit)
         else:
+            # Use a full timestamp
             version = (version
                        + "." + dist
                        + "~" + now.strftime("%Y%m%d%H%M%S")
@@ -432,7 +435,7 @@ def generate_debian_package(args, buildconfig):
         exit(1)
     else:
         print("[buildpkg::get_version] ({})"
-              " Found distro: {}".format(project_name, dist))
+              " Found distro code: {}".format(project_name, dist))
 
     print("[buildpkg::generate_debian_package] ({})"
           " Retrieve version from the project's metadata".format(project_name))
