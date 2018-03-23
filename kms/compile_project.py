@@ -284,12 +284,6 @@ def get_debian_version(simplify_dev_version, dist):
                        + "." + current_commit)
     else:
         # This is a Release build
-        # FIXME - this is a hack done to allow multiple builds of a package
-        # with the same version number.
-        # This is due to the fact that the repos won't allow uploading
-        # a new file if another one of the same name already exists.
-        # With an ideal workflow for releases, the version numbers should
-        # be something like "6.6.2" and not "6.6.2-20170605185155"
         version = (version
                    + "." + dist
                    + "." + now.strftime("%Y%m%d%H%M%S")
