@@ -80,10 +80,18 @@ PACKAGES=(
   libgstreamer-plugins-base1.5-dev
   libnice-dev
   openh264-gst-plugins-bad-1.5
-  openwebrtc-gst-plugins-dev
+  #openwebrtc-gst-plugins-dev # FIXME - Workaround for Ubuntu 14.04 (Trusty)
   kmsjsoncpp-dev
   ffmpeg
 )
+
+# FIXME - Workaround for Ubuntu 14.04 (Trusty)
+if [ "$(lsb_release -sc)" = "trusty" ]; then
+  PACKAGES+=(
+    openwebrtc-gst-plugins=0.10.0.1.trusty~20180213160509.1.33ccf19
+    openwebrtc-gst-plugins-dev=0.10.0.1.trusty~20180213160509.1.33ccf19
+  )
+fi
 
 # Parse command line arguments
 update=1

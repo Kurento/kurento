@@ -21,15 +21,15 @@ PACKAGES=(
   libssl1.0.0-dbg
 
   # Kurento external libraries
-  gstreamer1.5-plugins-base-dbg
+  #gstreamer1.5-plugins-base-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
   gstreamer1.5-plugins-good-dbg
   gstreamer1.5-plugins-ugly-dbg
   gstreamer1.5-plugins-bad-dbg
   gstreamer1.5-libav-dbg
-  libgstreamer1.5-0-dbg
+  #libgstreamer1.5-0-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
   libnice-dbg
   libsrtp1-dbg
-  openwebrtc-gst-plugins-dbg
+  #openwebrtc-gst-plugins-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
   kmsjsoncpp-dbg
 
   # KMS main components
@@ -45,6 +45,16 @@ PACKAGES=(
   kms-platedetector-dbg
   kms-pointerdetector-dbg
 )
+
+# FIXME - Workaround for Ubuntu 14.04 (Trusty)
+if [ "$(lsb_release -sc)" = "trusty" ]; then
+  PACKAGES+=(
+    openwebrtc-gst-plugins=0.10.0.1.trusty~20180213160509.1.33ccf19
+    openwebrtc-gst-plugins-dbg=0.10.0.1.trusty~20180213160509.1.33ccf19
+  )
+else
+  PACKAGES+=(gstreamer1.5-plugins-base-dbg libgstreamer1.5-0-dbg)
+fi
 
 # Parse command line arguments
 update=1
