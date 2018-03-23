@@ -2,12 +2,15 @@
 set -eu -o pipefail  # Abort on errors, disallow undefined variables
 IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
-# Install every package with debugging symbols for Kurento Media Server.
+# Install debugging symbols for Kurento Media Server.
 #
 # Changes:
 # 2018-02-12 Juan Navarro <juan.navarro@gmx.es>
 # - Initial version (merged from other install scripts).
 # - Add package: libsrtp1-dbg.
+# 2018-03-16
+# - Add command line argument parsing with 'getopts'.
+# - Add argument '-n' to skip running `apt-get update`.
 
 # Check root permissions
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
@@ -43,7 +46,17 @@ PACKAGES=(
   kms-pointerdetector-dbg
 )
 
-apt-get update
+# Parse command line arguments
+update=1
+while getopts 'n' flag; do
+  case "${flag}" in
+    n) update=0 ;;
+    *) ;;
+  esac
+done
+
+(($update)) && apt-get update
+
 apt-get install --yes "${PACKAGES[@]}"
 
 echo "All packages installed successfully"

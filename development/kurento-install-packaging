@@ -21,6 +21,9 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # - Add libcommons-validator-java
 # 2018-02-02
 # - Use a Bash Array to define all packages; run a single `apt-get` command.
+# 2018-03-16
+# - Add command line argument parsing with 'getopts'.
+# - Add argument '-n' to skip running `apt-get update`.
 
 # Check root permissions
 [ $(id -u) -eq 0 ] || { echo "Please run as root"; exit 1; }
@@ -45,7 +48,17 @@ PACKAGES=(
   wget
 )
 
-apt-get update
+# Parse command line arguments
+update=1
+while getopts 'n' flag; do
+  case "${flag}" in
+    n) update=0 ;;
+    *) ;;
+  esac
+done
+
+(($update)) && apt-get update
+
 apt-get install --yes "${PACKAGES[@]}"
 
 echo "All packages installed successfully"

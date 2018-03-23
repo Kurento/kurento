@@ -2,7 +2,11 @@
 set -eu -o pipefail  # Abort on errors, disallow undefined variables
 IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
-# Install every package related to development of Kurento Media Server.
+# Install packages needed to build Kurento Media Server.
+#
+# This script installs all development tools and pre-requisites that are needed
+# to build a fresh copy of the Kurento Media Server source code. It does not
+# install packages belonging to KMS itself.
 #
 # Notes:
 # - gstreamer1.5-x is needed for the "timeoverlay" GStreamer plugin,
@@ -19,6 +23,9 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # - Move debugging packages to their own install script.
 # 2018-02-25
 # - Remove 'clang' and sort dev tools by name.
+# 2018-03-16
+# - Add command line argument parsing with 'getopts'.
+# - Add argument '-n' to skip running `apt-get update`.
 
 # Check root permissions
 [ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
@@ -78,7 +85,17 @@ PACKAGES=(
   ffmpeg
 )
 
-apt-get update
+# Parse command line arguments
+update=1
+while getopts 'n' flag; do
+  case "${flag}" in
+    n) update=0 ;;
+    *) ;;
+  esac
+done
+
+(($update)) && apt-get update
+
 apt-get install --yes "${PACKAGES[@]}"
 
 echo "All packages installed successfully"
