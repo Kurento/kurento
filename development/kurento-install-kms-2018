@@ -59,5 +59,4 @@ echo "All packages installed successfully"
 
 # ------------
 
-echo ""
 echo "[$0] Done."

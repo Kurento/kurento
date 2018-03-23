@@ -52,5 +52,4 @@ echo "Git repositories cloned at ${PWD}/"
 
 # ------------
 
-echo ""
 echo "[$0] Done."

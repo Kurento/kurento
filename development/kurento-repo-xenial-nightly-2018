@@ -31,5 +31,4 @@ apt-get update
 
 # ------------
 
-echo ""
 echo "[$0] Done."

@@ -36,5 +36,4 @@ echo "Repository '$REPO' configured at $FILE"
 
 # ------------
 
-echo ""
 echo "[$0] Done."
