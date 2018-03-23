@@ -26,63 +26,69 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-03-16
 # - Add command line argument parsing with 'getopts'.
 # - Add argument '-n' to skip running `apt-get update`.
+# 2018-03-23
+# - Add log function.
+
+# Set up logging function
+BASENAME="$(basename "$0")"  # Complete file name
+log() { echo "[$BASENAME] $*"; }
 
 # Check root permissions
-[ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
+[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
 
 PACKAGES=(
-  # Development tools
-  build-essential
-  cmake
-  debhelper
-  default-jdk
-  gdb
-  git
-  maven
-  pkg-config
-  valgrind
-  wget
+    # Development tools
+    build-essential
+    cmake
+    debhelper
+    default-jdk
+    gdb
+    git
+    maven
+    pkg-config
+    valgrind
+    wget
 
-  # 'maven-debian-helper' installs an old Maven version in Ubuntu 14.04 (Trusty),
-  # so this ensures that the effective version is the one from 'maven'.
-  maven-debian-helper-
+    # 'maven-debian-helper' installs an old Maven version in Ubuntu 14.04 (Trusty),
+    # so this ensures that the effective version is the one from 'maven'.
+    maven-debian-helper-
 
-  # System development libraries
-  libboost-dev
-  libboost-filesystem-dev
-  libboost-log-dev
-  libboost-program-options-dev
-  libboost-regex-dev
-  libboost-system-dev
-  libboost-test-dev
-  libboost-thread-dev
-  libevent-dev
-  libglib2.0-dev
-  libglibmm-2.4-dev
-  libopencv-dev
-  libsigc++-2.0-dev
-  libsoup2.4-dev
-  libssl-dev
-  libvpx-dev
-  libxml2-utils
-  uuid-dev
+    # System development libraries
+    libboost-dev
+    libboost-filesystem-dev
+    libboost-log-dev
+    libboost-program-options-dev
+    libboost-regex-dev
+    libboost-system-dev
+    libboost-test-dev
+    libboost-thread-dev
+    libevent-dev
+    libglib2.0-dev
+    libglibmm-2.4-dev
+    libopencv-dev
+    libsigc++-2.0-dev
+    libsoup2.4-dev
+    libssl-dev
+    libvpx-dev
+    libxml2-utils
+    uuid-dev
 
-  # Kurento external libraries
-  gstreamer1.5-plugins-base
-  gstreamer1.5-plugins-good
-  gstreamer1.5-plugins-ugly
-  gstreamer1.5-plugins-bad
-  gstreamer1.5-libav
-  gstreamer1.5-nice
-  gstreamer1.5-tools
-  gstreamer1.5-x
-  libgstreamer1.5-dev
-  libgstreamer-plugins-base1.5-dev
-  libnice-dev
-  openh264-gst-plugins-bad-1.5
-  #openwebrtc-gst-plugins-dev # FIXME - Workaround for Ubuntu 14.04 (Trusty)
-  kmsjsoncpp-dev
-  ffmpeg
+    # Kurento external libraries
+    gstreamer1.5-plugins-base
+    gstreamer1.5-plugins-good
+    gstreamer1.5-plugins-ugly
+    gstreamer1.5-plugins-bad
+    gstreamer1.5-libav
+    gstreamer1.5-nice
+    gstreamer1.5-tools
+    gstreamer1.5-x
+    libgstreamer1.5-dev
+    libgstreamer-plugins-base1.5-dev
+    libnice-dev
+    openh264-gst-plugins-bad-1.5
+    #openwebrtc-gst-plugins-dev # FIXME - Workaround for Ubuntu 14.04 (Trusty)
+    kmsjsoncpp-dev
+    ffmpeg
 )
 
 # FIXME - Workaround for Ubuntu 14.04 (Trusty)
@@ -96,18 +102,18 @@ fi
 # Parse command line arguments
 update=1
 while getopts 'n' flag; do
-  case "${flag}" in
-    n) update=0 ;;
-    *) ;;
-  esac
+    case "${flag}" in
+        n) update=0 ;;
+        *) ;;
+    esac
 done
 
 (($update)) && apt-get update
 
 apt-get install --yes "${PACKAGES[@]}"
 
-echo "All packages installed successfully"
+log "All packages installed successfully"
 
 # ------------
 
-echo "[$0] Done."
+log "Done."

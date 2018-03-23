@@ -24,45 +24,51 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-03-16
 # - Add command line argument parsing with 'getopts'.
 # - Add argument '-n' to skip running `apt-get update`.
+# 2018-03-23
+# - Add log function.
+
+# Set up logging function
+BASENAME="$(basename "$0")"  # Complete file name
+log() { echo "[$BASENAME] $*"; }
 
 # Check root permissions
-[ $(id -u) -eq 0 ] || { echo "Please run as root"; exit 1; }
+[ $(id -u) -eq 0 ] || { log "Please run as root"; exit 1; }
 
 PACKAGES=(
-  # Packaging tools
-  build-essential
-  debhelper
-  curl
-  fakeroot
-  flex
-  git
-  libcommons-validator-java
-  python
-  python-apt
-  python-debian
-  python-git
-  python-requests
-  python-yaml
-  realpath
-  subversion
-  wget
+    # Packaging tools
+    build-essential
+    debhelper
+    curl
+    fakeroot
+    flex
+    git
+    libcommons-validator-java
+    python
+    python-apt
+    python-debian
+    python-git
+    python-requests
+    python-yaml
+    realpath
+    subversion
+    wget
 )
 
 # Parse command line arguments
 update=1
 while getopts 'n' flag; do
-  case "${flag}" in
-    n) update=0 ;;
-    *) ;;
-  esac
+    case "${flag}" in
+        n) update=0 ;;
+        *) ;;
+    esac
 done
 
 (($update)) && apt-get update
 
 apt-get install --yes "${PACKAGES[@]}"
 
-echo "All packages installed successfully"
+log "All packages installed successfully"
 
 # ------------
 
-echo "[$0] Done."
+log "Done."

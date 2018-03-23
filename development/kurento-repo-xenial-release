@@ -7,9 +7,15 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # Changes:
 # 2017-10-03 Juan Navarro <juan.navarro@gmx.es>
 # - Initial version.
+# 2018-03-23
+# - Add log function.
+
+# Set up logging function
+BASENAME="$(basename "$0")"  # Complete file name
+log() { echo "[$BASENAME] $*"; }
 
 # Check root permissions
-[ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
+[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
 
 # Settings
 FILE="/etc/apt/sources.list.d/kurento.list"
@@ -21,19 +27,19 @@ deb http://ubuntu.kurento.org ${REPO} kms6
 EOF
 
 gpg --list-public-keys --no-default-keyring --keyring /etc/apt/trusted.gpg \
-  --with-colons | grep -q "Kurento" && RC=$? || RC=$?
+    --with-colons | grep -q "Kurento" && RC=$? || RC=$?
 
 if [ "$RC" -eq 1 ]; then
-  wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
+    wget http://ubuntu.kurento.org/kurento.gpg.key -O - | apt-key add -
 elif [ "$RC" -ne 0 ]; then
-  echo "ERROR ($RC)"
-  exit "$RC"
+    log "ERROR ($RC)"
+    exit "$RC"
 fi
 
 apt-get update
 
-echo "Repository '$REPO' configured at $FILE"
+log "Repository '$REPO' configured at $FILE"
 
 # ------------
 
-echo "[$0] Done."
+log "Done."

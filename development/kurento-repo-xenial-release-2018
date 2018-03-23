@@ -12,9 +12,15 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-02-06 Juan Navarro
 # - Do not depend on extra tools: don't use 'software-properties-common'.
 # - Ensure that 'kurento.list' is always the repository source file.
+# 2018-03-23
+# - Add log function.
+
+# Set up logging function
+BASENAME="$(basename "$0")"  # Complete file name
+log() { echo "[$BASENAME] $*"; }
 
 # Check root permissions
-[ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
+[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
 
 # Settings
 FILE="/etc/apt/sources.list.d/kurento.list"
@@ -31,4 +37,4 @@ apt-get update
 
 # ------------
 
-echo "[$0] Done."
+log "Done."

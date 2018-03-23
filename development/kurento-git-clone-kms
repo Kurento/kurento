@@ -12,70 +12,75 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-02-13
 # - Print the list of repos that will get cloned.
 # - Don't hide stderr from `git clone`.
+# 2018-03-23
+# - Add log function.
+
+# Set up logging function
+BASENAME="$(basename "$0")"  # Complete file name
+log() { echo "[$BASENAME] $*"; }
 
 # Settings
 BASE_URL="https://github.com/Kurento"
 
 REPOS=(
-  # KMS main components
-  kms-omni-build
-  kurento-module-creator
-  kms-cmake-utils
-  kms-jsonrpc
-  kms-core
-  kms-elements
-  kms-filters
-  kurento-media-server
+    # KMS main components
+    kms-omni-build
+    kurento-module-creator
+    kms-cmake-utils
+    kms-jsonrpc
+    kms-core
+    kms-elements
+    kms-filters
+    kurento-media-server
 
-  # KMS extra modules
-  kms-chroma
-  kms-crowddetector
-  kms-datachannelexample
-  kms-platedetector
-  kms-pointerdetector
+    # KMS extra modules
+    kms-chroma
+    kms-crowddetector
+    kms-datachannelexample
+    kms-platedetector
+    kms-pointerdetector
 
-  # Additional sample modules
-  kms-markerdetector
-  kms-opencv-plugin-sample
-  kms-plugin-sample
+    # Additional sample modules
+    kms-markerdetector
+    kms-opencv-plugin-sample
+    kms-plugin-sample
 
-  # Tools and documentation
-  adm-scripts
-  bugtracker
-  doc-kurento
+    # Tools and documentation
+    adm-scripts
+    bugtracker
+    doc-kurento
 
-  # Client Applications related repos
-  kurento-maven-plugin
-  kurento-qa-pom
-  kurento-java
-  kurento-tutorial-java
-  kurento-tutorial-test
+    # Client Applications related repos
+    kurento-maven-plugin
+    kurento-qa-pom
+    kurento-java
+    kurento-tutorial-java
+    kurento-tutorial-test
 
-  # Miscellaneous experiments
-  experiments
+    # Miscellaneous experiments
+    experiments
 )
 
-echo "==== Clone Git repositories ===="
-echo "This script will clone all Kurento repos:"
+log "==== Clone Git repositories ===="
+log "This script will clone all Kurento repos:"
 printf '%s\n' "${REPOS[@]}"
 read -p "Are you sure? Type 'yes': " -r SURE
-[ "$SURE" != "yes" ] && [ "$SURE" != "YES" ] && { echo "Aborting"; exit 1; }
+[ "$SURE" != "yes" ] && [ "$SURE" != "YES" ] && { log "Aborting"; exit 1; }
 
-echo "Working..."
+log "Working..."
 
 for REPO in "${REPOS[@]}"; do
-  REPO_URL="${BASE_URL}/${REPO}"
-  if [ -d "$REPO" ]; then
-    echo "Skip already existing: $REPO"
-  else
-    echo "Clone repository: $REPO"
-    git clone "$REPO_URL" >/dev/null
-  fi
+    REPO_URL="${BASE_URL}/${REPO}"
+    if [ -d "$REPO" ]; then
+        log "Skip already existing: $REPO"
+    else
+        log "Clone repository: $REPO"
+        git clone "$REPO_URL" >/dev/null
+    fi
 done
 
-echo ""
-echo "Git repositories cloned at ${PWD}/"
+log "Git repositories cloned at ${PWD}/"
 
 # ------------
 
-echo "[$0] Done."
+log "Done."

@@ -11,56 +11,62 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-03-16
 # - Add command line argument parsing with 'getopts'.
 # - Add argument '-n' to skip running `apt-get update`.
+# 2018-03-23
+# - Add log function.
+
+# Set up logging function
+BASENAME="$(basename "$0")"  # Complete file name
+log() { echo "[$BASENAME] $*"; }
 
 # Check root permissions
-[ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
+[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
 
 PACKAGES=(
-  # Third-party libraries
-  libglib2.0-0-dbg
-  libssl1.0.0-dbg
+    # Third-party libraries
+    libglib2.0-0-dbg
+    libssl1.0.0-dbg
 
-  # Kurento external libraries
-  gstreamer1.5-plugins-base-dbg
-  gstreamer1.5-plugins-good-dbg
-  gstreamer1.5-plugins-ugly-dbg
-  gstreamer1.5-plugins-bad-dbg
-  gstreamer1.5-libav-dbg
-  libgstreamer1.5-0-dbg
-  libnice-dbg
-  libsrtp1-dbg
-  openwebrtc-gst-plugins-dbg
-  kmsjsoncpp-dbg
+    # Kurento external libraries
+    gstreamer1.5-plugins-base-dbg
+    gstreamer1.5-plugins-good-dbg
+    gstreamer1.5-plugins-ugly-dbg
+    gstreamer1.5-plugins-bad-dbg
+    gstreamer1.5-libav-dbg
+    libgstreamer1.5-0-dbg
+    libnice-dbg
+    libsrtp1-dbg
+    openwebrtc-gst-plugins-dbg
+    kmsjsoncpp-dbg
 
-  # KMS main components
-  kms-jsonrpc-1.0-dbg
-  kms-core-6.0-dbg
-  kms-elements-6.0-dbg
-  kms-filters-6.0-dbg
-  kurento-media-server-6.0-dbg
+    # KMS main components
+    kms-jsonrpc-1.0-dbg
+    kms-core-6.0-dbg
+    kms-elements-6.0-dbg
+    kms-filters-6.0-dbg
+    kurento-media-server-6.0-dbg
 
-  # KMS extra modules
-  kms-chroma-6.0-dbg
-  kms-crowddetector-6.0-dbg
-  kms-platedetector-6.0-dbg
-  kms-pointerdetector-6.0-dbg
+    # KMS extra modules
+    kms-chroma-6.0-dbg
+    kms-crowddetector-6.0-dbg
+    kms-platedetector-6.0-dbg
+    kms-pointerdetector-6.0-dbg
 )
 
 # Parse command line arguments
 update=1
 while getopts 'n' flag; do
-  case "${flag}" in
-    n) update=0 ;;
-    *) ;;
-  esac
+    case "${flag}" in
+        n) update=0 ;;
+        *) ;;
+    esac
 done
 
 (($update)) && apt-get update
 
 apt-get install --yes "${PACKAGES[@]}"
 
-echo "All packages installed successfully"
+log "All packages installed successfully"
 
 # ------------
 
-echo "[$0] Done."
+log "Done."

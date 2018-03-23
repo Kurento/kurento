@@ -21,56 +21,62 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-03-16
 # - Add command line argument parsing with 'getopts'.
 # - Add argument '-n' to skip running `apt-get update`.
+# 2018-03-23
+# - Add log function.
+
+# Set up logging function
+BASENAME="$(basename "$0")"  # Complete file name
+log() { echo "[$BASENAME] $*"; }
 
 # Check root permissions
-[ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
+[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
 
 PACKAGES=(
-  # KMS main components
-  kurento-module-creator
-  kms-cmake-utils
-  kms-jsonrpc
-  kms-jsonrpc-dev
-  kms-core
-  kms-core-dev
-  kms-elements
-  kms-elements-dev
-  kms-filters
-  kms-filters-dev
-  kurento-media-server
-  kurento-media-server-dev
+    # KMS main components
+    kurento-module-creator
+    kms-cmake-utils
+    kms-jsonrpc
+    kms-jsonrpc-dev
+    kms-core
+    kms-core-dev
+    kms-elements
+    kms-elements-dev
+    kms-filters
+    kms-filters-dev
+    kurento-media-server
+    kurento-media-server-dev
 
-  # KMS extra modules
-  kms-chroma
-  kms-chroma-dev
-  kms-crowddetector
-  kms-crowddetector-dev
-  kms-datachannelexample
-  kms-datachannelexample-dev
-  kms-platedetector
-  kms-platedetector-dev
-  kms-pointerdetector
-  kms-pointerdetector-dev
+    # KMS extra modules
+    kms-chroma
+    kms-chroma-dev
+    kms-crowddetector
+    kms-crowddetector-dev
+    kms-datachannelexample
+    kms-datachannelexample-dev
+    kms-platedetector
+    kms-platedetector-dev
+    kms-pointerdetector
+    kms-pointerdetector-dev
 
-  # Optional but recommended packages
-  openh264-gst-plugins-bad-1.5
+    # Optional but recommended packages
+    openh264-gst-plugins-bad-1.5
 )
 
 # Parse command line arguments
 update=1
 while getopts 'n' flag; do
-  case "${flag}" in
-    n) update=0 ;;
-    *) ;;
-  esac
+    case "${flag}" in
+        n) update=0 ;;
+        *) ;;
+    esac
 done
 
 (($update)) && apt-get update
 
 apt-get install --yes "${PACKAGES[@]}"
 
-echo "All packages installed successfully"
+log "All packages installed successfully"
 
 # ------------
 
-echo "[$0] Done."
+log "Done."
