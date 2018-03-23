@@ -13,6 +13,7 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # - Add argument '-n' to skip running `apt-get update`.
 # 2018-03-23
 # - Add log function.
+# - FIXME for Trusty: openwebrtc-gst-plugins=0.10.0.20160909214034.trusty
 
 # Set up logging function
 BASENAME="$(basename "$0")"  # Complete file name
@@ -54,12 +55,16 @@ PACKAGES=(
 
 # FIXME - Workaround for Ubuntu 14.04 (Trusty)
 if [ "$(lsb_release -sc)" = "trusty" ]; then
-  PACKAGES+=(
-    openwebrtc-gst-plugins=0.10.0.1.trusty~20180213160509.1.33ccf19
-    openwebrtc-gst-plugins-dbg=0.10.0.1.trusty~20180213160509.1.33ccf19
-  )
+    PACKAGES+=(
+        openwebrtc-gst-plugins=0.10.0.20160909214034.trusty
+        openwebrtc-gst-plugins-dbg=0.10.0.20160909214034.trusty
+    )
 else
-  PACKAGES+=(gstreamer1.5-plugins-base-dbg libgstreamer1.5-0-dbg)
+    PACKAGES+=(
+        gstreamer1.5-plugins-base-dbg
+        libgstreamer1.5-0-dbg
+        openwebrtc-gst-plugins-dbg
+    )
 fi
 
 # Parse command line arguments
