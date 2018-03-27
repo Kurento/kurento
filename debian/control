@@ -27,7 +27,7 @@ Architecture: any
 Section: libs
 Depends: ${shlibs:Depends},
  ${misc:Depends},
- libssl1.0.0 (>= 1.0.2d),
+ libssl1.0.0,
  gstreamer1.5-nice (>= 0.1.13.1~0),
  kms-core (>= 6.7.0),
  openwebrtc-gst-plugins,
