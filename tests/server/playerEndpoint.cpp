@@ -117,8 +117,8 @@ eos_received ()
 {
   std::shared_ptr <PlayerEndpointImpl> player = createPlayerEndpoint ();
   std::shared_ptr <MediaElementImpl> sink = createTestSink();
-  GCond cond;
-  GMutex mutex;
+  GCond cond{};
+  GMutex mutex{};
   bool eos = false;
   gint64 end_time;
 
@@ -162,8 +162,8 @@ eos_received_with_no_accept_eos_sink ()
 {
   std::shared_ptr <PlayerEndpointImpl> player = createPlayerEndpoint ();
   std::shared_ptr <MediaElementImpl> sink = createTestSink();
-  GCond cond;
-  GMutex mutex;
+  GCond cond{};
+  GMutex mutex{};
   bool eos = false;
   gint64 end_time;
 

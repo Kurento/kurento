@@ -303,7 +303,7 @@ got_post_data_cb (KmsHttpPost *post_obj, SoupBuffer *buffer, gpointer data)
   GstFlowReturn ret;
   GstBuffer *new_buffer;
   GstMemory *memory;
-  GstMapInfo info;
+  GstMapInfo info{};
 
   new_buffer = gst_buffer_new ();
   memory = gst_allocator_alloc (NULL, buffer->length, NULL);

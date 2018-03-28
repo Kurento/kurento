@@ -75,7 +75,7 @@ private:
   gulong handlerOnStateChanged = 0;
   std::mutex mtx;
   std::condition_variable cv;
-  gint state;
+  gint state{};
 
   void onStateChanged (gint state);
   void waitForStateChange (gint state);
