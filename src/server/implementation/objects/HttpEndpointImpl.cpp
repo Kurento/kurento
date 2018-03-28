@@ -125,8 +125,8 @@ HttpEndpointImpl::unregister_end_point ()
     return;
   }
 
-  std::function <void (GError *err) > aux = [&] (GError * err) {
-    if (err != NULL) {
+  std::function<void(GError * err)> aux = [&](GError *err) {
+    if (err != nullptr) {
       GST_ERROR ("Could not unregister uri %s: %s", uri.c_str(), err->message);
     }
 
@@ -139,8 +139,8 @@ HttpEndpointImpl::unregister_end_point ()
     cond.notify_all ();
   };
 
-  server->unregisterEndPoint (uri, unregister_end_point_adaptor_function,
-                              &aux, NULL);
+  server->unregisterEndPoint(uri, unregister_end_point_adaptor_function, &aux,
+                             nullptr);
 
   std::unique_lock<std::mutex> lock (mutex);
 
@@ -162,7 +162,7 @@ HttpEndpointImpl::register_end_point ()
     guint port;
     gchar *url_tmp;
 
-    if (err != NULL) {
+    if (err != nullptr) {
       GST_ERROR ("Can not register end point: %s", err->message);
       goto do_signal;
     }
@@ -197,9 +197,8 @@ do_signal:
 
   };
 
-  server->registerEndPoint (element,
-                            disconnectionTimeout, register_end_point_adaptor_function,
-                            &aux, NULL);
+  server->registerEndPoint(element, disconnectionTimeout,
+                           register_end_point_adaptor_function, &aux, nullptr);
 
   std::unique_lock<std::mutex> lock (mutex);
 
@@ -323,7 +322,7 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
              getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ANNOUNCED_ADDRESS,
                  "") );
 
-  if (server == NULL) {
+  if (server == nullptr) {
     throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR ,
                             "HttpServer is not created");
   }

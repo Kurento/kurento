@@ -65,7 +65,7 @@ remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)
 {
   guint i;
 
-  if (codecs == NULL) {
+  if (codecs == nullptr) {
     return;
   }
 
@@ -120,7 +120,7 @@ check_support_for_h264 ()
 
   plugin = gst_plugin_load_by_name ("openh264");
 
-  if (plugin == NULL) {
+  if (plugin == nullptr) {
     GST_WARNING ("H264 is NOT supported: Plugin 'openh264' not found");
     return;
   }
@@ -554,7 +554,7 @@ WebRtcEndpointImpl::getStunServerAddress ()
 
   g_object_get ( G_OBJECT (element), "stun-server", &ret, NULL);
 
-  if (ret != NULL) {
+  if (ret != nullptr) {
     stunServerAddress = std::string (ret);
     g_free (ret);
   }
@@ -595,7 +595,7 @@ WebRtcEndpointImpl::getTurnUrl ()
 
   g_object_get ( G_OBJECT (element), "turn-url", &ret, NULL);
 
-  if (ret != NULL) {
+  if (ret != nullptr) {
     turnUrl = std::string (ret);
     g_free (ret);
   }
@@ -659,9 +659,8 @@ WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
   std::string cand_str = candidate->getCandidate();
   std::string mid_str = candidate->getSdpMid ();
   guint8 sdp_m_line_index = candidate->getSdpMLineIndex ();
-  KmsIceCandidate *cand = kms_ice_candidate_new (cand_str.c_str(),
-                          mid_str.c_str(),
-                          sdp_m_line_index, NULL);
+  KmsIceCandidate *cand = kms_ice_candidate_new(
+      cand_str.c_str(), mid_str.c_str(), sdp_m_line_index, nullptr);
 
   if (cand) {
     g_signal_emit_by_name (element, "add-ice-candidate", this->sessId.c_str (),
@@ -906,14 +905,14 @@ WebRtcEndpointImpl::fillStatsReport (std::map
                                      <std::string, std::shared_ptr<Stats>>
                                      &report, const GstStructure *stats, double timestamp)
 {
-  const GstStructure *data_stats = NULL;
+  const GstStructure *data_stats = nullptr;
 
   BaseRtpEndpointImpl::fillStatsReport (report, stats, timestamp);
 
   data_stats = kms_utils_get_structure_by_name (stats,
                KMS_DATA_SESSION_STATISTICS_FIELD);
 
-  if (data_stats != NULL) {
+  if (data_stats != nullptr) {
     return collectRTCDataChannelStats (report, timestamp, data_stats);
   }
 }

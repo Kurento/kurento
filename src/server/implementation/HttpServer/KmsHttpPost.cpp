@@ -68,7 +68,9 @@ enum {
 
 #define KMS_HTTP_PORT_DEFAULT_MESSAGE NULL
 
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+static GParamSpec *obj_properties[N_PROPERTIES] = {
+    nullptr,
+};
 
 /* signals */
 enum {
@@ -83,7 +85,7 @@ static void
 kms_http_post_concat_previous_buffer (KmsHttpPost *self, const char **start,
                                       const char **end)
 {
-  if (self->priv->multipart->tmp_buff == NULL) {
+  if (self->priv->multipart->tmp_buff == nullptr) {
     return;
   }
 
@@ -124,13 +126,13 @@ kms_http_post_skip_preamble (KmsHttpPost *self, const char **start,
   int boundary_len = strlen (boundary);
   const char *b;
 
-  if (self->priv->multipart->tmp_buff != NULL) {
+  if (self->priv->multipart->tmp_buff != nullptr) {
     kms_http_post_concat_previous_buffer (self, start, end);
   }
 
   b = (const char *) memchr (*start, '-', *end - *start);
 
-  if (b == NULL || b != *start) {
+  if (b == nullptr || b != *start) {
     /*first line of the body is not the boundary tag */
     self->priv->multipart->state = MULTIPART_IGNORE_CONTENT;
     return;
@@ -138,16 +140,16 @@ kms_http_post_skip_preamble (KmsHttpPost *self, const char **start,
 
   if (b + boundary_len + 4 > *end) {
     /* boundary does not fit in this buffer */
-    gchar *mem = NULL;
+    gchar *mem = nullptr;
 
-    if (self->priv->multipart->tmp_buff != NULL) {
+    if (self->priv->multipart->tmp_buff != nullptr) {
       mem = self->priv->multipart->tmp_buff;
     }
 
     self->priv->multipart->tmp_buff = (gchar *) g_memdup (b, *end - b);
     self->priv->multipart->len = *end - b;
 
-    if (mem != NULL) {
+    if (mem != nullptr) {
       g_free (mem);
     }
 
@@ -183,9 +185,9 @@ kms_http_post_skip_preamble (KmsHttpPost *self, const char **start,
     return;
   }
 
-  if (self->priv->multipart->tmp_buff != NULL) {
+  if (self->priv->multipart->tmp_buff != nullptr) {
     g_free (self->priv->multipart->tmp_buff);
-    self->priv->multipart->tmp_buff = NULL;
+    self->priv->multipart->tmp_buff = nullptr;
   }
 
   /* Move start pointer up to the end */
@@ -200,18 +202,18 @@ kms_http_post_read_until_boundary (KmsHttpPost *self, const char **start,
   int boundary_len = strlen (boundary);
   const char *b;
 
-  if (self->priv->multipart->tmp_buff != NULL) {
+  if (self->priv->multipart->tmp_buff != nullptr) {
     kms_http_post_concat_previous_buffer (self, start, end);
   }
 
-  for (b = (const char *) memchr (*start, '\r', *end - *start); b != NULL;
-       b = (const char *) memchr (b + 1, '\r', *end - (b + 1) ) ) {
+  for (b = (const char *)memchr(*start, '\r', *end - *start); b != nullptr;
+       b = (const char *)memchr(b + 1, '\r', *end - (b + 1))) {
 
     if (b + boundary_len + 6 > *end) {
       /* boundary does not fit in this buffer */
-      gchar *mem = NULL;
+      gchar *mem = nullptr;
 
-      if (self->priv->multipart->tmp_buff != NULL) {
+      if (self->priv->multipart->tmp_buff != nullptr) {
         mem = self->priv->multipart->tmp_buff;
       }
 
@@ -223,7 +225,7 @@ kms_http_post_read_until_boundary (KmsHttpPost *self, const char **start,
         kms_notify_buffer_data (self, *start, b );
       }
 
-      if (mem != NULL) {
+      if (mem != nullptr) {
         g_free (mem);
       }
 
@@ -267,13 +269,13 @@ kms_http_post_read_until_boundary (KmsHttpPost *self, const char **start,
   }
 
   /* Notify data */
-  if (!ignore && b == NULL) {
+  if (!ignore && b == nullptr) {
     kms_notify_buffer_data (self, *start, *end);
   }
 
-  if (self->priv->multipart->tmp_buff != NULL) {
+  if (self->priv->multipart->tmp_buff != nullptr) {
     g_free (self->priv->multipart->tmp_buff);
-    self->priv->multipart->tmp_buff = NULL;
+    self->priv->multipart->tmp_buff = nullptr;
   }
 
   /* Move start pointer up to the end */
@@ -293,8 +295,8 @@ kms_http_post_parse_header (KmsHttpPost *self, const char *start,
   /* Reject if there is no ':', or the header name is
    * empty, or it contains whitespace.
    */
-  if (name_end == NULL || name_end == name_start ||
-      name_start + strcspn (name_start, " \t\r\n") < name_end) {
+  if (name_end == nullptr || name_end == name_start ||
+      name_start + strcspn(name_start, " \t\r\n") < name_end) {
     /* Ignore this line. */
     return;
   }
@@ -305,7 +307,7 @@ kms_http_post_parse_header (KmsHttpPost *self, const char *start,
   value_start = name_end + 1;
   value_end = strchr (name_start, '\n');
 
-  if (value_end == NULL) {
+  if (value_end == nullptr) {
     return;
   }
 
@@ -340,7 +342,7 @@ kms_http_post_read_headers (KmsHttpPost *self, const char **start,
 {
   const char *b;
 
-  if (self->priv->multipart->tmp_buff != NULL) {
+  if (self->priv->multipart->tmp_buff != nullptr) {
     kms_http_post_concat_previous_buffer (self, start, end);
   }
 
@@ -349,18 +351,18 @@ kms_http_post_read_headers (KmsHttpPost *self, const char **start,
   while (b <= *end) {
     const char *newline = (const char *) memchr (b, '\n', *end - b);
 
-    if (newline == NULL) {
+    if (newline == nullptr) {
       /* header does not fit in this buffer */
-      gchar *mem = NULL;
+      gchar *mem = nullptr;
 
-      if (self->priv->multipart->tmp_buff != NULL) {
+      if (self->priv->multipart->tmp_buff != nullptr) {
         mem = self->priv->multipart->tmp_buff;
       }
 
       self->priv->multipart->tmp_buff = (gchar *) g_memdup (b, *end - b);
       self->priv->multipart->len = *end - b;
 
-      if (mem != NULL) {
+      if (mem != nullptr) {
         g_free (mem);
       }
 
@@ -388,9 +390,9 @@ kms_http_post_read_headers (KmsHttpPost *self, const char **start,
     b = newline + 1;
   }
 
-  if (self->priv->multipart->tmp_buff != NULL) {
+  if (self->priv->multipart->tmp_buff != nullptr) {
     g_free (self->priv->multipart->tmp_buff);
-    self->priv->multipart->tmp_buff = NULL;
+    self->priv->multipart->tmp_buff = nullptr;
   }
 
   /* Move start pointer up to the end */
@@ -400,10 +402,10 @@ kms_http_post_read_headers (KmsHttpPost *self, const char **start,
 static void
 kms_http_post_check_headers (KmsHttpPost *self)
 {
-  GHashTable *params = NULL;
-  gchar *disposition = NULL;
+  GHashTable *params = nullptr;
+  gchar *disposition = nullptr;
 
-  if (self->priv->multipart->headers == NULL) {
+  if (self->priv->multipart->headers == nullptr) {
     return;
   }
 
@@ -421,11 +423,11 @@ kms_http_post_check_headers (KmsHttpPost *self)
 
 end:
 
-  if (disposition != NULL) {
+  if (disposition != nullptr) {
     g_free (disposition);
   }
 
-  if (params != NULL) {
+  if (params != nullptr) {
     g_hash_table_destroy (params);
   }
 }
@@ -514,7 +516,7 @@ got_chunk_cb (SoupMessage *msg, SoupBuffer *chunk, gpointer data)
 {
   KmsHttpPost *self = KMS_HTTP_POST (data);
 
-  if (self->priv->multipart != NULL) {
+  if (self->priv->multipart != nullptr) {
     /* Extract data from body parts */
     kms_http_post_parse_multipart_data (self, chunk->data,
                                         chunk->data + chunk->length);
@@ -528,26 +530,26 @@ got_chunk_cb (SoupMessage *msg, SoupBuffer *chunk, gpointer data)
 static void
 kms_http_post_destroy_multipart (KmsHttpPost *self)
 {
-  if (self->priv->multipart == NULL) {
+  if (self->priv->multipart == nullptr) {
     return;
   }
 
   g_free (self->priv->multipart->boundary);
 
-  if (self->priv->multipart->headers != NULL) {
+  if (self->priv->multipart->headers != nullptr) {
     soup_message_headers_free (self->priv->multipart->headers);
   }
 
   g_free (self->priv->multipart->tmp_buff);
 
   g_slice_free (KmsHttpPostMultipart, self->priv->multipart);
-  self->priv->multipart = NULL;
+  self->priv->multipart = nullptr;
 }
 
 static void
 kms_http_post_init_multipart (KmsHttpPost *self)
 {
-  if (self->priv->multipart != NULL) {
+  if (self->priv->multipart != nullptr) {
     GST_WARNING ("Multipart data is already initialized");
     kms_http_post_destroy_multipart (self);
   }
@@ -560,7 +562,7 @@ kms_http_post_init_multipart (KmsHttpPost *self)
 static void
 kms_http_post_release_message (KmsHttpPost *self)
 {
-  if (self->priv->msg == NULL) {
+  if (self->priv->msg == nullptr) {
     return;
   }
 
@@ -592,13 +594,13 @@ static void
 kms_http_post_configure_msg (KmsHttpPost *self)
 {
   const gchar *content_type;
-  GHashTable *params = NULL;
+  GHashTable *params = nullptr;
 
   content_type =
     soup_message_headers_get_content_type (self->priv->msg->request_headers,
         &params);
 
-  if (content_type == NULL) {
+  if (content_type == nullptr) {
     GST_WARNING ("Content-type header is not present in request");
     soup_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE);
     goto end;
@@ -612,7 +614,7 @@ kms_http_post_configure_msg (KmsHttpPost *self)
       self->priv->multipart->boundary =
         g_strdup ( (gchar *) g_hash_table_lookup (params, "boundary") );
 
-      if (self->priv->multipart->boundary == NULL) {
+      if (self->priv->multipart->boundary == nullptr) {
         GST_WARNING ("Malformed multipart POST request");
         kms_http_post_destroy_multipart (self);
         soup_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE);
@@ -637,7 +639,7 @@ kms_http_post_configure_msg (KmsHttpPost *self)
                           G_CALLBACK (finished_cb), self);
 end:
 
-  if (params != NULL) {
+  if (params != nullptr) {
     g_hash_table_destroy (params);
   }
 }
@@ -729,20 +731,15 @@ kms_http_post_class_init (KmsHttpPostClass *klass)
                                      N_PROPERTIES,
                                      obj_properties);
 
-  obj_signals[GOT_DATA] =
-    g_signal_new ("got-data",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (KmsHttpPostClass, got_data), NULL, NULL,
-                  g_cclosure_marshal_VOID__OBJECT, G_TYPE_NONE, 1,
-                  SOUP_TYPE_BUFFER);
+  obj_signals[GOT_DATA] = g_signal_new(
+      "got-data", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET(KmsHttpPostClass, got_data), nullptr, nullptr,
+      g_cclosure_marshal_VOID__OBJECT, G_TYPE_NONE, 1, SOUP_TYPE_BUFFER);
 
-  obj_signals[FINISHED] =
-    g_signal_new ("finished",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (KmsHttpPostClass, finished), NULL, NULL,
-                  g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+  obj_signals[FINISHED] = g_signal_new(
+      "finished", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET(KmsHttpPostClass, finished), nullptr, nullptr,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 
   /* Registers a private structure for an instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsHttpPostPrivate) );
@@ -759,7 +756,7 @@ kms_http_post_new ()
 {
   KmsHttpPost *obj;
 
-  obj = KMS_HTTP_POST (g_object_new (KMS_TYPE_HTTP_POST, NULL) );
+  obj = KMS_HTTP_POST(g_object_new(KMS_TYPE_HTTP_POST, nullptr));
 
   return obj;
 }

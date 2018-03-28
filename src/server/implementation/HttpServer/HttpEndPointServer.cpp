@@ -24,7 +24,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-std::shared_ptr<HttpEndPointServer> HttpEndPointServer::instance = 0;
+std::shared_ptr<HttpEndPointServer> HttpEndPointServer::instance = nullptr;
 std::recursive_mutex HttpEndPointServer::mutex;
 
 uint HttpEndPointServer::port;
@@ -75,18 +75,20 @@ HttpEndPointServer::getHttpEndPointServer (const uint port,
 
 HttpEndPointServer::HttpEndPointServer ()
 {
-  server = kms_http_ep_server_new (
-             KMS_HTTP_EP_SERVER_PORT, HttpEndPointServer::port,
-             KMS_HTTP_EP_SERVER_INTERFACE,
-             (HttpEndPointServer::interface.empty() ) ? NULL :
-             HttpEndPointServer::interface.c_str (),
-             KMS_HTTP_EP_SERVER_ANNOUNCED_IP,
-             (HttpEndPointServer::announcedAddr.empty() ) ? NULL :
-             HttpEndPointServer::announcedAddr.c_str (),
-             NULL);
+  server =
+      kms_http_ep_server_new(KMS_HTTP_EP_SERVER_PORT, HttpEndPointServer::port,
+                             KMS_HTTP_EP_SERVER_INTERFACE,
+                             (HttpEndPointServer::interface.empty())
+                                 ? nullptr
+                                 : HttpEndPointServer::interface.c_str(),
+                             KMS_HTTP_EP_SERVER_ANNOUNCED_IP,
+                             (HttpEndPointServer::announcedAddr.empty())
+                                 ? nullptr
+                                 : HttpEndPointServer::announcedAddr.c_str(),
+                             NULL);
 
-  logHandler = [&] (GError * err) {
-    if (err != NULL) {
+  logHandler = [&](GError *err) {
+    if (err != nullptr) {
       GST_ERROR ("%s", err->message);
     }
   };
@@ -109,13 +111,14 @@ http_server_handler_cb (KmsHttpEPServer *self, GError *err, gpointer data)
 void
 HttpEndPointServer::start ()
 {
-  kms_http_ep_server_start (server, http_server_handler_cb, &logHandler, NULL);
+  kms_http_ep_server_start(server, http_server_handler_cb, &logHandler,
+                           nullptr);
 }
 
 void
 HttpEndPointServer::stop ()
 {
-  kms_http_ep_server_stop (server, http_server_handler_cb, &logHandler , NULL);
+  kms_http_ep_server_stop(server, http_server_handler_cb, &logHandler, nullptr);
 }
 
 void

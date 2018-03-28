@@ -51,7 +51,7 @@ BOOST_GLOBAL_FIXTURE (GF)
 GF::GF()
 {
   boost::property_tree::ptree ac, audioCodecs, vc, videoCodecs;
-  gst_init (NULL, NULL);
+  gst_init(nullptr, nullptr);
 
   moduleManager.loadModulesFromDirectories ("../../src/server:../../..");
 
@@ -77,7 +77,7 @@ std::string exec (const std::string &str)
   std::string result = "";
 
   while (!feof (pipe.get() ) ) {
-    if (fgets (buffer, 128, pipe.get() ) != NULL) {
+    if (fgets(buffer, 128, pipe.get()) != nullptr) {
       result += buffer;
     }
   }

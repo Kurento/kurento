@@ -134,7 +134,7 @@ std::shared_ptr<VideoInfo> PlayerEndpointImpl::getVideoInfo ()
 
   g_object_get (G_OBJECT (element), VIDEO_DATA, &video_data, NULL);
 
-  if (video_data == NULL) {
+  if (video_data == nullptr) {
     GST_ERROR ("structure null");
   }
 

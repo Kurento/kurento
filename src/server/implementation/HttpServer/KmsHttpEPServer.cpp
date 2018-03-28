@@ -107,7 +107,9 @@ enum {
 #define KMS_HTTP_EP_SERVER_DEFAULT_ANNOUNCED_ADDRESS \
   KMS_HTTP_EP_SERVER_DEFAULT_INTERFACE
 
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+static GParamSpec *obj_properties[N_PROPERTIES] = {
+    nullptr,
+};
 
 /* signals */
 enum {
@@ -152,18 +154,18 @@ struct sample_data {
 static gchar *
 get_address ()
 {
-  gchar *addressStr = NULL;
+  gchar *addressStr = nullptr;
   GList *ips, *l;
   gboolean done = FALSE;
 
   ips = nice_interfaces_get_local_ips (FALSE);
 
-  for (l = ips; l != NULL && !done; l = l->next) {
+  for (l = ips; l != nullptr && !done; l = l->next) {
     GInetAddress *addr;
 
     addr = g_inet_address_new_from_string ( (const gchar *) l->data);
 
-    if (addr == NULL) {
+    if (addr == nullptr) {
       GST_WARNING ("Can not parse address %s", (const gchar *) l->data);
       continue;
     }
@@ -193,7 +195,7 @@ get_address ()
 
   g_list_free_full (ips, g_free);
 
-  if (addressStr == NULL) {
+  if (addressStr == nullptr) {
     addressStr = g_strdup ("0.0.0.0");
   }
 
@@ -209,14 +211,14 @@ kms_http_ep_server_remove_timeout (KmsHttpEPServer *self, GstElement *httpep)
   timeout_id = (guint *) g_object_get_qdata (G_OBJECT (httpep),
                key_timeout_id_quark () );
 
-  if (timeout_id == NULL) {
+  if (timeout_id == nullptr) {
     return;
   }
 
   GST_DEBUG ("Remove timeout %d", *timeout_id);
   kms_loop_remove (self->priv->loop, *timeout_id);
-  g_object_set_qdata_full (G_OBJECT (httpep), key_timeout_id_quark (), NULL,
-                           NULL);
+  g_object_set_qdata_full(G_OBJECT(httpep), key_timeout_id_quark(), nullptr,
+                          nullptr);
 }
 
 static GstElement *
@@ -225,8 +227,8 @@ kms_http_ep_server_get_ep_from_msg (KmsHttpEPServer *self, SoupMessage *msg)
   SoupURI *suri = soup_message_get_uri (msg);
   const char *uri = soup_uri_get_path (suri);
 
-  if (uri == NULL || self->priv->handlers == NULL) {
-    return NULL;
+  if (uri == nullptr || self->priv->handlers == nullptr) {
+    return nullptr;
   }
 
   return (GstElement *) g_hash_table_lookup (self->priv->handlers, uri);
@@ -247,7 +249,7 @@ emit_expiration_signal_cb (gpointer user_data)
 
   httpep = (GstElement *) g_hash_table_lookup (serv->priv->handlers, path);
 
-  if (httpep != NULL) {
+  if (httpep != nullptr) {
     kms_http_ep_server_remove_timeout (serv, httpep);
   }
 
@@ -306,7 +308,7 @@ got_post_data_cb (KmsHttpPost *post_obj, SoupBuffer *buffer, gpointer data)
   GstMapInfo info{};
 
   new_buffer = gst_buffer_new ();
-  memory = gst_allocator_alloc (NULL, buffer->length, NULL);
+  memory = gst_allocator_alloc(nullptr, buffer->length, nullptr);
   gst_buffer_append_memory (new_buffer, memory);
 
   gst_buffer_map (new_buffer, &info, GST_MAP_WRITE);
@@ -358,14 +360,14 @@ install_http_post_signals (GstElement *httpep)
   post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
              key_param_post_controller_quark () );
 
-  if (post_obj == NULL) {
+  if (post_obj == nullptr) {
     return;
   }
 
   handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
               key_got_data_handler_id_quark () );
 
-  if (handlerid == NULL) {
+  if (handlerid == nullptr) {
     handlerid = g_slice_new (gulong);
     *handlerid = g_signal_connect (post_obj, "got-data",
                                    G_CALLBACK (got_post_data_cb), httpep);
@@ -378,7 +380,7 @@ install_http_post_signals (GstElement *httpep)
   handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
               key_finished_handler_id_quark () );
 
-  if (handlerid == NULL) {
+  if (handlerid == nullptr) {
     handlerid = g_slice_new (gulong);
     *handlerid = g_signal_connect (post_obj, "finished",
                                    G_CALLBACK (finished_post_cb), httpep);
@@ -398,30 +400,30 @@ uninstall_http_post_signals (GstElement *httpep)
   post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
              key_param_post_controller_quark () );
 
-  if (post_obj == NULL) {
+  if (post_obj == nullptr) {
     return;
   }
 
   handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
               key_got_data_handler_id_quark () );
 
-  if (handlerid != NULL) {
+  if (handlerid != nullptr) {
     GST_DEBUG ("Disconnecting got-data signal with id %lu from %p ",
                *handlerid, (gpointer) httpep);
     g_signal_handler_disconnect (post_obj, *handlerid);
-    g_object_set_qdata_full (G_OBJECT (httpep), key_got_data_handler_id_quark (),
-                             NULL, NULL);
+    g_object_set_qdata_full(G_OBJECT(httpep), key_got_data_handler_id_quark(),
+                            nullptr, nullptr);
   }
 
   handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
               key_finished_handler_id_quark () );
 
-  if (handlerid != NULL) {
+  if (handlerid != nullptr) {
     GST_DEBUG ("Disconnecting finished signal with id %lu from %p ",
                *handlerid, (gpointer) httpep);
     g_signal_handler_disconnect (post_obj, *handlerid);
-    g_object_set_qdata_full (G_OBJECT (httpep), key_finished_handler_id_quark (),
-                             NULL, NULL);
+    g_object_set_qdata_full(G_OBJECT(httpep), key_finished_handler_id_quark(),
+                            nullptr, nullptr);
   }
 }
 
@@ -449,7 +451,7 @@ kms_http_ep_server_post_handler (KmsHttpEPServer *self, SoupMessage *msg,
   post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
              key_param_post_controller_quark () );
 
-  if (post_obj == NULL) {
+  if (post_obj == nullptr) {
     post_obj = kms_http_post_new ();
     g_object_set_qdata_full (G_OBJECT (httpep), key_param_post_controller_quark (),
                              post_obj, g_object_unref);
@@ -475,7 +477,8 @@ kms_http_ep_server_clean_http_end_point (KmsHttpEPServer *self,
   kms_http_ep_server_remove_timeout (self, httpep);
 
   /* Cancel current transtacion */
-  g_object_set_qdata_full (G_OBJECT (httpep), key_message_quark (), NULL, NULL);
+  g_object_set_qdata_full(G_OBJECT(httpep), key_message_quark(), nullptr,
+                          nullptr);
 }
 
 static void
@@ -502,11 +505,11 @@ kms_http_ep_server_remove_handlers (KmsHttpEPServer *self)
 static void
 destroy_tmp_unregister_data (struct tmp_unregister_data *tdata)
 {
-  if (tdata->server != NULL) {
+  if (tdata->server != nullptr) {
     g_object_unref (tdata->server);
   }
 
-  if (tdata->notify != NULL) {
+  if (tdata->notify != nullptr) {
     tdata->notify (tdata->data);
   }
 
@@ -518,15 +521,15 @@ destroy_tmp_unregister_data (struct tmp_unregister_data *tdata)
 static void
 destroy_tmp_register_data (struct tmp_register_data *tdata)
 {
-  if (tdata->notify != NULL) {
+  if (tdata->notify != nullptr) {
     tdata->notify (tdata->data);
   }
 
-  if (tdata->endpoint != NULL) {
+  if (tdata->endpoint != nullptr) {
     gst_object_unref (tdata->endpoint);
   }
 
-  if (tdata->server != NULL) {
+  if (tdata->server != nullptr) {
     g_object_unref (tdata->server);
   }
 
@@ -541,11 +544,11 @@ destroy_tmp_data (struct tmp_data *tdata)
     kms_loop_remove (tdata->server->priv->loop, tdata->id);
   }
 
-  if (tdata->server != NULL) {
+  if (tdata->server != nullptr) {
     g_object_unref (tdata->server);
   }
 
-  if (tdata->notify != NULL) {
+  if (tdata->notify != nullptr) {
     tdata->notify (tdata->data);
   }
 
@@ -555,9 +558,9 @@ destroy_tmp_data (struct tmp_data *tdata)
 static gboolean
 stop_http_ep_server_cb (struct tmp_data *tdata)
 {
-  GError *gerr = NULL;
+  GError *gerr = nullptr;
 
-  if (tdata->server->priv->server == NULL) {
+  if (tdata->server->priv->server == nullptr) {
     g_set_error (&gerr, KMS_HTTP_EP_SERVER_ERROR,
                  HTTPEPSERVER_UNEXPECTED_ERROR,
                  "Server is not started");
@@ -571,11 +574,11 @@ stop_http_ep_server_cb (struct tmp_data *tdata)
 
 end:
 
-  if (tdata->cb != NULL) {
+  if (tdata->cb != nullptr) {
     tdata->cb (tdata->server, gerr, tdata->data);
   }
 
-  if (gerr != NULL) {
+  if (gerr != nullptr) {
     g_error_free (gerr);
   }
 
@@ -612,7 +615,7 @@ destroy_pending_message (SoupMessage *msg)
   if (msg->method == SOUP_METHOD_GET) {
     gulong *handlerid;
 
-    if (httpep != NULL) {
+    if (httpep != nullptr) {
       /* Drop internal media flowing in the piepline */
       g_object_set (G_OBJECT (httpep), "start", FALSE, NULL);
     }
@@ -626,20 +629,20 @@ destroy_pending_message (SoupMessage *msg)
     soup_message_body_complete (msg->response_body);
 
   } else if (msg->method == SOUP_METHOD_POST) {
-    KmsHttpPost *post_obj = NULL;
+    KmsHttpPost *post_obj = nullptr;
 
-    if (httpep != NULL)
+    if (httpep != nullptr)
       post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
                  key_param_post_controller_quark () );
 
-    if (post_obj != NULL) {
+    if (post_obj != nullptr) {
       g_object_set (G_OBJECT (post_obj), "soup-message", NULL, NULL);
     }
   }
 
   /* Force to remove http server reference */
-  g_object_set_qdata_full (G_OBJECT (msg), key_http_ep_server_quark (), NULL,
-                           NULL);
+  g_object_set_qdata_full(G_OBJECT(msg), key_http_ep_server_quark(), nullptr,
+                          nullptr);
 
   /* Remove internal msg reference */
   g_object_unref (G_OBJECT (msg) );
@@ -653,7 +656,7 @@ kms_http_ep_server_register_handler (KmsHttpEPServer *self, gchar *uri,
 
   element = (GstElement *) g_hash_table_lookup (self->priv->handlers, uri);
 
-  if (element != NULL) {
+  if (element != nullptr) {
     GST_ERROR ("URI %s is already registered for element %s.", uri,
                GST_ELEMENT_NAME (element) );
     return FALSE;
@@ -713,12 +716,12 @@ kms_http_ep_server_check_cookie (SoupCookie *cookie, SoupMessage *msg)
   /* Check cookie */
   cookies = soup_cookies_from_request (msg);
 
-  if (cookies == NULL) {
+  if (cookies == nullptr) {
     GST_WARNING ("No cookie present in request");
     return FALSE;
   }
 
-  for (e = cookies; e != NULL; e = e->next) {
+  for (e = cookies; e != nullptr; e = e->next) {
     SoupCookie *c = (SoupCookie *) e->data;
 
     if (g_strcmp0 (soup_cookie_get_name (cookie),
@@ -742,7 +745,7 @@ kms_http_ep_server_manage_cookie_session (KmsHttpEPServer *self,
     GstElement *httpep, SoupMessage *msg, const char *path)
 {
   SoupCookie *cookie;
-  gchar *method = NULL;
+  gchar *method = nullptr;
 
   g_object_get (G_OBJECT (msg), "method", &method, NULL);
 
@@ -756,7 +759,7 @@ kms_http_ep_server_manage_cookie_session (KmsHttpEPServer *self,
   cookie = (SoupCookie *) g_object_get_qdata (G_OBJECT (httpep),
            key_cookie_quark () );
 
-  if (cookie != NULL) {
+  if (cookie != nullptr) {
     return kms_http_ep_server_check_cookie (cookie, msg);
   }
 
@@ -785,7 +788,7 @@ got_headers_handler (SoupMessage *msg, gpointer data)
 
   httpep = (GstElement *) g_hash_table_lookup (self->priv->handlers, path);
 
-  if (httpep == NULL) {
+  if (httpep == nullptr) {
     /* URI is not registered */
     soup_message_set_status_full (msg, SOUP_STATUS_NOT_FOUND,
                                   "Http end point not found");
@@ -861,7 +864,7 @@ kms_http_ep_server_create_server (KmsHttpEPServer *self, SoupAddress *addr)
 
   addr = soup_socket_get_local_address (listener);
 
-  if (self->priv->iface == NULL) {
+  if (self->priv->iface == nullptr) {
     /* Update the recently id adrress */
     self->priv->iface = g_strdup (soup_address_get_physical (addr) );
     /* TODO: Emit property change signal */
@@ -881,7 +884,7 @@ static void
 soup_address_callback (SoupAddress *addr, guint status, gpointer user_data)
 {
   struct tmp_data *tdata = (struct tmp_data *) user_data;
-  GError *gerr = NULL;
+  GError *gerr = nullptr;
 
   switch (status) {
   case SOUP_STATUS_OK:
@@ -909,7 +912,7 @@ soup_address_callback (SoupAddress *addr, guint status, gpointer user_data)
     break;
   }
 
-  if (tdata->cb != NULL) {
+  if (tdata->cb != nullptr) {
     tdata->cb (tdata->server, gerr, tdata->data);
   }
 
@@ -933,17 +936,17 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
                                gpointer user_data, GDestroyNotify notify)
 {
   struct tmp_data *tdata;
-  SoupAddress *addr = NULL;
+  SoupAddress *addr = nullptr;
   GCancellable *cancel;
 
-  if (self->priv->server != NULL) {
+  if (self->priv->server != nullptr) {
     GST_WARNING ("Server is already running");
     return;
   }
 
-  if (self->priv->iface == NULL) {
-    kms_http_ep_server_create_server (self, NULL);
-    start_cb (self, NULL, user_data);
+  if (self->priv->iface == nullptr) {
+    kms_http_ep_server_create_server(self, nullptr);
+    start_cb(self, nullptr, user_data);
     return;
   }
 
@@ -960,9 +963,8 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
 
   addr = soup_address_new (self->priv->iface, self->priv->port);
 
-  soup_address_resolve_async (addr, NULL, cancel,
-                              (SoupAddressCallback) soup_address_callback,
-                              tdata);
+  soup_address_resolve_async(addr, nullptr, cancel,
+                             (SoupAddressCallback)soup_address_callback, tdata);
 }
 
 static void
@@ -979,7 +981,7 @@ add_guint_param (GstElement *httpep, GQuark quark, guint val)
 static gboolean
 register_end_point_cb (struct tmp_register_data *tdata)
 {
-  GError *gerr = NULL;
+  GError *gerr = nullptr;
   gchar *uuid_str;
   gchar *uri;
   uuid_t uuid;
@@ -995,7 +997,7 @@ register_end_point_cb (struct tmp_register_data *tdata)
   if (!kms_http_ep_server_register_handler (tdata->server, uri,
       tdata->endpoint) ) {
     g_free (uri);
-    uri = NULL;
+    uri = nullptr;
     g_set_error (&gerr, KMS_HTTP_EP_SERVER_ERROR,
                  HTTPEPSERVER_UNEXPECTED_ERROR,
                  "Could not register httpendpoint");
@@ -1003,7 +1005,7 @@ register_end_point_cb (struct tmp_register_data *tdata)
     add_guint_param (tdata->endpoint, key_param_timeout_quark (), tdata->timeout);
   }
 
-  if (tdata->function != NULL) {
+  if (tdata->function != nullptr) {
     tdata->function (tdata->server, uri, tdata->endpoint, gerr, tdata->data);
   }
 
@@ -1018,7 +1020,7 @@ kms_http_ep_server_register_end_point_impl (KmsHttpEPServer *self,
     gpointer user_data, GDestroyNotify notify)
 {
   struct tmp_register_data *tdata;
-  GError *gerr = NULL;
+  GError *gerr = nullptr;
 
   /* Check whether this is really an httpendpoint element */
   if (http_t == G_TYPE_INVALID) {
@@ -1026,7 +1028,7 @@ kms_http_ep_server_register_end_point_impl (KmsHttpEPServer *self,
 
     http_f = gst_element_factory_find ("httpendpoint");
 
-    if (http_f == NULL) {
+    if (http_f == nullptr) {
       g_set_error (&gerr, KMS_HTTP_EP_SERVER_ERROR,
                    HTTPEPSERVER_UNEXPECTED_ERROR,
                    "No httpendpoint factory found");
@@ -1064,11 +1066,11 @@ kms_http_ep_server_register_end_point_impl (KmsHttpEPServer *self,
 
 error:
 
-  if (cb != NULL) {
-    cb (self, NULL, endpoint, gerr, user_data);
+  if (cb != nullptr) {
+    cb(self, nullptr, endpoint, gerr, user_data);
   }
 
-  if (notify != NULL) {
+  if (notify != nullptr) {
     notify (user_data);
   }
 
@@ -1079,11 +1081,11 @@ static gboolean
 unregister_end_point_cb (struct tmp_unregister_data *tdata)
 {
   GstElement *httpep;
-  GError *gerr = NULL;
+  GError *gerr = nullptr;
 
   GST_DEBUG ("Unregister uri: %s", tdata->uri);
 
-  if (tdata->server->priv->handlers == NULL) {
+  if (tdata->server->priv->handlers == nullptr) {
     g_set_error (&gerr, KMS_HTTP_EP_SERVER_ERROR,
                  HTTPEPSERVER_UNEXPECTED_ERROR,
                  "handlers list is NULL");
@@ -1100,13 +1102,13 @@ unregister_end_point_cb (struct tmp_unregister_data *tdata)
   httpep = (GstElement *) g_hash_table_lookup (tdata->server->priv->handlers,
            tdata->uri);
 
-  if (httpep != NULL) {
+  if (httpep != nullptr) {
     kms_http_ep_server_clean_http_end_point (tdata->server, httpep);
   }
 
   g_hash_table_remove (tdata->server->priv->handlers, tdata->uri);
 
-  if (tdata->cb != NULL) {
+  if (tdata->cb != nullptr) {
     tdata->cb (tdata->server, gerr, tdata->data);
   }
 
@@ -1116,7 +1118,7 @@ unregister_end_point_cb (struct tmp_unregister_data *tdata)
 
 error:
 
-  if (tdata->cb != NULL) {
+  if (tdata->cb != nullptr) {
     tdata->cb (tdata->server, gerr, tdata->data);
   }
 
@@ -1178,19 +1180,19 @@ kms_http_ep_server_finalize (GObject *obj)
     g_clear_object (&self->priv->loop);
   }
 
-  if (self->priv->handlers != NULL) {
+  if (self->priv->handlers != nullptr) {
     g_hash_table_unref (self->priv->handlers);
-    self->priv->handlers = NULL;
+    self->priv->handlers = nullptr;
   }
 
-  if (self->priv->server != NULL) {
+  if (self->priv->server != nullptr) {
     soup_server_disconnect (self->priv->server);
     g_clear_object (&self->priv->server);
   }
 
-  if (self->priv->rand != NULL) {
+  if (self->priv->rand != nullptr) {
     g_rand_free (self->priv->rand);
-    self->priv->rand = NULL;
+    self->priv->rand = nullptr;
   }
 
   /* Chain up to the parent class */
@@ -1210,7 +1212,7 @@ kms_http_ep_server_set_property (GObject *obj, guint prop_id,
 
   case PROP_KMS_HTTP_EP_SERVER_INTERFACE:
 
-    if (self->priv->iface != NULL) {
+    if (self->priv->iface != nullptr) {
       g_free (self->priv->iface);
     }
 
@@ -1220,7 +1222,7 @@ kms_http_ep_server_set_property (GObject *obj, guint prop_id,
   case PROP_KMS_HTTP_EP_SERVER_ANNOUNCED_ADDRESS: {
     gchar *val = g_value_dup_string (value);
 
-    if (self->priv->announced_addr != NULL) {
+    if (self->priv->announced_addr != nullptr) {
       g_free (self->priv->announced_addr);
     }
 
@@ -1305,29 +1307,21 @@ kms_http_ep_server_class_init (KmsHttpEPServerClass *klass)
                                      N_PROPERTIES,
                                      obj_properties);
 
-  obj_signals[ACTION_REQUESTED] =
-    g_signal_new ("action-requested",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (KmsHttpEPServerClass, action_requested),
-                  NULL, NULL, http_marshal_VOID__STRING_ENUM, G_TYPE_NONE, 2,
-                  G_TYPE_STRING, KMS_TYPE_HTTP_END_POINT_ACTION);
+  obj_signals[ACTION_REQUESTED] = g_signal_new(
+      "action-requested", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET(KmsHttpEPServerClass, action_requested), nullptr, nullptr,
+      http_marshal_VOID__STRING_ENUM, G_TYPE_NONE, 2, G_TYPE_STRING,
+      KMS_TYPE_HTTP_END_POINT_ACTION);
 
-  obj_signals[URL_REMOVED] =
-    g_signal_new ("url-removed",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (KmsHttpEPServerClass, url_removed), NULL,
-                  NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1,
-                  G_TYPE_STRING);
+  obj_signals[URL_REMOVED] = g_signal_new(
+      "url-removed", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET(KmsHttpEPServerClass, url_removed), nullptr, nullptr,
+      g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING);
 
-  obj_signals[URL_EXPIRED] =
-    g_signal_new ("url-expired",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (KmsHttpEPServerClass, url_expired), NULL,
-                  NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1,
-                  G_TYPE_STRING);
+  obj_signals[URL_EXPIRED] = g_signal_new(
+      "url-expired", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET(KmsHttpEPServerClass, url_expired), nullptr, nullptr,
+      g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING);
 
   /* Registers a private structure for an instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsHttpEPServerPrivate) );
@@ -1348,11 +1342,11 @@ kms_http_ep_server_init (KmsHttpEPServer *self)
   self->priv = KMS_HTTP_EP_SERVER_GET_PRIVATE (self);
 
   /* Set default values */
-  self->priv->server = NULL;
+  self->priv->server = nullptr;
   self->priv->port = KMS_HTTP_EP_SERVER_DEFAULT_PORT;
   self->priv->iface = KMS_HTTP_EP_SERVER_DEFAULT_INTERFACE;
   self->priv->announced_addr = KMS_HTTP_EP_SERVER_DEFAULT_ANNOUNCED_ADDRESS;
-  self->priv->got_addr = NULL;
+  self->priv->got_addr = nullptr;
   self->priv->handlers = g_hash_table_new_full (g_str_hash, equal_str_key,
                          g_free, g_object_unref);
 
