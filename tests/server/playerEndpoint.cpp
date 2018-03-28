@@ -89,9 +89,7 @@ releasePlayerEndpoint (std::shared_ptr<PlayerEndpointImpl> &ep)
   MediaSet::getMediaSet ()->release (id);
 }
 
-static std::shared_ptr <MediaElementImpl>
-createTestSink (void)
-{
+static std::shared_ptr<MediaElementImpl> createTestSink() {
   std::shared_ptr <MediaElementImpl> src = std::dynamic_pointer_cast
       <MediaElementImpl> (MediaSet::getMediaSet()->ref (new  MediaElementImpl (
                             boost::property_tree::ptree(),

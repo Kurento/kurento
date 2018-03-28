@@ -113,9 +113,7 @@ releaseRecorderEndpoint (std::shared_ptr<RecorderEndpointImpl> &ep)
   MediaSet::getMediaSet ()->release (id);
 }
 
-static std::shared_ptr <MediaElementImpl>
-createTestSrc (void)
-{
+static std::shared_ptr<MediaElementImpl> createTestSrc() {
   std::shared_ptr <MediaElementImpl> src = std::dynamic_pointer_cast
       <MediaElementImpl> (MediaSet::getMediaSet()->ref (new  MediaElementImpl (
                             boost::property_tree::ptree(),
