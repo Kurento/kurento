@@ -24,6 +24,7 @@
 #include <CryptoSuite.hpp>
 #include <SDES.hpp>
 #include <SignalHandler.hpp>
+#include <memory>
 #include <string>
 
 #define GST_CAT_DEFAULT kurento_rtp_endpoint_impl
@@ -135,11 +136,11 @@ RtpEndpointImpl::onKeySoftLimit (gchar *media)
   std::shared_ptr<MediaType> type;
 
   if (g_strcmp0 (media, "audio") == 0) {
-    type = std::shared_ptr<MediaType> (new MediaType (MediaType::AUDIO) );
+    type = std::make_shared<MediaType>(MediaType::AUDIO);
   } else if (g_strcmp0 (media, "video") == 0) {
-    type = std::shared_ptr<MediaType> (new MediaType (MediaType::VIDEO) );
+    type = std::make_shared<MediaType>(MediaType::VIDEO);
   } else if (g_strcmp0 (media, "data") == 0) {
-    type = std::shared_ptr<MediaType> (new MediaType (MediaType::DATA) );
+    type = std::make_shared<MediaType>(MediaType::DATA);
   } else {
     GST_ERROR ("Unsupported media %s", media);
     return;

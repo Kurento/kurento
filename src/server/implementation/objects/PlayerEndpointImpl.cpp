@@ -22,6 +22,7 @@
 #include <DotGraph.hpp>
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
+#include <memory>
 #include <gst/gst.h>
 #include "SignalHandler.hpp"
 
@@ -162,9 +163,9 @@ std::string PlayerEndpointImpl::getElementGstreamerDot ()
 {
   GValue *pipeline;
   g_object_get (G_OBJECT (element), PIPELINE, &pipeline, NULL);
-  return generateDotGraph (GST_BIN (pipeline),
-                           std::shared_ptr <GstreamerDotDetails> (new GstreamerDotDetails (
-                                 GstreamerDotDetails::SHOW_VERBOSE) ) );
+  return generateDotGraph(
+      GST_BIN(pipeline),
+      std::make_shared<GstreamerDotDetails>(GstreamerDotDetails::SHOW_VERBOSE));
 }
 
 void PlayerEndpointImpl::setPosition (int64_t position)
