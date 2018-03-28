@@ -10,7 +10,7 @@ ${event.name}.cpp
 #include "${property.type.name}.hpp"
 </#if>
 </#list>
-#include <time.h>
+#include <ctime>
 #include <string>
 
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
