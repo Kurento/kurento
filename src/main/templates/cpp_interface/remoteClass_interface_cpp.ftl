@@ -16,7 +16,7 @@ static void
 initHierarchy ()
 {
 <#list typeHierarchy(remoteClass) as hierarchy>
-  hierarchy${remoteClass.name}.push_back("${hierarchy}");
+  hierarchy${remoteClass.name}.emplace_back("${hierarchy}");
 </#list>
 }
 
