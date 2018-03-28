@@ -79,7 +79,7 @@ public:
 private:
   void onMessageReceived (const std::string &msg);
 
-  std::atomic<long> id;
+  std::atomic<long> id{};
 
   std::map <std::string, Continuation> responseHandlers;
   std::shared_ptr <Transport> transport;
