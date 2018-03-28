@@ -104,9 +104,9 @@ BOOST_AUTO_TEST_CASE (serialize_list)
   kurento::JsonSerializer writer2 (true);
   kurento::JsonSerializer reader (false);
 
-  array.push_back ("first");
-  array.push_back ("2");
-  array.push_back ("three");
+  array.emplace_back("first");
+  array.emplace_back("2");
+  array.emplace_back("three");
 
   writer.Serialize ("array", array);
 
