@@ -20,7 +20,7 @@ namespace ${namespace}
 class ${remoteClass.name}ImplFactory : public virtual <#if remoteClass.extends??>${remoteClass.extends.name}Impl<#else>kurento::</#if>Factory
 {
 public:
-  ${remoteClass.name}ImplFactory () {};
+  ${remoteClass.name}ImplFactory() = default;
 
   virtual std::string getName () const {
     return "${remoteClass.name}";

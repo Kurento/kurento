@@ -125,7 +125,7 @@ public:
 
 protected:
 
-  ${event.name}() {};
+  ${event.name}() = default;
 
 private:
   <#list event.properties as property>

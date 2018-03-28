@@ -20,8 +20,8 @@ namespace ${namespace}
 class ${remoteClass.name}Method${method.name?cap_first}
 {
 public:
-  ${remoteClass.name}Method${method.name?cap_first}() {}
-  ~${remoteClass.name}Method${method.name?cap_first}() {}
+  ${remoteClass.name}Method${method.name?cap_first}() = default;
+  ~${remoteClass.name}Method${method.name?cap_first}() = default;
 
   ${getCppObjectType(method.return, false)} invoke (std::shared_ptr<${remoteClass.name}> obj);
   void Serialize (JsonSerializer &serializer);
@@ -55,8 +55,8 @@ private:
 class ${remoteClass.name}Constructor
 {
 public:
-  ${remoteClass.name}Constructor () {}
-  ~${remoteClass.name}Constructor () {}
+  ${remoteClass.name}Constructor() = default;
+  ~${remoteClass.name}Constructor() = default;
 
   void Serialize (JsonSerializer &serializer);
   <#list remoteClass.constructor.params as param>

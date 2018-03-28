@@ -127,7 +127,7 @@ public:
 
 protected:
 
-  ${complexType.name}() {};
+  ${complexType.name}() = default;
   </#if>
 
 private:
@@ -172,7 +172,7 @@ private:
   void Serialize (JsonSerializer &s);
 
   <#if createEmptyConstructor >
-  ${complexType.name}() {};
+  ${complexType.name}() = default;
   </#if>
 
 private:

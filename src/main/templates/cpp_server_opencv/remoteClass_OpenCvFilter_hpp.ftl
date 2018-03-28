@@ -21,7 +21,7 @@ public:
 
   ${remoteClass.name}OpenCVImpl ();
 
-  virtual ~${remoteClass.name}OpenCVImpl () {};
+  virtual ~${remoteClass.name}OpenCVImpl() = default;
 
   virtual void process (cv::Mat &mat);
   <#macro methodHeader method>

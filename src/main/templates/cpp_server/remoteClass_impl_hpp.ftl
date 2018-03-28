@@ -52,7 +52,7 @@ public:
   ${remoteClass.name}Impl (const boost::property_tree::ptree &config);
 </#if>
 
-  virtual ~${remoteClass.name}Impl () {};
+  virtual ~${remoteClass.name}Impl() = default;
   <#macro methodHeader method>
   ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
       <#lt><#list method.params as param>${getCppObjectType(param.type)}${param.name}<#if param_has_next>, </#if></#list>);

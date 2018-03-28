@@ -45,8 +45,8 @@ class ${remoteClass.name}<#if remoteClass.extends??><#rt>
 {
 
 public:
-  ${remoteClass.name} () {};
-  virtual ~${remoteClass.name} () {};
+  ${remoteClass.name}() = default;
+  virtual ~${remoteClass.name}() = default;
   <#macro methodHeader method>
   virtual ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
       <#lt><#list method.params as param>${getCppObjectType(param.type)}${param.name}<#if param_has_next>, </#if></#list>) = 0;
