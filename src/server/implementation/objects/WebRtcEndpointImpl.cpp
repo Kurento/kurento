@@ -83,10 +83,9 @@ remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)
     s = gst_value_get_structure (v);
     codec_name = gst_structure_get_name (s);
 
-    for (std::vector<std::string>::iterator it = supported_codecs.begin();
-         it != supported_codecs.end(); ++it) {
+    for (auto &supported_codec : supported_codecs) {
 
-      if (boost::istarts_with (codec_name, (*it) ) ) {
+      if (boost::istarts_with(codec_name, supported_codec)) {
         supported = TRUE;
         break;
       }
