@@ -69,8 +69,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
-
-  GstElement *imageOverlay;
+  GstElement *imageOverlay{};
 
   class StaticConstructor
   {

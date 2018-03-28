@@ -55,8 +55,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
-
-  GstElement *opencvfilter;
+  GstElement *opencvfilter{};
 
   class StaticConstructor
   {

@@ -155,7 +155,7 @@ kms_opencv_filter_transform_frame_ip (GstVideoFilter *filter,
                                       GstVideoFrame *frame)
 {
   KmsOpenCVFilter *opencv_filter = KMS_OPENCV_FILTER (filter);
-  GstMapInfo info;
+  GstMapInfo info{};
 
   if (opencv_filter->priv->object == NULL) {
     return GST_FLOW_OK;

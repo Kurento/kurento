@@ -58,8 +58,7 @@ protected:
   virtual void postConstructor ();
 
 private:
-
-  GstElement *zbar;
+  GstElement *zbar{};
   gulong bus_handler_id;
 
   guint64 lastTs = G_GUINT64_CONSTANT (0);
