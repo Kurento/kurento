@@ -90,7 +90,7 @@ ZBarFilterImpl::ZBarFilterImpl (const boost::property_tree::ptree &conf,
   g_object_set (element, "filter-factory", "zbar", NULL);
   g_object_get (G_OBJECT (element), "filter", &zbar, NULL);
 
-  if (zbar == NULL) {
+  if (zbar == nullptr) {
     throw KurentoException (MEDIA_OBJECT_NOT_FOUND, "MediaObject not found");
   }
 

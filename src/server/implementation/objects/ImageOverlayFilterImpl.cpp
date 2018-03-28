@@ -42,7 +42,7 @@ ImageOverlayFilterImpl::ImageOverlayFilterImpl (const
 
   g_object_get (G_OBJECT (element), "filter", &imageOverlay, NULL);
 
-  if (imageOverlay == NULL) {
+  if (imageOverlay == nullptr) {
     throw KurentoException (MEDIA_OBJECT_NOT_AVAILABLE,
                             "Media Object not available");
   }

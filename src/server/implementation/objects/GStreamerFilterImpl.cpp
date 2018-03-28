@@ -40,7 +40,7 @@ GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
           std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
 {
   GstElement *filter, *filter_check;
-  GError *error = NULL;
+  GError *error = nullptr;
 
   this->cmd = command;
 
@@ -65,15 +65,15 @@ GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
 
   filter = gst_parse_launch (command.c_str(), &error);
 
-  if (filter == NULL || error != NULL) {
+  if (filter == nullptr || error != nullptr) {
     std::string error_str = "GStreamer filter cannot be created";
 
     if (filter) {
       g_object_unref (filter);
     }
 
-    if (error != NULL) {
-      if (error->message != NULL) {
+    if (error != nullptr) {
+      if (error->message != nullptr) {
         error_str += ": " + std::string (error->message);
       }
 

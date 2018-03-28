@@ -93,7 +93,7 @@ kms_opencv_filter_set_property (GObject *object, guint property_id,
       opencv_filter->priv->object = dynamic_cast<kurento::OpenCVProcess *> ( (
                                       kurento::OpenCVProcess *) g_value_get_pointer (value) );
     } catch (std::bad_cast &e) {
-      opencv_filter->priv->object = NULL;
+      opencv_filter->priv->object = nullptr;
       GST_ERROR ( "Object type not valid");
     }
 
@@ -132,7 +132,7 @@ static void
 kms_opencv_filter_initialize_images (KmsOpenCVFilter *opencv_filter,
                                      GstVideoFrame *frame, GstMapInfo &info)
 {
-  if (opencv_filter->priv->cv_image == NULL) {
+  if (opencv_filter->priv->cv_image == nullptr) {
 
     opencv_filter->priv->cv_image = new Mat (frame->info.height,
         frame->info.width, CV_8UC4, info.data);
@@ -157,7 +157,7 @@ kms_opencv_filter_transform_frame_ip (GstVideoFilter *filter,
   KmsOpenCVFilter *opencv_filter = KMS_OPENCV_FILTER (filter);
   GstMapInfo info{};
 
-  if (opencv_filter->priv->object == NULL) {
+  if (opencv_filter->priv->object == nullptr) {
     return GST_FLOW_OK;
   }
 
@@ -207,7 +207,7 @@ kms_opencv_filter_finalize (GObject *object)
 {
   KmsOpenCVFilter *opencv_filter = KMS_OPENCV_FILTER (object);
 
-  if (opencv_filter->priv->cv_image != NULL) {
+  if (opencv_filter->priv->cv_image != nullptr) {
     delete opencv_filter->priv->cv_image;
   }
 

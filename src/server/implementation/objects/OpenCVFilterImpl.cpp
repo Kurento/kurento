@@ -40,7 +40,7 @@ OpenCVFilterImpl::OpenCVFilterImpl (const boost::property_tree::ptree &conf,
 
   g_object_get (G_OBJECT (element), "filter", &opencvfilter, NULL);
 
-  if (opencvfilter == NULL) {
+  if (opencvfilter == nullptr) {
     throw KurentoException (MEDIA_OBJECT_NOT_AVAILABLE,
                             "Media Object not available");
   }

@@ -39,7 +39,7 @@ FaceOverlayFilterImpl::FaceOverlayFilterImpl (const boost::property_tree::ptree
 
   g_object_get (G_OBJECT (element), "filter", &faceOverlay, NULL);
 
-  if (faceOverlay == NULL) {
+  if (faceOverlay == nullptr) {
     throw KurentoException (MEDIA_OBJECT_NOT_AVAILABLE,
                             "Media Object not available");
   }
