@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include <string.h>
+#include <cstring>
 #include <libsoup/soup.h>
 #include "KmsHttpPost.h"
 

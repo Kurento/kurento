@@ -15,10 +15,10 @@
  *
  */
 
-#include <time.h>
+#include <ctime>
 #include <libsoup/soup.h>
 #include <uuid/uuid.h>
-#include <string.h>
+#include <cstring>
 #include <gio/gio.h>
 #include <nice/interfaces.h>
 #include <commons/kmsloop.h>
