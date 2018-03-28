@@ -27,7 +27,7 @@ class Classifier
 {
 public:
   Classifier ();
-  ~Classifier() {};
+  ~Classifier() = default;
 
   CascadeClassifier face_cascade;
 };
