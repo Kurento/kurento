@@ -125,7 +125,7 @@ check_support_for_h264 ()
     return;
   }
 
-  supported_codecs.push_back ("H264");
+  supported_codecs.emplace_back("H264");
   gst_object_unref (plugin);
 }
 
