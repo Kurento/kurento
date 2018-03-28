@@ -46,7 +46,7 @@ ${event.name}::${event.name} (<#rt>
     </#if><#rt>
   <#lt></#list>
   this->setTimestamp (getCurrentTime());
-  if ( source != NULL) {
+  if (source != nullptr) {
     if (source->getSendTagsInEvents ()) {
       this->setTags (source->getTags ());
     }
