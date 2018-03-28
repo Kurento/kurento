@@ -35,7 +35,7 @@ public:
 
   }
 
-  virtual ~TestTransport () {}
+  virtual ~TestTransport() = default;
 
   void sendMessage (const std::string &data)
   {
@@ -53,12 +53,9 @@ private:
 class TestEchoTransport : public kurento::JsonRpc::Transport
 {
 public:
-  TestEchoTransport ()
-  {
+  TestEchoTransport() = default;
 
-  }
-
-  virtual ~TestEchoTransport () {}
+  virtual ~TestEchoTransport() = default;
 
   void sendMessage (const std::string &data)
   {
