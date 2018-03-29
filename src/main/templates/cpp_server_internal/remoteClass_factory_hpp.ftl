@@ -22,7 +22,7 @@ class ${remoteClass.name}ImplFactory : public virtual <#if remoteClass.extends??
 public:
   ${remoteClass.name}ImplFactory() = default;
 
-  virtual std::string getName () const {
+  std::string getName() const override {
     return "${remoteClass.name}";
   };
 
@@ -31,7 +31,9 @@ private:
 
 </#if>
 <#if (!remoteClass.abstract) && (remoteClass.constructor)??>
-  virtual MediaObjectImpl *createObjectPointer (const boost::property_tree::ptree &conf, const Json::Value &params) const;
+  MediaObjectImpl *createObjectPointer (
+      const boost::property_tree::ptree &conf,
+      const Json::Value &params) const override;
 
 </#if>
   <#if remoteClass.constructor??><#rt>

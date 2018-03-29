@@ -107,7 +107,7 @@ public:
 
   </#if>
   </#list>
-  virtual void Serialize (JsonSerializer &s);
+  <#if !complexType.extends??>virtual </#if>void Serialize (JsonSerializer &s)<#if complexType.extends??> override</#if>;
 
   static void registerType () {
     std::function<RegisterParent*(void)> func =

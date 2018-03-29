@@ -46,7 +46,8 @@ class ${remoteClass.name}<#if remoteClass.extends??><#rt>
 
 public:
   ${remoteClass.name}() = default;
-  virtual ~${remoteClass.name}() = default;
+  <#if !remoteClass.extends??>virtual </#if>~${remoteClass.name}()<#if remoteClass.extends??> override</#if> = default;
+
   <#macro methodHeader method>
   virtual ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
       <#lt><#list method.params as param>${getCppObjectType(param.type)}${param.name}<#if param_has_next>, </#if></#list>) = 0;
@@ -61,12 +62,12 @@ public:
     <#lt><@methodHeader method />
   </#list>
 
-  virtual const std::string& getType () const;
-  virtual const std::string& getQualifiedType () const;
-  virtual const std::string& getModule () const;
-  virtual const std::vector<std::string>& getHierarchy () const;
+  <#if !remoteClass.extends??>virtual </#if>const std::string &getType() const<#if remoteClass.extends??> override</#if>;
+  <#if !remoteClass.extends??>virtual </#if>const std::string &getQualifiedType() const<#if remoteClass.extends??> override</#if>;
+  <#if !remoteClass.extends??>virtual </#if>const std::string &getModule() const<#if remoteClass.extends??> override</#if>;
+  <#if !remoteClass.extends??>virtual </#if>const std::vector<std::string> &getHierarchy() const<#if remoteClass.extends??> override</#if>;
 
-  virtual void Serialize (JsonSerializer &serializer) = 0;
+  <#if !remoteClass.extends??>virtual </#if>void Serialize(JsonSerializer &serializer)<#if remoteClass.extends??> override</#if> = 0;
 <#list remoteClass.properties as property>
 
   virtual ${getCppObjectType (property.type, false)} get${property.name?cap_first} () = 0;
