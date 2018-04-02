@@ -9,6 +9,9 @@ KMS_DEB_PKG=$(ls -1 kurento-media-server* | head -n 1)
 RELEASE=$(dpkg -f "$KMS_DEB_PKG" Version | grep -Po '^\d.\d.\d')
 [ ! -z "$RELEASE" ] || exit 1
 
+# Get external packages
+aws s3 sync s3://ubuntu.openvidu.io/externals/${DISTRIBUTION}/ .
+
 aptly repo create -distribution=$DISTRIBUTION -component=kms6 kurento-$DISTRIBUTION-$RELEASE
 aptly repo add kurento-$DISTRIBUTION-$RELEASE *.deb 
 aptly snapshot create snap-kurento-$DISTRIBUTION-$RELEASE from repo kurento-$DISTRIBUTION-$RELEASE
