@@ -111,7 +111,6 @@
 		<version.bcpkix>1.54</version.bcpkix>
 		<version.cglib>3.2.0</version.cglib>
 		<version.cors-filter>2.5</version.cors-filter>
-		<version.exec.maven.plugin>1.4.0</version.exec.maven.plugin>
 		<version.eclipse.aether>1.1.0</version.eclipse.aether>
 		<version.findbugs>3.0.1</version.findbugs>
 		<version.google.gson>2.5</version.google.gson>
@@ -834,11 +833,6 @@
 		<pluginManagement>
 			<!-- All plugins ordered by shortname (antrun, assembly ...) -->
 			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<version>${version.exec.maven.plugin}</version>
-				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-antrun-plugin</artifactId>
