@@ -89,11 +89,12 @@ Here are some tips on what logging components and levels could be most useful de
 
      export GST_DEBUG="3,kmsiceniceagent:5,kmswebrtcsession:5,webrtcendpoint:4"
 
-  Notes:
+  .. note::
 
-  - *kmsiceniceagent* shows messages from the Nice Agent (handling of candidates).
-  - *kmswebrtcsession* shows messages from the KMS WebRtcSession (decision logic).
-  - *webrtcendpoint* shows messages from the WebRtcEndpoint (very basic logging).
+     - See also :ref:`logging-libnice` to enable advanced logging.
+     - *kmsiceniceagent* shows messages from the Nice Agent (handling of candidates).
+     - *kmswebrtcsession* shows messages from the KMS WebRtcSession (decision logic).
+     - *webrtcendpoint* shows messages from the WebRtcEndpoint (very basic logging).
 
 - Event MediaFlow{In|Out} state changes:
 
@@ -119,10 +120,10 @@ Here are some tips on what logging components and levels could be most useful de
 
      export GST_DEBUG="3,kmsremb:5"
 
-  Notes:
+  .. note::
 
-  - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
-  - *kmsremb:6* (debug level 6) shows full handling of all source SSRCs.
+     - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
+     - *kmsremb:6* (debug level 6) shows full handling of all source SSRCs.
 
 - RPC calls:
 
