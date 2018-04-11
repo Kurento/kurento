@@ -45,15 +45,15 @@ You can file bug reports on our `Issue Tracker`_, and they will be addressed as 
 Reporting Issues
 ----------------
 
-When reporting a bug, please include as much information as possible, this will help us solve the problem. Also, try to follow these guidelines as closely as possible, because making it easier for someone to work on the issue means that there are more probabilities that the issue gets fixed:
+When reporting a bug, please include as much information as possible, this will help us solve the problem. Also, try to follow these guidelines as closely as possible, because they make it easier for people to work on the issue, and that means more chances that the issue gets fixed:
 
-- **Be curious**. Has it been asked before? Is it really a bug? Everybody hates duplicated reports. Google is your friend!
+- **Be proactive**. If you are working with an old version of Kurento, please check with newer versions, specially with the :doc:`latest development version </user/installation_dev>`. We can't emphasize this enough: *it's the first thing that we are going to ask*.
 
-- **Be proactive**. Check with other versions, specially with the :doc:`latest development version </user/installation_dev>`. We can't emphasize this enough: *it's the first thing that we are going to ask*.
+- **Be curious**. Has it been asked before? Is it really a bug? Everybody hates duplicated reports. The Search tool is your friend!
 
-- **Be precise**. Don't wander around your situation and go straight to the point, unless the context around it is technically required to understand what is going on. Describe as precisely as possible what you are doing and what is happening but shouldn't happen.
+- **Be precise**. Don't wander around your situation and go straight to the point, unless the context around it is technically required to understand what is going on. Describe as precisely as possible what you are doing and what is happening but you think that shouldn't happen.
 
-- **Be specific**. Explain how to reproduce the problem, being very systematic about it: step by step, so others can reproduce the bug. Also, report only *one problem per opened issue*.
+- **Be specific**. Explain how to reproduce the problem, being very systematic about it: step by step, so others can reproduce the bug. Also, report *only one problem per opened issue*.
 
 If you definitely think you have hit a bug, try to include these in your bug report:
 

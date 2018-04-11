@@ -440,7 +440,7 @@ Run:
 
 .. code-block:: bash
 
-   export GST_DEBUG='3,Kurento*:4,kms*:4,rtpendpoint:4,webrtcendpoint:4'
+   export GST_DEBUG="3,Kurento*:4,kms*:4,rtpendpoint:4,webrtcendpoint:4"
 
    kurento-media-server/server/kurento-media-server \
      --modules-path=. \
