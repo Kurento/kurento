@@ -27,8 +27,6 @@ MediaElement events
 
 These events indicate some low level information about the state of `GStreamer <https://gstreamer.freedesktop.org>`__, the underlying multimedia framework.
 
-Note that the ``MediaFlowInStateChange`` and ``MediaFlowOutStateChange`` events are not 100% reliable to check if a RTP connection is flowing: RTCP packets do not usually flow at a constant rate. For example, minimizing a browser window with an *RTCPeerConnection* might affect this interval.
-
 
 
 ElementConnected
@@ -48,7 +46,7 @@ ElementDisconnected
 MediaFlowInStateChange
 ----------------------
 
-- State = *Flowing*: Data is arriving from the KMS Pipeline, and flowing **into** the Endpoint. Technically, this means that there are GStreamer Buffers flowing from the Pipeline to the Endpoint's ``sink`` pad. For example, with a Recorder element this event would fire when media arrives from the Pipeline to be written to disk.
+- State = *Flowing*: Data is arriving from the KMS Pipeline, and **flowing into** the Endpoint. Technically, this means that there are GStreamer Buffers flowing from the Pipeline to the Endpoint's ``sink`` pad. For example, with a Recorder element this event would fire when media arrives from the Pipeline to be written to disk.
 
 - State = *NotFlowing*: The element is not receiving any input data from the Pipeline.
 
@@ -57,7 +55,7 @@ MediaFlowInStateChange
 MediaFlowOutStateChange
 -----------------------
 
-- State = *Flowing*: There is data flowing **from** the Endpoint towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Endpoint's ``src`` pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
+- State = *Flowing*: There is data **flowing out** from the Endpoint towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Endpoint's ``src`` pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
 
 - State = *NotFlowing*: The element is not sending any output data to the Pipeline.
 
@@ -66,15 +64,15 @@ MediaFlowOutStateChange
 MediaTranscodingStateChange
 ---------------------------
 
-All Endpoint objects in Kurento Media Server embed a custom-made GStreamer element called `agnosticbin`. This element is used to provide seamless interconnection of components in the *MediaPipeline*, regardless of the format and codec configuration of the input and poutput media streams.
+All Endpoint objects in Kurento Media Server embed a custom-made GStreamer element called `agnosticbin`. This element is used to provide seamless interconnection of components in the *MediaPipeline*, regardless of the format and codec configuration of the input and output media streams.
 
-When media starts flowing through any *MediaElement*-derived object, an internal dynamic configuration is done in order to match the incoming media format with the requested output media format. If both input and output formats are compatible (at the codec level), then the media can be transferred directly without any extra processing. However, if the input and output media formats are not compatible, the internal transcoding module will get enabled to convert the input media format to be compatible with the required output.
+When media starts flowing through any *MediaElement*-derived object, an internal dynamic configuration is **automatically done** in order to match the incoming and outgoing media formats. If both input and output formats are compatible (at the codec level), then the media can be transferred directly without any extra processing. However, if the input and output media formats don't match, the internal transcoding module will get enabled to convert between them.
 
-For example, if a WebRtcEndpoint receives a *VP8* video stream from a Chrome browser, and then has to send the stream to a Safari browser which only accepts *H.264*, then the media will need to be transcoded.
+For example: If a *WebRtcEndpoint* receives a *VP8* video stream from a Chrome browser, and has to send it to a Safari browser (which only supports the *H.264* codec), then the media needs to be transcoded. The *WebRtcEndpoint* will automatically do it.
 
-- State = *Transcoding*: The *MediaElement* will transcode the incoming media, because its format is not compatible with the requested output format.
+- State = *Transcoding*: The *MediaElement* will transcode the incoming media, because its format is not compatible with the requested output.
 
-- State = *NotTranscoding*: The *MediaElement* will *not* transcode the incoming media, because its format is compatible with the requested output format.
+- State = *NotTranscoding*: The *MediaElement* will *not* transcode the incoming media, because its format is compatible with the requested output.
 
 
 
@@ -82,6 +80,8 @@ BaseRtpEndpoint events
 ======================
 
 These events provide information about the state of the RTP connection for each stream in the WebRTC call.
+
+Note that the ``MediaStateChanged`` event is not 100% reliable to check if a RTP connection is active: RTCP packets do not usually flow at a constant rate. For example, minimizing a browser window with an *RTCPeerConnection* might affect this interval.
 
 
 
@@ -106,9 +106,9 @@ Call sequence:
 MediaStateChanged
 -----------------
 
-- State = *Connected*: At least *one* of the audio or video RTP streams in the session is still alive (receiving RTCP packets).
+- State = *Connected*: At least *one* of the audio or video RTP streams in the session is still alive (sending or receiving RTCP packets).
 
-- State = *Disconnected*: None of the RTP streams belonging to the session is alive (ie. no RTCP packets are received for any of them).
+- State = *Disconnected*: None of the RTP streams belonging to the session is alive (ie. no RTCP packets are sent or received for any of them).
 
 These signals from GstRtpBin will trigger the ``MediaStateChanged`` event:
 
