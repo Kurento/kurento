@@ -173,7 +173,7 @@ IceComponentStateChange
 
 This event carries the state values from the signal `NiceAgent::"component-state-changed" <https://nice.freedesktop.org/libnice/NiceAgent.html#NiceAgent-component-state-changed>`__.
 
-- State = *Disconnected*: There is no active connection, and the ICE process is stopped.
+- State = *Disconnected*: There is no active connection, and the ICE process is idle.
 
   NiceAgent state: ``NICE_COMPONENT_STATE_DISCONNECTED``, "*No activity scheduled*".
 
@@ -181,11 +181,11 @@ This event carries the state values from the signal `NiceAgent::"component-state
 
   NiceAgent state: ``NICE_COMPONENT_STATE_GATHERING``, "*Gathering local candidates*".
 
-- State = *Connecting*: The Endpoint has started the connectivity checks between at least one pair of local and remote candidates.
+- State = *Connecting*: The Endpoint has started the connectivity checks between **at least** one pair of local and remote candidates. These checks will always start as soon as possible (i.e. whenever the very first remote candidates arrive), so don't assume that the candidate gathering has already finished, because it will probably still be running in parallel; some (possibly better) candidates might still be waiting to be found and gathered.
 
   NiceAgent state: ``NICE_COMPONENT_STATE_CONNECTING``, "*Establishing connectivity*".
 
-- State = *Connected*: At least one candidate pair resulted in a successful connection. This happens right after the event ``NewCandidatePairSelected``.
+- State = *Connected*: **At least** one candidate pair resulted in a successful connection. This happens right after the event ``NewCandidatePairSelected``. When this event triggers, the effective communication between peers can start, and usually this means that media will start flowing between them. However, the candidate gathering hasn't really finished yet, which means that some (possibly better) candidates might still be waiting to be found, gathered, checked for connectivity, and if that completes successfully, selected as new candidate pair.
 
   NiceAgent state: ``NICE_COMPONENT_STATE_CONNECTED``, "*At least one working candidate pair*".
 
@@ -197,7 +197,7 @@ This event carries the state values from the signal `NiceAgent::"component-state
 
   NiceAgent state: ``NICE_COMPONENT_STATE_FAILED``, "*Connectivity checks have been completed, but connectivity was not established*".
 
-This graph shows the possible state changes:
+This graph shows the possible state changes (`source <https://cgit.freedesktop.org/libnice/libnice/tree/docs/reference/libnice/states.gv>`__):
 
 .. graphviz:: /images/graphs/events-libnice-states.dot
    :align: center
@@ -212,7 +212,9 @@ This graph shows the possible state changes:
 IceGatheringDone
 ----------------
 
-All local candidates have been found, all remote candidates have been received from the remote peer, and all pairs of local-remote candidates have been tested for connectivity. When this happens, all activity of the ICE agent stops. Equivalent to the signal `NiceAgent::"candidate-gathering-done" <https://nice.freedesktop.org/libnice/NiceAgent.html#NiceAgent-candidate-gathering-done>`__.
+All local candidates have been found, so the gathering process is finished for this peer. Note this doesn't imply that the remote peer has finished its own gathering, so more remote candidates might still arrive.
+
+When this event triggers, all activity of the ICE Agent stops. Equivalent to the signal `NiceAgent::"candidate-gathering-done" <https://nice.freedesktop.org/libnice/NiceAgent.html#NiceAgent-candidate-gathering-done>`__.
 
 
 
@@ -276,7 +278,7 @@ When a *WebRtcEndpoint* instance has been created, and all event handlers have b
 
 4. Event: ``IceComponentStateChanged`` (State: *Connecting*).
 
-   After receiving the very first of the remote candidates, the ICE agent starts with the connectivity checks.
+   After receiving the very first of the remote candidates, the ICE Agent starts with the connectivity checks.
 
 5. Function call(s): ``AddIceCandidate``.
 
@@ -288,7 +290,7 @@ When a *WebRtcEndpoint* instance has been created, and all event handlers have b
 
 7. ``NewCandidatePairSelected``.
 
-   The ICE agent makes local and remote candidate pairs. If one of those pairs pass the connectivity checks, it is selected for the WebRTC connection.
+   The ICE Agent makes local and remote candidate pairs. If one of those pairs pass the connectivity checks, it is selected for the WebRTC connection.
 
 8. ``IceComponentStateChanged`` (State: *Connected*).
 
@@ -300,7 +302,7 @@ When a *WebRtcEndpoint* instance has been created, and all event handlers have b
 
 10. ``IceGatheringDone``.
 
-    When all candidate pairs have been tested, no more work is left to do for the ICE agent. The gathering process is finished.
+    When all candidate pairs have been tested, no more work is left to do for the ICE Agent. The gathering process is finished.
 
 11. ``IceComponentStateChanged`` (State: *Ready*).
 
