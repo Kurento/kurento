@@ -212,9 +212,7 @@ This graph shows the possible state changes (`source <https://cgit.freedesktop.o
 IceGatheringDone
 ----------------
 
-All local candidates have been found, so the gathering process is finished for this peer. Note this doesn't imply that the remote peer has finished its own gathering, so more remote candidates might still arrive.
-
-When this event triggers, all activity of the ICE Agent stops. Equivalent to the signal `NiceAgent::"candidate-gathering-done" <https://nice.freedesktop.org/libnice/NiceAgent.html#NiceAgent-candidate-gathering-done>`__.
+All local candidates have been found, so the gathering process is finished for this peer. Note this doesn't imply that the remote peer has finished its own gathering, so more remote candidates might still arrive. Equivalent to the signal `NiceAgent::"candidate-gathering-done" <https://nice.freedesktop.org/libnice/NiceAgent.html#NiceAgent-candidate-gathering-done>`__.
 
 
 
