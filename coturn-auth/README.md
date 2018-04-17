@@ -19,7 +19,7 @@ Dockerized coturn with authentication
 
 # testing
 
-Check out (this)[https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/] with:
+Check out [this](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/) with:
 
 var | value
 --- | --- 
