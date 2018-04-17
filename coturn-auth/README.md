@@ -22,6 +22,7 @@ Dockerized coturn with authentication
 Check out (this)[https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/] with:
 
 var | value
+--- | --- 
 STUN or TURN URI | turn:PUBLIC_IP:PORT
 TURN username | user 
 TURN password | s3cr3t
