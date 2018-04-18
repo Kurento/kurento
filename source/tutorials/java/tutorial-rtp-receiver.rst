@@ -25,13 +25,13 @@ Follow these steps to run this demo application:
    .. code-block:: text
 
       git clone https://github.com/Kurento/kurento-tutorial-java.git
-      cd kurento-tutorial-java/kurento-hello-world
+      cd kurento-tutorial-java/kurento-rtp-receiver/
       git checkout |VERSION|
-      mvn clean compile exec:java -Dkms.url=ws://localhost:8888/kurento
+      mvn -U clean spring-boot:run -Dkms.url=ws://localhost:8888/kurento
 
 3. Open the demo page with a WebRTC-compliant browser (Chrome, Firefox): https://localhost:8443/
 4. Click on *Start* to begin the demo.
-5. Copy the KMS IP and Port information to the external streaming program.
+5. Copy the KMS **IP** and **Port** values to the external streaming program.
 6. As soon as the external streaming program starts sending RTP packets to the IP and Port where KMS is listening for incoming data, the video should appear in the page.
 7. Click on *Stop* to finish the demo.
 
