@@ -62,7 +62,7 @@ modifying the kurento magic-mirror example.
 		}
 	    });
 
-> mvn compile exec:java # Execute the example
+> mvn -U clean spring-boot:run # Execute the example
 
 Try it out in the web browser: http://localhost:8080/
 
