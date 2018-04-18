@@ -59,7 +59,7 @@ Configure Java applications to use HTTPS
 
 .. sourcecode:: bash
 
-   mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento
+   mvn -U clean spring-boot:run -Dkms.url=ws://kms_host:kms_port/kurento
 
 .. note::
 

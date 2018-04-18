@@ -31,7 +31,7 @@ is hosted, and then run the main class:
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-hello-world-repository/
     git checkout |VERSION|
-    mvn compile exec:java
+    mvn -U clean spring-boot:run
 
 Access the application connecting to the URL https://localhost:8443/ in a WebRTC
 capable browser (Chrome, Firefox).
@@ -47,7 +47,7 @@ capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento \
+      mvn -U clean spring-boot:run -Dkms.url=ws://kms_host:kms_port/kurento \
           -Drepository.uri=http://repository_host:repository_url
 
 

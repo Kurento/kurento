@@ -30,7 +30,7 @@ is hosted, and then run the main class:
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-chroma
     git checkout |VERSION|
-    mvn compile exec:java
+    mvn -U clean spring-boot:run
 
 The web application starts on port 8443 in the localhost by default. Therefore,
 open the URL https://localhost:8443/ in a WebRTC compliant browser (Chrome,
@@ -45,7 +45,7 @@ Firefox).
 
    .. sourcecode:: bash
 
-      mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento
+      mvn -U clean spring-boot:run -Dkms.url=ws://kms_host:kms_port/kurento
 
 Understanding this example
 ==========================

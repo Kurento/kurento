@@ -26,7 +26,7 @@ is hosted, and then run the main class:
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-one2one-call-advanced
     git checkout |VERSION|
-    mvn compile exec:java
+    mvn -U clean spring-boot:run
 
 The web application starts on port 8443 in the localhost by default. Therefore,
 open the URL https://localhost:8443/ in a WebRTC compliant browser (Chrome,
@@ -41,7 +41,7 @@ Firefox).
 
    .. sourcecode:: bash
 
-      mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento
+      mvn -U clean spring-boot:run -Dkms.url=ws://kms_host:kms_port/kurento
 
 
 Understanding this example
@@ -705,7 +705,7 @@ methods delegate to WebRtc endpoints to create the appropriate answer.
 
    .. sourcecode:: bash
 
-      mvn compile exec:java -Dapp.server.url=https://app_server_host:app_server_port
+      mvn -U clean spring-boot:run -Dapp.server.url=https://app_server_host:app_server_port
 
 The second media pipeline consists on a ``PlayerEndpoint`` connected to a
 ``WebRtcEndpoint``. The ``PlayerEndpoint`` reads the previously recorded media
