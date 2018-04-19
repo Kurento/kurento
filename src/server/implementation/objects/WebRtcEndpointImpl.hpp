@@ -41,7 +41,7 @@ public:
 
   WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                       std::shared_ptr<MediaPipeline> mediaPipeline,
-                      bool useDataChannels,
+                      bool recvonly, bool sendonly, bool useDataChannels,
                       std::shared_ptr<CertificateKeyType> certificateKeyType);
 
   virtual ~WebRtcEndpointImpl ();

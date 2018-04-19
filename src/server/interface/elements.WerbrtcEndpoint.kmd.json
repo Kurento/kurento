@@ -175,6 +175,20 @@
               "type": "MediaPipeline"
             },
             {
+              "name": "recvonly",
+              "doc": "Single direction, receive-only endpoint",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            },
+            {
+              "name": "sendonly",
+              "doc": "Single direction, send-only endpoint",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            },
+            {
               "name": "useDataChannels",
               "doc": "Activate data channels support",
               "type": "boolean",

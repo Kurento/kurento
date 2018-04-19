@@ -36,6 +36,7 @@
 #include <RTCPeerConnectionStats.hpp>
 #include <commons/kmsstats.h>
 #include <commons/kmsutils.h>
+#include <commons/gstsdpdirection.h>
 
 #include "webrtcendpoint/kmswebrtcdatachannelstate.h"
 #include <boost/algorithm/string.hpp>
@@ -172,7 +173,7 @@ void WebRtcEndpointImpl::checkUri (std::string &uri)
     try {
       path = getConfigValue <std::string, WebRtcEndpoint> (CONFIG_PATH);
     } catch (boost::property_tree::ptree_error &e) {
-      GST_DEBUG ("WebRtcEndpoint config file doesn't contain a defaul path");
+      GST_DEBUG ("WebRtcEndpoint config file doesn't contain a default path");
       path = getConfigValue <std::string> (CONFIG_PATH, DEFAULT_PATH);
     }
 
@@ -428,7 +429,8 @@ WebRtcEndpointImpl::getCerficateFromFile (std::string &path)
 
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
-                                        mediaPipeline, bool useDataChannels,
+                                        mediaPipeline, bool recvonly,
+                                        bool sendonly, bool useDataChannels,
                                         std::shared_ptr<CertificateKeyType> certificateKeyType) :
   BaseRtpEndpointImpl (conf,
                        std::dynamic_pointer_cast<MediaObjectImpl>
@@ -441,6 +443,14 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   std::call_once (check_openh264, check_support_for_h264);
   std::call_once (certificates_flag,
                   std::bind (&WebRtcEndpointImpl::generateDefaultCertificates, this) );
+
+  if (recvonly) {
+    g_object_set (element, "offer-dir", GST_SDP_DIRECTION_RECVONLY, NULL);
+  }
+
+  if (sendonly) {
+    g_object_set (element, "offer-dir", GST_SDP_DIRECTION_SENDONLY, NULL);
+  }
 
   if (useDataChannels) {
     g_object_set (element, "use-data-channels", TRUE, NULL);
@@ -920,10 +930,11 @@ WebRtcEndpointImpl::fillStatsReport (std::map
 MediaObjectImpl *
 WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>
-    mediaPipeline, bool useDataChannels,
+    mediaPipeline, bool recvonly, bool sendonly, bool useDataChannels,
     std::shared_ptr<CertificateKeyType> certificateKeyType) const
 {
-  return new WebRtcEndpointImpl (conf, mediaPipeline, useDataChannels,
+  return new WebRtcEndpointImpl (conf, mediaPipeline, recvonly,
+                                 sendonly, useDataChannels,
                                  certificateKeyType);
 }
 
