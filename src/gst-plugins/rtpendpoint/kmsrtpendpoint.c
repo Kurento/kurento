@@ -699,6 +699,7 @@ kms_rtp_endpoint_configure_connection_keys (KmsRtpEndpoint * self,
 
   if (sdes_keys == NULL) {
     GST_ERROR_OBJECT (self, "No keys configured for %s connection", media);
+    goto end;
   } else {
     sdes_keys->conn = g_object_ref (conn);
   }
