@@ -112,16 +112,15 @@ Resources:
             apt-get install -y coturn
             # install kms
             sudo apt-get update
-            sudo apt-get install -y wget
-            echo "deb http://ubuntu.kurento.org xenial kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
-            wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
+            sudo echo "deb [arch=amd64] http://ubuntu.openvidu.io/6.7.0 xenial kms6" >/etc/apt/sources.list.d/kurento.list
+            sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
             sudo apt-get update 
-            sudo apt-get install -y kurento-media-server-6.0
-            systemctl enable kurento-media-server-6.0
+            sudo apt-get install -y kurento-media-server
+            systemctl enable kurento-media-server
             # enable coturn
             sudo echo TURNSERVER_ENABLED=1 > /etc/default/coturn
             # turn config file
-            sudo cat >/etc/turnserver.conf<<-EOF
+            sudo cat >/etc/turnserver.conf<<EOF
             external-ip=PUBLIC_IP
             fingerprint
             user=${TurnUser}:${TurnPassword}
@@ -135,14 +134,14 @@ Resources:
             sudo apt-get -y install python-setuptools
             sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
             # creating launching script 
-            sudo cat >/usr/local/bin/launch-kms.sh<<-EOF
+            sudo cat >/usr/local/bin/launch-kms.sh<<EOF
             #!/bin/bash
 
             PUBLIC_IP=\$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
             TURN_USER=${TurnUser}
             TURN_PASSWORD=${TurnPassword}
 
-            systemctl stop kurento-media-server-6.0
+            systemctl stop kurento-media-server
             systemctl stop coturn
             sleep 5
             cat /etc/turnserver.conf | grep -v external-ip >/tmp/turnserver.conf
@@ -151,11 +150,11 @@ Resources:
             echo "turnURL=\$TURN_USER:\$TURN_PASSWORD@\$PUBLIC_IP:3478" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
             sleep 5
             systemctl start coturn
-            systemctl start kurento-media-server-6.0
+            systemctl start kurento-media-server
             EOF
             sudo chmod 755 /usr/local/bin/launch-kms.sh
             # Preparing after reboot script
-            sudo cat >/etc/rc.local<<-EOF
+            sudo cat >/etc/rc.local<<EOF
             #!/bin/sh -e
             /usr/local/bin/launch-kms.sh
             exit 0
