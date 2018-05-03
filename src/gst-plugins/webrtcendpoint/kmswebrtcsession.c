@@ -1233,7 +1233,7 @@ configure_data_session (KmsWebrtcSession * self, const GstSDPMedia * media)
     return FALSE;
   }
 
-  if (len > 1) {
+  if (len > MAX_DATA_CHANNELS) {
     GST_WARNING_OBJECT (self,
         "Only one data session is supported over the same DTLS connection");
   }
