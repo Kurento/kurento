@@ -85,11 +85,15 @@ kms_webrtc_transport_new (KmsIceBaseAgent * agent,
 
   if (!KMS_IS_ICE_NICE_AGENT (agent)) {
     GST_ERROR ("Agent type not found");
-
     return NULL;
   }
 
   tr = KMS_WEBRTC_TRANSPORT (g_object_new (KMS_TYPE_WEBRTC_TRANSPORT, NULL));
+
+  if (tr->sink->dtlssrtpenc == NULL || tr->src->dtlssrtpdec == NULL) {
+    GST_ERROR ("SRTP elements not available: dtlssrtpenc, dtlssrtpdec");
+    return NULL;
+  }
 
   if (pem_certificate != NULL) {
     g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "pem", pem_certificate,
