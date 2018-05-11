@@ -1,3 +1,10 @@
+kms-elements (6.7.2) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Prepare release 6.7.2
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Fri, 11 May 2018 10:20:30 +0100
+
 kms-elements (6.7.1) testing; urgency=medium
 
   [ Juan Navarro Moreno ]
