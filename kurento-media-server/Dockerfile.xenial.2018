@@ -2,13 +2,15 @@ FROM      ubuntu:16.04
 MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 MAINTAINER Fede Diaz <nordri@gmail.com>
 
+ARG VERSION
+
 RUN apt-get update \
   && apt-get -y dist-upgrade \
   && apt-get install -y software-properties-common curl
 
 RUN	\
  	apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 && \
-	add-apt-repository "deb http://ubuntu.openvidu.io/6.7.0 xenial kms6" && \
+	add-apt-repository "deb http://ubuntu.openvidu.io/$VERSION xenial kms6" && \
 	apt-get update && \
 	apt-get -y install kurento-media-server && \
 	apt-get clean && \
