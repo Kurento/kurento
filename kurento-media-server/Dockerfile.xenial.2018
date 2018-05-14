@@ -8,6 +8,9 @@ RUN apt-get update \
   && apt-get -y dist-upgrade \
   && apt-get install -y software-properties-common curl
 
+RUN apt-get -y --no-install-recommends install wget bzip2 && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN	\
  	apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 && \
 	add-apt-repository "deb http://ubuntu.openvidu.io/$VERSION xenial kms6" && \
