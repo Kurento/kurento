@@ -43,7 +43,7 @@ export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
 
 echo "[kurento_maven_deploy] Command: kurento_get_version"
-PROJECT_VERSION=$(kurento_get_version.sh)
+PROJECT_VERSION="$(kurento_get_version.sh)"
 echo "[kurento_maven_deploy] Deploy version: $PROJECT_VERSION"
 
 # Build all packages
