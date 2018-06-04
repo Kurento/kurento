@@ -6,6 +6,10 @@ exec 3>&1 >/dev/tty || exec 3>&1 >./get_version_logs
 
 echo "##################### EXECUTE: kurento_get_version.sh #####################"
 
+# WARNING: Several scripts have implicit dependency on the ORDER of these checks.
+# For example: kurento_mavenize_js_project assumes that pom.xml sill be checked
+# BEFORE package.json.
+
 if [ -f VERSION ]
 then
   echo "Getting version from VERSION file"
@@ -26,12 +30,16 @@ then
 elif [ -f pom.xml ]
 then
   echo "Getting version from pom.xml"
-  if [ "${MAVEN_SETTINGS}x" = "x" ]
-  then
-    PROJECT_VERSION="$(mvn --batch-mode --non-recursive help:evaluate -Dexpression=project.version 2>/dev/null | grep -v '^\[.*\]')"
-  else
-    PROJECT_VERSION="$(mvn --batch-mode --non-recursive --settings $MAVEN_SETTINGS help:evaluate -Dexpression=project.version 2>/dev/null | grep -v '^\[.*\]')"
-  fi
+  MAVEN_CMD='mvn --batch-mode --non-recursive exec:exec -Dexec.executable=echo -Dexec.args=\${project.version}'
+  [ -n "$MAVEN_SETTINGS" ] && MAVEN_CMD="$MAVEN_CMD --settings $MAVEN_SETTINGS"
+  eval "$MAVEN_CMD"  # This is just to print all output from Maven, eases debugging
+  MAVEN_CMD="$MAVEN_CMD --quiet 2>/dev/null"
+  PROJECT_VERSION="$(eval "$MAVEN_CMD")"
+  [ $? -eq 0 ] || {
+    PROJECT_VERSION="0"
+    echo "[kurento_get_version] ERROR: Command failed: mvn echo project.version"
+    exit 1
+  }
 elif [ -f configure.ac ]
 then
   echo "Getting version from configure.ac"
