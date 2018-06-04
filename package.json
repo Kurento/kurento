@@ -1,40 +1,67 @@
 {
   "name": "kurento-jsonrpc",
-  "version": "5.1.5-dev",
-  "description": "RPC library for browser and Node.js",
+  "version": "6.7.2-dev",
+  "description": "Kurento RPC client library for Browser and Node.js",
+  "keywords": [
+    "kurento",
+    "mcu",
+    "sfu",
+    "rpc",
+    "mediaserver",
+    "pipe",
+    "audio",
+    "video",
+    "media",
+    "recording",
+    "stream",
+    "streaming",
+    "videoconference",
+    "broadcast",
+    "multicast",
+    "client",
+    "server",
+    "browser",
+    "chrome",
+    "edge",
+    "firefox",
+    "safari",
+    "webrtc",
+    "datachannel",
+    "sdp",
+    "ice",
+    "stun",
+    "turn",
+    "h264",
+    "h.264",
+    "opus",
+    "vp8",
+    "rtp",
+    "srtp",
+    "rtsp"
+  ],
+  "homepage": "https://www.kurento.org",
+  "license": "Apache-2.0",
+  "author": "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
+  "contributors": [
+    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)"
+  ],
+  "bugs": {
+    "url": "https://github.com/Kurento/bugtracker/issues",
+    "email": "kurento@googlegroups.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kurento/kurento-jsonrpc-js.git"
+  },
   "main": "lib/index.js",
   "scripts": {
     "test": "nodeunit test/index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "Kurento/kurento-jsonrpc-js"
-  },
-  "keywords": [
-    "RPC",
-    "JsonRPC",
-    "XML-RPC",
-    "HTTP",
-    "WebP2P",
-    "WebSocket",
-    "DataChannel",
-    "WebWorker",
-    "postMessage",
-    "pipe",
-    "stream"
-  ],
-  "author": "Kurento <info@kurento.org> (http://kurento.org)",
-  "contributors": [
-    "Jesus Leganes Combarro 'piranna' <piranna@gmail.com>",
-    "Ivan Gracia <igracia@kurento.org>"
-  ],
-  "license": "Apache-2.0",
   "dependencies": {
     "inherits": "^2.0.1",
     "ws": "^1.1.1",
     "bufferutil": "1.2.x",
     "utf-8-validate": "1.2.x"
-
   },
   "devDependencies": {
     "bower": "~1.7.9",
@@ -44,7 +71,7 @@
     "grunt-browserify": "~5.0.0",
     "grunt-cli": "~1.2.0",
     "grunt-contrib-clean": "~1.0.0",
-    "grunt-jsdoc": "~2.1.0",
+    "grunt-jsdoc": "~2.2.1",
     "grunt-npm2bower-sync": "^0.9.0",
     "grunt-shell": "^2.0.0",
     "jscoverage": "~0.6.0",
