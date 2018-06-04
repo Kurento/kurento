@@ -262,7 +262,9 @@ def get_debian_version(simplify_dev_version, dist):
             "git log " + last_release + "..HEAD --oneline"
             " | wc -l", shell=True).strip()
     except subprocess.CalledProcessError:
-        return None
+        # If Git fails (eg. the directory is not a Git repo), use default values
+        current_commit = "0000000"
+        num_commits = "1"  # Force a Development build in next code block
 
     now = datetime.fromtimestamp(time())
 
@@ -428,7 +430,7 @@ def generate_debian_package(args, buildconfig):
               " ERROR: Running 'lsb_release'".format(project_name))
         exit(1)
     else:
-        print("[buildpkg::get_version] ({})"
+        print("[buildpkg::generate_debian_package] ({})"
               " Found distro code: {}".format(project_name, dist))
 
     print("[buildpkg::generate_debian_package] ({})"
