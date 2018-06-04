@@ -50,12 +50,19 @@ REPOS=(
     bugtracker
     doc-kurento
 
-    # Client Applications related repos
+    # Client applications - Java
     kurento-maven-plugin
     kurento-qa-pom
     kurento-java
     kurento-tutorial-java
     kurento-tutorial-test
+
+    # Client applications - JavaScript & Node
+    kurento-jsonrpc-js
+    kurento-utils-js
+    kurento-client-js
+    kurento-tutorial-js
+    kurento-tutorial-node
 
     # Miscellaneous experiments
     experiments

@@ -92,18 +92,6 @@ PACKAGES=(
     ffmpeg
 )
 
-# FIXME - Workaround for Ubuntu 14.04 (Trusty)
-if [ "$(lsb_release -sc)" = "trusty" ]; then
-    PACKAGES+=(
-        openwebrtc-gst-plugins=0.10.0.20160909214034.trusty
-        openwebrtc-gst-plugins-dev=0.10.0.20160909214034.trusty
-    )
-else
-    PACKAGES+=(
-        openwebrtc-gst-plugins-dev
-    )
-fi
-
 # Parse command line arguments
 update=1
 while getopts 'n' flag; do
@@ -113,9 +101,22 @@ while getopts 'n' flag; do
     esac
 done
 
-(($update)) && apt-get update
+(( $update )) && apt-get update
 
 apt-get install --yes "${PACKAGES[@]}"
+
+# FIXME - Workaround for Ubuntu 14.04 (Trusty)
+if [ "$(lsb_release -sc)" = "trusty" ]; then
+    apt-get install --yes \
+        openwebrtc-gst-plugins=0.10.0.20160909214034.trusty \
+        openwebrtc-gst-plugins-dev=0.10.0.20160909214034.trusty \
+    || apt-get install --yes \
+        openwebrtc-gst-plugins=0.10.0.1.trusty~20180213160509.1.33ccf19 \
+        openwebrtc-gst-plugins-dev=0.10.0.1.trusty~20180213160509.1.33ccf19
+else
+    apt-get install --yes \
+        openwebrtc-gst-plugins-dev
+fi
 
 log "All packages installed successfully"
 

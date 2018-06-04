@@ -35,7 +35,7 @@ while getopts 'n' flag; do
   esac
 done
 
-(($update)) && apt-get update
+(( $update )) && apt-get update
 
 # Set PATH so scripts can be called by name, without './'
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path

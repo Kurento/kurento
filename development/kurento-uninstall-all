@@ -43,14 +43,14 @@ PACKAGES=(
     uuid-dev
 
     # Packages installed by kurento-module-creator
-    libmaven-assembly-plugin-java
-    libmaven-compiler-plugin-java
-    libfreemarker-java
-    libgoogle-gson-java
-    libslf4j-java
-    junit4
-    libcommons-cli-java
-    libwagon-java
+    #libmaven-assembly-plugin-java
+    #libmaven-compiler-plugin-java
+    #libfreemarker-java
+    #libgoogle-gson-java
+    #libslf4j-java
+    #junit4
+    #libcommons-cli-java
+    #libwagon-java
 )
 
 # Run a loop over all names and uninstall them.

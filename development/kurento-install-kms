@@ -4,9 +4,10 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
 # Install Kurento Media Server packages for users and developers.
 #
-# This not only includes KMS itself and all its modules, but also all
-# development and debugging packages, and the tools used to write new modules
-# (module creator, CMake utils).
+# This script installs all KMS packages, together with their corresponding
+# development libraries. and the tools used to write new modules (module
+# creator, CMake utils). It does not include the debugging symbols, which can be
+# installed with a separate script.
 #
 # Notes:
 # - gstreamer1.5-x is needed for the "timeoverlay" GStreamer plugin,
@@ -70,7 +71,7 @@ while getopts 'n' flag; do
     esac
 done
 
-(($update)) && apt-get update
+(( $update )) && apt-get update
 
 apt-get install --yes "${PACKAGES[@]}"
 

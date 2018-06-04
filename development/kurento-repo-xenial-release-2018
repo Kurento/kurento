@@ -30,7 +30,7 @@ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 tee "$FILE" >/dev/null <<EOF
 # Kurento Media Server - Release packages
-deb [arch=amd64] http://ubuntu.openvidu.io/6.7.0 $DISTRO kms6
+deb [arch=amd64] http://ubuntu.openvidu.io/6.7.1 $DISTRO kms6
 EOF
 
 apt-get update

@@ -63,7 +63,7 @@ while getopts 'n' flag; do
     esac
 done
 
-(($update)) && apt-get update
+(( $update )) && apt-get update
 
 apt-get install --yes "${PACKAGES[@]}"
 
