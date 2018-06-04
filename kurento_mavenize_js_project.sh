@@ -54,10 +54,13 @@ RELEASE="$(echo $VERSION | awk -F"-" '{print $1}')"
 [ -n "$(echo $VERSION | awk -F"-" '{print $2}')" ] && VERSION="${RELEASE}-SNAPSHOT"
 
 # Exit if pom already present with correct version
-[ -f pom.xml ] && [ $VERSION == `mvn help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v "Down"` ] && {
-  echo "[kurento_mavenize_js_project] Exit: pom.xml already exists"
-  exit 0
-}
+if [ -f pom.xml ]; then
+  POM_VERSION="$(mvn --batch-mode --non-recursive help:evaluate -Dexpression=project.version 2>/dev/null | grep -v '^\[.*\]')"
+  [ "$VERSION" == "$POM_VERSION" ] && {
+    echo "[kurento_mavenize_js_project] Exit: pom.xml already exists"
+    exit 0
+  }
+fi
 
 # Add pom file
 cat >pom.xml <<EOF

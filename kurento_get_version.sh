@@ -4,6 +4,8 @@
 
 exec 3>&1 >/dev/tty || exec 3>&1 >./get_version_logs
 
+echo "##################### EXECUTE: kurento_get_version.sh #####################"
+
 if [ -f VERSION ]
 then
   echo "Getting version from VERSION file"
@@ -26,9 +28,9 @@ then
   echo "Getting version from pom.xml"
   if [ "${MAVEN_SETTINGS}x" = "x" ]
   then
-    PROJECT_VERSION=`mvn --batch-mode help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v -i "Down"`
+    PROJECT_VERSION="$(mvn --batch-mode --non-recursive help:evaluate -Dexpression=project.version 2>/dev/null | grep -v '^\[.*\]')"
   else
-    PROJECT_VERSION=`mvn --batch-mode --settings $MAVEN_SETTINGS help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v -i "Down"`
+    PROJECT_VERSION="$(mvn --batch-mode --non-recursive --settings $MAVEN_SETTINGS help:evaluate -Dexpression=project.version 2>/dev/null | grep -v '^\[.*\]')"
   fi
 elif [ -f configure.ac ]
 then
