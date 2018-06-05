@@ -23,18 +23,32 @@ echo "##################### EXECUTE: kurento_mavenice_js_project ###############
   exit 1
 }
 
-[ -z "$MAVEN_SHELL_SCRIPT" ] && MAVEN_SHELL_SCRIPT="\
-  apt-get install --yes curl || { echo ERR1; exit 1; } \
-  ( curl -sL https://deb.nodesource.com/setup_8.x | bash - ) || { echo ERR2; exit 1; } \
-  sudo apt-get update || { echo ERR3; exit 1; } \
-  sudo apt-get install --reinstall nodejs || { echo ERR4; exit 1; } \
-  npm install --global npm || { echo ERR5; exit 1; } \
-  cd \${basedir}; || { echo ERR6; exit 1; } \
-  npm install --loglevel info || { echo ERR7; exit 1; } \
-  node_modules/.bin/grunt || { echo ERR8; exit 1; } \
-  node_modules/.bin/grunt sync:bower || { echo ERR9; exit 1; } \
-  mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR10; exit 1; } \
-  cp dist/* src/main/resources/META-INF/resources/js/"
+if [ -n "$MAVEN_SHELL_SCRIPT" ]; then
+cat >maven_script.sh <<EOF
+#!/usr/bin/env bash
+# Shell options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
+$MAVEN_SHELL_SCRIPT
+EOF
+else
+cat >maven_script.sh <<EOF
+#!/usr/bin/env bash
+# Shell options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
+apt-get install --yes curl || { echo ERR1; exit 1; }
+( curl -sL https://deb.nodesource.com/setup_8.x | bash - ) || { echo ERR2; exit 1; }
+sudo apt-get update || { echo ERR3; exit 1; }
+sudo apt-get install --reinstall nodejs || { echo ERR4; exit 1; }
+npm install --global npm || { echo ERR5; exit 1; }
+npm install --loglevel info || { echo ERR7; exit 1; }
+node_modules/.bin/grunt || { echo ERR8; exit 1; }
+node_modules/.bin/grunt sync:bower || { echo ERR9; exit 1; }
+mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR10; exit 1; }
+cp dist/* src/main/resources/META-INF/resources/js/"
+EOF
+fi
+
+chmod +x maven_script.sh
 
 [ -z "$ASSEMBLY_FILE" ] && ASSEMBLY_FILE="assembly.xml"
 
@@ -136,25 +150,20 @@ cat >pom.xml <<EOF
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
-        <artifactId>shell-maven-plugin</artifactId>
-        <version>1.0-beta-1</version>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
         <executions>
           <execution>
             <id>stage-sources</id>
             <phase>process-sources</phase>
             <goals>
-              <goal>shell</goal>
+              <goal>exec</goal>
             </goals>
-            <configuration>
-              <workDir>\${workDir}</workDir>
-              <chmod>true</chmod>
-              <keepScriptFile>true</keepScriptFile>
-              <script>
-                ${MAVEN_SHELL_SCRIPT}
-              </script>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <executable>maven_script.sh</executable>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -180,7 +189,7 @@ cat >pom.xml <<EOF
     </extensions>
   </build>
   <profiles>
-    <!-- Kurento CI requires this profiles to exist -->
+    <!-- Kurento CI requires these profiles to exist -->
     <profile>
       <id>default</id>
     </profile>
