@@ -22,14 +22,20 @@ echo "##################### EXECUTE: kurento_mavenice_js_project ###############
   echo "[kurento_mavenize_js_project] ERROR: Undefined variable: PROJECT_NAME"
   exit 1
 }
+
 [ -z "$MAVEN_SHELL_SCRIPT" ] && MAVEN_SHELL_SCRIPT="\
-  npm install npm -g || exit 1; \
+  apt-get install --yes curl || exit 1; \
+  curl -sL https://deb.nodesource.com/setup_8.x | bash - || exit 1; \
+  sudo apt-get update || exit 1; \
+  sudo apt-get install --reinstall nodejs || exit 1; \
+  npm install --global npm || exit 1; \
   cd \${basedir}; \
-  npm -d install || exit 1; \
+  npm install --loglevel info || exit 1; \
   node_modules/.bin/grunt || exit 1; \
   node_modules/.bin/grunt sync:bower || exit 1; \
   mkdir -p src/main/resources/META-INF/resources/js/ || exit 1; \
   cp dist/* src/main/resources/META-INF/resources/js/"
+
 [ -z "$ASSEMBLY_FILE" ] && ASSEMBLY_FILE="assembly.xml"
 
 # Validate project structure
