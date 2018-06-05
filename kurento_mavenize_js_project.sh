@@ -24,16 +24,16 @@ echo "##################### EXECUTE: kurento_mavenice_js_project ###############
 }
 
 [ -z "$MAVEN_SHELL_SCRIPT" ] && MAVEN_SHELL_SCRIPT="\
-  apt-get install --yes curl || exit 1; \
-  curl -sL https://deb.nodesource.com/setup_8.x | bash - || exit 1; \
-  sudo apt-get update || exit 1; \
-  sudo apt-get install --reinstall nodejs || exit 1; \
-  npm install --global npm || exit 1; \
-  cd \${basedir}; \
-  npm install --loglevel info || exit 1; \
-  node_modules/.bin/grunt || exit 1; \
-  node_modules/.bin/grunt sync:bower || exit 1; \
-  mkdir -p src/main/resources/META-INF/resources/js/ || exit 1; \
+  apt-get install --yes curl || { echo ERR1; exit 1; } \
+  ( curl -sL https://deb.nodesource.com/setup_8.x | bash - ) || { echo ERR2; exit 1; } \
+  sudo apt-get update || { echo ERR3; exit 1; } \
+  sudo apt-get install --reinstall nodejs || { echo ERR4; exit 1; } \
+  npm install --global npm || { echo ERR5; exit 1; } \
+  cd \${basedir}; || { echo ERR6; exit 1; } \
+  npm install --loglevel info || { echo ERR7; exit 1; } \
+  node_modules/.bin/grunt || { echo ERR8; exit 1; } \
+  node_modules/.bin/grunt sync:bower || { echo ERR9; exit 1; } \
+  mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR10; exit 1; } \
   cp dist/* src/main/resources/META-INF/resources/js/"
 
 [ -z "$ASSEMBLY_FILE" ] && ASSEMBLY_FILE="assembly.xml"
