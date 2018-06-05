@@ -45,7 +45,7 @@ npm install --loglevel info || { echo ERR7; exit 1; }
 node_modules/.bin/grunt || { echo ERR8; exit 1; }
 node_modules/.bin/grunt sync:bower || { echo ERR9; exit 1; }
 mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR10; exit 1; }
-cp dist/* src/main/resources/META-INF/resources/js/"
+cp dist/* src/main/resources/META-INF/resources/js/
 EOF
 fi
 
