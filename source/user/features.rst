@@ -70,7 +70,7 @@ There are two topics to note when dealing with RTP connections: the automatic co
 
 .. _features-remb:
 
-Congestion Control (REMB)
+Congestion Control / REMB
 =========================
 
 Kurento implements the *Google Congestion Control* algorithm, so it is able to generate and parse both ``abs-send-time`` RTP headers and :term:`REMB` RTCP messages.
@@ -91,8 +91,8 @@ It is enabled by by passing the media-level attribute ``goog-remb`` in the SDP O
    a=sendonly
    a=ssrc:112233 cname:user@example.com
 
-``a=rtcp-fb`` is an *RTCP Feedback Capability Attribute*, as defined in :rfc:`4585`.
+``a=rtcp-fb`` is the *RTCP Feedback* capability attribute, as defined in :rfc:`4585`.
 
-Also it is important to note that KMS implements REMB propagation between the sender and receiver legs of a connection. This means that when KMS is used as a proxy between a video sender and one or more video receivers, the smallest REMB value from the receivers will be relayed to the sender. This allows the sender to choose a lower bitrate that will accommodate all of the receivers connected to KMS at the other side.
+KMS implements REMB propagation between the sender and receiver legs of a connection. This means that when KMS is used as a proxy between a video sender and one or more video receivers, the smallest REMB value from the receivers will be relayed to the sender. This allows the sender to choose a lower bitrate that will accommodate all of the receivers connected to KMS at the other side.
 
 For more context about what is REMB and how it fits in the greater project of RMCAT, please read our Knowledge Base document: :doc:`/knowledge/congestion_rmcat`.
