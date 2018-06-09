@@ -88,9 +88,10 @@ Information about development of *Kurento itself* is also available:
    :maxdepth: 2
    :caption: Project Documentation
 
-   /project/contribute
    /project/team
+   /project/contribute
    /project/conduct
+   /project/relnotes/index
 
 ..
    This sections are commented out, for now:
