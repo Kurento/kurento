@@ -106,16 +106,18 @@ Call sequence:
 MediaStateChanged
 -----------------
 
-- State = *Connected*: At least *one* of the audio or video RTP streams in the session is still alive (sending or receiving RTCP packets).
+- State = *Connected*: At least *one* of the audio or video RTP streams in the session is still alive (sending or receiving RTCP packets). Equivalent to the signal `GstRtpBin::"on-ssrc-active" <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtpbin.html#GstRtpBin-on-ssrc-active>`__, which gets triggered whenever the GstRtpBin receives an *RTCP Sender Report* (*RTCP SR*) or *RTCP Receiver Report* (*RTCP RR*).
 
 - State = *Disconnected*: None of the RTP streams belonging to the session is alive (ie. no RTCP packets are sent or received for any of them).
 
-These signals from GstRtpBin will trigger the ``MediaStateChanged`` event:
+These signals from `GstRtpBin`_ will trigger the ``MediaStateChanged`` event:
 
 - ``GstRtpBin::"on-bye-ssrc"``: State = *Disconnected*.
 - ``GstRtpBin::"on-bye-timeout"``: State = *Disconnected*.
 - ``GstRtpBin::"on-timeout"``: State = *Disconnected*.
 - ``GstRtpBin::"on-ssrc-active"``: State = *Connected*.
+
+.. _GstRtpBin: https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtpbin.html
 
 Call sequence:
 
@@ -262,46 +264,60 @@ The application's custom signaling mechanism could be as simple as some ad-hoc m
 
 When a *WebRtcEndpoint* instance has been created, and all event handlers have been added, starting the ICE process will generate a sequence of events very similar to this one:
 
-1. Event(s): ``IceCandidateFound``.
+.. code-block:: text
 
-   Typically, candidates of type ``host`` (corresponding to the LAN, local network) are almost immediately found after starting the ICE gathering, and this event can arrive even before the event ``IceComponentStateChanged`` is emitted.
+   IceCandidateFound
+   IceComponentStateChanged (Gathering)
+   AddIceCandidate
+   IceComponentStateChanged (Connecting)
+   AddIceCandidate
+   IceCandidateFound
+   NewCandidatePairSelected
+   IceComponentStateChanged (Connected)
+   NewCandidatePairSelected
+   IceGatheringDone
+   IceComponentStateChanged: (Ready)
 
-2. Event: ``IceComponentStateChanged`` (State: *Gathering*).
+1. ``IceCandidateFound``
+
+   Repeated multiple times; tipically, candidates of type ``host`` (corresponding to the LAN, local network) are almost immediately found after starting the ICE gathering, and this event can arrive even before the event ``IceComponentStateChanged`` is emitted.
+
+2. ``IceComponentStateChanged`` (state: *Gathering*)
 
    At this point, the local peer is gathering more candidates, and it is also waiting for the candidates gathered by the remote peer, which could start arriving at any time.
 
-3. Function call: ``AddIceCandidate``.
+3. ``AddIceCandidate``
 
-   The remote peer found some initial candidates, and started sending them. Typically, the first candidate received is of type ``host``, because those are found the fastest.
+   Repeated multiple times; the remote peer found some initial candidates, and started sending them. Typically, the first candidate received is of type ``host``, because those are found the fastest.
 
-4. Event: ``IceComponentStateChanged`` (State: *Connecting*).
+4. ``IceComponentStateChanged`` (state: *Connecting*)
 
    After receiving the very first of the remote candidates, the ICE Agent starts with the connectivity checks.
 
-5. Function call(s): ``AddIceCandidate``.
+5. ``AddIceCandidate``
 
-   The remote peer will continue sending its own gathered candidates, of any type: ``host``, ``srflx`` (*STUN*), ``relay`` (*TURN*).
+   Repeated multiple times; the remote peer will continue sending its own gathered candidates, of any type: ``host``, ``srflx`` (*STUN*), ``relay`` (*TURN*).
 
-6. Event: ``IceCandidateFound``.
+6. ``IceCandidateFound``
 
-   The local peer will also continue finding more of the available local candidates.
+   Repeated multiple times; the local peer will also continue finding more of the available local candidates.
 
-7. ``NewCandidatePairSelected``.
+7. ``NewCandidatePairSelected``
 
    The ICE Agent makes local and remote candidate pairs. If one of those pairs pass the connectivity checks, it is selected for the WebRTC connection.
 
-8. ``IceComponentStateChanged`` (State: *Connected*).
+8. ``IceComponentStateChanged`` (state: *Connected*)
 
    After selecting a candidate pair, the connection is established. *At this point, the media stream(s) can start flowing*.
 
-9. ``NewCandidatePairSelected``.
+9. ``NewCandidatePairSelected``
 
    Typically, better candidate pairs will be found over time. The old pair will be abandoned in favor of the new one.
 
-10. ``IceGatheringDone``.
+10. ``IceGatheringDone``
 
     When all candidate pairs have been tested, no more work is left to do for the ICE Agent. The gathering process is finished.
 
-11. ``IceComponentStateChanged`` (State: *Ready*).
+11. ``IceComponentStateChanged`` (state: *Ready*)
 
     As a consequence of finishing the ICE gathering, the component state gets updated.
