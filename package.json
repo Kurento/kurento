@@ -4,39 +4,56 @@
   "description": "Kurento Utilities",
   "keywords": [
     "kurento",
-    "webrtc",
-    "rtp",
-    "srtp",
+    "mcu",
+    "sfu",
+    "rpc",
+    "mediaserver",
+    "pipe",
     "audio",
     "video",
-    "videoconference",
-    "broadcast",
-    "mediaserver",
+    "media",
     "recording",
     "stream",
     "streaming",
-    "mcu",
-    "sfu",
-    "h264",
-    "vp8",
+    "videoconference",
+    "broadcast",
+    "multicast",
+    "client",
+    "server",
+    "browser",
+    "chrome",
+    "edge",
+    "firefox",
+    "safari",
+    "webrtc",
+    "datachannel",
+    "sdp",
+    "ice",
     "stun",
-    "turn"
+    "turn",
+    "h264",
+    "h.264",
+    "opus",
+    "vp8",
+    "rtp",
+    "srtp",
+    "rtsp"
   ],
   "homepage": "https://www.kurento.org",
+  "license": "Apache-2.0",
+  "author": "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
+  "contributors": [
+    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)"
+  ],
   "bugs": {
     "url": "https://github.com/Kurento/bugtracker/issues",
     "email": "kurento@googlegroups.com"
   },
-  "license": "Apache-2.0",
-  "author": "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
-  "contributors": [
-    "Kurento Community <openvidu@gmail.com> (https://www.kurento.org)"
-  ],
-  "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "github:Kurento/kurento-utils-js"
+    "url": "https://github.com/Kurento/kurento-utils-js.git"
   },
+  "main": "lib/index.js",
   "scripts": {
     "coveralls": "scripts/coveralls",
     "test": "scripts/test"
