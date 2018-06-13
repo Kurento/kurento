@@ -43,7 +43,8 @@
   "license": "Apache-2.0",
   "author": "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
   "contributors": [
-    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)"
+    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)",
+    "Jesús Leganés-Combarro 'piranna' <piranna@gmail.com> (https://pirannafs.blogspot.com/)"
   ],
   "bugs": {
     "url": "https://github.com/Kurento/bugtracker/issues",
