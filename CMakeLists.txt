@@ -19,6 +19,7 @@ message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 # Compiler flags
 include(CommonBuildFlags)
 common_buildflags_set()
+#common_buildflags_print()
 
 find_package(PkgConfig)
 pkg_check_modules(JSONCPP REQUIRED kmsjsoncpp>=0.6.0)
