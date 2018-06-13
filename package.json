@@ -1,18 +1,59 @@
 {
   "name": "kurento-client",
-  "version": "6.6.1-dev",
-  "description": "Media API for the Kurento Web SDK",
-  "homepage": "http://www.kurento.org",
-  "license": "Apache-2.0",
-  "author": "Kurento <info@kurento.com> (http://kurento.org)",
-  "contributors": [
-    {
-      "name": "Jesús Leganés Combarro 'piranna'",
-      "email": "piranna@gmail.com",
-      "url": "http://pirannafs.blogspot.com.es"
-    }
+  "version": "6.7.2-dev",
+  "description": "Client SDK that implements the Kurento API for JavaScript applications",
+  "keywords": [
+    "kurento",
+    "mcu",
+    "sfu",
+    "rpc",
+    "mediaserver",
+    "pipe",
+    "audio",
+    "video",
+    "media",
+    "recording",
+    "stream",
+    "streaming",
+    "videoconference",
+    "broadcast",
+    "multicast",
+    "client",
+    "server",
+    "browser",
+    "chrome",
+    "edge",
+    "firefox",
+    "safari",
+    "webrtc",
+    "datachannel",
+    "sdp",
+    "ice",
+    "stun",
+    "turn",
+    "h264",
+    "h.264",
+    "opus",
+    "vp8",
+    "rtp",
+    "srtp",
+    "rtsp"
   ],
-  "main": "./lib/index.js",
+  "homepage": "https://www.kurento.org",
+  "license": "Apache-2.0",
+  "author": "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
+  "contributors": [
+    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)"
+  ],
+  "bugs": {
+    "url": "https://github.com/Kurento/bugtracker/issues",
+    "email": "kurento@googlegroups.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kurento/kurento-client-js.git"
+  },
+  "main": "lib/index.js",
   "scripts": {
     "coveralls": "scripts/coveralls",
     "coverallsBrowser": "scripts/coveralls -- testBrowser",
@@ -21,18 +62,6 @@
     "testReconnect": "scripts/testReconnect",
     "testWithoutTransactions": "scripts/testWithoutTransactions"
   },
-  "repository": {
-    "type": "git",
-    "url": "Kurento/kurento-client-js"
-  },
-  "bugs": {
-    "email": "kurento@googlegroups.com"
-  },
-  "keywords": [
-    "API",
-    "Kurento",
-    "WebRTC"
-  ],
   "dependencies": {
     "async": "~2.0.1",
     "error-tojson": "0.0.1",
