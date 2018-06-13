@@ -24,8 +24,8 @@ message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 # Note: Flags added from dpkg-buildflags (if installed):
 # -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2
 include(DpkgBuildFlags)
-get_dpkg_buildflags_c(DPKG_BUILDFLAGS_C)
-get_dpkg_buildflags_cxx(DPKG_BUILDFLAGS_CXX)
+dpkg_buildflags_get_cflags(DPKG_BUILDFLAGS_C)
+dpkg_buildflags_get_cflagsxx(DPKG_BUILDFLAGS_CXX)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${DPKG_BUILDFLAGS_C}   -std=gnu11   -Wall -Werror -pthread")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DPKG_BUILDFLAGS_CXX} -std=c++11 -Wall -Werror -pthread")
 set(CMAKE_C_FLAGS_DEBUG   "-g -O0") # FIXME Ideal is '-Og' but a bug in GCC prevents this,
