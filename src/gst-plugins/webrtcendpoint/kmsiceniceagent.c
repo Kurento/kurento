@@ -355,7 +355,7 @@ kms_ice_nice_agent_get_local_credentials (KmsIceBaseAgent * self,
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   guint id = atoi (stream_id);
 
-  GST_DEBUG_OBJECT (self, "Set local credentials, stream_id: %d", id);
+  GST_DEBUG_OBJECT (self, "Get local credentials, stream_id: %d", id);
 
   nice_agent_get_local_credentials (nice_agent->priv->agent, id, ufrag, pwd);
 }
