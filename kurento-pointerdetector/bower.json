@@ -1,16 +1,30 @@
 {
   "name": "kurento-pointerdetector",
-  "version": "6.6.2-dev",
+  "version": "6.7.2",
   "description": "Kurento Browser JavaScript Tutorial: Pointer Detector",
-  "authors": [
-    "Kurento <info@kurento.org>"
+  "keywords": [
+    "kurento", "mcu", "sfu", "rpc", "mediaserver", "pipe",
+    "audio", "video", "media", "recording", "stream", "streaming", "videoconference",
+    "broadcast", "multicast", "client", "server",
+    "browser", "chrome", "edge", "firefox", "safari",
+    "webrtc", "datachannel", "sdp", "ice", "stun", "turn",
+    "h264", "h.264", "opus", "vp8",
+    "rtp", "srtp", "rtsp"
   ],
+  "homepage": "https://www.kurento.org",
+  "license": "Apache-2.0",
+  "authors": [
+    "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
+    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kurento/kurento-tutorial-js.git"
+  },
   "main": "index.html",
   "moduleType": [
     "globals"
   ],
-  "license": "ALv2",
-  "homepage": "http://www.kurento.org/",
   "private": true,
   "ignore": [
     "**/.*",
