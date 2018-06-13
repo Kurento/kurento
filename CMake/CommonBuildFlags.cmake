@@ -7,10 +7,12 @@
 # to a set of well tested values. The defined flags will also enforce a set
 # of common rules which are intended to maintain a good level of security and
 # code quality. These are:
-# - Language selection: C11, C++11.
-# - Warnings are forbidden: By default all warnings are treated as errors.
-#   Sub-projects are free to define exceptions to this rule, via the
-#   `-Wno-error` flag.
+# - Language selection: C11 and C++11.
+# - Warnings are forbidden during development (but allowed for production):
+#   '-Werror' is used for Debug builds.
+#   Developers can opt-out of this rule, setting '-Wno-error=<WarningName>'.
+#   For example:
+#       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 # - Debian security hardening best practices:
 #   - Format string checks.
 #   - Fortify source functions (check usages of memcpy, strcpy, etc.)
@@ -48,41 +50,43 @@ function(common_buildflags_set)
 
   # The environment variable 'DEB_BUILD_MAINT_OPTIONS' is used to instruct
   # Debhelper to use all available security hardening mechanisms.
-  SET(ENV{DEB_BUILD_MAINT_OPTIONS} "hardening=+all")
+  set(ENV{DEB_BUILD_MAINT_OPTIONS} "hardening=+all")
   dpkg_buildflags_get_cflags(DPKG_CFLAGS)
   dpkg_buildflags_get_cxxflags(DPKG_CXXFLAGS)
   dpkg_buildflags_get_ldflags(DPKG_LDFLAGS)
 
   # General flags, covering all build configurations
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c11   -Wall -Werror -pthread" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -pthread" PARENT_SCOPE)
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c11   -Wall -pthread" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pthread" PARENT_SCOPE)
 
-  # Flags used for build type 'Debug'
+  # Debug builds
   #
   # FIXME Ideal is '-Og' but a bug in GCC prevents this, causing
-  # "may be used uninitialized" errors:
-  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58455
-  set(CMAKE_C_FLAGS_DEBUG   "${DPKG_CFLAGS}   -g -O0" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${DPKG_CXXFLAGS} -g -O0" PARENT_SCOPE)
-  #set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "${DPKG_LDFLAGS}" PARENT_SCOPE)
+  #       "may be used uninitialized" errors:
+  #       https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58455
+  #       Affects GCC 5.4.0 (Ubuntu 16.04 "Xenial")
+  set(CMAKE_C_FLAGS_DEBUG   "${DPKG_CFLAGS}   -Werror -g -O0" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${DPKG_CXXFLAGS} -Werror -g -O0" PARENT_SCOPE)
   set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_MODULE_LINKER_FLAGS_DEBUG "${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG    "${DPKG_LDFLAGS}" PARENT_SCOPE)
 
-  # Flags used for build type 'Release'
+  # Release builds
   #
   # CMake adds '-O3' by default for the Release build type, but here we want
   # to change that to '-O2', which is the default used by Debian toolchain.
   set(CMAKE_C_FLAGS_RELEASE   "${DPKG_CFLAGS}   -DNDEBUG -O2" PARENT_SCOPE)
   set(CMAKE_CXX_FLAGS_RELEASE "${DPKG_CXXFLAGS} -DNDEBUG -O2" PARENT_SCOPE)
-  #set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE    "${DPKG_LDFLAGS}" PARENT_SCOPE)
 
-  # Add '-fPIC' to all targets by default, including static libs
+  # Build all targets with '-fPIC'/'-fPIE' by default, including static libs
   set(CMAKE_POSITION_INDEPENDENT_CODE ON PARENT_SCOPE)
 
-  # FIXME CMake doesn't add '-pie' by default for executables (CMake issue #14983)
-  #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")
+  # FIXME CMake doesn't link executables with '-pie', even if
+  #       CMAKE_POSITION_INDEPENDENT_CODE is ON.
+  #       See: CMake issue #14983 (https://gitlab.kitware.com/cmake/cmake/issues/14983)
+  #       Affects CMake 3.5.1 (Ubuntu 16.04 "Xenial")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie" PARENT_SCOPE)
 endfunction()
