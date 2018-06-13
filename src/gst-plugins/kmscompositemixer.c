@@ -87,6 +87,8 @@ struct _KmsCompositeMixerPrivate
 {
   GstElement *videomixer;
   GstElement *audiomixer;
+  GstElement *datamixer_sink;
+  GstElement *datamixer_src;
   GstElement *videotestsrc;
   GHashTable *ports;
   GstElement *mixer_audio_agnostic;
@@ -234,6 +236,7 @@ remove_elements_from_pipeline (KmsCompositeMixerData * port_data)
       g_object_ref (port_data->tee), g_object_ref (port_data->fakesink), NULL);
 
   kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), port_data->id);
+  kms_base_hub_unlink_data_src (KMS_BASE_HUB (self), port_data->id);
 
   KMS_COMPOSITE_MIXER_UNLOCK (self);
 
@@ -321,6 +324,7 @@ kms_composite_mixer_port_data_destroy (gpointer data)
 
   kms_base_hub_unlink_video_sink (KMS_BASE_HUB (self), port_data->id);
   kms_base_hub_unlink_audio_sink (KMS_BASE_HUB (self), port_data->id);
+  kms_base_hub_unlink_data_sink (KMS_BASE_HUB (self), port_data->id);
 
   if (port_data->input) {
     GstEvent *event;
@@ -517,9 +521,9 @@ static KmsCompositeMixerData *
 kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
 {
   KmsCompositeMixerData *data;
-  gchar *padname;
   GstPad *tee_src;
   GstCaps *filtercaps;
+  gchar *padname;
 
   data = kms_create_composite_mixer_data ();
   data->mixer = mixer;
@@ -527,6 +531,17 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
   data->input = FALSE;
   data->removing = FALSE;
   data->eos_managed = FALSE;
+
+
+  // Link AUDIO input
+
+  padname = g_strdup_printf (AUDIO_SINK_PAD, data->id);
+  kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), data->id,
+      mixer->priv->audiomixer, padname, FALSE);
+  g_free (padname);
+
+
+  // Link VIDEO input
 
   data->tee = gst_element_factory_make ("tee", NULL);
   data->fakesink = gst_element_factory_make ("fakesink", NULL);
@@ -565,15 +580,18 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
       "sink");
   g_object_unref (tee_src);
 
-  padname = g_strdup_printf (AUDIO_SINK_PAD, id);
-  kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), id,
-      mixer->priv->audiomixer, padname, FALSE);
-  g_free (padname);
 
   data->link_probe_id = gst_pad_add_probe (data->tee_sink_pad,
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM | GST_PAD_PROBE_TYPE_BLOCK,
       (GstPadProbeCallback) link_to_videomixer,
       KMS_COMPOSITE_MIXER_REF (data), (GDestroyNotify) kms_ref_struct_unref);
+
+
+  // Link DATA input
+
+  kms_base_hub_link_data_sink (KMS_BASE_HUB (mixer), data->id,
+      mixer->priv->datamixer_sink, "sink_%u", TRUE);
+
 
   return data;
 }
@@ -630,7 +648,7 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
   KmsCompositeMixerData *port_data;
   gint port_id;
 
-  GST_DEBUG ("handle new port");
+  GST_DEBUG ("Handle new HubPort");
   port_id = KMS_BASE_HUB_CLASS (G_OBJECT_CLASS
       (kms_composite_mixer_parent_class))->handle_port (mixer, mixer_end_point);
 
@@ -718,8 +736,25 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
     g_signal_connect (self->priv->audiomixer, "pad-removed",
         G_CALLBACK (pad_removed_cb), self);
   }
+
+  if (self->priv->datamixer_sink == NULL) {
+    self->priv->datamixer_sink = gst_element_factory_make ("funnel", NULL);
+    self->priv->datamixer_src = gst_element_factory_make ("tee", NULL);
+
+    gst_bin_add_many (GST_BIN (mixer), self->priv->datamixer_sink,
+        self->priv->datamixer_src, NULL);
+
+    gst_element_sync_state_with_parent (self->priv->datamixer_sink);
+    gst_element_sync_state_with_parent (self->priv->datamixer_src);
+
+    gst_element_link (self->priv->datamixer_sink, self->priv->datamixer_src);
+  }
+
   kms_base_hub_link_video_src (KMS_BASE_HUB (self), port_id,
       self->priv->mixer_video_agnostic, "src_%u", TRUE);
+
+  kms_base_hub_link_data_src (KMS_BASE_HUB (self), port_id,
+      self->priv->datamixer_src, "src_%u", TRUE);
 
   port_data = kms_composite_mixer_port_data_create (self, port_id);
   g_hash_table_insert (self->priv->ports, create_gint (port_id), port_data);
