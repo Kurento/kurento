@@ -13,6 +13,9 @@ set(PLATEDETECTOR_SOURCES
 
 add_library(platedetector MODULE ${PLATEDETECTOR_SOURCES})
 
+# This target uses 'setenv()', which is a POSIX.1-2001 extension
+target_compile_definitions(platedetector PRIVATE _POSIX_C_SOURCE=200112L)
+
 target_link_libraries(platedetector
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}

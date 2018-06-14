@@ -23,7 +23,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <tesseract/capi.h>
-#include <stdlib.h> // setenv()
+#include <stdlib.h> // setenv(), requires POSIX.1-2001: -D_POSIX_C_SOURCE=200112L
 
 #define PLUGIN_NAME "platedetector"
 #define GREEN CV_RGB (0, 255, 0)
