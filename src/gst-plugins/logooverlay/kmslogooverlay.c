@@ -150,13 +150,23 @@ load_from_url (gchar * file_name, gchar * url)
       SOUP_SESSION_SSL_STRICT, FALSE,
       NULL);
 
+  // Enable logging in 'libsoup' library
+  if (g_strcmp0 (g_getenv ("SOUP_DEBUG"), "1") >= 0) {
+    GST_INFO ("Enable debug logging in 'libsoup' library");
+    SoupLogger *logger = soup_logger_new (SOUP_LOGGER_LOG_HEADERS, -1);
+    soup_session_add_feature (session, SOUP_SESSION_FEATURE (logger));
+  }
+
   msg = soup_message_new ("GET", url);
   if (!msg) {
     GST_ERROR ("Cannot parse URL: %s", url);
     goto end;
   }
 
+  GST_INFO ("HTTP blocking request BEGIN, URL: %s", url);
   soup_session_send_message (session, msg);
+  GST_INFO ("HTTP blocking request END");
+
   if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code)) {
     GST_ERROR ("HTTP error code %u: %s", msg->status_code, msg->reason_phrase);
 
