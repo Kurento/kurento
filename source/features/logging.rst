@@ -183,7 +183,7 @@ From there, one can add these other values which will expand from the default on
 libnice
 -------
 
-**libnice** is `the GLib implementation <https://nice.freedesktop.org>`__ of :term:`ICE`, the standard method used by :term:`WebRTC` to solve the issue of :term:`NAT Traversal`.
+**libnice** is the `GLib implementation <https://nice.freedesktop.org>`__ of :term:`ICE`, the standard method used by :term:`WebRTC` to solve the issue of :term:`NAT Traversal`.
 
 This library has its own logging system that comes disabled by default, but can be enabled very easily. This can prove useful in situations where a developer is studying an issue with the ICE process. However, the debug output of libnice is very verbose, so it makes sense that it is left disabled by default for production systems.
 
@@ -203,4 +203,18 @@ Example:
 
    export G_MESSAGES_DEBUG="libnice,libnice-stun"
    export NICE_DEBUG="$G_MESSAGES_DEBUG"
+   /usr/bin/kurento-media-server
+
+
+
+libsoup
+-------
+
+**libsoup** is the `GNOME HTTP client/server <https://wiki.gnome.org/Projects/libsoup>`__ library. It is used to perform HTTP requests, and currently this is used in Kurento by the KmsImageOverlay and the KmsLogoOverlay filters.
+
+It is possible to enable detailed debug logging of the HTTP request/response headers, by defining the environment variable ``SOUP_DEBUG=1`` before running KMS:
+
+.. code-block:: bash
+
+   export SOUP_DEBUG=1
    /usr/bin/kurento-media-server
