@@ -2,34 +2,54 @@
 Debug Logging
 =============
 
-Kurento Media Server generates log files that are stored in ``/var/log/kurento-media-server/``. The content of this folder is as follows:
-
-- ``media-server_<timestamp>.<log_number>.<kms_pid>.log``: Output log of a currently running instance of KMS.
-- ``media-server_error.log``: Errors logged by third-party libraries.
-- ``logs``: Folder that contains older KMS logs. The logs in this folder are rotated, so they don't fill up all the space available in the disk.
-
-Each line in a log produced by KMS has a fixed structure:
+Kurento Media Server generates log files that are stored in ``/var/log/kurento-media-server/``. These files are named as follows:
 
 .. code-block:: text
 
-   [timestamp] [pid] [memory] [level] [component] [filename:loc] [method] [message]
+   {DateTime}.{LogNumber}.pid{PID}.log
 
-- ``[timestamp]``: Date and time of the logging message (e.g. *2017-12-31 23:59:59,493295*).
-- ``[pid]``: Process Identifier of *kurento-media-sever* (e.g. *17521*).
-- ``[memory]``: Memory address in which the *kurento-media-sever* component is running (e.g. *0x00007fd59f2a78c0*).
-- ``[level]``: Logging level. This value typically will be *INFO* or *DEBUG*. If unexpected error situations happen, the *WARN* and *ERROR* levels will contain information about the problem.
-- ``[component]``: Name of the component that generated the log line. E.g. *KurentoModuleManager*, *webrtcendpoint*, or *qtmux*, among others.
-- ``[filename:loc]``: Source code file name (e.g. *main.cpp*) followed by the line of code number.
-- ``[method]``: Name of the function in which the log message was generated (e.g. *loadModule()*, *doGarbageCollection()*, etc).
-- ``[message]``: Specific log information.
+- ``{DateTime}``: Date and time of the logging file creation, in :wikipedia:`ISO 8601` Extended Notation for the date, and Basic Notation for the time. For example: *2018-12-31T235959*.
+- ``{LogNumber}``: Log file number.
+- ``{PID}``: Process Identifier of *kurento-media-sever*.
 
-For example, when KMS starts correctly, this trace is written in the log file:
+For example, when KMS starts correctly, a log file such as this one would be created:
 
 .. code-block:: text
 
-   [timestamp] [pid] [memory]  info  KurentoMediaServer  main.cpp:255  main()  Kurento Media Server started
+   2018-06-14T194426.00000.pid13006.log
+
+Besides normal log files, an ``errors.log`` file stores error messages logged by third-party libraries. Stack traces will also be printed to this file, in case KMS crashes.
+
+.. note::
+
+   Log files in this folder are rotated, and old files will get eventually deleted when new ones are created. This helps with preventing that log files might end up filling all available disk space.
+
+Each line in a log file has a fixed structure:
+
+.. code-block:: text
+
+   {DateTime} {PID} {ThreadID} {Level} {Component} {FileLine} {Function} {Object}? {Message}
+
+- ``{DateTime}``: Date and time of the logging message, in :wikipedia:`ISO 8601` Extended Notation, with a seconds fraction of six decimal places. For example: *2018-12-31T23:59:59,999999*.
+- ``{PID}``: Process Identifier of *kurento-media-sever*.
+- ``{ThreadID}``: Thread ID from which the message was issued. For example: *0x0000111122223333*.
+- ``{Level}``: Logging level. This value typically will be *INFO* or *DEBUG*. If unexpected error situations happen, the *WARN* and *ERROR* levels will contain information about the problem.
+- ``{Component}``: Name of the component that generated the log line. For example: *KurentoModuleManager*, *webrtcendpoint*, *qtmux*, etc.
+- ``{FileLine}``: File name and line number, separated by a colon. For example: *main.cpp:255*.
+- ``{Function}``: Name of the function in which the log message was generated. For example: *main()*, *loadModule()*, *kms_webrtc_endpoint_gather_candidates()*, etc.
+- ``{Object}``: [Optional] Name of the object that issued the message, if one was specified for the log message. For example: *<kmswebrtcendpoint0>*, *<fakesink1>*, *<audiotestsrc0:src>*, etc.
+- ``{Message}``: The actual log message.
+
+For example, when KMS starts correctly, a message such as this one would be printed to the log file:
+
+.. code-block:: text
+
+   {DateTime}                  {PID}  {ThreadID}          {Level}  {Component}         {FileLine}    {Function}  {Message}
+   2018-06-14T19:44:26,918243  13006  0x00007f59401f5880  info     KurentoMediaServer  main.cpp:255  main()      Kurento Media Server started
 
 
+
+.. _logging-levels:
 
 Logging levels and components
 =============================
@@ -55,14 +75,16 @@ Logging categories and levels can be set by two methods:
 
      /usr/bin/kurento-media-server \
        --gst-debug-level=3 \
-       --gst-debug=Kurento*:4,kms*:4
+       --gst-debug="Kurento*:4,kms*:4"
 
-- Use the environment variable `GST_DEBUG`. For example, run:
+- Set the environment variable *GST_DEBUG*. For example, run:
 
   .. code-block:: bash
 
      export GST_DEBUG="3,Kurento*:4,kms*:4"
      /usr/bin/kurento-media-server
+
+Besides this, the log colors can be explicitly disabled in the same two ways: either with ``--gst-debug-no-color`` or with ``export GST_DEBUG_NO_COLOR=1``.
 
 
 
@@ -71,23 +93,19 @@ Suggested levels
 
 Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed. They are given in the environment variable form, so they can be copied directly into the KMS configuration file, */etc/default/kurento-media-server*:
 
-- Default suggested levels:
+The **default suggested level** is what KMS sets automatically when it is started as a system service from the init scripts:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,Kurento*:4,kms*:4"
+     export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4"
 
-- COMEDIA port discovery:
-
-  .. code-block:: text
-
-     export GST_DEBUG="3,rtpendpoint:4"
+From there, one can add these other values which will expand from the default one:
 
 - ICE candidate gathering:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,kmsiceniceagent:5,kmswebrtcsession:5,webrtcendpoint:4"
+     export GST_DEBUG="${GST_DEBUG:-3},kmsiceniceagent:5,kmswebrtcsession:5,webrtcendpoint:4"
 
   .. note::
 
@@ -100,25 +118,25 @@ Here are some tips on what logging components and levels could be most useful de
 
   .. code-block:: text
 
-     export GST_DEBUG="3,KurentoMediaElementImpl:5"
+     export GST_DEBUG="${GST_DEBUG:-3},KurentoMediaElementImpl:5"
 
 - Player:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,playerendpoint:5"
+     export GST_DEBUG="${GST_DEBUG:-3},playerendpoint:5"
 
 - Recorder:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5"
+     export GST_DEBUG="${GST_DEBUG:-3},KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5"
 
 - REMB congestion control:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,kmsremb:5"
+     export GST_DEBUG="${GST_DEBUG:-3},kmsremb:5"
 
   .. note::
 
@@ -129,31 +147,31 @@ Here are some tips on what logging components and levels could be most useful de
 
   .. code-block:: text
 
-     export GST_DEBUG="3,KurentoWebSocketTransport:5"
+     export GST_DEBUG="${GST_DEBUG:-3},KurentoWebSocketTransport:5"
 
 - RTP Sync:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
+     export GST_DEBUG="${GST_DEBUG:-3},kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
 - SDP processing:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,kmssdpsession:4"
+     export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:4"
 
 - Transcoding of media:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,Kurento*:5,kms*:4,agnosticbin*:7"
+     export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,kms*:4,agnosticbin*:7"
 
 - Unit tests:
 
   .. code-block:: text
 
-     export GST_DEBUG="3,check:5"
+     export GST_DEBUG="${GST_DEBUG:-3},check:5"
 
 
 
