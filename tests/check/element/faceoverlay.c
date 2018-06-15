@@ -33,6 +33,10 @@
 #define KMS_ELEMENT_PAD_TYPE_AUDIO 1
 #define KMS_ELEMENT_PAD_TYPE_VIDEO 2
 
+// DEBUG LOGGING:
+//export SOUP_DEBUG=1
+//export GST_DEBUG="3,check:5,playerendpoint:5,faceoverlay:7,imageoverlay:7"
+
 GMainLoop *loop;
 GstElement *player, *pipeline, *filter, *fakesink_audio, *fakesink_video;
 
