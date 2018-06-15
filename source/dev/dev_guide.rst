@@ -440,7 +440,7 @@ Run:
 
 .. code-block:: bash
 
-   export GST_DEBUG="3,Kurento*:4,kms*:4,rtpendpoint:4,webrtcendpoint:4"
+   export GST_DEBUG="3,Kurento*:4,kms*:4,*rtpendpoint:4,webrtcendpoint:4"
 
    kurento-media-server/server/kurento-media-server \
      --modules-path=. \
@@ -466,32 +466,44 @@ https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-run
 Build and run KMS unit tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). To build and run all tests, change the last one of the build commands from ``make`` to ``make check``.
+KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). To build and run all tests, change the last one of the build commands from ``make`` to ``make check``. All available tests will run, and a summary report will be shown at the end.
 
-To build and run one specific test, use ``make <TestName>.check``. For example:
+.. note::
 
-.. code-block:: text
+   It is recommended to first disable GStreamer log colors, that way the resulting log files won't contain extraneous escape sequences such as *^[[31;01m ^[[00m*. Also, it could be useful to specify a higher logging level than the default; set the environment variable *GST_DEBUG*, as explained in :ref:`logging-levels`.
 
-   make test_agnosticbin.check
+   The complete command would look like this:
 
-If you want to analyze memory usage with Valgrind, use ``make <TestName>.valgrind``. For example:
+   .. code-block:: bash
 
-.. code-block:: text
+      export GST_DEBUG_NO_COLOR=1
+      export GST_DEBUG="3,check:5"
+      make check
 
-   make test_agnosticbin.valgrind
-
-Each test has some amount of debug logging which will get printed; check these messages in the file *./Testing/Temporary/LastTest.log* after running a test suite. To find the starting point of each individual test in this log file, look for the words "*test start*". Example:
+The log output of the whole test suite will get saved into the file *./Testing/Temporary/LastTest.log*. To find the starting point of each individual test inside this log file, search for the words "*test start*". For the start of a specific test, search for "*{TestName}: test start*". For example:
 
 .. code-block:: text
 
    webrtcendpoint.c:1848:test_vp8_sendrecv: test start
 
+To build and run one specific test, use ``make {TestName}.check``. For example:
+
+.. code-block:: text
+
+   make test_agnosticbin.check
+
+If you want to analyze memory usage with Valgrind, use ``make {TestName}.valgrind``. For example:
+
+.. code-block:: text
+
+   make test_agnosticbin.valgrind
+
 
 
 .. _dev-clean:
 
-Clean your system
-~~~~~~~~~~~~~~~~~
+Clean up your system
+~~~~~~~~~~~~~~~~~~~~
 
 To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command and, for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option ``--yes`` (which makes the process automatic and unattended), so it should be fairly safe to use. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
 
