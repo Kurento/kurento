@@ -16,7 +16,9 @@ set_property(TARGET kmsfilterstestutils
 include(TestHelpers)
 set(TEST_VARIABLES
   "GST_PLUGIN_PATH=${CMAKE_BINARY_DIR}"
-  "CK_DEFAULT_TIMEOUT=50"
+  # HTTP requests have 60s timeout for the worst case, plus allow some time for
+  # processing the tests
+  "CK_DEFAULT_TIMEOUT=120"
 )
 set(SUPPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 
