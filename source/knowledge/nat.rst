@@ -9,6 +9,8 @@ Sources:
 - `Symmetric NAT and It's Problems <http://www.think-like-a-computer.com/2011/09/19/symmetric-nat/>`__
 - `Peer-to-Peer Communication Across Network Address Translators <http://www.brynosaurus.com/pub/net/p2pnat/>`__
 - `The hole trick - How Skype & Co. get round firewalls <http://www.h-online.com/security/features/How-Skype-Co-get-round-firewalls-747197.html>`__
+- `What type of NAT combinations requires a TURN server? <https://stackoverflow.com/questions/31424904/what-type-of-nat-combinations-requires-a-turn-server>`__
+- `Under what scenarios Server- and Peer-Reflexive candidates differ? <https://stackoverflow.com/questions/19905239/under-what-scenarios-does-server-reflexive-and-peer-reflexive-addresses-candidat>`__
 
 
 
@@ -31,8 +33,9 @@ Visualization:
 
 .. note::
 
-   - ``(SRC_IP, SRC_PORT)`` is the IP tuple of a local machine making a connection.
    - ``->`` denotes the direction of the communication.
+   - ``(A, P)`` denotes an Address-Port IP tuple.
+   - ``(SRC_IP, SRC_PORT)`` is the IP tuple of a local machine making a connection.
    - ``(DST_IP, DST_PORT)`` is the IP tuple of a remote machine receiving the connection.
 
 
@@ -55,13 +58,16 @@ Visualization:
 
 .. code-block:: text
 
-   (LAN_IP, LAN_PORT) <= [(WAN_IP, LAN_PORT) <- (REM_IP, REM_PORT)]
+    {Local internal}   |    {Local external}   |  {Remote}
+                       |                       |
+   (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (REM_IP, REM_PORT) ]
 
 .. note::
 
+   - ``[ ... ]`` denotes the **key** used to access the NAT table.
+   - ``<=`` denotes the resolution of the NAT mapping.
    - ``(REM_IP, REM_PORT)`` is the **source** IP tuple of a remote machine making a connection.
    - ``(WAN_IP, LAN_PORT)`` is the **destination** IP tuple on the *external side* of the NAT receiving the connection.
-   - ``<=`` denotes the resolution of the NAT mapping.
    - ``(LAN_IP, LAN_PORT)`` is the **destination** IP tuple on the *internal side* of the NAT for a local machine receiving the connection.
    - Note how the *same* port (``LAN_PORT``) is used in the internal and the external sides of the NAT. This is the most common case, only differing for Symmetric NAT.
 
@@ -79,7 +85,9 @@ Visualization:
 
 .. code-block:: text
 
-   (LAN_IP, LAN_PORT) <= [(WAN_IP, LAN_PORT) <- (*, *)]
+    {Local internal}   |    {Local external}   |  {Remote}
+                       |                       |
+   (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (*, *) ]
 
 .. note::
 
@@ -98,12 +106,14 @@ Visualization:
 
 .. code-block:: text
 
-   1. (LAN_IP, LAN_PORT) => [(WAN_IP, LAN_PORT) -> (REM_IP, REM_PORT)]
-   2. (LAN_IP, LAN_PORT) <= [(WAN_IP, LAN_PORT) <- (REM_IP, *)]
+       {Local internal}   |    {Local external}   |  {Remote}
+                          |                       |
+   1. (LAN_IP, LAN_PORT) => [ (WAN_IP, LAN_PORT) -> (REM_IP, REM_PORT) ]
+   2. (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (REM_IP, *) ]
 
 .. note::
 
-   - ``=>`` denotes the creation of a new rule in the NAT table.
+   - ``=>`` denotes the creation of a new rule (key) in the NAT table.
    - The **destination** IP address ``REM_IP`` in step 1 must be the same as the **source** IP address ``REM_IP`` in step 2.
 
 
@@ -119,8 +129,10 @@ Visualization:
 
 .. code-block:: text
 
-   1. (LAN_IP, LAN_PORT) => [(WAN_IP, LAN_PORT) -> (REM_IP, REM_PORT)]
-   2. (LAN_IP, LAN_PORT) <= [(WAN_IP, LAN_PORT) <- (REM_IP, REM_PORT)]
+       {Local internal}   |    {Local external}   |  {Remote}
+                          |                       |
+   1. (LAN_IP, LAN_PORT) => [ (WAN_IP, LAN_PORT) -> (REM_IP, REM_PORT) ]
+   2. (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (REM_IP, REM_PORT) ]
 
 .. note::
 
@@ -134,14 +146,16 @@ Symmetric NAT
 
 This type of NAT behaves in the same way of a Port-Restricted Cone NAT, with a crucial difference: for each outbound connection to a different remote machine, the NAT assigns a **new random source port** on the external side. This means that two consecutive connections to two different machines will have two different external source ports, even if the internal source IP tuple is the same for both of them.
 
-This is also the only case where the ICE connectivity protocol will find Peer Reflexive candidates which differ from the Server Reflexive ones, due to the differing ports between the connection to the STUN server and the direct connection between peers.
+This is also the only case where the ICE connectivity protocol will find `Peer Reflexive candidates <https://tools.ietf.org/html/rfc5245#section-7.1.3.2.1>`__ which differ from the Server Reflexive ones, due to the differing ports between the connection to the STUN server and the direct connection between peers.
 
 Visualization:
 
 .. code-block:: text
 
-   1. (LAN_IP, LAN_PORT) => [(WAN_IP, WAN_PORT) -> (REM_IP, REM_PORT)]
-   2. (LAN_IP, LAN_PORT) <= [(WAN_IP, WAN_PORT) <- (REM_IP, REM_PORT)]
+       {Local internal}   |    {Local external}   |  {Remote}
+                          |                       |
+   1. (LAN_IP, LAN_PORT) => [ (WAN_IP, WAN_PORT) -> (REM_IP, REM_PORT) ]
+   2. (LAN_IP, LAN_PORT) <= [ (WAN_IP, WAN_PORT) <- (REM_IP, REM_PORT) ]
 
 .. note::
 
