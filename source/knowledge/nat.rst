@@ -23,7 +23,7 @@ An IP connection is uniquely identified by a connection "quadruplet" consisting 
 - (Source IP address, source port number).
 - (Destination IP address, destination port number).
 
-Concept:
+Visualization:
 
 .. code-block:: text
 
@@ -51,7 +51,7 @@ Typically, these NAT rules were created automatically during an earlier outbound
 
 Also, it is worth noting that the port number used in the internal side of the network will also be kept by the NAT on the external side, and it won't change for each new connection that the local machine does to any external server. This is the crucial difference between Cone NAT and Symmetric NAT, as explained later.
 
-Concept:
+Visualization:
 
 .. code-block:: text
 
@@ -75,7 +75,7 @@ Full Cone NAT
 
 This type of NAT allows inbound connections from *any source IP address* and *any source port*, as long as the destination tuple exists in any previously created rule. Typically, these rules are statically created beforehand by an administrator. These are the kind of rules that are used to configure *Port Forwarding* (aka. "*opening the ports*") in most consumer routers.
 
-Concept:
+Visualization:
 
 .. code-block:: text
 
@@ -94,7 +94,7 @@ This type of NAT allows inbound connections from *any source port* of a *specifi
 
 To connect with a local machine which is behind an Address-Restricted Cone NAT, it is first required that the local machine performs an outbound connection to the remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
 
-Concept:
+Visualization:
 
 .. code-block:: text
 
@@ -115,7 +115,7 @@ This is the most restrictive type of NAT: it only allows inbound connections fro
 
 To connect with a local machine which is behind a Port-Restricted Cone NAT, it is first required that the local machine performs an outbound connection to the remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
 
-Concept:
+Visualization:
 
 .. code-block:: text
 
@@ -136,7 +136,7 @@ This type of NAT behaves in the same way of a Port-Restricted Cone NAT, with a c
 
 This is also the only case where the ICE connectivity protocol will find Peer Reflexive candidates which differ from the Server Reflexive ones, due to the differing ports between the connection to the STUN server and the direct connection between peers.
 
-Concept:
+Visualization:
 
 .. code-block:: text
 
