@@ -29,122 +29,129 @@ Visualization:
 
 .. code-block:: text
 
-   (SRC_IP, SRC_PORT) -> (DST_IP, DST_PORT)
+   (SRC_ADDR, SRC_PORT) -> (DST_ADDR, DST_PORT)
 
 .. note::
 
-   - ``->`` denotes the direction of the communication.
-   - ``(A, P)`` denotes an Address-Port IP tuple.
-   - ``(SRC_IP, SRC_PORT)`` is the IP tuple of a local machine making a connection.
-   - ``(DST_IP, DST_PORT)`` is the IP tuple of a remote machine receiving the connection.
+   - ``->`` denotes the direction of the connection.
+   - ``(ADDR, PORT)`` denotes an (IP address, IP port) tuple.
+   - ``(SRC_ADDR, SRC_PORT)`` is the IP tuple of the machine that makes the connection.
+   - ``(DST_ADDR, DST_PORT)`` is the IP tuple of the machine that receives the connection.
 
 
 
 Inbound NAT connection
 ----------------------
 
-A NAT establishes **inbound** rules which are used to convert an IP tuple existing in the external network (*WAN*) to an IP tuple existing in the internal network (*LAN*). Usually, the external network is the public internet while the internal network is the local network. These inbound rules have the form of a *hash table* (or *map*): for each given key, there is a resulting value:
+A NAT maintains **inbound** rules which are used to translate IP tuples between the NAT's *external* and *internal* sides. Usually, the *external* side of the NAT is facing the public internet (*WAN*), while the *internal* side of the NAT is facing the local network (*LAN*). These inbound rules have the form of a *hash table* (or *map*); for each given key, there is a resulting value:
 
-- The key of the table is an IP quadruplet, formed by the WAN IP tuple and the destination IP tuple.
-- The value of the table is the LAN IP tuple.
+- The key of the table is an IP quadruplet, formed by a NAT's external IP tuple and a remote machine's IP tuple.
+- The value of the table is a NAT's internal IP tuple.
 
 In other words, a NAT creates an equivalence between external combinations of IP addresses and ports, and internal IP addresses and ports.
 
-Typically, these NAT rules were created automatically during an earlier outbound connection from the LAN to some external machine: it's at that moment when the NAT inserts a new entry into its table. Later, this entry in the NAT table is used to know which local machine needs to receive the response that the external machine might send. Rules created in this way are called "dynamic rules"; on the other hand, "static rules" can be created by the administrator in order to set a fixed table for a given local machine.
-
-Also, it is worth noting that the port number used in the internal side of the network will also be kept by the NAT on the external side, and it won't change for each new connection that the local machine does to any external server. This is the crucial difference between Cone NAT and Symmetric NAT, as explained later.
+Typically, these NAT rules are created automatically during an outbound connection from the LAN to some remote machine: it's at that moment when the NAT inserts a new entry into its table (this is **step 1** in the following visualizations). Later, this entry in the NAT table is used to know which local machine needs to receive the response that the remote machine might send (this is **step 2** in the visualizations). Rules created in this way are called "dynamic rules"; on the other hand, "static rules" can be created by an administrator in order to set a fixed table for a given local machine.
 
 Visualization:
 
 .. code-block:: text
 
-    {Local internal}   |    {Local external}   |  {Remote}
-                       |                       |
-   (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (REM_IP, REM_PORT) ]
+       {NAT internal side}  |    {NAT external side}  |  {Remote machine}
+                            |                         |
+   1. (INT_ADDR, INT_PORT) => [ (EXT_ADDR, EXT_PORT) -> (REM_ADDR, REM_PORT) ]
+   2. (INT_ADDR, INT_PORT) <= [ (EXT_ADDR, EXT_PORT) <- (REM_ADDR, REM_PORT) ]
 
 .. note::
 
-   - ``[ ... ]`` denotes the **key** used to access the NAT table.
+   - ``->`` and ``<-`` denote the direction of the connection in each step.
+   - ``=>`` denotes the creation of a new rule (key) in the NAT table.
+   - ``[ (ADDR, PORT), (ADDR, PORT) ]`` denotes the **key** (IP quadruplet) used to access the NAT table.
    - ``<=`` denotes the resolution of the NAT mapping.
-   - ``(REM_IP, REM_PORT)`` is the **source** IP tuple of a remote machine making a connection.
-   - ``(WAN_IP, LAN_PORT)`` is the **destination** IP tuple on the *external side* of the NAT receiving the connection.
-   - ``(LAN_IP, LAN_PORT)`` is the **destination** IP tuple on the *internal side* of the NAT for a local machine receiving the connection.
-   - Note how the *same* port (``LAN_PORT``) is used in the internal and the external sides of the NAT. This is the most common case, only differing for Symmetric NAT.
+   - ``(INT_ADDR, INT_PORT)`` is the **source** IP tuple on the *internal side* of the NAT for a local machine making a connection during step 1, and it is the **destination** IP tuple for the same machine receiving the connection during step 2.
+   - ``(EXT_ADDR, EXT_PORT)`` is the **source** IP tuple on the *external side* of the NAT from where a connection is originated during step 1, and it is the **destination** IP tuple for the connection being received during step 2.
+   - ``(REM_ADDR, REM_PORT)`` is the **destination** IP tuple of some remote machine receiving a connection during step 1, and it is the **source** IP tuple of a remote machine that makes a connection during step 2.
 
 
 
 Types of NAT
 ============
 
+There are two categories of NAT behavior, namely **Cone** and **Symmetric** NATs. The crucial difference between them is that the former will use the same port numbers for internal and external IP tuples, while the later will always use different numbers for each side of the NAT. This will be explained later in more detail.
+
+Besides, there are 3 types of Cone NATs, with varying degrees of restrictions regarding the allowed sources of incoming connections. To connect with a local machine which is behind a Cone NAT, it's first required that the local machine performs an outbound connection to a remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
+
+
+
 Full Cone NAT
 -------------
 
-This type of NAT allows inbound connections from *any source IP address* and *any source port*, as long as the destination tuple exists in any previously created rule. Typically, these rules are statically created beforehand by an administrator. These are the kind of rules that are used to configure *Port Forwarding* (aka. "*opening the ports*") in most consumer routers.
+This type of NAT allows inbound connections from *any source IP address* and *any source port*, as long as the destination tuple exists in a previously created rule.
+
+Typically, these rules are statically created beforehand by an administrator. These are the kind of rules that are used to configure *Port Forwarding* (aka. "*opening the ports*") in most consumer routers.
 
 Visualization:
 
 .. code-block:: text
 
-    {Local internal}   |    {Local external}   |  {Remote}
-                       |                       |
-   (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (*, *) ]
+       {NAT internal side}  |    {NAT external side}  |  {Remote machine}
+                            |                         |
+   1. (INT_ADDR, INT_PORT) => [ (EXT_ADDR, INT_PORT) -> (REM_ADDR, REM_PORT) ]
+   2. (INT_ADDR, INT_PORT) <= [ (EXT_ADDR, INT_PORT) <- (   *    ,    *    ) ]
 
 .. note::
 
-   - ``*`` means that any value could be used here.
+   - ``*`` means that any value could be used: a remote machine can connect from *any* IP address and port.
+   - The *same* port (``INT_PORT``) is used in the internal and the external sides of the NAT. This is the most common case for all Cone NATs, only being different for Symmetric NATs.
 
 
 
 (Address-)Restricted Cone NAT
 -----------------------------
 
-This type of NAT allows inbound connections from *any source port* of a *specific source IP address*. Typically, an inbound rule of this type was previously created dynamically, when the local machine initiated a connection to a remote one.
-
-To connect with a local machine which is behind an Address-Restricted Cone NAT, it is first required that the local machine performs an outbound connection to the remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
+This type of NAT allows inbound connections from a *specific source IP address* but allowing for *any source port*. Typically, an inbound rule of this type was previously created dynamically, when the local machine initiated an outbound connection to a remote one.
 
 Visualization:
 
 .. code-block:: text
 
-       {Local internal}   |    {Local external}   |  {Remote}
-                          |                       |
-   1. (LAN_IP, LAN_PORT) => [ (WAN_IP, LAN_PORT) -> (REM_IP, REM_PORT) ]
-   2. (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (REM_IP, *) ]
+       {NAT internal side}  |    {NAT external side}  |  {Remote machine}
+                            |                         |
+   1. (INT_ADDR, INT_PORT) => [ (EXT_ADDR, INT_PORT) -> (REM_ADDR, REM_PORT) ]
+   2. (INT_ADDR, INT_PORT) <= [ (EXT_ADDR, INT_PORT) <- (REM_ADDR,    *    ) ]
 
 .. note::
 
-   - ``=>`` denotes the creation of a new rule (key) in the NAT table.
-   - The **destination** IP address ``REM_IP`` in step 1 must be the same as the **source** IP address ``REM_IP`` in step 2.
+   - The **destination** IP address ``REM_ADDR`` in step 1 must be the same as the **source** IP address in step 2.
+   - The *same* port (``INT_PORT``) is used in the internal and the external sides of the NAT.
 
 
 
 Port-Restricted Cone NAT
 ------------------------
 
-This is the most restrictive type of NAT: it only allows inbound connections from a *specific source port* of a *specific source IP address*. Again, an inbound rule of this type was previously created dynamically, when the local machine initiated an outbound connection to a remote one.
-
-To connect with a local machine which is behind a Port-Restricted Cone NAT, it is first required that the local machine performs an outbound connection to the remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
+This is the most restrictive type of Cone NAT: it only allows inbound connections from a *specific source IP address* and a *specific source port*. Again, an inbound rule of this type was previously created dynamically, when the local machine initiated an outbound connection to a remote one.
 
 Visualization:
 
 .. code-block:: text
 
-       {Local internal}   |    {Local external}   |  {Remote}
-                          |                       |
-   1. (LAN_IP, LAN_PORT) => [ (WAN_IP, LAN_PORT) -> (REM_IP, REM_PORT) ]
-   2. (LAN_IP, LAN_PORT) <= [ (WAN_IP, LAN_PORT) <- (REM_IP, REM_PORT) ]
+       {NAT internal side}  |    {NAT external side}  |  {Remote machine}
+                            |                         |
+   1. (INT_ADDR, INT_PORT) => [ (EXT_ADDR, INT_PORT) -> (REM_ADDR, REM_PORT) ]
+   2. (INT_ADDR, INT_PORT) <= [ (EXT_ADDR, INT_PORT) <- (REM_ADDR, REM_PORT) ]
 
 .. note::
 
-   - The **destination** IP address ``REM_IP`` in step 1 must be the same as the **source** IP address ``REM_IP`` in step 2.
-   - The **destination** port ``REM_PORT`` in step 1 must be the same as the **source** port ``REM_PORT`` in step 2.
+   - The **destination** IP address ``REM_ADDR`` in step 1 must be the same as the **source** IP address in step 2.
+   - The **destination** port ``REM_PORT`` in step 1 must be the same as the **source** port in step 2.
+   - The *same* port (``INT_PORT``) is used in the internal and the external sides of the NAT.
 
 
 
 Symmetric NAT
 -------------
 
-This type of NAT behaves in the same way of a Port-Restricted Cone NAT, with a crucial difference: for each outbound connection to a different remote machine, the NAT assigns a **new random source port** on the external side. This means that two consecutive connections to two different machines will have two different external source ports, even if the internal source IP tuple is the same for both of them.
+This type of NAT behaves in the same way of a Port-Restricted Cone NAT, with an important difference: for each outbound connection to a different remote IP tuple (i.e. to a different remote machine), the NAT assigns a **new random source port** on the external side. This means that two consecutive connections from the same local port to two different remote machines will have two different external source ports, even if the internal source IP tuple is the same for both of them.
 
 This is also the only case where the ICE connectivity protocol will find `Peer Reflexive candidates <https://tools.ietf.org/html/rfc5245#section-7.1.3.2.1>`__ which differ from the Server Reflexive ones, due to the differing ports between the connection to the STUN server and the direct connection between peers.
 
@@ -152,23 +159,27 @@ Visualization:
 
 .. code-block:: text
 
-       {Local internal}   |    {Local external}   |  {Remote}
-                          |                       |
-   1. (LAN_IP, LAN_PORT) => [ (WAN_IP, WAN_PORT) -> (REM_IP, REM_PORT) ]
-   2. (LAN_IP, LAN_PORT) <= [ (WAN_IP, WAN_PORT) <- (REM_IP, REM_PORT) ]
+       {NAT internal side}  |    {NAT external side}  |  {Remote machine}
+                            |                         |
+   1. (INT_ADDR, INT_PORT) => [ (EXT_ADDR, EXT_PORT1) -> (REM_ADDR, REM_PORT1) ]
+   2. (INT_ADDR, INT_PORT) <= [ (EXT_ADDR, EXT_PORT1) <- (REM_ADDR, REM_PORT1) ]
+   ...
+   3. (INT_ADDR, INT_PORT) => [ (EXT_ADDR, EXT_PORT2) -> (REM_ADDR, REM_PORT2) ]
+   4. (INT_ADDR, INT_PORT) <= [ (EXT_ADDR, EXT_PORT2) <- (REM_ADDR, REM_PORT2) ]
 
 .. note::
 
-   - When the outbound connection is done in step 1, ``WAN_PORT`` gets defined as a new random port number, assigned for each new remote IP tuple ``(REM_IP, REM_PORT)``.
+   - When the outbound connection is done in step 1, ``EXT_PORT1`` gets defined as a new random port number, assigned for the new remote IP tuple ``(REM_ADDR, REM_PORT1)``.
+   - Later, another outbound connection is done in step 1, from the same local address and port to the same remote machine but at a different port. ``EXT_PORT2`` is a new random port number, assigned for the new remote IP tuple ``(REM_ADDR, REM_PORT2)``.
 
 
 
 NAT Traversal
 =============
 
-The NAT mechanism is implemented in a vast majority of home and corporate routers, and it completely prevents the possibility of running any kind of server software in a local machine which sits behind these kinds of devices. NAT make impossible for a remote client to be the active peer and send any kind of request to the server. NAT Traversal, also known as *Hole Punching*, is the procedure of opening an inbound port in the NAT tables of these routers.
+The NAT mechanism is implemented in a vast majority of home and corporate routers, and it completely prevents the possibility of running any kind of server software in a local machine that sits behind these kinds of devices. NAT Traversal, also known as *Hole Punching*, is the procedure of opening an inbound port in the NAT tables of these routers.
 
-To connect with a local machine which is behind an Address-Restricted Cone NAT, a Port-Restricted Cone NAT or a Symmetric NAT, it is first required that the local machine performs an outbound connection to the remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
+To connect with a local machine which is behind an Address-Restricted Cone NAT, a Port-Restricted Cone NAT or a Symmetric NAT, it's first required that the local machine performs an outbound connection to the remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
 
 In order to tell one machine when it has to perform an outbound connection to another one, and the destination IP tuple it must use, the typical solution is to use a signaling service such as STUN. This is usually managed by a third machine, a server sitting on a public internet address. It retrieves the external IP and port of each peer, and gives that information to the other peers that want to communicate.
 
