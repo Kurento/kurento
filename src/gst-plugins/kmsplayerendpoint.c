@@ -527,8 +527,8 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
       goto end;
     } else if (pts_orig == pts_data->last_pts_orig) {
       GST_DEBUG_OBJECT (appsink,
-          "Original PTS equals than last PTS (original PTS: %" GST_TIME_FORMAT
-          ", is preroll: %d). It seems to be already pushed.",
+          "Original PTS equals last PTS (original PTS: %" GST_TIME_FORMAT
+          ", is preroll: %d). Seems to be already pushed.",
           GST_TIME_ARGS (pts_orig), is_preroll);
       goto end;
     }
@@ -579,7 +579,7 @@ push:
   buffer = NULL;
   if (ret != GST_FLOW_OK) {
     GST_ERROR_OBJECT (appsink,
-        "Could not send buffer to appsrc %s. Cause: %s",
+        "Could not send buffer to '%s'. Cause: %s",
         GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
   }
 
@@ -596,7 +596,7 @@ end:
 }
 
 static GstFlowReturn
-new_preroll_cb (GstAppSink * appsink, gpointer user_data)
+appsink_new_preroll_cb (GstAppSink * appsink, gpointer user_data)
 {
   GstSample *sample;
 
@@ -606,7 +606,7 @@ new_preroll_cb (GstAppSink * appsink, gpointer user_data)
 }
 
 static GstFlowReturn
-new_sample_cb (GstAppSink * appsink, gpointer user_data)
+appsink_new_sample_cb (GstAppSink * appsink, gpointer user_data)
 {
   GstSample *sample;
 
@@ -616,28 +616,30 @@ new_sample_cb (GstAppSink * appsink, gpointer user_data)
 }
 
 static void
-eos_cb (GstAppSink * appsink, gpointer user_data)
+appsink_eos_cb (GstAppSink * appsink, gpointer user_data)
 {
   GstAppSrc *appsrc = GST_APP_SRC (user_data);
   GstFlowReturn ret;
   GstPad *pad;
 
-  GST_DEBUG_OBJECT (appsrc, "Sending eos event to main pipeline");
-
+  GST_DEBUG_OBJECT (appsink, "Send EOS event to main pipeline (via %s)",
+      GST_ELEMENT_NAME (appsrc));
   ret = gst_app_src_end_of_stream (appsrc);
+  GST_DEBUG_OBJECT (appsink, "Send EOS return: %s", gst_flow_get_name (ret));
 
   pad = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
   if (pad != NULL) {
+    GST_INFO_OBJECT (pad, "Send flush events");
+
     gst_pad_send_event (pad, gst_event_new_flush_start ());
-    gst_pad_send_event (pad, gst_event_new_flush_stop (0));
+    gst_pad_send_event (pad, gst_event_new_flush_stop (FALSE));
+
     g_object_unref (pad);
   }
-
-  GST_DEBUG_OBJECT (appsrc, "Returned %s", gst_flow_get_name (ret));
 }
 
 static GstPadProbeReturn
-main_pipeline_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+appsrc_query_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 {
   GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
   GstElement *appsink = GST_ELEMENT (element);
@@ -674,7 +676,7 @@ kms_player_end_point_add_appsrc (KmsPlayerEndpoint * self,
 
   srcpad = gst_element_get_static_pad (appsrc, "src");
   gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_QUERY_UPSTREAM,
-      main_pipeline_probe, appsink, NULL);
+      appsrc_query_probe, appsink, NULL);
   g_object_unref (srcpad);
 
   gst_bin_add (GST_BIN (self), appsrc);
@@ -755,7 +757,8 @@ kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
 }
 
 static GstPadProbeReturn
-set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+appsink_probe_set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info,
+    gpointer element)
 {
   GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
   GstElement *appsrc = GST_ELEMENT (element);
@@ -771,15 +774,15 @@ set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
     return GST_PAD_PROBE_OK;
   }
 
-  GST_DEBUG_OBJECT (appsrc, "Setting caps %" GST_PTR_FORMAT, caps);
-
+  GST_DEBUG_OBJECT (appsrc, "Set new caps: %" GST_PTR_FORMAT, caps);
   g_object_set (G_OBJECT (appsrc), "caps", caps, NULL);
 
   return GST_PAD_PROBE_OK;
 }
 
 static GstPadProbeReturn
-negotiate_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+appsink_probe_query_appsrc_caps (GstPad * pad, GstPadProbeInfo * info,
+    gpointer element)
 {
   GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
   GstElement *appsrc = GST_ELEMENT (element);
@@ -804,17 +807,19 @@ negotiate_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 }
 
 static GstPadProbeReturn
-internal_pipeline_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+appsink_event_query_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 {
-  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
-    return set_appsrc_caps (pad, info, element);
-  } else if (GST_PAD_PROBE_INFO_TYPE (info) &
-      GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM) {
-    return negotiate_appsrc_caps (pad, info, element);
-  } else {
-    GST_WARNING_OBJECT (pad, "Probe does nothing");
-    return GST_PAD_PROBE_OK;
+  GstPadProbeType type = GST_PAD_PROBE_INFO_TYPE (info);
+
+  if (type & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
+    return appsink_probe_set_appsrc_caps (pad, info, element);
   }
+  else if (type & GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM) {
+    return appsink_probe_query_appsrc_caps (pad, info, element);
+  }
+
+  GST_WARNING_OBJECT (pad, "Probe does nothing");
+  return GST_PAD_PROBE_OK;
 }
 
 static void
@@ -840,9 +845,9 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
     g_object_set (appsink, "enable-last-sample", FALSE, "emit-signals", FALSE,
         "qos", FALSE, "max-buffers", 1, NULL);
 
-    callbacks.eos = eos_cb;
-    callbacks.new_preroll = new_preroll_cb;
-    callbacks.new_sample = new_sample_cb;
+    callbacks.eos = appsink_eos_cb;
+    callbacks.new_preroll = appsink_new_preroll_cb;
+    callbacks.new_sample = appsink_new_sample_cb;
     gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc,
         NULL);
 
@@ -862,9 +867,8 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
   sinkpad = gst_element_get_static_pad (appsink, "sink");
 
   if (agnosticbin != NULL) {
-    gst_pad_add_probe (sinkpad,
-        (GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM |
-            GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM), internal_pipeline_probe,
+    gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM
+        | GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM, appsink_event_query_probe,
         appsrc, NULL);
   }
 
@@ -885,7 +889,7 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
 }
 
 static void
-kms_remove_element_from_bin (GstBin * bin, GstElement * element)
+kms_player_endpoint_remove_element_from_bin (GstBin * bin, GstElement * element)
 {
   GST_DEBUG ("Removing %" GST_PTR_FORMAT " from %" GST_PTR_FORMAT, element,
       bin);
@@ -909,19 +913,18 @@ kms_player_endpoint_uridecodebin_pad_removed (GstElement * element,
   if (GST_PAD_IS_SINK (pad))
     return;
 
-  GST_DEBUG ("pad %" GST_PTR_FORMAT " removed", pad);
-
   kms_player_end_point_remove_stat_probe (self, pad);
 
   appsink = g_object_steal_qdata (G_OBJECT (pad), appsink_quark ());
   appsrc = g_object_steal_qdata (G_OBJECT (pad), appsrc_quark ());
 
   if (appsink != NULL) {
-    kms_remove_element_from_bin (GST_BIN (self->priv->pipeline), appsink);
+    kms_player_endpoint_remove_element_from_bin (GST_BIN (self->priv->pipeline),
+        appsink);
   }
 
   if (appsrc != NULL) {
-    kms_remove_element_from_bin (GST_BIN (self), appsrc);
+    kms_player_endpoint_remove_element_from_bin (GST_BIN (self), appsrc);
   }
 }
 
@@ -932,7 +935,7 @@ kms_player_endpoint_stopped (KmsUriEndpoint * obj, GError ** error)
 
   GST_DEBUG_OBJECT (self, "Pipeline stopped");
 
-  /* Set internal pipeline to NULL */
+  // Set internal pipeline to NULL state
   kms_player_endpoint_mark_reset_base_time_and_set_state (self, GST_STATE_NULL);
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
@@ -1120,8 +1123,8 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
   g_object_class_install_property (gobject_class, PROP_PIPELINE,
-      g_param_spec_object ("pipeline", "pipeline",
-          "Players private pipeline",
+      g_param_spec_object ("pipeline", "Internal pipeline",
+          "PlayerEndpoint's private pipeline",
           GST_TYPE_ELEMENT, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   kms_player_endpoint_signals[SIGNAL_EOS] =
@@ -1159,7 +1162,7 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
 static gboolean
 kms_player_endpoint_emit_EOS_signal (gpointer data)
 {
-  GST_DEBUG ("Emit EOS Signal");
+  GST_DEBUG ("Emit 'EOS' signal and stop endpoint");
   kms_player_endpoint_stopped (KMS_URI_ENDPOINT (data), NULL);
   g_signal_emit (G_OBJECT (data), kms_player_endpoint_signals[SIGNAL_EOS], 0);
 
@@ -1171,7 +1174,7 @@ kms_player_endpoint_emit_invalid_uri_signal (gpointer data)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
 
-  GST_DEBUG ("Emit invalid uri signal");
+  GST_DEBUG ("Emit 'Invalid URI' signal");
   g_signal_emit (G_OBJECT (self),
       kms_player_endpoint_signals[SIGNAL_INVALID_URI], 0);
 
@@ -1183,7 +1186,7 @@ kms_player_endpoint_emit_invalid_media_signal (gpointer data)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
 
-  GST_DEBUG ("Emit invalid media signal");
+  GST_DEBUG ("Emit 'Invalid Media' signal");
   g_signal_emit (G_OBJECT (self),
       kms_player_endpoint_signals[SIGNAL_INVALID_MEDIA], 0);
 
@@ -1247,8 +1250,6 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
         kms_player_endpoint_emit_EOS_signal, g_object_ref (self),
         g_object_unref);
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
-    GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
-
     if (g_str_has_prefix (GST_OBJECT_NAME (msg->src), "decodebin")) {
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
           kms_player_endpoint_emit_invalid_media_signal, g_object_ref (self),
@@ -1276,8 +1277,9 @@ kms_player_endpoint_uridecodebin_source_setup (GstElement * uridecodebin,
   srcpad = gst_element_get_static_pad (source, "src");
 
   if (srcpad == NULL) {
-    GST_WARNING_OBJECT (self, "Can not set latency probe to %" GST_PTR_FORMAT,
-        source);
+    GST_WARNING_OBJECT (self,
+        "No src pad in uridecodebin (%s), skip setting latency probe",
+        G_OBJECT_TYPE_NAME (source));
     return;
   }
 
@@ -1370,7 +1372,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->base_time_preroll = GST_CLOCK_TIME_NONE;
 
   self->priv->loop = kms_loop_new ();
-  self->priv->pipeline = gst_pipeline_new ("pipeline");
+  self->priv->pipeline = gst_pipeline_new ("internalpipeline");
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
   self->priv->network_cache = NETWORK_CACHE_DEFAULT;
