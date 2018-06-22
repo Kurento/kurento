@@ -33,7 +33,6 @@
 #define PLUGIN_NAME "playerendpoint"
 #define AUDIO_APPSRC "audio_appsrc"
 #define VIDEO_APPSRC "video_appsrc"
-#define URIDECODEBIN "uridecodebin"
 #define RTSPSRC "rtspsrc"
 
 #define APPSRC_KEY "appsrc-key"
@@ -1342,7 +1341,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("internalpipeline");
   self->priv->uridecodebin =
-      gst_element_factory_make ("uridecodebin", URIDECODEBIN);
+      gst_element_factory_make ("uridecodebin", NULL);
   self->priv->network_cache = NETWORK_CACHE_DEFAULT;
 
   self->priv->stats.probes = kms_list_new_full (g_direct_equal, g_object_unref,
