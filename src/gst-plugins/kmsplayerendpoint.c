@@ -454,6 +454,7 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
 
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
+    GST_ERROR_OBJECT (appsink, "Cannot get buffer");
     goto end;
   }
 
@@ -1244,9 +1245,10 @@ kms_player_endpoint_uridecodebin_source_setup (GstElement * uridecodebin,
   srcpad = gst_element_get_static_pad (source, "src");
 
   if (srcpad == NULL) {
-    GST_WARNING_OBJECT (self,
-        "No src pad in uridecodebin (%s), skip setting latency probe",
-        G_OBJECT_TYPE_NAME (source));
+    GST_WARNING_OBJECT (self, "No src pad in %" GST_PTR_FORMAT
+        " (%s) (%" GST_PTR_FORMAT "), skip setting latency probe",
+        uridecodebin, G_OBJECT_TYPE_NAME (source), source);
+
     return;
   }
 
