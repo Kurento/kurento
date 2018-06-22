@@ -720,7 +720,7 @@ static GstElement *
 kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
     GstPad * pad)
 {
-  GstCaps *caps, *audio_caps = NULL, *video_caps = NULL;
+  GstCaps *caps;
   GstElement *agnosticbin = NULL;
 
   caps = gst_pad_query_caps (pad, NULL);
@@ -729,25 +729,20 @@ kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
     return NULL;
   }
 
-  audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
-  video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
-
   GST_DEBUG_OBJECT (pad, "Check required caps: %" GST_PTR_FORMAT, caps);
 
   /* TODO: Update latency probe to set valid and media type */
-  if (gst_caps_can_intersect (audio_caps, caps)) {
-    agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
+  if (kms_utils_caps_is_audio (caps)) {
     GST_DEBUG_OBJECT (pad, "Detected audio caps");
+    agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
     kms_player_end_point_add_stat_probe (self, pad, KMS_MEDIA_TYPE_AUDIO);
-  } else if (gst_caps_can_intersect (video_caps, caps)) {
+  } else if (kms_utils_caps_is_video (caps)) {
     GST_DEBUG_OBJECT (pad, "Detected video caps");
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
     kms_player_end_point_add_stat_probe (self, pad, KMS_MEDIA_TYPE_VIDEO);
   }
 
   gst_caps_unref (caps);
-  gst_caps_unref (audio_caps);
-  gst_caps_unref (video_caps);
 
   return agnosticbin;
 }
