@@ -642,19 +642,15 @@ static GstPadProbeReturn
 appsrc_query_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 {
   GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstQueryType type = GST_QUERY_TYPE (query);
   GstElement *appsink = GST_ELEMENT (element);
 
-  switch (GST_QUERY_TYPE (query)) {
-    case GST_QUERY_CAPS:
-    case GST_QUERY_ACCEPT_CAPS:
-      break;
-    default:
-      return GST_PAD_PROBE_OK;
+  if (type == GST_QUERY_CAPS || type == GST_QUERY_ACCEPT_CAPS) {
+    query = gst_query_make_writable (query);
+    // Send query upstream to the uridecodebin
+    gst_element_query (appsink, query);
+    GST_PAD_PROBE_INFO_DATA (info) = query;
   }
-
-  query = gst_query_make_writable (query);
-  gst_element_query (appsink, query);
-  GST_PAD_PROBE_INFO_DATA (info) = query;
 
   return GST_PAD_PROBE_OK;
 }
