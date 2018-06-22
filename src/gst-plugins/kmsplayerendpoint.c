@@ -781,23 +781,15 @@ appsink_probe_query_appsrc_caps (GstPad * pad, GstPadProbeInfo * info,
     gpointer element)
 {
   GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstQueryType type = GST_QUERY_TYPE (query);
   GstElement *appsrc = GST_ELEMENT (element);
-  GstPad *srcpad;
 
-  switch (GST_QUERY_TYPE (query)) {
-    case GST_QUERY_CAPS:
-    case GST_QUERY_ACCEPT_CAPS:
-      break;
-    default:
-      return GST_PAD_PROBE_OK;
+  if (type == GST_QUERY_CAPS || type == GST_QUERY_ACCEPT_CAPS) {
+    query = gst_query_make_writable (query);
+    // Send query downstream to the agnosticbin
+    gst_element_query (appsrc, query);
+    GST_PAD_PROBE_INFO_DATA (info) = query;
   }
-
-  query = gst_query_make_writable (query);
-  srcpad = gst_element_get_static_pad (appsrc, "src");
-  /* Send query to the agnosticbin */
-  gst_pad_peer_query (srcpad, query);
-  g_object_unref (srcpad);
-  GST_PAD_PROBE_INFO_DATA (info) = query;
 
   return GST_PAD_PROBE_OK;
 }
