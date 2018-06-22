@@ -889,20 +889,6 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
 }
 
 static void
-kms_player_endpoint_remove_element_from_bin (GstBin * bin, GstElement * element)
-{
-  GST_DEBUG ("Removing %" GST_PTR_FORMAT " from %" GST_PTR_FORMAT, element,
-      bin);
-
-  if (!gst_element_set_locked_state (element, TRUE)) {
-    GST_ERROR ("Could not block element %" GST_PTR_FORMAT, element);
-  }
-
-  gst_element_set_state (element, GST_STATE_NULL);
-  gst_bin_remove (bin, element);
-}
-
-static void
 kms_player_endpoint_uridecodebin_pad_removed (GstElement * element,
     GstPad * pad, KmsPlayerEndpoint * self)
 {
@@ -919,12 +905,11 @@ kms_player_endpoint_uridecodebin_pad_removed (GstElement * element,
   appsrc = g_object_steal_qdata (G_OBJECT (pad), appsrc_quark ());
 
   if (appsink != NULL) {
-    kms_player_endpoint_remove_element_from_bin (GST_BIN (self->priv->pipeline),
-        appsink);
+    kms_utils_bin_remove (GST_BIN (self->priv->pipeline), appsink);
   }
 
   if (appsrc != NULL) {
-    kms_player_endpoint_remove_element_from_bin (GST_BIN (self), appsrc);
+    kms_utils_bin_remove (GST_BIN (self), appsrc);
   }
 }
 
