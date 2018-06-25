@@ -29,9 +29,9 @@ The Kurento project provides an *AWS CloudFormation* template file. It can be us
 
 4.1 **Stack name** A descriptive name for your Stack.
 
-4.2 **InstanceType** Choose an apropiate size for your instance. `Check the different ones <https://aws.amazon.com/ec2/instance-types/?nc1=h_ls>`
+4.2 **InstanceType** Choose an apropiate size for your instance. `Check the different ones <https://aws.amazon.com/ec2/instance-types/?nc1=h_ls>`__.
 
-4.3 **KeyName** You need to create a RSA key beforehand in order to access the instance. Check AWS documentation on how to create `one <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html>`
+4.3 **KeyName** You need to create a RSA key beforehand in order to access the instance. Check AWS documentation on how to create `one <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html>`__.
 
 4.4 **SSHLocation** For security reason you may need to restrict SSH traffic to allow only from specific location. For example from your home or office.
 
