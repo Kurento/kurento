@@ -17,7 +17,9 @@ If you want to try pre-release builds of KMS, then head to the section :doc:`/us
 Amazon Web Services
 ===================
 
-The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server. Follow these steps to use it:
+The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server. Note that the template is ready to be deployed on the default AWS VPC network. So, definitely you need a VPC to deploy the template.
+
+Follow these steps to use it:
 
 1. Access the `AWS CloudFormation Console <https://console.aws.amazon.com/cloudformation>`__.
 
@@ -25,27 +27,23 @@ The Kurento project provides an *AWS CloudFormation* template file. It can be us
 
 3. Look for the section *Choose a template*, and choose the option *Specify an Amazon S3 template URL*. Then, in the text field that gets enabled, paste this URL: ``https://s3-eu-west-1.amazonaws.com/aws.kurento.org/KMS-Coturn-cfn.yaml``.
 
-4. Follow through the steps of the configuration wizard.
+4. Follow through the steps of the configuration wizard:
 
-4.1 **Stack name** A descriptive name for your Stack.
+   4.1. **Stack name**: A descriptive name for your Stack.
 
-4.2 **InstanceType** Choose an apropiate size for your instance. `Check the different ones <https://aws.amazon.com/ec2/instance-types/?nc1=h_ls>`__.
+   4.2. **InstanceType**: Choose an appropriate size for your instance. `Check the different ones <https://aws.amazon.com/ec2/instance-types/?nc1=h_ls>`__.
 
-4.3 **KeyName** You need to create a RSA key beforehand in order to access the instance. Check AWS documentation on how to create `one <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html>`__.
+   4.3. **KeyName**: You need to create an RSA key beforehand in order to access the instance. Check AWS documentation on `how to create one <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html>`__.
 
-4.4 **SSHLocation** For security reason you may need to restrict SSH traffic to allow only from specific location. For example from your home or office.
+   4.4. **SSHLocation**: For security reasons you may need to restrict SSH traffic to allow connections only from specific locations. For example, from your home or office.
 
-4.5 **TurnPassword** Password for turn user. Kurento is the default one.
+   4.5. **TurnUser**: User name for the TURN server.
 
-4.6 **TurnUser** User for turn. Kurento is the default.
+   4.6. **TurnPassword**: Password required to use the TURN server.
 
-   .. note::
+        .. note::
 
-      The template file includes a *Coturn* server. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
-      
-   .. note::
-    
-      The template is ready to be deployed on the default AWS VPC network. So, definetly you need a VPC to deploy the template.
+           The template file includes *Coturn* as a :term:`TURN` server. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
 
 5. Finish the Stack creation process. Wait until the status of the newly created Stack reads *CREATE_COMPLETE*.
 
