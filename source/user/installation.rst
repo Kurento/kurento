@@ -193,7 +193,7 @@ See some examples of TURN configuration below:
 
 .. code-block:: bash
 
-   turnURL=kurento:kurento@111.222.333.444:3478
+   turnURL=kurento:kurento@WWW.XXX.YYY.ZZZ:3478
 
 ... or using a free access `Numb`_ TURN/STUN server:
 
