@@ -27,9 +27,25 @@ The Kurento project provides an *AWS CloudFormation* template file. It can be us
 
 4. Follow through the steps of the configuration wizard.
 
+4.1 **Stack name** A descriptive name for your Stack.
+
+4.2 **InstanceType** Choose an apropiate size for your instance. `Check the different ones <https://aws.amazon.com/ec2/instance-types/?nc1=h_ls>`
+
+4.3 **KeyName** You need to create a RSA key beforehand in order to access the instance. Check AWS documentation on how to create `one <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html>`
+
+4.4 **SSHLocation** For security reason you may need to restrict SSH traffic to allow only from specific location. For example from your home or office.
+
+4.5 **TurnPassword** Password for turn user. Kurento is the default one.
+
+4.6 **TurnUser** User for turn. Kurento is the default.
+
    .. note::
 
       The template file includes a *Coturn* server. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
+      
+   .. note::
+    
+      The template is ready to be deployed on the default AWS VPC network. So, definetly you need a VPC to deploy the template.
 
 5. Finish the Stack creation process. Wait until the status of the newly created Stack reads *CREATE_COMPLETE*.
 
