@@ -17,7 +17,9 @@ If you want to try pre-release builds of KMS, then head to the section :doc:`/us
 Amazon Web Services
 ===================
 
-The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server. Note that the template is ready to be deployed on the default AWS VPC network. So, definitely you need a VPC to deploy the template.
+The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server.
+
+Note that this template is specifically tailored to be deployed on the default *Amazon Virtual Private Cloud* (`Amazon VPC <https://aws.amazon.com/documentation/vpc/>`__) network. **You need an Amazon VPC to deploy this template**.
 
 Follow these steps to use it:
 
