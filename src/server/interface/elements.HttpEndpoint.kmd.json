@@ -22,10 +22,12 @@
             },
             {
               "name": "useEncodedMedia",
-              "doc": "Feed the input stream as-is to the media pipeline, instead of first decoding it.
-              By default, the input media gets decoded into a raw format before being processed by the media pipeline, because this allows Kurento to keep track of lost keyframes among other quality-control measurements. This of course has a cost in terms of processing power, but ensures that the output streaming will be robust and reliable. It is possible to disable this behavior by using this method, and in that case the encoded stream will be provided directly to the media pipeline, without prior decoding. Enabling this could have a severe effect on stability, because lost video keyframes will not be regenerated; however, this can be very useful to improve performance by greatly reducing the processing load.
+              "doc": "Feed the input media as-is to the Media Pipeline, instead of first decoding it.
+              When this property is not enabled, the input media gets always decoded into a raw format before being processed by the rest of the Media Pipeline; this is done to ensure that Kurento is able to keep track of lost keyframes among other quality-control measurements. Of course, having to decode the media has a cost in terms of CPU usage, but ensures that the output streaming will be robust and reliable.
 
-              Keep in mind that if this option is enabled, the source media and target media MUST share the same format and codec configurations.
+              When this property is enabled, the explained behavior gets disabled. Instead, PlayerEndpoint will provide the input media directly to the Media Pipeline, without prior decoding. Enabling this mode of operation could have a severe effect on stability, because lost video keyframes will not be regenerated; however, avoiding a full cycle of decoding and encoding can be very useful for certain applications, because it improves performance by greatly reducing the CPU processing load.
+
+              Keep in mind that if this property is enabled, the original source media MUST already have an encoding format which is compatible with the destination target. For example: given a pipeline which uses PlayerEndpoint to read a local file and then streams it to a WebRTC browser such as Chrome, then the local file must already be encoded with a VP8 or H.264 codec profile which Chrome is able to decode. Note that for this example, most browsers don't support ANY combination of H.264 encoding options; instead, they tend to support only a very specific subset of the codec features (also known as 'profiles').
 
               We strongly recommend to avoid using this option, because correct behavior cannot be guaranteed.",
               "type": "boolean",
