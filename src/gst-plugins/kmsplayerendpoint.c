@@ -724,12 +724,11 @@ kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
   GstElement *agnosticbin = NULL;
 
   caps = gst_pad_query_caps (pad, NULL);
-
   if (caps == NULL) {
     return NULL;
   }
 
-  GST_DEBUG_OBJECT (pad, "Check required caps: %" GST_PTR_FORMAT, caps);
+  GST_DEBUG_OBJECT (pad, "Prepare for input caps: %" GST_PTR_FORMAT, caps);
 
   /* TODO: Update latency probe to set valid and media type */
   if (kms_utils_caps_is_audio (caps)) {
@@ -1245,9 +1244,8 @@ kms_player_endpoint_uridecodebin_source_setup (GstElement * uridecodebin,
   srcpad = gst_element_get_static_pad (source, "src");
 
   if (srcpad == NULL) {
-    GST_WARNING_OBJECT (self, "No src pad in %" GST_PTR_FORMAT
-        " (%s) (%" GST_PTR_FORMAT "), skip setting latency probe",
-        uridecodebin, G_OBJECT_TYPE_NAME (source), source);
+    GST_WARNING_OBJECT (self, "Skip setting latency probe, no src pad in %"
+        GST_PTR_FORMAT " (%s)", uridecodebin, G_OBJECT_TYPE_NAME (source));
 
     return;
   }
