@@ -2,12 +2,10 @@
 
 # This scripts gets project version from CMakeList.txt, pom.xml or configure.ac
 
-exec 3>&1 >/dev/tty || exec 3>&1 >./get_version_logs
-
 echo "##################### EXECUTE: kurento_get_version.sh #####################"
 
 # WARNING: Several scripts have implicit dependency on the ORDER of these checks.
-# For example: kurento_mavenize_js_project assumes that pom.xml sill be checked
+# For example: kurento_mavenize_js_project assumes that pom.xml will be checked
 # BEFORE package.json.
 
 if [ -f VERSION ]
@@ -80,5 +78,4 @@ if [ "${PROJECT_VERSION}x" = "x" ]; then
   exit 1
 fi
 
-exec >&3-
 echo ${PROJECT_VERSION}
