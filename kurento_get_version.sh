@@ -42,10 +42,16 @@ then
   echo "Getting version from pom.xml" >&2
   MAVEN_CMD='mvn --batch-mode --non-recursive exec:exec -Dexec.executable=echo -Dexec.args=\${project.version}'
   [ -n "$MAVEN_SETTINGS" ] && MAVEN_CMD="$MAVEN_CMD --settings $MAVEN_SETTINGS"
-  eval "$MAVEN_CMD"  # This is just to print all output from Maven, eases debugging
+
+  # This is just to print all output from Maven, eases debugging
+  eval "$MAVEN_CMD" >&2 || {
+    echo "[kurento_get_version] ERROR: Command failed: mvn echo project.version (debug)" >&2
+    exit 1
+  }
+
   MAVEN_CMD="$MAVEN_CMD --quiet 2>/dev/null"
   PROJECT_VERSION="$(eval "$MAVEN_CMD")" || {
-    echo "[kurento_get_version] ERROR: Command failed: mvn echo project.version" >&2
+    echo "[kurento_get_version] ERROR: Command failed: mvn echo project.version (quiet)" >&2
     exit 1
   }
 elif [ -f configure.ac ]
