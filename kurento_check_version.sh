@@ -15,7 +15,9 @@ fi
 
 [ -n "$CHECK_SUBMODULES" ] || CHECK_SUBMODULES="yes"
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
 
 echo "[kurento_check_version] Create tag is '$CREATE_TAG'"
 

@@ -47,7 +47,10 @@ FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$V_DIR/kurento-room-docs/kuren
 FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$S_DIR/kurento-room-docs/kurento-room-docs.tgz:1"
 
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
+
 kurento_builds_publish.sh "$FILE"
 
 echo "FILES=$FILE" > kurento-docs-env.properties

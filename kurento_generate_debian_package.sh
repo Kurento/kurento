@@ -5,7 +5,9 @@ then
   echo "You should indentify an gnupg key in environment variable GNUPG_KEY_ID, use one from gpg -K"
 fi
 
-PATH=$PATH:$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${BASEPATH}/kms:${PATH}"
 
 PROJECT_NAME=$1
 BRANCH=$2

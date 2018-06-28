@@ -9,7 +9,6 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 #   package version detection prevents that.
 # - libcommons-validator-java seems to be required to build "gstreamer" (it
 #   failed with lots of errors from "jade", when building documentation files)
-# - realpath is used by 'adm-scripts/kurento_check_version.sh'.
 # - subversion (svn) is used in the Python build script (compile_project.py) due
 #   to GitHub's lack of support for git-archive protocol
 #   (https://github.com/isaacs/github/issues/554).
@@ -49,7 +48,6 @@ PACKAGES=(
     python-git
     python-requests
     python-yaml
-    realpath
     subversion
     wget
 )

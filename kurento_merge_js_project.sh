@@ -20,7 +20,9 @@ echo "##################### EXECUTE: kurento_merge_js_project ##################
 # BOWER_REPOSITORY url
 #   URL to bower repository
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
 
 # Verify project structure
 kurento_check_version.sh false || {

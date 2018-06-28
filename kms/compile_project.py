@@ -3,7 +3,7 @@
 
 # Install system tools and Python modules
 # apt-get install --no-install-recommends \
-#   curl wget git build-essential fakeroot debhelper subversion flex realpath \
+#   curl wget git build-essential fakeroot debhelper subversion flex \
 #   python python-apt python-debian python-git python-requests python-yaml
 
 # Module documentation

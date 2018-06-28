@@ -7,7 +7,9 @@ echo "##################### EXECUTE: kurento_ci_container_entrypoint ###########
 }
 BUILD_COMMAND=$@
 
-PATH=$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms:$PATH
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${BASEPATH}/kms:${PATH}"
 
 echo "[kurento_ci_container_entrypoint] Preparing environment..."
 

@@ -1,7 +1,9 @@
 #!/bin/bash -x
 echo "##################### EXECUTE: kurento_ci_container_dnat_hook_handler #####################"
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
 
 exec >> hook.log
 exec 2>&1
@@ -39,7 +41,7 @@ if [ $event = 'start' ]; then
   docker_pid=$(docker inspect -f '{{.State.Pid}}' $container)
   echo $docker_pid > $container.id
   echo "[$container] >>>> Calling dnat script"
-  sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $docker_pid $transport $ip >> dnat2.log
+  sudo "${BASEPATH}/kurento_ci_container_dnat.sh" $container $event $docker_pid $transport $ip >> dnat2.log
 fi
 
 if [ $event = 'stop' ]; then
@@ -52,7 +54,7 @@ if [ $event = 'destroy' ]; then
     echo "Container with dnat found. Deleting dnat rules."
     docker_pid=$(cat $container.id)
     echo "Calling dnat script"
-    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $docker_pid >> dnat2destroy.log
+    sudo "${BASEPATH}/kurento_ci_container_dnat.sh" $container $event $docker_pid >> dnat2destroy.log
   else
     echo "Container not found. Ignoring."
   fi

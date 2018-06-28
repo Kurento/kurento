@@ -113,7 +113,9 @@ check_argument $REPREPRO_URL
 
 tmp_dir=$(mktemp -d)
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
 
 cd $tmp_dir
 

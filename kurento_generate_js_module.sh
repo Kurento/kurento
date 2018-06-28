@@ -1,6 +1,8 @@
 #!/bin/bash -x
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
 
 PROJECT_NAME=$1
 BRANCH=$2

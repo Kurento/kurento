@@ -12,7 +12,9 @@ SOURCE="Source: $1"
 ORIG_DIST=$2
 TARGET_DIST=$3
 
-PATH=$PATH:$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${BASEPATH}/kms:${PATH}"
 
 if [ "${ID_RSA_FILE}x" == "x" ]
 then

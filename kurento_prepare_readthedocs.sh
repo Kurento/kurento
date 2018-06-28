@@ -16,7 +16,9 @@ echo "##################### EXECUTE: kurento_prepare_readthedocs ###############
 #     Location of the settings.xml file used by maven
 #
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
 
 echo "Building $GERRIT_REFNAME of $KURENTO_PROJECT"
 

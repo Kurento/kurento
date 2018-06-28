@@ -1,6 +1,8 @@
 #!/bin/bash
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+# Path information
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+PATH="${BASEPATH}:${PATH}"
 
 config_files="pom.xml package.json bower.json CMakeLists.txt Makefile configure.ac configure.in"
 dev_version_suffixes="dev|SNAPSHOT|master|KurentoForks|^"
