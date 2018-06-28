@@ -44,12 +44,6 @@ export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
 # Maven options
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
 
-
-# Build all packages
-echo "[kurento_maven_deploy] Build all packages"
-mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package $OPTS || {
-    echo "[kurento_maven_deploy] ERROR: Command failed: mvn clean package"
-    exit 1
 PROJECT_VERSION="$(kurento_get_version.sh)" || {
   echo "[kurento_maven_deploy] ERROR: Command failed: kurento_get_version"
   exit 1
@@ -58,7 +52,7 @@ echo "[kurento_maven_deploy] Build and deploy version: $PROJECT_VERSION"
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
     echo "[kurento_maven_deploy] Version to deploy is SNAPSHOT"
-    mvn --batch-mode $PARAM_MAVEN_SETTINGS \
+    mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package \
         org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
         -Pdefault -Pdeploy \
         $OPTS \
@@ -72,7 +66,7 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
     if [[ $SIGN_ARTIFACTS == "true" ]]; then
         echo "[kurento_maven_deploy] Artifact signing on deploy is ENABLED"
         # Deploy signing artifacts
-        mvn --batch-mode $PARAM_MAVEN_SETTINGS \
+        mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package \
             javadoc:jar source:jar gpg:sign \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
             $OPTS \
@@ -100,7 +94,7 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
     else
         echo "[kurento_maven_deploy] Artifact signing on deploy is DISABLED"
         # Deploy without signing artifacts
-        mvn --batch-mode $PARAM_MAVEN_SETTINGS \
+        mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package \
             javadoc:jar source:jar \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
             -U \
