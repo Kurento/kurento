@@ -153,18 +153,24 @@ cat >pom.xml <<EOF
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.6.0</version>
+        <!-- Have different executions for explicit CLI calls (e.g. to get
+        the project version) and implicit calls (e.g. 'mvn package') -->
         <executions>
           <execution>
-            <id>stage-sources</id>
-            <phase>process-sources</phase>
+            <id>default-cli</id>
+            <phase/>
+          </execution>
+          <execution>
+            <id>default-package</id>
+            <phase>package</phase>
             <goals>
               <goal>exec</goal>
             </goals>
+            <configuration>
+              <executable>maven_script.sh</executable>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <executable>maven_script.sh</executable>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -214,28 +220,28 @@ EOF
 cat >$ASSEMBLY_FILE <<-EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-	<id>dist</id>
-	<formats>
-		<format>zip</format>
-	</formats>
-	<includeBaseDirectory>false</includeBaseDirectory>
-	<fileSets>
-		<fileSet>
-			<includes>
-				<include>README.md</include>
-				<include>LICENSE</include>
-			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>dist</directory>
-			<outputDirectory>/js</outputDirectory>
-			<includes>
-				<include>*.js</include>
-				<include>*.map</include>
-			</includes>
-		</fileSet>
-	</fileSets>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  <id>dist</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>README.md</include>
+        <include>LICENSE</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>dist</directory>
+      <outputDirectory>/js</outputDirectory>
+      <includes>
+        <include>*.js</include>
+        <include>*.map</include>
+      </includes>
+    </fileSet>
+  </fileSets>
 </assembly>
 EOF
