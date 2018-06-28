@@ -57,12 +57,12 @@ mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package $OPTS || {
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
     echo "[kurento_maven_deploy] Version to deploy is SNAPSHOT"
-    mvn --batch-mode $PARAM_MAVEN_SETTINGS package \
+    mvn --batch-mode $PARAM_MAVEN_SETTINGS \
         org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
         -Pdefault -Pdeploy \
         $OPTS \
         -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || {
-            echo "[kurento_maven_deploy] ERROR: Command failed: mvn package (snapshot)"
+            echo "[kurento_maven_deploy] ERROR: Command failed: mvn deploy (snapshot)"
             exit 1
         }
 elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; then
@@ -71,12 +71,12 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
     if [[ $SIGN_ARTIFACTS == "true" ]]; then
         echo "[kurento_maven_deploy] Artifact signing on deploy is ENABLED"
         # Deploy signing artifacts
-        mvn --batch-mode $PARAM_MAVEN_SETTINGS package \
+        mvn --batch-mode $PARAM_MAVEN_SETTINGS \
             javadoc:jar source:jar gpg:sign \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
             $OPTS \
             -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || {
-                echo "[kurento_maven_deploy] ERROR: Command failed: mvn package (signed release)"
+                echo "[kurento_maven_deploy] ERROR: Command failed: mvn deploy (signed release)"
                 exit 1
             }
 
@@ -99,13 +99,13 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
     else
         echo "[kurento_maven_deploy] Artifact signing on deploy is DISABLED"
         # Deploy without signing artifacts
-        mvn --batch-mode $PARAM_MAVEN_SETTINGS package \
+        mvn --batch-mode $PARAM_MAVEN_SETTINGS \
             javadoc:jar source:jar \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
             -U \
             $OPTS \
             -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || {
-                echo "[kurento_maven_deploy] ERROR: Command failed: mvn package (unsigned release)"
+                echo "[kurento_maven_deploy] ERROR: Command failed: mvn deploy (unsigned release)"
                 exit 1
             }
     fi
