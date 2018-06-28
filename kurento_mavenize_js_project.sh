@@ -40,10 +40,10 @@ apt-get install --yes curl || { echo ERR1; exit 1; }
 ( curl -sL https://deb.nodesource.com/setup_8.x | bash - ) || { echo ERR2; exit 1; }
 apt-get update || { echo ERR3; exit 1; }
 apt-get install --reinstall nodejs || { echo ERR4; exit 1; }
-npm install --global npm || { echo ERR5; exit 1; }
-npm install --loglevel info || { echo ERR7; exit 1; }
-node_modules/.bin/grunt || { echo ERR8; exit 1; }
-node_modules/.bin/grunt sync:bower || { echo ERR9; exit 1; }
+npm install --no-color --global npm || { echo ERR5; exit 1; }
+npm install --no-color --loglevel info || { echo ERR7; exit 1; }
+node_modules/.bin/grunt --no-color || { echo ERR8; exit 1; }
+node_modules/.bin/grunt --no-color sync:bower || { echo ERR9; exit 1; }
 mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR10; exit 1; }
 cp dist/* src/main/resources/META-INF/resources/js/
 EOF
