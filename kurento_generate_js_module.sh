@@ -37,7 +37,10 @@ then
   git push origin ${BRANCH} || exit 1
 fi
 
-PROJECT_VERSION=`kurento_get_version.sh`
+PROJECT_VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_generate_js_module] ERROR: Command failed: kurento_get_version"
+  exit 1
+}
 
 # If release version, create tag
 if [[ ${PROJECT_VERSION} != *-dev ]]; then

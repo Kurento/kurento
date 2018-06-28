@@ -76,8 +76,7 @@ RELEASE="$(echo $VERSION | awk -F"-" '{print $1}')"
 
 # Exit if pom already present with correct version
 if [ -f pom.xml ]; then
-  POM_VERSION="$(kurento_get_version.sh)"
-  [ $? -eq 0 ] || {
+  POM_VERSION="$(kurento_get_version.sh)" || {
     echo "[kurento_mavenize_js_project] ERROR: Command failed: kurento_get_version"
     exit 1
   }

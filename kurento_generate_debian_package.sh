@@ -61,7 +61,10 @@ DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
 echo ${CUSTOM_PRE_COMMAND}
 ${CUSTOM_PRE_COMMAND} || exit 1
 
-PROJECT_VERSION=`kurento_get_version.sh`
+PROJECT_VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_generate_debian_package] ERROR: Command failed: kurento_get_version"
+  exit 1
+}
 
 if [ "${PROJECT_VERSION}x" = "x" ]; then
   exit 1

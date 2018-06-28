@@ -15,5 +15,8 @@ export CHECK_SUBMODULES="no"
 kurento_check_version.sh true || exit 1
 
 # Extract version
-VERSION=$(kurento_get_version.sh)
+VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_merge_doc_project] ERROR: Command failed: kurento_get_version"
+  exit 1
+}
 echo "Version built: $VERSION"

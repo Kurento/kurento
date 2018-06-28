@@ -44,16 +44,17 @@ export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
 # Maven options
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
 
-echo "[kurento_maven_deploy] Command: kurento_get_version"
-PROJECT_VERSION="$(kurento_get_version.sh)"
-echo "[kurento_maven_deploy] Deploy version: $PROJECT_VERSION"
 
 # Build all packages
 echo "[kurento_maven_deploy] Build all packages"
 mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package $OPTS || {
     echo "[kurento_maven_deploy] ERROR: Command failed: mvn clean package"
     exit 1
+PROJECT_VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_maven_deploy] ERROR: Command failed: kurento_get_version"
+  exit 1
 }
+echo "[kurento_maven_deploy] Build and deploy version: $PROJECT_VERSION"
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
     echo "[kurento_maven_deploy] Version to deploy is SNAPSHOT"

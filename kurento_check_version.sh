@@ -21,7 +21,11 @@ PATH="${BASEPATH}:${PATH}"
 
 echo "[kurento_check_version] Create tag is '$CREATE_TAG'"
 
-PROJECT_VERSION=`kurento_get_version.sh`
+PROJECT_VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_check_version] ERROR: Command failed: kurento_get_version"
+  exit 1
+}
+echo "[kurento_check_version] PROJECT_VERSION: $PROJECT_VERSION"
 
 if [ "${PROJECT_VERSION}x" = "x" ]; then
   echo "[kurento_check_version] ERROR: Could not find project version"

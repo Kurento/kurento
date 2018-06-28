@@ -79,7 +79,10 @@ export CREATE_TAG=true
 kurento_bower_publish.sh
 
 # Deploy to builds only when it is release
-VERSION=$(kurento_get_version.sh)
+VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_get_version"
+  exit 1
+}
 if [[ $VERSION != *-SNAPSHOT ]]; then
   V_DIR=/release/$VERSION
   S_DIR=/release/stable

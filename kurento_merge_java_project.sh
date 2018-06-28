@@ -41,7 +41,10 @@ kurento_maven_deploy.sh || {
 }
 
 # Deploy to Kurento Builds only when it is release
-VERSION=$(kurento_get_version.sh)
+VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_merge_java_project] ERROR: Command failed: kurento_get_version"
+  exit 1
+}
 if [[ $VERSION != *-SNAPSHOT ]]; then
   echo "[kurento_merge_java_project] Version is RELEASE: HTTP publish"
 

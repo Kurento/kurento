@@ -31,7 +31,10 @@ COMMIT_LOG=$(git log -1 --oneline)
 COMMIT_ID=$(echo $COMMIT_LOG|cut -d' ' -f1)
 COMMIT_MSG=$(echo $COMMIT_LOG|cut -d' ' -f2-)
 MESSAGE="Generated code from $KURENTO_PROJECT:$COMMIT_ID"
-VERSION=$(kurento_get_version.sh)
+VERSION="$(kurento_get_version.sh)" || {
+  echo "[kurento_bower_publish] ERROR: Command failed: kurento_get_version"
+  exit 1
+}
 
 # Checkout bower repo
 BOWER_DIR="bower_code"
