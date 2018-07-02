@@ -1,50 +1,47 @@
 #!/bin/bash -x
 
-# Path information
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-PATH="${BASEPATH}:${PATH}"
+echo "##################### EXECUTE: kurento_generate_js_module #####################"
 
-PROJECT_NAME=$1
-BRANCH=$2
-
-[ -z "$PROJECT_NAME" ] && PROJECT_NAME=$KURENTO_PROJECT
-[ -z "$BRANCH" ] && BRANCH=$GERRIT_REFNAME
-
-COMMIT_ID=`git rev-parse HEAD`
-mkdir -p build
-cd build
-cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || exit 1
-JS_PROJECT_NAME=`cat js_project_name`
-echo Project name $JS_PROJECT_NAME
-rm -rf js
-git clone ${KURENTO_GIT_REPOSITORY}/${JS_PROJECT_NAME}-js.git js || exit 1
-cd js || (echo "Cannot clone repository, may not be public" && exit 0)
-# Remove /refs/heads/ before use
-BRANCH=$(echo $BRANCH | sed 's|refs/heads/||g')
-git checkout ${BRANCH} || git checkout -b ${BRANCH}
-git reset --hard origin/${BRANCH} || echo
-rm -rf *
-cd ..
-cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE || exit 1
-cd js
-for i in `find . | grep -v  "^./.git" | grep -v "^.$"`
-do
-  git add $i
-done
-if ! git diff-index --quiet HEAD
-then
-  git commit -a -m "Generated code from ${PROJECT_NAME} $COMMIT_ID"
-  git push origin ${BRANCH} || exit 1
-fi
-
-PROJECT_VERSION="$(kurento_get_version.sh)" || {
-  echo "[kurento_generate_js_module] ERROR: Command failed: kurento_get_version"
+rm -rf build
+mkdir build && cd build
+cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
+  echo "[kurento_generate_js_module] ERROR: Command failed: cmake"
   exit 1
 }
 
-# If release version, create tag
-if [[ ${PROJECT_VERSION} != *-dev ]]; then
-  echo "Creating tag ${JS_PROJECT_NAME}-${PROJECT_VERSION}"
-  git tag "${PROJECT_VERSION}"
-  git push --tags || exit 1
-fi
+[ -d js ] || {
+  echo "[kurento_generate_js_module] ERROR: Expected directory doesn't exist: $PWD/js"
+  exit 1
+}
+
+JS_PROJECT_NAME="$(cat js_project_name)-js"
+echo "[kurento_generate_js_module] Generated sources: $JS_PROJECT_NAME"
+
+kurento_clone_repo.sh "$JS_PROJECT_NAME" "$GERRIT_NEWREV" || {
+  echo "[kurento_generate_js_module] ERROR: Command failed: git clone $JS_PROJECT_NAME $GERRIT_NEWREV"
+  exit 1
+}
+
+rm -rf "${JS_PROJECT_NAME}/*"
+cp -a js/* "${JS_PROJECT_NAME}/"
+
+echo "Commit and push changes to repo: $JS_PROJECT_NAME"
+pushd "$JS_PROJECT_NAME"
+git status
+git diff-index --quiet HEAD || {
+  git add --all .
+  COMMIT_ID="$(git rev-parse --short HEAD)"
+  git commit -m "Generated code from $KURENTO_PROJECT $COMMIT_ID"
+  git push origin master || {
+    echo "Couldn't push changes to repo: $JS_PROJECT_NAME"
+    exit 1
+}
+popd
+
+# Only create a tag if the deployment process was successful
+# Commented out because this is currently being done in the main kms-{core,elements,filters} job.
+# Uncomment when this is sorted out and we know WHEN we want to create tags.
+# kurento_check_version.sh true || {
+#   echo "[kurento_generate_js_module] ERROR: Command failed: kurento_check_version (tagging enabled)"
+#   exit 1
+# }

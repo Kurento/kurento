@@ -24,33 +24,35 @@ echo "##################### EXECUTE: kurento_merge_js_project ##################
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 PATH="${BASEPATH}:${PATH}"
 
-# Verify project structure
+# ---- Verify project structure ----
+
+[ -f package.json ] || {
+  echo "[kurento_merge_js_project] ERROR: File not found: package.json"
+  exit 1
+}
+
 kurento_check_version.sh false || {
   echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
 }
-[ -f package.json ] || {
-  echo "[kurento_merge_js_project] ERROR: Cannot read file: package.json"
-  exit 1
-}
 
-# Deploy to Maven Central
-kurento_mavenize_js_project.sh $KURENTO_PROJECT || {
+# Convert into a valid Maven artifact
+kurento_mavenize_js_project.sh "$KURENTO_PROJECT" || {
   echo "[kurento_merge_js_project] ERROR: Command failed: kurento_mavenize_js_project"
   exit 1
 }
 
 # Deploy to Kurento repositories
-export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
-export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
+export SNAPSHOT_REPOSITORY="$MAVEN_S3_KURENTO_SNAPSHOTS"
+export RELEASE_REPOSITORY="$MAVEN_S3_KURENTO_RELEASES"
 kurento_maven_deploy.sh || {
   echo "[kurento_merge_js_project] ERROR: Command failed: kurento_maven_deploy (Kurento)"
   exit 1
 }
 
 # Deploy to Maven Central (only release)
-export SNAPSHOT_REPOSITORY=
-export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
+export SNAPSHOT_REPOSITORY=""
+export RELEASE_REPOSITORY="$MAVEN_SONATYPE_NEXUS_STAGING"
 kurento_maven_deploy.sh || {
   echo "[kurento_merge_js_project] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
   exit 1
@@ -59,8 +61,8 @@ kurento_maven_deploy.sh || {
 # Deploy to NPM
 kurento_npm_publish.sh
 
-# Deploy to bower repository
-[ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
+# Deploy to Bower repository
+[ -z "$BASE_NAME" ] && BASE_NAME="$KURENTO_PROJECT"
 # Select files to be moved to bower repository
 FILES=""
 FILES="$FILES dist/$BASE_NAME.js:js/$BASE_NAME.js"
@@ -73,7 +75,6 @@ FILES="$FILES dist/$BASE_NAME.map:js/$BASE_NAME.map"
 # LICENSE is optional
 [ -f LICENSE ] && FILES="$FILES LICENSE:LICENSE"
 
-export BOWER_REPOSITORY
 export FILES
 export CREATE_TAG=true
 kurento_bower_publish.sh
@@ -84,11 +85,13 @@ VERSION="$(kurento_get_version.sh)" || {
   exit 1
 }
 if [[ $VERSION != *-SNAPSHOT ]]; then
-  V_DIR=/release/$VERSION
-  S_DIR=/release/stable
+  echo "[kurento_merge_js_project] Version is RELEASE, HTTP publish"
+
+  V_DIR="/release/$VERSION"
+  S_DIR="/release/stable"
 
   # Create kws version file
-  echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > $KURENTO_PROJECT.version
+  echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > "${KURENTO_PROJECT}.version"
 
   # Create kws environment file
   FILES=""
@@ -107,6 +110,8 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
 
   export FILES
   kurento_http_publish.sh
+else
+  echo "[kurento_merge_js_project] Skip HTTP publish: Version is SNAPSHOT"
 fi
 
 # Only create a tag if the deployment process was successful
