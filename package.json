@@ -54,7 +54,7 @@
     "type": "git",
     "url": "https://github.com/Kurento/kurento-client-js.git"
   },
-  "main": "lib/index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "coveralls": "scripts/coveralls",
     "coverallsBrowser": "scripts/coveralls -- testBrowser",
