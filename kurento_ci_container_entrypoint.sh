@@ -41,7 +41,6 @@ if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS
   Token = ''" >/etc/apt/s3auth.conf
 fi
 
-apt-get install -y wget iproute
 wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
 dpkg -i libtimedate*deb
 rm libtimedate*deb
