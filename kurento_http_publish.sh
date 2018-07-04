@@ -15,6 +15,7 @@ echo "##################### EXECUTE: kurento_http_publish #####################"
 #
 
 # Functions
+# Make Collection
 mkcol () {
 	if [ $(dirname $1) != "." -a $(dirname $1) != "/" ]; then
 		mkcol $(dirname $1)
