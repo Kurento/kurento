@@ -18,7 +18,8 @@ RUN apt-get update \
     iproute \
     openjdk-8-jdk \
     gnupg \
-    maven 
+    maven \
+    build-essential
 
 # Cleaning the house
 RUN apt-get clean && \
