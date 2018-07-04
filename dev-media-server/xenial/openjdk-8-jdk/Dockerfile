@@ -7,7 +7,7 @@ FROM buildpack-deps:xenial-scm
 
 # Fix for "no matching key exchange method found" error (http://www.openssh.com/legacy.html)
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y --no-install-recommends \
     git-review \
     python \
     python-configobj \
@@ -15,15 +15,22 @@ RUN apt-get update \
     unzip \
     wget \
     zip \
-  && rm -rf /var/lib/apt/lists/*
+    iproute \
+    openjdk-8-jdk \
+    gnupg \
+    maven 
+
+# Cleaning the house
+RUN apt-get clean && \
+    apt-get autoclean && \
+    rm -Rf /tmp/* && \
+    rm -Rf /var/lib/apt/lists/*
 
 # Default to UTF-8 file.encoding
 ENV LANG C.UTF-8
 
-RUN apt-get update && apt-get install -y openjdk-8-jdk gnupg maven && rm -rf /var/lib/apt/lists/*
-
 RUN mkdir /nodejs \
-  && curl -sL https://deb.nodesource.com/setup_4.x | bash - \
+  && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
   && apt-get install -y nodejs
 
 ENV PATH $PATH:/nodejs/bin
