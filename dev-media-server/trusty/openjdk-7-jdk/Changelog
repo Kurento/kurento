@@ -1,0 +1,8 @@
+* Version: trusty-jdk-7-2
+  
+  - Added iproute2
+  - Instalation with --no-install-recomends
+  - All apt in a single run line
+  - Update nodejs to v8
+  - Another RUN line to clean the house
+  - Install build essential
