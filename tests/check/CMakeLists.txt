@@ -20,6 +20,7 @@ set(TEST_VARIABLES
   # processing the tests
   "CK_DEFAULT_TIMEOUT=120"
 )
-set(SUPPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
+list(APPEND SUPPRESSIONS
+  "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 
 add_subdirectory(element)
