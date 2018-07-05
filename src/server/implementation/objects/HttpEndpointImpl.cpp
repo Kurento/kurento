@@ -247,7 +247,7 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
       std::string errorMessage = "Invalid or unexpected request received";
 
       try {
-        Error error (shared_from_this(), "Invalid Uri", 0, "INVALID_URI");
+        Error error (shared_from_this(), "Invalid URI", 0, "INVALID_URI");
 
         GST_ERROR ("%s", errorMessage.c_str() );
 

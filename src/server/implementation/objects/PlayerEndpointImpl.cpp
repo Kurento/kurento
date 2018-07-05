@@ -53,7 +53,7 @@ void PlayerEndpointImpl::invalidUri ()
 {
   try {
     /* TODO: Define error codes and types*/
-    Error error (shared_from_this(), "Invalid Uri", 0, "INVALID_URI");
+    Error error (shared_from_this(), "Invalid URI", 0, "INVALID_URI");
 
     signalError (error);
   } catch (std::bad_weak_ptr &e) {
