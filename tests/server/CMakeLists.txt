@@ -5,7 +5,8 @@ set(VALGRIND_TEST_VARIABLES
   "${TEST_VARIABLES}"
   "DEBUG_MEDIASET=TRUE"
 )
-set(SUPPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
+list(APPEND SUPPRESSIONS
+  "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 
 add_test_program(test_constructors constructors.cpp)
 if(TARGET ${LIBRARY_NAME}module)

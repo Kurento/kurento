@@ -26,6 +26,7 @@ set(VALGRIND_TEST_VARIABLES
   "${TEST_VARIABLES}"
   "CK_DEFAULT_TIMEOUT=1000"
 )
-set(SUPPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
+list(APPEND SUPPRESSIONS
+  "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 
 add_subdirectory(element)
