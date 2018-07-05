@@ -22,7 +22,8 @@ add_dependencies(test_recorderendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_recorderendpoint PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
-                           ${gstreamer-check-1.5_INCLUDE_DIRS})
+                           ${gstreamer-check-1.5_INCLUDE_DIRS}
+                           "${PROJECT_SOURCE_DIR}/3rdparty/valgrind/include")
 target_link_libraries(test_recorderendpoint
                       ${gstreamer-1.5_LIBRARIES}
                       ${gstreamer-check-1.5_LIBRARIES}
