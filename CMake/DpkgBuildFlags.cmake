@@ -32,7 +32,7 @@
 # limitations under the License.
 #=============================================================================
 
-find_program(FLAGS_EXECUTABLE dpkg-buildflags DOC "dpkg-buildflags program")
+find_program(FLAGS_EXECUTABLE dpkg-buildflags DOC "Path to 'dpkg-buildflags' executable")
 mark_as_advanced(FLAGS_EXECUTABLE)
 
 function(dpkg_buildflags_get_cflags var)
