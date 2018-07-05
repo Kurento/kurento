@@ -92,6 +92,7 @@ kms_webrtc_transport_new (KmsIceBaseAgent * agent,
 
   if (tr->sink->dtlssrtpenc == NULL || tr->src->dtlssrtpdec == NULL) {
     GST_ERROR ("SRTP elements not available: dtlssrtpenc, dtlssrtpdec");
+    g_object_unref (tr);
     return NULL;
   }
 
