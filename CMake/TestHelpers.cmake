@@ -93,18 +93,18 @@ function(add_test_program test_name sources)
   foreach(SUPP ${SUPPRESSIONS})
     set(SUPPS "${SUPPS}\n    --suppressions=${SUPP}")
   endforeach()
-  string(STRIP ${SUPPS} SUPPS)
+  if (SUPPS)
+    string(STRIP "${SUPPS}" SUPPS)
+  endif()
 
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
 "
-find_program(VALGRIND_EXECUTABLE valgrind
-  DOC \"Path to 'valgrind' executable\")
+find_program(VALGRIND_EXECUTABLE valgrind DOC \"Path to 'valgrind' executable\")
 if(NOT VALGRIND_EXECUTABLE)
   message(FATAL_ERROR \"ERROR: 'valgrind' executable not found\")
 endif()
 
-execute_process(COMMAND \${VALGRIND_EXECUTABLE} --quiet
-    ${SUPPS}
+execute_process(COMMAND \${VALGRIND_EXECUTABLE} --quiet ${SUPPS}
     --tool=memcheck --leak-check=full --trace-children=yes
     --leak-resolution=high --show-possibly-lost=yes
     --num-callers=${VALGRIND_NUM_CALLERS} --leak-check-heuristics=all
