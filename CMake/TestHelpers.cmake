@@ -18,7 +18,7 @@ set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of ent
 
 function(create_check_target)
   if(NOT TARGET check_build)
-    MESSAGE(STATUS "Add custom target: 'check_build'")
+    message(STATUS "Add custom target: 'check_build'")
     if(${GENERATE_TESTS})
       add_custom_target(check_build ALL)
     else()
@@ -26,7 +26,7 @@ function(create_check_target)
     endif()
   endif()
   if(NOT TARGET check)
-    MESSAGE(STATUS "Add custom target: 'check'")
+    message(STATUS "Add custom target: 'check'")
     add_custom_target(check
       COMMAND ${CMAKE_CTEST_COMMAND} \${ARGS}
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -37,7 +37,7 @@ endfunction()
 
 function(create_valgrind_target)
   if(NOT TARGET valgrind)
-    MESSAGE(STATUS "Add custom target: 'valgrind'")
+    message(STATUS "Add custom target: 'valgrind'")
     add_custom_target(valgrind)
   endif()
 endfunction()
