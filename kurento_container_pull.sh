@@ -3,6 +3,9 @@
 # Internal (private) images
 [ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.53.0"
 
+#  Remove dangling docker images
+docker rmi $(docker images --quiet --filter "dangling=true")
+
 # dev-integration images (for Java & JS)
 NODE_VERSIONS="0.12 4.x 5.x"
 for NODE_VERSION in $NODE_VERSIONS
