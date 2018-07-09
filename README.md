@@ -12,6 +12,87 @@ kurento-docker
 
 Kurento utilities for [Docker] containers.
 
+What can you find here
+----------------------
+
+Here you can find the Dockerfile for generating Docker Images. Following is an inventory of which image you can build in every folder:
+
+* aws-cli
+
+Docker image with AWS Cli.
+
+* coturn
+
+Docker image with Coturn. 
+
+* coturn-auth
+
+Docker image with Coturn using authentication.
+
+* dev-chef
+
+Docker image with Chef client.
+
+* dev-documentation
+
+Docker image for Kurento documentation.
+
+Build: https://ci.openvidu.io/jenkins/job/Development/job/adm_container_kurento_dev_documentation_merged/
+
+Used for:
+  Build Kurento documentation and push it to Read the doc.
+
+* dev-integration
+
+Build: https://ci.openvidu.io/jenkins/job/Development/job/adm_container_kurento_dev_integration_merged/
+
+Used for:
+
+Integration test
+
+* dev-integration-browser
+
+* dev-media-server
+
+Docker image to build Kurento Media Server.
+
+Build: https://ci.openvidu.io/jenkins/job/Development/job/adm_container_kurento_dev_media_server_merged
+
+* docker
+
+Install Kurento Media server in a container. This was created to test if our APT Repositories work properly. It's now deprecated.
+
+* kurento-media-server
+
+Official Docker Image for Kurento Media Server.
+
+Build: 
+https://ci.openvidu.io/jenkins/job/Development/job/Kurento_media_server_docker_trusty/
+https://ci.openvidu.io/jenkins/job/Development/job/Kurento_media_server_docker_xenial/
+
+* kurento-media-server-dev
+
+Nightly versions of Kurento media server.
+
+Build:
+https://ci.openvidu.io/jenkins/job/Development/view/5%20-%20Build/view/Docker/job/Kurento_media_server_docker_trusty_nightly/
+https://ci.openvidu.io/jenkins/job/Development/view/5%20-%20Build/view/Docker/job/Kurento_media_server_docker_xenial_nightly/
+
+* kurento-test-files
+
+Docker image to download test files from SVN repository. Deprecated.
+
+* release-media-server
+
+Docker image for relase Kurento Media Server.
+
+Build: https://ci.openvidu.io/jenkins/job/Development/job/container_release_media_server
+
+* svn-client
+
+Docker image with svn client.
+
+
 What is Kurento
 ---------------
 
