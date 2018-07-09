@@ -43,5 +43,6 @@ RUN echo 'Acquire::http::Proxy "http://proxy.kurento.org:3142";' > /etc/apt/apt.
   && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy
 
 # Install Kurento Media Server (KMS) 
-RUN echo "deb http://ubuntu.openvidu.io/dev trusty kms6" | tee /etc/apt/sources.list.d/kurento.list \
+RUN echo "deb http://ubuntu.openvidu.io/dev xenial kms6" | tee /etc/apt/sources.list.d/kurento.list \
   && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+  
