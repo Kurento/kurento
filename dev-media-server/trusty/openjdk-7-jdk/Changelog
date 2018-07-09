@@ -6,3 +6,7 @@
   - Update nodejs to v8
   - Another RUN line to clean the house
   - Install build essential
+
+* Version: trusty-jdk-7-3
+
+  - Enable kurento repos
