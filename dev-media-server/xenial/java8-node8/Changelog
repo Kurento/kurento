@@ -1,0 +1,9 @@
+* Version: xenial-java8-node8-1
+  
+  - Based on version xenial-jdk-8-2.
+  - Remove obsolete comments that didn't talk about the actual file contents.
+  - Perform configuration first. This makes apt-get use our package proxy.
+  - Perform cleanup last. This ensures all possible garbage gets cleaned.
+  - Add apt paths to be cleaned.
+  - Review apt-get package list, base it on official documentation.
+  - Add extra build tool to package list: CMake.

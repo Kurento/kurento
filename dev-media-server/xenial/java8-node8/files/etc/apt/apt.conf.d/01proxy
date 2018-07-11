@@ -1,0 +1,2 @@
+Acquire::http::Proxy "http://proxy.openvidu.io:3142";
+Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";
