@@ -26,15 +26,18 @@ rm -rf "${JS_PROJECT_NAME}/*"
 cp -a js/* "${JS_PROJECT_NAME}/"
 
 echo "Commit and push changes to repo: $JS_PROJECT_NAME"
+
+COMMIT_ID="$(git rev-parse --short HEAD)"
+
 pushd "$JS_PROJECT_NAME"
 git status
 git diff-index --quiet HEAD || {
   git add --all .
-  COMMIT_ID="$(git rev-parse --short HEAD)"
-  git commit -m "Generated code from $KURENTO_PROJECT $COMMIT_ID"
+  git commit -m "Generated code from ${KURENTO_PROJECT}@${COMMIT_ID}"
   git push origin master || {
     echo "Couldn't push changes to repo: $JS_PROJECT_NAME"
     exit 1
+  }
 }
 popd
 
