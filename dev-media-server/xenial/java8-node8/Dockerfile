@@ -1,5 +1,5 @@
 #
-# Kurento CI Dockerfile for Ubuntu 16.04 (Xenial) jobs
+# Kurento CI Dockerfile for Ubuntu 16.04 (Xenial)
 #
 
 FROM buildpack-deps:xenial-scm
@@ -65,7 +65,6 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
 # We still do our own cleanup, just to be sure.
 #
 RUN apt-get clean \
- && apt-get autoclean \
  && rm -rf \
     /var/lib/apt/lists/* \
     /var/cache/apt/archives/*.deb \
