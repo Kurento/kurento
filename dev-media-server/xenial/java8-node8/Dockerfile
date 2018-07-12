@@ -16,7 +16,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 #
 # Install required packages
 # This list is divided into 3 sections:
-# 1. Miscellaneous tools that are used by several tools in CI.
+# 1. Miscellaneous tools that are used by several jobs in CI.
 # 2. Dependencies of our build tools and packaging scripts.
 #    Source: https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#generating-debian-packages
 # 3. Extra build tools that are used by most CI jobs.
@@ -48,7 +48,6 @@ RUN apt-get update && apt-get install -y \
     pkg-config
 
 # Install Node.js 8.x LTS + NPM + Bower
-# Note: `pipefail` is a Shell option that catches errors in piped commands.
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get install -y nodejs \
  && npm -g install bower
@@ -56,11 +55,12 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
 #
 # Clean the house
 #
-# Note: "Best practices for writing Dockerfiles" (https://docs.docker.com/v17.12/develop/develop-images/dockerfile_best-practices/#run)
+# Note: "Best practices for writing Dockerfiles"
 # states that official base images already do an apt-get cleanup:
+# https://docs.docker.com/v17.12/develop/develop-images/dockerfile_best-practices/#run
 #
 #   > Official Debian and Ubuntu images automatically run `apt-get clean`, so
-#     explicit invocation is not required.
+#   > explicit invocation is not required.
 #
 # We still do our own cleanup, just to be sure.
 #
