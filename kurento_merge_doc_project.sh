@@ -76,17 +76,8 @@ kurento_check_version.sh true \
 kurento_clone_repo.sh "$RTD_PROJECT" \
 || { log "ERROR Command failed: kurento_clone_repo $RTD_PROJECT"; exit 1; }
 
-log "Current dir:"
-ls -lA
-
-log "Source contents:"
-ls -lA "${KURENTO_PROJECT}" || true
-
-log "Destination dir:"
-ls -lA "${RTD_PROJECT}" || true
-
-rm -rf "${RTD_PROJECT:?}/*"
-cp -a "./${KURENTO_PROJECT:?}/*" "./${RTD_PROJECT:?}/"
+rm -rf "${RTD_PROJECT:?}"/*
+cp -a "${KURENTO_PROJECT:?}"/* "${RTD_PROJECT:?}"/
 
 log "Commit and push changes to repo: $RTD_PROJECT"
 
