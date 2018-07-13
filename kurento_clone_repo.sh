@@ -11,20 +11,19 @@
 #/
 #/   2: Branch, tag or commit hash.
 #/      Optional.
-#/      Default: $BUILD_GIT_REF, or "master".
+#/      Default: $JOB_GIT_REF, or "master".
 #/
 #/   3: Destination directory.
 #/      Optional.
 #/      Default: Repository name.
 #/
 
+echo "############ RUN: [$0] ############"
+
 # ------------ Shell setup ------------
 
 # Shell options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
-
-# Enable debug mode
-set -o xtrace
 
 # Logging functions
 BASENAME="$(basename "$0")"  # Complete file name
@@ -41,15 +40,16 @@ trap on_exit EXIT
 usage() { grep '^#/' "$0" | cut -c 4-; exit 0; }
 expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
 
+# Enable debug mode
+set -o xtrace
+
 
 
 # ------------ Script start ------------
 
-log "############ RUN: [$0] ############"
-
 # Load arguments, with default fallbacks
 CLONE_NAME="${1:-${KURENTO_PROJECT}}"
-CLONE_REF="${2:-${BUILD_GIT_REF:-master}}"
+CLONE_REF="${2:-${JOB_GIT_REF:-master}}"
 CLONE_DIR="${3:-${CLONE_NAME}}"
 
 # Internal variables

@@ -8,13 +8,12 @@
 #/   None.
 #/
 
+echo "############ RUN: [$0] ############"
+
 # ------------ Shell setup ------------
 
 # Shell options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
-
-# Enable debug mode
-set -o xtrace
 
 # Logging functions
 BASENAME="$(basename "$0")"  # Complete file name
@@ -31,11 +30,12 @@ trap on_exit EXIT
 usage() { grep '^#/' "$0" | cut -c 4-; exit 0; }
 expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
 
+# Enable debug mode
+set -o xtrace
+
 
 
 # ------------ Script start ------------
-
-log "############ RUN: [$0] ############"
 
 # Internal variables
 RTD_PROJECT="${KURENTO_PROJECT}-readthedocs"
