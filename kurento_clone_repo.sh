@@ -39,7 +39,7 @@ on_error() { ERROR=1; }
 trap on_error ERR
 on_exit() {
     (( ${ERROR-${?}} )) && log "ERROR" || log "SUCCESS"
-    log "------------ END ------------"
+    log "==================== END ===================="
 }
 trap on_exit EXIT
 
@@ -50,7 +50,7 @@ expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
 # Enable debug mode
 set -o xtrace
 
-log "++++++++++++ BEGIN ++++++++++++"
+log "#################### BEGIN ####################"
 
 
 

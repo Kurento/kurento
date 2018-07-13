@@ -29,7 +29,7 @@ on_error() { ERROR=1; }
 trap on_error ERR
 on_exit() {
     (( ${ERROR-${?}} )) && log "ERROR" || log "SUCCESS"
-    log "------------ END ------------"
+    log "==================== END ===================="
 }
 trap on_exit EXIT
 
@@ -40,7 +40,7 @@ expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
 # Enable debug mode
 set -o xtrace
 
-log "++++++++++++ BEGIN ++++++++++++"
+log "#################### BEGIN ####################"
 
 
 
@@ -76,8 +76,17 @@ kurento_check_version.sh true \
 kurento_clone_repo.sh "$RTD_PROJECT" \
 || { log "ERROR Command failed: kurento_clone_repo $RTD_PROJECT"; exit 1; }
 
+log "Current dir:"
+ls -lA
+
+log "Source contents:"
+ls -lA "${KURENTO_PROJECT}" || true
+
+log "Destination dir:"
+ls -lA "${RTD_PROJECT}" || true
+
 rm -rf "${RTD_PROJECT:?}/*"
-cp -a "${KURENTO_PROJECT:?}/*" "${RTD_PROJECT:?}/"
+cp -a "./${KURENTO_PROJECT:?}/*" "./${RTD_PROJECT:?}/"
 
 log "Commit and push changes to repo: $RTD_PROJECT"
 
