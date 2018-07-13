@@ -1,56 +1,88 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-[ -n $1 ] && PROJECT_NAME=$1
-[ -n $2 ] && BRANCH=$2
+#/
+#/ Clone a Git repository.
+#/
+#/ Arguments:
+#/
+#/   1: Repository name.
+#/      Optional.
+#/      Default: $KURENTO_PROJECT
+#/
+#/   2: Branch, tag or commit hash.
+#/      Optional.
+#/      Default: $BUILD_GIT_REF, or "master".
+#/
+#/   3: Destination directory.
+#/      Optional.
+#/      Default: Repository name.
+#/
 
-[ -z "$PROJECT_NAME" ] && PROJECT_NAME=$KURENTO_PROJECT
-if [ -z "$BRANCH" ]
-then
-  if [ -z "$GERRIT_NEWREV" ]
-  then
-    BRANCH=$GERRIT_REFNAME
-  else
-    BRANCH=$GERRIT_NEWREV
-  fi
-fi
+# ------------ Shell setup ------------
 
-if [ "${BRANCH}x" == "x" ]
-then
-  BRANCH=master
-fi
+# Shell options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
 
-if [ "${KURENTO_GIT_REPOSITORY}x" == "x" ]
-then
-  echo "KURENTO_GIT_REPOSITORY environment variable should be to the base url for the repos"
-  exit 1
-fi
+# Enable debug mode
+set -o xtrace
 
-echo "Preparing to clone project: ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} (${BRANCH})"
+# Logging functions
+BASENAME="$(basename "$0")"  # Complete file name
+log()   { echo "[${BASENAME}] $*"; }
+error() { echo "[${BASENAME}] ERROR $*"; exit 1; }
 
-if [ ! "${GIT_SSH_KEY}x" == "x" ]
-then
-  echo "Setting private key permissions to 600"
-  chmod 600 ${GIT_SSH_KEY}
-fi
+# Trap functions
+on_error() { ERROR=1; }
+trap on_error ERR
+on_exit() { (( ${ERROR-${?}} )) && error || log "SUCCESS"; }
+trap on_exit EXIT
 
-if [ "${GIT_SSH_KEY}x" == "x" ]
-then
-  git clone ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} || exit 1
+# Print help message
+usage() { grep '^#/' "$0" | cut -c 4-; exit 0; }
+expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
+
+
+
+# ------------ Script start ------------
+
+log "############ RUN: [$0] ############"
+
+# Load arguments, with default fallbacks
+CLONE_NAME="${1:-${KURENTO_PROJECT}}"
+CLONE_REF="${2:-${BUILD_GIT_REF:-master}}"
+CLONE_DIR="${3:-${CLONE_NAME}}"
+
+# Internal variables
+CLONE_URL="${KURENTO_GIT_REPOSITORY}/${CLONE_NAME}.git"
+
+log "Git clone: ${CLONE_URL} (${CLONE_REF})"
+
+if [ -z "${GIT_KEY:+x}" ]; then
+    git clone "${CLONE_URL}" "${CLONE_DIR}" \
+    || error "Command failed: git clone"
 else
-  ssh-agent bash -c "ssh-add ${GIT_SSH_KEY}; git clone ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} || exit 1" || exit 1
+    ssh-agent bash -c "\
+      ssh-add ${GIT_KEY} || exit 1; \
+      git clone "${CLONE_URL}" "${CLONE_DIR}" || exit 1;" \
+    || error "Command failed: ssh-agent bash -c git clone"
 fi
 
-cd ${PROJECT_NAME} || exit 1
+cd "${CLONE_DIR}/"
 
-git fetch ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} refs/changes/*:refs/changes/*
-git checkout ${BRANCH} || exit 1
+git fetch . refs/changes/*:refs/changes/* \
+|| error "Command failed: git fetch"
 
-if [ -f .gitmodules ]
-then
-  if [ "${GIT_SSH_KEY}x" == "x" ]
-    then
-    git submodule update --init --recursive || exit 1
-  else
-    ssh-agent bash -c "ssh-add ${GIT_SSH_KEY}; git submodule update --init --recursive || exit 1" || exit 1
-  fi
+git checkout "${CLONE_REF}" \
+|| error "Command failed: git checkout"
+
+if [ -f .gitmodules ]; then
+    if [ -z "${GIT_KEY:+x}" ]; then
+        git submodule update --init --recursive \
+        || error "Command failed: git submodule update"
+    else
+        ssh-agent bash -c "\
+          ssh-add ${GIT_KEY} || exit 1; \
+          git submodule update --init --recursive || exit 1;" \
+        || error "Command failed: ssh-agent bash -c git submodule update"
+    fi
 fi
