@@ -8,22 +8,30 @@
 #/   None.
 #/
 
-echo "############ RUN: [$0] ############"
-
 # ------------ Shell setup ------------
 
 # Shell options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
 
 # Logging functions
+# These disable and re-enable debug mode (only if it was already set)
+# Source: https://superuser.com/a/1141026
+shopt -s expand_aliases  # This trick requires enabling aliases in Bash
 BASENAME="$(basename "$0")"  # Complete file name
-log()   { echo "[${BASENAME}] $*"; }
-error() { echo "[${BASENAME}] ERROR $*"; exit 1; }
+echo_and_restore() {
+    echo "[${BASENAME}] $*"
+    case "$flags" in (*x*) set -x ; esac
+}
+alias   log='{ flags="$-"; set +x; } 2>/dev/null; echo_and_restore'
+alias error='{ flags="$-"; set +x; } 2>/dev/null; echo_and_restore ERROR'
 
 # Trap functions
 on_error() { ERROR=1; }
 trap on_error ERR
-on_exit() { (( ${ERROR-${?}} )) && error || log "SUCCESS"; }
+on_exit() {
+    (( ${ERROR-${?}} )) && error || log "SUCCESS"
+    log "------------ END ------------"
+}
 trap on_exit EXIT
 
 # Print help message
@@ -32,6 +40,8 @@ expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
 
 # Enable debug mode
 set -o xtrace
+
+log "++++++++++++ BEGIN ++++++++++++"
 
 
 
