@@ -40,8 +40,6 @@ log "############ RUN: [$0] ############"
 # Internal variables
 RTD_PROJECT="${KURENTO_PROJECT}-readthedocs"
 
-git config --global http.postBuffer 2M
-
 kurento_clone_repo.sh "$KURENTO_PROJECT" \
 || error "Command failed: kurento_clone_repo $KURENTO_PROJECT"
 
