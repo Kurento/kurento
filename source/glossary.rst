@@ -165,17 +165,11 @@ This is a glossary of terms that often appear in discussion about multimedia tra
           :doc:`/knowledge/nat`
               Entry in our Knowledge Base.
 
-          `NAT Traversal White Paper <http://www.nattraversal.com/>`__
-              White paper on NAT-T and solutions for end-to-end connectivity in its presence
-
    Node.js
        `Node.js <https://nodejs.org/>`__ is a cross-platform runtime environment for server-side and networking applications. Node.js applications are written in JavaScript, and can be run within the Node.js runtime on OS X, Microsoft Windows and Linux with no changes.
 
    npm
        `npm <https://www.npmjs.org/>`__ is the official package manager for :term:`Node.js`.
-
-   OpenCL
-       `OpenCL <http://www.khronos.org/opencl/>`__ is the standard framework for  cross-platform, parallel programming of heterogeneous platforms consisting of central processing units (CPUs), graphics processing units (GPUs), digital signal processors (DSPs), field-programmable gate arrays (FPGAs) and other processors.
 
    OpenCV
        OpenCV (Open Source Computer Vision Library) is a BSD-licensed open source computer vision and machine learning software library. OpenCV aims to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception.
@@ -186,9 +180,6 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        .. seealso::
           `GStreamer Pad <https://gstreamer.freedesktop.org/documentation/application-development/basics/pads.html>`__
               Definition of the Pad structure in GStreamer
-
-   PubNub
-       `PubNub <http://www.pubnub.com/>`__ is a publish/subscribe cloud service for sending and routing data. It streams data to global audiences on any device using persistent socket connections. PubNub has been designed to deliver data with low latencies to end-user devices. These devices can be behind firewalls, NAT environments, and other hard-to-reach network environments. PubNub provides message caching for retransmission of lost signals over unreliable network environments. This is accomplished by maintaining an always open socket connection to every device.
 
    QR
        QR code (Quick Response Code) is a type of two-dimensional barcode. that became popular in the mobile phone industry due to its fast readability and greater storage capacity compared to standard UPC barcodes.
