@@ -63,7 +63,7 @@ Configure Java applications to use HTTPS
 
 .. note::
 
-      If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <http://docs.spring.io/spring/docs/current/spring-framework-reference/html/websocket.html#websocket-server-allowed-origins>`__ entry for more info.
+      If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#websocket-server-allowed-origins>`__ entry for more info.
 
 
 
@@ -75,7 +75,7 @@ Configure Node applications to use HTTPS
    * Request a certificate from a local certification authority.
 
    * Create your own self-signed certificate as explained
-     `here <http://www.akadia.com/services/ssh_test_certificate.html>`__. This
+     `here <https://www.akadia.com/services/ssh_test_certificate.html>`__. This
      will show you how to create the required files: *server.crt*, *server.key*
      and *server.csr*.
 
@@ -126,7 +126,7 @@ Configure Javascript applications to use HTTPS
    * Request a certificate from a local certification authority.
 
    * Create your own self-signed certificate as explained
-     `here <http://www.akadia.com/services/ssh_test_certificate.html>`__. This
+     `here <https://www.akadia.com/services/ssh_test_certificate.html>`__. This
      will show you how to create the required files: *server.crt*, *server.key*
      and *server.csr*.
 
@@ -174,7 +174,7 @@ by default. For this reason, you'll need to force them to accept it.
   https://localhost:8433/kurento and accepting the certificate in the browser.
 
 * Java applications, follow the instructions of this
-  `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__
+  `link <https://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__
   (get ``InstallCert.java`` from
   `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`__).
   You'll need to instruct the ``KurentoClient`` needs to be configured to allow

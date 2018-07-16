@@ -6,7 +6,7 @@ About Kurento and WebRTC
 
 The code is open source, released under the terms of `Apache License Version 2.0`_ and `available on GitHub`_.
 
-.. _Apache License Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+.. _Apache License Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
 .. _available on GitHub: https://github.com/Kurento
 
 Kurento follows an architecture based on composable modules that can be mix-and-matched, activated, or deactivated at any point in time. Developers can create additional modules to add new functionalities that will be able to be plugged-in dynamically.

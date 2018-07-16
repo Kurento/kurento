@@ -17,7 +17,7 @@ the underlying network and media pipeline.
 To that aim, Kurento provides WebRTC statistics gathering for the server-side
 (Kurento Media Server, KMS). The implementation of this capability follows the
 guidelines provided in the
-`W3C WebRTC's Statistics API <http://www.w3.org/TR/webrtc-stats/>`__.
+`W3C WebRTC's Statistics API <https://www.w3.org/TR/webrtc-stats/>`__.
 Therefore, the statistics gathered in the KMS can be divided into two groups:
 
 - ``inboundrtp``: statistics on the stream received in the KMS.

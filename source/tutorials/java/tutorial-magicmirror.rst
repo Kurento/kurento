@@ -70,7 +70,7 @@ composed by the following `Media Element`:term: s:
 - **FaceOverlay filter**: Computer vision filter that detects faces in the
   video stream and puts an image on top of them. In this demo the filter is
   configured to put a
-  `Super Mario hat <http://files.kurento.org/img/mario-wings.png>`_).
+  `Super Mario hat <http://files.openvidu.io/img/mario-wings.png>`_).
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
@@ -468,7 +468,7 @@ is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
 client-side. Other client libraries are managed with
-`webjars <http://www.webjars.org/>`_:
+`webjars <https://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -510,7 +510,7 @@ client-side. Other client libraries are managed with
 .. note::
 
    We are in active development. You can find the latest version of
-   Kurento Java Client at `Maven Central <http://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
+   Kurento Java Client at `Maven Central <https://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
 
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
 include the following properties in your pom:

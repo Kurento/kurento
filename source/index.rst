@@ -6,7 +6,7 @@ Welcome to Kurento
 
 The code is open source, released under the terms of `Apache License Version 2.0`_ and `available on GitHub`_.
 
-.. _Apache License Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+.. _Apache License Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
 .. _available on GitHub: https://github.com/Kurento
 
 You can read more on our page :doc:`About Kurento and WebRTC </user/about>`. Check now how to :doc:`get started </user/quickstart>` with Kurento and take a look at our :doc:`tutorials </user/tutorials>`, which showcase some demo applications.

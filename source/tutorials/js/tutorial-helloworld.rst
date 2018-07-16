@@ -284,4 +284,4 @@ To get these dependencies, just run the following shell command:
 .. note::
 
    We are in active development. You can find the latest version of
-   Kurento JavaScript Client at `Bower <http://bower.io/search/?q=kurento-client>`_.
+   Kurento JavaScript Client at `Bower <https://bower.io/search/?q=kurento-client>`_.

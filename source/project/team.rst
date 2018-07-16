@@ -33,7 +33,7 @@ The Kurento development team is formed under the `CodeURJC Research Group`_, whi
 .. _Kurento Module Creator: https://github.com/Kurento/kurento-module-creator
 .. _documentation: https://github.com/Kurento/doc-kurento
 .. _Kurento Room: https://github.com/Kurento/kurento-room
-.. _OpenVidu: http://openvidu.io/
+.. _OpenVidu: https://openvidu.io/
 .. _JavaScript client: https://github.com/Kurento/kurento-utils-js
 .. _Kurento: https://github.com/Kurento/kms-core
 .. _Media: https://github.com/Kurento/kms-elements

@@ -226,4 +226,4 @@ epub_exclude_files = ['search.html']
 # -- Additional options for Kurento ---------------------------------------
 
 # linkcheck, jboss forbids us
-linkcheck_ignore = [r'http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm']
+linkcheck_ignore = [r'https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm']

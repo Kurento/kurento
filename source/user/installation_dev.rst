@@ -60,7 +60,8 @@ This will install the latest KMS pre-release (potentially unstable) version.
 Kurento Java Client
 ===================
 
-The development builds of the Kurento Java Client are made available for Maven in http://maven.kurento.org/. To use these, you need to add first this repository to your Maven configuration.
+The development builds of the Kurento Java Client are made available for Maven in https://maven.openvidu.io/archiva/index.action
+To use these, you need to add first this repository to your Maven configuration.
 
 Adding a repository to Maven can be done at three scope levels:
 

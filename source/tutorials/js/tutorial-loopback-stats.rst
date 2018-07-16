@@ -270,4 +270,4 @@ Demo dependencies are located in file `bower.json <https://github.com/Kurento/ku
 .. note::
 
    We are in active development. You can find the latest version of
-   Kurento JavaScript Client at `Bower <http://bower.io/search/?q=kurento-client>`_.
+   Kurento JavaScript Client at `Bower <https://bower.io/search/?q=kurento-client>`_.

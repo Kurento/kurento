@@ -18,7 +18,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
           :wikipedia:`Resource Interchange File Format`
 
    Bower
-       `Bower <http://bower.io/>`__ is a package manager for the web. It offers a generic solution to the problem of front-end package management, while exposing the package dependency model via an API that can be consumed by a build stack.
+       `Bower <https://bower.io/>`__ is a package manager for the web. It offers a generic solution to the problem of front-end package management, while exposing the package dependency model via an API that can be consumed by a build stack.
 
    Builder Pattern
        The builder pattern is an object creation software design pattern whose intention is to find a solution to the telescoping constructor anti-pattern. The telescoping constructor anti-pattern occurs when the increase of object constructor parameter combination leads to an exponential list of constructors. Instead of using numerous constructors, the builder pattern uses another object, a builder, that receives each initialization parameter step by step and then returns the resulting constructed object at once.
@@ -32,7 +32,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        .. seealso::
           :wikipedia:`Cross-origin resource sharing`
 
-          `enable-cors.org <http://enable-cors.org/>`__
+          `enable-cors.org <https://enable-cors.org/>`__
               Information on the relevance of CORS and how and when to enable it.
 
    DOM
@@ -42,7 +42,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        End Of Stream is an event that occurs when playback of some media source has finished. In Kurento, some elements will raise an ``EndOfStream`` event.
 
    GStreamer
-       `GStreamer <http://gstreamer.freedesktop.org/>`__ is a pipeline-based multimedia framework written in the C programming language.
+       `GStreamer <https://gstreamer.freedesktop.org/>`__ is a pipeline-based multimedia framework written in the C programming language.
 
    H.264
        A Video Compression Format. The H.264 standard can be viewed as a "family of standards" composed of a number of profiles. Each specific decoder deals with at least one such profiles, but not necessarily all.
@@ -85,16 +85,16 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               Transition Scenarios for 3GPP Networks
 
    jQuery
-       `jQuery <http://jquery.com/>`__ is a cross-platform JavaScript library designed to simplify the client-side scripting of HTML.
+       `jQuery <https://jquery.com/>`__ is a cross-platform JavaScript library designed to simplify the client-side scripting of HTML.
 
    JSON
-       `JSON <http://json.org/>`__ (JavaScript Object Notation) is a lightweight data-interchange format. It is designed to be easy to understand and write for humans and easy to parse for machines.
+       `JSON <https://json.org/>`__ (JavaScript Object Notation) is a lightweight data-interchange format. It is designed to be easy to understand and write for humans and easy to parse for machines.
 
    JSON-RPC
-       `JSON-RPC <http://www.jsonrpc.org/>`__ is a simple remote procedure call protocol encoded in JSON. JSON-RPC allows for notifications and for multiple calls to be sent to the server which may be answered out of order.
+       `JSON-RPC <https://www.jsonrpc.org/>`__ is a simple remote procedure call protocol encoded in JSON. JSON-RPC allows for notifications and for multiple calls to be sent to the server which may be answered out of order.
 
    Kurento
-       `Kurento <http://kurento.org>`__ is a platform for the development of multimedia-enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Some components of Kurento are the :term:`Kurento Media Server`, the :term:`Kurento API`, the :term:`Kurento Protocol`, and the :term:`Kurento Client`.
+       `Kurento <https://www.kurento.org/>`__ is a platform for the development of multimedia-enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Some components of Kurento are the :term:`Kurento Media Server`, the :term:`Kurento API`, the :term:`Kurento Protocol`, and the :term:`Kurento Client`.
 
    Kurento API
         An object oriented API to create media pipelines to control media. It can be seen as and interface to Kurento Media Server. It can be used from the Kurento Protocol or from Kurento Clients.
@@ -110,7 +110,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
         **Kurento Media Server** is the core element of Kurento since it responsible for media transmission, processing, loading and recording.
 
    Maven
-       `Maven <http://maven.apache.org/>`__ is a build automation tool used primarily for Java projects.
+       `Maven <https://maven.apache.org/>`__ is a build automation tool used primarily for Java projects.
 
    Media Element
        A **Media Element** is a module that encapsulates a specific media capability.  For example **RecorderEndpoint**, **PlayerEndpoint**, etc.
@@ -169,7 +169,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               White paper on NAT-T and solutions for end-to-end connectivity in its presence
 
    Node.js
-       `Node.js <http://www.nodejs.org/>`__ is a cross-platform runtime environment for server-side and networking applications. Node.js applications are written in JavaScript, and can be run within the Node.js runtime on OS X, Microsoft Windows and Linux with no changes.
+       `Node.js <https://nodejs.org/>`__ is a cross-platform runtime environment for server-side and networking applications. Node.js applications are written in JavaScript, and can be run within the Node.js runtime on OS X, Microsoft Windows and Linux with no changes.
 
    npm
        `npm <https://www.npmjs.org/>`__ is the official package manager for :term:`Node.js`.
@@ -211,7 +211,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               A Google Congestion Control Algorithm for Real-Time Communication
 
    REST
-       Representational state transfer (REST) is an architectural style consisting of a coordinated set of constraints applied to components, connectors, and data elements, within a distributed hypermedia system. The term representational state transfer was introduced and defined in 2000 by Roy Fielding in his `doctoral dissertation <http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm>`__.
+       Representational state transfer (REST) is an architectural style consisting of a coordinated set of constraints applied to components, connectors, and data elements, within a distributed hypermedia system. The term representational state transfer was introduced and defined in 2000 by Roy Fielding in his `doctoral dissertation <https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm>`__.
 
        .. seealso::
           :wikipedia:`Representational state transfer`
@@ -332,10 +332,10 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        This is the documentation tool of choice for the Kurento project.
 
        .. seealso::
-          `Easy and beautiful documentation with Sphinx <http://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html?ca=dat>`__
+          `Easy and beautiful documentation with Sphinx <https://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html>`__
 
    Spring Boot
-       `Spring Boot <http://projects.spring.io/spring-boot/>`__ is Spring's convention-over-configuration solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
+       `Spring Boot <http://spring.io/projects/spring-boot>`__ is Spring's convention-over-configuration solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
        It embeds Tomcat or Jetty directly and so there is no need to deploy WAR files in order to run web applications.
 
    SRTCP
@@ -391,13 +391,13 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               VP8 Data Format and Decoding Guide
 
    WebM
-       `WebM <http://www.webmproject.org/>`__ is an open media file format designed for the web. WebM files consist of video streams compressed with the VP8 video codec and audio streams compressed with the Vorbis audio codec. The WebM file structure is based on the Matroska media container.
+       `WebM <https://www.webmproject.org/>`__ is an open media file format designed for the web. WebM files consist of video streams compressed with the VP8 video codec and audio streams compressed with the Vorbis audio codec. The WebM file structure is based on the Matroska media container.
 
    WebRTC
        `WebRTC <https://webrtc.org/>`__ is a set of protocols, mechanisms and APIs that provide browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections.
 
        .. seealso::
-          `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`__
+          `WebRTC Working Draft <https://www.w3.org/TR/webrtc/>`__
 
    WebSocket
        `WebSocket <https://www.websocket.org/>`__ specification (developed as part of the HTML5 initiative) defines a full-duplex single socket connection over which messages can be sent between client and server.

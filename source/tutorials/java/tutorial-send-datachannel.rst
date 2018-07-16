@@ -247,7 +247,7 @@ with the SDP answer.
              .build();
          user.setWebRtcEndpoint(webRtcEndpoint);
          PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-             "http://files.kurento.org/video/filter/barcodes.webm").build();
+             "http://files.openvidu.io/video/filter/barcodes.webm").build();
          user.setPlayer(player);
          users.put(session.getId(), user);
 
@@ -488,7 +488,7 @@ is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
 client-side. Other client libraries are managed with
-`webjars <http://www.webjars.org/>`_:
+`webjars <https://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -530,7 +530,7 @@ client-side. Other client libraries are managed with
 .. note::
 
    We are in active development. You can find the latest version of
-   Kurento Java Client at `Maven Central <http://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
+   Kurento Java Client at `Maven Central <https://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
 
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
 include the following properties in your pom:

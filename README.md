@@ -1,4 +1,4 @@
-[![License badge](https://img.shields.io/badge/license-Apache2-orange.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![License badge](https://img.shields.io/badge/license-Apache2-orange.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Documentation badge](https://readthedocs.org/projects/fiware-orion/badge/?version=latest)](https://doc-kurento.readthedocs.io)
 [![Docker badge](https://img.shields.io/docker/pulls/fiware/orion.svg)](https://hub.docker.com/r/fiware/stream-oriented-kurento/)
 [![Support badge]( https://img.shields.io/badge/support-sof-yellowgreen.svg)](https://stackoverflow.com/questions/tagged/kurento)
@@ -9,7 +9,7 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 
 [Kurento]: https://kurento.org
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
-[Apache 2.0 License]: http://www.apache.org/licenses/LICENSE-2.0
+[Apache 2.0 License]: https://www.apache.org/licenses/LICENSE-2.0
 
 
 
@@ -30,9 +30,9 @@ Kurento is an open source software project providing a platform suitable for cre
 
 Kurento is part of [FIWARE]. For further information on the relationship of FIWARE and Kurento check the [Kurento FIWARE Catalog Entry]. Kurento is also part of the [NUBOMEDIA] research initiative.
 
-[FIWARE]: http://www.fiware.org
-[Kurento FIWARE Catalog Entry]: http://catalogue.fiware.org/enablers/stream-oriented-kurento
-[NUBOMEDIA]: http://www.nubomedia.eu
+[FIWARE]: https://www.fiware.org/
+[Kurento FIWARE Catalog Entry]: https://catalogue-server.fiware.org/enablers/stream-oriented-kurento
+[NUBOMEDIA]: https://www.nubomedia.eu/
 
 
 
@@ -42,8 +42,8 @@ Documentation
 The Kurento project provides detailed [documentation] including tutorials, installation and development guides. The [Open API specification], also known as *Kurento Protocol*, is available on [apiary.io].
 
 [documentation]: https://www.kurento.org/documentation
-[Open API specification]: http://kurento.github.io/doc-kurento/
-[apiary.io]: http://docs.streamoriented.apiary.io/
+[Open API specification]: https://kurento.github.io/doc-kurento/
+[apiary.io]: https://streamoriented.docs.apiary.io/
 
 
 
@@ -52,14 +52,14 @@ Useful Links
 
 Usage:
 
-* [Installation Guide](http://doc-kurento.readthedocs.io/en/stable/user/installation.html)
-* [Compilation Guide](http://doc-kurento.readthedocs.io/en/stable/dev/dev_guide.html#developing-kms)
-* [Contribution Guide](http://doc-kurento.readthedocs.io/en/stable/project/contribute.html)
+* [Installation Guide](https://doc-kurento.readthedocs.io/en/stable/user/installation.html)
+* [Compilation Guide](https://doc-kurento.readthedocs.io/en/stable/dev/dev_guide.html#developing-kms)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/stable/project/contribute.html)
 
 Issues:
 
 * [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
-* [Support](http://doc-kurento.readthedocs.io/en/stable/user/support.html)
+* [Support](https://doc-kurento.readthedocs.io/en/stable/user/support.html)
 
 News:
 
@@ -86,7 +86,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,

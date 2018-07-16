@@ -92,7 +92,7 @@ following `Media Element`:term: s:
 - **FaceOverlay filter**: Computer vision filter that detects faces in the
   video stream and puts an image on top of them. In this demo the filter is
   configured to put a
-  `Super Mario hat <http://files.kurento.org/img/mario-wings.png>`_).
+  `Super Mario hat <http://files.openvidu.io/img/mario-wings.png>`_).
 
 The media pipeline implemented is illustrated in the following picture:
 
@@ -262,4 +262,4 @@ file, as follows:
 .. note::
 
    We are in active development. You can find the latest version of
-   Kurento JavaScript Client at `Bower <http://bower.io/search/?q=kurento-client>`_.
+   Kurento JavaScript Client at `Bower <https://bower.io/search/?q=kurento-client>`_.

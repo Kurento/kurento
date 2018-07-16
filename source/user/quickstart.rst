@@ -42,4 +42,4 @@ Generally speaking, these are the first steps that any user interested in Kurent
 
    Kurento is a project that aims to bring the latest innovations closer to the people, and help connect them together. Make a great application with it, and let us know! We will be more than happy to find out about who is using Kurento and what is being built with it :-)
 
-.. _OpenVidu: http://openvidu.io/
+.. _OpenVidu: https://openvidu.io/
