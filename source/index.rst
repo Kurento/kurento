@@ -40,8 +40,9 @@ Information about development of *Kurento itself* is also available:
    /user/configuration
    /user/writing_applications
    /user/writing_modules
-   /user/support
    /user/faq
+   /user/troubleshooting
+   /user/support
 
 
 
@@ -121,6 +122,7 @@ Information about development of *Kurento itself* is also available:
 
    /knowledge/congestion_rmcat
    /knowledge/nat
+   /knowledge/safari
    /glossary
 
 

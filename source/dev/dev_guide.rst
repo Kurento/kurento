@@ -337,44 +337,6 @@ Run:
     sudo apt-get update
     sudo apt-get install "${PACKAGES[@]}"
 
-Optionally, install the debugging symbols if you will be using a debugger to troubleshoot bugs in KMS. Run:
-
-.. code-block:: bash
-
-    PACKAGES=(
-      # Third-party libraries
-      libglib2.0-0-dbg
-      libssl1.0.0-dbg
-
-      # Kurento external libraries
-      gstreamer1.5-plugins-base-dbg
-      gstreamer1.5-plugins-good-dbg
-      gstreamer1.5-plugins-ugly-dbg
-      gstreamer1.5-plugins-bad-dbg
-      gstreamer1.5-libav-dbg
-      libgstreamer1.5-0-dbg
-      libnice-dbg
-      libsrtp1-dbg
-      openwebrtc-gst-plugins-dbg
-      kmsjsoncpp-dbg
-
-      # KMS main components
-      kms-jsonrpc-dbg
-      kms-core-dbg
-      kms-elements-dbg
-      kms-filters-dbg
-      kurento-media-server-dbg
-
-      # KMS extra modules
-      kms-chroma-dbg
-      kms-crowddetector-dbg
-      kms-platedetector-dbg
-      kms-pointerdetector-dbg
-    )
-
-    sudo apt-get update
-    sudo apt-get install "${PACKAGES[@]}"
-
 
 
 Download KMS
