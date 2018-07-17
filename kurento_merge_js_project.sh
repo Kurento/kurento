@@ -24,8 +24,6 @@ echo "##################### EXECUTE: kurento_merge_js_project ##################
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 PATH="${BASEPATH}:${PATH}"
 
-# ---- Verify project structure ----
-
 [ -f package.json ] || {
   echo "[kurento_merge_js_project] ERROR: File not found: package.json"
   exit 1
@@ -35,6 +33,20 @@ kurento_check_version.sh false || {
   echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
 }
+
+# Deploy to NPM
+kurento_npm_publish.sh
+
+# Finish if the project is one of the main client modules:
+# "kurento-client-{core,elements,filters}-js" get loaded directly by
+# kurento-client via NPM. They should not be available independently in Maven
+# or Bower.
+case "$KURENTO_PROJECT" in
+    kurento-client-core-js \
+    | kurento-client-elements-js \
+    | kurento-client-filters-js)
+        exit 0 ;;
+esac
 
 # Convert into a valid Maven artifact
 kurento_mavenize_js_project.sh "$KURENTO_PROJECT" || {
@@ -57,9 +69,6 @@ kurento_maven_deploy.sh || {
   echo "[kurento_merge_js_project] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
   exit 1
 }
-
-# Deploy to NPM
-kurento_npm_publish.sh
 
 # Deploy to Bower repository
 [ -z "$BASE_NAME" ] && BASE_NAME="$KURENTO_PROJECT"
