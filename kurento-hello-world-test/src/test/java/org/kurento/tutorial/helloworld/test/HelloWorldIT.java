@@ -28,7 +28,7 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KmsService;
 import org.kurento.test.services.Service;
 import org.kurento.test.services.WebServerService;
-import org.kurento.tutorial.helloworld.HelloWorldApp;
+import org.kurento.tutorial.helloworld.Application;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -42,7 +42,7 @@ import org.openqa.selenium.WebElement;
 public class HelloWorldIT extends BrowserTest<WebPage> {
 
   public static @Service(1) KmsService kms = new KmsService();
-  public static @Service(2) WebServerService webServer = new WebServerService(HelloWorldApp.class);
+  public static @Service(2) WebServerService webServer = new WebServerService(Application.class);
 
   private WebDriver driver;
 
