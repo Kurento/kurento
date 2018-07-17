@@ -16,25 +16,29 @@ echo "##################### EXECUTE: kurento_merge_java_project ################
 
 PATH=$PATH:${KURENTO_SCRIPTS_HOME}
 
-echo "[kurento_merge_java_project] Command: kurento_check_version (tagging disabled)"
+# ---- Verify project structure ----
+
+[ -f pom.xml ] || {
+  echo "[kurento_merge_java_project] ERROR: File not found: pom.xml"
+  exit 1
+}
+
 kurento_check_version.sh false || {
   echo "[kurento_merge_java_project] ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
 }
 
 # Deploy to Kurento repositories
-export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
-export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
-echo "[kurento_merge_java_project] Command: kurento_maven_deploy (Kurento)"
+export SNAPSHOT_REPOSITORY="$MAVEN_S3_KURENTO_SNAPSHOTS"
+export RELEASE_REPOSITORY="$MAVEN_S3_KURENTO_RELEASES"
 kurento_maven_deploy.sh || {
   echo "[kurento_merge_java_project] ERROR: Command failed: kurento_maven_deploy (Kurento)"
   exit 1
 }
 
 # Deploy to Maven Central (only release)
-export SNAPSHOT_REPOSITORY=
-export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
-echo "[kurento_merge_java_project] Command: kurento_maven_deploy (Sonatype)"
+export SNAPSHOT_REPOSITORY=""
+export RELEASE_REPOSITORY="$MAVEN_SONATYPE_NEXUS_STAGING"
 kurento_maven_deploy.sh || {
   echo "[kurento_merge_java_project] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
   exit 1
@@ -46,17 +50,17 @@ VERSION="$(kurento_get_version.sh)" || {
   exit 1
 }
 if [[ $VERSION != *-SNAPSHOT ]]; then
-  echo "[kurento_merge_java_project] Version is RELEASE: HTTP publish"
+  echo "[kurento_merge_java_project] Version is RELEASE, HTTP publish"
 
   if [[ -n "$FILES" ]]; then
     echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > project.version
     echo "[kurento_merge_java_project] Command: kurento_http_publish"
     FILES=$FILES kurento_http_publish.sh
   else
-    echo "[kurento_merge_java_project] No FILES provided, skip HTTP publish"
+    echo "[kurento_merge_java_project] Skip HTTP publish: No FILES provided"
   fi
 else
-  echo "[kurento_merge_java_project] Version is SNAPSHOT, skip HTTP publish"
+  echo "[kurento_merge_java_project] Skip HTTP publish: Version is SNAPSHOT"
 fi
 
 # Only create a tag if the deployment process was successful
