@@ -180,6 +180,12 @@
 			<artifactId>tesseract</artifactId>
 		</dependency>
 
+		<!-- JNA -->
+		<dependency>
+			<groupId>com.sun.jna</groupId>
+			<artifactId>jna</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

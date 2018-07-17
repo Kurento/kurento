@@ -512,9 +512,9 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
       if (jObject.has(RESULT_PROPERTY)) {
 
         ParameterizedType parameterizedType = (ParameterizedType) typeOfT;
-
-        return new Response<>(id, context.deserialize(jObject.get(RESULT_PROPERTY),
-            parameterizedType.getActualTypeArguments()[0]));
+        Object deserialize = context.deserialize(jObject.get(RESULT_PROPERTY),
+            parameterizedType.getActualTypeArguments()[0]);
+        return new Response<>(id, deserialize);
 
       } else {
 

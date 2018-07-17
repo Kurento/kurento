@@ -86,7 +86,7 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -96,7 +96,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
+import io.github.bonigarcia.wdm.WebDriverManager;
 
 /**
  * Wrapper of Selenium Webdriver for testing Kurento applications.
@@ -280,7 +280,7 @@ public class Browser implements Closeable {
 
     if (scope == BrowserScope.LOCAL) {
       // Management of chromedriver
-      ChromeDriverManager.getInstance().setup();
+      WebDriverManager.chromedriver().setup();
     }
 
     // Chrome options
@@ -358,18 +358,21 @@ public class Browser implements Closeable {
   }
 
   private void createFirefoxBrowser(DesiredCapabilities capabilities) throws MalformedURLException {
-    FirefoxProfile profile = new FirefoxProfile();
+    if (scope == BrowserScope.LOCAL) {
+      WebDriverManager.firefoxdriver().setup();
+    }
+    FirefoxOptions firefoxOptions = new FirefoxOptions();
     // This flag avoids granting the access to the camera
-    profile.setPreference("media.navigator.permission.disabled", true);
+    firefoxOptions.addPreference("media.navigator.permission.disabled", true);
 
     // This flag force to use fake user media (synthetic video of multiple color)
-    profile.setPreference("media.navigator.streams.fake", true);
+    firefoxOptions.addPreference("media.navigator.streams.fake", true);
 
     // This allows to load pages with self-signed certificates
     capabilities.setCapability("acceptInsecureCerts", true);
-    profile.setAcceptUntrustedCertificates(true);
+    firefoxOptions.setAcceptInsecureCerts(true);
 
-    capabilities.setCapability(FirefoxDriver.PROFILE, profile);
+    capabilities.setCapability(FirefoxDriver.PROFILE, firefoxOptions.getProfile());
     capabilities.setBrowserName(DesiredCapabilities.firefox().getBrowserName());
 
     // Firefox extensions
@@ -380,7 +383,7 @@ public class Browser implements Closeable {
           try {
             File xpi = File.createTempFile(extension.keySet().iterator().next(), ".xpi");
             FileUtils.copyInputStreamToFile(is, xpi);
-            profile.addExtension(xpi);
+            firefoxOptions.getProfile().addExtension(xpi);
           } catch (Throwable t) {
             log.error("Error loading Firefox extension {} ({} : {})", extension, t.getClass(),
                 t.getMessage());
@@ -389,7 +392,7 @@ public class Browser implements Closeable {
       }
     }
 
-    createDriver(capabilities, profile);
+    createDriver(capabilities, firefoxOptions);
   }
 
   private void createDriver(DesiredCapabilities capabilities, Object options)
@@ -433,8 +436,8 @@ public class Browser implements Closeable {
 
         if (options instanceof ChromeOptions) {
           driver = new ChromeDriver((ChromeOptions) options);
-        } else if (options instanceof FirefoxProfile) {
-          driver = new FirefoxDriver((FirefoxProfile) options);
+        } else if (options instanceof FirefoxOptions) {
+          driver = new FirefoxDriver((FirefoxOptions) options);
         }
 
       } catch (Throwable t) {

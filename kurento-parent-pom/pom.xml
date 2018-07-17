@@ -113,8 +113,8 @@
 		<version.cors-filter>2.5</version.cors-filter>
 		<version.eclipse.aether>1.1.0</version.eclipse.aether>
 		<version.findbugs>3.0.1</version.findbugs>
-		<version.google.gson>2.5</version.google.gson>
-		<version.google.guava>19.0</version.google.guava>
+		<version.google.gson>2.8.5</version.google.gson>
+		<version.google.guava>23.6.1-jre</version.google.guava>
 		<version.google.youtube>v3-rev153-1.21.0</version.google.youtube>
 		<version.google.http>1.21.0</version.google.http>
 		<version.google.oauth>1.21.0</version.google.oauth>
@@ -138,18 +138,18 @@
 		<version.websocket-api>1.1</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
-		<selenium-java.version>2.53.0</selenium-java.version>
-		<xml-apis.version>2.0.2</xml-apis.version>
+		<selenium-java.version>3.13.0</selenium-java.version>
 		<jmeter-maven-plugin.version>1.9.0</jmeter-maven-plugin.version>
 		<freemarker.version>2.3.23</freemarker.version>
 		<ApacheJMeter_core.version>2.11</ApacheJMeter_core.version>
 		<overthere.version>4.3.2</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
 		<version.ocr>3.04.01-1.2</version.ocr>
-		<webdrivermanager.version>1.7.0</webdrivermanager.version>
+		<webdrivermanager.version>2.2.4</webdrivermanager.version>
 		<docker-java.version>3.0.6</docker-java.version>
 		<jackson.version>2.7.4</jackson.version>
 		<assertj.version>2.5.0</assertj.version>
+		<jna.version>3.0.9</jna.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -201,8 +201,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- maven-compiler-plugin -->
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 
 		<!-- Options to override the compiler arguments directly on the compiler
 		argument line, to separate between what the IDE understands as the source level
@@ -746,6 +746,41 @@
 				<version>${selenium-java.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-firefox-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-opera-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-ie-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-edge-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-safari-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-support</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-server</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>io.github.bonigarcia</groupId>
 				<artifactId>webdrivermanager</artifactId>
 				<version>${webdrivermanager.version}</version>
@@ -786,11 +821,6 @@
 				<version>${selenium-java.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>xml-apis</groupId>
-				<artifactId>xml-apis</artifactId>
-				<version>${xml-apis.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.freemarker</groupId>
 				<artifactId>freemarker</artifactId>
 				<version>${freemarker.version}</version>
@@ -824,6 +854,11 @@
 				<groupId>com.google.code.findbugs</groupId>
 				<artifactId>annotations</artifactId>
 				<version>${version.findbugs}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.jna</groupId>
+				<artifactId>jna</artifactId>
+				<version>${jna.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
