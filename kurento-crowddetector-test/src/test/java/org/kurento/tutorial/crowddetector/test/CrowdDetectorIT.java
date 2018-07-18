@@ -55,7 +55,7 @@ public class CrowdDetectorIT extends BrowserTest<WebPage> {
   protected WebDriver driver;
   protected static final Logger log = LoggerFactory.getLogger(CrowdDetectorIT.class);
 
-  protected final static int TEST_TIMEOUT = 45; // seconds
+  protected final static int TEST_TIMEOUT = 10; // seconds
   protected final static int ALERT_TIMEOUT = 10; // seconds
   protected final static int PLAY_TIME = 5; // seconds
 
