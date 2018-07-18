@@ -30,6 +30,7 @@ import org.kurento.test.services.Service;
 import org.kurento.test.services.WebServerService;
 import org.kurento.tutorial.one2onecalladv.One2OneCallAdvApp;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -115,7 +116,9 @@ public class One2OneCallAdvIT extends BrowserTest<WebPage> {
     WebElement video = driver.findElement(By.id(videoTagId));
     int i = 0;
     for (; i < TEST_TIMEOUT; i++) {
-      if (video.getAttribute("src").startsWith("blob")) {
+      Number currentTime = (Number) ((JavascriptExecutor) driver)
+          .executeScript("return arguments[0].currentTime;", video);
+      if (currentTime.intValue() > 0) {
         break;
       } else {
         Thread.sleep(1000);
