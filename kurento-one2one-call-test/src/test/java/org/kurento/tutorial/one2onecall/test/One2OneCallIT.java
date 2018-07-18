@@ -48,7 +48,7 @@ public class One2OneCallIT extends BrowserTest<WebPage> {
   protected WebDriver caller;
   protected WebDriver callee;
 
-  protected final static int TEST_TIMEOUT = 120; // seconds
+  protected final static int TEST_TIMEOUT = 20; // seconds
   protected final static int PLAY_TIME = 5; // seconds
   protected final static String CALLER_NAME = "user1";
   protected final static String CALLEE_NAME = "user2";

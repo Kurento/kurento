@@ -48,7 +48,7 @@ public class PointerDetectorIT extends BrowserTest<WebPage> {
 
   protected WebDriver driver;
 
-  protected final static int TEST_TIMEOUT = 60; // seconds
+  protected final static int TEST_TIMEOUT = 10; // seconds
   protected final static int PLAY_TIME = 5; // seconds
 
   @Before

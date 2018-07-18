@@ -49,7 +49,7 @@ public class One2OneCallAdvIT extends BrowserTest<WebPage> {
   protected WebDriver caller;
   protected WebDriver callee;
 
-  protected final static int TEST_TIMEOUT = 300; // seconds
+  protected final static int TEST_TIMEOUT = 30; // seconds
   protected final static int PLAY_TIME = 10; // seconds
   protected final static String APP_URL = "https://localhost:8443/";
   protected final static String CALLER_NAME = "user1";

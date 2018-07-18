@@ -46,7 +46,7 @@ public class HelloWorldIT extends BrowserTest<WebPage> {
 
   private WebDriver driver;
 
-  private final static int TEST_TIMEOUT = 100; // seconds
+  private final static int TEST_TIMEOUT = 10; // seconds
   private final static int PLAY_TIME = 5; // seconds
 
   @Before
