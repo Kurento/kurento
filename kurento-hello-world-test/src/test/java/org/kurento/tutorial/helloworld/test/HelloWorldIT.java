@@ -62,19 +62,19 @@ public class HelloWorldIT extends BrowserTest<WebPage> {
   @Test
   public void testHelloWorld() throws InterruptedException {
     // Start application
-    driver.findElement(By.id("start")).click();
+    driver.findElement(By.id("uiStartBtn")).click();
 
     // Assessment #1: Local video tag should play media
-    waitForStream("videoInput");
+    waitForStream("uiLocalVideo");
 
     // Assessment #2: Remote video tag should play media
-    waitForStream("videoOutput");
+    waitForStream("uiRemoteVideo");
 
     // Guard time to see application in action
     Thread.sleep(PLAY_TIME * 1000);
 
     // Stop application
-    driver.findElement(By.id("stop")).click();
+    driver.findElement(By.id("uiStopBtn")).click();
   }
 
   private void waitForStream(String videoTagId) throws InterruptedException {
