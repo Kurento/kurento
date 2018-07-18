@@ -19,7 +19,8 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 # 1. Miscellaneous tools that are used by several jobs in CI.
 # 2. Dependencies of our build tools and packaging scripts.
 #    Source: https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#generating-debian-packages
-# 3. Extra build tools that are used by most CI jobs.
+# 3. Extra build tools that are used by some CI scripts:
+#    - jshon: used by mavenize_js_project, npm_publish.
 #
 RUN apt-get update && apt-get install -y \
     gnupg \
@@ -45,7 +46,8 @@ RUN apt-get update && apt-get install -y \
     cmake \
     maven \
     openjdk-8-jdk \
-    pkg-config
+    pkg-config \
+    jshon
 
 # Install Node.js 8.x LTS + NPM + Bower
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
