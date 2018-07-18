@@ -107,10 +107,11 @@ CONTAINER_TEST_FILES=/opt/test-files
 #[ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && { echo "[kurento_ci_container_job_setup] ERROR: Undefined variable KURENTO_GIT_REPOSITORY_SERVER"; exit 1; }
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
 
-[ -z "$BUILD_COMMANDS" ] && {
+[ -z "${BUILD_COMMANDS:+x}" ] && {
+    echo "[kurento_ci_container_job_setup] WARNING: Variable is unset: BUILD_COMMANDS"
     # Transition period from BUILD_COMMAND value to BUILD_COMMANDS array
-    [ -z "$BUILD_COMMAND" ] && {
-        echo "[kurento_ci_container_job_setup] ERROR: Variable is unset: BUILD_COMMANDS"
+    [ -z "${BUILD_COMMAND:+x}" ] && {
+        echo "[kurento_ci_container_job_setup] ERROR: Variable is unset: BUILD_COMMAND"
         exit 1
     }
     BUILD_COMMANDS=("$BUILD_COMMAND")
