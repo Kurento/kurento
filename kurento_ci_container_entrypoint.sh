@@ -1,11 +1,18 @@
 #!/bin/bash -x
 echo "##################### EXECUTE: kurento_ci_container_entrypoint #####################"
 
-[ -z "$1" ] && {
-    echo "[kurento_ci_container_entrypoint] ERROR: Missing argument(s): BUILD_COMMANDS"
+#/
+#/ Arguments:
+#/
+#/   All: Commands to run.
+#/      Mandatory.
+#/
+
+RUN_COMMANDS=("$@")
+[ -z "${RUN_COMMANDS:+x}" ] && {
+    echo "[kurento_ci_container_entrypoint] ERROR: Missing argument(s): Commands to run"
     exit 1
 }
-BUILD_COMMANDS=("$@")
 
 echo "[kurento_ci_container_entrypoint] Preparing environment..."
 
@@ -89,7 +96,7 @@ echo "$BOWER_KURENTO_ORG bower.kurento.org" >> /etc/hosts
 echo "[kurento_ci_container_entrypoint] Network configuration"
 ip addr list
 
-for COMMAND in "${BUILD_COMMANDS[@]}"; do
+for COMMAND in "${RUN_COMMANDS[@]}"; do
     echo "[kurento_ci_container_entrypoint] Run command: '$COMMAND'"
     eval $COMMAND || {
         echo "[kurento_ci_container_entrypoint] ERROR: Command failed: '$COMMAND'"

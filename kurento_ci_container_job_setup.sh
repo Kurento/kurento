@@ -2,7 +2,15 @@
 echo "##################### EXECUTE: kurento_ci_container_job_setup #####################"
 trap cleanup EXIT
 
-# Starts a docker container, prepares CI environment and executes procedure
+# Starts a Docker container, prepares CI environment, and runs commands
+
+#/
+#/ Arguments:
+#/
+#/   All: Commands to run.
+#/      Optional.
+#/      Default: $BUILD_COMMAND
+#/
 
 # CONTAINER_IMAGE
 #   Optional
@@ -21,9 +29,6 @@ trap cleanup EXIT
 #
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
-#
-# BUILD_COMMANDS
-#   Bash array of commands to run in the container
 #
 # CHECKOUT
 #   Optional
@@ -99,6 +104,18 @@ CONTAINER_NPM_CONFIG=/root/.npmrc
 CONTAINER_KMS_KEY=/opt/kms_id_rsa
 CONTAINER_TEST_FILES=/opt/test-files
 
+# Verify mandatory arguments
+RUN_COMMANDS=("$@")
+[ -z "${RUN_COMMANDS:+x}" ] && {
+    echo "[kurento_ci_container_job_setup] WARNING: Missing argument(s): Commands to run"
+    # Transition period from BUILD_COMMAND value to RUN_COMMANDS array
+    [ -z "${BUILD_COMMAND:+x}" ] && {
+        echo "[kurento_ci_container_job_setup] ERROR: Variable is empty: BUILD_COMMAND"
+        exit 1
+    }
+    RUN_COMMANDS=("$BUILD_COMMAND")
+}
+
 # Verify mandatory parameters
 [ -z "$CONTAINER_IMAGE" ] && CONTAINER_IMAGE="kurento/dev-integration:jdk-8-node-0.12"
 #[ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
@@ -106,16 +123,6 @@ CONTAINER_TEST_FILES=/opt/test-files
 [ -z "$KURENTO_PUBLIC_PROJECT" ] && KURENTO_PUBLIC_PROJECT="no"
 #[ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && { echo "[kurento_ci_container_job_setup] ERROR: Undefined variable KURENTO_GIT_REPOSITORY_SERVER"; exit 1; }
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
-
-[ -z "${BUILD_COMMANDS:+x}" ] && {
-    echo "[kurento_ci_container_job_setup] WARNING: Variable is unset: BUILD_COMMANDS"
-    # Transition period from BUILD_COMMAND value to BUILD_COMMANDS array
-    [ -z "${BUILD_COMMAND:+x}" ] && {
-        echo "[kurento_ci_container_job_setup] ERROR: Variable is unset: BUILD_COMMAND"
-        exit 1
-    }
-    BUILD_COMMANDS=("$BUILD_COMMAND")
-}
 
 # Set default Parameters
 [ -z "$WORKSPACE" ] && WORKSPACE="."
@@ -280,7 +287,7 @@ docker run \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     $CONTAINER_IMAGE \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh "${BUILD_COMMANDS[@]}"
+      /opt/adm-scripts/kurento_ci_container_entrypoint.sh "${RUN_COMMANDS[@]}"
 status=$?
 
 # Change worspace ownership to avoid permission errors caused by docker usage of root
