@@ -22,8 +22,8 @@ trap cleanup EXIT
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
 #
-# BUILD_COMMAND
-#   List of commands to run in the container after initialization
+# BUILD_COMMANDS
+#   Bash array of commands to run in the container
 #
 # CHECKOUT
 #   Optional
@@ -106,7 +106,12 @@ CONTAINER_TEST_FILES=/opt/test-files
 [ -z "$KURENTO_PUBLIC_PROJECT" ] && KURENTO_PUBLIC_PROJECT="no"
 #[ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && { echo "[kurento_ci_container_job_setup] ERROR: Undefined variable KURENTO_GIT_REPOSITORY_SERVER"; exit 1; }
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
-[ -z "$BUILD_COMMAND" ] && BUILD_COMMAND="kurento_merge_js_project.sh"
+
+BUILD_COMMANDS=("$BUILD_COMMAND")
+[ -z "$BUILD_COMMANDS" ] && || {
+    echo "[kurento_ci_container_job_setup] ERROR: Variable is unset: BUILD_COMMANDS"
+    exit 1
+}
 
 # Set default Parameters
 [ -z "$WORKSPACE" ] && WORKSPACE="."
@@ -271,7 +276,7 @@ docker run \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     $CONTAINER_IMAGE \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND
+      /opt/adm-scripts/kurento_ci_container_entrypoint.sh "${BUILD_COMMANDS[@]}"
 status=$?
 
 # Change worspace ownership to avoid permission errors caused by docker usage of root

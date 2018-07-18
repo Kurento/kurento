@@ -1,17 +1,17 @@
 #!/bin/bash -x
 echo "##################### EXECUTE: kurento_ci_container_entrypoint #####################"
 
-[ -n "$1" ] || {
-  echo "[kurento_ci_container_entrypoint] ERROR: No script to run specified. Need one to run after preparing the environment"
-  exit 1
+[ -z "$1" ] && {
+    echo "[kurento_ci_container_entrypoint] ERROR: Missing argument(s): BUILD_COMMANDS"
+    exit 1
 }
-BUILD_COMMAND=$@
+BUILD_COMMANDS=("$@")
+
+echo "[kurento_ci_container_entrypoint] Preparing environment..."
 
 # Path information
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 PATH="${BASEPATH}:${BASEPATH}/kms:${PATH}"
-
-echo "[kurento_ci_container_entrypoint] Preparing environment..."
 
 DIST=$(lsb_release -c)
 DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
@@ -89,10 +89,10 @@ echo "$BOWER_KURENTO_ORG bower.kurento.org" >> /etc/hosts
 echo "[kurento_ci_container_entrypoint] Network configuration"
 ip addr list
 
-for CMD in $BUILD_COMMAND; do
-  echo "[kurento_ci_container_entrypoint] Running command: $CMD"
-  $CMD || {
-    echo "[kurento_ci_container_entrypoint] ERROR: Command failed: $CMD"
-    exit 1
-  }
+for COMMAND in "${BUILD_COMMANDS[@]}"; do
+    echo "[kurento_ci_container_entrypoint] Run command: '$COMMAND'"
+    eval $COMMAND || {
+        echo "[kurento_ci_container_entrypoint] ERROR: Command failed: '$COMMAND'"
+        exit 1
+    }
 done
