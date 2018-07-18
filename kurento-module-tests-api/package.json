@@ -1,6 +1,6 @@
 {
   "name": "kurento-module-tests-api",
-  "version": "6.6.2-dev",
+  "version": "6.7.3-dev",
   "description": "Kurento Module Tests API",
   "homepage": "http://www.kurento.org",
   "license": "ALv2",
@@ -42,6 +42,6 @@
     "qunitjs": "1.18.0",
     "xml2js": "^0.4.9",
     "wock": "^0.1.1",
-    "dockerode":"2.2.6"
+    "dockerode": "2.2.6"
   }
 }
