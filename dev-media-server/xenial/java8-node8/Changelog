@@ -1,5 +1,5 @@
-* Version: xenial-java8-node8-1
-  
+* xenial-java8-node8-1 - 2018-07-11 - Juan Navarro <juan.navarro@gmx.es>
+
   - Based on version xenial-jdk-8-2.
   - Remove obsolete comments that didn't talk about the actual file contents.
   - Perform configuration first. This makes apt-get use our package proxy.
@@ -7,3 +7,7 @@
   - Add apt paths to be cleaned.
   - Review apt-get package list, base it on official documentation.
   - Add extra build tool to package list: CMake.
+
+* xenial-java8-node8-2 - 2018-07-18
+
+  - Add jshon, needed for some JavaScript jobs in CI.
