@@ -10,7 +10,7 @@ ENV LANG C.UTF-8
 ENV DEBIAN_FRONTEND noninteractive
 
 # Configure Kurento's apt proxy
-RUN echo 'Acquire::http::Proxy "http://proxy.openvidu.org:3142";' > /etc/apt/apt.conf.d/01proxy \
+RUN echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' > /etc/apt/apt.conf.d/01proxy \
   && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy \
   && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/00recommends \
   && echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/00recommends 
