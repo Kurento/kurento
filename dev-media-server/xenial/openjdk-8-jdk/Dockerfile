@@ -15,7 +15,14 @@ RUN echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' > /etc/apt/apt.
   && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/00recommends \
   && echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/00recommends 
 
-# Installing necessary software
+#
+# Install required packages
+# This list is divided into 3 sections:
+# 1. Miscellaneous tools that are used by several jobs in CI.
+# 2. Dependencies of our build tools and packaging scripts.
+#    Source: https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#generating-debian-packages
+# 3. Extra build tools that are used by some CI scripts:
+#    - jshon: used by mavenize_js_project, npm_publish.
 RUN apt-get update \
   && apt-get install -y \
     gnupg \
