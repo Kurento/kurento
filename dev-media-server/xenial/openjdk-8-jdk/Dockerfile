@@ -17,7 +17,7 @@ RUN echo 'Acquire::http::Proxy "http://proxy.kurento.org:3142";' > /etc/apt/apt.
 
 # Installing necessary software
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y \
     gnupg \
     iproute2 \
     zip unzip \
