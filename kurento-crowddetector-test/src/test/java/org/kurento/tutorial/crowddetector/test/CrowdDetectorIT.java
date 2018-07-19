@@ -79,7 +79,7 @@ public class CrowdDetectorIT extends BrowserTest<WebPage> {
     try {
       if (wait.until(ExpectedConditions.alertIsPresent()) != null) {
         driver.switchTo().alert().accept();
-        driver.findElement(By.id("address")).sendKeys("rtsp://195.55.223.100/axis-media/media.amp");
+        driver.findElement(By.id("address")).sendKeys("rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov");
         driver.findElement(By.id("changeFeed")).click();
         if (wait.until(ExpectedConditions.alertIsPresent()) != null) {
           driver.switchTo().alert().accept();
