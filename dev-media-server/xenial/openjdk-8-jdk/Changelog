@@ -8,6 +8,10 @@
   - Install build essential
 
 
-* Version: xenial-jdk-7-3
+* Version: xenial-jdk-8-3
 
   - Enable kurento repos
+
+* Version: xenial-jdk-8-4
+
+  - Adding Juan Navarro's work
