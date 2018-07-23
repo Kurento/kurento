@@ -6,7 +6,7 @@
     "api": {
       "js": {
         "nodeName": "kurento-module-sampleplugin",
-        "npmDescription": "Sample plugin",
+        "npmDescription": "JavaScript Client API for Kurento Media Server",
         "npmGit": "Kurento/kurento-module-sampleplugin-js"
       }
     }
