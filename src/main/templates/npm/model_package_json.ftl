@@ -39,5 +39,10 @@ package.json
     "minifyify": "^6.4.0"
   },
 </#if>
+  "keywords": [
+    "Kurento",
+    "module",
+    "plugin"
+  ],
   "main": "lib/index.js"
 }
