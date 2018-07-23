@@ -16,7 +16,7 @@
       },
       "js": {
         "nodeName": "kurento-client-core",
-        "npmDescription": "Base classes for kurento media server api",
+        "npmDescription": "JavaScript Client API for Kurento Media Server",
         "npmGit": "Kurento/kurento-client-core-js"
       }
     },
