@@ -3,33 +3,37 @@
     {
       "name": "GStreamerFilter",
       "extends": "Filter",
-      "doc": "This is a generic filter interface, that creates GStreamer filters in the media server.",
+      "doc": "A generic filter interface that allows injecting any GStreamer element.
+      <p>
+      Note however that the current implementation of GStreamerFilter only allows single elements to be injected; one cannot indicate more than one at the same time; use several GStreamerFilters if you need to inject more than one element at the same time.
+      </p>
+      ",
       "constructor": {
-	"doc": "Create a :rom:cls:`GStreamerFilter`",
-	"params": [
-	  {
-	    "name": "mediaPipeline",
-	    "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
-	    "type": "MediaPipeline"
-	  },
-	  {
-	    "name": "command",
-	    "doc": "command that would be used to instantiate the filter, as in `gst-launch <http://rpm.pbone.net/index.php3/stat/45/idpl/19531544/numer/1/nazwa/gst-launch-1.0>`__",
-	    "type": "String"
-	  },
-	  {
+        "doc": "Create a :rom:cls:`GStreamerFilter`.",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "command",
+            "doc": "String used to instantiate the GStreamer element, as in `gst-launch <https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html>`__.",
+            "type": "String"
+          },
+          {
             "name": "filterType",
-            "doc": "Filter type that define if the filter is set as audio, video or autodetect",
+            "doc": "Sets the filter as Audio, Video, or Autodetect.",
             "type": "FilterType",
             "optional": true,
-            "defaultValue" : "AUTODETECT"
+            "defaultValue": "AUTODETECT"
           }
-	]
+        ]
       },
       "properties": [
         {
           "name": "command",
-          "doc": "GStreamer command.",
+          "doc": "String used to instantiate the GStreamer element, as in `gst-launch <https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html>`__.",
           "type": "String",
           "readOnly": true
         }
