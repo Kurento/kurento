@@ -16,7 +16,7 @@
 	<!-- Project-level information -->
 	<name>Kurento Java</name>
 	<description>
-		Client SDK that implements the Kurento API for Java applications.
+		Java Client API for Kurento Media Server
 	</description>
 
 	<!-- Project configuration -->
