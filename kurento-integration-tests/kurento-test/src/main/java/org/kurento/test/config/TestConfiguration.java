@@ -260,10 +260,10 @@ public class TestConfiguration {
   public static final String TEST_FILES_S3_DEFAULT = "kurento-s3-test";
 
   public static final String TEST_FILES_HTTP_PROP = "test.files.http";
-  public static final String TEST_FILES_HTTP_DEFAULT = "files.kurento.org";
+  public static final String TEST_FILES_HTTP_DEFAULT = "files.openvidu.io";
 
   public static final String TEST_FILES_MONGO_PROP = "test.files.mongodb";
-  public static final String TEST_FILES_MONGO_DEFAULT = "files.kurento.org:27017";
+  public static final String TEST_FILES_MONGO_DEFAULT = "files.openvidu.io:27017";
 
   public static final String TEST_PROJECT_PATH_PROP = "test.project.path";
   public static final String TEST_PROJECT_PATH_DEFAULT = "target/surefire-reports/";
