@@ -13,6 +13,7 @@ RUN apt-get update -y \
     curl \
     git \
     mediainfo \
+    libmediainfo-dev \
     python \
     python-dev \
     gnupg \
