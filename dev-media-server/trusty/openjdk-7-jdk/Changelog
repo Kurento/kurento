@@ -10,3 +10,9 @@
 * Version: trusty-jdk-7-3
 
   - Enable kurento repos
+
+* Version: trusty-jdk-7-5
+
+  - New Dockerfile based on xenial-jdk-8-5 (discard old one).
+  - Make sure Maven >= 3.0 gets installed, by not installing maven-debian-helper.
+  - Comment why the '-' suffix in 'maven-debian-helper-'
