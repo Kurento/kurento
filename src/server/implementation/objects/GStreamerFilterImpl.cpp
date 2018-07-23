@@ -24,7 +24,9 @@
 #include <KurentoException.hpp>
 #include <gst/gst.h>
 #include <commons/kms-core-enumtypes.h>
+
 #include <algorithm>
+#include <string>
 
 #define GST_CAT_DEFAULT kurento_gstreamer_filter_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -66,7 +68,7 @@ GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
   filter = gst_parse_launch (command.c_str(), &error);
 
   if (filter == nullptr || error != nullptr) {
-    std::string error_str = "GStreamer filter cannot be created";
+    std::string error_str = "GStreamer element cannot be created";
 
     if (filter) {
       g_object_unref (filter);
@@ -85,7 +87,7 @@ GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
     g_object_unref (filter);
 
     throw KurentoException (MARSHALL_ERROR,
-                            "Given command is not valid, just one element can be created");
+                            "Given command is not valid, only one element can be created");
   }
 
   g_object_set (element, "filter", filter, NULL);
@@ -97,11 +99,13 @@ GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
     g_object_unref (filter_check);
 
     throw KurentoException (MARSHALL_ERROR,
-                            "Given command is not valid, pad templates does not match");
+                            "Given command is not valid, pad templates don't match");
   }
 
   g_object_unref (filter);
   g_object_unref (filter_check);
+
+  gstElement = filter;  // No ref held; will be released by the pipeline
 }
 
 MediaObjectImpl *
@@ -116,6 +120,53 @@ GStreamerFilterImplFactory::createObject (const boost::property_tree::ptree
 std::string GStreamerFilterImpl::getCommand ()
 {
   return this->cmd;
+}
+
+void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
+    const std::string &propertyValue)
+{
+  // Get the property *type* from the GStreamer element
+  const char* property_name = propertyName.c_str();
+  GParamSpec *pspec = g_object_class_find_property (
+      G_OBJECT_GET_CLASS (gstElement), property_name);
+  if (pspec == NULL) {
+    GST_WARNING ("No property named '%s' in object %" GST_PTR_FORMAT,
+        property_name, gstElement);
+    return;
+  }
+
+  // Convert the input string to the correct value type
+  GValue value = G_VALUE_INIT;
+
+  if (G_IS_PARAM_SPEC_INT (pspec)) {
+    gint converted = 0;
+    try {
+      converted = std::stoi (propertyValue);
+    }
+    catch (std::exception ex) {
+      GST_WARNING ("Cannot convert property value '%s': %s",
+          propertyValue.c_str(), ex.what());
+      return;
+    }
+    g_value_init (&value, G_TYPE_INT);
+    g_value_set_int (&value, converted);
+  }
+  else if (G_IS_PARAM_SPEC_FLOAT (pspec)) {
+    gfloat converted = 0.0f;
+    try {
+      converted = std::stof (propertyValue);
+    }
+    catch (std::exception ex) {
+      GST_WARNING ("Cannot convert property value '%s': %s",
+          propertyValue.c_str(), ex.what());
+      return;
+    }
+    g_value_init (&value, G_TYPE_FLOAT);
+    g_value_set_float (&value, converted);
+  }
+  // else ... Add here whatever types are needed
+
+  g_object_set_property (G_OBJECT (gstElement), property_name, &value);
 }
 
 GStreamerFilterImpl::StaticConstructor GStreamerFilterImpl::staticConstructor;

@@ -45,6 +45,9 @@ public:
 
   virtual std::string getCommand ();
 
+  virtual void setElementProperty (const std::string &propertyName,
+      const std::string &propertyValue) override;
+
   /* Next methods are automatically implemented by code generator */
   using FilterImpl::connect;
   virtual bool connect (const std::string &eventType,
@@ -57,6 +60,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+  GstElement *gstElement = NULL;
   std::string cmd;
 
   class StaticConstructor
