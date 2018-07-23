@@ -4,25 +4,32 @@
 
 FROM buildpack-deps:xenial-scm
 
-# Default to UTF-8 file.encoding
+# Default to UTF-8 file encoding
 ENV LANG C.UTF-8
 
+#
+# Configure Apt:
+# - General apt-get settings
+# - Kurento package proxy
+# - Kurento package repository
+#
 ENV DEBIAN_FRONTEND noninteractive
-
-# Configure Kurento's apt proxy
-RUN echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' > /etc/apt/apt.conf.d/01proxy \
-  && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy \
-  && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/00recommends \
-  && echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/00recommends 
+RUN echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/00recommends \
+ && echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/00recommends \
+ && echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' > /etc/apt/apt.conf.d/01proxy \
+ && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy \
+ && echo 'deb http://ubuntu.openvidu.io/dev xenial kms6' > /etc/apt/sources.list.d/kurento.list \
+ && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 #
-# Install required packages
+# Install additional packages
 # This list is divided into 3 sections:
 # 1. Miscellaneous tools that are used by several jobs in CI.
 # 2. Dependencies of our build tools and packaging scripts.
 #    Source: https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#generating-debian-packages
-# 3. Extra build tools that are used by some CI scripts:
+# 3. Extra build tools that are used by some CI scripts.
 #    - jshon: used by mavenize_js_project, npm_publish.
+#
 RUN apt-get update \
   && apt-get install -y \
     gnupg \
@@ -56,15 +63,7 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get install -y nodejs \
  && npm -g install bower
 
-
-ENV PATH $PATH:/nodejs/bin
-
-# Install Kurento Media Server (KMS) 
-RUN echo "deb http://ubuntu.openvidu.io/dev xenial kms6" | tee /etc/apt/sources.list.d/kurento.list \
-  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
-  
-# Cleaning the house
-RUN apt-get clean && \
-    apt-get autoclean && \
-    rm -Rf /tmp/* && \
-    rm -Rf /var/lib/apt/lists/*
+# Clean the house
+RUN apt-get clean \
+ && rm -rf /tmp/* \
+ && rm -rf /var/lib/apt/lists/*

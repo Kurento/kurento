@@ -14,7 +14,7 @@
 
 * Version: xenial-jdk-8-4
 
-  - Adding Juan Navarro's work:
+  - Add Juan Navarro's work:
 	  - Based on version xenial-jdk-8-2.
 	  - Remove obsolete comments that didn't talk about the actual file contents.
 	  - Perform configuration first. This makes apt-get use our package proxy.
@@ -23,3 +23,9 @@
 	  - Review apt-get package list, base it on official documentation.
 	  - Add extra build tool to package list: CMake.
 	  - Add jshon, needed for some JavaScript jobs in CI.
+
+* Version: xenial-jdk-8-5
+
+  - Put all Apt configuration together.
+  - Restore comments about what packages are installed and why.
+  - Use as base to update Trusty image (dev-media-server/trusty/openjdk-7-jdk).
