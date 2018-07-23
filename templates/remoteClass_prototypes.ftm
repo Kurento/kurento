@@ -174,8 +174,8 @@ MediaObject.prototype.then = function(onFulfilled, onRejected){
   else {
     var self = this
 
-    var promise = new Promise((resolve, reject) => {
-      this.once('_id', function(error, id) {
+    var promise = new Promise(function(resolve, reject) {
+      return self.once('_id', function(error, id) {
         if(error) return reject(error);
 
         resolve(disguise.unthenable(self));
