@@ -33,7 +33,7 @@ cd java || {
   exit 1
 }
 
-# Deploy to Kurento repositories
+# Deploy to Kurento Archiva (both Development and Release versions)
 export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
 export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
 kurento_maven_deploy.sh || {
@@ -41,7 +41,7 @@ kurento_maven_deploy.sh || {
   exit 1
 }
 
-# Deploy to Maven Central (only release)
+# Deploy to Maven Central (only Release versions)
 export SNAPSHOT_REPOSITORY=
 export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
 kurento_maven_deploy.sh || {
@@ -50,6 +50,8 @@ kurento_maven_deploy.sh || {
 }
 
 # Only create a tag if the deployment process was successful
+# Commented out because this is currently being done in the main kms-{core,elements,filters} job.
+# Uncomment when this is sorted out and we know WHEN we want to create tags.
 # kurento_check_version.sh true || {
 #   echo "[kurento_generate_java_module] ERROR: Command failed: kurento_check_version (tagging enabled)"
 #   exit 1

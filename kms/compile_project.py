@@ -1,11 +1,6 @@
 #!/usr/bin/python2.7 -u
 #pylint: disable=missing-docstring
 
-# Install system tools and Python modules
-# apt-get install --no-install-recommends \
-#   curl wget git build-essential fakeroot debhelper subversion flex \
-#   python python-apt python-debian python-git python-requests python-yaml
-
 # Module documentation
 # - argparse: https://docs.python.org/2/library/argparse.html
 # - python-apt: https://apt.alioth.debian.org/python-apt-doc/contents.html

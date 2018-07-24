@@ -49,6 +49,7 @@ REPOS=(
     adm-scripts
     bugtracker
     doc-kurento
+    kurento-docker
 
     # Client applications - Java
     kurento-maven-plugin
