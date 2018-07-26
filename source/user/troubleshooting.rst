@@ -231,7 +231,8 @@ OpenH264 not found
    '/usr/lib/x86_64-linux-gnu/gstreamer-1.5/libgstopenh264.so': libopenh264.so.0:
    cannot open shared object file: No such file or directory
 
-Also:
+Also these conditions apply:
+
 - Packages *openh264-gst-plugins-bad-1.5* and *openh264* are already installed.
 - The file */usr/lib/x86_64-linux-gnu/libopenh264.so* is a broken link to the unexisting file */usr/lib/x86_64-linux-gnu/libopenh264.so.0*.
 
