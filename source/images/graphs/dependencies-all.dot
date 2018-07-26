@@ -7,15 +7,15 @@ digraph dependencies_all {
   rankdir = "RL";
 
   // Kurento external libraries
-  "gstreamer";
+  "jsoncpp";
   "libsrtp";
   "openh264";
   "usrsctp";
-  "jsoncpp";
+  "gstreamer";
   "gst-plugins-base" -> "gstreamer";
   "gst-plugins-good" -> "gst-plugins-base";
-  "gst-plugins-ugly" -> "gst-plugins-base";
   "gst-plugins-bad" -> {"gst-plugins-base" "libsrtp" "openh264"};
+  "gst-plugins-ugly" -> "gst-plugins-base";
   "gst-libav" -> "gst-plugins-base";
   "openwebrtc-gst-plugins" -> {"gstreamer" "gst-plugins-base" "usrsctp"};
   "libnice" -> "gstreamer";
@@ -24,7 +24,7 @@ digraph dependencies_all {
   "kurento-module-creator";
   "kms-cmake-utils";
   "kms-jsonrpc" -> {"jsoncpp" "kms-cmake-utils"};
-  "kms-core" -> {"gstreamer" "gst-plugins-base" "gst-plugins-good" "gst-plugins-ugly" "gst-libav" "gst-plugins-bad" "kms-cmake-utils" "kms-jsonrpc" "kurento-module-creator"};
+  "kms-core" -> {"gstreamer" "gst-plugins-base" "gst-plugins-good" "gst-plugins-bad" "gst-plugins-ugly" "gst-libav" "kurento-module-creator" "kms-cmake-utils" "kms-jsonrpc"};
   "kms-elements" -> {"openwebrtc-gst-plugins" "libnice" "kms-core"};
   "kms-filters" -> "kms-elements";
   "kurento-media-server" -> {"kms-core" "kms-elements" "kms-filters"};

@@ -13,7 +13,7 @@ digraph dependencies_kms {
     "kms-cmake-utils";
   }
   "kms-jsonrpc" -> "kms-cmake-utils";
-  "kms-core" -> {"kms-cmake-utils" "kms-jsonrpc" "kurento-module-creator"};
+  "kms-core" -> {"kurento-module-creator" "kms-cmake-utils" "kms-jsonrpc"};
   "kms-elements" -> "kms-core";
   "kms-filters" -> "kms-elements";
   "kurento-media-server" -> {"kms-core" "kms-elements" "kms-filters"};

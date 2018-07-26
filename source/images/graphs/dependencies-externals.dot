@@ -7,15 +7,15 @@ digraph dependencies_externals {
   rankdir = "RL";
 
   // Kurento external libraries
-  "gstreamer";
+  "jsoncpp";
   "libsrtp";
   "openh264";
   "usrsctp";
-  "jsoncpp";
+  "gstreamer";
   "gst-plugins-base" -> "gstreamer";
   "gst-plugins-good" -> "gst-plugins-base";
-  "gst-plugins-ugly" -> "gst-plugins-base";
   "gst-plugins-bad" -> {"gst-plugins-base" "libsrtp" "openh264"};
+  "gst-plugins-ugly" -> "gst-plugins-base";
   "gst-libav" -> "gst-plugins-base";
   "openwebrtc-gst-plugins" -> {"gstreamer" "gst-plugins-base" "usrsctp"};
   "libnice" -> "gstreamer";
