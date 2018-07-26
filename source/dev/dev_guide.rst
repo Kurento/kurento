@@ -706,6 +706,35 @@ How to add new fork libraries
 
 
 
+How to work with API changes
+----------------------------
+
+What to do when you are developing a new feature that spans across KMS and the public API? This is a summary of the actions done in CI by ``adm-scripts/kurento_generate_java_module.sh`` and ``adm-scripts/kurento_maven_deploy.sh``:
+
+1. Work on your changes, which may include changing the KMS files where the Kurento API is defined.
+
+2. Generate client SDK dependencies:
+
+   .. code-block:: bash
+
+      cd <module>  # E.g. kms-filters
+      rm -rf build
+      mkdir build && cd build
+      cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
+      cd java
+      mvn clean install
+
+3. Generate client SDK:
+
+   .. code-block:: bash
+
+      cd kurento-java
+      mvn clean install
+
+4. At this point, the new Java packages have been generated and installed *in the local repository*. Your Java application can now make use of any changes that were introduced in the API.
+
+
+
 Known problems
 --------------
 
