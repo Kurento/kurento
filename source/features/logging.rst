@@ -24,13 +24,13 @@ Besides normal log files, an ``errors.log`` file stores error messages logged by
 
    Log files in this folder are rotated, and old files will get eventually deleted when new ones are created. This helps with preventing that log files might end up filling all available disk space.
 
-Each line in a log file has a fixed structure:
+Each line in the log files has a fixed structure:
 
 .. code-block:: text
 
    {DateTime} {PID} {ThreadID} {Level} {Component} {FileLine} {Function} {Object}? {Message}
 
-- ``{DateTime}``: Date and time of the logging message, in :wikipedia:`ISO 8601` Extended Notation, with a seconds fraction of six decimal places. For example: *2018-12-31T23:59:59,999999*.
+- ``{DateTime}``: Date and time of the logging message, in :wikipedia:`ISO 8601` Extended Notation, with six decimal places for the seconds fraction. For example: *2018-12-31T23:59:59,999999*.
 - ``{PID}``: Process Identifier of *kurento-media-sever*.
 - ``{ThreadID}``: Thread ID from which the message was issued. For example: *0x0000111122223333*.
 - ``{Level}``: Logging level. This value typically will be *INFO* or *DEBUG*. If unexpected error situations happen, the *WARN* and *ERROR* levels will contain information about the problem.
@@ -44,8 +44,7 @@ For example, when KMS starts correctly, a message such as this one would be prin
 
 .. code-block:: text
 
-   {DateTime}                  {PID}  {ThreadID}          {Level}  {Component}         {FileLine}    {Function}  {Message}
-   2018-06-14T19:44:26,918243  13006  0x00007f59401f5880  info     KurentoMediaServer  main.cpp:255  main()      Kurento Media Server started
+   2018-06-14T19:44:26,918243  13006  0x00007f59401f5880  info  KurentoMediaServer  main.cpp:255  main()  Kurento Media Server started
 
 
 
