@@ -24,7 +24,6 @@ digraph mediaobjects {
       + "+ getMediaPipeline() : MediaPipeline\l"
       + "+ getParent() : MediaObject[]\l}";
     labelurl = "MediaObject";
-    href = "com/kurento/kmf/media/MediaObject.html";
   ]
 
   "MediaElement" [
@@ -33,7 +32,6 @@ digraph mediaobjects {
       + "+ getMediaSinks(...) : MediaSink[]\l"
       + "+ getMediaSrcs(...) : MediaSource[]\l}";
     urllabel = "MediaElement";
-    href = "com/kurento/kmf/media/MediaElement.html";
   ]
 
   "MediaObject" -> "MediaPipeline";
