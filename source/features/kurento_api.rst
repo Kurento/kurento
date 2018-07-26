@@ -93,7 +93,7 @@ The **FaceOverlayFilter** filter detects faces in a video stream and overlaid it
 .. image:: /images/toolbox/FaceOverlayFilter.png
    :align:  center
 
-**GStreamerFilter** is a generic filter interface that allow use GStreamer filter in Kurento Media Pipelines.
+**GStreamerFilter** is a generic filter interface that allows injecting any GStreamer element into a Kurento Media Pipeline. Note however that the current implementation of GStreamerFilter only allows single elements to be injected; one cannot indicate more than one at the same time; use several GStreamerFilters if you need to inject more than one element at the same time.
 
 .. image:: /images/toolbox/GStreamerFilter.png
    :align:  center
