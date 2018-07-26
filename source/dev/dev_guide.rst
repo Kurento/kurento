@@ -53,27 +53,27 @@ There are several types of repositories:
 
   These are the current Fork Repositories, as of KMS version 6.7:
 
+  - `jsoncpp <https://github.com/Kurento/jsoncpp>`__
+  - `libsrtp <https://github.com/Kurento/libsrtp>`__
+  - `openh264 <https://github.com/Kurento/openh264>`__
+  - `usrsctp <https://github.com/Kurento/usrsctp>`__
   - `gstreamer <https://github.com/Kurento/gstreamer>`__ (libgstreamer1.5)
   - `gst-plugins-base <https://github.com/Kurento/gst-plugins-base>`__
   - `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
   - `gst-plugins-bad <https://github.com/Kurento/gst-plugins-bad>`__
   - `gst-plugins-ugly <https://github.com/Kurento/gst-plugins-ugly>`__
   - `gst-libav <https://github.com/Kurento/gst-libav>`__
-  - `jsoncpp <https://github.com/Kurento/jsoncpp>`__
-  - `libsrtp <https://github.com/Kurento/libsrtp>`__
-  - `libnice <https://github.com/Kurento/libnice>`__ (gstreamer1.0-nice, gstreamer1.5-nice)
   - `openwebrtc-gst-plugins <https://github.com/Kurento/openwebrtc-gst-plugins>`__
-  - `openh264 <https://github.com/Kurento/openh264>`__
-  - `usrsctp <https://github.com/Kurento/usrsctp>`__
+  - `libnice <https://github.com/Kurento/libnice>`__ (gstreamer1.0-nice, gstreamer1.5-nice)
 
 - **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.7, these repositories are:
 
   - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
   - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
+  - `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
   - `kms-core <https://github.com/Kurento/kms-core>`__: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
   - `kms-elements <https://github.com/Kurento/kms-elements>`__: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
   - `kms-filters <https://github.com/Kurento/kms-filters>`__: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
-  - `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
   - `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__: Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
 
 - **Omni-Build Repository**: The `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__ repository is a dummy umbrella for the other KMS Main Repositories. It has no actual code; instead, it only has the required CMake code to allow building the whole KMS project in one go. For this, it gets a copy of the required repositories via Git submodules.
@@ -90,8 +90,8 @@ There are several types of repositories:
 - **Tutorial or demo repositories**: There are several repositories that contain sample code for developers that use Kurento or want to develop a custom Kurento module. Currently these are:
 
    - `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`__
-   - `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`__
    - `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__
+   - `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`__
    - `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__
    - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
    - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
@@ -120,15 +120,15 @@ As the dependency graph is not strictly linear, there are multiple possible ways
 
 **Externals**:
 
-1. gstreamer
+1. jsoncpp
 2. libsrtp
 3. openh264
 4. usrsctp
-5. jsoncpp
+5. gstreamer
 6. gst-plugins-base
 7. gst-plugins-good
-8. gst-plugins-ugly
-9. gst-plugins-bad
+8. gst-plugins-bad
+9. gst-plugins-ugly
 10. gst-libav
 11. openwebrtc-gst-plugins
 12. libnice
@@ -319,8 +319,8 @@ Run:
       # Kurento external libraries
       gstreamer1.5-plugins-base
       gstreamer1.5-plugins-good
-      gstreamer1.5-plugins-ugly
       gstreamer1.5-plugins-bad
+      gstreamer1.5-plugins-ugly
       gstreamer1.5-libav
       gstreamer1.5-nice
       gstreamer1.5-tools
