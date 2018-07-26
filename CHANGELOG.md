@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - All: Apply multiple fixes suggested by *clang-tidy*.
-- WebRtcTransport: NULL dereference when the ``gstdtlssrtp*`` plugins are missing (eg. if libsrtp is not correctly installed).
+- WebRtcTransport: NULL dereference when the `gstdtlssrtp*` plugins are missing (eg. if libsrtp is not correctly installed).
 - [#242](https://github.com/Kurento/bugtracker/issues/242) (libSSL crashes on mirrored packets): Debian: Remove dependency on our unmaintained fork of libSSL - **Work In Progress**.
 
 ## [6.7.1] - 2018-03-21
