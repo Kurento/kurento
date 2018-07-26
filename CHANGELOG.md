@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [6.7.0] - 2018-01-24
 
 ### Changed
-- CMake: Compile and link as Position Independent Code ('-fPIC').
+- CMake: Compile and link as Position Independent Code (`-fPIC`).
 - Add more verbose logging in some areas that required it.
 - Debian: Align all version numbers of KMS-related modules.
 - Debian: Remove version numbers from package names.
@@ -23,9 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Old ChangeLog.md moved to the new format in this CHANGELOG.md file.
 - CMake: Full review of all CMakeLists.txt files to tidy up and homogenize code style and compiler flags.
-- CMake: Position Independent Code flags ("-fPIC") were scattered around projects, and are now removed. Instead, the more CMake-idiomatic variable "CMAKE_POSITION_INDEPENDENT_CODE" is used.
-- CMake: All projects now compile with "[-std=c11|-std=c++11] -Wall -Werror -pthread".
-- CMake: Debug builds now compile with "-g -O0" (while default CMake used "-O1" for Debug builds).
+- CMake: Position Independent Code flags (`-fPIC`) were scattered around projects, and are now removed. Instead, the more CMake-idiomatic variable "CMAKE_POSITION_INDEPENDENT_CODE" is used.
+- CMake: All projects now compile with `-std=c11|-std=c++11 -Wall -Werror -pthread`.
+- CMake: Debug builds now compile with `-g -O0` (while default CMake used `-O1` for Debug builds).
 - CMake: include() and import() commands were moved to the code areas where they are actually required.
 
 ## [6.6.1] - 2016-09-30
