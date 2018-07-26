@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - All: Apply multiple fixes suggested by *clang-tidy*.
-- WebRtcTransport: NULL access when the gstdtlssrtp* plugins are missing (eg. if libsrtp is not correctly installed).
-- Debian: Remove dependency on our unmaintained fork of libSSL (Kurento/bugtracker#242).
+- WebRtcTransport: NULL dereference when the ``gstdtlssrtp*`` plugins are missing (eg. if libsrtp is not correctly installed).
+- [#242](https://github.com/Kurento/bugtracker/issues/242) (libSSL crashes on mirrored packets): Debian: Remove dependency on our unmaintained fork of libSSL - **Work In Progress**.
 
 ## [6.7.1] - 2018-03-21
 
@@ -40,14 +40,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [6.6.3] - 2017-08-10
 
 ### Changed
-- Prevent frames from building up in the buffer if the CPU falls behind, by @kc7bfi (David Robison).
+- Prevent frames from building up in the buffer if the CPU falls behind, by [@kc7bfi](https://github.com/kc7bfi) (David Robison).
 
 ## [6.6.2] - 2017-07-24
 
 ### Added
-- REMB: Add "COMEDIA"/automatic port discovery. [TODO Link to documentation].
-- Allow AppSrc pipeline DOT diagrams to be returned, by @kc7bfi (David Robison).
-- Eat all bus messages from 'queue2', by @kc7bfi (David Robison).
+- REMB: Add "COMEDIA"/automatic port discovery. [Documentation](https://doc-kurento.readthedocs.io/en/latest/features/nat_traversal.html#rtp-without-ice).
+- Allow AppSrc pipeline DOT diagrams to be returned, by [@kc7bfi](https://github.com/kc7bfi) (David Robison).
+- Eat all bus messages from 'queue2', by [@kc7bfi](https://github.com/kc7bfi) (David Robison).
 
 ### Changed
 - Old ChangeLog.md moved to the new format in this CHANGELOG.md file.
@@ -61,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Bugfix: Out of bound access on SDP medias.
-- Use format macros to fix compiler errors on 32bit systems, by @fancycode (Joachim Bauch).
+- Use format macros to fix compiler errors on 32bit systems, by [@fancycode](https://github.com/fancycode) (Joachim Bauch).
 - Debian: Use either "ffmpeg" or "libav" as dependencies (which adds compatibility with Ubuntu Xenial or Trusty, respectively).
 - *FIXME* Disable failing IPv6 test.
 - Workaround buggy libnice Foundation strings.
