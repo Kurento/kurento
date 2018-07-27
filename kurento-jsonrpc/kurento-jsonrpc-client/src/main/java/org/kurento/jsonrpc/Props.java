@@ -86,5 +86,9 @@ public class Props implements Iterable<Prop> {
   public String toString() {
     return props.toString();
   }
+  
+  public Object removeProp(String name) {
+		return props.remove(name);
+	}
 
 }

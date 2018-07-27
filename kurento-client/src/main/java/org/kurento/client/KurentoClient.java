@@ -17,6 +17,7 @@
 
 package org.kurento.client;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -32,10 +33,14 @@ import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.AbstractJsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientNettyWebSocket;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.StandardSystemProperty;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Factory to create {@link MediaPipeline} in the media server.
@@ -367,5 +372,9 @@ public class KurentoClient {
       clientLabel += ":" + label;
     }
     client.setLabel(clientLabel);
+  }
+  
+  public Response<JsonElement> sendJsonRpcRequest(Request<JsonObject> request) throws IOException {
+	  return client.sendRequest(request);
   }
 }

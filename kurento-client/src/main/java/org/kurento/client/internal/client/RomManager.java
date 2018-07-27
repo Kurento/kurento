@@ -51,6 +51,11 @@ public class RomManager implements ObjectRefsManager {
   // FIXME: Improve concurrency
   public synchronized RemoteObject create(String remoteClassName, Props constructorParams,
       Props genericProps) {
+	  
+	if(remoteClassName.equals("GenericMediaElement")) {
+		remoteClassName = (String) constructorParams.removeProp("mediaElementClassName");
+	}
+	  
     String objectRef = client.create(remoteClassName, constructorParams, genericProps);
 
     return new RemoteObject(objectRef, remoteClassName, this);

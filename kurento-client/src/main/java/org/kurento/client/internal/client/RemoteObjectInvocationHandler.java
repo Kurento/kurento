@@ -30,6 +30,7 @@ import java.util.Set;
 import org.kurento.client.Continuation;
 import org.kurento.client.Event;
 import org.kurento.client.EventListener;
+import org.kurento.client.GenericMediaElement;
 import org.kurento.client.KurentoObject;
 import org.kurento.client.Transaction;
 import org.kurento.client.internal.ParamAnnotationUtils;
@@ -40,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.JsonElement;
 
 public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
@@ -83,11 +85,15 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
       return remoteObjectMethod.invoke(remoteObject, args);
     }
 
-    log.trace("Invoking method {} on object {}", method, proxy);
-
     Continuation<?> cont = null;
     Transaction tx = null;
     List<String> paramNames = Collections.emptyList();
+
+    if (proxy instanceof GenericMediaElement && method.getName().equals("invoke")) {
+      return genericMediaElementInvoke(args);
+    }
+
+    log.trace("Invoking method {} on object {}", method, proxy);
 
     if (args != null && args.length > 0) {
 
@@ -118,8 +124,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
       if (methodName.startsWith("add")) {
         return subscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont, tx);
       } else if (methodName.startsWith("remove")) {
-        return unsubscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont,
-            tx);
+        return unsubscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont, tx);
       } else {
         throw new IllegalStateException("Method " + methodName + " undefined for events");
       }
@@ -128,6 +133,15 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
       return invoke(method, paramNames, args, cont, tx);
     }
+  }
+
+  private Object genericMediaElementInvoke(Object[] args) {
+    String methodName = (String) args[0];
+    Props props = null;
+    if (args.length > 1) {
+      props = (Props) args[1];
+    }
+    return remoteObject.invoke(methodName, props, JsonElement.class);
   }
 
   private Object invoke(Method method, List<String> paramNames, Object[] args, Continuation<?> cont,
