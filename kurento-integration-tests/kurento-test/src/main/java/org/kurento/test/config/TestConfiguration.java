@@ -100,6 +100,7 @@ public class TestConfiguration {
 
   public static final String SELENIUM_SCOPE_PROPERTY = "test.selenium.scope";
 
+  // TODO review recording
   public static final String SELENIUM_RECORD_PROPERTY = "test.selenium.record";
   public static final boolean SELENIUM_RECORD_DEFAULT = true;
 
@@ -108,31 +109,14 @@ public class TestConfiguration {
   public static final boolean TEST_SELENIUM_DNAT_DEFAULT = false;
   public static final String TEST_SELENIUM_TRANSPORT = "test.selenium.transport";
 
-  // Docker
-  public static final String DOCKER_HUB_IMAGE_PROPERTY = "docker.hub.image";
-  public static final String DOCKER_HUB_IMAGE_DEFAULT = "selenium/hub:3.13.0";
-
   public static final String DOCKER_VNCRECORDER_IMAGE_PROPERTY = "docker.vncrecorder.image";
   public static final String DOCKER_VNCRECORDER_IMAGE_DEFAULT = "softsam/vncrecorder";
 
   public static final String DOCKER_NODE_CHROME_IMAGE_PROPERTY = "docker.node.chrome.image";
-  public static final String DOCKER_NODE_CHROME_IMAGE_DEFAULT = "selenium/node-chrome:3.13.0";
+  public static final String DOCKER_NODE_CHROME_IMAGE_DEFAULT = "elastestbrowsers/chrome:latest";
 
   public static final String DOCKER_NODE_FIREFOX_IMAGE_PROPERTY = "docker.node.firefox.image";
-  public static final String DOCKER_NODE_FIREFOX_IMAGE_DEFAULT = "selenium/node-firefox:3.13.0";
-
-  public static final String DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY =
-      "docker.node.chrome-debug.image";
-  public static final String DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT =
-      "selenium/node-chrome-debug:3.13.0";
-
-  public static final String DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY =
-      "docker.node.firefox-debug.image";
-  public static final String DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT =
-      "selenium/node-firefox-debug:3.13.0";
-
-  public static final String DOCKER_HUB_CONTAINER_NAME_PROPERTY = "docker.hub.container.name";
-  public static final String DOCKER_HUB_CONTAINER_NAME_DEFAULT = "hub";
+  public static final String DOCKER_NODE_FIREFOX_IMAGE_DEFAULT = "elastestbrowsers/firefox:latest";
 
   public static final String DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY =
       "docker.vncrecorder.container.name";

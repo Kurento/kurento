@@ -26,7 +26,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -34,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -59,6 +57,7 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.Volume;
@@ -88,7 +87,6 @@ public class Docker implements Closeable {
 
   private static Docker singleton = null;
   private static Boolean isRunningInContainer;
-  private static String hostIp;
 
   private DockerClient client;
   private String containerName;
@@ -144,34 +142,6 @@ public class Docker implements Closeable {
     }
 
     return isRunningInContainer;
-  }
-
-  private static synchronized String getHostIp() {
-
-    if (hostIp == null) {
-
-      if (isRunningInContainerInternal()) {
-
-        try {
-
-          String ipRoute = Shell.runAndWait("sh", "-c", "/sbin/ip route");
-
-          String[] tokens = ipRoute.split("\\s");
-
-          hostIp = tokens[2];
-
-        } catch (Exception e) {
-          throw new DockerClientException("Exception executing /sbin/ip route", e);
-        }
-
-      } else {
-        hostIp = "127.0.0.1";
-      }
-    }
-
-    log.debug("Host IP is {}", hostIp);
-
-    return hostIp;
   }
 
   public boolean isRunningContainer(String containerName) {
@@ -406,21 +376,7 @@ public class Docker implements Closeable {
     }
   }
 
-  public synchronized String startHub(String hubName, String imageId) {
-    // Create hub if not exist
-    createContainer(imageId, hubName, false, "GRID_TIMEOUT=30");
-
-    // Start hub if stopped
-    startContainer(hubName);
-
-    // Read IP address
-    String hubIp = inspectContainer(hubName).getNetworkSettings().getIpAddress();
-    log.debug("Hub started on IP address: {}", hubIp);
-    return hubIp;
-  }
-
-  public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
-      String hubIp) {
+  public void startNode(String id, BrowserType browserType, String nodeName, String imageId) {
     // Create node if not exist
     if (!existsContainer(nodeName)) {
 
@@ -429,10 +385,7 @@ public class Docker implements Closeable {
       log.debug("Creating container {}", nodeName);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withName(nodeName);
-
-      // TODO make this port configurable
-      createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp, "HUB_PORT_4444_TCP_PORT=4444" });
+          getClient().createContainerCmd(imageId).withCapAdd(Capability.SYS_ADMIN).withName(nodeName);
 
       createContainerCmd.exec();
 
@@ -447,7 +400,7 @@ public class Docker implements Closeable {
   }
 
   public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
-      String hubIp, String containerIp) {
+      String containerIp) {
     // Create node if not exist
     if (!existsContainer(nodeName)) {
 
@@ -456,7 +409,7 @@ public class Docker implements Closeable {
       log.debug("Creating container {}", nodeName);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withName(nodeName);
+          getClient().createContainerCmd(imageId).withCapAdd(Capability.SYS_ADMIN).withName(nodeName);
 
       createContainerCmd.withNetworkMode("none");
 
@@ -466,8 +419,6 @@ public class Docker implements Closeable {
       labels.put("IpAddress", containerIp);
 
       createContainerCmd.withLabels(labels);
-      createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp,
-          "SE_OPTS=\"-host " + containerIp + " -port 5555\"" });
 
       createContainerCmd.exec();
 
@@ -481,22 +432,15 @@ public class Docker implements Closeable {
     startContainer(nodeName);
   }
 
-  public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
-      String hubIp) {
-    startNode(id, browserType, nodeName, imageId, hubIp);
+  public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId) {
+    startNode(id, browserType, nodeName, imageId);
     waitForContainer(nodeName);
   }
 
   public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
-      String hubIp, String containerIp) {
-    startNode(id, browserType, nodeName, imageId, hubIp, containerIp);
+      String containerIp) {
+    startNode(id, browserType, nodeName, imageId, containerIp);
     waitForContainer(nodeName);
-  }
-
-  public String startAndWaitHub(String hubName, String imageId) {
-    String hubIp = startHub(hubName, imageId);
-    waitForContainer(hubName);
-    return hubIp;
   }
 
   public void waitForContainer(String containerName) {

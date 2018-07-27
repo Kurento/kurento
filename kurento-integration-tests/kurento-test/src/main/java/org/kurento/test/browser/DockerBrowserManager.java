@@ -18,10 +18,6 @@
 package org.kurento.test.browser;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
-import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_IMAGE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
@@ -37,14 +33,10 @@ import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_PROPERTY
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAULT;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,14 +45,12 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.net.RemoteService;
@@ -73,16 +63,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 
 public class DockerBrowserManager {
 
   public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
   private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 300;
-
-  private static final int HUB_CREATION_WAIT_POOL_TIME_MS = 1000;
-  private static final int HUB_CREATION_TIMEOUT_MS = 120000;
 
   private static Logger log = LoggerFactory.getLogger(DockerBrowserManager.class);
 
@@ -120,60 +105,6 @@ public class DockerBrowserManager {
       }
     }
 
-    private void waitForNodeRegisteredInHub() {
-
-      long timeoutMs = System.currentTimeMillis() + HUB_CREATION_TIMEOUT_MS;
-      while (true) {
-
-        try {
-
-          JsonObject result =
-              curl(hubUrl + "/grid/api/proxy?id=http://" + browserContainerIp + ":5555");
-
-          if (result.get("success").getAsBoolean()) {
-            log.debug("Capabilities of container {}: {}", browserContainerName,
-                result.get("request").getAsJsonObject().get("capabilities"));
-            return;
-          } else {
-            log.debug("Node {} not registered in hub. Waiting {} ms...", id,
-                HUB_CREATION_WAIT_POOL_TIME_MS);
-          }
-
-          waitPoolTime(timeoutMs, "node registration in hub");
-
-        } catch (MalformedURLException e) {
-          throw new Error(e);
-        } catch (IOException e) {
-          log.debug("Hub is not ready ({} : {}). Waiting {} ms...", e.getClass().getName(),
-              e.getMessage(), HUB_CREATION_WAIT_POOL_TIME_MS);
-          waitPoolTime(timeoutMs, "hub service ready");
-        }
-      }
-    }
-
-    private void waitPoolTime(long timeoutMs, String message) {
-      if (System.currentTimeMillis() > timeoutMs) {
-        throw new RuntimeException(
-            "Timeout of " + HUB_CREATION_TIMEOUT_MS + " ms waiting for " + message);
-      }
-      try {
-        Thread.sleep(HUB_CREATION_WAIT_POOL_TIME_MS);
-      } catch (InterruptedException e) {
-        // Intentianally left blank
-      }
-    }
-
-    private JsonObject curl(String urlString) throws MalformedURLException, IOException {
-      URL url = new URL(urlString);
-
-      URLConnection connection = url.openConnection();
-
-      Reader is = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-      JsonObject result = new GsonBuilder().create().fromJson(is, JsonObject.class);
-      return result;
-    }
-
     public void create() {
 
       String nodeImageId = calculateBrowserImageName(capabilities);
@@ -193,17 +124,16 @@ public class DockerBrowserManager {
           if (kmsSelenium) {
             browserContainerIp = docker.generateIpAddressForContainer();
             docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
-                dockerHubIp, browserContainerIp);
+                browserContainerIp);
           } else {
-            docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
-                dockerHubIp);
+            docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId);
             browserContainerIp =
                 docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
           }
 
-          waitForNodeRegisteredInHub();
-
-          createAndWaitRemoteDriver(hubUrl + "/wd/hub", capabilities);
+          // TODO: use a free port instead
+          String driverUrl = String.format("http://%s:4444/wd/hub", browserContainerIp);
+          createAndWaitRemoteDriver(driverUrl, capabilities);
 
         } catch (TimeoutException e) {
 
@@ -263,14 +193,8 @@ public class DockerBrowserManager {
           remoteDriver = driverFuture.get(REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S, TimeUnit.SECONDS);
 
           SessionId sessionId = remoteDriver.getSessionId();
-          String nodeIp = obtainBrowserNodeIp(sessionId);
 
-          if (!nodeIp.equals(browserContainerIp)) {
-            log.warn("Browser {} is not created in its container. Container IP: {} Browser IP:{}",
-                id, browserContainerIp, nodeIp);
-          }
-
-          log.debug("Created selenium session {} for browser {} in node {}", sessionId, id, nodeIp);
+          log.debug("Created selenium session {} for browser {}", sessionId, id);
 
           driver = remoteDriver;
 
@@ -308,23 +232,6 @@ public class DockerBrowserManager {
         }
 
       } while (driver == null);
-    }
-
-    private String obtainBrowserNodeIp(SessionId sessionId) {
-
-      try {
-
-        JsonObject result = curl(hubUrl + "/grid/api/testsession?session=" + sessionId);
-
-        String nodeIp = result.get("proxyId").getAsString();
-        return nodeIp.substring(7, nodeIp.length()).split(":")[0];
-
-      } catch (IOException e) {
-        log.warn("Exception while trying to obtain node Ip. {}:{}", e.getClass().getName(),
-            e.getMessage());
-        return null;
-      }
-
     }
 
     private void createVncRecorderContainer() {
@@ -389,11 +296,6 @@ public class DockerBrowserManager {
 
   private Docker docker = Docker.getSingleton();
 
-  private AtomicInteger numBrowsers = new AtomicInteger();
-  private CountDownLatch hubStarted = new CountDownLatch(1);
-  private String dockerHubIp;
-  private String hubContainerName;
-  private String hubUrl;
   private ExecutorService exec = Executors.newFixedThreadPool(10);
 
   private ConcurrentMap<String, DockerBrowser> browsers = new ConcurrentHashMap<>();
@@ -411,21 +313,6 @@ public class DockerBrowserManager {
     this.downloadLogsPath = path;
   }
 
-  private void calculateHubContainerName() {
-    hubContainerName =
-        getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY, DOCKER_HUB_CONTAINER_NAME_DEFAULT);
-
-    if (docker.isRunningInContainer()) {
-
-      String containerName = docker.getContainerName();
-
-      hubContainerName = containerName + "-" + hubContainerName + "-"
-          + KurentoTest.getTestClassName() + "-" + new Random().nextInt(5000);
-    }
-
-    log.debug("Hub container name: {}", hubContainerName);
-  }
-
   public RemoteWebDriver createDockerDriver(String id, DesiredCapabilities capabilities)
       throws MalformedURLException {
 
@@ -434,10 +321,6 @@ public class DockerBrowserManager {
     if (browsers.putIfAbsent(id, browser) != null) {
       throw new KurentoException("Browser with id " + id + " already exists");
     }
-
-    boolean firstBrowser = numBrowsers.incrementAndGet() == 1;
-
-    startHub(firstBrowser);
 
     browser.create();
 
@@ -455,58 +338,6 @@ public class DockerBrowserManager {
 
     browser.close();
 
-    if (numBrowsers.decrementAndGet() == 0) {
-      closeHub();
-    }
-  }
-
-  private synchronized void closeHub() {
-
-    if (hubContainerName == null) {
-      log.warn("Trying to close Hub, but it is not created");
-      return;
-    }
-
-    downloadLogsForContainer(hubContainerName, "hub");
-    docker.stopAndRemoveContainers(hubContainerName);
-
-    dockerHubIp = null;
-    hubUrl = null;
-    hubStarted = new CountDownLatch(1);
-  }
-
-  private void startHub(boolean firstBrowser) {
-
-    if (firstBrowser) {
-
-      synchronized (this) {
-
-        log.debug("Creating hub...");
-
-        calculateHubContainerName();
-
-        String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY, DOCKER_HUB_IMAGE_DEFAULT);
-
-        dockerHubIp = docker.startAndWaitHub(hubContainerName, hubImageId);
-
-        hubUrl = "http://" + dockerHubIp + ":4444";
-
-        hubStarted.countDown();
-      }
-
-    } else {
-
-      if (hubStarted.getCount() != 0) {
-
-        log.debug("Waiting for hub...");
-
-        try {
-          hubStarted.await();
-        } catch (InterruptedException e) {
-          throw new RuntimeException("InterruptedException while waiting to hub creation");
-        }
-      }
-    }
   }
 
   private String createSecretFile() throws IOException {
