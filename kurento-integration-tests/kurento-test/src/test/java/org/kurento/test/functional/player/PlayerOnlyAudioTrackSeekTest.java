@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -153,6 +154,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekS3Mp3() throws Exception {
     // Test data
@@ -160,6 +162,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekS3M4a() throws Exception {
     // Test data
@@ -167,6 +170,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekS3Ogg() throws Exception {
     // Test data
@@ -174,6 +178,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekS3Wav() throws Exception {
     // Test data
@@ -181,6 +186,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekS3Wma() throws Exception {
     // Test data

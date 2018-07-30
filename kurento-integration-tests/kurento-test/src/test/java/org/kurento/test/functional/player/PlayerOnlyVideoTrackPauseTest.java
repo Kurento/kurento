@@ -25,6 +25,7 @@ import static org.kurento.test.config.Protocol.S3;
 import java.awt.Color;
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -176,6 +177,7 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyVideoPauseS3Ogv() throws Exception {
     // Test data
@@ -183,6 +185,7 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyVideoPauseS3Mkv() throws Exception {
     // Test data
@@ -190,6 +193,7 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyVideoPauseS3Avi() throws Exception {
     // Test data
@@ -197,6 +201,7 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyVideoPauseS3Webm() throws Exception {
     // Test data
@@ -204,6 +209,7 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyVideoPauseS3Mov() throws Exception {
     // Test data
@@ -211,6 +217,7 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyVideoPauseS33gp() throws Exception {
     // Test data
@@ -218,6 +225,7 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyVideoPauseS3Mp4() throws Exception {
     // Test data

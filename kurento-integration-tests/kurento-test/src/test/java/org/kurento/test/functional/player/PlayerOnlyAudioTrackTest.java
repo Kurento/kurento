@@ -142,26 +142,31 @@ public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
     initTest(S3, "/audio/10sec/birds.mp3");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackS3Wav() throws Exception {
     initTest(S3, "/audio/10sec/counter.wav");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackS3Flac() throws Exception {
     initTest(S3, "/audio/10sec/cinema.flac");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackS3Ogg() throws Exception {
     initTest(S3, "/audio/10sec/fiware.ogg");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackS3M4a() throws Exception {
     initTest(S3, "/audio/10sec/left-right.m4a");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackS3Wma() throws Exception {
     initTest(S3, "/audio/10sec/meet.wma");

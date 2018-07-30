@@ -24,6 +24,7 @@ import static org.kurento.test.config.Protocol.S3;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -146,6 +147,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioPauseS3Mp3() throws Exception {
     // Test data
@@ -153,6 +155,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioPauseS3M4a() throws Exception {
     // Test data
@@ -160,6 +163,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioPauseS3Ogg() throws Exception {
     // Test data
@@ -167,6 +171,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioPauseS3Wav() throws Exception {
     // Test data
@@ -174,6 +179,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioPauseS3Wma() throws Exception {
     // Test data

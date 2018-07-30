@@ -32,6 +32,7 @@ import static org.kurento.test.config.VideoFormat.WEBM;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
@@ -143,36 +144,43 @@ public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
     testPlayerWithSmallFileVideoOnly(FILE, OGV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyS33gp() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, THIRDGP, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyS3Avi() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, AVI, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyS3Mkv() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, MKV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyS3Mov() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, MOV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyS3Mp4() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, MP4, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyS3Ogv() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, OGV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyS3Webm() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, WEBM, VIDEO_ONLY);
