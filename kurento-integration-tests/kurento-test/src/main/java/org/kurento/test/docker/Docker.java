@@ -520,7 +520,7 @@ public class Docker implements Closeable {
   public String getContainerIpAddress() {
     if (isRunningInContainer()) {
       String ipAddr = inspectContainer(getContainerName()).getNetworkSettings().getIpAddress();
-      log.debug("Docker container IP address {}", ipAddr);
+      log.trace("Docker container IP address {}", ipAddr);
       return ipAddr;
     } else {
       throw new DockerClientException(
