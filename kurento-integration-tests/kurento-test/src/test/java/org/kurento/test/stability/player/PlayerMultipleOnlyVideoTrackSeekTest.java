@@ -179,6 +179,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Ogv() throws Exception {
     // Test data
@@ -186,6 +187,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Mkv() throws Exception {
     // Test data
@@ -193,6 +195,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Avi() throws Exception {
     // Test data
@@ -200,6 +203,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Webm() throws Exception {
     // Test data
@@ -207,6 +211,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Mov() throws Exception {
     // Test data
@@ -214,6 +219,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyVideoSeekS33gp() throws Exception {
     // Test data
@@ -221,6 +227,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Mp4() throws Exception {
     // Test data

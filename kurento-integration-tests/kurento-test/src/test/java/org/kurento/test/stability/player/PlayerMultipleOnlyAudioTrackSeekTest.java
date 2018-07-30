@@ -150,6 +150,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekS3Mp3() throws Exception {
     // Test data
@@ -157,6 +158,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekS3M4a() throws Exception {
     // Test data
@@ -164,6 +166,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekS3Ogg() throws Exception {
     // Test data
@@ -171,6 +174,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekS3Wav() throws Exception {
     // Test data
@@ -178,6 +182,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekS3Wma() throws Exception {
     // Test data
