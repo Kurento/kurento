@@ -95,20 +95,18 @@ public class RepositoryMongoTest extends KurentoClientBrowserTest<WebRtcTestPage
       case HTTP:
         mediaUrl = HTTP + "://" + getTestFilesHttpPath();
         break;
-      case MONGODB:
       case FILE:
         mediaUrl = FILE + "://" + getTestFilesDiskPath();
         break;
       case S3:
         mediaUrl = S3 + "://" + getTestFilesS3Path();
         break;
-// TODO: Temporary disable of MongoDB repository
-//      case MONGODB:
-//        List<RepositoryItem> repositoryItem =
-//            repository.findRepositoryItemsByAttRegex("file", nameMedia);
-//        RepositoryHttpPlayer repositoryPlayer = repositoryItem.get(0).createRepositoryHttpPlayer();
-//        mediaUrl = repositoryPlayer.getURL();
-//        return mediaUrl;
+      case MONGODB:
+        List<RepositoryItem> repositoryItem =
+            repository.findRepositoryItemsByAttRegex("file", nameMedia);
+        RepositoryHttpPlayer repositoryPlayer = repositoryItem.get(0).createRepositoryHttpPlayer();
+        mediaUrl = repositoryPlayer.getURL();
+        return mediaUrl;
       default:
         throw new RuntimeException(protocol + "is not supported in this test.");
     }
