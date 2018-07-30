@@ -17,6 +17,9 @@
 
 package org.kurento.test.browser;
 
+import static java.lang.System.currentTimeMillis;
+import static java.lang.Thread.sleep;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
@@ -35,6 +38,8 @@ import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAU
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -68,6 +73,8 @@ public class DockerBrowserManager {
 
   public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
   private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 300;
+  private static final int WAIT_URL_POLL_TIME_MS = 200;
+  private static final int WAIT_URL_TIMEOUT_SEC = 10;
 
   private static Logger log = LoggerFactory.getLogger(DockerBrowserManager.class);
 
@@ -133,6 +140,7 @@ public class DockerBrowserManager {
 
           // TODO: use a free port instead
           String driverUrl = String.format("http://%s:4444/wd/hub", browserContainerIp);
+          waitForUrl(driverUrl);
           createAndWaitRemoteDriver(driverUrl, capabilities);
 
         } catch (TimeoutException e) {
@@ -164,6 +172,33 @@ public class DockerBrowserManager {
       if (record) {
         createVncRecorderContainer();
       }
+    }
+
+    public void waitForUrl(String url) {
+      boolean urlAvailable = false;
+      long timeoutMs =
+          currentTimeMillis() + SECONDS.toMillis(WAIT_URL_TIMEOUT_SEC);
+      do {
+        try {
+          HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+          connection.setRequestMethod("HEAD");
+          int responseCode = connection.getResponseCode();
+          urlAvailable = responseCode >= 200 && responseCode < 500;
+          if (!urlAvailable) {
+            if (currentTimeMillis() > timeoutMs) {
+              throw new KurentoException("Timeout of " + WAIT_URL_TIMEOUT_SEC
+                  + " seconds waiting for URL " + url);
+            }
+            log.debug("URL {} is not still available (response {}) ... waiting {} ms", url,
+                    responseCode, WAIT_URL_POLL_TIME_MS);
+            sleep(WAIT_URL_POLL_TIME_MS);
+          }
+        } catch (ConnectException e) {
+          log.trace("{} is not yet available", url);
+        } catch (IOException | InterruptedException e) {
+          log.error("Exception waiting for url {}", url, e);
+        }
+      } while (!urlAvailable);
     }
 
     private void createAndWaitRemoteDriver(final String driverUrl,
