@@ -240,6 +240,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerAudioVideoSeekRepositoryOgv() throws Exception {
     // Test data
@@ -247,6 +248,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerAudioVideoSeekRepositoryMkv() throws Exception {
     // Test data
@@ -254,6 +256,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerAudioVideoSeekRepositoryAvi() throws Exception {
     // Test data
@@ -261,6 +264,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerAudioVideoSeekRepositoryWebm() throws Exception {
     // Test data
@@ -268,6 +272,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerAudioVideoSeekRepositoryMov() throws Exception {
     // Test data
@@ -275,6 +280,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerAudioVideoSeekRepository3gp() throws Exception {
     // Test data
@@ -282,6 +288,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerAudioVideoSeekRepositoryMp4() throws Exception {
     // Test data

@@ -194,6 +194,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekRepositoryMp3() throws Exception {
     // Test data
@@ -201,6 +202,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekRepositoryM4a() throws Exception {
     // Test data
@@ -208,6 +210,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekRepositoryOgg() throws Exception {
     // Test data
@@ -215,6 +218,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekRepositoryWav() throws Exception {
     // Test data
@@ -222,6 +226,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioSeekRepositoryWma() throws Exception {
     // Test data

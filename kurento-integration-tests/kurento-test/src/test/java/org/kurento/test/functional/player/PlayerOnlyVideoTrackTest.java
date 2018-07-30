@@ -186,36 +186,43 @@ public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
     testPlayerWithSmallFileVideoOnly(S3, WEBM, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepository3gp() throws Exception {
     testPlayerWithSmallFileVideoOnly(MONGODB, THIRDGP, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryAvi() throws Exception {
     testPlayerWithSmallFileVideoOnly(MONGODB, AVI, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryMkv() throws Exception {
     testPlayerWithSmallFileVideoOnly(MONGODB, MKV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryMov() throws Exception {
     testPlayerWithSmallFileVideoOnly(MONGODB, MOV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryMp4() throws Exception {
     testPlayerWithSmallFileVideoOnly(MONGODB, MP4, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryOgv() throws Exception {
     testPlayerWithSmallFileVideoOnly(MONGODB, OGV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryWebm() throws Exception {
     testPlayerWithSmallFileVideoOnly(MONGODB, WEBM, VIDEO_ONLY);

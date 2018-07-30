@@ -172,31 +172,37 @@ public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
     initTest(S3, "/audio/10sec/meet.wma");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackRepositoryMp3() throws Exception {
     initTest(MONGODB, "/audio/10sec/birds.mp3");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackRepositoryWav() throws Exception {
     initTest(MONGODB, "/audio/10sec/counter.wav");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackRepositoryFlac() throws Exception {
     initTest(MONGODB, "/audio/10sec/cinema.flac");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackRepositoryOgg() throws Exception {
     initTest(MONGODB, "/audio/10sec/fiware.ogg");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackRepositoryM4a() throws Exception {
     initTest(MONGODB, "/audio/10sec/left-right.m4a");
   }
 
+  @Ignore
   @Test
   public void testPlayerOnlyAudioTrackRepositoryWma() throws Exception {
     initTest(MONGODB, "/audio/10sec/meet.wma");

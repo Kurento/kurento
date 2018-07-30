@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.base.StabilityTest;
@@ -227,6 +228,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleAudioVideoSeekRepositoryOgv() throws Exception {
     // Test data
@@ -234,6 +236,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleAudioVideoSeekRepositoryMkv() throws Exception {
     // Test data
@@ -241,6 +244,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleAudioVideoSeekRepositoryAvi() throws Exception {
     // Test data
@@ -248,6 +252,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleAudioVideoSeekRepositoryWebm() throws Exception {
     // Test data
@@ -255,6 +260,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleAudioVideoSeekRepositoryMov() throws Exception {
     // Test data
@@ -262,6 +268,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleAudioVideoSeekRepository3gp() throws Exception {
     // Test data
@@ -269,6 +276,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleAudioVideoSeekRepositoryMp4() throws Exception {
     // Test data

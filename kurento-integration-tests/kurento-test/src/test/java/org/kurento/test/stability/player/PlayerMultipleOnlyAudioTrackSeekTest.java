@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.base.StabilityTest;
@@ -184,6 +185,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekRepositoryMp3() throws Exception {
     // Test data
@@ -191,6 +193,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekRepositoryM4a() throws Exception {
     // Test data
@@ -198,6 +201,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekRepositoryOgg() throws Exception {
     // Test data
@@ -205,6 +209,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekRepositoryWav() throws Exception {
     // Test data
@@ -212,6 +217,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(MONGODB, mediaUrl);
   }
 
+  @Ignore
   @Test
   public void testPlayerMultipleOnlyAudioSeekRepositoryWma() throws Exception {
     // Test data

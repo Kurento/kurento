@@ -433,106 +433,127 @@ public class PlayerWebRtcTest extends FunctionalPlayerTest {
     testPlayerWithSmallFile(S3, WEBM, AUDIO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioAndVideoRepository3gp() throws Exception {
     testPlayerWithSmallFile(MONGODB, THIRDGP, AUDIO_AND_VIDEO);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepository3gp() throws Exception {
     testPlayerWithSmallFile(MONGODB, THIRDGP, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioOnlyRepository3gp() throws Exception {
     testPlayerWithSmallFile(MONGODB, THIRDGP, AUDIO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioAndVideoRepositoryAvi() throws Exception {
     testPlayerWithSmallFile(MONGODB, AVI, AUDIO_AND_VIDEO);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryAvi() throws Exception {
     testPlayerWithSmallFile(MONGODB, AVI, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioOnlyRepositoryAvi() throws Exception {
     testPlayerWithSmallFile(MONGODB, AVI, AUDIO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioAndVideoRepositoryMkv() throws Exception {
     testPlayerWithSmallFile(MONGODB, MKV, AUDIO_AND_VIDEO);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryMkv() throws Exception {
     testPlayerWithSmallFile(MONGODB, MKV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioOnlyRepositoryMkv() throws Exception {
     testPlayerWithSmallFile(MONGODB, MKV, AUDIO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioAndVideoRepositoryMov() throws Exception {
     testPlayerWithSmallFile(MONGODB, MOV, AUDIO_AND_VIDEO);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryMov() throws Exception {
     testPlayerWithSmallFile(MONGODB, MOV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioOnlyRepositoryMov() throws Exception {
     testPlayerWithSmallFile(MONGODB, MOV, AUDIO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioAndVideoRepositoryMp4() throws Exception {
     testPlayerWithSmallFile(MONGODB, MP4, AUDIO_AND_VIDEO);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryMp4() throws Exception {
     testPlayerWithSmallFile(MONGODB, MP4, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioOnlyRepositoryMp4() throws Exception {
     testPlayerWithSmallFile(MONGODB, MP4, AUDIO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioAndVideoRepositoryOgv() throws Exception {
     testPlayerWithSmallFile(MONGODB, OGV, AUDIO_AND_VIDEO);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryOgv() throws Exception {
     testPlayerWithSmallFile(MONGODB, OGV, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioOnlyRepositoryOgv() throws Exception {
     testPlayerWithSmallFile(MONGODB, OGV, AUDIO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioAndVideoRepositoryWebm() throws Exception {
     testPlayerWithSmallFile(MONGODB, WEBM, AUDIO_AND_VIDEO);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcVideoOnlyRepositoryWebm() throws Exception {
     testPlayerWithSmallFile(MONGODB, WEBM, VIDEO_ONLY);
   }
 
+  @Ignore
   @Test
   public void testPlayerWebRtcAudioOnlyRepositoryWebm() throws Exception {
     testPlayerWithSmallFile(MONGODB, WEBM, AUDIO_ONLY);
