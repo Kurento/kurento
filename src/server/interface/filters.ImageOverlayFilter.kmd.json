@@ -9,7 +9,7 @@
         "params": [
           {
             "name": "mediaPipeline",
-            "doc": "pipeline to which this :rom:cls:`Filter` belons",
+            "doc": "pipeline to which this :rom:cls:`Filter` belongs",
             "type": "MediaPipeline"
           }
         ]
