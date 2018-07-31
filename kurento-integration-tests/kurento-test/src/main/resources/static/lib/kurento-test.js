@@ -176,6 +176,9 @@ KurentoTest.prototype.checkColor = function() {
 
 KurentoTest.prototype.checkColorIn = function(videoTagId) {
 	var video = document.getElementById(videoTagId);
+	if (!video) {
+		return;
+	}
 	var canvas = document.createElement("canvas");
 	canvas.width = 1;
 	canvas.height = 1;
