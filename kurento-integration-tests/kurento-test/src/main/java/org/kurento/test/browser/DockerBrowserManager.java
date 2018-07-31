@@ -29,8 +29,6 @@ import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_CONTA
 import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_PROPERTY;
-import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
@@ -47,13 +45,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -63,7 +56,6 @@ import org.kurento.test.base.KurentoTest;
 import org.kurento.test.docker.Docker;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.SessionId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,12 +130,11 @@ public class DockerBrowserManager {
                 docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
           }
 
-          // TODO: use a free port instead
           String driverUrl = String.format("http://%s:4444/wd/hub", browserContainerIp);
           waitForUrl(driverUrl);
-          createAndWaitRemoteDriver(driverUrl, capabilities);
+          driver = new RemoteWebDriver(new URL(driverUrl), capabilities);
 
-        } catch (TimeoutException e) {
+        } catch (Exception e) {
 
           if (numRetries == REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES) {
             throw new KurentoException("Timeout of "
@@ -201,73 +192,6 @@ public class DockerBrowserManager {
       } while (!urlAvailable);
     }
 
-    private void createAndWaitRemoteDriver(final String driverUrl,
-        final DesiredCapabilities capabilities) throws TimeoutException {
-
-      log.debug("Creating remote driver for browser {} in hub {}", id, driverUrl);
-
-      int timeoutSeconds =
-          getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY, SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
-
-      long timeoutMs = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeoutSeconds);
-
-      do {
-
-        Future<RemoteWebDriver> driverFuture = null;
-
-        try {
-
-          driverFuture = exec.submit(new Callable<RemoteWebDriver>() {
-            @Override
-            public RemoteWebDriver call() throws Exception {
-              return new RemoteWebDriver(new URL(driverUrl), capabilities);
-            }
-          });
-
-          RemoteWebDriver remoteDriver;
-          remoteDriver = driverFuture.get(REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S, TimeUnit.SECONDS);
-
-          SessionId sessionId = remoteDriver.getSessionId();
-
-          log.debug("Created selenium session {} for browser {}", sessionId, id);
-
-          driver = remoteDriver;
-
-        } catch (TimeoutException e) {
-
-          driverFuture.cancel(true);
-          throw e;
-
-        } catch (InterruptedException e) {
-
-          throw new RuntimeException("Interrupted exception waiting for RemoteWebDriver", e);
-
-        } catch (ExecutionException e) {
-
-          log.warn("Exception creating RemoveWebDriver", e);
-
-          // Check timeout
-          if (System.currentTimeMillis() > timeoutMs) {
-            throw new KurentoException(
-                "Timeout of " + timeoutMs + " millis waiting to create a RemoteWebDriver",
-                e.getCause());
-          }
-
-          log.debug("Exception creating RemoteWebDriver for browser \"{}\". Retrying...", id,
-              e.getCause());
-
-          // Poll time
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException t) {
-            Thread.currentThread().interrupt();
-            return;
-          }
-
-        }
-
-      } while (driver == null);
-    }
 
     private void createVncRecorderContainer() {
 
@@ -328,10 +252,7 @@ public class DockerBrowserManager {
 
     }
   }
-
   private Docker docker = Docker.getSingleton();
-
-  private ExecutorService exec = Executors.newFixedThreadPool(10);
 
   private ConcurrentMap<String, DockerBrowser> browsers = new ConcurrentHashMap<>();
 
