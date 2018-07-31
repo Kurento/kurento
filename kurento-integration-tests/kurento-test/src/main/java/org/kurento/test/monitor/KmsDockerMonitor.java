@@ -22,6 +22,9 @@ import java.util.Map;
 
 import org.kurento.test.docker.Docker;
 
+import com.github.dockerjava.api.model.CpuStatsConfig;
+import com.github.dockerjava.api.model.MemoryStatsConfig;
+import com.github.dockerjava.api.model.StatisticNetworksConfig;
 import com.github.dockerjava.api.model.Statistics;
 
 /**
@@ -51,7 +54,7 @@ public class KmsDockerMonitor extends KmsMonitor {
   protected NetInfo getNetInfo() {
     NetInfo netInfo = new NetInfo();
     Statistics stats = docker.getStatistics(containerId);
-    Map<String, Object> networksStats = stats.getNetworks();
+    Map<String, StatisticNetworksConfig> networksStats = stats.getNetworks();
 
     for (String key : networksStats.keySet()) {
       Map<String, Object> iface = (Map<String, Object>) networksStats.get(key);
@@ -68,11 +71,11 @@ public class KmsDockerMonitor extends KmsMonitor {
   protected double getCpuUsage() {
     double cpuUsage = 0;
     Statistics stats = docker.getStatistics(containerId);
-    Map<String, Object> cpuStats = stats.getCpuStats();
+    CpuStatsConfig cpuStats = stats.getCpuStats();
 
     if (cpuStats != null) {
-      Map<String, Object> cpuUsageMap = (Map<String, Object>) cpuStats.get("cpu_usage");
-      long systemUsage = Long.parseLong(cpuStats.get("system_cpu_usage").toString());
+      Map<String, Object> cpuUsageMap = (Map<String, Object>) cpuStats.getCpuUsage();
+      long systemUsage = Long.parseLong(cpuStats.getSystemCpuUsage().toString());
       long totalUsage = Long.parseLong(cpuUsageMap.get("total_usage").toString());
 
       List<Object> perCpuUsage = (List<Object>) cpuUsageMap.get("percpu_usage");
@@ -101,9 +104,9 @@ public class KmsDockerMonitor extends KmsMonitor {
     double[] out = { 0, 0 };
 
     Statistics stats = docker.getStatistics(containerId);
-    Map<String, Object> memoryStats = stats.getMemoryStats();
-    int usage = (Integer) memoryStats.get("usage");
-    float limit = (Long) memoryStats.get("limit");
+    MemoryStatsConfig memoryStats = stats.getMemoryStats();
+    long usage = memoryStats.getUsage();
+    long limit = memoryStats.getLimit();
     double memPercent = usage / limit * 100;
 
     out[0] = usage;

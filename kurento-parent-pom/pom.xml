@@ -146,7 +146,7 @@
 		<jfreechart.version>1.0.19</jfreechart.version>
 		<version.ocr>3.04.01-1.2</version.ocr>
 		<webdrivermanager.version>2.2.4</webdrivermanager.version>
-		<docker-java.version>3.0.6</docker-java.version>
+		<docker-java.version>3.1.0-rc-4</docker-java.version>
 		<jackson.version>2.7.4</jackson.version>
 		<assertj.version>2.5.0</assertj.version>
 		<jna.version>3.0.9</jna.version>
