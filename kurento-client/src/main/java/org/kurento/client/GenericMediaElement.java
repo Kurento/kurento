@@ -30,5 +30,5 @@ public interface GenericMediaElement extends MediaElement {
 
 	public ListenerSubscription addEventListener(String type, EventListener<GenericMediaEvent> listener);
 
-	public void removeEventListener(String type, ListenerSubscription listener);
+	public void removeEventListener(ListenerSubscription listener);
 }
