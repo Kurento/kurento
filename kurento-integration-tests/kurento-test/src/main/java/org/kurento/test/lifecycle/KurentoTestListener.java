@@ -76,16 +76,16 @@ public class KurentoTestListener extends RunListener {
 
   private void invokeServices(ServiceMethod method, TestServiceScope scope) {
     for (TestService serviceRunner : serviceRunners) {
-      log.debug("** Only for debugging: serviceRunner: {}. All Service Runners: {}", serviceRunner,
+      log.trace("** Only for debugging: serviceRunner: {}. All Service Runners: {}", serviceRunner,
           serviceRunners);
-      log.debug("** Only for debugging: serviceRunner.getScope: {}", serviceRunner.getScope());
+      log.trace("** Only for debugging: serviceRunner.getScope: {}", serviceRunner.getScope());
       if (serviceRunner.getScope() == scope) {
         if (method == ServiceMethod.START) {
           serviceRunner.start();
         } else if (method == ServiceMethod.STOP) {
-          log.debug("** Only for debugging: serviceRunner.stop() {}", serviceRunner);
+          log.trace("** Only for debugging: serviceRunner.stop() {}", serviceRunner);
           serviceRunner.stop();
-          log.debug(
+          log.trace(
               "### Only for debugging: After serviceRunner.stop() -> serviceRunner: {}. All Service Runners: {}",
               serviceRunner, serviceRunners);
         }

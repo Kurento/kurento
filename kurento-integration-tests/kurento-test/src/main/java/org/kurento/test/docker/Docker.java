@@ -346,16 +346,16 @@ public class Docker implements Closeable {
         try {
           count++;
           getClient().removeContainerCmd(containerName).withRemoveVolumes(true).exec();
-          log.debug("*** Only for debuggin: After Docker.removeContainer({}). Times: {}",
+          log.trace("*** Only for debugging: After Docker.removeContainer({}). Times: {}",
               containerName, count);
           removed = true;
         } catch (Throwable e) {
           if (count == 10) {
-            log.error("*** Only for debugging: Exception {} -> Docker.removeContainer({}).",
+            log.trace("*** Only for debugging: Exception {} -> Docker.removeContainer({}).",
                 containerName, e.getMessage());
           }
           try {
-            log.debug("Waiting for removing {}. Times: {}", containerName, count);
+            log.trace("Waiting for removing {}. Times: {}", containerName, count);
             Thread.sleep(WAIT_CONTAINER_POLL_TIMEOUT);
           } catch (InterruptedException e1) {
             // Nothing todo

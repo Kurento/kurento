@@ -283,15 +283,15 @@ public class KmsService extends TestService {
     if (isKmsDocker) {
       try {
         Docker.getSingleton().removeContainer(dockerContainerName);
-        log.debug("*** Only for debugging: Docker.getSingleton().removeContainer({})",
+        log.trace("*** Only for debugging: Docker.getSingleton().removeContainer({})",
             dockerContainerName);
       } catch (Throwable name) {
-        log.error(" +++ Only for debugging: Exception on Docker.getSingleton().removeContainer({})",
+        log.trace(" +++ Only for debugging: Exception on Docker.getSingleton().removeContainer({})",
             dockerContainerName);
       }
     }
 
-    log.debug("+++ Only for debugging: After removeContainer {}", dockerContainerName);
+    log.trace("+++ Only for debugging: After removeContainer {}", dockerContainerName);
 
     // Delete temporal folder and content
     if (!isKmsDocker) {
@@ -301,7 +301,7 @@ public class KmsService extends TestService {
         log.warn("Exception deleting temporal folder {}", workspace, e);
       }
     }
-    log.debug("+++ Only for debugging: End of KmsService.stop() for: {}", dockerContainerName);
+    log.trace("+++ Only for debugging: End of KmsService.stop() for: {}", dockerContainerName);
   }
 
   @Override
