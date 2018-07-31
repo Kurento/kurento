@@ -99,7 +99,7 @@ public class TestReport {
     String kurentoLogoPng = "http://files.openvidu.io/img/kurento.png";
     appendHtml("<link rel='shortcut icon' href='" + kurentoLogoPng + "' type='image/png' />");
     appendHtml(
-        "<script src='https://cdn.rawgit.com/eligrey/FileSaver.js/master/src/FileSaver.js'></script>");
+        "<script src='https://cdn.rawgit.com/eligrey/FileSaver.js/1.3.2/FileSaver.js'></script>");
     appendHtml("<script src='https://code.jquery.com/jquery-1.11.3.min.js'></script>");
     appendHtml("<script>");
     appendHtml("window.onload = function() {");
