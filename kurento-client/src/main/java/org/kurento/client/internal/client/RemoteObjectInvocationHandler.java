@@ -31,6 +31,7 @@ import org.kurento.client.Continuation;
 import org.kurento.client.Event;
 import org.kurento.client.EventListener;
 import org.kurento.client.GenericMediaElement;
+import org.kurento.client.GenericMediaEvent;
 import org.kurento.client.KurentoObject;
 import org.kurento.client.Transaction;
 import org.kurento.client.internal.ParamAnnotationUtils;
@@ -89,9 +90,16 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
     Transaction tx = null;
     List<String> paramNames = Collections.emptyList();
 
-    if (proxy instanceof GenericMediaElement && method.getName().equals("invoke")) {
-      return genericMediaElementInvoke(args);
-    }
+	if (proxy instanceof GenericMediaElement) {
+		switch(method.getName()) {
+		case "invoke":
+			return genericMediaElementInvoke(args);
+		case "addEventListener":
+			return genericSubscribeEventListener((String) args[0], proxy, args, cont, tx);
+		case "removeEventListener":
+			return unsubscribeEventListener(null, args, null, null, cont, tx);
+		}
+	}
 
     log.trace("Invoking method {} on object {}", method, proxy);
 
@@ -211,6 +219,27 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
       return remoteObject.addEventListener(eventName, listener);
     }
   }
+  
+  	@SuppressWarnings("unchecked")
+	private Object genericSubscribeEventListener(String eventName, final Object proxy, final Object[] args,
+			Continuation<?> cont, Transaction tx) {
+	
+		RemoteObjectEventListener listener = new RemoteObjectEventListener() {
+			@Override
+			public void onEvent(String eventType, Props data) {
+				propagateEventTo(proxy, GenericMediaEvent.class, data, (EventListener<?>) args[1]);
+			}
+		};
+	
+		if (cont != null) {
+			remoteObject.addEventListener(eventName, listener, (Continuation<ListenerSubscriptionImpl>) cont);
+			return null;
+		} else if (tx != null) {
+			return remoteObject.addEventListener(eventName, listener, tx);
+		} else {
+			return remoteObject.addEventListener(eventName, listener);
+		}
+	}
 
   @SuppressWarnings("unchecked")
   private Object unsubscribeEventListener(final Object proxy, final Object[] args,

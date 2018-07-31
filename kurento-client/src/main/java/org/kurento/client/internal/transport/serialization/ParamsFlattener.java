@@ -343,8 +343,13 @@ public class ParamsFlattener {
     for (int i = 0; i < paramTypes.length; i++) {
 
       String paramName = ParamAnnotationUtils.getParamAnnotation(paramAnnotations[i]).value();
-      Object value = params.getProp(paramName);
-      returnParams[i] = unflattenValue(paramName, paramTypes[i], value, manager);
+      
+      if ("genericData".equals(paramName)) {
+    	  returnParams[i] = params;
+      } else {
+    	  Object value = params.getProp(paramName);
+    	  returnParams[i] = unflattenValue(paramName, paramTypes[i], value, manager);
+      }
     }
 
     return returnParams;
