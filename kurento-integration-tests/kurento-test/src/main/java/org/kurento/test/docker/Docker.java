@@ -326,6 +326,7 @@ public class Docker implements Closeable {
 
       if (withRecording) {
           execCommand(containerName, "stop-video-recording.sh");
+          log.debug("Stopping recording in container {}", containerName);
       }
 
       getClient().stopContainerCmd(containerName).exec();
@@ -400,12 +401,13 @@ public class Docker implements Closeable {
 
   }
 
-  private void startRecordingIfNeeded(String nodeName, boolean record) {
+  private void startRecordingIfNeeded(String containerName, boolean record) {
     if (record) {
         String recordingName = KurentoTest.getSimpleTestName() + "-recording";
-        ExecCreateCmdResponse exec =client.execCreateCmd(nodeName)
+        ExecCreateCmdResponse exec =client.execCreateCmd(containerName)
             .withCmd("start-video-recording.sh", "-n", recordingName).exec();
         client.execStartCmd(exec.getId()).exec(new ExecStartResultCallback());
+        log.debug("Starting recording in container {}", containerName);
     }
   }
 
@@ -416,6 +418,8 @@ public class Docker implements Closeable {
         Volume recordVol = new Volume("/home/ubuntu/recordings");
         String recordTarget = KurentoTest.getDefaultOutputFolder().getAbsolutePath();
         createContainerCmd.withVolumes(recordVol).withBinds(new Bind(recordTarget, recordVol));
+        log.debug("Mounting volume for recording in host path {} for container {}",
+            recordTarget, createContainerCmd.getName());
       }
   }
 
