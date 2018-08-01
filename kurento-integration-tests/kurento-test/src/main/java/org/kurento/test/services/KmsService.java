@@ -469,7 +469,7 @@ public class KmsService extends TestService {
     if (dockerClient.existsContainer(dockerContainerName)) {
       log.warn("Trying to create a new container named '" + dockerContainerName
           + "' but it already exist. Stopping and removing existing one and creating it again.");
-      dockerClient.stopAndRemoveContainer(dockerContainerName);
+      dockerClient.stopAndRemoveContainer(dockerContainerName, false);
     }
 
     log.debug("Starting KMS container...{}", dockerContainerName);
@@ -674,7 +674,7 @@ public class KmsService extends TestService {
 
   public void stopKms() {
     if (isKmsDocker) {
-      Docker.getSingleton().stopContainer(dockerContainerName);
+      Docker.getSingleton().stopContainer(dockerContainerName, false);
 
     } else {
       killKmsProcesses();

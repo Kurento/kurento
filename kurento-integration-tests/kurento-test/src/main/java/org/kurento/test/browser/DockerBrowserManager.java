@@ -25,10 +25,6 @@ import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
-import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY;
-import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_DEFAULT;
@@ -36,16 +32,13 @@ import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_PROPERTY
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAULT;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,7 +51,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.commons.net.RemoteService;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.docker.Docker;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -66,8 +58,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.SessionId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.dockerjava.api.command.CreateContainerCmd;
 
 public class DockerBrowserManager {
 
@@ -82,7 +72,6 @@ public class DockerBrowserManager {
 
     private String id;
     private String browserContainerName;
-    private String vncrecorderContainerName;
     private String browserContainerIp;
     private DesiredCapabilities capabilities;
     private RemoteWebDriver driver;
@@ -98,17 +87,12 @@ public class DockerBrowserManager {
 
       browserContainerName = id;
 
-      vncrecorderContainerName =
-          browserContainerName + "-" + getProperty(DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY,
-              DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT);
-
       if (docker.isRunningInContainer()) {
 
         String containerName = docker.getContainerName();
 
         browserContainerName = containerName + "-" + browserContainerName + "-"
             + KurentoTest.getTestClassName() + "-" + new Random().nextInt(1000);
-        vncrecorderContainerName = containerName + "-" + vncrecorderContainerName;
       }
     }
 
@@ -131,14 +115,14 @@ public class DockerBrowserManager {
           if (kmsSelenium) {
             browserContainerIp = docker.generateIpAddressForContainer();
             docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
-                browserContainerIp);
+                record, browserContainerIp);
           } else {
-            docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId);
+            docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
+                record);
             browserContainerIp =
                 docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
           }
 
-          // TODO: use a free port instead
           String driverUrl = String.format("http://%s:4444/wd/hub", browserContainerIp);
           waitForUrl(driverUrl);
           createAndWaitRemoteDriver(driverUrl, capabilities);
@@ -155,7 +139,7 @@ public class DockerBrowserManager {
           log.warn("Timeout of {} seconds creating RemoteWebDriver. Retrying {}...",
               REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S, numRetries);
 
-          docker.stopAndRemoveContainer(browserContainerName);
+          docker.stopAndRemoveContainer(browserContainerName, record);
 
           browserContainerName += "r";
 
@@ -169,9 +153,6 @@ public class DockerBrowserManager {
       log.debug("RemoteWebDriver for browser {} created (Version={}, Capabilities={})", id,
           driver.getCapabilities().getVersion(), driver.getCapabilities());
 
-      if (record) {
-        createVncRecorderContainer();
-      }
     }
 
     public void waitForUrl(String url) {
@@ -269,50 +250,6 @@ public class DockerBrowserManager {
       } while (driver == null);
     }
 
-    private void createVncRecorderContainer() {
-
-      try {
-
-        try {
-          RemoteService.waitForReady(browserContainerIp, 5900, 10, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-          throw new RuntimeException("Timeout when connecting to browser VNC");
-        }
-
-        String vncrecordImageId =
-            getProperty(DOCKER_VNCRECORDER_IMAGE_PROPERTY, DOCKER_VNCRECORDER_IMAGE_DEFAULT);
-
-        if (docker.existsContainer(vncrecorderContainerName)) {
-          throw new KurentoException(
-              "Vncrecorder container '" + vncrecorderContainerName + "' already exists");
-        }
-
-        String secretFile = createSecretFile();
-
-        docker.pullImageIfNecessary(vncrecordImageId, false);
-
-        String videoFile = Paths.get(KurentoTest.getDefaultOutputFile("-" + id + "-record.flv"))
-            .toAbsolutePath().toString();
-
-        log.debug("Creating container {} for recording video from browser {} in file {}",
-            vncrecorderContainerName, browserContainerName, videoFile);
-
-        CreateContainerCmd createContainerCmd = docker.getClient()
-            .createContainerCmd(vncrecordImageId).withName(vncrecorderContainerName)
-            .withCmd("-o", videoFile, "-P", secretFile, browserContainerIp, "5900");
-
-        docker.mountDefaultFolders(createContainerCmd);
-
-        createContainerCmd.exec();
-
-        docker.startContainer(vncrecorderContainerName);
-
-        log.debug("Container {} started...", vncrecorderContainerName);
-
-      } catch (Exception e) {
-        log.warn("Exception creating vncRecorder container");
-      }
-    }
 
     public RemoteWebDriver getRemoteWebDriver() {
       return driver;
@@ -322,9 +259,7 @@ public class DockerBrowserManager {
 
       downloadLogsForContainer(browserContainerName, id);
 
-      downloadLogsForContainer(vncrecorderContainerName, id + "-recorder");
-
-      docker.stopAndRemoveContainers(vncrecorderContainerName, browserContainerName);
+      docker.stopAndRemoveContainer(browserContainerName, record);
 
     }
   }
@@ -373,16 +308,6 @@ public class DockerBrowserManager {
 
     browser.close();
 
-  }
-
-  private String createSecretFile() throws IOException {
-    Path secretFile = Paths.get(KurentoTest.getTestDir() + "vnc-passwd");
-
-    try (BufferedWriter bw = Files.newBufferedWriter(secretFile, StandardCharsets.UTF_8)) {
-      bw.write("secret");
-    }
-
-    return secretFile.toAbsolutePath().toString();
   }
 
   private String calculateBrowserImageName(DesiredCapabilities capabilities) {

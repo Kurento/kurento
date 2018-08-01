@@ -118,10 +118,6 @@ public class TestConfiguration {
   public static final String DOCKER_NODE_FIREFOX_IMAGE_PROPERTY = "docker.node.firefox.image";
   public static final String DOCKER_NODE_FIREFOX_IMAGE_DEFAULT = "elastestbrowsers/firefox:latest";
 
-  public static final String DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY =
-      "docker.vncrecorder.container.name";
-  public static final String DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT = "vncrecorder";
-
   public static final String TEST_POST_CONTAINER_RUN_URL = "test.post.container.run.url";
 
   // Parallel browsers

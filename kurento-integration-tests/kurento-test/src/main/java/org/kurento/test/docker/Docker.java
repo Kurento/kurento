@@ -17,6 +17,7 @@
 
 package org.kurento.test.docker;
 
+import static com.github.dockerjava.api.model.Capability.SYS_ADMIN;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_TRANSPORT;
 
@@ -57,7 +58,6 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.Volume;
@@ -314,15 +314,19 @@ public class Docker implements Closeable {
     return client;
   }
 
-  public void stopContainers(String... containerNames) {
+  public void stopContainers(boolean withRecording, String... containerNames) {
     for (String containerName : containerNames) {
-      stopContainer(containerName);
+      stopContainer(containerName, withRecording);
     }
   }
 
-  public void stopContainer(String containerName) {
+  public void stopContainer(String containerName, boolean withRecording) {
     if (isRunningContainer(containerName)) {
       log.debug("Stopping container {}", containerName);
+
+      if (withRecording) {
+          execCommand(containerName, "stop-video-recording.sh");
+      }
 
       getClient().stopContainerCmd(containerName).exec();
 
@@ -365,18 +369,13 @@ public class Docker implements Closeable {
     }
   }
 
-  public void stopAndRemoveContainer(String containerName) {
-    stopContainer(containerName);
+  public void stopAndRemoveContainer(String containerName, boolean withRecording) {
+    stopContainer(containerName, withRecording);
     removeContainer(containerName);
   }
 
-  public void stopAndRemoveContainers(String... containerNames) {
-    for (String containerName : containerNames) {
-      stopAndRemoveContainer(containerName);
-    }
-  }
-
-  public void startNode(String id, BrowserType browserType, String nodeName, String imageId) {
+  public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
+      boolean record) {
     // Create node if not exist
     if (!existsContainer(nodeName)) {
 
@@ -385,10 +384,9 @@ public class Docker implements Closeable {
       log.debug("Creating container {}", nodeName);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withCapAdd(Capability.SYS_ADMIN).withName(nodeName);
-
+          getClient().createContainerCmd(imageId).withCapAdd(SYS_ADMIN).withName(nodeName);
+      mountVolumeForRecordingIfNeeded(record, createContainerCmd);
       createContainerCmd.exec();
-
       log.debug("Container {} started...", nodeName);
 
     } else {
@@ -397,10 +395,32 @@ public class Docker implements Closeable {
 
     // Start node if stopped
     startContainer(nodeName);
+
+    startRecordingIfNeeded(nodeName, record);
+
+  }
+
+  private void startRecordingIfNeeded(String nodeName, boolean record) {
+    if (record) {
+        String recordingName = KurentoTest.getSimpleTestName() + "-recording";
+        ExecCreateCmdResponse exec =client.execCreateCmd(nodeName)
+            .withCmd("start-video-recording.sh", "-n", recordingName).exec();
+        client.execStartCmd(exec.getId()).exec(new ExecStartResultCallback());
+    }
+  }
+
+  private void mountVolumeForRecordingIfNeeded(boolean record,
+        CreateContainerCmd createContainerCmd) {
+    if (record) {
+        mountDefaultFolders(createContainerCmd);
+        Volume recordVol = new Volume("/home/ubuntu/recordings");
+        String recordTarget = KurentoTest.getDefaultOutputFolder().getAbsolutePath();
+        createContainerCmd.withVolumes(recordVol).withBinds(new Bind(recordTarget, recordVol));
+      }
   }
 
   public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
-      String containerIp) {
+      boolean record, String containerIp) {
     // Create node if not exist
     if (!existsContainer(nodeName)) {
 
@@ -409,7 +429,7 @@ public class Docker implements Closeable {
       log.debug("Creating container {}", nodeName);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withCapAdd(Capability.SYS_ADMIN).withName(nodeName);
+          getClient().createContainerCmd(imageId).withCapAdd(SYS_ADMIN).withName(nodeName);
 
       createContainerCmd.withNetworkMode("none");
 
@@ -422,6 +442,8 @@ public class Docker implements Closeable {
 
       createContainerCmd.exec();
 
+      mountVolumeForRecordingIfNeeded(record, createContainerCmd);
+
       log.debug("Container {} started...", nodeName);
 
     } else {
@@ -430,16 +452,19 @@ public class Docker implements Closeable {
 
     // Start node if stopped
     startContainer(nodeName);
+
+    startRecordingIfNeeded(nodeName, record);
   }
 
-  public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId) {
-    startNode(id, browserType, nodeName, imageId);
+  public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
+     boolean record) {
+    startNode(id, browserType, nodeName, imageId, record);
     waitForContainer(nodeName);
   }
 
   public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
-      String containerIp) {
-    startNode(id, browserType, nodeName, imageId, containerIp);
+     boolean record, String containerIp) {
+    startNode(id, browserType, nodeName, imageId, record, containerIp);
     waitForContainer(nodeName);
   }
 
