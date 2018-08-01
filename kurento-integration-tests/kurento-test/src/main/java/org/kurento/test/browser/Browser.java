@@ -48,6 +48,7 @@ import static org.kurento.test.config.TestConfiguration.TEST_PUBLIC_PORT_PROPERT
 import static org.kurento.test.config.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 import static org.kurento.test.config.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
+import static org.openqa.selenium.firefox.FirefoxOptions.FIREFOX_OPTIONS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -372,8 +373,8 @@ public class Browser implements Closeable {
     capabilities.setCapability("acceptInsecureCerts", true);
     firefoxOptions.setAcceptInsecureCerts(true);
 
-    capabilities.setCapability(FirefoxDriver.PROFILE, firefoxOptions.getProfile());
-    capabilities.setBrowserName(DesiredCapabilities.firefox().getBrowserName());
+    capabilities.setCapability(FIREFOX_OPTIONS, firefoxOptions);
+    capabilities.setBrowserName(firefoxOptions.getBrowserName());
 
     // Firefox extensions
     if (extensions != null && !extensions.isEmpty()) {
