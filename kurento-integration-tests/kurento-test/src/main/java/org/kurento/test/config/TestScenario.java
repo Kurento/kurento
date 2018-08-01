@@ -199,17 +199,13 @@ public class TestScenario {
       test1.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
           .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 
-      return Arrays.asList(new Object[][] { { test1 } });
-      // FIXME There is a problem with Selenium 2.53.0 and Firefox 47. For the moment,
-      // never it will return a firefox scenario. When Selenium works, restore.
       // Test #2 : Firefox in local
+      TestScenario test2 = new TestScenario();
+      test2.addBrowser(BrowserConfig.BROWSER, new
+      Browser.Builder().webPageType(WebPageType.WEBRTC)
+          .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
 
-      // TestScenario test2 = new TestScenario();
-      // test2.addBrowser(BrowserConfig.BROWSER, new
-      // Browser.Builder().webPageType(WebPageType.WEBRTC)
-      // .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
-      //
-      // return Arrays.asList(new Object[][] { { test1 }, { test2 } });
+      return Arrays.asList(new Object[][] { { test1 }, { test2 } });
     }
   }
 
@@ -218,18 +214,13 @@ public class TestScenario {
     if (configFile != null) {
       return from(configFile);
     } else {
-      // Test #1 : Firefox and Chrome in local
-      // FIXME There is a problem with Selenium 2.53.0 and Firefox 47. For the moment,
-      // never it will return a firefox scenario. When Selenium works, restore.
+      // Test #1 : Chrome and Firefox in local
       TestScenario test = new TestScenario();
       test.addBrowser(BrowserConfig.BROWSER + 0,
           new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
               .scope(BrowserScope.LOCAL).build());
-      // test.addBrowser(BrowserConfig.BROWSER + 1,
-      // new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.FIREFOX)
-      // .scope(BrowserScope.LOCAL).build());
       test.addBrowser(BrowserConfig.BROWSER + 1,
-          new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
+          new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.FIREFOX)
               .scope(BrowserScope.LOCAL).build());
 
       return Arrays.asList(new Object[][] { { test } });
@@ -291,18 +282,15 @@ public class TestScenario {
                 .scope(BrowserScope.LOCAL).build());
       }
 
-      return Arrays.asList(new Object[][] { { test1 } });
-      // FIXME There is a problem with Selenium 2.53.0 and Firefox 47. For the moment,
-      // never it will return a firefox scenario. When Selenium works, restore.
       // Test #2 : Firefox's in local
-      // TestScenario test2 = new TestScenario();
-      // for (int i = 0; i < size; i++) {
-      // test2.addBrowser(BrowserConfig.BROWSER + i,
-      // new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.FIREFOX)
-      // .scope(BrowserScope.LOCAL).build());
-      // }
-      //
-      // return Arrays.asList(new Object[][] { { test1 }, { test2 } });
+      TestScenario test2 = new TestScenario();
+      for (int i = 0; i < size; i++) {
+        test2.addBrowser(BrowserConfig.BROWSER + i,
+            new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.FIREFOX)
+                .scope(BrowserScope.LOCAL).build());
+      }
+
+      return Arrays.asList(new Object[][] { { test1 }, { test2 } });
     }
   }
 
