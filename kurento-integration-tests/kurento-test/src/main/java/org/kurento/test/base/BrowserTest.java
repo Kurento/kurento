@@ -82,6 +82,7 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
 import org.kurento.test.lifecycle.FailedTest;
 import org.kurento.test.utils.Shell;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
@@ -167,22 +168,26 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public void teardownBrowserTest() {
     if (testScenario != null) {
       for (Browser browser : testScenario.getBrowserMap().values()) {
+        String browserId = browser.getId();
         try {
-          if (browser.getWebDriver() != null) {
-            browserLogs.put(browser.getId(),
-                browser.getWebDriver().manage().logs().get(LogType.BROWSER));
+          WebDriver webDriver = browser.getWebDriver();
+          if (webDriver != null) {
+            String screenshotFileName = getDefaultOutputFile("-" + browserId + ".png");
+            getOrCreatePage(browserId).takeScreeshot(screenshotFileName);
+            browserLogs.put(browserId,
+                webDriver.manage().logs().get(LogType.BROWSER));
           } else {
             log.warn("It was not possible to recover logs for {} "
                 + "since browser is no longer available (maybe "
-                + "it has been closed manually or crashed)", browser.getId());
+                + "it has been closed manually or crashed)", browserId);
           }
         } catch (Exception e) {
-          log.warn("Exception getting logs {}", browser.getId(), e);
+          log.warn("Exception getting logs {}", browserId, e);
         }
         try {
           browser.close();
         } catch (Exception e) {
-          log.warn("Exception closing browser {}", browser.getId(), e);
+          log.warn("Exception closing browser {}", browserId, e);
         }
       }
     }
