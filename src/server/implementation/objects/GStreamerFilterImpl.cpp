@@ -37,6 +37,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
+static void string2enum (const GValue *src_value, GValue *dst_value);
+
 GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, const std::string &command,
@@ -107,7 +109,11 @@ GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
   g_object_unref (filter);
   g_object_unref (filter_check);
 
-  gstElement = filter;  // No ref held; will be released by the pipeline
+  // No ref held; will be released by the pipeline
+  gstElement = filter;
+
+  // Used by method setElementProperty() when the property is an enum
+  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_ENUM, string2enum);
 }
 
 MediaObjectImpl *
@@ -124,10 +130,43 @@ std::string GStreamerFilterImpl::getCommand ()
   return this->cmd;
 }
 
+static void
+string2enum (const GValue *src_value, GValue *dst_value)
+{
+  // Find and set the requested enum value among all possible ones
+  //
+  // See:
+  // - https://developer.gnome.org/gobject/stable/gobject-Enumeration-and-Flag-Types.html
+  // - https://developer.gnome.org/gobject/stable/gobject-Generic-values.html
+  // - https://developer.gnome.org/gobject/stable/gobject-Standard-Parameter-and-Value-Types.html
+
+  const gchar *src_string = g_value_get_string (src_value);
+
+  const GType enum_type = G_VALUE_TYPE (dst_value);
+  const GEnumClass *enum_class = G_ENUM_CLASS (g_type_class_ref (enum_type));
+  const GEnumValue *enum_values = enum_class->values;
+  gboolean found = FALSE;
+
+  for (guint i = 0; i < enum_class->n_values; ++i) {
+    if (g_strcmp0 (src_string, enum_values[i].value_nick) == 0) {
+      found = TRUE;
+      g_value_set_enum (dst_value, enum_values[i].value);
+      break;
+    }
+  }
+
+  if (!found) {
+    gchar *message = g_strdup_printf ("Invalid value for enum %s",
+        G_VALUE_TYPE_NAME(dst_value));
+    throw std::invalid_argument(message);
+    g_free (message);
+  }
+}
+
 void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
     const std::string &propertyValue)
 {
-  // Get the property *type* from the GStreamer element
+  // Get the property _type_ from the GStreamer element
   const char* property_name = propertyName.c_str();
   GParamSpec *pspec = g_object_class_find_property (
       G_OBJECT_GET_CLASS (gstElement), property_name);
@@ -178,9 +217,43 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
     g_value_init (&value, G_TYPE_FLOAT);
     g_value_set_float (&value, converted);
   }
-  // else ... Add here whatever types are needed
+  else if (G_IS_PARAM_SPEC_ENUM (pspec)) {
+    // Source type: string
+    GValue src_value = G_VALUE_INIT;
+    g_value_init (&src_value, G_TYPE_STRING);
+    g_value_set_static_string (&src_value, propertyValue.c_str());
+
+    // Destination type: enum
+    g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE(pspec));
+    try {
+      g_value_transform (&src_value, &value);
+    }
+    catch (std::exception &ex) {
+      GST_WARNING ("Cannot convert '%s' to enum: %s",
+          propertyValue.c_str(), ex.what());
+
+      std::ostringstream oss;
+      oss << "Cannot convert '" << propertyValue << "' to enum: "
+          << ex.what();
+      throw KurentoException (MARSHALL_ERROR, oss.str());
+    }
+  }
+  else if (G_IS_PARAM_SPEC_STRING (pspec)) {
+    g_value_init (&value, G_TYPE_STRING);
+    g_value_set_static_string (&value, propertyValue.c_str());
+  }
+  // else if (...) { Add here whatever types are needed }
+  else {
+    GST_WARNING ("Property type not implemented: %s",
+        G_PARAM_SPEC_TYPE_NAME (pspec));
+
+    std::ostringstream oss;
+    oss << "Property type not implemented: " << G_PARAM_SPEC_TYPE_NAME (pspec);
+    throw KurentoException (NOT_IMPLEMENTED, oss.str());
+  }
 
   g_object_set_property (G_OBJECT (gstElement), property_name, &value);
+  g_value_unset (&value);
 }
 
 GStreamerFilterImpl::StaticConstructor GStreamerFilterImpl::staticConstructor;
