@@ -109,9 +109,6 @@ public class TestConfiguration {
   public static final boolean TEST_SELENIUM_DNAT_DEFAULT = false;
   public static final String TEST_SELENIUM_TRANSPORT = "test.selenium.transport";
 
-  public static final String DOCKER_VNCRECORDER_IMAGE_PROPERTY = "docker.vncrecorder.image";
-  public static final String DOCKER_VNCRECORDER_IMAGE_DEFAULT = "softsam/vncrecorder";
-
   public static final String DOCKER_NODE_CHROME_IMAGE_PROPERTY = "docker.node.chrome.image";
   public static final String DOCKER_NODE_CHROME_IMAGE_DEFAULT = "elastestbrowsers/chrome:latest";
 
