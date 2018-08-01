@@ -26,6 +26,8 @@
 #include <commons/kms-core-enumtypes.h>
 
 #include <algorithm>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 
 #define GST_CAT_DEFAULT kurento_gstreamer_filter_impl
@@ -132,7 +134,11 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
   if (pspec == NULL) {
     GST_WARNING ("No property named '%s' in object %" GST_PTR_FORMAT,
         property_name, gstElement);
-    return;
+
+    std::ostringstream oss;
+    oss << "No property named '" << property_name << "' in object '"
+        << GST_ELEMENT_NAME (gstElement) << "'";
+    throw KurentoException (MARSHALL_ERROR, oss.str());
   }
 
   // Convert the input string to the correct value type
@@ -143,10 +149,14 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
     try {
       converted = std::stoi (propertyValue);
     }
-    catch (std::exception ex) {
-      GST_WARNING ("Cannot convert property value '%s': %s",
+    catch (std::exception &ex) {
+      GST_WARNING ("Cannot convert '%s' to int: %s",
           propertyValue.c_str(), ex.what());
-      return;
+
+      std::ostringstream oss;
+      oss << "Cannot convert '" << propertyValue << "' to int: "
+          << ex.what();
+      throw KurentoException (MARSHALL_ERROR, oss.str());
     }
     g_value_init (&value, G_TYPE_INT);
     g_value_set_int (&value, converted);
@@ -156,10 +166,14 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
     try {
       converted = std::stof (propertyValue);
     }
-    catch (std::exception ex) {
-      GST_WARNING ("Cannot convert property value '%s': %s",
+    catch (std::exception &ex) {
+      GST_WARNING ("Cannot convert '%s' to float: %s",
           propertyValue.c_str(), ex.what());
-      return;
+
+      std::ostringstream oss;
+      oss << "Cannot convert '" << propertyValue << "' to float: "
+          << ex.what();
+      throw KurentoException (MARSHALL_ERROR, oss.str());
     }
     g_value_init (&value, G_TYPE_FLOAT);
     g_value_set_float (&value, converted);
