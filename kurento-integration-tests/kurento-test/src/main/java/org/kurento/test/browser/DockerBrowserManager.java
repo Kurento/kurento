@@ -32,6 +32,7 @@ import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_PROPERTY
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAULT;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
@@ -336,7 +337,9 @@ public class DockerBrowserManager {
 
       try {
 
-        Path logFile = downloadLogsPath.resolve(logName + ".log");
+        String logFileName = new File(KurentoTest.getDefaultOutputFile("-" + logName + ".log"))
+            .getAbsolutePath();
+        Path logFile = downloadLogsPath.resolve(logFileName);
 
         if (Files.exists(logFile.getParent())) {
           Files.createDirectories(logFile.getParent());

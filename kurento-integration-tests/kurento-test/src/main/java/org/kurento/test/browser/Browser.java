@@ -933,7 +933,7 @@ public class Browser implements Closeable {
     // Stop docker containers (if necessary)
     if (scope == BrowserScope.DOCKER) {
 
-      Path logFile = Paths.get(KurentoTest.getDefaultOutputFile(""));
+      Path logFile = KurentoTest.getDefaultOutputFolder().toPath();
 
       try {
         if (!Files.exists(logFile)) {
