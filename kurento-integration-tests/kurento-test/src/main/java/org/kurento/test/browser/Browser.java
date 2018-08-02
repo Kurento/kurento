@@ -707,12 +707,13 @@ public class Browser implements Closeable {
       kurentoTestJs += "return true;";
       this.executeScript(kurentoTestJs);
 
-      String recordingJs = "var recScript=window.document.createElement('script');";
-      recordingJs += "recScript.type='text/javascript';";
-      recordingJs += "recScript.src='https://cdn.webrtc-experiment.com/RecordRTC.js';";
-      recordingJs += "window.document.head.appendChild(recScript);";
-      recordingJs += "return true;";
-      this.executeScript(recordingJs);
+      // Disable RecordRTC.js injection
+      // String recordingJs = "var recScript=window.document.createElement('script');";
+      // recordingJs += "recScript.type='text/javascript';";
+      // recordingJs += "recScript.src='https://cdn.webrtc-experiment.com/RecordRTC.js';";
+      // recordingJs += "window.document.head.appendChild(recScript);";
+      // recordingJs += "return true;";
+      // this.executeScript(recordingJs);
     }
   }
 
