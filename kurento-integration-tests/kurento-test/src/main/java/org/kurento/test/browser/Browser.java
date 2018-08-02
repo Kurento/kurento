@@ -328,6 +328,9 @@ public class Browser implements Closeable {
     // https://code.google.com/p/chromedriver/issues/detail?id=799
     options.addArguments("--test-type");
 
+    // To avoid problems with DevToolsActivePort
+    options.addArguments("--no-sandbox");
+
     if (protocol == Protocol.FILE) {
       // This flag allows reading local files in video tags
       options.addArguments("--allow-file-access-from-files");
