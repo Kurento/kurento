@@ -171,13 +171,13 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
   GParamSpec *pspec = g_object_class_find_property (
       G_OBJECT_GET_CLASS (gstElement), property_name);
   if (pspec == NULL) {
-    GST_WARNING ("No property named '%s' in object %" GST_PTR_FORMAT,
-        property_name, gstElement);
-
     std::ostringstream oss;
     oss << "No property named '" << property_name << "' in object '"
         << GST_ELEMENT_NAME (gstElement) << "'";
-    throw KurentoException (MARSHALL_ERROR, oss.str());
+    std::string message = oss.str();
+
+    GST_WARNING ("%s", message.c_str());
+    throw KurentoException (MARSHALL_ERROR, message);
   }
 
   // Convert the input string to the correct value type
@@ -189,13 +189,12 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
       converted = std::stoi (propertyValue);
     }
     catch (std::exception &ex) {
-      GST_WARNING ("Cannot convert '%s' to int: %s",
-          propertyValue.c_str(), ex.what());
-
       std::ostringstream oss;
-      oss << "Cannot convert '" << propertyValue << "' to int: "
-          << ex.what();
-      throw KurentoException (MARSHALL_ERROR, oss.str());
+      oss << "Cannot convert '" << propertyValue << "' to int: " << ex.what();
+      std::string message = oss.str();
+
+      GST_WARNING ("%s", message.c_str());
+      throw KurentoException (MARSHALL_ERROR, message);
     }
     g_value_init (&value, G_TYPE_INT);
     g_value_set_int (&value, converted);
@@ -206,13 +205,12 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
       converted = std::stof (propertyValue);
     }
     catch (std::exception &ex) {
-      GST_WARNING ("Cannot convert '%s' to float: %s",
-          propertyValue.c_str(), ex.what());
-
       std::ostringstream oss;
-      oss << "Cannot convert '" << propertyValue << "' to float: "
-          << ex.what();
-      throw KurentoException (MARSHALL_ERROR, oss.str());
+      oss << "Cannot convert '" << propertyValue << "' to float: " << ex.what();
+      std::string message = oss.str();
+
+      GST_WARNING ("%s", message.c_str());
+      throw KurentoException (MARSHALL_ERROR, message);
     }
     g_value_init (&value, G_TYPE_FLOAT);
     g_value_set_float (&value, converted);
@@ -229,13 +227,12 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
       g_value_transform (&src_value, &value);
     }
     catch (std::exception &ex) {
-      GST_WARNING ("Cannot convert '%s' to enum: %s",
-          propertyValue.c_str(), ex.what());
-
       std::ostringstream oss;
-      oss << "Cannot convert '" << propertyValue << "' to enum: "
-          << ex.what();
-      throw KurentoException (MARSHALL_ERROR, oss.str());
+      oss << "Cannot convert '" << propertyValue << "' to enum: " << ex.what();
+      std::string message = oss.str();
+
+      GST_WARNING ("%s", message.c_str());
+      throw KurentoException (MARSHALL_ERROR, message);
     }
   }
   else if (G_IS_PARAM_SPEC_STRING (pspec)) {
@@ -244,12 +241,12 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
   }
   // else if (...) { Add here whatever types are needed }
   else {
-    GST_WARNING ("Property type not implemented: %s",
-        G_PARAM_SPEC_TYPE_NAME (pspec));
-
     std::ostringstream oss;
     oss << "Property type not implemented: " << G_PARAM_SPEC_TYPE_NAME (pspec);
-    throw KurentoException (NOT_IMPLEMENTED, oss.str());
+    std::string message = oss.str();
+
+    GST_WARNING ("%s", message.c_str());
+    throw KurentoException (NOT_IMPLEMENTED, message);
   }
 
   g_object_set_property (G_OBJECT (gstElement), property_name, &value);
