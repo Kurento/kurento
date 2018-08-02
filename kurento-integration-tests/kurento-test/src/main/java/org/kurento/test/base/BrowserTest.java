@@ -201,7 +201,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
         lines.add(logEntry.toString());
       }
 
-      File file = new File(getDefaultOutputFile("-" + browserKey + ".log"));
+      File file = new File(getDefaultOutputFile("-" + browserKey + "-console.log"));
 
       try {
         FileUtils.writeLines(file, lines);

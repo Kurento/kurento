@@ -337,7 +337,7 @@ public class DockerBrowserManager {
 
       try {
 
-        String logFileName = new File(KurentoTest.getDefaultOutputFile("-" + logName + ".log"))
+        String logFileName = new File(KurentoTest.getDefaultOutputFile("-" + logName + "-container.log"))
             .getAbsolutePath();
         Path logFile = downloadLogsPath.resolve(logFileName);
 
