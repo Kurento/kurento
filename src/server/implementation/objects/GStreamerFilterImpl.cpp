@@ -182,6 +182,7 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
 
   // Convert the input string to the correct value type
   GValue value = G_VALUE_INIT;
+  g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE(pspec));
 
   if (G_IS_PARAM_SPEC_INT (pspec)) {
     gint converted = 0;
@@ -196,7 +197,6 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
       GST_WARNING ("%s", message.c_str());
       throw KurentoException (MARSHALL_ERROR, message);
     }
-    g_value_init (&value, G_TYPE_INT);
     g_value_set_int (&value, converted);
   }
   else if (G_IS_PARAM_SPEC_FLOAT (pspec)) {
@@ -212,7 +212,6 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
       GST_WARNING ("%s", message.c_str());
       throw KurentoException (MARSHALL_ERROR, message);
     }
-    g_value_init (&value, G_TYPE_FLOAT);
     g_value_set_float (&value, converted);
   }
   else if (G_IS_PARAM_SPEC_ENUM (pspec)) {
@@ -222,7 +221,6 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
     g_value_set_static_string (&src_value, propertyValue.c_str());
 
     // Destination type: enum
-    g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE(pspec));
     try {
       g_value_transform (&src_value, &value);
     }
@@ -236,7 +234,6 @@ void GStreamerFilterImpl::setElementProperty(const std::string &propertyName,
     }
   }
   else if (G_IS_PARAM_SPEC_STRING (pspec)) {
-    g_value_init (&value, G_TYPE_STRING);
     g_value_set_static_string (&value, propertyValue.c_str());
   }
   // else if (...) { Add here whatever types are needed }
