@@ -338,7 +338,7 @@ public class Docker implements Closeable {
           String stopRecordingOutput = execCommand(containerName, true, "stop-video-recording.sh");
           log.debug("Stopping recording in container {}:", containerName, stopRecordingOutput);
           String lsRecordingsFolder = execCommand(containerName, true,
-              "ls", "/home/ubuntu/recordings");
+              "ls", "-la", "/home/ubuntu/recordings");
           log.debug("List of recording folder in container {}:\n{}", containerName,
               lsRecordingsFolder);
       }
