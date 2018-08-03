@@ -427,7 +427,11 @@ public class Docker implements Closeable {
 
   private void startRecordingIfNeeded(String id, String containerName, boolean record) {
     if (record) {
-      String recordingName = KurentoTest.getSimpleTestName() + "-" + id + "-recording";
+      // Clean previous recordings
+      execCommand(containerName, true, "rm", "/home/ubuntu/recordings/*.mp4");
+
+      // Start recording with script
+      String recordingName = KurentoTest.getSimpleTestName() + "-" + containerName + "-recording";
       String startRecordingOutput = execCommand(containerName, false, "start-video-recording.sh",
           "-n", recordingName);
 
