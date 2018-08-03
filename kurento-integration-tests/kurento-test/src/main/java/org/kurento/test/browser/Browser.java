@@ -402,7 +402,7 @@ public class Browser implements Closeable {
   private void createDriver(DesiredCapabilities capabilities, Object options)
       throws MalformedURLException {
 
-    log.debug("Creating driver in scope {} for browser {}", scope, id);
+    log.debug("Creating driver in scope {} for browser '{}'", scope, id);
 
     if (scope == BrowserScope.SAUCELABS) {
       createSaucelabsDriver(capabilities);

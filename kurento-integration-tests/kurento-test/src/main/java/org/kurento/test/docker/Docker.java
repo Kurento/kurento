@@ -399,10 +399,6 @@ public class Docker implements Closeable {
 
     startRecordingIfNeeded(nodeName, record);
 
-    String ipV6Disapled = execCommand(nodeName, "cat", "/proc/sys/net/ipv6/conf/all/disable_ipv6");
-
-    log.debug("IPv6 disabled in container {}: {}", nodeName, ipV6Disapled);
-
   }
 
   private void startRecordingIfNeeded(String containerName, boolean record) {
