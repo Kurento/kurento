@@ -25,7 +25,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -658,12 +657,12 @@ public class Docker implements Closeable {
   public String execCommand(String containerId, String... command) {
     ExecCreateCmdResponse exec = client.execCreateCmd(containerId).withCmd(command).withTty(false)
         .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).exec();
-    OutputStream outputStream = new ByteArrayOutputStream();
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     String output = null;
     try {
       client.execStartCmd(exec.getId()).withDetach(false).withTty(true)
           .exec(new ExecStartResultCallback(outputStream, System.err)).awaitCompletion();
-      output = outputStream.toString();// IOUtils.toString(outputStream, Charset.defaultCharset());
+      output = new String(outputStream.toByteArray());
     } catch (InterruptedException e) {
       log.warn("Exception executing command {} on container {}", Arrays.toString(command),
           containerId, e);
