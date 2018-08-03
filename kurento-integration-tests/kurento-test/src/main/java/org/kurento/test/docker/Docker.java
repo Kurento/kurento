@@ -335,8 +335,12 @@ public class Docker implements Closeable {
       log.debug("Stopping container {}", containerName);
 
       if (withRecording) {
-          execCommand(containerName, "stop-video-recording.sh");
-          log.debug("Stopping recording in container {}", containerName);
+          String stopRecordingOutput = execCommand(containerName, true, "stop-video-recording.sh");
+          log.debug("Stopping recording in container {}:", containerName, stopRecordingOutput);
+          String lsRecordingsFolder = execCommand(containerName, true,
+              "ls", "/home/ubuntu/recordings");
+          log.debug("List of recording folder in container {}:\n{}", containerName,
+              lsRecordingsFolder);
       }
 
       getClient().stopContainerCmd(containerName).exec();
@@ -424,10 +428,11 @@ public class Docker implements Closeable {
   private void startRecordingIfNeeded(String id, String containerName, boolean record) {
     if (record) {
       String recordingName = KurentoTest.getSimpleTestName() + "-" + id + "-recording";
-      ExecCreateCmdResponse exec =client.execCreateCmd(containerName)
-          .withCmd("start-video-recording.sh", "-n", recordingName).exec();
-      client.execStartCmd(exec.getId()).exec(new ExecStartResultCallback());
-      log.debug("Starting recording in container {} (target file {})", containerName, recordingName);
+      String startRecordingOutput = execCommand(containerName, false, "start-video-recording.sh",
+          "-n", recordingName);
+
+      log.debug("Starting recording in container {} (target file {}) (command result {})", containerName,
+          recordingName, startRecordingOutput);
     }
   }
 
@@ -678,14 +683,17 @@ public class Docker implements Closeable {
     }
   }
 
-  public String execCommand(String containerId, String... command) {
+  public String execCommand(String containerId, boolean awaitCompletion, String... command) {
     ExecCreateCmdResponse exec = client.execCreateCmd(containerId).withCmd(command).withTty(false)
         .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).exec();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     String output = null;
     try {
-      client.execStartCmd(exec.getId()).withDetach(false).withTty(true)
-          .exec(new ExecStartResultCallback(outputStream, System.err)).awaitCompletion();
+      ExecStartResultCallback resultCallback = client.execStartCmd(exec.getId()).withDetach(false)
+          .withTty(true).exec(new ExecStartResultCallback(outputStream, System.err));
+      if (awaitCompletion) {
+          resultCallback.awaitCompletion();
+      }
       output = new String(outputStream.toByteArray());
     } catch (InterruptedException e) {
       log.warn("Exception executing command {} on container {}", Arrays.toString(command),

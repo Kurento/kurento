@@ -118,7 +118,7 @@ public class KmsDockerMonitor extends KmsMonitor {
   @Override
   protected int getKmsPid() {
     int kmdPid = -1;
-    String execOutput = docker.execCommand(containerId, "ps", "axf");
+    String execOutput = docker.execCommand(containerId, true, "ps", "axf");
 
     String[] lines = execOutput.split("\n");
     for (String line : lines) {
@@ -134,7 +134,7 @@ public class KmsDockerMonitor extends KmsMonitor {
   @Override
   protected int getNumThreads() {
     int numThreads = -1;
-    String kmsStat = docker.execCommand(containerId, "cat", "/proc/" + kmsPid + "/stat");
+    String kmsStat = docker.execCommand(containerId, true, "cat", "/proc/" + kmsPid + "/stat");
     String[] kmsStats = kmsStat.split(" ");
     if (kmsStats.length >= 20) {
       numThreads = Integer.parseInt(kmsStats[19]);
