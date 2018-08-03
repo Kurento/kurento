@@ -115,7 +115,6 @@ import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.io.CharStreams;
 
 import freemarker.template.Configuration;
@@ -461,8 +460,7 @@ public class KmsService extends TestService {
 
     if (!dockerClient.existsImage(kmsImageName) || forcePulling) {
       log.debug("Pulling KMS image {} ... please wait", kmsImageName);
-      dockerClient.getClient().pullImageCmd(kmsImageName).exec(new PullImageResultCallback())
-          .awaitSuccess();
+      dockerClient.pullImageIfNecessary(kmsImageName, true);
       log.debug("KMS image {} pulled", kmsImageName);
     }
 
@@ -573,7 +571,8 @@ public class KmsService extends TestService {
       CreateContainerResponse kmsContainer = createContainerCmd.exec();
       dockerClient.getClient().startContainerCmd(kmsContainer.getId()).exec();
       kmsAddress =
-          dockerClient.inspectContainer(dockerContainerName).getNetworkSettings().getIpAddress();
+          dockerClient.inspectContainer(dockerContainerName).getNetworkSettings()
+              .getNetworks().values().iterator().next().getIpAddress();
     }
 
     setWsUri("ws://" + kmsAddress + ":8888/kurento");

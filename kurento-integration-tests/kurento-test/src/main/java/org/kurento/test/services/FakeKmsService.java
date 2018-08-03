@@ -179,7 +179,7 @@ public class FakeKmsService extends KmsService {
   }
 
   public void releaseAllFakePipelines(long timeBetweenClientMs, SystemMonitorManager monitor) {
-    for (WebRtcEndpoint fakeWebRtc : fakeWebRtcList) {
+    for (int i = 0; i < fakeWebRtcList.size(); i++) {
       monitor.decrementNumClients();
       waitMs(timeBetweenClientMs);
     }

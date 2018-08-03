@@ -267,7 +267,12 @@ public class Docker implements Closeable {
     if (force || !existsImage(imageId)) {
       log.debug("Pulling Docker image {} ... please be patient until the process finishes",
           imageId);
-      getClient().pullImageCmd(imageId).exec(new PullImageResultCallback()).awaitSuccess();
+      try {
+        getClient().pullImageCmd(imageId).exec(new PullImageResultCallback()).awaitCompletion();
+      }
+      catch (Exception e) {
+        log.warn("Exception pulling image {}", imageId, e);
+      }
       log.debug("Image {} downloaded", imageId);
 
     } else {
@@ -547,7 +552,8 @@ public class Docker implements Closeable {
 
   public String getContainerIpAddress() {
     if (isRunningInContainer()) {
-      String ipAddr = inspectContainer(getContainerName()).getNetworkSettings().getIpAddress();
+      String ipAddr = inspectContainer(getContainerName()).getNetworkSettings()
+          .getNetworks().values().iterator().next().getIpAddress();
       log.trace("Docker container IP address {}", ipAddr);
       return ipAddr;
     } else {

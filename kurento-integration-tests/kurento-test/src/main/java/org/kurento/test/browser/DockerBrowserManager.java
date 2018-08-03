@@ -121,7 +121,8 @@ public class DockerBrowserManager {
             docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
                 record);
             browserContainerIp =
-                docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
+                docker.inspectContainer(browserContainerName).getNetworkSettings().getNetworks()
+                    .values().iterator().next().getIpAddress();
           }
 
           String driverUrl = String.format("http://%s:4444/wd/hub", browserContainerIp);
