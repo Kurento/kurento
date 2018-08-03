@@ -396,17 +396,17 @@ public class Docker implements Closeable {
     // Start node if stopped
     startContainer(nodeName);
 
-    startRecordingIfNeeded(nodeName, record);
+    startRecordingIfNeeded(id, nodeName, record);
 
   }
 
-  private void startRecordingIfNeeded(String containerName, boolean record) {
+  private void startRecordingIfNeeded(String id, String containerName, boolean record) {
     if (record) {
-        String recordingName = KurentoTest.getSimpleTestName() + "-recording";
-        ExecCreateCmdResponse exec =client.execCreateCmd(containerName)
-            .withCmd("start-video-recording.sh", "-n", recordingName).exec();
-        client.execStartCmd(exec.getId()).exec(new ExecStartResultCallback());
-        log.debug("Starting recording in container {}", containerName);
+      String recordingName = KurentoTest.getSimpleTestName() + "-" + id + "-recording";
+      ExecCreateCmdResponse exec =client.execCreateCmd(containerName)
+          .withCmd("start-video-recording.sh", "-n", recordingName).exec();
+      client.execStartCmd(exec.getId()).exec(new ExecStartResultCallback());
+      log.debug("Starting recording in container {}", containerName);
     }
   }
 
@@ -456,7 +456,7 @@ public class Docker implements Closeable {
     // Start node if stopped
     startContainer(nodeName);
 
-    startRecordingIfNeeded(nodeName, record);
+    startRecordingIfNeeded(id, nodeName, record);
   }
 
   public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
