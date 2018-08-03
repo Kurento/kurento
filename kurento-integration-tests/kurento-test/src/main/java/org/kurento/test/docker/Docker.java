@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +54,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.InspectContainerResponse.Mount;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
@@ -211,7 +213,11 @@ public class Docker implements Closeable {
 
   public void mountDefaultFolders(CreateContainerCmd createContainerCmd, String configFilePath) {
 
-    if (isRunningInContainer()) {
+    boolean runningInContainer = isRunningInContainer();
+
+    log.debug("Mounting default folders. Running inside container: {}", runningInContainer);
+
+    if (runningInContainer) {
 
       createContainerCmd.withVolumesFrom(new VolumesFrom(getContainerId()));
 
@@ -386,7 +392,7 @@ public class Docker implements Closeable {
 
       pullImageIfNecessary(imageId, true);
 
-      log.debug("Creating container {}", nodeName);
+      log.debug("Creating container for browser '{}'", id);
 
       CreateContainerCmd createContainerCmd =
           getClient().createContainerCmd(imageId).withCapAdd(SYS_ADMIN).withName(nodeName);
@@ -403,6 +409,16 @@ public class Docker implements Closeable {
 
     startRecordingIfNeeded(id, nodeName, record);
 
+    logMounts(nodeName);
+  }
+
+  private void logMounts(String containerId) {
+    List<Mount> mounts = getClient().inspectContainerCmd(containerId).exec().getMounts();
+    log.debug("There are {} mount(s) in the container {}:", mounts.size(), containerId);
+    for (int i = 0; i < mounts.size(); i++) {
+      Mount mount = mounts.get(i);
+      log.debug("{}) {} -> {} ({})", i + 1, mount.getSource(), mount.getDestination(), mount.getMode());
+    }
   }
 
   private void startRecordingIfNeeded(String id, String containerName, boolean record) {
@@ -411,7 +427,7 @@ public class Docker implements Closeable {
       ExecCreateCmdResponse exec =client.execCreateCmd(containerName)
           .withCmd("start-video-recording.sh", "-n", recordingName).exec();
       client.execStartCmd(exec.getId()).exec(new ExecStartResultCallback());
-      log.debug("Starting recording in container {}", containerName);
+      log.debug("Starting recording in container {} (target file {})", containerName, recordingName);
     }
   }
 
@@ -434,7 +450,7 @@ public class Docker implements Closeable {
 
       pullImageIfNecessary(imageId, true);
 
-      log.debug("Creating container {}", nodeName);
+      log.debug("Creating container for browser '{}'", id);
 
       CreateContainerCmd createContainerCmd =
           getClient().createContainerCmd(imageId).withCapAdd(SYS_ADMIN).withName(nodeName);
@@ -462,6 +478,8 @@ public class Docker implements Closeable {
     startContainer(nodeName);
 
     startRecordingIfNeeded(id, nodeName, record);
+
+    logMounts(nodeName);
   }
 
   public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
