@@ -427,6 +427,14 @@ public class Docker implements Closeable {
 
   private void startRecordingIfNeeded(String id, String containerName, boolean record) {
     if (record) {
+      // Log if IPv6 is disabled
+      String lsFolder = execCommand(containerName, true, "ls", "-la", "/proc/sys/net/ipv6/conf/all/");
+      log.debug("Content of folder /proc/sys/net/ipv6/conf/all/ in container {}: {}", containerName,
+          lsFolder);
+      String ipV6Disapled = execCommand(containerName, true, "cat",
+          "/proc/sys/net/ipv6/conf/all/disable_ipv6");
+      log.debug("IPv6 disabled in container {}: {}", containerName, ipV6Disapled);
+
       // Clean previous recordings
       execCommand(containerName, true, "rm", "/home/ubuntu/recordings/*.mp4");
 
@@ -689,7 +697,7 @@ public class Docker implements Closeable {
 
   public String execCommand(String containerId, boolean awaitCompletion, String... command) {
     ExecCreateCmdResponse exec = client.execCreateCmd(containerId).withCmd(command).withTty(false)
-        .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).exec();
+        .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).withPrivileged(true).exec();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     String output = null;
     try {
