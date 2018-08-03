@@ -231,7 +231,7 @@ public class DockerBrowserManager {
           // Check timeout
           if (System.currentTimeMillis() > timeoutMs) {
             throw new KurentoException(
-                "Timeout of " + timeoutMs + " millis waiting to create a RemoteWebDriver",
+                "Timeout of " + timeoutSeconds + " seconds waiting to create a RemoteWebDriver",
                 e.getCause());
           }
 
