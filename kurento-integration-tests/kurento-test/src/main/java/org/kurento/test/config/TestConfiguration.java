@@ -94,7 +94,7 @@ public class TestConfiguration {
   public static final String TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN = "Screen 1";
 
   public static final String SELENIUM_MAX_DRIVER_ERROR_PROPERTY = "selenium.max.driver.error";
-  public static final int SELENIUM_MAX_DRIVER_ERROR_DEFAULT = 10;
+  public static final int SELENIUM_MAX_DRIVER_ERROR_DEFAULT = 15;
 
   public static final String SELENIUM_REMOTE_HUB_URL_PROPERTY = "selenium.remote.hub.url";
 
