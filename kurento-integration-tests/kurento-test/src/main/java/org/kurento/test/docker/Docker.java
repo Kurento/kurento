@@ -379,7 +379,7 @@ public class Docker implements Closeable {
     // Create node if not exist
     if (!existsContainer(nodeName)) {
 
-      pullImageIfNecessary(imageId, false);
+      pullImageIfNecessary(imageId, true);
 
       log.debug("Creating container {}", nodeName);
 
@@ -427,7 +427,7 @@ public class Docker implements Closeable {
     // Create node if not exist
     if (!existsContainer(nodeName)) {
 
-      pullImageIfNecessary(imageId, false);
+      pullImageIfNecessary(imageId, true);
 
       log.debug("Creating container {}", nodeName);
 
