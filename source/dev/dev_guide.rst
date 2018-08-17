@@ -566,7 +566,6 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
         flex
         git
         libcommons-validator-java
-        lsb-release
         python
         python-apt
         python-debian
@@ -584,7 +583,6 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
 
       - ``flex`` will be automatically installed by GStreamer, but for now a bug in package version detection prevents that.
       - ``libcommons-validator-java`` seems to be required to build *gstreamer* (it failed with lots of errors from *jade*, when building documentation files).
-      - ``lsb-release`` is used in the Python build script (*compile_project.py*) to detect the name of the current distribution.
       - ``subversion`` (svn) is used in the Python build script (*compile_project.py*) due to GitHub's lack of support for git-archive protocol (see https://github.com/isaacs/github/issues/554).
 
 4. Download the Kurento CI scripts and the desired module. Run:
