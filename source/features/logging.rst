@@ -109,8 +109,8 @@ From there, one can add these other values which will expand from the default on
   .. note::
 
      - See also :ref:`logging-libnice` to enable advanced logging.
-     - *kmsiceniceagent* shows messages from the Nice Agent (handling of candidates).
-     - *kmswebrtcsession* shows messages from the KMS WebRtcSession (decision logic).
+     - *kmsiceniceagent* shows messages from the Nice Agent (low-level handling of candidates).
+     - *kmswebrtcsession* shows messages from the KMS WebRtcSession class (broarder decision logic).
      - *webrtcendpoint* shows messages from the WebRtcEndpoint (very basic logging).
 
 - Event MediaFlow{In|Out} state changes:
@@ -140,7 +140,7 @@ From there, one can add these other values which will expand from the default on
   .. note::
 
      - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
-     - *kmsremb:6* (debug level 6) shows full handling of all source SSRCs.
+     - *kmsremb:6* (debug level 6) shows full (very verbose) handling of all source SSRCs.
 
 - RPC calls:
 
@@ -158,13 +158,13 @@ From there, one can add these other values which will expand from the default on
 
   .. code-block:: text
 
-     export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:4"
+     export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:5"
 
 - Transcoding of media:
 
   .. code-block:: text
 
-     export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,kms*:4,agnosticbin*:7"
+     export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:7"
 
 - Unit tests:
 
@@ -209,7 +209,7 @@ Example:
 libsoup
 -------
 
-**libsoup** is the `GNOME HTTP client/server <https://wiki.gnome.org/Projects/libsoup>`__ library. It is used to perform HTTP requests, and currently this is used in Kurento by the KmsImageOverlay and the KmsLogoOverlay filters.
+**libsoup** is the `GNOME HTTP client/server <https://wiki.gnome.org/Projects/libsoup>`__ library. It is used to perform HTTP requests, and currently this is used in Kurento by the *KmsImageOverlay* and the *KmsLogoOverlay* filters.
 
 It is possible to enable detailed debug logging of the HTTP request/response headers, by defining the environment variable ``SOUP_DEBUG=1`` before running KMS:
 
