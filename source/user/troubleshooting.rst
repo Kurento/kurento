@@ -18,7 +18,7 @@ Media Server crashed
 
 If the Media Server crashes, it will generate an **error log** and also in typical Ubuntu systems, the Linux Kernel will generate a **crash core dump**.
 
-However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to install all ``-dbg`` packages:
+However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to run your breaking test case *after* having installed all ``-dbg`` packages:
 
 .. code-block:: bash
 
@@ -245,6 +245,23 @@ If the machine is disconnected during the actual installation of this package, t
 .. code-block:: bash
 
    sudo apt-get install --reinstall openh264
+
+
+
+Missing video or audio streams
+------------------------------
+
+A typical cause for missing streams is that the network topology requires using either STUN or TURN, to overcome the NAT configuration of some intermediate router. If that's the case, the solution is to set up a STUN or a TURN server, and configure its details in the corresponding file, as explained in :ref:`installation-stun-turn`.
+
+There are some logging messages that could indicate a bad configuration of STUN or TURN; these are useful to look for:
+
+.. code-block:: text
+
+   STUN server Port not found in config; using default value: 3478
+   STUN server IP address not found in config; NAT traversal requires either STUN or TURN server
+   TURN server IP address not found in config; NAT traversal requires either STUN or TURN server
+
+If you see these messages, it's a clear indication that STUN or TURN are not properly configured in KMS.
 
 
 

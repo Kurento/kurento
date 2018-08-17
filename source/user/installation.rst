@@ -107,6 +107,8 @@ The server includes service files which integrate with the Ubuntu init system, s
 
 
 
+.. _installation-stun-turn:
+
 STUN and TURN servers
 =====================
 
