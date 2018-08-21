@@ -436,10 +436,10 @@ public class Docker implements Closeable {
       log.debug("IPv6 disabled in container {}: {}", containerName, ipV6Disapled);
 
       // Clean previous recordings
-      execCommand(containerName, true, "rm", "/home/ubuntu/recordings/*.mp4");
+      execCommand(containerName, true, "rm", "/home/ubuntu/recordings/*");
 
       // Start recording with script
-      String recordingName = KurentoTest.getSimpleTestName() + "-" + containerName + "-recording";
+      String recordingName = KurentoTest.getSimpleTestName() + "-recording";
       String startRecordingOutput = execCommand(containerName, false, "start-video-recording.sh",
           "-n", recordingName);
 
