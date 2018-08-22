@@ -337,10 +337,7 @@ public class Docker implements Closeable {
       if (withRecording) {
           String stopRecordingOutput = execCommand(containerName, true, "stop-video-recording.sh");
           log.debug("Stopping recording in container {}:", containerName, stopRecordingOutput);
-          String lsRecordingsFolder = execCommand(containerName, true,
-              "ls", "-la", "/home/ubuntu/recordings");
-          log.debug("List of recording folder in container {}:\n{}", containerName,
-              lsRecordingsFolder);
+          listFolderInContainer(containerName, "/home/ubuntu/recordings");
       }
 
       getClient().stopContainerCmd(containerName).exec();
@@ -348,6 +345,12 @@ public class Docker implements Closeable {
     } else {
       log.debug("Container {} is not running", containerName);
     }
+  }
+
+  public void listFolderInContainer(String containerName, String folderName) {
+    String lsRecordingsFolder = execCommand(containerName, true, "ls", "-la", folderName);
+    log.debug("List of folder {} in container {}:\n{}", folderName, containerName,
+        lsRecordingsFolder);
   }
 
   public void removeContainers(String... containerNames) {
@@ -436,7 +439,10 @@ public class Docker implements Closeable {
       log.debug("IPv6 disabled in container {}: {}", containerName, ipV6Disapled);
 
       // Clean previous recordings
-      execCommand(containerName, true, "rm", "/home/ubuntu/recordings/*");
+      String recordingFolderName = "/home/ubuntu/recordings";
+      log.debug("Clean previous recordings (folder {})", recordingFolderName);
+      execCommand(containerName, true, "rm", recordingFolderName + "/*");
+      listFolderInContainer(containerName, recordingFolderName);
 
       // Start recording with script
       String recordingName = KurentoTest.getSimpleTestName() + "-recording";
