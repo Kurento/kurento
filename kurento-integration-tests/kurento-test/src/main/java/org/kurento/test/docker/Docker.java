@@ -441,7 +441,7 @@ public class Docker implements Closeable {
       // Clean previous recordings
       String recordingFolderName = "/home/ubuntu/recordings";
       log.debug("Clean previous recordings (folder {})", recordingFolderName);
-      execCommand(containerName, true, "rm", recordingFolderName + "/*");
+      execCommand(containerName, true, "sudo", "rm", recordingFolderName + "/*");
       listFolderInContainer(containerName, recordingFolderName);
 
       // Start recording with script
