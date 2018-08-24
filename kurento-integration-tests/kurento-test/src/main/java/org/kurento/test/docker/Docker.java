@@ -455,15 +455,15 @@ public class Docker implements Closeable {
   }
 
   private void mountVolumeForRecordingIfNeeded(boolean record,
-        CreateContainerCmd createContainerCmd) {
+      CreateContainerCmd createContainerCmd) {
     if (record) {
-        mountDefaultFolders(createContainerCmd);
-        Volume recordVol = new Volume("/home/ubuntu/recordings");
-        String recordTarget = KurentoTest.getDefaultOutputFolder().getAbsolutePath();
-        createContainerCmd.withVolumes(recordVol).withBinds(new Bind(recordTarget, recordVol));
-        log.debug("Mounting volume for recording in host path {} for container {}",
-            recordTarget, createContainerCmd.getName());
-      }
+      mountDefaultFolders(createContainerCmd);
+      Volume recordVol = new Volume("/home/ubuntu/recordings");
+      String recordTarget = KurentoTest.getDefaultOutputFolder().getAbsolutePath();
+      createContainerCmd.withVolumes(recordVol).withBinds(new Bind(recordTarget, recordVol));
+      log.debug("Mounting volume for recording in host path {} for container {}",
+          recordTarget, createContainerCmd.getName());
+    }
   }
 
   public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
