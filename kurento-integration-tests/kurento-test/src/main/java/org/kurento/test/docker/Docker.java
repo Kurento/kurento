@@ -461,6 +461,11 @@ public class Docker implements Closeable {
       mountDefaultFolders(createContainerCmd);
       Volume recordVol = new Volume("/home/ubuntu/recordings");
 
+      Map<String, String> envs = System.getenv();
+      for (String key : envs.keySet()) {
+          log.debug("*** Env {} = {}", key, envs.get(key));
+      }
+
       String workspaceProjectPath = PropertiesManager.getProperty(TestConfiguration.TEST_PROJECT_PATH_PROP,
           TestConfiguration.TEST_PROJECT_PATH_DEFAULT);
       log.debug("Workspace project path: {}", workspaceProjectPath);
