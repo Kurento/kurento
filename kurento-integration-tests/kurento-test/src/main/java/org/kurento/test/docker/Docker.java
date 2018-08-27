@@ -461,10 +461,10 @@ public class Docker implements Closeable {
       mountDefaultFolders(createContainerCmd);
       Volume recordVol = new Volume("/home/ubuntu/recordings");
 
-      String workspaceHost = PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_HOST_PROP,
-          TestConfiguration.TEST_WORKSPACE_HOST_DEFAULT);
-      log.debug("Workspace host: {}", workspaceHost);
-      File workspaceFile = new File(workspaceHost, KurentoTest.getTestDir() + File.separator +
+      String workspaceProjectPath = PropertiesManager.getProperty(TestConfiguration.TEST_PROJECT_PATH_PROP,
+          TestConfiguration.TEST_PROJECT_PATH_DEFAULT);
+      log.debug("Workspace project path: {}", workspaceProjectPath);
+      File workspaceFile = new File(workspaceProjectPath, KurentoTest.getTestDir() + File.separator +
           KurentoTest.getTestClassName());
       String recordTarget = workspaceFile.getAbsolutePath();
 
