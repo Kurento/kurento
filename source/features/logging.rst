@@ -8,11 +8,11 @@ Kurento Media Server generates log files that are stored in ``/var/log/kurento-m
 
    {DateTime}.{LogNumber}.pid{PID}.log
 
-- ``{DateTime}``: Date and time of the logging file creation, in :wikipedia:`ISO 8601` Extended Notation for the date, and Basic Notation for the time. For example: *2018-12-31T235959*.
+- ``{DateTime}``: Logging file creation date and time, in :wikipedia:`ISO 8601` Extended Notation for the date, and Basic Notation for the time. For example: *2018-12-31T235959*.
 - ``{LogNumber}``: Log file number.
 - ``{PID}``: Process Identifier of *kurento-media-sever*.
 
-For example, when KMS starts correctly, a log file such as this one would be created:
+When KMS starts correctly, a log file such as this one would be created:
 
 .. code-block:: text
 
@@ -24,16 +24,16 @@ Besides normal log files, an ``errors.log`` file stores error messages logged by
 
    Log files in this folder are rotated, and old files will get eventually deleted when new ones are created. This helps with preventing that log files might end up filling all available disk space.
 
-Each line in the log files has a fixed structure:
+Each line in a log file has a fixed structure:
 
 .. code-block:: text
 
    {DateTime} {PID} {ThreadID} {Level} {Component} {FileLine} {Function} {Object}? {Message}
 
-- ``{DateTime}``: Date and time of the logging message, in :wikipedia:`ISO 8601` Extended Notation, with six decimal places for the seconds fraction. For example: *2018-12-31T23:59:59,999999*.
+- ``{DateTime}``: Date and time of the logging message, in :wikipedia:`ISO 8601` Extended Notation, with six decimal places for the seconds fraction. For example: *2018-12-31T23:59:59,123456*.
 - ``{PID}``: Process Identifier of *kurento-media-sever*.
 - ``{ThreadID}``: Thread ID from which the message was issued. For example: *0x0000111122223333*.
-- ``{Level}``: Logging level. This value typically will be *INFO* or *DEBUG*. If unexpected error situations happen, the *WARN* and *ERROR* levels will contain information about the problem.
+- ``{Level}``: Logging level. This value will typically be *INFO* or *DEBUG*. If unexpected error situations happen, the *WARNING* and *ERROR* levels will contain information about the problem.
 - ``{Component}``: Name of the component that generated the log line. For example: *KurentoModuleManager*, *webrtcendpoint*, *qtmux*, etc.
 - ``{FileLine}``: File name and line number, separated by a colon. For example: *main.cpp:255*.
 - ``{Function}``: Name of the function in which the log message was generated. For example: *main()*, *loadModule()*, *kms_webrtc_endpoint_gather_candidates()*, etc.
@@ -53,7 +53,7 @@ For example, when KMS starts correctly, a message such as this one would be prin
 Logging levels and components
 =============================
 
-Each different **component** of KMS is able to generate its own logging messages. Besides that, each individual logging message has a severity **level**, which defines how critical (or superfluous) the message is.
+Each different ``{Component}`` of KMS is able to generate its own logging messages. Besides that, each individual logging message has a severity ``{Level}``, which defines how critical (or superfluous) the message is.
 
 These are the different message levels, as defined by the `GStreamer logging library <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-running.html>`__:
 
@@ -66,9 +66,9 @@ These are the different message levels, as defined by the `GStreamer logging lib
 - **(7) TRACE**: Logs all trace messages. These messages for events that *happen repeatedly* during an object's lifetime such as the ref/unref cycles.
 - **(8) MEMDUMP**: Log all memory dump messages. Memory dump messages are used to log (small) chunks of data as memory dumps in the log. They will be displayed as hexdump with ASCII characters.
 
-Logging categories and levels can be set by two methods:
+Logging categories and levels can be filtered by two methods:
 
-- Use the specific command-line argument while launching KMS. For example, run:
+- Use a command-line argument while launching KMS. For example, run:
 
   .. code-block:: text
 
@@ -83,7 +83,14 @@ Logging categories and levels can be set by two methods:
      export GST_DEBUG="3,Kurento*:4,kms*:4"
      /usr/bin/kurento-media-server
 
-Besides this, the log colors can be explicitly disabled in the same two ways: either with ``--gst-debug-no-color`` or with ``export GST_DEBUG_NO_COLOR=1``.
+If you are using the *apt-get* installation of KMS, then you can also configure the *GST_DEBUG* variable in the KMS configuration file, */etc/default/kurento-media-server*:
+
+  .. code-block:: bash
+
+     # Logging level.
+     export GST_DEBUG="3,Kurento*:4,kms*:4"
+
+Logs will be colored by default, but colors can be explicitly disabled in the same two ways explained here: either with ``--gst-debug-no-color`` or with ``export GST_DEBUG_NO_COLOR=1``.
 
 
 
