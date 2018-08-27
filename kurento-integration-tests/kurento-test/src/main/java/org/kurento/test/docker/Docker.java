@@ -348,7 +348,8 @@ public class Docker implements Closeable {
   }
 
   public void listFolderInContainer(String containerName, String folderName) {
-    String lsRecordingsFolder = execCommand(containerName, true, "ls", "-la", folderName);
+    String lsRecordingsFolder = execCommand(containerName, true, "ls", "-lrt", "-d", "-1",
+        folderName + "/{*,.*}");
     log.debug("List of folder {} in container {}:\n{}", folderName, containerName,
         lsRecordingsFolder);
   }
