@@ -24,6 +24,7 @@ import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_TRANSPORT;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InterfaceAddress;
@@ -459,8 +460,15 @@ public class Docker implements Closeable {
     if (record) {
       mountDefaultFolders(createContainerCmd);
       Volume recordVol = new Volume("/home/ubuntu/recordings");
-      String recordTarget = KurentoTest.getDefaultOutputFolder().getAbsolutePath();
-      createContainerCmd.withVolumes(recordVol).withBinds(new Bind(recordTarget, recordVol));
+
+      String workspaceHost = PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_HOST_PROP,
+          TestConfiguration.TEST_WORKSPACE_HOST_DEFAULT);
+      log.debug("Workspace host: {}", workspaceHost);
+      File workspaceFile = new File(workspaceHost, KurentoTest.getTestDir() + File.separator +
+          KurentoTest.getTestClassName());
+      String recordTarget = workspaceFile.getAbsolutePath();
+
+      createContainerCmd.withVolumes(recordVol).withBinds(new Bind(workspaceFile.getAbsolutePath(), recordVol));
       log.debug("Mounting volume for recording in host path {} for container {}",
           recordTarget, createContainerCmd.getName());
     }
