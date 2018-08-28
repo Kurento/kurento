@@ -445,7 +445,7 @@ public class Docker implements Closeable {
       }
 
       if (isRunningInContainer()) {
-        createContainerCmd.withNetworkMode("container:" + getContainerName());
+        createContainerCmd.withNetworkMode("container:" + getContainerId());
       }
 
       createContainerCmd.exec();
@@ -476,7 +476,11 @@ public class Docker implements Closeable {
 
   private void logNetworks(String containerId) {
       Map<String, ContainerNetwork> networks = getClient().inspectContainerCmd(containerId).exec().getNetworkSettings().getNetworks();
-      log.debug("There are {} network(s) in the container {}:", networks.size(), containerId);
+      int networksSize = networks.size();
+      log.debug("There are {} network(s) in the container {}:", networksSize, containerId);
+      if (networksSize == 0) {
+          return;
+      }
       int i = 0;
       for (Entry<String, ContainerNetwork> network : networks.entrySet()) {
           log.debug("{}) {} -> {}", ++i, network.getKey(), network.getValue());
@@ -485,12 +489,6 @@ public class Docker implements Closeable {
 
   private void startRecordingIfNeeded(String id, String containerName, boolean record) {
     if (record) {
-      // Check if IPv6 is disabled
-      listFolderInContainer(containerName, "/proc/sys/net/ipv6/conf/all/");
-      String ipV6Disapled = execCommand(containerName, true, "cat",
-          "/proc/sys/net/ipv6/conf/all/disable_ipv6");
-      log.debug("IPv6 disabled in container {}: {}", containerName, ipV6Disapled);
-
       // Start recording with script
       String browserId = getBrowserIdFromContainerName(containerName);
       String recordingName = KurentoTest.getSimpleTestName() + "-" + browserId + "-recording";
