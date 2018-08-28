@@ -36,7 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -285,8 +284,7 @@ public class DockerBrowserManager {
     this.downloadLogsPath = path;
   }
 
-  public RemoteWebDriver createDockerDriver(String id, DesiredCapabilities capabilities)
-      throws MalformedURLException {
+  public RemoteWebDriver createDockerDriver(String id, DesiredCapabilities capabilities) {
 
     DockerBrowser browser = new DockerBrowser(id, capabilities);
 
