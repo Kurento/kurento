@@ -362,6 +362,21 @@ public class Docker implements Closeable {
     }
   }
 
+  public String getBrowserIdFromContainerName(String containerName) {
+    String keyword = "JOB_SETUP";
+    int indexOfKeyWord = containerName.indexOf(keyword);
+    if (indexOfKeyWord != -1) {
+      int i = containerName.indexOf("-", keyword.length() + indexOfKeyWord + 1);
+      if (i != -1) {
+        int j = containerName.indexOf("-", i + 1);
+        if (j != -1) {
+          containerName = containerName.substring(i + 1, j);
+        }
+      }
+    }
+    return containerName;
+  }
+
   public void listFolderInContainer(String containerName, String folderName) {
     String lsRecordingsFolder = execCommand(containerName, true, "ls", "-la", folderName);
     log.debug("List of folder {} in container {}:\n{}", folderName, containerName,
@@ -454,7 +469,8 @@ public class Docker implements Closeable {
       log.debug("IPv6 disabled in container {}: {}", containerName, ipV6Disapled);
 
       // Start recording with script
-      recordingName = KurentoTest.getSimpleTestName() + "-" + containerName + "-recording";
+      String browserId = getBrowserIdFromContainerName(containerName);
+      recordingName = KurentoTest.getSimpleTestName() + "-" + browserId + "-recording";
       String startRecordingOutput = execCommand(containerName, false, "start-video-recording.sh",
           "-n", recordingName);
 
