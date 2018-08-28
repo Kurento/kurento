@@ -430,10 +430,8 @@ public class Docker implements Closeable {
 
   private void startRecordingIfNeeded(String id, String containerName, boolean record) {
     if (record) {
-      // Log if IPv6 is disabled
-      String lsFolder = execCommand(containerName, true, "ls", "-la", "/proc/sys/net/ipv6/conf/all/");
-      log.debug("Content of folder /proc/sys/net/ipv6/conf/all/ in container {}: {}", containerName,
-          lsFolder);
+      // Check if IPv6 is disabled
+      listFolderInContainer(containerName, "/proc/sys/net/ipv6/conf/all/");
       String ipV6Disapled = execCommand(containerName, true, "cat",
           "/proc/sys/net/ipv6/conf/all/disable_ipv6");
       log.debug("IPv6 disabled in container {}: {}", containerName, ipV6Disapled);
