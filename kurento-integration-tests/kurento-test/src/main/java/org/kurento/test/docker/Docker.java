@@ -443,6 +443,11 @@ public class Docker implements Closeable {
       if (record) {
         mountDefaultFolders(createContainerCmd);
       }
+
+      if (isRunningInContainer()) {
+        createContainerCmd.withNetworkMode(getContainerId());
+      }
+
       createContainerCmd.exec();
       log.debug("Container {} started...", nodeName);
 
