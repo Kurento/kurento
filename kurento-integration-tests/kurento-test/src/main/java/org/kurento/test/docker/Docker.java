@@ -40,6 +40,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -65,6 +66,7 @@ import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.Volume;
@@ -454,6 +456,8 @@ public class Docker implements Closeable {
     startRecordingIfNeeded(id, nodeName, record);
 
     logMounts(nodeName);
+
+    logNetworks(nodeName);
   }
 
   private void logMounts(String containerId) {
@@ -463,6 +467,15 @@ public class Docker implements Closeable {
       Mount mount = mounts.get(i);
       log.debug("{}) {} -> {} ({})", i + 1, mount.getSource(), mount.getDestination(), mount.getMode());
     }
+  }
+
+  private void logNetworks(String containerId) {
+      Map<String, ContainerNetwork> networks = getClient().inspectContainerCmd(containerId).exec().getNetworkSettings().getNetworks();
+      log.debug("There are {} network(s) in the container {}:", networks.size(), containerId);
+      int i = 0;
+      for (Entry<String, ContainerNetwork> network : networks.entrySet()) {
+          log.debug("{}) {} -> {}", ++i, network.getKey(), network.getValue());
+      }
   }
 
   private void startRecordingIfNeeded(String id, String containerName, boolean record) {
@@ -524,6 +537,8 @@ public class Docker implements Closeable {
     startRecordingIfNeeded(id, nodeName, record);
 
     logMounts(nodeName);
+
+    logNetworks(nodeName);
   }
 
   public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
