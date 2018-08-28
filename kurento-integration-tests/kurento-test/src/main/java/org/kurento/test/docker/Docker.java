@@ -24,6 +24,8 @@ import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_TRANSPORT;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InterfaceAddress;
@@ -41,6 +43,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.io.IOUtils;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.KurentoTest;
@@ -92,6 +97,7 @@ public class Docker implements Closeable {
   private DockerClient client;
   private String containerName;
   private String dockerServerUrl;
+  private String recordingName;
 
   public static Docker getSingleton(String dockerServerUrl) {
     if (singleton == null) {
@@ -337,7 +343,16 @@ public class Docker implements Closeable {
       if (withRecording) {
           String stopRecordingOutput = execCommand(containerName, true, "stop-video-recording.sh");
           log.debug("Stopping recording in container {}:", containerName, stopRecordingOutput);
-          listFolderInContainer(containerName, "/home/ubuntu/recordings");
+
+          try {
+            // Wait for FFMPEG to finish writing recording file
+            Thread.sleep(5000);
+          } catch (InterruptedException e) {
+            log.warn("Exception waiting for recording file", e);
+          }
+
+          copyFileFromContainer(containerName, "/home/ubuntu/recordings/" + recordingName + ".mp4",
+                  KurentoTest.getDefaultOutputFolder().getAbsolutePath());
       }
 
       getClient().stopContainerCmd(containerName).exec();
@@ -403,7 +418,9 @@ public class Docker implements Closeable {
 
       CreateContainerCmd createContainerCmd =
           getClient().createContainerCmd(imageId).withCapAdd(SYS_ADMIN).withName(nodeName);
-      mountVolumeForRecordingIfNeeded(record, createContainerCmd);
+      if (record) {
+        mountDefaultFolders(createContainerCmd);
+      }
       createContainerCmd.exec();
       log.debug("Container {} started...", nodeName);
 
@@ -437,24 +454,12 @@ public class Docker implements Closeable {
       log.debug("IPv6 disabled in container {}: {}", containerName, ipV6Disapled);
 
       // Start recording with script
-      String recordingName = KurentoTest.getSimpleTestName() + "-recording";
+      recordingName = KurentoTest.getSimpleTestName() + "-recording";
       String startRecordingOutput = execCommand(containerName, false, "start-video-recording.sh",
           "-n", recordingName);
 
       log.debug("Starting recording in container {} (target file {}) (command result {})", containerName,
           recordingName, startRecordingOutput);
-    }
-  }
-
-  private void mountVolumeForRecordingIfNeeded(boolean record,
-      CreateContainerCmd createContainerCmd) {
-    if (record) {
-      mountDefaultFolders(createContainerCmd);
-      Volume recordVol = new Volume("/home/ubuntu/recordings");
-      String recordTarget = KurentoTest.getDefaultOutputFolder().getAbsolutePath();
-      createContainerCmd.withVolumes(recordVol).withBinds(new Bind(recordTarget, recordVol));
-      log.debug("Mounting volume for recording in host path {} for container {}",
-          recordTarget, createContainerCmd.getName());
     }
   }
 
@@ -481,7 +486,9 @@ public class Docker implements Closeable {
 
       createContainerCmd.exec();
 
-      mountVolumeForRecordingIfNeeded(record, createContainerCmd);
+      if (record) {
+        mountDefaultFolders(createContainerCmd);
+      }
 
       log.debug("Container {} started...", nodeName);
 
@@ -711,6 +718,51 @@ public class Docker implements Closeable {
     }
 
     return output;
+  }
+
+
+  public void copyFileFromContainer(String containerName, String containerFile, String hostFolder) {
+    if (existsContainer(containerName)) {
+      log.trace("Copying {} from container {} to host folder {}", containerFile, containerName,
+          hostFolder);
+      try (TarArchiveInputStream tarStream = new TarArchiveInputStream(
+          client.copyArchiveFromContainerCmd(containerName, containerFile).exec())) {
+        unTar(tarStream, new File(hostFolder));
+      } catch (Exception e) {
+        log.warn("Exception getting tar file from container {}", e.getMessage());
+      }
+    }
+  }
+
+  private void unTar(TarArchiveInputStream tis, File destFolder) throws IOException {
+    TarArchiveEntry entry = null;
+    while ((entry = tis.getNextTarEntry()) != null) {
+      FileOutputStream fos = null;
+      try {
+        if (entry.isDirectory()) {
+          continue;
+        }
+        File curfile = new File(destFolder, entry.getName());
+        File parent = curfile.getParentFile();
+        if (!parent.exists()) {
+          parent.mkdirs();
+        }
+        fos = new FileOutputStream(curfile);
+        IOUtils.copy(tis, fos);
+      } catch (Exception e) {
+        log.warn("Exception extracting {} to {}", tis, destFolder, e);
+      } finally {
+        try {
+          if (fos != null) {
+            fos.flush();
+            fos.getFD().sync();
+            fos.close();
+          }
+        } catch (IOException e) {
+          log.warn("Exception closing {}", fos, e);
+        }
+      }
+    }
   }
 
 }
