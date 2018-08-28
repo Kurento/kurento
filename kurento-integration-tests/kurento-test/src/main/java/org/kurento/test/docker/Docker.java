@@ -445,7 +445,7 @@ public class Docker implements Closeable {
       }
 
       if (isRunningInContainer()) {
-        createContainerCmd.withNetworkMode("container:" + getContainerId());
+        createContainerCmd.withNetworkMode("bridge");
       }
 
       createContainerCmd.exec();
