@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -97,7 +98,7 @@ public class Docker implements Closeable {
   private DockerClient client;
   private String containerName;
   private String dockerServerUrl;
-  private String recordingName;
+  private Map<String, String> recordingNameMap = new ConcurrentHashMap<>();
 
   public static Docker getSingleton(String dockerServerUrl) {
     if (singleton == null) {
@@ -341,18 +342,22 @@ public class Docker implements Closeable {
       log.debug("Stopping container {}", containerName);
 
       if (withRecording) {
-          String stopRecordingOutput = execCommand(containerName, true, "stop-video-recording.sh");
-          log.debug("Stopping recording in container {}:", containerName, stopRecordingOutput);
+        String stopRecordingOutput = execCommand(containerName, true, "stop-video-recording.sh");
+        log.debug("Stopping recording in container {}:", containerName, stopRecordingOutput);
 
-          try {
-            // Wait for FFMPEG to finish writing recording file
-            Thread.sleep(5000);
-          } catch (InterruptedException e) {
-            log.warn("Exception waiting for recording file", e);
-          }
+        try {
+          // Wait for FFMPEG to finish writing recording file
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          log.warn("Exception waiting for recording file", e);
+        }
 
+        if (recordingNameMap.containsKey(containerName)) {
+          String recordingName = recordingNameMap.get(containerName);
           copyFileFromContainer(containerName, "/home/ubuntu/recordings/" + recordingName + ".mp4",
-                  KurentoTest.getDefaultOutputFolder().getAbsolutePath());
+              KurentoTest.getDefaultOutputFolder().getAbsolutePath());
+          recordingNameMap.remove(containerName);
+        }
       }
 
       getClient().stopContainerCmd(containerName).exec();
@@ -470,7 +475,8 @@ public class Docker implements Closeable {
 
       // Start recording with script
       String browserId = getBrowserIdFromContainerName(containerName);
-      recordingName = KurentoTest.getSimpleTestName() + "-" + browserId + "-recording";
+      String recordingName = KurentoTest.getSimpleTestName() + "-" + browserId + "-recording";
+      recordingNameMap.put(containerName, recordingName);
       String startRecordingOutput = execCommand(containerName, false, "start-video-recording.sh",
           "-n", recordingName);
 
