@@ -227,6 +227,7 @@ public class Browser implements Closeable {
       log.debug("Browser {} loading url {}", getId(), url);
 
       driver.get(url.toString());
+      driver.navigate().refresh();
 
       log.debug("Browser {} initialized", getId());
 
