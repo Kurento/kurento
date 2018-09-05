@@ -176,5 +176,9 @@ public class WebSocketServerSession extends ServerSession {
       log.warn("Exception closing webSocket session", e);
     }
   }
+  
+  public WebSocketSession getWebSocketSession() {
+	  return this.wsSession;
+  }
 
 }
