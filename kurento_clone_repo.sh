@@ -62,7 +62,7 @@ CLONE_REF="${2:-${JOB_GIT_REF:-master}}"
 CLONE_DIR="${3:-${CLONE_NAME}}"
 
 # Internal variables
-CLONE_URL="${KURENTO_GIT_REPOSITORY}/${CLONE_NAME}.git"
+CLONE_URL="${CLONE_NAME}.git"
 
 log "Git clone $CLONE_URL ($CLONE_REF) to $PWD/$CLONE_DIR"
 
