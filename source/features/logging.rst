@@ -107,7 +107,7 @@ The **default suggested level** is what KMS sets automatically when it is starte
 
 From there, one can add these other values which will expand from the default one:
 
-- ICE candidate gathering:
+- ICE candidate gathering
 
   .. code-block:: text
 
@@ -120,25 +120,25 @@ From there, one can add these other values which will expand from the default on
      - *kmswebrtcsession* shows messages from the KMS WebRtcSession class (broarder decision logic).
      - *webrtcendpoint* shows messages from the WebRtcEndpoint (very basic logging).
 
-- Event MediaFlow{In|Out} state changes:
+- Event MediaFlow{In,Out} state changes
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoMediaElementImpl:5"
 
-- Player:
+- Player
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},playerendpoint:5"
 
-- Recorder:
+- Recorder
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5"
 
-- REMB congestion control:
+- REMB congestion control
 
   .. code-block:: text
 
@@ -149,31 +149,31 @@ From there, one can add these other values which will expand from the default on
      - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
      - *kmsremb:6* (debug level 6) shows full (very verbose) handling of all source SSRCs.
 
-- RPC calls:
+- RPC calls
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoWebSocketTransport:5"
 
-- RTP Sync:
+- RTP Sync
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
-- SDP processing:
+- SDP processing
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:5"
 
-- Transcoding of media:
+- Transcoding of media
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:7"
 
-- Unit tests:
+- Unit tests
 
   .. code-block:: text
 
@@ -181,7 +181,7 @@ From there, one can add these other values which will expand from the default on
 
 
 
-3rd-party libraries
+3rd-Party libraries
 ===================
 
 .. _logging-libnice:
