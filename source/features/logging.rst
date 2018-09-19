@@ -107,6 +107,12 @@ The **default suggested level** is what KMS sets automatically when it is starte
 
 From there, one can add these other values which will expand from the default one:
 
+- Event MediaFlow{In,Out} state changes
+
+  .. code-block:: text
+
+     export GST_DEBUG="${GST_DEBUG:-3},KurentoMediaElementImpl:5"
+
 - ICE candidate gathering
 
   .. code-block:: text
@@ -119,12 +125,6 @@ From there, one can add these other values which will expand from the default on
      - *kmsiceniceagent* shows messages from the Nice Agent (low-level handling of candidates).
      - *kmswebrtcsession* shows messages from the KMS WebRtcSession class (broarder decision logic).
      - *webrtcendpoint* shows messages from the WebRtcEndpoint (very basic logging).
-
-- Event MediaFlow{In,Out} state changes
-
-  .. code-block:: text
-
-     export GST_DEBUG="${GST_DEBUG:-3},KurentoMediaElementImpl:5"
 
 - Player
 
@@ -191,9 +191,9 @@ libnice
 
 **libnice** is the `GLib implementation <https://nice.freedesktop.org>`__ of :term:`ICE`, the standard method used by :term:`WebRTC` to solve the issue of :term:`NAT Traversal`.
 
-This library has its own logging system that comes disabled by default, but can be enabled very easily. This can prove useful in situations where a developer is studying an issue with the ICE process. However, the debug output of libnice is very verbose, so it makes sense that it is left disabled by default for production systems.
+This library uses the standard *GLib* logging functions, which comes disabled by default but can be enabled very easily. This can prove useful in situations where a developer is studying an issue with the ICE process. However, the debug output of libnice is very verbose, so it makes sense that it is left disabled by default for production systems.
 
-Run KMS with these environment variables defined: ``G_MESSAGES_DEBUG`` and ``NICE_DEBUG``. They must have one or more of these values, separated by commas:
+To enable debug logging on *libnice*, set the environment variable ``G_MESSAGES_DEBUG`` with one or more of these values (separated by commas):
 
 - libnice
 - libnice-stun
@@ -203,13 +203,17 @@ Run KMS with these environment variables defined: ``G_MESSAGES_DEBUG`` and ``NIC
 - libnice-pseudotcp-verbose
 - all
 
+After doing this, GLib messages themselves must be enabled in the Kurento logging system, by setting an appropriate level for the ``glib`` component.
+
 Example:
 
 .. code-block:: bash
 
    export G_MESSAGES_DEBUG="libnice,libnice-stun"
-   export NICE_DEBUG="$G_MESSAGES_DEBUG"
+   export GST_DEBUG="${GST_DEBUG:-3},glib:5"
    /usr/bin/kurento-media-server
+
+You can also set this configuration in the Kurento service settings file, which gets installed at ``/etc/default/kurento-media-server``.
 
 
 
