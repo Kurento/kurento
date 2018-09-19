@@ -250,13 +250,6 @@ kms_ice_nice_agent_new (GMainContext * context)
   g_signal_connect (self->priv->agent, "new-selected-pair-full",
       G_CALLBACK (kms_ice_nice_agent_new_selected_pair_full), self);
 
-  // Enable logging in 'libnice' library
-  if ((g_getenv ("NICE_DEBUG") != NULL)
-      && (g_getenv ("G_MESSAGES_DEBUG") != NULL)) {
-    GST_INFO_OBJECT (self, "Enable debug logging in 'libnice' library");
-    nice_debug_enable (TRUE);
-  }
-
   return self;
 }
 
