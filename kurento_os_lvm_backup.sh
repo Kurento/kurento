@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -x
 #
 # Openstack LVM Volume Backup
 #
@@ -6,7 +6,10 @@
 # ./kurento-os-lvm-backup VOL_ID VOL_NAME
 #
 # Based: https://docs.openstack.org/cinder/latest/admin/blockstorage-backup-disks.html
-#
+
+set -eu -o pipefail
+
+export PATH=$PATH:/sbin
 
 DATE=$(date +'%Y-%m-%d')
 VOL_PREFIX="/dev/cinder-volumes"
@@ -42,5 +45,4 @@ umount /mnt
 kpartx -d ${VOL_PREFIX}/${VOL_NAME}-snap
 
 # Removing snapshot
-lvremove -f /dev/cinder-volumes/$VOL_NAME-snap
-
+lvremove -f ${VOL_PREFIX}/$VOL_NAME-snap
