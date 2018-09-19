@@ -279,6 +279,9 @@ public class Docker implements Closeable {
   }
 
   public void pullImageIfNecessary(String imageId, boolean force) {
+    if (imageId.isEmpty()) {
+      return;
+    }
     if (force || !existsImage(imageId)) {
       log.debug("Pulling Docker image {} ... please be patient until the process finishes",
           imageId);
