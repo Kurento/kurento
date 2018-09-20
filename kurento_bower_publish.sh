@@ -2,9 +2,6 @@
 
 echo "##################### EXECUTE: kurento_bower_publish #####################"
 # Parameter management
-# BOWER_REPOSITORY string
-#   URL of repository where bower code is located. This is regarded as binary
-#
 # FILES string
 #   List of files to be placed in bower repo. It consist of a of pairs
 #   SRC_FILE:DST_FILE separated by white space. All paths are relative to
@@ -18,7 +15,6 @@ echo "##################### EXECUTE: kurento_bower_publish #####################
 #   Whether a TAG must be created in bower repository. Default value is false
 
 # Validate mandatory parameters
-[ -z "$BOWER_REPOSITORY" ] && exit 1
 [ -z "$FILES" ] && exit 1
 [ -z "$REFSPEC" ] && REFSPEC=master
 [ -z "$CREATE_TAG" ] && CREATE_TAG=false
@@ -40,11 +36,12 @@ VERSION="$(kurento_get_version.sh)" || {
 BOWER_DIR="bower_code"
 [ -d $BOWER_DIR ] && rm -rf $BOWER_DIR
 
-# Do not declare error if bower repository does not exists
-kurento_clone_repo.sh "$BOWER_REPOSITORY" master "$BOWER_DIR" || {
-    echo "[kurento_bower_publish] WARNING: Command failed: kurento_clone_repo $BOWER_REPOSITORY master $BOWER_DIR"
-    exit 0
-}
+# Internal variables
+BOWER_PROJECT="${KURENTO_PROJECT}-bower"
+
+# Do not declare error if bower repository does not exist
+kurento_clone_repo.sh "$BOWER_PROJECT" master "$BOWER_DIR" \
+|| { echo "[kurento_bower_publish] WARNING: Command failed: kurento_clone_repo $BOWER_PROJECT"; exit 0; }
 
 cd $BOWER_DIR || exit 1
 
