@@ -1538,7 +1538,7 @@
 		<repository>
 			<id>kurento-snapshots</id>
 			<name>Kurento Snapshots</name>
-			<url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
+			<url>https://maven.openvidu.io/repository/snapshots/</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
@@ -1551,7 +1551,7 @@
 		<pluginRepository>
 			<id>kurento-snapshots</id>
 			<name>Kurento Snapshots</name>
-			<url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
+			<url>https://maven.openvidu.io/repository/snapshots/</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
