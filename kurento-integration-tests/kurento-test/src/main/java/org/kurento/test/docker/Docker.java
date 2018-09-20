@@ -442,7 +442,7 @@ public class Docker implements Closeable {
       log.debug("Creating container for browser '{}'", id);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withCapAdd(SYS_ADMIN).withName(nodeName);
+          getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
       if (record) {
         mountDefaultFolders(createContainerCmd);
       }
@@ -514,7 +514,7 @@ public class Docker implements Closeable {
       log.debug("Creating container for browser '{}'", id);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withCapAdd(SYS_ADMIN).withName(nodeName);
+          getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
 
       createContainerCmd.withNetworkMode("none");
 
