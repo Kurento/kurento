@@ -162,17 +162,17 @@ public class DockerBrowserManager {
           currentTimeMillis() + SECONDS.toMillis(WAIT_URL_TIMEOUT_SEC);
       do {
         try {
+          if (currentTimeMillis() > timeoutMs) {
+            throw new KurentoException("Timeout of " + WAIT_URL_TIMEOUT_SEC
+                + " seconds waiting for URL " + url);
+          }
           HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
           connection.setRequestMethod("HEAD");
           int responseCode = connection.getResponseCode();
           urlAvailable = responseCode >= 200 && responseCode < 500;
           if (!urlAvailable) {
-            if (currentTimeMillis() > timeoutMs) {
-              throw new KurentoException("Timeout of " + WAIT_URL_TIMEOUT_SEC
-                  + " seconds waiting for URL " + url);
-            }
             log.debug("URL {} is not still available (response {}) ... waiting {} ms", url,
-                    responseCode, WAIT_URL_POLL_TIME_MS);
+                responseCode, WAIT_URL_POLL_TIME_MS);
             sleep(WAIT_URL_POLL_TIME_MS);
           }
         } catch (ConnectException e) {
