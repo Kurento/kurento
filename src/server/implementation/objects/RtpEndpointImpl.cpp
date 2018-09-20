@@ -37,8 +37,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
  * the GStreamer's SRTP plugin enforces using the maximum length possible
  * for the type of cypher used (in file 'gstsrtpenc.c'). So, KMS also expects
  * that the maximum Master key size is used. */
-#define KMS_SRTP_CIPHER_AES_CM_128_SIZE 30
-#define KMS_SRTP_CIPHER_AES_CM_256_SIZE 46
+#define KMS_SRTP_CIPHER_AES_CM_128_SIZE  ((gsize)30)
+#define KMS_SRTP_CIPHER_AES_CM_256_SIZE  ((gsize)46)
 
 namespace kurento
 {
@@ -92,15 +92,17 @@ RtpEndpointImpl::RtpEndpointImpl (const boost::property_tree::ptree &conf,
     key_b64 = crypto->getKeyBase64();
     guchar *tmp_b64 = g_base64_decode (key_b64.data(), &key_data_size);
     if (!tmp_b64) {
-      GST_ERROR_OBJECT (element, "Master key is not valid base64");
+      GST_ERROR_OBJECT (element, "Master key is not valid Base64");
       throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
-                              "Master key is not valid base64");
+                              "Master key is not valid Base64");
     }
     g_free (tmp_b64);
   }
 
   if (key_data_size != expect_size) {
-    GST_ERROR_OBJECT (element, "Master key size is wrong");
+    GST_ERROR_OBJECT (element,
+        "Bad Base64-decoded master key size: got %lu, expected %lu",
+        key_data_size, expect_size);
     throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
                             "Master key size is wrong");
   }

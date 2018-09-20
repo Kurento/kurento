@@ -52,8 +52,8 @@ G_DEFINE_TYPE (KmsRtpEndpoint, kms_rtp_endpoint, KMS_TYPE_BASE_RTP_ENDPOINT);
 #define KMS_SRTP_AUTH_HMAC_SHA1_80 2
 #define KMS_SRTP_CIPHER_AES_CM_128 1
 #define KMS_SRTP_CIPHER_AES_CM_256 2
-#define KMS_SRTP_CIPHER_AES_CM_128_SIZE 30
-#define KMS_SRTP_CIPHER_AES_CM_256_SIZE 46
+#define KMS_SRTP_CIPHER_AES_CM_128_SIZE ((gsize)30)
+#define KMS_SRTP_CIPHER_AES_CM_256_SIZE ((gsize)46)
 
 #define KMS_RTP_ENDPOINT_GET_PRIVATE(obj) (  \
   G_TYPE_INSTANCE_GET_PRIVATE (              \
@@ -1000,14 +1000,18 @@ kms_rtp_endpoint_set_property (GObject * object, guint prop_id,
       gsize key_data_size;
       guchar *tmp_b64 = g_base64_decode (key_b64, &key_data_size);
       if (!tmp_b64) {
-        GST_ERROR_OBJECT (self, "Master key is not valid base64");
+        GST_ERROR_OBJECT (self, "Master key is not valid Base64");
         break;
       }
       g_free (tmp_b64);
 
       if (key_data_size != KMS_SRTP_CIPHER_AES_CM_128_SIZE
-          && key_data_size != KMS_SRTP_CIPHER_AES_CM_256_SIZE) {
-        GST_ERROR_OBJECT (self, "Master key size is wrong");
+          && key_data_size != KMS_SRTP_CIPHER_AES_CM_256_SIZE)
+      {
+        GST_ERROR_OBJECT (self,
+            "Bad Base64-decoded master key size: got %lu, expected %lu or %lu",
+            key_data_size, KMS_SRTP_CIPHER_AES_CM_128_SIZE,
+            KMS_SRTP_CIPHER_AES_CM_256_SIZE);
         break;
       }
 
