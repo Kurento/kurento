@@ -60,7 +60,7 @@ This will install the latest KMS pre-release (potentially unstable) version.
 Kurento Java Client
 ===================
 
-The development builds of the Kurento Java Client are made available for Maven in https://maven.openvidu.io/archiva/index.action
+The development builds of the Kurento Java Client are made available for Maven in https://maven.openvidu.io/index.action
 To use these, you need to add first this repository to your Maven configuration.
 
 Adding a repository to Maven can be done at three scope levels:
@@ -77,7 +77,7 @@ Adding a repository to Maven can be done at three scope levels:
          <repository>
            <id>kurento-snapshots</id>
            <name>Kurento Snapshots</name>
-           <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
+           <url>https://maven.openvidu.io/repository/snapshots/</url>
            <releases>
              <enabled>false</enabled>
            </releases>
@@ -90,7 +90,7 @@ Adding a repository to Maven can be done at three scope levels:
          <pluginRepository>
            <id>kurento-snapshots</id>
            <name>Kurento Snapshots</name>
-           <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
+           <url>https://maven.openvidu.io/repository/snapshots/</url>
            <releases>
              <enabled>false</enabled>
            </releases>
@@ -136,7 +136,7 @@ Adding a repository to Maven can be done at three scope levels:
              <repository>
                <id>kurento-snapshots</id>
                <name>Kurento Snapshots</name>
-               <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
+               <url>https://maven.openvidu.io/repository/snapshots/</url>
                <releases>
                  <enabled>false</enabled>
                </releases>
@@ -149,7 +149,7 @@ Adding a repository to Maven can be done at three scope levels:
              <pluginRepository>
                <id>kurento-snapshots</id>
                <name>Kurento Snapshots</name>
-               <url>https://maven.openvidu.io/archiva/repository/snapshots/</url>
+               <url>https://maven.openvidu.io/repository/snapshots/</url>
                <releases>
                  <enabled>false</enabled>
                </releases>
