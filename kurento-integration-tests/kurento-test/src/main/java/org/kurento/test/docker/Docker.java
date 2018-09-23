@@ -195,8 +195,8 @@ public class Docker implements Closeable {
   }
 
   public void mountFiles(CreateContainerCmd createContainerCmd) {
-    String videoFilesDiskPath = "/var/lib/jenkins/test-files";
-    Volume configVol = new Volume(KurentoTest.getTestFilesDiskPath());
+    String videoFilesDiskPath = KurentoTest.getTestFilesDiskPath();
+    Volume configVol = new Volume(videoFilesDiskPath);
     createContainerCmd.withVolumes(configVol).withBinds(new Bind(videoFilesDiskPath, configVol));
   }
 
