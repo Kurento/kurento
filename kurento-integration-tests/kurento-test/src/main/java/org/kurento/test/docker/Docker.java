@@ -442,6 +442,8 @@ public class Docker implements Closeable {
     logMounts(nodeName);
 
     logNetworks(nodeName);
+
+    listFolderInContainer(nodeName, KurentoTest.getTestFilesDiskPath());
   }
 
   private void logMounts(String containerId) {
