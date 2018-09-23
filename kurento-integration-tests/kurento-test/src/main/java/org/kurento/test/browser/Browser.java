@@ -352,8 +352,8 @@ public class Browser implements Closeable {
         }
 
         File videoFile = new File(video);
-        log.debug("Using video {} in browser {} (exists {}, {} bytes)", video, id,
-            videoFile.exists(), videoFile.length());
+        log.debug("Using video {} in browser {} (exists {}, {} bytes, can read {})", video, id,
+            videoFile.exists(), videoFile.length(), videoFile.canRead());
         options.addArguments("--use-file-for-fake-video-capture=" + video);
       }
     }
