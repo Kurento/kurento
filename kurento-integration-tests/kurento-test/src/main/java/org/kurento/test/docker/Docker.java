@@ -423,11 +423,8 @@ public class Docker implements Closeable {
 
     CreateContainerCmd createContainerCmd =
         getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
+    mountDefaultFolders(createContainerCmd);
     mountFiles(createContainerCmd);
-
-    if (record) {
-      mountDefaultFolders(createContainerCmd);
-    }
 
     if (isRunningInContainer()) {
       createContainerCmd.withNetworkMode("bridge");
@@ -459,7 +456,7 @@ public class Docker implements Closeable {
   private void logNetworks(String containerId) {
       Map<String, ContainerNetwork> networks = getClient().inspectContainerCmd(containerId).exec().getNetworkSettings().getNetworks();
       int networksSize = networks.size();
-      log.debug("There are {} network(s) in the container {}:", networksSize, containerId);
+      log.debug("There are {} network(s) in the container {}", networksSize, containerId);
       if (networksSize == 0) {
           return;
       }
@@ -492,6 +489,7 @@ public class Docker implements Closeable {
 
     CreateContainerCmd createContainerCmd =
         getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
+    mountDefaultFolders(createContainerCmd);
     mountFiles(createContainerCmd);
 
     createContainerCmd.withNetworkMode("none");
@@ -504,10 +502,6 @@ public class Docker implements Closeable {
     createContainerCmd.withLabels(labels);
 
     createContainerCmd.exec();
-
-    if (record) {
-      mountDefaultFolders(createContainerCmd);
-    }
 
     log.debug("Container {} started...", nodeName);
 
