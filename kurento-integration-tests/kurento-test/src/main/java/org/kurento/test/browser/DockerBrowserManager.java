@@ -332,7 +332,7 @@ public class DockerBrowserManager {
 
   private void downloadLogsForContainer(String container, String logName) {
 
-    if (docker.existsContainer(container) && downloadLogsPath != null) {
+    if (downloadLogsPath != null) {
 
       try {
 

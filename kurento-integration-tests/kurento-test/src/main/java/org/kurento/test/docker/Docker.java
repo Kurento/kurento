@@ -155,26 +155,9 @@ public class Docker implements Closeable {
   }
 
   public boolean isRunningContainer(String containerName) {
-    boolean isRunning = false;
-    if (existsContainer(containerName)) {
-      isRunning = inspectContainer(containerName).getState().getRunning();
-      log.trace("Container {} is running: {}", containerName, isRunning);
-    }
-
+    boolean isRunning = inspectContainer(containerName).getState().getRunning();
+    log.trace("Container {} is running: {}", containerName, isRunning);
     return isRunning;
-  }
-
-  public boolean existsContainer(String containerName) {
-    boolean exists = true;
-    try {
-      getClient().inspectContainerCmd(containerName).exec();
-      log.trace("Container {} already exist", containerName);
-
-    } catch (NotFoundException e) {
-      log.trace("Container {} does not exist", containerName);
-      exists = false;
-    }
-    return exists;
   }
 
   public boolean existsImage(String imageName) {
@@ -193,27 +176,22 @@ public class Docker implements Closeable {
   public void createContainer(String imageId, String containerName, boolean mountFolders,
       String... env) {
 
-    if (!existsContainer(containerName)) {
+    pullImageIfNecessary(imageId, false);
 
-      pullImageIfNecessary(imageId, false);
+    log.debug("Creating container {}", containerName);
 
-      log.debug("Creating container {}", containerName);
+    CreateContainerCmd createContainerCmd =
+        getClient().createContainerCmd(imageId).withName(containerName).withEnv(env)
+        .withVolumes(new Volume("/var/run/docker.sock"));
 
-      CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withName(containerName).withEnv(env)
-          .withVolumes(new Volume("/var/run/docker.sock"));
-
-      if (mountFolders) {
-        mountDefaultFolders(createContainerCmd);
-      }
-
-      createContainerCmd.exec();
-
-      log.debug("Container {} started...", containerName);
-
-    } else {
-      log.debug("Container {} already exists", containerName);
+    if (mountFolders) {
+      mountDefaultFolders(createContainerCmd);
     }
+
+    createContainerCmd.exec();
+
+    log.debug("Container {} started...", containerName);
+
   }
 
   public void mountDefaultFolders(CreateContainerCmd createContainerCmd) {
@@ -400,31 +378,29 @@ public class Docker implements Closeable {
   }
 
   public void removeContainer(String containerName) {
-    if (existsContainer(containerName)) {
-      log.debug("Removing container {}", containerName);
-      boolean removed = false;
-      int count = 0;
-      do {
-        try {
-          count++;
-          getClient().removeContainerCmd(containerName).withRemoveVolumes(true).exec();
-          log.trace("*** Only for debugging: After Docker.removeContainer({}). Times: {}",
-              containerName, count);
-          removed = true;
-        } catch (Throwable e) {
-          if (count == 10) {
-            log.trace("*** Only for debugging: Exception {} -> Docker.removeContainer({}).",
-                containerName, e.getMessage());
-          }
-          try {
-            log.trace("Waiting for removing {}. Times: {}", containerName, count);
-            Thread.sleep(WAIT_CONTAINER_POLL_TIMEOUT);
-          } catch (InterruptedException e1) {
-            // Nothing todo
-          }
+    log.debug("Removing container {}", containerName);
+    boolean removed = false;
+    int count = 0;
+    do {
+      try {
+        count++;
+        getClient().removeContainerCmd(containerName).withRemoveVolumes(true).exec();
+        log.trace("*** Only for debugging: After Docker.removeContainer({}). Times: {}",
+            containerName, count);
+        removed = true;
+      } catch (Throwable e) {
+        if (count == 10) {
+          log.trace("*** Only for debugging: Exception {} -> Docker.removeContainer({}).",
+              containerName, e.getMessage());
         }
-      } while (!removed && count <= 10);
-    }
+        try {
+          log.trace("Waiting for removing {}. Times: {}", containerName, count);
+          Thread.sleep(WAIT_CONTAINER_POLL_TIMEOUT);
+        } catch (InterruptedException e1) {
+          // Nothing to do
+        }
+      }
+    } while (!removed && count <= 10);
   }
 
   public void stopAndRemoveContainer(String containerName, boolean withRecording) {
@@ -434,29 +410,24 @@ public class Docker implements Closeable {
 
   public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
       boolean record) {
-    // Create node if not exist
-    if (!existsContainer(nodeName)) {
+    // Create node
+    pullImageIfNecessary(imageId, true);
 
-      pullImageIfNecessary(imageId, true);
+    log.debug("Creating container for browser '{}'", id);
 
-      log.debug("Creating container for browser '{}'", id);
-
-      CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
-      if (record) {
-        mountDefaultFolders(createContainerCmd);
-      }
-
-      if (isRunningInContainer()) {
-        createContainerCmd.withNetworkMode("bridge");
-      }
-
-      createContainerCmd.exec();
-      log.debug("Container {} started...", nodeName);
-
-    } else {
-      log.debug("Container {} already exists", nodeName);
+    CreateContainerCmd createContainerCmd =
+        getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
+    if (record) {
+      mountDefaultFolders(createContainerCmd);
     }
+
+    if (isRunningInContainer()) {
+      createContainerCmd.withNetworkMode("bridge");
+    }
+
+    createContainerCmd.exec();
+    log.debug("Container {} started...", nodeName);
+
 
     // Start node if stopped
     startContainer(nodeName);
@@ -506,36 +477,30 @@ public class Docker implements Closeable {
 
   public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
       boolean record, String containerIp) {
-    // Create node if not exist
-    if (!existsContainer(nodeName)) {
+    // Create node
+    pullImageIfNecessary(imageId, true);
 
-      pullImageIfNecessary(imageId, true);
+    log.debug("Creating container for browser '{}'", id);
 
-      log.debug("Creating container for browser '{}'", id);
+    CreateContainerCmd createContainerCmd =
+        getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
 
-      CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
+    createContainerCmd.withNetworkMode("none");
 
-      createContainerCmd.withNetworkMode("none");
+    Map<String, String> labels = new HashMap<>();
+    labels.put("KurentoDnat", "true");
+    labels.put("Transport", getProperty(TEST_SELENIUM_TRANSPORT));
+    labels.put("IpAddress", containerIp);
 
-      Map<String, String> labels = new HashMap<>();
-      labels.put("KurentoDnat", "true");
-      labels.put("Transport", getProperty(TEST_SELENIUM_TRANSPORT));
-      labels.put("IpAddress", containerIp);
+    createContainerCmd.withLabels(labels);
 
-      createContainerCmd.withLabels(labels);
+    createContainerCmd.exec();
 
-      createContainerCmd.exec();
-
-      if (record) {
-        mountDefaultFolders(createContainerCmd);
-      }
-
-      log.debug("Container {} started...", nodeName);
-
-    } else {
-      log.debug("Container {} already exists", nodeName);
+    if (record) {
+      mountDefaultFolders(createContainerCmd);
     }
+
+    log.debug("Container {} started...", nodeName);
 
     // Start node if stopped
     startContainer(nodeName);
@@ -571,6 +536,7 @@ public class Docker implements Closeable {
             + " seconds waiting for container " + containerName);
       }
 
+      // TODO Check this
       isRunning = isRunningContainer(containerName);
       if (!isRunning) {
         try {
@@ -764,15 +730,13 @@ public class Docker implements Closeable {
 
 
   public void copyFileFromContainer(String containerName, String containerFile, String hostFolder) {
-    if (existsContainer(containerName)) {
-      log.trace("Copying {} from container {} to host folder {}", containerFile, containerName,
-          hostFolder);
-      try (TarArchiveInputStream tarStream = new TarArchiveInputStream(
-          client.copyArchiveFromContainerCmd(containerName, containerFile).exec())) {
-        unTar(tarStream, new File(hostFolder));
-      } catch (Exception e) {
-        log.warn("Exception getting tar file from container {}", e.getMessage());
-      }
+    log.trace("Copying {} from container {} to host folder {}", containerFile, containerName,
+        hostFolder);
+    try (TarArchiveInputStream tarStream = new TarArchiveInputStream(
+        client.copyArchiveFromContainerCmd(containerName, containerFile).exec())) {
+      unTar(tarStream, new File(hostFolder));
+    } catch (Exception e) {
+      log.warn("Exception getting tar file from container {}", e.getMessage());
     }
   }
 

@@ -464,11 +464,9 @@ public class KmsService extends TestService {
       log.debug("KMS image {} pulled", kmsImageName);
     }
 
-    if (dockerClient.existsContainer(dockerContainerName)) {
-      log.warn("Trying to create a new container named '" + dockerContainerName
-          + "' but it already exist. Stopping and removing existing one and creating it again.");
-      dockerClient.stopAndRemoveContainer(dockerContainerName, false);
-    }
+    log.warn("Trying to create a new container named '" + dockerContainerName
+        + "' but it already exist. Stopping and removing existing one and creating it again.");
+    dockerClient.stopAndRemoveContainer(dockerContainerName, false);
 
     log.debug("Starting KMS container...{}", dockerContainerName);
 
