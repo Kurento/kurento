@@ -351,7 +351,7 @@ public class Browser implements Closeable {
               + ", but this file doesn't exist.");
         }
 
-        log.debug("Using video {} in browser {}", video, id);
+        log.debug("Using video {} in browser {}  (exists {})", video, id, new File(video).exists());
         options.addArguments("--use-file-for-fake-video-capture=" + video);
       }
     }
