@@ -565,15 +565,14 @@ public class Docker implements Closeable {
     long timeoutMs =
         System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(WAIT_CONTAINER_POLL_TIMEOUT);
     do {
+      // Check timeout
+      if (System.currentTimeMillis() > timeoutMs) {
+        throw new KurentoException("Timeout of " + WAIT_CONTAINER_POLL_TIMEOUT
+            + " seconds waiting for container " + containerName);
+      }
+
       isRunning = isRunningContainer(containerName);
       if (!isRunning) {
-
-        // Check timeout
-        if (System.currentTimeMillis() > timeoutMs) {
-          throw new KurentoException("Timeout of " + WAIT_CONTAINER_POLL_TIMEOUT
-              + " seconds waiting for container " + containerName);
-        }
-
         try {
           // Wait WAIT_HUB_POLL_TIME ms
           log.debug("Container {} is not still running ... waiting {} ms", containerName,
