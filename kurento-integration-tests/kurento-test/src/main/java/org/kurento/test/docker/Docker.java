@@ -194,6 +194,12 @@ public class Docker implements Closeable {
 
   }
 
+  public void mountFiles(CreateContainerCmd createContainerCmd) {
+    String videoFilesDiskPath = KurentoTest.getTestFilesDiskPath();
+    Volume configVol = new Volume(videoFilesDiskPath);
+    createContainerCmd.withVolumes(configVol).withBinds(new Bind(videoFilesDiskPath, configVol));
+  }
+
   public void mountDefaultFolders(CreateContainerCmd createContainerCmd) {
     mountDefaultFolders(createContainerCmd, null);
   }
@@ -417,6 +423,8 @@ public class Docker implements Closeable {
 
     CreateContainerCmd createContainerCmd =
         getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
+    mountFiles(createContainerCmd);
+
     if (record) {
       mountDefaultFolders(createContainerCmd);
     }
@@ -484,6 +492,7 @@ public class Docker implements Closeable {
 
     CreateContainerCmd createContainerCmd =
         getClient().createContainerCmd(imageId).withPrivileged(true).withCapAdd(SYS_ADMIN).withName(nodeName);
+    mountFiles(createContainerCmd);
 
     createContainerCmd.withNetworkMode("none");
 
