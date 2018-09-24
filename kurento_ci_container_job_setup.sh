@@ -206,7 +206,6 @@ MAVEN_OPTIONS+=" -Dtest.selenium.record=$RECORD_TEST"
 # Create main container
 docker run \
   --name $BUILD_TAG-JOB_SETUP-$(date +"%s") \
-  --sysctl net.ipv6.conf.all.disable_ipv6=1 \
   $([ "$DETACHED" = "true" ] && echo "-d" || echo "--rm") \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
