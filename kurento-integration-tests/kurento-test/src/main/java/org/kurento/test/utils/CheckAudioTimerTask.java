@@ -65,8 +65,8 @@ public class CheckAudioTimerTask extends TimerTask {
       packetsNoReceived = 0;
     }
 
-    if (packetsNoReceived >= 100) {
-      log.warn("PacketsNoReceived >= 100");
+    if (packetsNoReceived >= 200) {
+      log.warn("PacketsNoReceived >= 200");
       errorContinuityAudiolatch.countDown();
     }
   }
