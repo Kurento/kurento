@@ -1,6 +1,6 @@
 {
   "name": "filters",
-  "version": "6.7.2-dev",
+  "version": "6.8.0",
   "kurentoVersion": "^6.7.0",
   "code": {
     "kmd": {

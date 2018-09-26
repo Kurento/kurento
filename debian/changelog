@@ -1,3 +1,10 @@
+kms-filters (6.8.0) testing; urgency=medium
+
+  * Remove 'override_dh_auto_test' from debian/rules
+  * Prepare release 6.8.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 26 Sep 2018 11:30:00 +0200
+
 kms-filters (6.7.1) testing; urgency=medium
 
   [ Juan Navarro Moreno ]

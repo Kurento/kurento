@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.8.0] - 2018-09-26
+
+### Added
+- Logging: Add support for libsoup debug logging
+- GStreamerFilters: Add setElementProperty() for real time updating of properties. Supported types:
+  - Int
+  - Float
+  - Double
+  - Enum
+
+### Changed
+- API: Review documentation, update links
+
+### Fixed
+- clang-tidy fixes
+
 ## [6.7.1] - 2018-03-21
 
 ### Changed
@@ -61,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GStreamerFilter: Improve command parser using `gst-launch` parser.
 - KmsOpencvFilter: Convert KurentoExceptions into bus messages.
 
+[6.8.0]: https://github.com/Kurento/kms-filters/compare/6.7.1...6.8.0
 [6.7.1]: https://github.com/Kurento/kms-filters/compare/6.7.0...6.7.1
 [6.7.0]: https://github.com/Kurento/kms-filters/compare/6.6.2...6.7.0
 [6.6.2]: https://github.com/Kurento/kms-filters/compare/6.6.1...6.6.2
