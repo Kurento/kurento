@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.8.0] - 2018-09-26
+
+### Added
+- CompositeMixer: Add support for DATA streams
+- Integrate GLib and Kurento's GStreamer logging systems (for libnice)
+
+### Changed
+- KmsPlayerEndpoint: Clearer logging messages, function names, code
+- API: Documentation for PlayerEndpoint.useEncodedMedia()
+- API: PlayerEndpoint/HttpEndpoint: Rewrite "useEncodedMedia" doc
+
+### Fixed
+- WebRtcTransport: Fix possible leak if GstDtlsSrtp elements are missing
+
 ## [6.7.2] - 2018-05-11
 
 ### Added
@@ -163,6 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PlayerEndpoint: set correct timestamps when source does not provide them properly.
 - Composite: Fix bugs simplifying internal design.
 
+[6.8.0]: https://github.com/Kurento/kms-elements/compare/6.7.2...6.8.0
 [6.7.2]: https://github.com/Kurento/kms-elements/compare/6.7.1...6.7.2
 [6.7.1]: https://github.com/Kurento/kms-elements/compare/6.7.0...6.7.1
 [6.7.0]: https://github.com/Kurento/kms-elements/compare/6.6.3...6.7.0
