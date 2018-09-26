@@ -1,0 +1,6 @@
+* Version: trusty-jdk-7-6
+
+  - Updated from 'dev-media-server:xenial-jdk-8-6'
+  - [FIXME] (Re-)Added Release repository, so build can find External packages (this
+    is a temporary fix that solves the issue while we work on fixing all
+    Externals to build correctly and integrate them into the CI Pipeline).

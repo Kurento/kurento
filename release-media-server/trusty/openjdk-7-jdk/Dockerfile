@@ -1,44 +1,78 @@
-FROM buildpack-deps:trusty-scm
+# Kurento build and packaging tools for Ubuntu 14.04 (Trusty)
+#
+# This Docker image is used to build and generate Ubuntu packages (*.deb) of
+# all repositories related to Kurento Media Server.
 
-# A few problems with compiling Java from source:
-#  1. Oracle.  Licensing prevents us from redistributing the official JDK.
-#  2. Compiling OpenJDK also requires the JDK to be installed, and it gets
-#       really hairy.
+FROM buildpack-deps:14.04-curl
 
-# Configure Kurento's apt proxy
-RUN echo 'Acquire::http::Proxy "http://proxy.kurento.org:3142";' > /etc/apt/apt.conf.d/01proxy \
-  && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy
+# Configure environment:
+# * LANG: Set the default locale for all commands
+# * DEBIAN_FRONTEND: Disable user-facing questions and messages
+# * PYTHONUNBUFFERED: Disable stdin, stdout, stderr buffering in Python
+ENV LANG=C.UTF-8 \
+    DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1
 
+# Configure apt-get:
+# * Disable installation of recommended and suggested packages
+# * Use the Openvidu package proxy
+# * Fix issues with Node.js package repo
+# * Add Kurento package repository
+RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
+ && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
+ && echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' >/etc/apt/apt.conf.d/01proxy \
+ && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >>/etc/apt/apt.conf.d/01proxy \
+ && echo 'deb [arch=amd64] http://ubuntu.openvidu.io/6.7.2 trusty kms6' >/etc/apt/sources.list.d/kurento.list \
+ && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+
+# Install everything needed:
+# * Dependencies of KMS build and packaging scripts:
+#   https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#generating-debian-packages
+# * Dependencies of other Kurento scripts:
+#   - CMake, pkg-config: Used in all C/C++ based repositories
+#   - Java JDK, Maven: Used in Kurento Module Creator and other Java modules
+#     NOTE: 'maven-debian-helper' installs an old Maven version in Ubuntu 14.04,
+#           and it may end up being installed instead of proper 'maven'.
+#           By adding '-' to its name we ensure that this doesn't happen, so we
+#           get Maven version 3.0.5.
+#   - Jshon: Used in JavaScript-related modules
+# * Miscellaneous tools that are used by several jobs in CI
 RUN apt-get update \
-  && apt-get install -y \
-    git-review \
-    python \
-    python-configobj \
-    realpath \
-    unzip \
-    wget \
-    zip \
-  && rm -rf /var/lib/apt/lists/*
+ && apt-get install -y \
+        build-essential \
+        debhelper \
+        curl \
+        fakeroot \
+        flex \
+        git \
+        libcommons-validator-java \
+        python \
+        python-apt \
+        python-debian \
+        python-git \
+        python-requests \
+        python-yaml \
+        subversion \
+        wget \
+        \
+        cmake \
+        pkg-config \
+        openjdk-7-jdk \
+        maven \
+        maven-debian-helper- \
+        jshon \
+        \
+        gnupg \
+        iproute2 \
+        zip unzip \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Default to UTF-8 file.encoding
-ENV LANG C.UTF-8
-
-RUN apt-get update && apt-get install -y openjdk-7-jdk gnupg && rm -rf /var/lib/apt/lists/*
-
-ENV MAVEN_VERSION 3.3.9
-
-RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz | tar xzf - -C /usr/share \
-  && mv /usr/share/apache-maven-$MAVEN_VERSION /usr/share/maven \
-  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
-
-ENV MAVEN_HOME /usr/share/maven
-
-RUN mkdir /nodejs \
-  && curl -sL https://deb.nodesource.com/setup_0.12 | bash - \
-  && apt-get install -y nodejs
-
-ENV PATH $PATH:/nodejs/bin
-
-RUN npm -g install bower
-
-#RUN echo "deb http://ubuntuci.kurento.org trusty kms6" | tee /etc/apt/sources.list.d/kurento.list
+# Install Node.js 8.x LTS (includes NPM) and Bower
+# This is used by all JavaScript-related modules
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+ && apt-get update \
+ && apt-get install -y \
+        nodejs \
+ && apt-get clean && rm -rf /var/lib/apt/lists/* \
+ && npm -g install bower \
+ && npm cache clean --force

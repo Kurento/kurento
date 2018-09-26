@@ -1,37 +1,73 @@
-FROM buildpack-deps:xenial-scm
+# Kurento build and packaging tools for Ubuntu 16.04 (Xenial)
+#
+# This Docker image is used to build and generate Ubuntu packages (*.deb) of
+# all repositories related to Kurento Media Server.
 
-# A few problems with compiling Java from source:
-#  1. Oracle.  Licensing prevents us from redistributing the official JDK.
-#  2. Compiling OpenJDK also requires the JDK to be installed, and it gets
-#       really hairy.
+FROM buildpack-deps:16.04-curl
 
-# Fix for "no matching key exchange method found" error (http://www.openssh.com/legacy.html)
+# Configure environment:
+# * LANG: Set the default locale for all commands
+# * DEBIAN_FRONTEND: Disable user-facing questions and messages
+# * PYTHONUNBUFFERED: Disable stdin, stdout, stderr buffering in Python
+ENV LANG=C.UTF-8 \
+    DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1
+
+# Configure apt-get:
+# * Disable installation of recommended and suggested packages
+# * Use the Openvidu package proxy
+# * Fix issues with Node.js package repo
+# * Add Kurento package repository
+RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
+ && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
+ && echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' >/etc/apt/apt.conf.d/01proxy \
+ && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >>/etc/apt/apt.conf.d/01proxy \
+ && echo 'deb [arch=amd64] http://ubuntu.openvidu.io/6.7.2 xenial kms6' >/etc/apt/sources.list.d/kurento.list \
+ && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+
+# Install everything needed:
+# * Dependencies of KMS build and packaging scripts:
+#   https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#generating-debian-packages
+# * Dependencies of other Kurento scripts:
+#   - CMake, pkg-config: Used in all C/C++ based repositories
+#   - Java JDK, Maven: Used in Kurento Module Creator and other Java modules
+#   - Jshon: Used in JavaScript-related modules
+# * Miscellaneous tools that are used by several jobs in CI
 RUN apt-get update \
-  && apt-get install -y \
-    git-review \
-    python \
-    python-configobj \
-    realpath \
-    unzip \
-    wget \
-    zip \
-  && rm -rf /var/lib/apt/lists/*
+ && apt-get install -y \
+        build-essential \
+        debhelper \
+        curl \
+        fakeroot \
+        flex \
+        git \
+        libcommons-validator-java \
+        python \
+        python-apt \
+        python-debian \
+        python-git \
+        python-requests \
+        python-yaml \
+        subversion \
+        wget \
+        \
+        cmake \
+        pkg-config \
+        openjdk-8-jdk \
+        maven \
+        jshon \
+        \
+        gnupg \
+        iproute2 \
+        zip unzip \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Default to UTF-8 file.encoding
-ENV LANG C.UTF-8
-
-RUN apt-get update && apt-get install -y openjdk-8-jdk gnupg maven && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir /nodejs \
-  && curl -sL https://deb.nodesource.com/setup_4.x | bash - \
-  && apt-get install -y nodejs
-
-ENV PATH $PATH:/nodejs/bin
-
-RUN npm -g install bower
-
-#RUN echo "deb http://ubuntuci.kurento.org xenial kms6" | tee /etc/apt/sources.list.d/kurento.list 
-
-# Configure Kurento's apt proxy
-RUN echo 'Acquire::http::Proxy "http://proxy.kurento.org:3142";' > /etc/apt/apt.conf.d/01proxy \
-  && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy
+# Install Node.js 8.x LTS (includes NPM) and Bower
+# This is used by all JavaScript-related modules
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+ && apt-get update \
+ && apt-get install -y \
+        nodejs \
+ && apt-get clean && rm -rf /var/lib/apt/lists/* \
+ && npm -g install bower \
+ && npm cache clean --force
