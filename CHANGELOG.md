@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.8.0] - 2018-09-26
+
+### Changed
+- CMake/CommonBuildFlags: Use -Werror only for development (DEBUG builds)
+- CMake/CommonBuildFlags: Add new function common_buildflags_print()
+
+### Removed
+- CMake/DpkgBuildFlags: Remove get_dpkg_buildflags_c(), get_dpkg_buildflags_cxx()
+
+### Fixed
+- TestHelpers: Always generate Valgrind target
+
 ## [6.7.0] - 2018-01-24
 
 ### Added
@@ -30,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.2.2 - 2015-11-25
 
+[6.8.0]: https://github.com/Kurento/kms-cmake-utils/compare/6.7.0...6.8.0
 [6.7.0]: https://github.com/Kurento/kms-cmake-utils/compare/1.4.0...6.7.0
 [1.4.0]: https://github.com/Kurento/kms-cmake-utils/compare/1.3.2...1.4.0
 [1.3.2]: https://github.com/Kurento/kms-cmake-utils/compare/1.3.1...1.3.2
