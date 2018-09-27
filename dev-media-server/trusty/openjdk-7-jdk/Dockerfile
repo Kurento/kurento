@@ -44,7 +44,7 @@ RUN apt-get update \
         curl \
         fakeroot \
         flex \
-        git \
+        git openssh-client \
         libcommons-validator-java \
         python \
         python-apt \

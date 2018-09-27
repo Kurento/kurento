@@ -5,7 +5,7 @@
 
 FROM buildpack-deps:14.04-curl
 
-# Configure environment:
+# Configure environment
 # * LANG: Set the default locale for all commands
 # * DEBIAN_FRONTEND: Disable user-facing questions and messages
 # * PYTHONUNBUFFERED: Disable stdin, stdout, stderr buffering in Python
@@ -13,7 +13,7 @@ ENV LANG=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1
 
-# Configure apt-get:
+# Configure apt-get
 # * Disable installation of recommended and suggested packages
 # * Use the Openvidu package proxy
 # * Fix issues with Node.js package repo
@@ -25,7 +25,7 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'deb [arch=amd64] http://ubuntu.openvidu.io/6.7.2 trusty kms6' >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-# Install everything needed:
+# Install everything needed
 # * Dependencies of KMS build and packaging scripts:
 #   https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#generating-debian-packages
 # * Dependencies of other Kurento scripts:
@@ -44,7 +44,7 @@ RUN apt-get update \
         curl \
         fakeroot \
         flex \
-        git \
+        git openssh-client \
         libcommons-validator-java \
         python \
         python-apt \
