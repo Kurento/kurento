@@ -1,4 +1,4 @@
-FROM selenium/node-base:2.53.1-rc1
+FROM selenium/node-base:3.14.0
 
 USER root
 
