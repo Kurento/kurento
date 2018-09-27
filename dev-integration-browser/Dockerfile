@@ -17,7 +17,7 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
   && apt-get update -qqy \
   && apt-get -qqy install \
     google-chrome-stable \
-  && rm /etc/apt/sources.list.d/google-chrome.list
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #=========
 # Firefox
@@ -27,29 +27,32 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AF316E81A155146718A
   && apt-get update -qqy \
   && apt-get -qqy --no-install-recommends install \
     firefox \
-  && rm -rf /etc/apt/sources.list.d/firefox.list
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+#=====
+# Misc
+#=====
 
 RUN apt-get update -y \
   && apt-get install -y -q \
     ca-certificates \
     curl \
-    git
+    git \
+    ffmpeg \
+    python \
+    python-pip \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+#=================================
+# Node.js (includes NPM) and Bower
+#=================================
 
 RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION | bash - \
-  && apt-get install -y nodejs
-
-
-ENV PATH $PATH:/nodejs/bin
-
-RUN npm -g install bower
-
-RUN apt-get update \
-  && apt-get install -y \
-    ffmpeg
-
-RUN apt-get update \
-  && apt-get install -y \
-    python \
-    python-pip
+ && apt-get update \
+ && apt-get install -y \
+        nodejs \
+ && apt-get clean && rm -rf /var/lib/apt/lists/* \
+ && npm -g install bower \
+ && npm cache clean --force
 
 USER seluser
