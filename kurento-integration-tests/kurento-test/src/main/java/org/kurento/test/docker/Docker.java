@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse.Mount;
@@ -75,6 +76,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
 
 /**
  * Docker client for tests.
@@ -98,6 +100,7 @@ public class Docker implements Closeable {
   private static Boolean isRunningInContainer;
 
   private DockerClient client;
+  private JerseyDockerCmdExecFactory execFactory;
   private String containerName;
   private String dockerServerUrl;
   private Map<String, String> recordingNameMap = new ConcurrentHashMap<>();
@@ -260,6 +263,7 @@ public class Docker implements Closeable {
             new Bind(workspacePath, workspaceVolume, AccessMode.rw));
       }
     }
+
   }
 
   public void pullImageIfNecessary(String imageId, boolean force) {
@@ -302,6 +306,7 @@ public class Docker implements Closeable {
   public void close() {
     if (client != null) {
       try {
+        execFactory.close();
         getClient().close();
       } catch (IOException e) {
         log.error("Exception closing Docker client", e);
@@ -313,7 +318,9 @@ public class Docker implements Closeable {
     if (client == null) {
       synchronized (this) {
         if (client == null) {
-          client = DockerClientBuilder.getInstance(dockerServerUrl).build();
+          execFactory = new JerseyDockerCmdExecFactory();
+          DockerCmdExecFactory dockerCmdExecFactory = execFactory.withMaxPerRouteConnections(100);
+          client = DockerClientBuilder.getInstance(dockerServerUrl).withDockerCmdExecFactory(dockerCmdExecFactory).build();
         }
       }
     }
@@ -447,7 +454,8 @@ public class Docker implements Closeable {
   }
 
   private void logMounts(String containerId) {
-    List<Mount> mounts = getClient().inspectContainerCmd(containerId).exec().getMounts();
+    InspectContainerResponse exec = getClient().inspectContainerCmd(containerId).exec();
+    List<Mount> mounts = exec.getMounts();
     log.debug("There are {} mount(s) in the container {}:", mounts.size(), containerId);
     for (int i = 0; i < mounts.size(); i++) {
       Mount mount = mounts.get(i);
@@ -474,11 +482,12 @@ public class Docker implements Closeable {
       String browserId = getBrowserIdFromContainerName(containerName);
       String recordingName = KurentoTest.getSimpleTestName() + "-" + browserId + "-recording";
       recordingNameMap.put(containerName, recordingName);
+
+      log.debug("Starting recording in container {} (browser {}) (target file {})", containerName,
+          browserId, recordingName);
       String startRecordingOutput = execCommand(containerName, false, "start-video-recording.sh",
           "-n", recordingName);
-
-      log.debug("Starting recording in container {} (target file {}) (command result {})", containerName,
-          recordingName, startRecordingOutput);
+      log.debug("Recording in container {} started (command result {})", containerName, startRecordingOutput);
     }
   }
 
@@ -541,7 +550,6 @@ public class Docker implements Closeable {
             + " seconds waiting for container " + containerName);
       }
 
-      // TODO Check this
       isRunning = isRunningContainer(containerName);
       if (!isRunning) {
         try {
@@ -715,7 +723,7 @@ public class Docker implements Closeable {
 
   public String execCommand(String containerId, boolean awaitCompletion, String... command) {
     ExecCreateCmdResponse exec = client.execCreateCmd(containerId).withCmd(command).withTty(false)
-        .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).withPrivileged(true).exec();
+        .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).exec();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     String output = null;
     try {
