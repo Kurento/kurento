@@ -70,7 +70,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
   // DEFAULT_NUM_SWITCH = 2 --> test time = 1 minute <br/>
   // DEFAULT_NUM_SWITCH = 120 --> test time = 1 hour
 
-  private static final int DEFAULT_NUM_SWITCH = 60;
+  private static final int DEFAULT_NUM_SWITCH = 10;
   private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
   @Parameters(name = "{index}: {0}")
