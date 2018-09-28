@@ -1,6 +1,6 @@
 {
   "name": "kurento-one2one-call",
-  "version": "6.7.3-dev",
+  "version": "6.8.0",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"
