@@ -1,8 +1,8 @@
+repo=kurento-module-creator
 repo=kms-cmake-utils
+repo=kms-jsonrpc
 repo=kms-core
 repo=kms-elements
 repo=kms-filters
-repo=kms-jsonrpc
 repo=kurento-media-server
-repo=kurento-module-creator
 serial=True
