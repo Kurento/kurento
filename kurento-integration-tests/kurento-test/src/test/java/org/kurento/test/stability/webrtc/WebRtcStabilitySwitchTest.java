@@ -17,20 +17,22 @@
 
 package org.kurento.test.stability.webrtc;
 
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
+import static java.lang.Integer.parseInt;
+import static java.lang.String.valueOf;
+import static java.lang.System.getProperty;
+import static java.lang.Thread.sleep;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.kurento.test.browser.WebRtcChannel.VIDEO_ONLY;
+import static org.kurento.test.browser.WebRtcMode.SEND_RCV;
+import static org.kurento.test.config.TestScenario.localPresenterAndViewer;
 
-import org.junit.Assert;
+import java.util.Collection;
+
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.StabilityTest;
-import org.kurento.test.browser.WebRtcChannel;
-import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.TestScenario;
-import org.kurento.test.latency.LatencyController;
-import org.kurento.test.latency.VideoTagType;
 
 /**
  * Stability test for switching 2 WebRTC (looback to back-2-back) a configurable number of times
@@ -65,23 +67,19 @@ import org.kurento.test.latency.VideoTagType;
  */
 public class WebRtcStabilitySwitchTest extends StabilityTest {
 
-  // test time = PLAYTIME_PER_SWITCH * 2 * DEFAULT_NUM_SWITCH
-
-  // DEFAULT_NUM_SWITCH = 2 --> test time = 1 minute <br/>
-  // DEFAULT_NUM_SWITCH = 120 --> test time = 1 hour
-
   private static final int DEFAULT_NUM_SWITCH = 10;
   private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
+  // test time = PLAYTIME_PER_SWITCH * 2 * DEFAULT_NUM_SWITCH
+
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
-    return TestScenario.localPresenterAndViewerRgb();
+    return localPresenterAndViewer();
   }
 
   @Test
   public void testWebRtcStabilitySwitch() throws Exception {
-    final int numSwitch = Integer.parseInt(
-        System.getProperty("test.webrtcstability.switch", String.valueOf(DEFAULT_NUM_SWITCH)));
+    final int numSwitch = parseInt(getProperty("test.webrtcstability.switch", valueOf(DEFAULT_NUM_SWITCH)));
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -92,59 +90,22 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 
     // WebRTC
     getPresenter().subscribeEvents("playing");
-    getPresenter().initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+    getPresenter().initWebRtc(webRtcEndpoint1, VIDEO_ONLY, SEND_RCV);
     getViewer().subscribeEvents("playing");
-    getViewer().initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+    getViewer().initWebRtc(webRtcEndpoint2, VIDEO_ONLY, SEND_RCV);
 
-    // Latency controller
-    LatencyController cs1 = new LatencyController("Latency in Browser 1");
-    LatencyController cs2 = new LatencyController("Latency in Browser 2");
-
-    try {
-      for (int i = 0; i < numSwitch; i++) {
-
-        if (i % 2 == 0) {
-          log.debug("Switch #" + i + ": loopback");
-          webRtcEndpoint1.connect(webRtcEndpoint1);
-          webRtcEndpoint2.connect(webRtcEndpoint2);
-
-          // Latency control (loopback)
-          log.debug("[{}.1] Latency control of browser1 to browser1", i);
-
-          cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS, getPresenter());
-
-          log.debug("[{}.2] Latency control of browser2 to browser2", i);
-          getViewer().activateLatencyControl(VideoTagType.LOCAL.getId(),
-              VideoTagType.REMOTE.getId());
-          cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS, getViewer());
-
-        } else {
-          log.debug("Switch #" + i + ": B2B");
-          webRtcEndpoint1.connect(webRtcEndpoint2);
-          webRtcEndpoint2.connect(webRtcEndpoint1);
-
-          // Latency control (B2B)
-          log.debug("[{}.3] Latency control of browser1 to browser2", i);
-          cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS, getPresenter(), getViewer());
-
-          log.debug("[{}.4] Latency control of browser2 to browser1", i);
-          cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS, getViewer(), getPresenter());
-        }
+    for (int i = 0; i < numSwitch; i++) {
+      if (i % 2 == 0) {
+        log.debug("Switch #" + i + ": loopback");
+        webRtcEndpoint1.connect(webRtcEndpoint1);
+        webRtcEndpoint2.connect(webRtcEndpoint2);
+      } else {
+        log.debug("Switch #" + i + ": B2B");
+        webRtcEndpoint1.connect(webRtcEndpoint2);
+        webRtcEndpoint2.connect(webRtcEndpoint1);
       }
-    } catch (RuntimeException re) {
-      getPresenter().takeScreeshot(getDefaultOutputFile("-browser1-error-screenshot.png"));
-      getViewer().takeScreeshot(getDefaultOutputFile("-browser2-error-screenshot.png"));
-      Assert.fail(re.getMessage());
+      sleep(SECONDS.toMillis(PLAYTIME_PER_SWITCH));
     }
-
-    // Draw latency results (PNG chart and CSV file)
-    cs1.drawChart(getDefaultOutputFile("-browser1.png"), 500, 270);
-    cs1.writeCsv(getDefaultOutputFile("-browser1.csv"));
-    cs1.logLatencyErrorrs();
-
-    cs2.drawChart(getDefaultOutputFile("-browser2.png"), 500, 270);
-    cs2.writeCsv(getDefaultOutputFile("-browser2.csv"));
-    cs2.logLatencyErrorrs();
 
     // Release Media Pipeline
     mp.release();
