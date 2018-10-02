@@ -60,9 +60,13 @@ function waitReport(driver, id, callback)
       })
 }
 
-function runTest(browser)
+function runTest(browser, capabilities)
 {
-  var driver = new webdriver.Builder().forBrowser(browser).build()
+  var builder = new webdriver.Builder().forBrowser(browser);
+  if (capabilities) {
+    builder = builder.withCapabilities(capabilities);
+  }
+  var driver = builder.build()
 
   var ws_uri = QUnit.config.ws_uri;
   if (ws_uri == undefined) {
@@ -103,6 +107,10 @@ tasks(['jsdoc', 'coverage'], {}, function()
     request.addListener('end', listener).resume()
   }).listen(PORT);
 
+  var capabilities = webdriver.Capabilities.chrome();
+  capabilities.set('chromeOptions',{
+    'args': ['--headless', '--disable-gpu', '--no-sandbox', '--disable-extensions', '--disable-dev-shm-usage']
+  });
   runTest('chrome').then(function() //server.close.bind(server))
 //  runTest('firefox').then(function()
   {
