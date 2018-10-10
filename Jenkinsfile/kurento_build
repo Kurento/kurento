@@ -40,7 +40,6 @@ pipeline {
         steps {
           parallel (
             "kurento_api_audit" : {build job: 'Development/kurento_api_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
-	          "kurento_app_audit" : {build job: 'Development/kurento_app_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
             "kurento_js_build_sanity_checks" : {build job: 'Development/kurento_js_build_sanity_checks', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master'), string(name: 'BOWER_RELEASE_URL', value: '//builds.kurento.org/dev/master/latest')]},
             "capability_functional_audit" : {build job: 'Development/capability_functional_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
             "capability_stability_audit" : {build job: 'Development/capability_stability_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
