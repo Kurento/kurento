@@ -163,7 +163,7 @@ if [ "$START_MONGO_CONTAINER" == 'true' ]; then
     sleep 10
 fi
 
-# Verify if Mongo container must be started
+# Verify if KMS container must be started
 if [ "$START_KMS_CONTAINER" == 'true' ]; then
     KMS_CONTAINER_ID=$(docker run -d \
       --name $BUILD_TAG-KMS-$(date +"%s") \
