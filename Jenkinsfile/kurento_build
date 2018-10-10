@@ -13,13 +13,9 @@ pipeline {
     stage('Build & deploy') {
       steps {
         parallel (
-          "kurento_tree_build" : {build job: 'Development/kurento_tree_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
-          "kurento_room_build" : {build job: 'Development/kurento_room_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
           "kurento_tutorial_java_build" : {build job: 'Development/kurento_tutorial_java_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
-
           "kurento_js_build" : {build job: 'Development/kurento_js_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},  
           "doc_kurento_build" : {build job: 'Development/doc_kurento_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
-          "doc_kurento_room_build" : {build job: 'Development/doc_kurento_room_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]}
           )
         }
       }
