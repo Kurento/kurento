@@ -1,0 +1,56 @@
+pipeline {
+  agent {
+    label "container"
+  }
+    
+  stages {
+    stage('Clean containers on all docker slaves') {
+     	steps {
+        build job: 'Development/container_clean_build', propagate: false
+      }
+    }
+    
+    stage('Build & deploy') {
+      steps {
+        parallel (
+          "kurento_tree_build" : {build job: 'Development/kurento_tree_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+			    "kurento_room_build" : {build job: 'Development/kurento_room_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+          "kurento_tutorial_java_build" : {build job: 'Development/kurento_tutorial_java_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+
+			    "kurento_js_build" : {build job: 'Development/kurento_js_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},  
+			    "doc_kurento_build" : {build job: 'Development/doc_kurento_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+			    "doc_kurento_room_build" : {build job: 'Development/doc_kurento_room_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]}
+          )
+        }
+      }
+      
+      stage('Build selenium containers') {
+        steps {
+          build job: 'Development/selenium_container_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]
+        }
+      }
+      
+      stage('Update ci environments') {
+        steps {
+          build job: 'Development/run_ansible', propagate: false
+		      build job: 'Development/kurento_ci_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]
+        }
+      }
+      stage('Testing new environment') {
+        steps {
+          parallel (
+            "kurento_api_audit" : {build job: 'Development/kurento_api_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+	          "kurento_app_audit" : {build job: 'Development/kurento_app_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+            "kurento_js_build_sanity_checks" : {build job: 'Development/kurento_js_build_sanity_checks', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master'), string(name: 'BOWER_RELEASE_URL', value: '//builds.kurento.org/dev/master/latest')]},
+            "capability_functional_audit" : {build job: 'Development/capability_functional_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+            "capability_stability_audit" : {build job: 'Development/capability_stability_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+            "webrtc_audit" : {build job: 'Development/webrtc_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+            "ice_audit_params" : {build job: 'Development/ice_audit_params', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+            "datachannel_audit" : {build job: 'Development/datachannel_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+            "kms_core_valgrind" : {build job: 'Development/kms_core_valgrind', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
+            "kms_elements_valgrind" : {build job: 'Development/kms_elements_valgrind', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]}
+          )
+        }
+      }
+    }
+  } 
