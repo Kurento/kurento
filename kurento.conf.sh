@@ -51,24 +51,36 @@ shopt -s expand_aliases  # This trick requires enabling aliases in Bash
 BASENAME="$(basename "$0")"  # Complete file name
 echo_and_restore() {
     echo "[${BASENAME}] $(cat -)"
+    # shellcheck disable=SC2154
     case "$flags" in (*x*) set -x ; esac
 }
 alias log='({ flags="$-"; set +x; } 2>/dev/null; echo_and_restore) <<<'
 
 # Trap functions
 on_error() {
-    _TRAP_ERROR=1
+    _ERR=$?
 }
 trap on_error ERR
 
 on_exit() {
-    (( ${_TRAP_ERROR-${?}} )) && log "ERROR" || log "SUCCESS"
+    _ERR="${_ERR:-$?}"  # Get either trap code, or this script's exit code
+    if (($_ERR)); then log "ERROR ($_ERR)"; else log "SUCCESS"; fi
     log "#################### END ####################"
 }
 trap on_exit EXIT
 
-# Help message (extracted from script headers)
-usage() { grep '^#/' "$0" | cut -c 4-; exit 0; }
-expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
+
 
 log "==================== BEGIN ===================="
+
+
+
+# Help message (extracted from script headers)
+usage() {
+    grep '^#/' "$0" | cut --characters=4-
+    exit 0
+}
+REGEX='^(-h|--help)$'
+if [[ "${1:-}" =~ $REGEX ]]; then
+    usage
+fi
