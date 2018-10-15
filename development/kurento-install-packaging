@@ -39,7 +39,7 @@ PACKAGES=(
     curl
     fakeroot
     flex
-    git
+    git openssh-client
     libcommons-validator-java
     python
     python-apt

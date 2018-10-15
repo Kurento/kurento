@@ -44,7 +44,7 @@ PACKAGES=(
     debhelper
     default-jdk
     gdb
-    git
+    git openssh-client
     maven
     pkg-config
     wget
