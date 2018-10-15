@@ -7,24 +7,25 @@
 #/
 #/ Arguments:
 #/
-#/ --install-missing <Distro> <Version>
+#/ --install-missing <Version>
 #/
-#/     Download and install any missing packages from the Kurento packages
-#/     repository for Ubuntu.
-#/     - <Distro> indicates which Ubuntu version to use.
-#/       Must be either "trusty" or "xenial".
-#/     - <Version> indicates which Kurento version must be used to download
-#/       packages from. E.g.: "6.8.0". If "nightly" is given, then the Kurento
-#/       Pre-Release repository will be used.
+#/     Use `apt-get` to download and install any missing packages from the
+#/     Kurento packages repository for Ubuntu.
 #/
-#/     If this argument is not provided, all required packages are expected to
-#/     be already installed in the system.
+#/     <Version> indicates which Kurento version must be used to download
+#/     packages from. E.g.: "6.8.0". If "dev" or "nightly" is given, the
+#/     Kurento Pre-Release package snapshots will be used instead. Typically,
+#/     you will provide an actual version number when also using the '--release'
+#/     flag, and just use "nightly" otherwise.
+#/
+#/     If this argument is not provided, all required dependencies are expected
+#/     to be already installed in the system.
 #/
 #/     This option is useful for end users, or external developers which may
 #/     want to build a specific component of Kurento without having to build
 #/     all the corresponding dependencies.
 #/
-#/     Optional. Default: False.
+#/     Optional. Default: Disabled.
 #/
 #/ --release
 #/
@@ -34,7 +35,7 @@
 #/     If none of the '--install-missing' options are given, this build script
 #/     expects that all required packages are manually installed beforehand.
 #/
-#/     Optional. Default: False.
+#/     Optional. Default: Disabled.
 #/
 #/ --skip-update
 #/
@@ -43,7 +44,7 @@
 #/     with this argument. It's useful mainly for developers or if you really
 #/     know that for some reason you don't want to update.
 #/
-#/     Optional. Default: False.
+#/     Optional. Default: Disabled.
 #/
 #/ --timestamp <Timestamp>
 #/
@@ -56,8 +57,6 @@
 #/
 #/ Dependency tree:
 #/
-#/ * mk-build-deps (package 'devscripts')
-#/   - equivs
 #/ * git-buildpackage (???)
 #    2 options:
 #    - Ubuntu package: git-buildpackage 0.7.2 in Xenial
@@ -66,10 +65,12 @@
 #      - sudo apt-get install python3-pip python3-setuptools
 #      - sudo pip3 install --upgrade gbp
 #/   - debuild (package 'devscripts')
-#/   - dpkg-buildpackage
+#/     - dpkg-buildpackage (package 'dpkg-dev')
+#/     - lintian
 #/   - git
-#/   - libdistro-info-perl (TODO: why?)
-#/   - lintian (TODO: why?)
+#/ * lsb-release
+#/ * mk-build-deps (package 'devscripts')
+#/   - equivs
 #/ * nproc (package 'coreutils')
 
 
@@ -90,14 +91,13 @@ source "$CONF_FILE"
 # ------------ Script start ------------
 
 # Check root permissions
-[ "$(id -u)" -eq 0 ] || { echo "Please run as root"; exit 1; }
+[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
 
 
 
 # ---- Parse arguments ----
 
 PARAM_INSTALL_MISSING=false
-PARAM_INSTALL_DISTRO=none
 PARAM_INSTALL_VERSION=0.0.0
 PARAM_RELEASE=false
 PARAM_SKIP_UPDATE=false
@@ -106,14 +106,12 @@ PARAM_TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 while [[ $# -gt 0 ]]; do
 case "${1-}" in
     --install-missing)
-        if [[ -n "${2-}" && -n "${3-}" ]]; then
+        if [[ -n "${2-}" ]]; then
             PARAM_INSTALL_MISSING=true
-            PARAM_INSTALL_DISTRO="$2"
-            PARAM_INSTALL_VERSION="$3"
-            shift
+            PARAM_INSTALL_VERSION="$2"
             shift
         else
-            log "ERROR: Missing <Distro> <Version>"
+            log "ERROR: Missing <Version>"
             exit 1
         fi
         shift
@@ -143,12 +141,11 @@ case "${1-}" in
 esac
 done
 
-echo "PARAM_INSTALL_MISSING=${PARAM_INSTALL_MISSING}"
-echo "PARAM_INSTALL_DISTRO=${PARAM_INSTALL_DISTRO}"
-echo "PARAM_INSTALL_VERSION=${PARAM_INSTALL_VERSION}"
-echo "PARAM_RELEASE=${PARAM_RELEASE}"
-echo "PARAM_SKIP_UPDATE=${PARAM_SKIP_UPDATE}"
-echo "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
+log "PARAM_INSTALL_MISSING=${PARAM_INSTALL_MISSING}"
+log "PARAM_INSTALL_VERSION=${PARAM_INSTALL_VERSION}"
+log "PARAM_RELEASE=${PARAM_RELEASE}"
+log "PARAM_SKIP_UPDATE=${PARAM_SKIP_UPDATE}"
+log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
 
 
 
@@ -164,15 +161,16 @@ if "$PARAM_INSTALL_MISSING"; then
     fi
 
     APT_FILE="$(mktemp /etc/apt/sources.list.d/kurento-XXXXX.list)"
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/$PARAM_INSTALL_VERSION $PARAM_INSTALL_DISTRO kms6" \
-        > "$APT_FILE"
+    DISTRO="$(lsb_release --short --codename)"
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/$PARAM_INSTALL_VERSION $DISTRO kms6" \
+        >"$APT_FILE"
 
     # This requires an Apt cache update
     apt-get update
     PARAM_SKIP_UPDATE=true  # No need to follow through with another update
 
     # The Apt cache is updated; remove the temporary file
-    rm "$APT_FILE"
+#     rm "$APT_FILE"
 fi
 
 if ! "$PARAM_SKIP_UPDATE"; then
@@ -192,49 +190,70 @@ mk-build-deps --install --remove \
 # ---- Changelog ----
 
 # To build Release packages, the 'debian/changelog' file must be updated and
-# committed a developer, as part of the release process. Then the build script
-# uses that information to assign a version number to the resulting packages.
+# committed by a developer, as part of the release process. Then the build
+# script uses it to assign a version number to the resulting packages.
 # For example, a developer would run:
-#     gbp dch --git-author --release ./debian/
+#     gbp dch --git-author --release debian/
 #     git add debian/changelog
-#     git commit -m "debian/changelog: New entry for Kurento release 0.1.14"
+#     git commit -m "Update debian/changelog with new release version"
 #
 # For nightly (pre-release) builds, the 'debian/changelog' file is
 # auto-generated by the build script with a snapshot version number. This
 # snapshot information is never committed.
 
-if ! "$PARAM_RELEASE"; then
+# --ignore-branch allows building from a tag or a commit.
+#   If it wasn't set, GBP would enforce that the current branch is
+#   the "debian-branch" specified in 'gbp.conf' (or 'master' by default).
+# --git-author uses the Git user details for the entry in 'debian/changelog'.
+if "$PARAM_RELEASE"; then
+    # Prepare a release version build
+    gbp dch \
+        --ignore-branch \
+        --git-author \
+        --spawn-editor=never \
+        --release \
+        debian/
+else
     # Prepare a nightly snapshot build
-    # --ignore-branch allows building from a Git tag.
-    #   If not set, GBP would enforce that the current branch is the one
-    #   given in 'gbp.conf'.
-    # --git-author puts Git user details in 'debian/changelog'.
-    gbp dch --ignore-branch --git-author \
+    gbp dch \
+        --ignore-branch \
+        --git-author \
+        --spawn-editor=never \
         --snapshot --snapshot-number="$PARAM_TIMESTAMP" \
-        ./debian/
+        debian/
 fi
 
 
 
 # ---- Build ----
 
+# --git-ignore-branch allows building from a tag or a commit.
+#   If it wasn't set, GBP would enforce that the current branch is
+#   the "debian-branch" specified in 'gbp.conf' (or 'master' by default).
+# --git-upstream-tree=SLOPPY generates the source tarball from the current
+#   state of the working directory.
+#   If it wasn't set, GBP would search for upstream source files in
+#   the "upstream-branch" specified in 'gbp.conf' (or 'upstream' by default).
+# --git-ignore-new ignores the uncommitted 'debian/changelog'.
+# - Other arguments are passed to debuild and dpkg-buildpackage.
 if "$PARAM_RELEASE"; then
-    # --git-ignore-branch allows building from a Git tag.
-    #   If not set, GBP would enforce that the current branch is the one
-    #   given in 'gbp.conf'.
-    # - Other arguments are passed to debuild and dpkg-buildpackage.
-    gbp buildpackage --git-ignore-branch \
+    gbp buildpackage \
+        --git-ignore-branch \
+        --git-ignore-new \
+        --git-upstream-tree=SLOPPY \
         -uc -us -j$(nproc)
 else
-    # --git-ignore-branch allows building from a Git tag.
-    #   If not set, GBP would enforce that the current branch is the one
-    #   given in 'gbp.conf'.
-    # --git-ignore-new ignores the uncommitted debian/changelog from the
-    #   Changelog step.
-    # --git-upstream-tree=BRANCH generates the source tarball from the branch
-    #   given in 'gbp.conf'. TODO: Probably wrong if building from a different branch!
-    # - Other arguments are passed to debuild and dpkg-buildpackage.
-    gbp buildpackage --git-ignore-branch --git-ignore-new \
-        --git-upstream-tree=BRANCH \
+    gbp buildpackage \
+        --git-ignore-branch \
+        --git-ignore-new \
+        --git-upstream-tree=SLOPPY \
         -uc -us -j$(nproc)
 fi
+
+
+
+# ---- Results ----
+
+log "Files:"
+ls -1 ../*.*
+cp ../*.*deb ./
