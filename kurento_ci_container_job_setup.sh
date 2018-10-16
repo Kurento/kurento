@@ -285,8 +285,8 @@ docker run \
   $([ -n "$KMS_CONTAINER_ID" ] && echo "--link $KMS_CONTAINER_ID:kms") \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
-  $CONTAINER_IMAGE \
   --entrypoint /bin/bash \
+  $CONTAINER_IMAGE \
   /opt/adm-scripts/kurento_ci_container_entrypoint.sh "${RUN_COMMANDS[@]}"
 status=$?
 
