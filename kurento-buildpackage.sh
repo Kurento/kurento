@@ -227,11 +227,3 @@ else
         --git-upstream-tree=SLOPPY \
         -uc -us -j$(nproc)
 fi
-
-
-
-# ---- Results ----
-
-log "Files:"
-ls -1 ../*.*
-cp ../*.*deb ./
