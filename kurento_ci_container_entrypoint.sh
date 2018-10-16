@@ -96,6 +96,9 @@ echo "$BOWER_KURENTO_ORG bower.kurento.org" >> /etc/hosts
 echo "[kurento_ci_container_entrypoint] Network configuration"
 ip addr list
 
+# Use the Openvidu package proxy for all apt-get commands
+echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' >>/etc/apt/apt.conf.d/01proxy
+
 for COMMAND in "${RUN_COMMANDS[@]}"; do
     echo "[kurento_ci_container_entrypoint] Run command: '$COMMAND'"
     eval $COMMAND || {
