@@ -37,15 +37,6 @@
 #/
 #/     Optional. Default: Disabled.
 #/
-#/ --skip-update
-#/
-#/     Skip running `apt-get update`.
-#/     If you have just updated the Apt cache, you can skip another update
-#/     with this argument. It's useful mainly for developers or if you really
-#/     know that for some reason you don't want to update.
-#/
-#/     Optional. Default: Disabled.
-#/
 #/ --timestamp <Timestamp>
 #/
 #/    Apply the provided timestamp instead of using the date and time this
@@ -100,7 +91,6 @@ source "$CONF_FILE"
 PARAM_INSTALL_MISSING=false
 PARAM_INSTALL_VERSION=0.0.0
 PARAM_RELEASE=false
-PARAM_SKIP_UPDATE=false
 PARAM_TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
 while [[ $# -gt 0 ]]; do
@@ -118,10 +108,6 @@ case "${1-}" in
         ;;
     --release)
         PARAM_RELEASE=true
-        shift
-        ;;
-    --skip-update)
-        PARAM_SKIP_UPDATE=true
         shift
         ;;
     --timestamp)
@@ -144,7 +130,6 @@ done
 log "PARAM_INSTALL_MISSING=${PARAM_INSTALL_MISSING}"
 log "PARAM_INSTALL_VERSION=${PARAM_INSTALL_VERSION}"
 log "PARAM_RELEASE=${PARAM_RELEASE}"
-log "PARAM_SKIP_UPDATE=${PARAM_SKIP_UPDATE}"
 log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
 
 
@@ -166,14 +151,6 @@ if "$PARAM_INSTALL_MISSING"; then
         >"$APT_FILE"
 
     # This requires an Apt cache update
-    apt-get update
-    PARAM_SKIP_UPDATE=true  # No need to follow through with another update
-
-    # The Apt cache is updated; remove the temporary file
-#     rm "$APT_FILE"
-fi
-
-if ! "$PARAM_SKIP_UPDATE"; then
     apt-get update
 fi
 
