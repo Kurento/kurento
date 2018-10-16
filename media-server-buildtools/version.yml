@@ -1,0 +1,3 @@
+image:
+  name: kurento/buildtools
+  version: 1.0.0
