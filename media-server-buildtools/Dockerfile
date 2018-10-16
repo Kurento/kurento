@@ -117,6 +117,7 @@ RUN git config --global user.name "Kurento CI" \
 
 # ------------ Runtime command ------------
 
-WORKDIR /build
-ENTRYPOINT ["/adm-scripts/kurento-buildpackage.sh"]
+COPY entrypoint.sh /
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD []
