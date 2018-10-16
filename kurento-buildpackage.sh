@@ -44,7 +44,7 @@
 #/    <Timestamp> can be in any format accepted by the `date` command,
 #/    for example in ISO 8601 format: "2018-12-31T23:58:59".
 #/
-#/     Optional. Default: Current timestamp, as given by `date +%Y%m%d%H%M%S`.
+#/    Optional. Default: Current timestamp, as given by `date +%Y%m%d%H%M%S`.
 #/
 #/ Dependency tree:
 #/
@@ -59,6 +59,7 @@
 #/     - dpkg-buildpackage (package 'dpkg-dev')
 #/     - lintian
 #/   - git
+#/     - openssh-client (for SSH access)
 #/ * lsb-release
 #/ * mk-build-deps (package 'devscripts')
 #/   - equivs
@@ -189,7 +190,7 @@ if "$PARAM_RELEASE"; then
         --git-author \
         --spawn-editor=never \
         --release \
-        debian/
+        ./debian/
 else
     # Prepare a nightly snapshot build
     gbp dch \
@@ -197,7 +198,7 @@ else
         --git-author \
         --spawn-editor=never \
         --snapshot --snapshot-number="$PARAM_TIMESTAMP" \
-        debian/
+        ./debian/
 fi
 
 
