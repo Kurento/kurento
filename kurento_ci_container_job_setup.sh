@@ -285,8 +285,9 @@ docker run \
   $([ -n "$KMS_CONTAINER_ID" ] && echo "--link $KMS_CONTAINER_ID:kms") \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
-    $CONTAINER_IMAGE \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh "${RUN_COMMANDS[@]}"
+  $CONTAINER_IMAGE \
+  --entrypoint /bin/bash \
+  /opt/adm-scripts/kurento_ci_container_entrypoint.sh "${RUN_COMMANDS[@]}"
 status=$?
 
 # Change worspace ownership to avoid permission errors caused by docker usage of root
