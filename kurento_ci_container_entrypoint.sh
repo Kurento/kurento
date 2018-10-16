@@ -97,7 +97,9 @@ echo "[kurento_ci_container_entrypoint] Network configuration"
 ip addr list
 
 # Use the Openvidu package proxy for all apt-get commands
-echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' >>/etc/apt/apt.conf.d/01proxy
+# The proxy is HTTP-only, so other repos should be accessed directly
+echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";'  >/etc/apt/apt.conf.d/01proxy
+echo 'Acquire::http::Proxy::deb.nodesource.com "DIRECT";'    >>/etc/apt/apt.conf.d/01proxy
 
 for COMMAND in "${RUN_COMMANDS[@]}"; do
     echo "[kurento_ci_container_entrypoint] Run command: '$COMMAND'"
