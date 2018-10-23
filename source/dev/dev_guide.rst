@@ -13,140 +13,95 @@ If you are looking to write applications that make use of Kurento, then you shou
 Introduction
 ============
 
-Kurento offers a multimedia framework that eases the task of building multimedia applications with the following features:
-
-- **Dynamic WebRTC Media pipelines**: Kurento allows custom media pipelines connected to WebRTC peers like web browsers and mobile apps. These media pipelines can be composed by players, recorders, mixers, etc. and can be changed dynamically when the media is flowing.
-
-- **Client/Server Architecture**: Apps developed with Kurento follow a client/server architecture. Kurento Media Server (KMS) is the server and offers a WebSocket interface implementing the Kurento Protocol, which allows Client Applications to define pipeline topologies.
-
-- **Java and JavaScript Client Applications**: The typical use case of a KMS deployment consists of a three-layer architecture, where the user's browser interacts with the KMS server by means of an intermediate Client Application. There are several official Kurento Client Libraries, supporting the use of Java and JavaScript for the Client Applications. Clients for other languages can be easily implemented following the WebSocket protocol.
-
-- **Third party Modules**: KMS has an extensible architecture based on plugins, which allows third parties to implement modules that can be combined with other built-in or third party modules in the same pipeline. For example, there are modules for Computer Vision with features such as face detection, barcode reading, etc.
-
-This document contains a high level explanation of how to become a KMS developer. Development of *Kurento Client Applications* is out of the scope for this document, and won't be explained here.
-
-
-
-Development tools
-=================
-
 This is an overview of the tools and technologies used by KMS:
 
 - The code is written in C and C++ languages.
 - The code style is heavily influenced by that of Gtk and GStreamer projects.
-- CMake is the construction tool.
-- The source code is versioned in several GitHub repositories.
+- CMake is the build tool of choice, and is used to build all modules.
+- Source code is versioned in several GitHub repositories.
 - The officially supported platforms are Ubuntu LTS distributions: 14.04 (Trusty) and 16.04 (Xenial).
-- The heart of KMS is the GStreamer multimedia framework.
+- The GStreamer multimedia framework sits at the heart of Kurento Media Server.
 - In addition to GStreamer, KMS uses other libraries like boost, jsoncpp, libnice, etc.
 
 
 
-Source code repositories
-========================
+.. _dev-code-repos:
+
+Code Repositories
+=================
 
 Kurento source code is stored in several GitHub repositories at https://github.com/Kurento. Each one of these repositories has a specific purpose and usually contains the code required to build a shared library of the same name.
 
-There are several types of repositories:
-
-- **Fork Repositories**: KMS depends on several open source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries. The repositories that contain these forked libraries are called "Fork Repositories".
-
-  These are the current Fork Repositories, as of KMS version 6.7:
-
-  - `jsoncpp <https://github.com/Kurento/jsoncpp>`__
-  - `libsrtp <https://github.com/Kurento/libsrtp>`__
-  - `openh264 <https://github.com/Kurento/openh264>`__
-  - `usrsctp <https://github.com/Kurento/usrsctp>`__
-  - `gstreamer <https://github.com/Kurento/gstreamer>`__ (libgstreamer1.5)
-  - `gst-plugins-base <https://github.com/Kurento/gst-plugins-base>`__
-  - `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
-  - `gst-plugins-bad <https://github.com/Kurento/gst-plugins-bad>`__
-  - `gst-plugins-ugly <https://github.com/Kurento/gst-plugins-ugly>`__
-  - `gst-libav <https://github.com/Kurento/gst-libav>`__
-  - `openwebrtc-gst-plugins <https://github.com/Kurento/openwebrtc-gst-plugins>`__
-  - `libnice <https://github.com/Kurento/libnice>`__ (gstreamer1.0-nice, gstreamer1.5-nice)
-
-- **Main Repositories**: The core of KMS is located in Main Repositories. As of version 6.7, these repositories are:
-
-  - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
-  - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
-  - `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
-  - `kms-core <https://github.com/Kurento/kms-core>`__: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
-  - `kms-elements <https://github.com/Kurento/kms-elements>`__: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
-  - `kms-filters <https://github.com/Kurento/kms-filters>`__: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
-  - `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__: Contains the main entry point of KMS. That is, the main() function for the server executable code. This application depends on libraries located in the above repositories. It has mainly C++ code.
-
-- **Omni-Build Repository**: The `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__ repository is a dummy umbrella for the other KMS Main Repositories. It has no actual code; instead, it only has the required CMake code to allow building the whole KMS project in one go. For this, it gets a copy of the required repositories via Git submodules.
-
-- **Module Repositories**: KMS is distributed with some basic GStreamer pipeline elements, but other elements are available in form of modules. These modules are stored individually in Module Repositories. Currently, we have the following ones:
-
-  - `kms-chroma <https://github.com/Kurento/kms-chroma>`__
-  - `kms-crowddetector <https://github.com/Kurento/kms-crowddetector>`__
-  - `kms-platedetector <https://github.com/Kurento/kms-platedetector>`__
-  - `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`__
-
-- **Client Repositories**: Client Applications can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their support tools made available in their respective repositories.
-
-- **Tutorial or demo repositories**: There are several repositories that contain sample code for developers that use Kurento or want to develop a custom Kurento module. Currently these are:
-
-   - `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`__
-   - `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__
-   - `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`__
-   - `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__
-   - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
-   - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
-
-A KMS developer must know how to work with KMS Fork and Main Repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at the KMS Main Repositories, while it's unusual to make changes in Fork Repositories except for updating their upstream versions.
-
-
-
-Module dependency graph
------------------------
-
-This graph shows the dependencies between all modules that form part of Kurento:
+An overview of the relationships between all repos forming the Kurento Media Server:
 
 .. graphviz:: /images/graphs/dependencies-all.dot
    :align: center
    :caption: All dependency relationships
 
+As the dependency graph is not strictly linear, there are multiple possible ways to order all modules into a linear dependency list; this section provides one possible order, which will be consistently used through all Kurento documents.
 
+**Fork Repositories**:
 
-.. _dev-dependency-list:
+KMS depends on several open source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries.
 
-Module dependency list
-----------------------
+- `jsoncpp <https://github.com/Kurento/jsoncpp>`__
+- `libsrtp <https://github.com/Kurento/libsrtp>`__
+- `openh264 <https://github.com/Kurento/openh264>`__
+- `usrsctp <https://github.com/Kurento/usrsctp>`__
+- `gstreamer <https://github.com/Kurento/gstreamer>`__ (produces libgstreamer1.5)
+- `gst-plugins-base <https://github.com/Kurento/gst-plugins-base>`__
+- `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
+- `gst-plugins-bad <https://github.com/Kurento/gst-plugins-bad>`__
+- `gst-plugins-ugly <https://github.com/Kurento/gst-plugins-ugly>`__
+- `gst-libav <https://github.com/Kurento/gst-libav>`__
+- `openwebrtc-gst-plugins <https://github.com/Kurento/openwebrtc-gst-plugins>`__
+- `libnice <https://github.com/Kurento/libnice>`__ (produces gstreamer1.0-nice, gstreamer1.5-nice)
 
-As the dependency graph is not strictly linear, there are multiple possible ways to order all modules into a linear dependency list; one possible order would be this one:
+**Main Repositories**
 
-**Externals**:
+- `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
+- `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
+- `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
+- `kms-core <https://github.com/Kurento/kms-core>`__: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
+- `kms-elements <https://github.com/Kurento/kms-elements>`__: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
+- `kms-filters <https://github.com/Kurento/kms-filters>`__: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
+- `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__: Contains the main entry point of KMS. That is, the main() function for the server executable code. This program depends on libraries located in the above repositories. It has mainly C++ code.
 
-1. jsoncpp
-2. libsrtp
-3. openh264
-4. usrsctp
-5. gstreamer
-6. gst-plugins-base
-7. gst-plugins-good
-8. gst-plugins-bad
-9. gst-plugins-ugly
-10. gst-libav
-11. openwebrtc-gst-plugins
-12. libnice
+**Extra Repositories**
 
-**KMS Main + Extra**:
+KMS is distributed with some basic GStreamer pipeline elements, but other elements are available in form of modules.
+These modules are *demos* of what third party modules could be written and integrated into Kurento. These are just for instructional purposes, and shouldn't be used in production servers.
 
-1. kurento-module-creator
-2. kms-cmake-utils
-3. kms-jsonrpc
-4. kms-core
-5. kms-elements
-6. kms-filters
-7. kurento-media-server
-8. kms-chroma
-9. kms-crowddetector
-10. kms-datachannelexample
-11. kms-platedetector
-12. kms-pointerdetector
+- `kms-chroma <https://github.com/Kurento/kms-chroma>`__
+- `kms-crowddetector <https://github.com/Kurento/kms-crowddetector>`__
+- `kms-platedetector <https://github.com/Kurento/kms-platedetector>`__
+- `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`__
+
+**Omni-Build Repository**
+
+This repository is an special project because it is designed to build all KMS Main Repositories from a single entry point. This repo brings the other KMS Main Repositories as Git submodules: it makes KMS development easier because if you build this project, you don’t need to manually install the libraries of the other KMS Main Repositories. However, all other development and support libraries must still be installed manually.
+
+- `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__
+
+**Client Repositories**
+
+Application Servers can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their support tools made available in their respective repositories.
+
+- `kurento-client-js <https://github.com/Kurento/kurento-client-js>`__ (Node.js Application Servers, browser JavaScript)
+- `kurento-java <https://github.com/Kurento/kurento-java>`__ (Java Application Servers)
+
+**Tutorial or demo repositories**
+
+There are several repositories that contain sample code for developers that use Kurento or want to develop a custom Kurento module. Currently these are:
+
+- `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`__
+- `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__
+- `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`__
+- `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__
+- `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
+- `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
+
+A KMS developer must know how to work with KMS Fork and Main Repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at theK MS Main Repositories, while it's unusual to make changes in Fork Repositories except for updating their upstream versions.
 
 
 
@@ -160,7 +115,7 @@ KMS is a C/C++ project developed with an Ubuntu system as main target, which mea
 Libraries
 ---------
 
-It is not a trivial task to configure the compiler to use a set of libraries because a library can be composed of several *.so* and *.h* files. To make this task easier, `pkg-config <https://www.freedesktop.org/wiki/Software/pkg-config>`__ is a helper tool used when compiling applications and libraries. In short: when a library is installed in a system, it registers itself in the ``pkg-config`` database with all its required files, which allows to later query those values in order to compile with the library in question.
+It is not a trivial task to configure the compiler to use a set of libraries because a library can be composed of several *.so* and *.h* files. To make this task easier, `pkg-config <https://www.freedesktop.org/wiki/Software/pkg-config>`__ is used when compiling programs and libraries. In short: when a library is installed in a system, it registers itself in the ``pkg-config`` database with all its required files, which allows to later query those values in order to compile with the library in question.
 
 For example, if you want to compile a C program which depends on GLib 2.0, you can run:
 
@@ -177,7 +132,7 @@ In a Debian/Ubuntu system, development libraries are distributed as Debian packa
 
 When a library is packaged, the result usually consists of several packages. These are some pointers on the most common naming conventions for packages, although they are not always strictly enforced by Debian or Ubuntu maintainers:
 
-- **bin package**: Package containing the binary files for the library itself. Applications are linked against them during development, and they are also loaded in production. The package name starts with *lib*, followed by the name of the library.
+- **bin package**: Package containing the binary files for the library itself. Programs are linked against them during development, and they are also loaded in production. The package name starts with *lib*, followed by the name of the library.
 - **dev package**: Contains files needed to link with the library during development. The package name starts with *lib* and ends with *-dev*. For example: *libboost-dev* or *libglib2.0-dev*.
 - **dbg package**: Contains debug symbols to ease error debugging during development. The package name starts with *lib* and ends with *-dbg*. For example: *libboost-dbg*.
 - **doc package**: Contains documentation for the library. Used in development. The package name starts with *lib* and ends with *-doc*. For example: *libboost-doc*.
@@ -196,58 +151,26 @@ To specify a dependency it is necessary to know how to configure this library in
 
 
 
-Working with KMS sources
-========================
+.. _dev-sources:
 
-KMS uses CMake to build KMS Main Repositories. Fork repositories contain its own build system (typically Autotools or native Make). This depends on the preferences of the original creators of each project.
-
-KMS Main Repositories declare libraries in CMake, assuming they are or can be installed in the system. For example, **kms-elements** depends on the following items:
-
-- **kms-core**, a library located in a Main Repository.
-- **libnice**, a library located in a Fork Repository.
-- **ffmpeg**, a public library.
-
-Thus *kms-core*, *ffmpeg* and *libnice* libraries have to be installed in the system before building the project **kms-elements**.
-
-In KMS, we have developed a custom CMake command to search a library in several places. This command is called ``generic_find`` and it is located in the *kms-cmake-utils* repository.
-
-**kms-omni-build** is an special project because it is designed to build all KMS Main Repositories from a single entry point. This repo brings the other KMS Main Repositories as Git submodules: it makes KMS development easier because if you build this project, you don't need to manually install the libraries of the other KMS Main Repositories. However, all other development and support libraries must still be installed manually.
-
-To build KMS from sources you first have to decide on which part you want to work:
-
-- **Main KMS development**: You want to make code changes in Main Repositories and test them in your development machine, to see how the changes affect KMS. Or maybe you want to debug KMS with GDB or analyze it with Valgrind.
-
-- **Change a forked library**: You want to update a Fork Repository and check if all is working as expected. In this case, you have two options:
-
-  - Change code in the current fork.
-  - Synchronize the fork with a new release of forked library.
-
-- **Generate Debian packages**: To distribute KMS it is necessary to generate Debian packages from KMS Fork and Main Repositories.
-
-As you can see, there are a lot of possibilities. In the next sections we'll explain the best way to build KMS in these different contexts.
-
-
-
-.. _dev-kms:
-
-Developing KMS
---------------
+Building from sources
+=====================
 
 To work directly with KMS source code, or to just build KMS from sources, the easiest way is using the module **kms-omni-build**. Just follow these steps:
 
-- Add the Kurento repository to your system configuration.
-- Install development packages: tools like Git, GCC, CMake, etc., and KMS development libraries.
-- Clone **kms-omni-build**.
-- Build with CMake and Make.
-- Run the newly compiled KMS.
-- Run KMS tests.
+1. Add the Kurento repository to your system configuration.
+2. Install development packages: tools like Git, GCC, CMake, etc., and KMS development libraries.
+3. Clone **kms-omni-build**.
+4. Build with CMake and Make.
+5. Run the newly compiled KMS.
+6. Run KMS tests.
 
 
 
 .. _dev-repository:
 
 Add Kurento repository
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 These steps are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
@@ -273,7 +196,7 @@ These steps are pretty much the same as those explained in :ref:`installation-lo
 
 
 Install development packages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 Run:
 
@@ -286,7 +209,7 @@ Run:
       debhelper
       default-jdk
       gdb
-      git
+      git openssh-client
       maven
       pkg-config
       wget
@@ -339,7 +262,7 @@ Run:
 
 
 Download KMS
-~~~~~~~~~~~~
+------------
 
 Run:
 
@@ -367,7 +290,7 @@ You can also set ``REF`` to any other branch or tag, such as ``REF=6.7.1``. This
 
 
 Build KMS
-~~~~~~~~~
+---------
 
 Run:
 
@@ -412,7 +335,7 @@ Lastly, it's possible to run either Unit tests or Valgrind tests, by using diffe
 
 
 Launch KMS
-~~~~~~~~~~
+----------
 
 Run:
 
@@ -441,8 +364,8 @@ https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-run
 
 
 
-Build and run KMS unit tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+KMS Unit Tests
+--------------
 
 KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). To build and run all tests, change the last one of the build commands from ``make`` to ``make check``. All available tests will run, and a summary report will be shown at the end.
 
@@ -481,7 +404,7 @@ If you want to analyze memory usage with Valgrind, use ``make {TestName}.valgrin
 .. _dev-clean:
 
 Clean up your system
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command and, for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option ``--yes`` (which makes the process automatic and unattended), so it should be fairly safe to use. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
 
@@ -517,14 +440,14 @@ Run:
 
 
 Working on a forked library
----------------------------
+===========================
 
 These are the two typical workflows used to work with fork libraries:
 
 
 
 Full cycle
-~~~~~~~~~~
+----------
 
 This workflow has the easiest and fastest setup, however it also is the slowest one. To make a change, you would edit the code in the library, then build it, generate Debian packages, and lastly install those packages over the ones already installed in your system. It would then be possible to run KMS and see the effect of the changes in the library.
 
@@ -533,7 +456,7 @@ This is of course an extremely cumbersome process to follow during anything more
 
 
 In-place linking
-~~~~~~~~~~~~~~~~
+----------------
 
 The other work method consists on changing the system library path so it points to the working copy where the fork library is being modified. Typically, this involves building the fork with its specific tool (which often is Automake), changing the environment variable ``LD_LIBRARY_PATH``, and running KMS with such configuration that any required shared libraries will load the modified version instead of the one installed in the system.
 
@@ -543,8 +466,8 @@ This allows for the fastest development cycle, however the specific instructions
 
 
 
-Generating Debian packages
---------------------------
+Debian packaging
+================
 
 You can easily create Debian packages for KMS itself and for any of the forked libraries. Packages are generated by a Python script called *compile_project.py*, which can be found in the `adm-scripts <https://github.com/Kurento/adm-scripts>`__ repository, and you can use it to generate Debian packages locally in your machine. Versions number of all packages are timestamped, so a developer is able to know explicitly which version of each package has been installed at any given time.
 
@@ -564,7 +487,7 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
         curl
         fakeroot
         flex
-        git
+        git openssh-client
         libcommons-validator-java
         python
         python-apt
@@ -619,7 +542,7 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
 .. _dev-depresolution:
 
 Dependency resolution: to repo or not to repo
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 
 The script *compile_project.py* is able to resolve all dependencies for any given module. For each dependency, the following process will happen:
 
@@ -638,7 +561,7 @@ This can have a very big impact on the amount of modules that need to be built t
 
 
 Package generation script
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 This is the full procedure followed by the *compile_project.py* script:
 
@@ -651,7 +574,7 @@ This is the full procedure followed by the *compile_project.py* script:
 
 
 Building KMS on Ubuntu 14.04 (Trusty)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 KMS cannot be built in Trusty without adding the Kurento Packages Repository, because some of the system development libraries are required in a more recent version than the one available by default in the official Ubuntu Trusty repos. This is a non exhaustive list of those required libraries, compared with the versions available in Xenial and in the Kurento repo:
 
@@ -675,14 +598,12 @@ libnice           libgupnp-igd-1.0-dev (>= 0.2.4)  0.2.2           0.2.4        
 
 This list of dependencies means that it is not possible to build the whole KMS on Ubuntu Trusty, at least not without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with ``apt-get``.
 
-In case that we want to force building the whole KMS libraries and modules -*as opposed to downloading them from the repo*- the solution to this problem is to clone each module separately, and manually build them one by one, in the order given by their :ref:`dev-dependency-list`.
+In case that we want to force building the whole KMS libraries and modules -*as opposed to downloading them from the repo*- the solution to this problem is to clone each module separately, and manually build them one by one, in the order given by their :ref:`dev-code-repos`.
 
 
 
 How-To
 ======
-
-
 
 How to add or update external libraries
 ---------------------------------------
