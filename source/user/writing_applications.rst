@@ -13,7 +13,7 @@ Kurento can be used following the architectural principles of the web. That is, 
 
 At the highest abstraction level, web applications have an architecture comprised of three different layers:
 
-- **Presentation layer (client side)**: Here we can find all the application code which is in charge of interacting with end users so that information is represented in a comprehensive way. This usually consists on HTML pages.
+- **Presentation layer (client side)**: Here we can find all the application code which is in charge of interacting with end users so that information is represented in a comprehensive way. This usually consists on HTML pages with JavaScript code.
 
 - **Application logic (server side)**: This layer is in charge of implementing the specific functions executed by the application.
 
@@ -71,7 +71,7 @@ On the **left side**, we have the Kurento Media Server, which implements the med
 Communicating client, server and Kurento
 ----------------------------------------
 
-As can be observed in the figure above, a Kurento application involves interactions
+As can be observed in the figure below, a Kurento application involves interactions
 among three main modules:
 
 - **Client Application**: Involves the native multimedia capabilities of the client platform plus the specific client-side application logic. It can use Kurento Clients designed for client platforms (for example, Kurento JavaScript Client).
@@ -137,6 +137,8 @@ As an example, imagine that you want to create a WebRTC application recording th
    *Example pipeline for a WebRTC session. A WebRtcEndpoint is connected to a RecorderEndpoint storing the received media stream and to an Augmented Reality filter, which feeds its output media stream back to the client. As a result, the end user will receive its own image filtered (e.g. with a hat added onto her head) and the stream will be recorded and made available for further recovery into a repository (e.g. a file).*
 
 
+
+.. _writing-app-pipelines:
 
 Media Plane
 ===========

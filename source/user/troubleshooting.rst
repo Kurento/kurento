@@ -140,7 +140,7 @@ Now that file names and line numbers are present in the stack trace, a developer
 
 
 
-Media Server disconnects from Client Application
+Media Server disconnects from Application Server
 ------------------------------------------------
 
 E.g. Kurento keeps disconnecting every 30 minutes on high load peek time.
@@ -236,9 +236,9 @@ Also these conditions apply:
 - Packages *openh264-gst-plugins-bad-1.5* and *openh264* are already installed.
 - The file */usr/lib/x86_64-linux-gnu/libopenh264.so* is a broken link to the unexisting file */usr/lib/x86_64-linux-gnu/libopenh264.so.0*.
 
-**Reason**: The package *openh264* didn't install correctly. This package is just a wrapper that needs Internet connectivity during its installation stage, to download some binary blob files from this URL: http://ciscobinary.openh264.org/libopenh264-1.4.0-linux64.so.bz2
+**Reason**: The package *openh264* didn't install correctly. This package is just a wrapper that needs Internet connectivity during its installation stage, to download a binary blob file from this URL: http://ciscobinary.openh264.org/libopenh264-1.4.0-linux64.so.bz2
 
-If the machine is disconnected during the actual installation of this package, the download will fail silently (albeit some error messages will be seen on the standard output).
+If the machine is disconnected during the actual installation of this package, the download will fail silently with some error messages printed on the standard output, but the installation will succeed.
 
 **Solution**: Ensure that the machine has access to the required URL, and try reinstalling the package:
 
@@ -268,13 +268,13 @@ If you see these messages, it's a clear indication that STUN or TURN are not pro
 Application Client
 ==================
 
-These are some common errors found to affect Kurento client applications.
+These are some common errors found to affect Kurento applications:
 
 
 KMS is not running
 ------------------
 
-Usually, the Kurento Client library is directed to connect with an instance of KMS that the developer expects will be running in some remote server. If there is no instance of KMS running at the provided URL, the Kurento Client library will raise an exception which **the client application should catch** and handle accordingly.
+Usually, the Kurento Client library is directed to connect with an instance of KMS that the developer expects will be running in some remote server. If there is no instance of KMS running at the provided URL, the Kurento Client library will raise an exception which **the Application Server should catch** and handle accordingly.
 
 This is a sample of what the console output will look like, with the logging level set to DEBUG:
 
@@ -320,7 +320,7 @@ As opposed to that, the console output for when a connection is successfully don
 KMS became unresponsive (due to network error or crash)
 -------------------------------------------------------
 
-The Kurento Client library is programmed to start a retry-connect process whenever the other side of the RPC channel -ie. the KMS instance- becomes unresponsive. An error exception will raise, which again **the client application should handle**, and then the library will automatically start trying to reconnect with KMS.
+The Kurento Client library is programmed to start a retry-connect process whenever the other side of the RPC channel -ie. the KMS instance- becomes unresponsive. An error exception will raise, which again **the Application Server should handle**, and then the library will automatically start trying to reconnect with KMS.
 
 This is how this process would look like. In this example, KMS was restarted so the Kurento Client library lost connectivity with KMS for a moment, but then it was able con reconnect and continue working normally:
 

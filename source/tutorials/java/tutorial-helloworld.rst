@@ -187,7 +187,7 @@ The ``start()`` method performs the following actions:
 
       webRtcEp.connect(webRtcEp);
 
-- **Create event listeners**. All objects managed by Kurento have the ability to emit several types of events, as explained in :doc:`/features/events`. The client applications can listen for them in order to have more insight about what is going on inside the processing logic of the media server. It is a good practice to listen for all possible events, so the client application has as much information as possible.
+- **Create event listeners**. All objects managed by Kurento have the ability to emit several types of events, as explained in :doc:`/features/events`. Application Servers can listen for them in order to have more insight about what is going on inside the processing logic of the media server. It is a good practice to listen for all possible events, so the client application has as much information as possible.
 
   .. code-block:: java
 
