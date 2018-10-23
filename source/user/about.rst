@@ -4,14 +4,22 @@ About Kurento and WebRTC
 
 :term:`Kurento` is a :term:`WebRTC` Media Server and a set of client APIs that simplify the development of advanced video applications for web and smartphone platforms. Its features include group communications, transcoding, recording, mixing, broadcasting and routing of audiovisual flows.
 
-The code is open source, released under the terms of `Apache License Version 2.0`_ and `available on GitHub`_.
+Kurento offers a multimedia framework that eases the task of building multimedia applications with the following features:
+
+- **Dynamic WebRTC Media pipelines**: Kurento allows custom :ref:`media pipelines <writing-app-pipelines>` connected to WebRTC peers like web browsers and mobile apps. These media pipelines are based on composable elements such as players, recorders, mixers, etc. that can be mix-and-matched, activated, or deactivated at any point in time, even when the media is already flowing.
+
+- **Client/Server Architecture**: Apps developed with Kurento follow a client/server architecture. Kurento Media Server (KMS) is the server and offers a WebSocket interface implementing the Kurento Protocol, which allows Client Applications to define pipeline topologies.
+
+- **Java and JavaScript Client Applications**: The typical use case of a KMS deployment consists of a three-layer architecture, where the user's browser interacts with the KMS server by means of an intermediate Client Application. There are several official Kurento Client Libraries, supporting the use of Java and JavaScript for the Client Applications. Clients for other languages can be easily implemented following the WebSocket protocol.
+
+- **Third party Modules**: The Kurento Media Server has an extensible architecture based on plugins, which allows third parties to implement modules that can be added to their media pipelines. This allows integration of media processing algorithms to any WebRTC application, like integrating Computer Vision, Augmented Reality, video indexing, and speech analysis. All is needed is to create a new Kurento element, and use it in any already existing media pipeline.
+
+This document contains a high level explanation of how to become a KMS developer. Development of *Kurento Client Applications* is out of the scope for this document, and won't be explained here.
+
+The code of Kurento Media Server is open source, released under the terms of `Apache License Version 2.0`_ and `available on GitHub`_.
 
 .. _Apache License Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
 .. _available on GitHub: https://github.com/Kurento
-
-Kurento follows an architecture based on composable modules that can be mix-and-matched, activated, or deactivated at any point in time. Developers can create additional modules to add new functionalities that will be able to be plugged-in dynamically.
-
-With Kurento, it's an easy task to add third-party media processing algorithms to any WebRTC application, like integrating Computer Vision, Augmented Reality, video indexing, and speech analysis. For example, features such as speech recognition, sentiment analysis or face recognition can be developed by specialized teams, and then seamlessly added to Kurento as new modules.
 
 
 
