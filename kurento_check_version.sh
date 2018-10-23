@@ -66,8 +66,8 @@ if [ -f debian/changelog ]; then
   #ver=$(head -1 debian/changelog | sed -e "s@.* (\(.*\)) .*@\1@")
   CHG_VER="$(dpkg-parsechangelog --show-field Version)"
   if [[ "${CHG_VER%%-*}" != "${PROJECT_VERSION}" ]]; then
-    echo "[kurento_check_version] ERROR: Version in changelog is different to current version"
-    exit 1
+    echo "[kurento_check_version] WARNING Version in changelog is different to current version"
+    #exit 1
   fi
 fi
 
