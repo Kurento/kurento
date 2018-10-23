@@ -46,18 +46,18 @@ ElementDisconnected
 MediaFlowInStateChange
 ----------------------
 
-- State = *Flowing*: Data is arriving from the KMS Pipeline, and **flowing into** the Endpoint. Technically, this means that there are GStreamer Buffers flowing from the Pipeline to the Endpoint's ``sink`` pad. For example, with a Recorder element this event would fire when media arrives from the Pipeline to be written to disk.
+- State = *Flowing*: Data is arriving from the KMS Pipeline, and **flowing into** the Element. Technically, this means that there are GStreamer Buffers flowing from the Pipeline to the Element's ``sink`` pad. For example, with a Recorder element this event would fire when media arrives from the Pipeline to be written to disk.
 
-- State = *NotFlowing*: The element is not receiving any input data from the Pipeline.
+- State = *NotFlowing*: The Element is not receiving any input data from the Pipeline.
 
 
 
 MediaFlowOutStateChange
 -----------------------
 
-- State = *Flowing*: There is data **flowing out** from the Endpoint towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Endpoint's ``src`` pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
+- State = *Flowing*: There is data **flowing out** from the Element towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Element's ``src`` pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
 
-- State = *NotFlowing*: The element is not sending any output data to the Pipeline.
+- State = *NotFlowing*: The Element is not sending any output data to the Pipeline.
 
 
 
