@@ -2,7 +2,9 @@
 Debug Logging
 =============
 
-Kurento Media Server generates log files that are stored in ``/var/log/kurento-media-server/``. These files are named as follows:
+When running Kurento Media Server manually with ``/usr/bin/kurento-media-server``, all logging messages are by default printed to standard out (*stdout*).
+
+The KMS native packages modify this behavior to ensure logging information is placed in a more conventional location for the platform. By default logs should be made available in */var/log/kurento-media-server/*, unless customized in */etc/default/kurento-media-server* (for Debian/Ubuntu packages). These files are named as follows:
 
 .. code-block:: text
 
@@ -12,17 +14,17 @@ Kurento Media Server generates log files that are stored in ``/var/log/kurento-m
 - ``{LogNumber}``: Log file number.
 - ``{PID}``: Process Identifier of *kurento-media-sever*.
 
-When KMS starts correctly, a log file such as this one would be created:
+When the KMS service starts correctly, a log file such as this one will be created:
 
 .. code-block:: text
 
    2018-06-14T194426.00000.pid13006.log
 
-Besides normal log files, an ``errors.log`` file stores error messages logged by third-party libraries. Stack traces will also be printed to this file, in case KMS crashes.
+Besides normal log files, an ``errors.log`` file stores error messages and stack traces, in case KMS crashes.
 
 .. note::
 
-   Log files in this folder are rotated, and old files will get eventually deleted when new ones are created. This helps with preventing that log files might end up filling all available disk space.
+   Log files in this folder are rotated, and old files will get eventually deleted when new ones are created. This helps with preventing that all available disk space ends up filled with logs.
 
 Each line in a log file has a fixed structure:
 
@@ -40,7 +42,7 @@ Each line in a log file has a fixed structure:
 - ``{Object}``: [Optional] Name of the object that issued the message, if one was specified for the log message. For example: *<kmswebrtcendpoint0>*, *<fakesink1>*, *<audiotestsrc0:src>*, etc.
 - ``{Message}``: The actual log message.
 
-For example, when KMS starts correctly, a message such as this one would be printed to the log file:
+For example, when KMS starts correctly, a message like this will be printed:
 
 .. code-block:: text
 
@@ -103,7 +105,7 @@ The **default suggested level** is what KMS sets automatically when it is starte
 
   .. code-block:: text
 
-     export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4"
+     export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
 From there, one can add these other values which will expand from the default one:
 
