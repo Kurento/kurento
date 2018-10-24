@@ -18,15 +18,10 @@ echo "##################### EXECUTE: kurento_get_version.sh ####################
 # error message. Don't print any debug messages, and if you do, make sure they
 # are redirected to stderr.
 
-if [ -f VERSION ]
-then
-  echo "Getting version from VERSION file" >&2
-  PROJECT_VERSION="$(tr -d '[:space:]' < VERSION)"
-elif [ -f CMakeLists.txt ]
+if [ -f CMakeLists.txt ]
 then
   echo "Getting version from CMakeLists.txt" >&2
-  mkdir check_version
-  cd check_version
+  { mkdir check_version && cd check_version; } || exit 1
   echo "@PROJECT_VERSION@" >version.txt.in
   echo 'configure_file(${CMAKE_BINARY_DIR}/version.txt.in version.txt)' >>../CMakeLists.txt
   cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE >/dev/null || {
@@ -61,10 +56,12 @@ elif [ -f package.json ]
 then
   echo "Getting version from package.json" >&2
   PROJECT_VERSION="$(grep version package.json | cut -d ":" -f 2 | cut -d "\"" -f 2)"
-elif [ -f Makefile ]
+elif [ -f VERSIONS.conf.sh ]
 then
-  echo "Getting version from Makefile" >&2
-  PROJECT_VERSION="$(grep "DOC_VERSION =" Makefile | cut -d "=" -f 2)"
+  echo "Getting version from VERSIONS.conf.sh" >&2
+  # shellcheck source=VERSIONS.conf.sh
+  source VERSIONS.conf.sh
+  PROJECT_VERSION="${PROJECT_VERSIONS[VERSION_DOC]}"
 elif [ "$(find . -regex '.*/package.json' | sed -n 1p)" ]
 then
   echo "Getting version from package.json recursing into folders" >&2

@@ -42,14 +42,14 @@ if [[ ${PROJECT_VERSION} == *-dev ]]; then
   exit 0
 fi
 
-if [[ $(echo $PROJECT_VERSION | grep -o '\.' | wc -l) -gt 2 ]]
+if [[ $(echo "$PROJECT_VERSION" | grep -o '\.' | wc -l) -gt 2 ]]
 then
   echo "[kurento_check_version] Exit: Found more than two dots, should be a configure.ac dev version"
   exit 0
 fi
 
 # Check if all submodules are in a tag
-if [[ ${CHECK_SUBMODULES} == yes ]]; then
+if [[ "${CHECK_SUBMODULES}" == "yes" ]]; then
   git submodule foreach "
     if [ x = \"x\`git tag --contains HEAD | head -1\`\" ]; then
       exit 1
@@ -72,18 +72,16 @@ if [ -f debian/changelog ]; then
 fi
 
 # Check that release version conforms to semver
-kurento_check_semver.sh ${PROJECT_VERSION} || {
+kurento_check_semver.sh "${PROJECT_VERSION}" || {
   echo "[kurento_check_version] ERROR: Command failed: kurento_check_semver"
   exit 1
 }
 
-if [ ${CREATE_TAG} = true ]
-then
+if [[ "${CREATE_TAG}" = "true" ]]; then
   #Create a new tag
   echo "[kurento_check_version] Create tag"
-  tag_name=${PROJECT_VERSION}
-  if git tag ${tag_name}
-  then
+  tag_name="${PROJECT_VERSION}"
+  if git tag "${tag_name}"; then
     echo "[kurento_check_version] Tag created, push to remote"
     git push --tags
   else
