@@ -18,7 +18,7 @@ Media Server crashed
 
 If the Media Server crashes, it will generate an **error log** file. Also, in typical Ubuntu systems, the Linux Kernel will generate a **crash core dump**.
 
-However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to run your breaking test case *after* having installed all ``-dbg`` packages:
+However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to run your breaking test case *after* having installed all debugging packages:
 
 .. code-block:: bash
 
@@ -56,7 +56,7 @@ However, these files won't contain much useful information if the relevant debug
     sudo apt-get update
     sudo apt-get install "${PACKAGES[@]}"
 
-As an example, see what an error log from Kurento looks like after a crash, when debug symbols are NOT installed. This doesn't help much to debug the crash, because there is no source code information in the stack trace:
+As an example, see what an error log from Kurento looks like after a crash, when debug symbols are NOT installed. **This doesn't help** to debug the crash, because there is no source code information in the stack trace:
 
 .. code-block:: text
 
@@ -147,7 +147,7 @@ E.g. Kurento keeps disconnecting every 30 minutes on high load peek time.
 
 Checklist:
 
-- Deploy a properly configured STUN or TURN server. coturn tends to work fine for this, and Kurento has some documentation about how to install and configure it: https://doc-kurento.readthedocs.io/en/latest/user/faq.html#install-coturn-turn-stun-server
+- Deploy a properly configured STUN or TURN server. Coturn tends to work fine for this, and Kurento has some documentation about how to install and configure it: https://doc-kurento.readthedocs.io/en/latest/user/faq.html#install-coturn-turn-stun-server
 
 - Use this WebRTC sample page to test that your STUN/TURN server is working properly: https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
 
@@ -248,12 +248,12 @@ If the machine is disconnected during the actual installation of this package, t
 
 
 
-Missing video or audio streams
+Missing audio or video streams
 ------------------------------
 
-A typical cause for missing streams is that the network topology requires using either STUN or TURN, to overcome the NAT configuration of some intermediate router. If that's the case, the solution is to set up a STUN or a TURN server, and configure its details in the corresponding file, as explained in :ref:`installation-stun-turn`.
+If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a STUN or TURN server, to traverse through the NAT firewall of intermediate routers. Check :ref:`installation-stun-turn`.
 
-There are some logging messages that could indicate a bad configuration of STUN or TURN; these are useful to look for:
+There are some KMS log messages that could indicate a bad configuration of STUN or TURN; these are useful to look for:
 
 .. code-block:: text
 
@@ -265,10 +265,11 @@ If you see these messages, it's a clear indication that STUN or TURN are not pro
 
 
 
-Application Client
+Application Server
 ==================
 
-These are some common errors found to affect Kurento applications:
+These are some common errors found to affect Kurento Application Servers:
+
 
 
 KMS is not running

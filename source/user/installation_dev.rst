@@ -12,7 +12,7 @@ These builds end up being uploaded to *Development* repositories so they can be 
    However, in the other 1% of cases it might include undocumented changes, regressions, bugs or deprecations. It's safer to be conservative and **never** use pre-release builds in a production environment.
 
 .. note::
-   If you are looking to build KMS from the source code, then you should check the section aimed at development of *KMS itself*: :ref:`dev-kms`.
+   If you are looking to build KMS from the source code, then you should check the section aimed at development of *KMS itself*: :ref:`dev-sources`.
 
 
 
