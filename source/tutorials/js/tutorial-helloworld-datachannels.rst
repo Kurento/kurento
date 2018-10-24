@@ -37,7 +37,7 @@ start the HTTP server:
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-hello-world-data-channel
-    git checkout |VERSION|
+    git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
@@ -243,8 +243,8 @@ They are managed using `Bower`:term:.
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "|VERSION|",
-      "kurento-utils": "|VERSION|"
+      "kurento-client": "|VERSION_CLIENT_JS|",
+      "kurento-utils": "|VERSION_UTILS_JS|"
    }
 
 .. note::

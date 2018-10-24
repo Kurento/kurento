@@ -19,7 +19,8 @@ How to use it
 =============
 
 * **Minified file** - Download the file from
-  `here <http://builds.kurento.org/release/|VERSION|/js/kurento-utils.min.js>`__.
+  `here <http://builds.openvidu.io/release/|VERSION_UTILS_JS|/js/kurento-utils.min.js>`__.
+
 
 * **NPM** - Install and use library in your NodeJS files.
 

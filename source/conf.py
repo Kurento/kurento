@@ -65,21 +65,7 @@ author = u'Kurento'
 # built documents.
 #
 # The short X.Y version.
-version = None
-version_files = ['./VERSION', '../VERSION']
-version_paths = [os.path.abspath(f) for f in version_files]  # Make absolute
-for version_path in version_paths:
-    try:
-        with open(version_path, 'r') as f:
-            print "Found VERSION file: '{}'".format(version_path)
-            version = f.read().strip()
-            break
-    except IOError as err:
-        print "Failed reading '{}': {}".format(version_path, err.strerror)
-
-if version is None:
-    print "ERROR reading VERSION: File not found"
-    exit(1)
+version = '|VERSION_DOC|'
 
 # The full version, including alpha/beta/rc tags.
 release = version

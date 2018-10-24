@@ -22,19 +22,12 @@ SOURCEDIR   := source
 BUILDDIR    := build
 WORKDIR     := $(CURDIR)/$(BUILDDIR)/$(SOURCEDIR)
 
-# Get the version number
-VERSION := $(strip $(shell cat VERSION))
-# FIXME: '.SHELLSTATUS' requires Make >= 4.2 (Xenial has 4.1)
-# ifneq ($(.SHELLSTATUS),0)
-# $(error Cannot read 'VERSION', make sure it exists)
-# endif
-
-# Put it first so that "make" without argument is like "make help".
+# Put this target first so that "make" without argument is like "make help"
 help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	@echo "  langdoc     to make JavaDocs and JsDocs of the Kurento Clients"
 	@echo "  dist        to make <langdoc html epub latexpdf> and then pack"
-	@echo "              all resulting files as kurento-doc-$(VERSION).tgz"
+	@echo "              all resulting files as kurento-doc-|VERSION_DOC|.tgz"
 	@echo "  readthedocs to make <langdoc> and then copy the results to the"
 	@echo "              Sphinx theme's static folder"
 	@echo ""
@@ -54,9 +47,6 @@ help:
 init-workdir:
 	mkdir -p $(WORKDIR)
 	rsync -a $(SOURCEDIR)/ $(WORKDIR)
-	rsync -a VERSION $(WORKDIR)
-	# Replace all instances of '|VERSION|' with the appropriate value
-	grep -rlZ "|VERSION|" $(WORKDIR) | xargs -0rL1 sed -i -e "s/|VERSION|/$(VERSION)/g"
 
 langdoc:
 	echo "#### 'langdoc' target BEGIN ####"
@@ -74,7 +64,7 @@ langdoc:
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-java.git \
 		&& cd kurento-java
-	git checkout $(VERSION) || echo "Using master branch"
+	git checkout |VERSION_CLIENT_JAVA| || echo "Using master branch"
 	cd kurento-client || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
 	mvn --batch-mode --quiet clean package \
 		-DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
@@ -88,7 +78,7 @@ langdoc:
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-client-js.git \
 		&& cd kurento-client-js
-	git checkout $(VERSION) || echo "Using master branch"
+	git checkout |VERSION_CLIENT_JS| || echo "Using master branch"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
@@ -98,7 +88,7 @@ langdoc:
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-utils-js.git \
 		&& cd kurento-utils-js
-	git checkout $(VERSION) || echo "Using master branch"
+	git checkout |VERSION_UTILS_JS| || echo "Using master branch"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
@@ -107,7 +97,7 @@ langdoc:
 	echo "#### 'langdoc' target END ####"
 
 dist: langdoc html epub latexpdf
-	$(eval DISTDIR := $(BUILDDIR)/dist/kurento-doc-$(VERSION))
+	$(eval DISTDIR := $(BUILDDIR)/dist/kurento-doc-|VERSION_DOC|)
 	mkdir -p $(DISTDIR)
 	rsync -a $(BUILDDIR)/html $(BUILDDIR)/epub/Kurento.epub \
 		$(BUILDDIR)/latex/Kurento.pdf $(DISTDIR)
@@ -119,7 +109,7 @@ ci-readthedocs: init-workdir langdoc
 	rsync -a $(WORKDIR)/ $(SOURCEDIR)
 	rsync -a $(BUILDDIR)/langdoc $(SOURCEDIR)
 
-# Comment this target to disable generation of JavaDoc & JsDoc
+# Comment this target to disable unconditional generation of JavaDoc & JsDoc
 #html: langdoc
 
 # Catch-all target: route all unknown targets to Sphinx using the new
