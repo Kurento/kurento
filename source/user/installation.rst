@@ -3,11 +3,13 @@
 Installation Guide
 ==================
 
-**Kurento Media Server (KMS)** can be made available through two different methods: either a local native installation, or an EC2 instance in the `Amazon Web Services`_ (AWS) cloud service.
+**Kurento Media Server (KMS)** can be installed in multiple ways
 
-Using AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
+- Using an EC2 instance in the `Amazon Web Services`_ (AWS) cloud service. Using AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
 
-On the other hand, the local installation will allow to have total control of the installation process. This method makes use of public package repositories that hold the latest released versions of KMS. Besides that, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT`. This document includes some details about that topic.
+- Using the Docker images provided by the Kurento team. Docker images allow to run Kurento in any host machine, so for example it's possible to run KMS on top of a Fedora or CentOS system. In theory it could even be possible to run under Windows, but so far that possibility hasn't been explored, so you would be at your own risk.
+
+- A local installation with ``apt-get install``, in any Ubuntu machine. This method allows to have total control of the installation process. Besides installing KMS, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT` firewall.
 
 If you want to try pre-release builds of KMS, then head to the section :doc:`/user/installation_dev`.
 
@@ -54,6 +56,15 @@ Follow these steps to use it:
 
 
 
+.. _installation-docker:
+
+Docker image
+============
+
+Kurento's Docker Hub contains images built from each KMS Release. Just head to the `kurento-media-server image page <https://hub.docker.com/r/kurento/kurento-media-server/>`__, and follow the instructions you'll find there.
+
+
+
 .. _installation-local:
 
 Local Installation
@@ -63,9 +74,13 @@ With this method, you will install KMS from the native Ubuntu package repositori
 
 KMS has explicit support for two Long-Term Support (*LTS*) distributions of Ubuntu: **Ubuntu 14.04 (Trusty)** and **Ubuntu 16.04 (Xenial)**. Only the 64-bits editions are supported.
 
-Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if required.
+Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if strictly required.
 
-1. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these commands:
+.. warning::
+
+   **Ubuntu 14.04 (Trusty) is in the path of deprecation** and will stop receiving updates in the end of 2018.
+
+1. Define what version of Ubuntu is in use. Open a terminal and copy **only one** of these commands:
 
    .. code-block:: bash
 
@@ -105,6 +120,8 @@ The server includes service files which integrate with the Ubuntu init system, s
 
    sudo service kurento-media-server start
    sudo service kurento-media-server stop
+
+Log messages from KMS will be available in ``/var/log/kurento-media-server/``. For more details about KMS logs, check :doc:`/features/logging`.
 
 
 
