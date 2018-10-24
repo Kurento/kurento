@@ -7,7 +7,7 @@
 
 Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 
-[Kurento]: https://kurento.org
+[Kurento]: https://www.kurento.org/
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [Apache 2.0 License]: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -26,7 +26,7 @@ Kurento Documentation. Made with [Sphinx] and [Read The Docs].
 About Kurento
 =============
 
-Kurento is an open source software project providing a platform suitable for creating modular applications with advanced real-time communication capabilities. For knowing more about Kurento, please visit the Kurento project website: https://www.kurento.org.
+Kurento is an open source software project providing a platform suitable for creating modular applications with advanced real-time communication capabilities. For knowing more about Kurento, please visit the Kurento project website: https://www.kurento.org/.
 
 Kurento is part of [FIWARE]. For further information on the relationship of FIWARE and Kurento check the [Kurento FIWARE Catalog Entry]. Kurento is also part of the [NUBOMEDIA] research initiative.
 
