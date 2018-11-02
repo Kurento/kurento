@@ -7,7 +7,7 @@ Frequently Asked Questions
 When is STUN needed?
 ====================
 
-**STUN is needed for every peer behind a NAT**. All NAT-ed clients need to open their own NAT ports, doing :term:`NAT traversal` by using a STUN server that is outside of the NAT.
+**STUN is needed for every peer behind a NAT**. All NAT-ed peers need to open their own NAT ports, doing :term:`NAT traversal` by using a STUN server that is *outside of the NAT*.
 
 Let's see this with an example: The typical installation scenario for Kurento Media Server is to have a strict separation between Application Server and client. KMS and Application Server are running in a cloud machine **without any NAT** or port restriction on incoming connections, while a browser client runs from any (possibly restricted) network that forbids incoming connections on any port that hasn't been "opened" in advance. The client may communicate with the Application Server for signaling purposes, but at the end of the day the bulk of the communication is done between the WebRTC engines of the browser and KMS.
 
@@ -21,7 +21,7 @@ In scenarios such as this one, the client is able to send data to KMS because it
    :align:  center
    :alt:    NAT client with STUN
 
-This procedure is called :term:`ICE`. Note that in reality you *can* also deploy KMS behind a NAT firewall, as long as KMS itself is also configured to open its own NAT ports by following the same procedure.
+This procedure is called :term:`ICE`. Note that in reality you *can* also deploy KMS behind a NAT firewall, as long as KMS itself is also configured to open its own NAT ports by following the same procedure (again, with a STUN server that is outside of the NAT).
 
 .. note::
 
