@@ -130,13 +130,15 @@ Log messages from KMS will be available in ``/var/log/kurento-media-server/``. F
 STUN and TURN servers
 =====================
 
-If Kurento Media Server or its Application Server are located behind a :term:`NAT` (e.g. in any cloud provider), you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
+If Kurento Media Server, its Application Server, or any of the clients are located behind a :term:`NAT`, you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
 
 Apart from that, you need to open all UDP ports in your system configuration, as STUN will use any random port from the whole [0-65535] range.
 
 .. note::
 
    The features provided by TURN are a superset of those provided by STUN. This means that *you don't need to configure a STUN server if you are already using a TURN server*.
+
+For more information about why and when STUN/TURN is needed, check out the FAQ: :ref:`faq-stun`
 
 
 
