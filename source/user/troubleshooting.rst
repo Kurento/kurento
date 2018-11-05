@@ -27,14 +27,14 @@ However, these files won't contain much useful information if the relevant debug
       libglib2.0-0-dbg
       libssl1.0.0-dbg
 
-      # Kurento external libraries
+      # Kurento forked libraries
       gstreamer1.5-plugins-base-dbg
       gstreamer1.5-plugins-good-dbg
       gstreamer1.5-plugins-ugly-dbg
       gstreamer1.5-plugins-bad-dbg
       gstreamer1.5-libav-dbg
       libgstreamer1.5-0-dbg
-      libnice-dbg
+      libnice10-dbgsym
       libsrtp1-dbg
       openwebrtc-gst-plugins-dbg
       kmsjsoncpp-dbg
