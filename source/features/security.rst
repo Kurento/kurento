@@ -15,13 +15,13 @@ for further information about this issue.
 
       Keep in mind that serving your application through HTTPS, forces you to use WebSockets Secure (WSS) if you are using websockets to control your application server.
 
-Securing client applications
+Securing Application Servers
 ============================
 
 .. _features-security-java-https:
 
-Configure Java applications to use HTTPS
-----------------------------------------
+Configure a Java server to use HTTPS
+------------------------------------
 
 
 * The application needs a certificate in order to enable HTTPS:
@@ -67,8 +67,8 @@ Configure Java applications to use HTTPS
 
 
 
-Configure Node applications to use HTTPS
-----------------------------------------
+Configure a Node server to use HTTPS
+------------------------------------
 
 * The application requires a valid SSL certificate in order to enable HTTPS:
 
