@@ -41,10 +41,10 @@
 #/
 #/    Apply the provided timestamp instead of using the date and time this
 #/    script is being run.
-#/    <Timestamp> can be in any format accepted by the `date` command,
-#/    for example in ISO 8601 format: "2018-12-31T23:58:59".
 #/
 #/    Optional. Default: Current timestamp, as given by `date +%Y%m%d%H%M%S`.
+#/    <Timestamp> must be a decimal number. Ideally, it represents some date
+#     and time when the build was done. It can also be any arbitrary number.
 #/
 #/ Dependency tree:
 #/
@@ -113,7 +113,7 @@ case "${1-}" in
         ;;
     --timestamp)
         if [[ -n "${2-}" ]]; then
-            PARAM_TIMESTAMP="$(date --date="$2" +%Y%m%d%H%M%S)"
+            PARAM_TIMESTAMP="$2"
             shift
         else
             log "ERROR: Missing <Timestamp>"
