@@ -42,9 +42,11 @@
 #/    Apply the provided timestamp instead of using the date and time this
 #/    script is being run.
 #/
-#/    Optional. Default: Current timestamp, as given by `date +%Y%m%d%H%M%S`.
 #/    <Timestamp> must be a decimal number. Ideally, it represents some date
 #     and time when the build was done. It can also be any arbitrary number.
+#/
+#/    Optional. Default: Current date and time, as given by the command
+#/    `date --utc +%Y%m%d%H%M%S`.
 #/
 #/ Dependency tree:
 #/
@@ -89,10 +91,10 @@ source "$CONF_FILE"
 
 # ---- Parse arguments ----
 
-PARAM_TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 PARAM_INSTALL_MISSING="false"
 PARAM_INSTALL_VERSION="0.0.0"
 PARAM_RELEASE="false"
+PARAM_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
 
 while [[ $# -gt 0 ]]; do
 case "${1-}" in
