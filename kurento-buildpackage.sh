@@ -71,7 +71,7 @@
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 CONF_FILE="$BASEPATH/kurento.conf.sh"
-[ -f "$CONF_FILE" ] || {
+[[ -f "$CONF_FILE" ]] || {
     echo "[$0] ERROR: Shell config file not found: $CONF_FILE"
     exit 1
 }
@@ -83,22 +83,22 @@ source "$CONF_FILE"
 # ------------ Script start ------------
 
 # Check root permissions
-[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
+[[ "$(id -u)" -eq 0 ]] || { log "Please run as root"; exit 1; }
 
 
 
 # ---- Parse arguments ----
 
-PARAM_INSTALL_MISSING=false
-PARAM_INSTALL_VERSION=0.0.0
-PARAM_RELEASE=false
 PARAM_TIMESTAMP="$(date +%Y%m%d%H%M%S)"
+PARAM_INSTALL_MISSING="false"
+PARAM_INSTALL_VERSION="0.0.0"
+PARAM_RELEASE="false"
 
 while [[ $# -gt 0 ]]; do
 case "${1-}" in
     --install-missing)
         if [[ -n "${2-}" ]]; then
-            PARAM_INSTALL_MISSING=true
+            PARAM_INSTALL_MISSING="true"
             PARAM_INSTALL_VERSION="$2"
             shift
         else
@@ -108,7 +108,7 @@ case "${1-}" in
         shift
         ;;
     --release)
-        PARAM_RELEASE=true
+        PARAM_RELEASE="true"
         shift
         ;;
     --timestamp)
@@ -123,6 +123,7 @@ case "${1-}" in
         ;;
     *)
         log "ERROR: Unknown argument '${1-}'"
+        shift
         exit 1
         ;;
 esac
@@ -138,7 +139,10 @@ log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
 # ---- Apt configuration ----
 
 # If requested, add the repository
-if "$PARAM_INSTALL_MISSING"; then
+if [[ "$PARAM_INSTALL_MISSING" = "true" ]]; then
+    log "Requested installation of missing packages"
+
+    log "Add the Kurento Apt repository key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
     # Set correct repo name for nightly versions
@@ -146,8 +150,9 @@ if "$PARAM_INSTALL_MISSING"; then
         PARAM_INSTALL_VERSION="dev"
     fi
 
+    log "Add the Kurento Apt repository line"
     APT_FILE="$(mktemp /etc/apt/sources.list.d/kurento-XXXXX.list)"
-    DISTRO="$(lsb_release --short --codename)"
+    DISTRO="$(lsb_release --codename --short)"
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/$PARAM_INSTALL_VERSION $DISTRO kms6" \
         >"$APT_FILE"
 
@@ -159,6 +164,7 @@ fi
 
 # ---- Dependencies ----
 
+log "Install build dependencies"
 mk-build-deps --install --remove \
     --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     ./debian/control
@@ -183,8 +189,8 @@ mk-build-deps --install --remove \
 #   If it wasn't set, GBP would enforce that the current branch is
 #   the "debian-branch" specified in 'gbp.conf' (or 'master' by default).
 # --git-author uses the Git user details for the entry in 'debian/changelog'.
-if "$PARAM_RELEASE"; then
-    # Prepare a release version build
+if [[ "$PARAM_RELEASE" = "true" ]]; then
+    log "Update debian/changelog for a release version build"
     gbp dch \
         --ignore-branch \
         --git-author \
@@ -192,7 +198,7 @@ if "$PARAM_RELEASE"; then
         --release \
         ./debian/
 else
-    # Prepare a nightly snapshot build
+    log "Update debian/changelog for a nightly snapshot build"
     gbp dch \
         --ignore-branch \
         --git-author \
@@ -214,16 +220,20 @@ fi
 #   the "upstream-branch" specified in 'gbp.conf' (or 'upstream' by default).
 # --git-ignore-new ignores the uncommitted 'debian/changelog'.
 # - Other arguments are passed to debuild and dpkg-buildpackage.
-if "$PARAM_RELEASE"; then
+if [[ "$PARAM_RELEASE" = "true" ]]; then
+    log "Run git-buildpackage to generate a release version build"
     gbp buildpackage \
         --git-ignore-branch \
         --git-ignore-new \
         --git-upstream-tree=SLOPPY \
-        -uc -us -j$(nproc)
+        -uc -us -j"$(nproc)"
 else
+    log "Run git-buildpackage to generate a nightly snapshot build"
     gbp buildpackage \
         --git-ignore-branch \
         --git-ignore-new \
         --git-upstream-tree=SLOPPY \
-        -uc -us -j$(nproc)
+        -uc -us -j"$(nproc)"
 fi
+
+log "Done!"
