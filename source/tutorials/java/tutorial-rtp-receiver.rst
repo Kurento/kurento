@@ -18,9 +18,16 @@ Quick start
 
 Follow these steps to run this demo application:
 
-1. Install Kurento Media Server: :doc:`/user/installation`.
+1. Install and run Kurento Media Server: :doc:`/user/installation`.
 
-2. Run these commands:
+2. Install Java JDK and Maven:
+
+   .. code-block:: text
+
+      sudo apt-get update
+      sudo apt-get install default-jdk maven
+
+3. Run these commands:
 
    .. code-block:: text
 
@@ -29,18 +36,18 @@ Follow these steps to run this demo application:
       git checkout |VERSION_TUTORIAL_JAVA|
       mvn -U clean spring-boot:run -Dkms.url=ws://localhost:8888/kurento
 
-3. Open the demo page with a WebRTC-compliant browser (Chrome, Firefox): https://localhost:8443/
-4. Click on *Start* to begin the demo.
-5. Copy the KMS **IP** and **Port** values to the external streaming program.
-6. As soon as the external streaming program starts sending RTP packets to the IP and Port where KMS is listening for incoming data, the video should appear in the page.
-7. Click on *Stop* to finish the demo.
+4. Open the demo page with a WebRTC-compliant browser (Chrome, Firefox): https://localhost:8443/
+5. Click on *Start* to begin the demo.
+6. Copy the KMS **IP** and **Port** values to the external streaming program.
+7. As soon as the external streaming program starts sending RTP packets to the IP and Port where KMS is listening for incoming data, the video should appear in the page.
+8. Click on *Stop* to finish the demo.
 
 
 
 Understanding this example
 ==========================
 
-To implement this behavior we have to create a :term:`Media Pipeline`, composed of an **RtpEndpoint** and a **WebRtcEndpoint**. The former acts as an RTP receiver, and the later is used to show the incoming video in the demo page.
+To implement this behavior we have to create a :term:`Media Pipeline`, composed of an **RtpEndpoint** and a **WebRtcEndpoint**. The former acts as an RTP receiver, and the later is used to show the video in the demo page.
 
 This is a web application, and therefore it follows a client-server architecture. At the client-side, the logic is implemented in **JavaScript**. At the server-side, we use a Spring-Boot based server application consuming the **Kurento Java Client** API, to control **Kurento Media Server** capabilities. All in all, the high level architecture of this demo is three-tier.
 
@@ -49,14 +56,14 @@ To communicate these entities, two WebSockets channels are used:
 1. A WebSocket is created between the Application Server and the browser client, to implement a custom signaling protocol.
 2. Another WebSocket is used to perform the communication between the Application Server and the Kurento Media Server. For this, the Application Server uses the Kurento Java Client library. This communication takes place using the **Kurento Protocol** (see :doc:`/features/kurento_protocol`).
 
-The following sections analyze in depth the Application Server (Java) and client-side (browser JavaScript) code of this application. The complete source code can be found in `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-rtp-receiver>`__.
+The complete source code for this tutorial can be found in `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-rtp-receiver>`__.
 
 
 
 Application Server Logic
 ========================
 
-This demo has been developed using **Java** in the server-side, based on the :term:`Spring Boot` framework, which embeds a Tomcat web server within the resulting program, and thus simplifies the development and deployment process.
+This demo has been developed using **Java** in the server side, based on the :term:`Spring Boot` framework, which embeds a Tomcat web server within the resulting program, and thus simplifies the development and deployment process.
 
 .. note::
 
