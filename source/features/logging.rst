@@ -4,14 +4,14 @@ Debug Logging
 
 When running Kurento Media Server manually with ``/usr/bin/kurento-media-server``, all logging messages are by default printed to standard out (*stdout*).
 
-The KMS native packages modify this behavior to ensure logging information is placed in a more conventional location for the platform. By default logs should be made available in */var/log/kurento-media-server/*, unless customized in */etc/default/kurento-media-server* (for Debian/Ubuntu packages). These files are named as follows:
+The KMS native packages modify this behavior to ensure logging information is placed in a more conventional location for the platform. By default logs should be made available in */var/log/kurento-media-server/*, unless customized in the service settings file, */etc/default/kurento-media-server* (for Debian/Ubuntu packages). Log files are named as follows:
 
 .. code-block:: text
 
    {DateTime}.{LogNumber}.pid{PID}.log
 
 - ``{DateTime}``: Logging file creation date and time, in :wikipedia:`ISO 8601` Extended Notation for the date, and Basic Notation for the time. For example: *2018-12-31T235959*.
-- ``{LogNumber}``: Log file number.
+- ``{LogNumber}``: Log file number. A new one will be created whenever the maximum size limit is reached (100 MB by default).
 - ``{PID}``: Process Identifier of *kurento-media-sever*.
 
 When the KMS service starts correctly, a log file such as this one will be created:
@@ -70,7 +70,7 @@ These are the different message levels, as defined by the `GStreamer logging lib
 
 Logging categories and levels can be filtered by two methods:
 
-- Use a command-line argument while launching KMS. For example, run:
+- Use a command-line argument if you are manually running KMS. For example, run:
 
   .. code-block:: text
 
@@ -78,28 +78,28 @@ Logging categories and levels can be filtered by two methods:
        --gst-debug-level=3 \
        --gst-debug="Kurento*:4,kms*:4"
 
-- Set the environment variable *GST_DEBUG*. For example, run:
+- You can also replace the command-line arguments with the environment variable *GST_DEBUG*. For example, run:
 
   .. code-block:: bash
 
      export GST_DEBUG="3,Kurento*:4,kms*:4"
      /usr/bin/kurento-media-server
 
-If you are using the *apt-get* installation of KMS, then you can also configure the *GST_DEBUG* variable in the KMS configuration file, */etc/default/kurento-media-server*:
+If you are using the native packages (installing KMS with *apt-get*) and running KMS as a system service, then you can also configure the *GST_DEBUG* variable in the KMS service settings file, */etc/default/kurento-media-server*:
 
   .. code-block:: bash
 
      # Logging level.
      export GST_DEBUG="3,Kurento*:4,kms*:4"
 
-Logs will be colored by default, but colors can be explicitly disabled in the same two ways explained here: either with ``--gst-debug-no-color`` or with ``export GST_DEBUG_NO_COLOR=1``.
+Logs will be colored by default, but colors can be explicitly disabled in the same two ways: either with ``--gst-debug-no-color`` or with ``export GST_DEBUG_NO_COLOR=1``. When running KMS as a system service, this option is enabled in order to generate clean logs without strange terminal ANSI color escape sequences.
 
 
 
 Suggested levels
 ================
 
-Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed. They are given in the environment variable form, so they can be copied directly into the KMS configuration file, */etc/default/kurento-media-server*:
+Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed. They are given in the environment variable form, so they can be copied directly into the KMS KMS service settings file, */etc/default/kurento-media-server*:
 
 The **default suggested level** is what KMS sets automatically when it is started as a system service from the init scripts:
 
@@ -107,7 +107,7 @@ The **default suggested level** is what KMS sets automatically when it is starte
 
      export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
-From there, one can add these other values which will expand from the default one:
+From that baseline, one can add any other values to extend the amount of information that gets logged:
 
 - Event MediaFlow{In,Out} state changes
 
