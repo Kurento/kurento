@@ -122,6 +122,7 @@ Information about development of *Kurento itself* is also available:
 
    /knowledge/congestion_rmcat
    /knowledge/nat
+   /knowledge/rtp_streaming
    /knowledge/safari
    /glossary
 
