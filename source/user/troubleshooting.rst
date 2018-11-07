@@ -371,27 +371,6 @@ This is how this process would look like. In this example, KMS was restarted so 
 
 
 
-RecorderEndpoint: Zero-size video files
----------------------------------------
-
-If you are trying to generate a video recording, but the resulting file is of size zero (0 KB), keep in mind that **the endpoint will wait until all requested tracks start arriving**.
-
-Quoting from the `Client documentation <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
-
-    It is recommended to start recording only after media arrives, either to the endpoint that is the source of the media connected to the recorder, to the recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut events, and synchronize the recording with the moment media comes in. In any case, nothing will be stored in the file until the first media packets arrive.
-
-Follow this checklist to see if everything is correctly configured:
-
-- The RecorderEndpoint is configured for both audio and video, but only video (or only audio) is being provided by the application.
-- Availability of audio/video devices at recorder client initialization, and just before starting the recording.
-- User is disconnecting existing hardware, or maybe connecting new hardware (usb webcams, mic, etc).
-- User is clicking "*Deny*" when asked to allow access to microphone/camera by the browser.
-- User is sleeping/hibernating the computer, and then possibly waking it up, while recording.
-- Check the browser information about the required media tracks, e.g. ``track.readyState``.
-- Track user agents, ICE candidates, etc.
-
-
-
 "Expects at least 4 fields"
 ---------------------------
 
@@ -418,6 +397,45 @@ The solution is to ensure that both peers are able to find a match in their supp
        { "name": "VP8/90000" },
        { "name": "H264/90000" }
      ]
+
+
+
+Element-specific info
+=====================
+
+PlayerEndpoint
+--------------
+
+RTSP broken video
+~~~~~~~~~~~~~~~~~
+
+Some users have reported huge macro-blocks or straight out broken video frames when using a PlayerEndpoint to receive an RTSP stream containing H.264 video. A possible solution to fix this issue is to fine-tune the PlayerEndpoint's **networkCache** parameter. It basically sets the buffer size (in milliseconds) that the underlying GStreamer decoding element will use to cache the stream.
+
+There's no science for that parameter, though. The perfect value depends on your network topology and efficiency, so you should proceed in a trial-and-error approach. For some situations, values lower than **100ms** have worked fine; some users have reported that 10ms was required to make their specific camera work, others have seen good results with setting this parameter to **0ms**.
+
+
+
+RecorderEndpoint
+----------------
+
+Zero-size video files
+~~~~~~~~~~~~~~~~~~~~~
+
+If you are trying to generate a video recording, but the resulting file is of size zero (0 KB), keep in mind that **the endpoint will wait until all requested tracks start arriving**.
+
+Quoting from the `Client documentation <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
+
+    It is recommended to start recording only after media arrives, either to the endpoint that is the source of the media connected to the recorder, to the recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut events, and synchronize the recording with the moment media comes in. In any case, nothing will be stored in the file until the first media packets arrive.
+
+Follow this checklist to see if everything is correctly configured:
+
+- The RecorderEndpoint is configured for both audio and video, but only video (or only audio) is being provided by the application.
+- Availability of audio/video devices at recorder client initialization, and just before starting the recording.
+- User is disconnecting existing hardware, or maybe connecting new hardware (usb webcams, mic, etc).
+- User is clicking "*Deny*" when asked to allow access to microphone/camera by the browser.
+- User is sleeping/hibernating the computer, and then possibly waking it up, while recording.
+- Check the browser information about the required media tracks, e.g. ``track.readyState``.
+- Track user agents, ICE candidates, etc.
 
 
 
