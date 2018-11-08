@@ -274,10 +274,7 @@ lifecycle = {
       getIpDocker(function (ip) {
         var hostIp = ip;
         console.log("Docker IP:", hostIp);
-        docker = new Docker({
-          host: hostIp,
-          port: 2375
-        });
+        docker = new Docker();
         docker.run('kurento/kurento-media-server-dev:latest', [], [
           process.stdout,
           process.stderr
