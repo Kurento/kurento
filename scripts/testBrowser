@@ -56,7 +56,8 @@ function waitReport(driver, id, callback)
       .then(elem.getAttribute.bind(elem, 'value'))
       .then(function(data)
       {
-        writeReport('xml', data, callback)
+        var ext = id == 'junit' ? 'xml' : id;
+        writeReport(ext, data, callback)
       })
 }
 
