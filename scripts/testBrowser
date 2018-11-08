@@ -56,7 +56,7 @@ function waitReport(driver, id, callback)
       .then(elem.getAttribute.bind(elem, 'value'))
       .then(function(data)
       {
-        writeReport(id, data, callback)
+        writeReport('xml', data, callback)
       })
 }
 
