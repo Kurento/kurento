@@ -58,7 +58,7 @@ QUnit.asyncTest('End of Stream with Callback', function () {
   QUnit.expect(5);
 
   var timeout = new Timeout('"GStreamerFilter:End of Stream"',
-    10 * 1000, onerror);
+    15 * 1000, onerror);
 
   function onerror(error) {
     timeout.stop();
