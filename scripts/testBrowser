@@ -62,7 +62,17 @@ function waitReport(driver, id, callback)
 
 function runTest(browser)
 {
-  var driver = new webdriver.Builder().forBrowser(browser).build()
+  var driverBuilder = new webdriver.Builder().forBrowser(browser)
+
+  if (browser == "chrome") {
+    var capabilities = webdriver.Capabilities.chrome();
+    capabilities.set('chromeOptions', {
+      'args': ['--headless', '--disable-gpu','--no-sandbox']
+    })
+    driverBuilder.withCapabilities(capabilities)
+  }
+
+  var driver = driverBuilder.build()
 
   var ws_uri = QUnit.config.ws_uri;
   if (ws_uri == undefined) {
