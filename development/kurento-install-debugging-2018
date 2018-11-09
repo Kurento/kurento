@@ -14,6 +14,8 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # 2018-03-23
 # - Add log function.
 # - FIXME for Trusty: openwebrtc-gst-plugins=0.10.0.20160909214034.trusty
+# 2018-11-09 Fede Diaz <nordri@gmail.com>
+# - Changed libnice package name libnice-dbg -> libnice10-dbgsym
 
 # Set up logging function
 BASENAME="$(basename "$0")"  # Complete file name
@@ -34,7 +36,7 @@ PACKAGES=(
     gstreamer1.5-plugins-bad-dbg
     gstreamer1.5-libav-dbg
     #libgstreamer1.5-0-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
-    libnice-dbg
+    libnice10-dbgsym
     libsrtp1-dbg
     #openwebrtc-gst-plugins-dbg # FIXME - Workaround for Ubuntu 14.04 (Trusty)
     kmsjsoncpp-dbg
