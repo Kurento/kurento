@@ -10,7 +10,7 @@
 Testing
 =======
 
-In order to assess Kurento, a rich test suite has been designed and implemented. To that aim, the Kurento Testing Framework (KTF) was created. KTF is a part of the Kurento project aimed to carry out end-to-end (E2E) tests for Kurento. KTF has been implemented on the top of two well-known open-source testing frameworks: JUnit and Selenium.  
+In order to assess properly Kurento, a rich test suite has been designed and implemented. To that aim, the **Kurento Testing Framework** (KTF) was created. KTF is a part of the Kurento project aimed to carry out end-to-end (E2E) tests for Kurento. KTF has been implemented on the top of two well-known open-source testing frameworks: `JUnit <https://junit.org/>`_ and `Selenium <https://www.seleniumhq.org/>`_.
 
 Kurento Testing Framework explained
 ===================================
