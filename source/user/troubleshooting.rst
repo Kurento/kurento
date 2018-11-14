@@ -420,7 +420,7 @@ RTSP Video stuttering
 
 The GStreamer element in charge of RTSP reception is `rtspsrc <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtspsrc.html>`__, and this element contains an `rtpjitterbuffer <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtpjitterbuffer.html>`__.
 
-If network packets arrive faster than what Kurento is able to process, then this buffer will fill up. If this happens, then PlayerEndpoint will start dropping packets, which then will trigger a warning in Kurento logs:
+This jitter buffer gets full when network packets arrive faster than what Kurento is able to process. If this happens, then PlayerEndpoint will start dropping packets, which will show up as video stuttering on the output streams, while triggering a warning in Kurento logs:
 
 .. code-block:: text
 
