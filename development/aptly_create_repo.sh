@@ -10,4 +10,3 @@ aptly repo add -force-replace "kurento-experimental-${DISTRIBUTION}" ./*.*deb
 aptly snapshot create "snap-kurento-experimental-${DISTRIBUTION}" from repo "kurento-experimental-${DISTRIBUTION}"
 aptly -gpg-key="${GPGKEY}" publish snapshot "snap-kurento-experimental-${DISTRIBUTION}" "s3:ubuntu:${DISTRIBUTION}"
 
-5AFA7A83
