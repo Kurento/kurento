@@ -415,6 +415,32 @@ There's no science for that parameter, though. The perfect value depends on your
 
 
 
+RTSP Video stuttering
+~~~~~~~~~~~~~~~~~~~~~
+
+The GStreamer element in charge of RTSP reception is `rtspsrc <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtspsrc.html>`__, and this element contains an `rtpjitterbuffer <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtpjitterbuffer.html>`__.
+
+If network packets arrive faster than what Kurento is able to process, then this buffer will fill up. If this happens, then PlayerEndpoint will start dropping packets, which then will trigger a warning in Kurento logs:
+
+.. code-block:: text
+
+   WARNING  kmsutils  discont_detection_probe() <kmsagnosticbin0:sink>  Stream discontinuity detected on non-keyframe
+
+You can check if this problem is affecting you by running with DEBUG :ref:`logging level <logging-levels>` enabled for the *rtpjitterbuffer* component, and searching for a specific message:
+
+.. code-block:: bash
+
+   export GST_DEBUG="${GST_DEBUG:-3},rtpjitterbuffer:5"
+   /usr/bin/kurento-media-server 2>&1 | grep -P 'rtpjitterbuffer.*(Received packet|Queue full)'
+
+With this command, a new line will get printed for each single *Received packet*, plus an extra line will appear informing about *Queue full* whenever a packet is dropped.
+
+There is not much you can fine tune in KMS to solve this problem; the most practical solution is to reduce the amount of data, mostly by decreasing either video resolution or video bitrate.
+
+Kurento Media Server is known to work well receiving videos of up to **720p** resolution (1280x720) at **30fps** and around **2Mbps**. If you are using values beyond those, there is a chance that KMS will be unable to process all incoming data on time, and this will cause that buffers fill up and frames get dropped. Try reducing the resolution of your input videos to see if this helps solving the issue.
+
+
+
 RecorderEndpoint
 ----------------
 
