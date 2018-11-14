@@ -421,9 +421,9 @@ RecorderEndpoint
 Zero-size video files
 ~~~~~~~~~~~~~~~~~~~~~
 
-If you are trying to generate a video recording, but the resulting file is of size zero (0 KB), keep in mind that **the endpoint will wait until all requested tracks start arriving**.
+If you are trying to generate a video recording, keep in mind that **the endpoint will wait until all tracks (audio, video) start arriving**.
 
-Quoting from the `Client documentation <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
+Quoting from the `Client documentation <https://doc-kurento.readthedocs.io/en/|VERSION_DOC|/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
 
     It is recommended to start recording only after media arrives, either to the endpoint that is the source of the media connected to the recorder, to the recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut events, and synchronize the recording with the moment media comes in. In any case, nothing will be stored in the file until the first media packets arrive.
 
