@@ -47,6 +47,22 @@ The most important classes of this diagram are the following:
 
    - KMS in a **Docker** container. To use this option, it is a pre-requisite to have `Docker <https://www.docker.com/>`_ installed in the machine running this type of tests.
 
+- `BrowserTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/BrowserTest.java>`_: This class provides wrappers of `Selenium WebDriver <https://www.seleniumhq.org/projects/webdriver/>`_ instances aimed to control a group of web browsers for tests. By default, KTF allows to use **Chrome** or **Firefox** as browsers. The scope of these browsers can be configured to use:
+
+   - Local browser, i.e. installed in the local machine.
+
+   - Remote browser, i.e. installed in the remote machines (using Selenium Grid).
+
+   - Docker browsers, i.e. executed in `Docker <https://www.docker.com/>`_ containers.
+
+   - Saucelabs browsers. `Saucelabs <https://saucelabs.com/>`_ is a cloud solution for web testing. It provides a big number of browsers to be used in Selenium tests. KTF provides seamless integration with Saucelabs.
+
+   Test scenario can be configured in ``BrowserTest`` tests in two different ways:
+
+   - Programmatically using Java
+
+   - Using a JSON file.
+
 
 E2E Tests
 =========
