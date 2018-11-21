@@ -59,10 +59,51 @@ The most important classes of this diagram are the following:
 
    Test scenario can be configured in ``BrowserTest`` tests in two different ways:
 
-   - Programmatically using Java
+   - Programmatically using Java. Test scenario uses JUnit 4's parameterized feature. The Java class `TestScenario <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/config/TestScenario.java>`_ is used by KTF to configure the scenario, for example as follows:
 
-   - Using a JSON file.
+   .. code-block:: java
 
+      @Parameters(name = "{index}: {0}")
+      public static Collection<Object[]> data() {
+         TestScenario test = new TestScenario();
+         test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().browserType(BrowserType.CHROME)
+             .scope(BrowserScope.LOCAL).webPageType(webPageType).build());
+
+         return Arrays.asList(new Object[][] { { test } });
+      }
+
+   - Using a JSON file. KTF allows to setup tests scenarios based on a custom customizable JSON notation. In these JSON files, several test executions can be setup. For each execution, the browser scope can be chosen. For example, the following example shows a test scenario in which two executions are defined. First execution defines two local browsers (identified as peer1 and peer2), Chrome and Firefox respectively. The second execution defines also two browsers, but this time browsers are located in the cloud infrastructure provided by Saucelabs.
+
+   .. code-block:: json
+
+      {
+         "executions":[
+            {
+               "peer1":{
+                  "scope":"local",
+                  "browser":"chrome"
+               },
+               "peer2":{
+                  "scope":"local",
+                  "browser":"firefox"
+               }
+            },
+            {
+               "peer1":{
+                  "scope":"saucelabs",
+                  "browser":"explorer",
+                  "version":"11",
+                  "platform":"win8_1"
+               },
+               "peer2":{
+                  "scope":"saucelabs",
+                  "browser":"safari",
+                  "version":"36",
+                  "platform":"yosemite"
+               }
+            }
+         ]
+      }
 
 E2E Tests
 =========
