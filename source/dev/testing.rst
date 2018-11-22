@@ -63,7 +63,14 @@ The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_
 Running tests
 =============
 
-This section explains the KTF API.
+Most of the Kurento tests have been created using a custom Java library called **Kurento Testing Framework** (KTF). For more details about this framework, please take a look to the next section. If you are interested only in running a group of E2E tests in order to assess Kurento, please keep reading this section.
+
+Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. Next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-test <https://github.com/Kurento/kurento-java/>`_:
+
+.. code-block:: bash
+
+   git clone https://github.com/Kurento/kurento-java
+
 
 In local environment
 --------------------
