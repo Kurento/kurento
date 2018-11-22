@@ -96,11 +96,18 @@ Let's take a closer look to the Maven command:
 
 Kurento test are highly configurable. This configuration is done simply adding extra JVM parameters (i.e. ``-Dparameter=value``) to the previous Maven command. The following table summarizes the main test parameters and its default values.
 
-+-----------------------------------+---------------------------------------------------------------------------------------------------------------------------+---------------------------------------+
-| Parameter                         | Description                                                                                                               | Default value                         |
-+===================================+===========================================================================================================================+=======================================+
-| ``test.app.autostart``            | Specifies whether test application where Selenium browsers connect must be started by test or if it is externally managed | ``testsuite``                         |
-+-----------------------------------+---------------------------------------------------------------------------------------------------------------------------+---------------------------------------+
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+
+| Parameter              | Description                                                                                                                                             | Default value |
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+
+| ``test.app.autostart`` | Specifies whether test application where Selenium browsers connect must be started by test or if it is externally managed:                              | ``testsuite`` |
+|                        |                                                                                                                                                         |               |
+|                        | - ``false`` : Test application is externally managed and not started by test. URL where selenium browsers connect must be then specified by properties: |               |
+|                        | test.host, test.port, test.path and test.protocol.                                                                                                      |               |
+|                        | - ``test`` : test application is started before each test execution                                                                                     |               |
+|                        | - ``testsuite``: Test application is started at the beginning of test execution                                                                         |               |
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+
+|                        |                                                                                                                                                         |               |
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+
 
 
 In local environment
