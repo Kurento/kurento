@@ -65,12 +65,33 @@ Running tests
 
 Most of the Kurento tests have been created using a custom Java library called **Kurento Testing Framework** (KTF). For more details about this framework, please take a look to the next section. If you are interested only in running a group of E2E tests in order to assess Kurento, please keep reading this section.
 
-Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. Next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-test <https://github.com/Kurento/kurento-java/>`_:
+Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. The next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-test <https://github.com/Kurento/kurento-java/>`_. Once we have this project, we need to invoke Maven to execute tests, for example as follows:
 
 .. code-block:: bash
 
    git clone https://github.com/Kurento/kurento-java
+   cd kurento-java
+   mvn test -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.IntegrationTests -Dtest=WebRtcOneLoopbackTest
 
+Let's take a closer look to the Maven command:
+
+- ``mvn verify``: Command to execute the ``verify`` goal in Maven, which involves the execution of the unit and integration tests of a Maven project.
+
+- ``-pl kurento-integration-tests/kurento-test``: Maven option to select a single project for the goal, in this case ``kurento-test``.
+
+- ``-Dgroups=org.kurento.commons.testing.SystemFunctionalTests``: The Kurento E2E test suite is divided into different `JUnit 4 categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_.
+
+- ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended to select a test or group of test using the parameter ``-Dtest`` of Maven. Using this command we can select a test using the Java class name. Moreover, the wildcard ``*`` can be used. Kurento tests follow a fixed notation for test naming, and so, this can be used to select a group of tests, as follows:
+
+   - ``-Dtest=WebRtc*``: Used to execute all the functional Kurento tests for WebRTC.
+
+   - ``-Dtest=Player*``: Used to execute all the functional Kurento tests for player.
+
+   - ``-Dtest=Recorder*``: Used to execute all the functional Kurento tests for recorder.
+
+   - ``-Dtest=Composite*``: Used to execute all the functional Kurento tests for composite.
+
+   - ``-Dtest=Dispatcher*``: Used to execute all the functional Kurento tests for dispatcher.
 
 In local environment
 --------------------
