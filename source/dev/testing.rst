@@ -110,7 +110,27 @@ The most important classes of this diagram are the following:
 E2E Tests
 =========
 
-This section introduces the different types of E2E implemented with KTF for Kurento.
+This section introduces the different types of E2E implemented with KTF for Kurento, namely **functional**, **stability**, **tutorials**, and **API**.
+
+Functional
+----------
+
+To do.
+
+Stability
+---------
+
+To do.
+
+Tutorials
+---------
+
+To do.
+
+API
+---
+
+To do.
 
 Running tests
 =============
