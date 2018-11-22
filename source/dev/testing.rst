@@ -48,7 +48,7 @@ Running tests
 
 This section explains the KTF API.
 
-In local environemnt
+In local environment
 --------------------
 
 This section explains how to use the KTF API for running Kurento tests in a local environment.
