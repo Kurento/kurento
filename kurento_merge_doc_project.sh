@@ -56,12 +56,12 @@ kurento_clone_repo.sh "$KURENTO_PROJECT"
 {
     pushd "$KURENTO_PROJECT"
 
-    ./configure.sh
+    [[ -x configure.sh ]] && ./configure.sh
 
     if [[ -z "${MAVEN_SETTINGS:+x}" ]]; then
         cp Makefile Makefile.ci
     else
-        sed -e "s@mvn@mvn --settings $MAVEN_SETTINGS@g" Makefile > Makefile.ci
+        sed -e "s@mvn@mvn --settings ${MAVEN_SETTINGS}@g" Makefile > Makefile.ci
     fi
 
     make --file=Makefile.ci ci-readthedocs
