@@ -105,6 +105,8 @@ The most important classes of this diagram are the following:
          ]
       }
 
+- `KurentoClientBrowserTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoClientBrowserTest.java>`_: This class can be seen as a mixed of the previous ones, since it provides the capability to use KMS (local or *dockerized*) together with a group of browser test using a *test scenario*. Moreover, it provides a web server started with each test for testing purposed, with a custom `web page <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/resources/static/webrtc.html>`_ available to test **WebRTC** in Kurento in a easy manner. As can be seen in the diagram before, this class is the parent of a rich variety of different classes. In short, these classes are used to distinguish among different types of tests. See next section for more information.
+
 E2E Tests
 =========
 
