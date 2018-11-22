@@ -92,14 +92,12 @@ The most important classes of this diagram are the following:
                "peer1":{
                   "scope":"saucelabs",
                   "browser":"explorer",
-                  "version":"11",
-                  "platform":"win8_1"
+                  "version":"11"
                },
                "peer2":{
                   "scope":"saucelabs",
                   "browser":"safari",
-                  "version":"36",
-                  "platform":"yosemite"
+                  "version":"36"
                }
             }
          ]
