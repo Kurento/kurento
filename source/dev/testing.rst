@@ -32,7 +32,7 @@ Functional tests are aimed to evaluate a given capability provided by Kurento. W
 
    - Datachannels. A WebRTC data channel allows to send custom data over an active connection to a peer. Tests using Chrome and Firefox has been implemented to check WebRTC datachannels.
 
-   - ICE negotiation. In order to create a media communication between peers, ICE (Interactive Connectivity Establishment) is used in WebRTC. Kurento ICE tests check this connectivity using different network setups (NATs, reflexive, bridge).
+   - ICE. In order to create media communication between peers avoiding NAT traversal problems, ICE (Interactive Connectivity Establishment) negotiation is used in WebRTC. Kurento ICE tests check this connectivity using different network setups (NATs, reflexive, bridge).
 
 - Recorder. Another important capability provided by Kurento is the media archiving. Recorder tests use ``RecorderEndpoint`` media element by ensuring that the recorded media is as expected.
 
@@ -44,17 +44,21 @@ Functional tests are aimed to evaluate a given capability provided by Kurento. W
 Stability
 ---------
 
-To do.
+Stability tests verifies Kurento capabilities in different scenarios:
+
+- Running media pipelines in large amount of time.
+
+- Using a lot of resources (CPU, memory) of a KMS instance.
 
 Tutorials
 ---------
 
-To do.
+The documentation of Kurento includes a number of tutorials `tutorials <https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html>`_ which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created.
 
 API
 ---
 
-To do.
+The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS.
 
 Running tests
 =============
