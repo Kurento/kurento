@@ -16,12 +16,52 @@ Software testing is a broad term within software engineering encompassing a wide
 - Integration: units are combined to create composite components. Integration tests focus on the interaction of different units.
 - System: all of the components are integrated and the system is tested as a whole.
 
-There is a special type of system tests called **end-to-end** (E2E). In E2E tests, the final user is typically impersonated, i.e., simulated using automation techniques. The main benefit of E2E tests is the simulation of real user scenarios in an automated fashion. Nevertheless, this kind tests have several deterrents. For instance, end-to-end tests are challenging in terms of automation since a proper infrastructure to carry out user impersonation (e.g. using web browsers). In addition, E2E tests does not isolate failures (such as unit tests), and therefore, trace a failed E2E test is usually costly. In order to overcome these problems for testing Kurento, the **Kurento Testing Framework** (KTF) has been created.
+There is a special type of system tests called **end-to-end** (E2E). In E2E tests, the final user is typically impersonated, i.e., simulated using automation techniques. The main benefit of E2E tests is the simulation of real user scenarios in an automated fashion.
+
+E2E Tests
+=========
+
+This section introduces the different types of E2E implemented with KTF for Kurento, namely **functional**, **stability**, **tutorials**, and **API**.
+
+Functional
+----------
+
+To do.
+
+Stability
+---------
+
+To do.
+
+Tutorials
+---------
+
+To do.
+
+API
+---
+
+To do.
+
+Running tests
+=============
+
+This section explains the KTF API.
+
+In local environemnt
+--------------------
+
+This section explains how to use the KTF API for running Kurento tests in a local environment.
+
+In Jenkins
+----------
+
+This section explains how to use the KTF API for running Kurento tests in a Jenkins Continuous Integration (CI) server.
 
 Kurento Testing Framework explained
 ===================================
 
-In order to assess properly Kurento from a final user perspective, a rich suite of E2E tests has been designed and implemented. To that aim, the **Kurento Testing Framework** is used. KTF is a part of the Kurento project aimed to carry out end-to-end (E2E) tests for Kurento. KTF has been implemented on the top of two well-known open-source testing frameworks: `JUnit <https://junit.org/>`_ and `Selenium <https://www.seleniumhq.org/>`_.
+In order to assess properly Kurento from a final user perspective, a rich suite of E2E tests has been designed and implemented. To that aim, the **Kurento Testing Framework** (KTF) has been created. KTF is a part of the Kurento project aimed to carry out end-to-end (E2E) tests for Kurento. KTF has been implemented on the top of two well-known open-source testing frameworks: `JUnit <https://junit.org/>`_ and `Selenium <https://www.seleniumhq.org/>`_.
 
 KTF provides high level capabilities to perform advanced automated testing for Kurento-based applications. KTF has been implemented in Java, and as usual it is hosted on GitHub, in the project `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_. KTF has been designed on the top of **JUnit 4**, providing a rich hierarchy of classes which are going to act as parent for JUnit 4 tests cases. This hierarchy is the following:
 
@@ -104,43 +144,3 @@ The most important classes of this diagram are the following:
       }
 
 - `KurentoClientBrowserTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoClientBrowserTest.java>`_: This class can be seen as a mixed of the previous ones, since it provides the capability to use KMS (local or *dockerized*) together with a group of browser test using a *test scenario*. Moreover, it provides a web server started with each test for testing purposed, with a custom `web page <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/resources/static/webrtc.html>`_ available to test **WebRTC** in Kurento in a easy manner. As can be seen in the diagram before, this class is the parent of a rich variety of different classes. In short, these classes are used to distinguish among different types of tests. See next section for more information.
-
-E2E Tests
-=========
-
-This section introduces the different types of E2E implemented with KTF for Kurento, namely **functional**, **stability**, **tutorials**, and **API**.
-
-Functional
-----------
-
-To do.
-
-Stability
----------
-
-To do.
-
-Tutorials
----------
-
-To do.
-
-API
----
-
-To do.
-
-Running tests
-=============
-
-This section explains the KTF API.
-
-In local environemnt
---------------------
-
-This section explains how to use the KTF API for running Kurento tests in a local environment.
-
-In Jenkins
-----------
-
-This section explains how to use the KTF API for running Kurento tests in a Jenkins Continuous Integration (CI) server.
