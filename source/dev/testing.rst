@@ -26,7 +26,20 @@ This section introduces the different types of E2E implemented to assess differe
 Functional
 ----------
 
-To do.
+Functional tests are aimed to evaluate a given capability provided by Kurento. We main types of functional tests for Kurento are the following:
+
+- WebRTC. Real-time media in the web is one of the core Kurento capabilities, and therefore, a rich test suite to assess the use of WebRTC in Kurento has been implemented. Moreover, two special WebRTC features are also tested:
+
+   - Datachannels. A WebRTC data channel allows to send custom data over an active connection to a peer. Tests using Chrome and Firefox has been implemented to check WebRTC datachannels.
+
+   - ICE negotiation. In order to create a media communication between peers, ICE (Interactive Connectivity Establishment) is used in WebRTC. Kurento ICE tests check this connectivity using different network setups (NATs, reflexive, bridge).
+
+- Recorder. Another important capability provided by Kurento is the media archiving. Recorder tests use ``RecorderEndpoint`` media element by ensuring that the recorded media is as expected.
+
+- Player. KMS's ``PlayerEndpoint`` allows to inject media from seekable or non-seekable sources to a media pipeline. A suite of tests have been implemented to assess this feature.
+
+- Composite/Dispatcher. KMS allows to mix media using different media elements (``Composite`` and ``Dispatcher``). These tests are aimed to asses the result of this media mixing.
+
 
 Stability
 ---------
