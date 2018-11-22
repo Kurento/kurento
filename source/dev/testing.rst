@@ -71,7 +71,7 @@ Maven is the the way which E2E Kurento are executed. Therefore, in order to run 
 
    git clone https://github.com/Kurento/kurento-java
    cd kurento-java
-   mvn test -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.IntegrationTests -Dtest=WebRtcOneLoopbackTest
+   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.IntegrationTests -Dtest=WebRtcOneLoopbackTest
 
 Let's take a closer look to the Maven command:
 
@@ -79,7 +79,7 @@ Let's take a closer look to the Maven command:
 
 - ``-pl kurento-integration-tests/kurento-test``: Maven option to select a single project for the goal, in this case ``kurento-test``.
 
-- ``-Dgroups=org.kurento.commons.testing.SystemFunctionalTests``: The Kurento E2E test suite is divided into different `JUnit 4 categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_.
+- ``-Dgroups=org.kurento.commons.testing.SystemFunctionalTests``: The Kurento E2E test suite is divided into different `JUnit 4's categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_.
 
 - ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended to select a test or group of test using the parameter ``-Dtest`` of Maven. Using this command we can select a test using the Java class name. Moreover, the wildcard ``*`` can be used. Kurento tests follow a fixed notation for test naming, and so, this can be used to select a group of tests, as follows:
 
@@ -92,6 +92,16 @@ Let's take a closer look to the Maven command:
    - ``-Dtest=Composite*``: Used to execute all the functional Kurento tests for composite.
 
    - ``-Dtest=Dispatcher*``: Used to execute all the functional Kurento tests for dispatcher.
+
+
+Kurento test are highly configurable. This configuration is done simply adding extra JVM parameters (i.e. ``-Dparameter=value``) to the previous Maven command. The following table summarizes the main test parameters and its default values.
+
++-----------------------------------+---------------------------------------------------------------------------------------------------------------------------+---------------------------------------+
+| Parameter                         | Description                                                                                                               | Default value                         |
++===================================+===========================================================================================================================+=======================================+
+| ``test.app.autostart``            | Specifies whether test application where Selenium browsers connect must be started by test or if it is externally managed | ``testsuite``                         |
++-----------------------------------+---------------------------------------------------------------------------------------------------------------------------+---------------------------------------+
+
 
 In local environment
 --------------------
