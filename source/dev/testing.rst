@@ -16,12 +16,12 @@ Software testing is a broad term within software engineering encompassing a wide
 - Integration: units are combined to create composite components. Integration tests focus on the interaction of different units.
 - System: all of the components are integrated and the system is tested as a whole.
 
-There is a special type of system tests called **end-to-end** (E2E). In E2E tests, the final user is typically impersonated, i.e., simulated using automation techniques. The main benefit of E2E tests is the simulation of real user scenarios in an automated fashion.
+There is a special type of system tests called **end-to-end** (E2E). In E2E tests, the final user is typically impersonated, i.e., simulated using automation techniques. The main benefit of E2E tests is the simulation of real user scenarios in an automated fashion. As described in the rest of this document, a rich variety of E2E has been implemented to assess Kurento.
 
 E2E Tests
 =========
 
-This section introduces the different types of E2E implemented with KTF for Kurento, namely **functional**, **stability**, **tutorials**, and **API**.
+This section introduces the different types of E2E implemented to assess different parts of Kurento, namely **functional**, **stability**, **tutorials**, and **API**.
 
 Functional
 ----------
