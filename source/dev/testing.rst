@@ -127,12 +127,6 @@ Kurento test are highly configurable. This configuration is done simply adding e
 ..
    This table has been generated using http://www.tablesgenerator.com/text_tables
 
-
-Kurento tests in Jenkins
-------------------------
-
-This section explains how to use the KTF API for running Kurento tests in a Jenkins Continuous Integration (CI) server.
-
 Kurento Testing Framework explained
 ===================================
 
