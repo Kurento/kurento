@@ -45,6 +45,7 @@ G_DEFINE_QUARK (APPSINK_KEY, appsink);
 G_DEFINE_QUARK (PTS_KEY, pts);
 
 #define NETWORK_CACHE_DEFAULT 2000
+#define PORT_RANGE_DEFAULT NULL
 #define IS_PREROLL TRUE
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
@@ -83,6 +84,7 @@ struct _KmsPlayerEndpointPrivate
   KmsLoop *loop;
   gboolean use_encoded_media;
   gint network_cache;
+  gchar *port_range;
 
   GMutex base_time_mutex;
   gboolean reset;
@@ -99,6 +101,7 @@ enum
   PROP_VIDEO_DATA,
   PROP_POSITION,
   PROP_NETWORK_CACHE,
+  PROP_PORT_RANGE,
   PROP_PIPELINE,
   N_PROPERTIES
 };
@@ -194,6 +197,10 @@ kms_player_endpoint_set_property (GObject * object, guint property_id,
     case PROP_NETWORK_CACHE:
       playerendpoint->priv->network_cache = g_value_get_int (value);
       break;
+    case PROP_PORT_RANGE:
+      g_free (playerendpoint->priv->port_range);
+      playerendpoint->priv->port_range = g_value_dup_string (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -266,6 +273,9 @@ kms_player_endpoint_get_property (GObject * object, guint property_id,
       break;
     case PROP_NETWORK_CACHE:
       g_value_set_int (value, playerendpoint->priv->network_cache);
+      break;
+    case PROP_PORT_RANGE:
+      g_value_set_string (value, playerendpoint->priv->port_range);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -358,6 +368,9 @@ kms_player_endpoint_finalize (GObject * object)
   g_mutex_clear (&self->priv->base_time_mutex);
   g_clear_object (&self->priv->stats.src);
   kms_list_unref (self->priv->stats.probes);
+
+  g_free (self->priv->port_range);
+  self->priv->port_range = NULL;
 
   G_OBJECT_CLASS (kms_player_endpoint_parent_class)->finalize (object);
 }
@@ -1089,6 +1102,11 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
           0, G_MAXINT, NETWORK_CACHE_DEFAULT,
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
+  g_object_class_install_property (gobject_class, PROP_PORT_RANGE,
+      g_param_spec_string ("port-range", "UDP Port range for RTSP client",
+          "Range of ports that can be allocated when acting as RTSP client",
+          PORT_RANGE_DEFAULT, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   g_object_class_install_property (gobject_class, PROP_PIPELINE,
       g_param_spec_object ("pipeline", "Internal pipeline",
           "PlayerEndpoint's private pipeline",
@@ -1272,8 +1290,11 @@ kms_player_endpoint_uridecodebin_element_added (GstBin * bin,
 
   if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
               (gst_element_get_factory (element))), RTSPSRC) == 0) {
-    g_object_set (G_OBJECT (element), "latency", self->priv->network_cache,
-        "drop-on-latency", TRUE, NULL);
+    g_object_set (G_OBJECT (element), 
+        "latency", self->priv->network_cache,
+        "drop-on-latency", TRUE, 
+        "port-range", self->priv->port_range,
+        NULL);
   }
 }
 
@@ -1343,6 +1364,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", NULL);
   self->priv->network_cache = NETWORK_CACHE_DEFAULT;
+  self->priv->port_range = PORT_RANGE_DEFAULT;
 
   self->priv->stats.probes = kms_list_new_full (g_direct_equal, g_object_unref,
       (GDestroyNotify) kms_stats_probe_destroy);
