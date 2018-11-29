@@ -370,3 +370,33 @@ The most important classes of this diagram are the following:
       }
 
 - `KurentoClientBrowserTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoClientBrowserTest.java>`_: This class can be seen as a mixed of the previous ones, since it provides the capability to use KMS (local or *dockerized*) together with a group of browser test using a *test scenario*. Moreover, it provides a web server started with each test for testing purposed, with a custom `web page <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/resources/static/webrtc.html>`_ available to test **WebRTC** in Kurento in a easy manner. As can be seen in the diagram before, this class is the parent of a rich variety of different classes. In short, these classes are used to distinguish among different types of tests. See next section for more information.
+
+
+Test scenario in JSON
+---------------------
+
+Test scenario consist of a list of executions, where each execution describes how many browsers must be available and their characteristics. Each browser has an unique identifier (can be any string) meaningful for the test. The following keys can be specified in a JSON test scenario in order to customize individual instances:
+
+-  ``scope``: Specifies what type of  browser infrastructure has to be used by the test execution. This value can be overridden by command line property ``-Dtest.selenium.scope``.
+
+   - ``local``:  Start the browser as a local process in the same CPU where test is executed.
+
+   - ``docker``: Start browser as a docker container.
+
+   - ``saucelabs``: Start browser in SauceLabs.
+
+- ``host``: IP address or host name of URL used by the browser to execute tests. This value can be overridden by command line property ``-Dtest.host``
+
+- ``port``: Port number of the URL used by the browser to execute the test. This value can be overridden by command line property ``-Dtest.port``
+
+- ``path``: Path of the URL used by browser to execute the test. This value can be overridden by command line property ``-Dtest.path``
+
+- ``protocol``: Protocol of the URL used by browser to execute the test. This value can be overridden by command line property ``-Dtest.protocol``
+
+- ``browser``: Specifies the browser platform to be used by the test execution. Test will fail if required browser is not found.
+
+- ``saucelabsUser`` : SauceLabs user. This property is mandatory for SauceLabs scope and ignored otherwise. Its value can be overridden by command line property ``-Dsaucelab.user``
+
+- ``saucelabsKey``: SauceLabs key. This property is mandatory for SauceLabs scope and ignored otherwise. Its value can be overridden by command line property ``-Dsaucelab.key``
+
+- ``version``: Version of browser to be used when test is executed in SauceLabs infrastructure. Test will fail if requested version is not found.
