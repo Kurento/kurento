@@ -198,6 +198,28 @@ In order to test automatically the web application under test using Kurento, web
 | ``test.timezone``             | Time zone for dates in browser log traces. This feature is interesting when using Saucelabs browsers, in order to match dates from browsers with KMS. Accepted values are ``GMT``, ``CET``, etc. | none                                |
 +-------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
 
+Fake clients
+------------
+
+In some tests (typically in performance tests), another instance of KMS is used to generate what we call *fake clients*, which are WebRTC peers which are connected in a WebRTC one to many communication. The KMS used for this features (referred as *fake KMS*) is controlled with the parameteres summarized in the following table:
+
+
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
+| **Parameter**          | **Description**                                                                                                                                                                                                                                   | **Default value**               |
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
+| ``fake.kms.scope``     | This property is similar to ``-Dtest.kms.scope``, except that it affects the KMS used by fake client sessions.                                                                                                                                    | ``local``                       |
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
+| ``fake.kms.ws.uri``    | URL of a KMS service used by WebRTC clients. This property is used when service is externally managed (``-Dfake.kms.autostart=false``) and ignored otherwise. If not specified, ``kms.ws.uri`` is first looked at before using the default value. | ``ws://localhost:8888/kurento`` |
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
+| ``fake.kms.autostart`` | Specifies if tests must start KMS or an external KMS service must be used for fake clients (sessions that use KMS media pipelines instead of the WebRTC stack provided by a web browser):                                                         | ``false``                       |
+|                        |                                                                                                                                                                                                                                                   |                                 |
+|                        | - ``false``: Test must use an external KMS service whose URL is provided by the property ``fake.kms.ws.uri`` (with ``kms.ws.uri`` as fallback). Test will fail if neither properties are provided.                                                |                                 |
+|                        | - ``test``: KMS instance is started for before each test execution. KMS is destroyed after test execution.                                                                                                                                        |                                 |
+|                        | - ``testsuite``: KMS service is started at the beginning of test suite execution. KMS service is stopped after test suite execution.                                                                                                              |                                 |
+|                        |                                                                                                                                                                                                                                                   |                                 |
+|                        | Following properties are honored when KMS is managed by test: ``fake.kms.scope``, ``test.kms.docker.image.name``, ``test.kms.debug``                                                                                                              |                                 |
++------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
+
 Other test features
 -------------------
 
