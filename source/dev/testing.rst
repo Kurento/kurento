@@ -156,8 +156,30 @@ Kurento is typically consumed using a web application. E2E follows this structur
 | ``test.protocol``      | Protocol of the URL where Selenium browsers will connect when test application is externally managed (``-Dtest.app.autostart=false``).                                                                                                                                                                       | ``http``          |
 +------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+
 
+Browsers
+--------
 
+In order to test automatically the web application under test using Kurento, web browsers (typically Chrome or Firefox, which allow to use WebRTC) are required. The options to configure these browsers are summarized in the following table:
 
++-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
+| **Parameter**                 | **Description**                                                                                                                                                                           | **Default value**                   |
++-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
+| ``test.selenium.scope``       | Specifies the scope used for browsers in Selenium test scenarios:                                                                                                                         | ``local``                           |
+|                               |                                                                                                                                                                                           |                                     |
+|                               | - ``local``: browser installed in the local machine.                                                                                                                                      |                                     |
+|                               |                                                                                                                                                                                           |                                     |
+|                               | - ``docker``: browser in Docker container (Chrome or Firefox).                                                                                                                            |                                     |
+|                               |                                                                                                                                                                                           |                                     |
+|                               | - ``saucelabs``: browser in SauceLabs cloud.                                                                                                                                              |                                     |
++-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
+| ``docker.node.chrome.image``  | Docker image identifier for Chrome when browser scope is ``docker``.                                                                                                                      | ``elastestbrowsers/chrome:latest``  |
++-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
+| ``docker.node.firefox.image`` | Docker image identifier for Firefox when browser scope is ``docker``.                                                                                                                     | ``elastestbrowsers/firefox:latest`` |
++-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
+| ``test.selenium.record``      | Allow recording the browser while executing a test, and generate a video with the completely test. This feature can be activated (``true``) only if the scope for browsers is ``docker``. | ``false``                           |
++-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
+| ``test.config.file``          | Path of a JSON based file with configuration keys (test scenario). Its content is transparently managed by test infrastructure and passed to tests for configuration purposes.            | ``test.conf.json``                  |
++-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
 
 
 
