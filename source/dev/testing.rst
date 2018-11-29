@@ -66,10 +66,18 @@ The documentation of Kurento includes a number of tutorials `tutorials <https://
 API
 ---
 
-The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS.
+The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS. In you want to run API tests for Java, please take a look to the next section of this document. In order to run JavaScript API tests against a running instance of local KMS, the command to be used is the following:
 
-Running tests
-=============
+.. code-block:: bash
+
+   git clone https://github.com/Kurento/kurento-client-js
+   cd kurento-client-js
+   npm install
+   rm -f node_modules/kurento-client && ln -s .. node_modules/kurento-client
+   npm test
+
+Running Java tests
+==================
 
 Functional and stability Kurento tests have been created using a custom Java library called **Kurento Testing Framework** (KTF). For more details about this framework, please take a look to the next section. If you are interested only in running a group of functional or stability E2E tests in order to assess Kurento, please keep reading this section.
 
@@ -106,7 +114,6 @@ Let's take a closer look to the Maven command:
    - ``-Dtest=Composite*``: Used to execute all the functional Kurento tests for composite.
 
    - ``-Dtest=Dispatcher*``: Used to execute all the functional Kurento tests for dispatcher.
-
 
 Kurento test are highly configurable. This configuration is done simply adding extra JVM parameters (i.e. ``-Dparameter=value``) to the previous Maven command. The following sections summarizes the main test parameters and its default values organized in different categories.
 
