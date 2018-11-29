@@ -55,7 +55,13 @@ Stability tests verifies Kurento capabilities in different scenarios:
 Tutorials
 ---------
 
-The documentation of Kurento includes a number of tutorials `tutorials <https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html>`_ which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created.
+The documentation of Kurento includes a number of tutorials `tutorials <https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html>`_ which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in the project `kurento-tutorial-test <https://github.com/Kurento/kurento-tutorial-test/>`_. In order to run these tests, Maven should be used:
+
+.. code-block:: bash
+
+   git clone https://github.com/Kurento/kurento-tutorial-test
+   cd kurento-tutorial-test
+   mvn verify
 
 API
 ---
@@ -87,7 +93,7 @@ Let's take a closer look to the Maven command:
 
    - ``SystemStabilityTests`` : To run stability tests (as defined in section before).
 
-   - ``KurentoClientTests``: To run Java API tests (as defined in section before).
+   - ``KurentoClientTests``: To run Java API tests (as defined in section before). If this option is used, the project should be also changed using ``-pl kurento-integration-tests/kurento-client-test``
 
 - ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended to select a test or group of test using the parameter ``-Dtest`` of Maven. Using this command we can select a test using the Java class name. Moreover, the wildcard ``*`` can be used. Kurento tests follow a fixed notation for test naming, and so, this can be used to select a group of tests, as follows:
 
