@@ -150,7 +150,6 @@ Kurento Media Server (KMS) is the heart of Kurento and therefore it must be prop
 ..
    This table has been generated using http://www.tablesgenerator.com/text_tables
 
-
 For example, in order to run the complete WebRTC functional test suite against a local instance KMS, the Maven would be as follows:
 
 .. code-block:: bash
@@ -195,6 +194,15 @@ In order to test automatically the web application under test using Kurento, web
 +-------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
 | ``saucelab.max.duration``     | Maximum duration for a given SauceLabs session (in seconds)                                                                                                                                      | ``1800``                            |
 +-------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
+
+For example, in order to run the complete WebRTC functional test suite using *dockerized* browsers and recordings, the command would be as follows:
+
+.. code-block:: bash
+
+   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemFunctionalTests -Dtest.selenium.scope=docker -Dtest.selenium.record=true -Dtest=WebRtc*
+
+In order to avoid wasting to much space disks, recording are deleted at the end of the test if the test is succeeded. For failed tests, recordings will be available by the default on the path ``target/surefire-reports/`` (this can be change using the property ``-Dtest.project.path``).
+
 
 Web server
 ----------
