@@ -144,10 +144,10 @@ Kurento Media Server (KMS) is the heart of Kurento and therefore it must be prop
 ..
    This table has been generated using http://www.tablesgenerator.com/text_tables
 
-Web application
----------------
+Web server
+----------
 
-Kurento is typically consumed using a web application. E2E follows this structure, and so, a web application is required. Kurento-test provides a sample web application out-of-the-box aimed to assess main Kurento features. Also, a custom web application for tests can be specified. The following table summarizes the configuration options for the test web application.
+Kurento is typically consumed using a web application. E2E tests follow this architecture, and so, a web application up and running in a web server is required. Kurento-test provides a sample web application out-of-the-box aimed to assess main Kurento features. Also, a custom web application for tests can be specified using its URL. The following table summarizes the configuration options for the test web applications.
 
 +------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+
 | **Parameter**          | **Description**                                                                                                                                                                                                                                                                                              | **Default value** |
