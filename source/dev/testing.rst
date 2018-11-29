@@ -87,6 +87,8 @@ Let's take a closer look to the Maven command:
 
    - ``SystemStabilityTests`` : To run stability tests (as defined in section before).
 
+   - ``KurentoClientTests``: To run Java API tests (as defined in section before).
+
 - ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended to select a test or group of test using the parameter ``-Dtest`` of Maven. Using this command we can select a test using the Java class name. Moreover, the wildcard ``*`` can be used. Kurento tests follow a fixed notation for test naming, and so, this can be used to select a group of tests, as follows:
 
    - ``-Dtest=WebRtc*``: Used to execute all the functional Kurento tests for WebRTC.
