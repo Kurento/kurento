@@ -13,7 +13,9 @@ Testing
 Software testing is a broad term within software engineering encompassing a wide spectrum of different concepts. Depending on the size of the System Under Test (SUT) and the scenario in which it is exercised, testing can be carried out at different levels. There is no universal classification for all the different testing levels. Nevertheless, the following levels are broadly accepted:
 
 - Unit: individual program units are tested. Unit tests typically focus on the functionality of individual objects or methods.
+
 - Integration: units are combined to create composite components. Integration tests focus on the interaction of different units.
+
 - System: all of the components are integrated and the system is tested as a whole.
 
 There is a special type of system tests called **end-to-end** (E2E). In E2E tests, the final user is typically impersonated, i.e., simulated using automation techniques. The main benefit of E2E tests is the simulation of real user scenarios in an automated fashion. As described in the rest of this document, a rich variety of E2E has been implemented to assess Kurento.
@@ -63,7 +65,7 @@ The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_
 Running tests
 =============
 
-Most of the Kurento tests have been created using a custom Java library called **Kurento Testing Framework** (KTF). For more details about this framework, please take a look to the next section. If you are interested only in running a group of E2E tests in order to assess Kurento, please keep reading this section.
+Functional and stability Kurento tests have been created using a custom Java library called **Kurento Testing Framework** (KTF). For more details about this framework, please take a look to the next section. If you are interested only in running a group of functional or stability E2E tests in order to assess Kurento, please keep reading this section.
 
 Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. The next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-test <https://github.com/Kurento/kurento-java/>`_. Once we have this project, we need to invoke Maven to execute tests, for example as follows:
 
@@ -79,7 +81,11 @@ Let's take a closer look to the Maven command:
 
 - ``-pl kurento-integration-tests/kurento-test``: Maven option to select a single project for the goal, in this case ``kurento-test``.
 
-- ``-Dgroups=org.kurento.commons.testing.SystemFunctionalTests``: The Kurento E2E test suite is divided into different `JUnit 4's categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_.
+- ``-Dgroups=org.kurento.commons.testing.IntegrationTests``: The Kurento E2E test suite is divided into different `JUnit 4's categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select different types of `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_. The most used values for this group are:
+
+   - ``SystemFunctionalTests`` : To run functional tests (as defined in section before).
+
+   - ``SystemStabilityTests`` : To run stability tests (as defined in section before).
 
 - ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended to select a test or group of test using the parameter ``-Dtest`` of Maven. Using this command we can select a test using the Java class name. Moreover, the wildcard ``*`` can be used. Kurento tests follow a fixed notation for test naming, and so, this can be used to select a group of tests, as follows:
 
