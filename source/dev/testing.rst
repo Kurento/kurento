@@ -150,6 +150,16 @@ Kurento Media Server (KMS) is the heart of Kurento and therefore it must be prop
 ..
    This table has been generated using http://www.tablesgenerator.com/text_tables
 
+
+For example, in order to run the complete WebRTC functional test suite against a local instance KMS, the Maven would be as follows:
+
+.. code-block:: bash
+
+   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemFunctionalTests -Dtest.kms.autostart=false -Dtest=WebRtc*
+
+In this case, an instance of KMS should be available in the machine running the tests. Concretely, KMS should be accessible in the URL ``ws://localhost:8888/kurento`` (which is the default value for ``kms.ws.uri``).
+
+
 Web server
 ----------
 
