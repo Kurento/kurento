@@ -81,7 +81,7 @@ Running Java tests
 
 Functional and stability Kurento tests have been created using a custom Java library called **Kurento Testing Framework** (KTF). For more details about this framework, please take a look to the next section. If you are interested only in running a group of functional or stability E2E tests in order to assess Kurento, please keep reading this section.
 
-Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. The next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-test <https://github.com/Kurento/kurento-java/>`_. Once we have this project, we need to invoke Maven to execute tests, for example as follows:
+Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. The next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-java <https://github.com/Kurento/kurento-java/>`_. Inside this project, we need to invoke Maven to execute tests, for example as follows:
 
 .. code-block:: bash
 
