@@ -203,7 +203,6 @@ For example, in order to run the complete WebRTC functional test suite using *do
 
 In order to avoid wasting to much space disks, recording are deleted at the end of the test if the test is succeeded. For failed tests, recordings will be available by the default on the path ``target/surefire-reports/`` (this can be change using the property ``-Dtest.project.path``).
 
-
 Web server
 ----------
 
@@ -266,6 +265,8 @@ Kurento tests can be configured in many different ways. The following table summ
 | ``test.num.retries``           | Number of retries for failed tests                                                                                                                                                                                                                   | ``1``                              |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
 | ``test.report``                | Path for HTML report                                                                                                                                                                                                                                 | ``target/report.html``             |
++--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| ``test.project.path``          | Path for test file output (e.g. recordings).                                                                                                                                                                                                         | ``target/surefire-reports/``       |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
 | ``test.workspace``             | Absolute path of working directory used by tests as temporary storage. Make sure test user has full access to this folder. Notice this is the path seen by container when scope is set to docker.                                                    | ``/tmp``                           |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
