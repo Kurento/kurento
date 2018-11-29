@@ -161,7 +161,7 @@ QUnit.asyncTest('End of Stream with Promise', function (assert) {
   assert.expect(2);
 
   var timeout = new Timeout('"PlayerEndpoint:End of Stream"',
-    10 * 1000, onerror);
+    15 * 1000, onerror);
 
   function onerror(error) {
     timeout.stop();

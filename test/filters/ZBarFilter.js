@@ -123,7 +123,7 @@ QUnit.asyncTest('Detect bar-code in a video with Callback', function () {
   QUnit.expect(3);
 
   var timeout = new Timeout('"ZBarFilter:Detect bar-code in a video"',
-    10 * 1000, onerror);
+    15 * 1000, onerror);
 
   function onerror(error) {
     timeout.stop();
@@ -170,7 +170,7 @@ QUnit.asyncTest('Detect bar-code in a video with Promise', function () {
   QUnit.expect(3);
 
   var timeout = new Timeout('"ZBarFilter:Detect bar-code in a video"',
-    10 * 1000, onerror);
+    15 * 1000, onerror);
 
   function onerror(error) {
     timeout.stop();

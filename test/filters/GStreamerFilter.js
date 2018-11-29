@@ -112,7 +112,7 @@ QUnit.asyncTest('End of Stream with Promise', function () {
   QUnit.expect(3);
 
   var timeout = new Timeout('"GStreamerFilter:End of Stream"',
-    10 * 1000, onerror);
+    15 * 1000, onerror);
 
   function onerror(error) {
     timeout.stop();
