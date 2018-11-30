@@ -1,0 +1,680 @@
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__GI___strcasecmp_l
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:__GI___strcasecmp_l
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:__strspn_sse42
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__strspn_sse42
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr4
+   fun:FcConfigFileExists
+}
+
+{
+   g_quark_init() in gquark.c
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_quark_init
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_double
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_double_range
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_int
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_int_range
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_set_seed
+}
+
+
+{
+   g_get_home_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_home_dir
+}
+
+{
+   g_get_host_name()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_host_name
+}
+
+{
+   g_get_real_name()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_real_name
+}
+
+{
+   g_get_system_config_dirs()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_system_config_dirs
+}
+
+{
+   g_get_system_data_dirs()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_system_data_dirs
+}
+
+{
+   g_get_tmp_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_tmp_dir
+}
+
+{
+   g_get_user_cache_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_cache_dir
+}
+
+{
+   g_get_user_config_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_config_dir
+}
+
+{
+   g_get_user_data_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_data_dir
+}
+
+{
+   g_get_user_name()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_name
+}
+
+{
+   g_get_user_runtime_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_runtime_dir
+}
+
+{
+   g_get_user_special_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_special_dir
+}
+
+
+{
+   g_hash_table_insert_node() in ghash.c
+   Memcheck:Leak
+   ...
+   fun:g_memdup
+   fun:g_hash_table_insert_node
+}
+
+{
+   g_hash_table_resize() in ghash.c
+   Memcheck:Leak
+   ...
+   fun:g_hash_table_resize
+}
+
+{
+   calloc() within gobject_init_ctor()
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:gobject_init_ctor
+}
+
+{
+   malloc() within gobject_init_ctor()
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:gobject_init_ctor
+}
+
+{
+   realloc() within gobject_init_ctor()
+   Memcheck:Leak
+   fun:realloc
+   ...
+   fun:gobject_init_ctor
+}
+
+{
+   _g_dbus_initialize() in gio/gdbusprivate.c
+   Memcheck:Leak
+   ...
+   fun:_g_dbus_initialize
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_bus_get
+   fun:g_bus_own_name
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_hash_table_new
+   fun:g_bus_own_name
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_main_context_ref_thread_default
+   fun:g_bus_own_name
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_hash_table_new
+   fun:g_bus_own_name_on_connection
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_variant_new
+   fun:g_bus_unown_name
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:FcConfigSubstitute*
+   fun:pango_cairo_fc_font_map_fontset_key_substitute
+}
+
+{
+   _gtk_accessibility_init() in gail.c
+   Memcheck:Leak
+   ...
+   fun:atk_add_focus_tracker
+   fun:_gtk_accessibility_init
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gdk_display_get_default
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gdk_display_manager_get
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gdk_display_manager_get_default_display
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_clipboard_get_for_display
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_clipboard_request_contents
+}
+
+{
+   gtk_im_module_initialize() in gtkimmodule.c
+   Memcheck:Leak
+   ...
+   fun:gtk_im_module_initialize
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_widget_get_style_context
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_source_style_scheme_get_style
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_source_style_scheme_manager_get_default
+}
+
+{
+   _gtk_accessibility_init() in gail.c
+   Memcheck:Leak
+   ...
+   fun:atk_add_focus_tracker
+   fun:_gtk_accessibility_init
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gdk_display_get_default
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gdk_display_manager_get
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gdk_display_manager_get_default_display
+}
+
+{
+   _g_dbus_initialize() in gio/gdbusprivate.c
+   Memcheck:Leak
+   ...
+   fun:_g_dbus_initialize
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_bus_get
+   fun:g_bus_own_name
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_hash_table_new
+   fun:g_bus_own_name
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_main_context_ref_thread_default
+   fun:g_bus_own_name
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_hash_table_new
+   fun:g_bus_own_name_on_connection
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_variant_new
+   fun:g_bus_unown_name
+}
+
+{
+   g_quark_init() in gquark.c
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_quark_init
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_double
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_double_range
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_int
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_int_range
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:g_random_set_seed
+}
+
+
+{
+   g_get_home_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_home_dir
+}
+
+{
+   g_get_host_name()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_host_name
+}
+
+{
+   g_get_real_name()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_real_name
+}
+
+{
+   g_get_system_config_dirs()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_system_config_dirs
+}
+
+{
+   g_get_system_data_dirs()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_system_data_dirs
+}
+
+{
+   g_get_tmp_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_tmp_dir
+}
+
+{
+   g_get_user_cache_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_cache_dir
+}
+
+{
+   g_get_user_config_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_config_dir
+}
+
+{
+   g_get_user_data_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_data_dir
+}
+
+{
+   g_get_user_name()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_name
+}
+
+{
+   g_get_user_runtime_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_runtime_dir
+}
+
+{
+   g_get_user_special_dir()
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_get_user_special_dir
+}
+
+
+{
+   g_hash_table_insert_node() in ghash.c
+   Memcheck:Leak
+   ...
+   fun:g_memdup
+   fun:g_hash_table_insert_node
+}
+
+{
+   g_hash_table_resize() in ghash.c
+   Memcheck:Leak
+   ...
+   fun:g_hash_table_resize
+}
+
+{
+   calloc() within gobject_init_ctor()
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:gobject_init_ctor
+}
+
+{
+   malloc() within gobject_init_ctor()
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:gobject_init_ctor
+}
+
+{
+   realloc() within gobject_init_ctor()
+   Memcheck:Leak
+   fun:realloc
+   ...
+   fun:gobject_init_ctor
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_clipboard_get_for_display
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_clipboard_request_contents
+}
+
+{
+   gtk_im_module_initialize() in gtkimmodule.c
+   Memcheck:Leak
+   ...
+   fun:gtk_im_module_initialize
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_clipboard_get_for_display
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_clipboard_request_contents
+}
+
+{
+   gtk_im_module_initialize() in gtkimmodule.c
+   Memcheck:Leak
+   ...
+   fun:gtk_im_module_initialize
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_widget_get_style_context
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_source_style_scheme_get_style
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_source_style_scheme_manager_get_default
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:FcConfigSubstitute*
+   fun:pango_cairo_fc_font_map_fontset_key_substitute
+}

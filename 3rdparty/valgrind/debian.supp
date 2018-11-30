@@ -1,0 +1,37 @@
+##
+## Debian suppressions
+##
+
+{
+   rpmatch bug#350347
+   Memcheck:Leak
+   ...
+   fun:rpmatch
+}
+
+{
+  glib type registry bug#231989
+  Memcheck:Leak
+  fun:calloc
+  fun:g_malloc0
+  fun:type_node_any_new_W
+}
+
+{
+  dlopen() with -lpthread bug#700899
+  Memcheck:Leak
+  fun:calloc
+  fun:_dlerror_run
+  fun:dlopen@@GLIBC_2.2.5
+}
+
+{
+  openmp with libgomp bug#783685
+  Memcheck:Leak
+  fun:malloc
+  fun:gomp_malloc
+  fun:gomp_init_num_threads
+  fun:initialize_env
+  fun:call_init.part.0
+  fun:call_init
+}
