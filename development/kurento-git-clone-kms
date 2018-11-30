@@ -20,7 +20,8 @@ BASENAME="$(basename "$0")"  # Complete file name
 log() { echo "[$BASENAME] $*"; }
 
 # Settings
-BASE_URL="https://github.com/Kurento"
+# BASE_URL="https://github.com/Kurento"  # Use HTTPS (Username + Password)
+BASE_URL="git@github.com:Kurento"  # Use SSH (Public/Private SSH Keys)
 
 REPOS=(
     # KMS main components
@@ -67,6 +68,7 @@ REPOS=(
 
     # Miscellaneous experiments
     experiments
+    kurento-demos-java
 )
 
 log "==== Clone Git repositories ===="
@@ -78,7 +80,7 @@ read -p "Are you sure? Type 'yes': " -r SURE
 log "Working..."
 
 for REPO in "${REPOS[@]}"; do
-    REPO_URL="${BASE_URL}/${REPO}"
+    REPO_URL="${BASE_URL}/${REPO}.git"
     if [ -d "$REPO" ]; then
         log "Skip already existing: $REPO"
     else
