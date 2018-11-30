@@ -3,12 +3,21 @@ cmake_minimum_required(VERSION 2.8)
 project("kms-omni-build")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
+# Disable Policy CMP0058, which takes care of Ninja complaining in QtCreator
+# (generate_kurento_libraries() creates files that aren't part of any target)
+#cmake_policy(SET CMP0058 OLD)
+
 # Test configuration
 set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
 enable_testing()
+
+# Create the SUPPRESSIONS list with all found files
+file(GLOB SUPPRESSIONS
+  LIST_DIRECTORIES false
+  "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/valgrind/*.supp")
 
 add_subdirectory(kms-cmake-utils)
 
@@ -27,12 +36,21 @@ generic_find(LIBNAME KurentoModuleCreator VERSION ^6.7.0)
 
 if(NOT KurentoModuleCreator_FOUND)
   message(STATUS "Generating module creator")
-  execute_process(COMMAND mvn package -DskipTests -DbuildDirectory=${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator RESULT_VARIABLE MVN_RESULT)
-  if(NOT "${MVN_RESULT}" STREQUAL "0")
-    message(FATAL_ERROR "Cannot create module creator, mvn execution failed")
+  execute_process(COMMAND mvn package -DskipTests
+      -DbuildDirectory=${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator
+    RESULT_VARIABLE MAVEN_RET)
+  if(MAVEN_RET)
+    message("Command result: ${MAVEN_RET}")
+    message(FATAL_ERROR "Command failed: mvn package")
   endif()
-  execute_process(COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator/scripts/kurento-module-creator ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/kurento-module-creator)
-  execute_process(COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/kurento-module-creator.generated)
+
+  execute_process(COMMAND cp
+      ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator/scripts/kurento-module-creator
+      ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/kurento-module-creator)
+
+  execute_process(COMMAND touch
+      ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/kurento-module-creator.generated)
 endif()
 
 file(GLOB_RECURSE MODULE_CREATOR_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator/src/*)
