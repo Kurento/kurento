@@ -27,6 +27,16 @@
 #/
 #/     Optional. Default: Disabled.
 #/
+#/ --allow-dirty
+#/
+#/     Build packages intended for Release.
+#/     If this option is not given, packages are built as nightly snapshots.
+#/
+#/     If none of the '--install-missing' options are given, this build script
+#/     expects that all required packages are manually installed beforehand.
+#/
+#/     Optional. Default: Disabled.
+#/
 #/ --release
 #/
 #/     Build packages intended for Release.
@@ -93,46 +103,48 @@ source "$CONF_FILE"
 
 PARAM_INSTALL_MISSING="false"
 PARAM_INSTALL_VERSION="0.0.0"
+PARAM_ALLOW_DIRTY="false"
 PARAM_RELEASE="false"
 PARAM_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
 
 while [[ $# -gt 0 ]]; do
-case "${1-}" in
-    --install-missing)
-        if [[ -n "${2-}" ]]; then
-            PARAM_INSTALL_MISSING="true"
-            PARAM_INSTALL_VERSION="$2"
-            shift
-        else
-            log "ERROR: Missing <Version>"
+    case "${1-}" in
+        --install-missing)
+            if [[ -n "${2-}" ]]; then
+                PARAM_INSTALL_MISSING="true"
+                PARAM_INSTALL_VERSION="$2"
+                shift
+            else
+                log "ERROR: Missing <Version>"
+                exit 1
+            fi
+            ;;
+        --allow-dirty)
+            PARAM_ALLOW_DIRTY="true"
+            ;;
+        --release)
+            PARAM_RELEASE="true"
+            ;;
+        --timestamp)
+            if [[ -n "${2-}" ]]; then
+                PARAM_TIMESTAMP="$2"
+                shift
+            else
+                log "ERROR: Missing <Timestamp>"
+                exit 1
+            fi
+            ;;
+        *)
+            log "ERROR: Unknown argument '${1-}'"
             exit 1
-        fi
-        shift
-        ;;
-    --release)
-        PARAM_RELEASE="true"
-        shift
-        ;;
-    --timestamp)
-        if [[ -n "${2-}" ]]; then
-            PARAM_TIMESTAMP="$2"
-            shift
-        else
-            log "ERROR: Missing <Timestamp>"
-            exit 1
-        fi
-        shift
-        ;;
-    *)
-        log "ERROR: Unknown argument '${1-}'"
-        shift
-        exit 1
-        ;;
-esac
+            ;;
+    esac
+    shift
 done
 
 log "PARAM_INSTALL_MISSING=${PARAM_INSTALL_MISSING}"
 log "PARAM_INSTALL_VERSION=${PARAM_INSTALL_VERSION}"
+log "PARAM_ALLOW_DIRTY=${PARAM_ALLOW_DIRTY}"
 log "PARAM_RELEASE=${PARAM_RELEASE}"
 log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
 
@@ -221,21 +233,29 @@ fi
 #   If it wasn't set, GBP would search for upstream source files in
 #   the "upstream-branch" specified in 'gbp.conf' (or 'upstream' by default).
 # --git-ignore-new ignores the uncommitted 'debian/changelog'.
-# - Other arguments are passed to debuild and dpkg-buildpackage.
+#
+# Other arguments are passed to `debuild` and `dpkg-buildpackage`.
+
+# Arguments passed to 'dpkg-buildpackage'
+ARGS="-uc -us -j$(nproc)"
+if [[ "$PARAM_ALLOW_DIRTY" = "true" ]]; then
+    ARGS="$ARGS -b"
+fi
+
 if [[ "$PARAM_RELEASE" = "true" ]]; then
     log "Run git-buildpackage to generate a release version build"
     gbp buildpackage \
         --git-ignore-branch \
         --git-ignore-new \
         --git-upstream-tree=SLOPPY \
-        -uc -us -j"$(nproc)"
+        $ARGS
 else
     log "Run git-buildpackage to generate a nightly snapshot build"
     gbp buildpackage \
         --git-ignore-branch \
         --git-ignore-new \
         --git-upstream-tree=SLOPPY \
-        -uc -us -j"$(nproc)"
+        $ARGS
 fi
 
 log "Done!"
