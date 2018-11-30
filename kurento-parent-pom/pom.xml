@@ -816,11 +816,6 @@
 				<version>${ApacheJMeter_core.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.seleniumhq.selenium</groupId>
-				<artifactId>selenium-server</artifactId>
-				<version>${selenium-java.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.freemarker</groupId>
 				<artifactId>freemarker</artifactId>
 				<version>${freemarker.version}</version>
