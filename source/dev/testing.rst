@@ -28,7 +28,7 @@ This section introduces the different types of E2E implemented to assess differe
 Functional
 ----------
 
-Functional tests are aimed to evaluate a given capability provided by Kurento. We main types of functional tests for Kurento are the following:
+Functional tests are aimed to evaluate a given capability provided by Kurento. Then main types of functional tests for Kurento are the following:
 
 - WebRTC. Real-time media in the web is one of the core Kurento capabilities, and therefore, a rich test suite to assess the use of WebRTC in Kurento has been implemented. Moreover, two special WebRTC features are also tested:
 
