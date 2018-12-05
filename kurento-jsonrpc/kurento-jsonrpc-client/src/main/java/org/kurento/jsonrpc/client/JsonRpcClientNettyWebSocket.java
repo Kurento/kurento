@@ -231,7 +231,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
           .handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
-              log.info("{} Inititating new Netty channel. Will create new handler too!", label);
+              log.info("{} Initiating new Netty channel. Will create new handler too!", label);
               handler = new JsonRpcWebSocketClientHandler(
                   WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null,
                       true, new DefaultHttpHeaders(), maxPacketSize));
