@@ -17,7 +17,7 @@ enable_testing()
 # Create the SUPPRESSIONS list with all found files
 file(GLOB SUPPRESSIONS
   LIST_DIRECTORIES false
-  "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/valgrind/*.supp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/bin/valgrind/*.supp")
 
 add_subdirectory(kms-cmake-utils)
 
