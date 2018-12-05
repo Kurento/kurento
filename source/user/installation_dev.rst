@@ -9,7 +9,7 @@ These builds end up being uploaded to *Development* repositories so they can be 
 .. warning::
    Pre-release builds always represent the current state on the software development; 99% of the time this is stable code, very close to what will end up being released.
 
-   However, in the other 1% of cases it might include undocumented changes, regressions, bugs or deprecations. It's safer to be conservative and **never** use pre-release builds in a production environment.
+   However, it's also possible (although unlikely) that these builds might include undocumented changes, regressions, bugs or deprecations. It's safer to be conservative and avoid using pre-release builds in a production environment, unless you have a strong reason to do it.
 
 .. note::
    If you are looking to build KMS from the source code, then you should check the section aimed at development of *KMS itself*: :ref:`dev-sources`.

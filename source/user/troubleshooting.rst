@@ -143,7 +143,7 @@ Now that file names and line numbers are present in the stack trace, a developer
 Media Server disconnects from Application Server
 ------------------------------------------------
 
-E.g. Kurento keeps disconnecting every 30 minutes on high load peek time.
+E.g. Kurento keeps disconnecting every 30 minutes on high load peak time.
 
 Checklist:
 
@@ -234,7 +234,7 @@ OpenH264 not found
 Also these conditions apply:
 
 - Packages *openh264-gst-plugins-bad-1.5* and *openh264* are already installed.
-- The file */usr/lib/x86_64-linux-gnu/libopenh264.so* is a broken link to the unexisting file */usr/lib/x86_64-linux-gnu/libopenh264.so.0*.
+- The file */usr/lib/x86_64-linux-gnu/libopenh264.so* is a broken link to the non-existing file */usr/lib/x86_64-linux-gnu/libopenh264.so.0*.
 
 **Reason**: The package *openh264* didn't install correctly. This package is just a wrapper that needs Internet connectivity during its installation stage, to download a binary blob file from this URL: http://ciscobinary.openh264.org/libopenh264-1.4.0-linux64.so.bz2
 
@@ -311,7 +311,7 @@ As opposed to that, the console output for when a connection is successfully don
    DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
    INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Connecting native client
    INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Creating new NioEventLoopGroup
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Inititating new Netty channel. Will create new handler too!
+   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Initiating new Netty channel. Will create new handler too!
    DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  channel active
    DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  WebSocket Client connected!
    INFO org.kurento.tutorial.player.Application : Started Application in 1.841 seconds (JVM running for 4.547)
@@ -340,7 +340,7 @@ This is how this process would look like. In this example, KMS was restarted so 
    INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Connecting native client
    INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Closing previously existing channel when connecting native client
    DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  Closing client
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Inititating new Netty channel. Will create new handler too!
+   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Initiating new Netty channel. Will create new handler too!
    WARN o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Trying to close a JsonRpcClientNettyWebSocket with channel == null
    DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : TryReconnectingForever=true
    DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : TryReconnectingMaxTime=0
@@ -360,7 +360,7 @@ This is how this process would look like. In this example, KMS was restarted so 
    DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
    INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Connecting native client
    INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Creating new NioEventLoopGroup
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Inititating new Netty channel. Will create new handler too!
+   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Initiating new Netty channel. Will create new handler too!
    DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  channel active
    DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  WebSocket Client connected!
    DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Req-> {"id":2,"method":"connect","jsonrpc":"2.0"}
@@ -453,7 +453,7 @@ Quoting from the `Client documentation <https://doc-kurento.readthedocs.io/en/|V
 
     It is recommended to start recording only after media arrives, either to the endpoint that is the source of the media connected to the recorder, to the recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut events, and synchronize the recording with the moment media comes in. In any case, nothing will be stored in the file until the first media packets arrive.
 
-Follow this checklist to see if everything is correctly configured:
+Follow this checklist to see if any of these problems is preventing the RecorderEndpoint from working correctly:
 
 - The RecorderEndpoint is configured for both audio and video, but only video (or only audio) is being provided by the application.
 - Availability of audio/video devices at recorder client initialization, and just before starting the recording.
