@@ -4,9 +4,9 @@ RTP Streaming Commands
 
 .. contents:: Table of Contents
 
-In this document you will find several examples of command-line programs that can be used to generate RTP streams. These streams can then be used to feed any general RTP receiver, but the intention here is to use them to connect an *RtpEndpoint* from a Kurento Media Server pipeline.
+In this document you will find several examples of command-line programs that can be used to generate RTP and SRTP streams. These streams can then be used to feed any general (S)RTP receiver, although the intention here is to use them to connect an *RtpEndpoint* from a Kurento Media Server pipeline.
 
-The tool used for all these programs is `gst-launch <https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html>`__, a tool that is part of the GStreamer multimedia library.
+The tool used for all these programs is `gst-launch <https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html>`__, part of the GStreamer multimedia library.
 
 These examples start from the simplest and then build on each other to end up with a full featured RTP generator. Of course, as more features are added, the command grows in complexity. A very good understanding of *gst-launch* and of GStreamer is recommended.
 
@@ -447,6 +447,23 @@ These are some random and unstructured notes that don't have the same level of d
 About 'sync=false'
 ------------------
 
+https://gstreamer.freedesktop.org/documentation/design/latency.html
+
+Pipeline initialization is done with 3 state changes:
+- NULL→READY: Underlying devices are probed to ensure they can be accessed.
+- READY→PAUSED: Preroll is done, which means that an initial frame is brought from the sources and set into the sinks of the pipeline.
+- PAUSED→PLAYING: Sources start generating frames, and sinks start receiving and processing them.
+
+The "sync" property indicates whether the element is Live (sync=true) or Non-Live (sync=false).
+- Live elements are synchronized against the clock, and only process data according to the established rate. The timestamps of the incoming buffers will be used to schedule the exact render time of its contents.
+- Non-Live elements do not synchronize with any clock, and process data as fast as possible. The pipeline will ignore the timestamps of the video frames and it will play them as they arrive, ignoring all timing information. Note that setting "sync=false" is almost never a solution when timing-related problems occur.
+
+The "async" property enables (async=true) or disables (async=false) the Preroll feature.
+- Live sources cannot produce an initial frame until they are set to PLAYING state, so Preroll cannot be done with them on PAUSE state. If Prerolling is enabled in a Live sink, it will be set on hold waiting for that initial frame to arrive, and only then they will be able to complete the Preroll and start playing.
+- Non-Live sources should be able to produce an initial frame before reaching the PLAYING state, allowing their downstream sinks to Preroll as soon as the PAUSED state is set.
+
+For example, a video camera or an output window/screen would be Live elements; a local file would be a Non-Live element.
+
 Since RTCP packets from the sender should be sent as soon as possible and do not participate in preroll, ``sync=false`` and ``async=false`` are configured on *udpsink*.
 
 See: https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-rtpbin.html
@@ -546,4 +563,3 @@ Some modifications that would be done for KMS:
     a=sendonly
     a=direction:active
     a=ssrc:112233 cname:user@example.com
-
