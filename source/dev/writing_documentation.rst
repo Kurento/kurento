@@ -30,6 +30,50 @@ Besides the extra markup added by Sphinx, there is also the possibility to use *
 
 
 
+Building locally
+================
+
+If you are writing documentation for Kurento, there is no need to commit every change and push to see the result only to discover that an image doesn't show up as you expected, or some small mistake breaks a table layout.
+
+- First of all, it's a very good idea to use a text editor that provides spell checking and live-preview visualization of *reST* files; this alone will help catching most grammatical and syntactic mistakes. `Visual Studio Code <https://code.visualstudio.com/>`__ is a great option, it provides extensions for both of these things.
+
+  To install *VS Code* and the two mentioned functions, use `their installer <https://code.visualstudio.com/Download>`__, then run these commands:
+
+  .. code-block:: bash
+
+     code --install-extension streetsidesoftware.code-spell-checker
+     code --install-extension lextudio.restructuredtext
+
+- Secondly, you can build the documentation locally. Just install the required dependencies:
+
+  .. code-block:: bash
+
+     # Ensure that old versions of Sphinx are not installed
+     sudo apt-get purge --auto-remove \
+         python-sphinx \
+         sphinx-common \
+         python-sphinx-rtd-theme \
+         sphinx-rtd-theme-common
+
+     # Ensure that Sphinx is not installed with Python 3
+     sudo pip3 uninstall sphinx
+     sudo pip3 uninstall sphinx_rtd_theme
+     sudo pip3 uninstall sphinxcontrib_websupport
+
+     # Install Sphinx with Python 2
+     sudo apt-get install python-pip python-setuptools
+     sudo pip2 install --upgrade sphinx sphinx_rtd_theme
+
+  And then just run ``make html`` to build and open your new shiny files:
+
+  .. code-block:: bash
+
+     cd doc-kurento/
+     make html
+     firefox build/html/index.html
+
+
+
 Kurento documentation Style Guide
 =================================
 
@@ -51,7 +95,7 @@ Inline markup
      All dependency targets are defined in the *CMakeLists.txt* file.
      You need to install *libboost-dev* for development.
 
-- Code, commands, arguments, environment variables, commit hashes, and in general machine-oriented keywords are emphasized with double backquotes (as in ````word````). Sample phrases:
+- Code, commands, arguments, environment variables, commit hashes, and in general machine-oriented keywords are emphasized with double back quotes (as in ````word````). Sample phrases:
 
   .. code-block:: text
 
@@ -59,7 +103,7 @@ Inline markup
      Set ``CMAKE_BUILD_TYPE=Debug`` to build with debugging symbols.
      The argument ``--gst-debug`` can be used to control the logging level.
 
-- There is no difference between using *single asterisks* (``*word*``), and `single backquotes` (```word```); they get rendered as *italic text*. So, always use asterisks when wanting to emphasize some text.
+- There is no difference between using *single asterisks* (``*word*``), and `single back quotes` (```word```); they get rendered as *italic text*. So, always use asterisks when wanting to emphasize some text.
 
 - As opposed to Markdown, underscores (as in ``_word_``) *don't get rendered*, so don't use them to emphasize text.
 
@@ -125,7 +169,7 @@ Our Sphinx-based project is hosted in the `doc-kurento`_ repository. Here, the m
 
   The *source* folder is copied into the *build* directory, and then the substitutions take place over this copy.
 
-- **langdoc**. This target creates the automatically generated reference documentation for each :doc:`/features/kurento_client`. Currently, this means the Javadoc and Jsdoc documentations for Java and Js clients, respectively. The Kurento client repositories are checked out in the same version as specified by the documentation's version file, or in the master branch if no such version tag exists. Then, the client stubs of the :doc:`/features/kurento_api` are automatically generated, and from the resulting source files, the appropriate documentation is automatically generated too.
+- **langdoc**. This target creates the automatically generated reference documentation for each :doc:`/features/kurento_client`. Currently, this means the Javadoc and Jsdoc documentations for Java and Js clients, respectively. The Kurento client repositories are checked out in the same version as specified by the documentation version file, or in the master branch if no such version tag exists. Then, the client stubs of the :doc:`/features/kurento_api` are automatically generated, and from the resulting source files, the appropriate documentation is automatically generated too.
 
   The *langdoc* target is usually run before the *html* target, in order to end up with a complete set of HTML documents that include all the reST documentation with the Javadoc/Jsdoc sections.
 
