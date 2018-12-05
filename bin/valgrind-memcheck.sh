@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
 
-#/ Massif: a heap profiler.
+#/ Memcheck: a memory error detector.
 #/
-#/ This scripts launches a program to be analyzed by Valgrind's Massif.
-#/ Massif gathers profiling information, which then can be loaded with
-#/ the `ms_print` tool to present it in a readable way.
-#/
-#/ For example:
-#/
-#/     ms_print valgrind-massif-13522.out > valgrind-massif-13522.out.txt
-#/
-#/ Massif manual: http://valgrind.org/docs/manual/ms-manual.html
+#/ This scripts launches a program to be analyzed by Valgrind's Memcheck.
 #/
 #/ Arguments:
 #/
@@ -63,16 +55,15 @@ fi
 
 # Start analysis
 log ""
-log "==== Massif heap profiler ===="
-log "Remember to build your project with VALGRIND MASSIF configuration"
-log "Best is: RELEASE build with DEBUG symbols, and NORMAL OPTIMIZATION"
+log "==== Memcheck memory error detector ===="
+log "Remember to build your project with VALGRIND MEMCHECK configuration"
+log "Best is: RELEASE build with DEBUG symbols, and MINIMAL OPTIMIZATION"
 log ""
 read -p "Do you want to continue? [Y/n]" -n 1 -r REPLY
 [[ "$REPLY" =~ ^[Yy]*$ ]] || exit 0
 
 # Note: "$@" expands to all quoted arguments, as passed to this script
-valgrind --tool=massif \
-    --log-file="valgrind-massif-%p.log" \
-    --massif-out-file="valgrind-massif-%p.out" \
+valgrind --tool=memcheck \
+    --log-file="valgrind-memcheck-%p.log" \
     $VALGRIND_ARGS \
     "$@"

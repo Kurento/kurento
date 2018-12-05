@@ -39,18 +39,15 @@
 
 # ------------ Shell setup ------------
 
-# Shell options for strict error checking
-set -o errexit -o errtrace -o pipefail -o nounset
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 
-# Help message (extracted from script headers)
-usage() {
-    grep '^#/' "$0" | cut --characters=4-
-    exit 0
+CONF_FILE="$BASEPATH/bash.conf.sh"
+[[ -f "$CONF_FILE" ]] || {
+    echo "[$0] ERROR: Config file not found: $CONF_FILE"
+    exit 1
 }
-REGEX='^(-h|--help)$'
-if [[ "${1:-}" =~ $REGEX ]]; then
-    usage
-fi
+# shellcheck source=bash.conf.sh
+source "$CONF_FILE"
 
 
 
@@ -64,7 +61,7 @@ PARAM_TAG="false"
 PARAM_VERSION="0.0.0"
 
 [[ $# -eq 0 ]] && {
-    echo "ERROR: Missing <Version>"
+    log "ERROR: Missing <Version>"
     exit 1
 }
 
@@ -94,10 +91,10 @@ if [[ "$PARAM_RELEASE" != "true" ]] || [[ "$PARAM_COMMIT" != "true" ]]; then
     PARAM_TAG="false"
 fi
 
-echo "PARAM_RELEASE=${PARAM_RELEASE}"
-echo "PARAM_COMMIT=${PARAM_COMMIT}"
-echo "PARAM_TAG=${PARAM_TAG}"
-echo "PARAM_VERSION=${PARAM_VERSION}"
+log "PARAM_RELEASE=${PARAM_RELEASE}"
+log "PARAM_COMMIT=${PARAM_COMMIT}"
+log "PARAM_TAG=${PARAM_TAG}"
+log "PARAM_VERSION=${PARAM_VERSION}"
 
 
 
@@ -256,7 +253,3 @@ sed --in-place --expression="
 commit_and_tag ./CMakeLists.txt
 
 popd
-
-
-
-echo "Done!"

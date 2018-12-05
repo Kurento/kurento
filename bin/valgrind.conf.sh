@@ -1,10 +1,27 @@
-# This file should be sourced by the `valgrind-*` scripts.
-# The environment variable VALGRIND_OPTIONS contains default common options
-# that will get passed to Valgrind at launch time.
+#!/bin/bash
+# (shebang not really needed, but required by ShellCheck)
 
-VALGRIND_OPTIONS=(
-    # ==== Core options ====
-    # http://valgrind.org/docs/manual/manual-core.html
+# Default settings for Valgrind commands.
+#
+# This config file acts as a central place where all Valgrind settings can
+# be defined. This allows to have a common set of general settings.
+#
+# The environment variable VALGRIND_ARGS gets created as a plain string,
+# containing all command-line options that should be passed to the Valgrind
+# command.
+#
+# To use this file, source it and expand the unquoted VALGRIND_ARGS variable:
+#
+#     source valgrind.conf.sh
+#     valgrind --tool=massif $VALGRIND_ARGS ./my-program
+
+
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+
+VALGRIND_ARGS=(
+    # ==== Basic Options ====
+    # http://valgrind.org/docs/manual/manual-core.html#manual-core.basicopts
 
     #--quiet
     --verbose
@@ -23,10 +40,12 @@ VALGRIND_OPTIONS=(
     # - '%n': a file sequence number, unique for the process.
     # - '%q{FOO}': replaced with contents of the environment variable 'FOO'.
     # =<filename>
-    # --log-file=valgrind-%n-%p.log
+    #--log-file="valgrind-%n-%p.log"
 
 
-    # ==== Error-related options ====
+
+    # ==== Error-related Options ====
+    # http://valgrind.org/docs/manual/manual-core.html#manual-core.erropts
 
     # Maximum number of entries shown in stack traces.
     # =<number> [default: 12]
@@ -47,11 +66,11 @@ VALGRIND_OPTIONS=(
 
     # Add an extra file from which to read error suppressions.
     # =<filename> [default: $PREFIX/lib/valgrind/default.supp]
-    --suppressions="$PWD/3rdparty/valgrind/GNOME.supp"
-    --suppressions="$PWD/3rdparty/valgrind/debian.supp"
-    --suppressions="$PWD/3rdparty/valgrind/glib.supp"
-    --suppressions="$PWD/3rdparty/valgrind/gst.supp"
-    --suppressions="$PWD/3rdparty/valgrind/walbottle.supp"
+    --suppressions="${BASEPATH}/valgrind/GNOME.supp"
+    --suppressions="${BASEPATH}/valgrind/debian.supp"
+    --suppressions="${BASEPATH}/valgrind/glib.supp"
+    --suppressions="${BASEPATH}/valgrind/gst.supp"
+    --suppressions="${BASEPATH}/valgrind/walbottle.supp"
 
     # Generate a suppression for every reported error.
     # Useful to generate new suppression files.
@@ -59,7 +78,10 @@ VALGRIND_OPTIONS=(
     #--gen-suppressions=all
 
 
-    # ==== Uncommon options ====
+
+    # ==== Uncommon Options ====
+    # http://valgrind.org/docs/manual/manual-core.html#manual-core.rareopts
+
     # Detect self-modifying code.
     # Needed for JIT languages, like Qt's QML interpreter.
     # =<none|stack|all|all-non-file> [default: all-non-file for x86/amd64]
@@ -67,14 +89,14 @@ VALGRIND_OPTIONS=(
 
     # Read debug info about inlined function calls.
     # Results in more detailed stacktraces.
-    # WARNING: Slows Valgrind startup and makes it use more memory.
+    # SPEED WARNING: Slows Valgrind startup and makes it use more memory.
     # =<yes|no> [default: yes for Valgrind >= 3.10.0 on Linux for Memcheck/Helgrind/DRD]
     --read-inline-info=yes
 
     # Read debug info about stack and global variables.
     # Result in more precise error messages, for Memcheck, Helgrind, and DRD.
     #
-    # WARNING: Slows Valgrind startup significantly and makes it use
+    # SPEED WARNING: Slows Valgrind startup significantly and makes it use
     # significantly more memory.
     # =<yes|no> [default: no]
     --read-var-info=yes
@@ -82,28 +104,72 @@ VALGRIND_OPTIONS=(
     # Control the scheduler used to serialise thread execution.
     # Improves reproducibility of thread scheduling for multithreaded applications,
     # which is particularly helpful when using Helgrind or DRD.
-    # WARNING: If CPU scaling is enabled, this could decrease significantly the
+    # SPEED WARNING: If CPU scaling is enabled, this could decrease significantly the
     # performance of a multithreaded app. Prevent that by disabling the system's
     # CPU scaling mechanism. E.g. with `cpufreq-set`:
-    #     for i in $(seq 0 $(($(nproc)-1))); do sudo cpufreq-set -c $i -g performance; done
+    #     for i in $(seq 0 $(($(nproc)-1))); do
+    #         sudo cpufreq-set -c $i -g performance
+    #     done
     # =<no|yes|try> [default: no]
     --fair-sched=try
 
 
-    # ==== Memcheck options ====
 
-    # TODO
-    #--memcheck:leak-check=full
-    #--memcheck:show-leak-kinds=definite,indirect
+    # ==== Memcheck Options ====
+    # http://valgrind.org/docs/manual/mc-manual.html#mc-manual.options
+
+    # Search for memory leaks when the client program finishes.
+    # - 'no': Disable reporting of memory leaks.
+    # - 'summary': Just says how many leaks occurred.
+    # - 'full', 'yes': Each individual leak will be shown in detail.
+    # =<no|summary|yes|full> [default: summary]
+    --memcheck:leak-check=full
+
+    # Threshold to merge different backtraces into the same leak report.
+    # - 'low': Only the first two entries need match.
+    # - 'med': Four entries have to match.
+    # - 'high': All entries need to match.
+    # =<low|med|high> [default: high]
+    --memcheck:leak-resolution=med
+
+    # Leak kinds to show in a 'full' leak search.
+    # =<definite,indirect,possible,reachable> [default: definite,possible]
+    #--memcheck:show-leak-kinds=definite,possible,indirect
+
+    # Output a 'Callgrind Format' execution tree file with leak results.
+    # =<no|yes> [default: no]
+    --memcheck:xtree-leak=yes
+    --memcheck:xtree-leak-file="valgrind-memcheck-xtleak-%p.kcg"
+
+    # Report uses of 'undefined value' errors.
+    # =<yes|no> [default: yes]
+    #--memcheck:undef-value-errors=no
+
+    # Track the origin of uninitialised values.
+    # It can drastically reduce the effort required to identify the root cause
+    # of uninitialised value errors, and so is often a productivity win.
+    # SPEED WARNING: Reduces Memcheck's speed by 50% and increases memory use
+    # by a minimum of 100MB, and possibly more.
+    # =<yes|no> [default: no]
     #--memcheck:track-origins=yes
-    #--memcheck:partial-loads-ok=yes
-    #--memcheck:keep-stacktraces=alloc-and-free
-    #--memcheck:show-possibly-lost=yes
-    #--memcheck:leak-check-heuristics=all
+
+    # Control how loads from partially invalid addresses are treated.
+    # Code with invalid addresses is in violation of the ISO C/C++ standards,
+    # and should be considered broken.
+    # =<yes|no> [default: yes]
+    --memcheck:partial-loads-ok=no
+
+    # Size of the freed memory buffer that Memcheck uses to detect invalid
+    # accesses to blocks for some time after they have been freed.
+    # Raising this value may detect invalid uses of freed blocks which would
+    # otherwise go undetected.
+    # =<number> [default: 20000000], in Bytes
+    --memcheck:freelist-vol=256000000
 
 
-    # ==== Massif options ====
-    # http://valgrind.org/docs/manual/ms-manual.html
+
+    # ==== Massif Options ====
+    # http://valgrind.org/docs/manual/ms-manual.html#ms-manual.options
 
     # Enable heap profiling.
     # =<yes|no> [default: yes]
@@ -111,7 +177,7 @@ VALGRIND_OPTIONS=(
 
     # Enable stack profiling.
     # Note main stack size is counted as zero at start-up.
-    # WARNING: Slows Massif down greatly.
+    # SPEED WARNING: Slows Massif down greatly.
     # =<yes|no> [default: no]
     #--massif:stacks=yes
 
@@ -126,9 +192,10 @@ VALGRIND_OPTIONS=(
     # =<name>
     --massif:alloc-fn=g_malloc
     --massif:alloc-fn=g_malloc0
-    --massif:alloc-fn=g_realloc
-    --massif:alloc-fn=g_try_malloc
     --massif:alloc-fn=g_mem_chunk_alloc
+    --massif:alloc-fn=g_realloc
+    --massif:alloc-fn=g_slice_alloc
+    --massif:alloc-fn=g_try_malloc
 
     # The time base used for the profiling results.
     # - 'i': Instructions executed.
@@ -143,5 +210,8 @@ VALGRIND_OPTIONS=(
 
     # Write the profiling data to the specified file.
     # =<file> [default: massif.out.%p]
-    # --massif-out-file=valgrind-massif-%n-%p.out
+    #--massif-out-file="valgrind-massif-%n-%p.out"
 )
+
+# Convert the array into a plain string
+VALGRIND_ARGS=( "${VALGRIND_ARGS[*]}" )
