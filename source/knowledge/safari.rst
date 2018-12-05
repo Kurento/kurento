@@ -9,25 +9,18 @@ There are two main implementations of the Safari browser: the Desktop edition wh
 Codec issues
 ============
 
-Safari (both Desktop and iOS editions) includes a half-baked implementation of the WebRTC standard, at the least with regards to the codecs compatibility. The WebRTC specs state that both VP8 and H.264 video codecs MUST be implemented in all WebRTC endpoints [*]_, but Apple added only H.264 support to Safari, thus leaving it open to suffer interoperability issues with other peers. They don't play nice, just avoid using Safari.
-
-.. [*] `RFC 7742, Section 5. Mandatory-to-Implement Video Codec <https://tools.ietf.org/html/rfc7742#section-5>`__:
-
-   | WebRTC Browsers MUST implement the VP8 video codec as described in
-   | [`RFC6386 <https://tools.ietf.org/html/rfc6386>`__] and H.264 Constrained Baseline as described in [`H264 <http://www.itu.int/rec/T-REC-H.264>`__].
-   |
-   | WebRTC Non-Browsers that support transmitting and/or receiving video
-   | MUST implement the VP8 video codec as described in [`RFC6386 <https://tools.ietf.org/html/rfc6386>`__] and
-   | H.264 Constrained Baseline as described in [`H264 <http://www.itu.int/rec/T-REC-H.264>`__].
+Safari (both Desktop and iOS editions) included a half-baked implementation of the WebRTC standard, at the least with regards to the codecs compatibility. The WebRTC specs state that both VP8 and H.264 video codecs MUST be implemented in all WebRTC endpoints [*]_, but Apple only added VP8 support starting from `Safari Release 68 <https://developer.apple.com/safari/technology-preview/release-notes/#r68>`__. Older versions of the browser won't be able to decode VP8 video, so if the source video isn't already in H.264 format, Kurento Media Server will need to transcode the input video so they can be received by Safari.
 
 In order to ensure compatibility with Safari browsers, also caring to not trigger on-the-fly transcoding between video codecs, it is important to make sure that Kurento has been configured with support for H.264, and it is also important to check that the SDP negotiations are actually choosing this as the preferred codec.
+
+If you are targeting Safari version 68+, then this won't pose any problem, as now both H.264 and VP8 can be used for WebRTC.
 
 
 
 HTML policies for video playback
 ================================
 
-Until now, this has been the recommended way of inserting a video element in any HTML document:
+Until recently, this has been the recommended way of inserting a video element in any HTML document:
 
 .. code-block:: html
 
@@ -37,21 +30,21 @@ All Kurento tutorials are written to follow this example. As a general rule, mos
 
 There are two things to consider in order to make an HTML document that is compatible with *iOS Safari*:
 
-1. Don't use the ``autoplay`` attribute. Instead, manually call ``HTMLMediaElement.play()``.
-2. Add the *playsinline* attribute.
+1. Call the ``play()`` method, instead of using the ``autoplay`` attribute of the ``<video>`` tag.
+2. Add the ``playsinline`` attribute to the ``<video>`` tag.
 
-Sources:
+Sources for this section:
 
 - https://webkit.org/blog/6784/new-video-policies-for-ios/
+- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#Browser_compatibility
 - https://developer.apple.com/library/content/releasenotes/General/WhatsNewInSafari/Articles/Safari_10_0.html
-- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video
 
 
 
 <video autoplay>
 ----------------
 
-The *autoplay* attribute is honored by all browsers, and it makes the ``<video>`` tag to automatically start playing as soon as the source stream is available. In other words: the underlying method ``video.play()`` gets implicitly called as soon as a source video stream becomes available and is set with ``video.srcObject = stream``:
+The *autoplay* attribute is honored by all browsers, and it makes the ``<video>`` tag to automatically start playing as soon as the source stream is available. In other words: the method ``video.play()`` gets implicitly called as soon as a source video stream becomes available and is set with ``video.srcObject = stream``:
 
 .. code-block:: html
 
@@ -59,7 +52,7 @@ The *autoplay* attribute is honored by all browsers, and it makes the ``<video>`
 
 However, in *iOS Safari* (version >= 10), the *autoplay* attribute is only available for videos that have **no sound**, are **muted**, or have a **disabled audio track**. In any other case, the *autoplay* attribute will be ignored, and the video won't start playing automatically when a new stream is set.
 
-The currently recommended solution for this issue is to avoid using the *autoplay* attribute altogether, for the ``<video>`` tags. Instead, manually call the ``play()`` method as a result of some user interaction. For example, when a user clicks a button. The safest way is to call the ``video.play()`` method from inside a button's ``onclick`` event handler.
+The currently recommended solution for this issue is to avoid using the *autoplay* attribute. Instead, manually call the ``play()`` method as a result of some user interaction. For example, when a user clicks a button. The safest way is to call the ``video.play()`` method from inside a button's ``onclick`` event handler.
 
 
 
