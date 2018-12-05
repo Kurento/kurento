@@ -196,6 +196,54 @@ Checklist:
 
 
 
+CPU usage grows too high
+------------------------
+
+Kurento Media Pipelines can get pretty complex if your use case requires so, which would mean more processing power is required to run them; however, even for the simplest cases it's possible that you find out unexpected spikes in CPU usage, which in extreme cases could end up crashing the server due to resource exhaustion in the machine.
+
+Check these points in an attempt to find possible causes for the high CPU usage:
+
+* Currently Kurento has performance issues with source videos bigger or equal to 720p. 1080p is not recommended (although it might work but the Kurento team hasn't done any factual analysis to prove it).
+
+* Source and destination video codecs must be compatible. This has always been a source of performance problems in WebRTC communications.
+
+  - For example, if some participants are using Firefox and talking in a room, they will probably negotiate **VP8** codec with Kurento; then later someone enters with Safari, CPU usage explodes due to transcoding is now suddenly required, because Safari only supports **H.264** (VP8 support was added only since Desktop Safari v68).
+  - Another example is you have some VP8 streams running nicely but then stream recording is enabled with the **MP4** recording profile, which uses H.264. Same story: video needs to be converted, and that uses a lot of CPU.
+
+* Also check if other processes are running in the same machine and using the CPU. For example, if Coturn is running and using a lot of resources because too many users end up connecting via Relay (TURN).
+
+Of these, video transcoding is the main user of CPU cycles, because encoding video is a computationally expensive operation. As mentioned earlier, keep an eye on the *TRANSCODING* events sent from Kurento to your Application Server, or alternatively look for ``TRANSCODING is ACTIVE`` messages in the media server logs.
+
+If you see that TRANSCODING is ACTIVE at some point, you may get a bit more information about why, by enabling this line:
+
+.. code-block:: bash
+
+   export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
+
+in your daemon settings file, ``/etc/default/kurento-media-server``.
+
+Then look for these messages in the media server log output:
+
+* ``Current output caps: [...]``
+* ``Downstream input caps: [...]``
+* ``Find TreeBin with output caps: [...]``
+
+Which will end up with either of these sets of messages:
+
+* If source codec is compatible with destination:
+
+  - ``TreeBin found! Reuse it``
+  - ``TRANSCODING is INACTIVE for this media``
+
+* If source codec is **not** compatible with destination:
+
+  - ``TreeBin not found! Connection requires transcoding``
+  - ``TRANSCODING is ACTIVE for this media``
+
+The *input caps* and *output caps* mentioned in the first messages can help understand what codec is being received by Kurento and what is being expected at the other side.
+
+
+
 Service init doesn't work
 -------------------------
 
