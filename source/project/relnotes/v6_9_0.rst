@@ -9,7 +9,7 @@ Howdy!
 
 A new release of Kurento Media Server brings huge stability and performance improvements.
 
-Until recently, some Kurento users had been suffering `a fatal bug <https://github.com/Kurento/bugtracker/issues/247>`__ which would cause crashes and segmentation faults in some specific configurations, related to abruptly interrupted TCP connections. Thanks to the invaluable help of `Olivier Crête <https://gitlab.freedesktop.org/ocrete>`__, who is the main maintainer and developer of the **libnice** library, `this bug <https://gitlab.freedesktop.org/libnice/libnice/issues/33>`__ has been fixed and all projects that make use of this library are now able to benefiting from the fix.
+Until recently, some Kurento users had been suffering `a fatal bug <https://github.com/Kurento/bugtracker/issues/247>`__ which would cause crashes and segmentation faults in some specific configurations, related to abruptly interrupted TCP connections. Thanks to the invaluable help of `Olivier Crête <https://gitlab.freedesktop.org/ocrete>`__, who is the main maintainer and developer of the **libnice** library, `this bug <https://gitlab.freedesktop.org/libnice/libnice/issues/33>`__ has been fixed and all projects that make use of this library are now able to benefit from the fix.
 
 Kurento is of course one of these projects, making use of the *libnice* library to provide WebRTC compatibility. Starting from version 6.9.0, the latest improvements made to the *libnice* library have been integrated, and now all related crashes have stopped happening. Once again, we want to send **a huge thank you to Olivier** for his great work!
 
@@ -57,7 +57,7 @@ Changed
 
 - [kms-core] The default port range for incoming RTP streams (applicable to both *RtpEndpoint* and *WebRtcEndpoint*) was ``[0, 65535]``. This changed to exclude all privileged ports, which are system-protected and require root permissions to be used; now the port range is ``[1024, 65535]``.
 
-  Of course, you are still able to configure a different range of ports by setting the `minPort` and/or `maxPort` properties in `/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini`.
+  Of course, you are still able to configure a different range of ports by setting the `minPort` and/or `maxPort` properties in ``/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini``.
 
 - [kurento-media-server] The daemon settings file in ``/etc/default/kurento-media-server`` now disables colored output by default. This is useful to produce a clean error log file in ``/var/log/kurento-media-server/errors.log``.
 
@@ -69,11 +69,11 @@ Changed
 
      <TIMESTAMP> -- New execution
 
-  Before this change, all errors were appended without separation, which could become confusing and users had problems identifying where the previous execution finished and where the latest one started.
+  Before this change, all errors were appended without separation, which could become confusing and users had problems identifying where older executions finished and where the latest one started.
 
 
 
 Fixed
 =====
 
-- [kurento-media-server] The daemon would crash if the debug log files couldn't be created for any reason (e.g. because of permission problems). After this fix, logging files will be disabled and logging will revert back to being printed on *stdout*.
+- [kurento-media-server] The daemon would crash if the debug log files couldn't be created for any reason (e.g. because of permission problems). After this fix, if log files cannot be created or accessed, file logging will be disabled and logging will revert back to being printed to *stdout*.

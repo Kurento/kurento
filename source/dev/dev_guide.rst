@@ -306,7 +306,7 @@ CMake accepts the following build types: *Debug*, *Release*, *RelWithDebInfo*. S
 
 .. note::
 
-   The standard way of compiling a project with CMake is to create a *build* directory and run the ``cmake`` and ``make`` commands from there. This allows the developer to have different build folders for different purposes. However **do not use this technique** if you are trying to compile a subdirectory of **kms-omni-build**. For example, if you do this to build *kms-ombi-build/kms-core*, no more that one build folder can be present at a time in *kms-ombi-build/kms-core/build*. If you want to keep several builds of a single module, it is better to just work on a separate Git clone of that repository.
+   The standard way of compiling a project with CMake is to create a *build* directory and run the ``cmake`` and ``make`` commands from there. This allows the developer to have different build folders for different purposes. However **do not use this technique** if you are trying to compile a subdirectory of **kms-omni-build**. For example, if you do this to build *kms-omni-build/kms-core*, no more that one build folder can be present at a time in *kms-ombi-build/kms-core/build*. If you want to keep several builds of a single module, it is better to just work on a separate Git clone of that repository.
 
 It is also possible to enable GCC's AddressSanitizer or ThreadSanitizer with these flags:
 
