@@ -138,8 +138,8 @@ VALGRIND_ARGS=(
 
     # Output a 'Callgrind Format' execution tree file with leak results.
     # =<no|yes> [default: no]
-    --memcheck:xtree-leak=yes
-    --memcheck:xtree-leak-file="valgrind-memcheck-xtleak-%p.kcg"
+    #--memcheck:xtree-leak=yes
+    #--memcheck:xtree-leak-file="valgrind-memcheck-xtleak-%p.kcg"
 
     # Report uses of 'undefined value' errors.
     # =<yes|no> [default: yes]
