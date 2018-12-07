@@ -53,17 +53,16 @@ source "$CONF_FILE"
 
 # ------------ Script start ------------
 
+PARAM_VERSION_DEFAULT="0.0.0"
+
+
+
 # ---- Parse arguments ----
 
 PARAM_RELEASE="false"
 PARAM_COMMIT="false"
 PARAM_TAG="false"
-PARAM_VERSION="0.0.0"
-
-[[ $# -eq 0 ]] && {
-    log "ERROR: Missing <Version>"
-    exit 1
-}
+PARAM_VERSION="$PARAM_VERSION_DEFAULT"
 
 while [[ $# -gt 0 ]]; do
 case "${1-}" in
@@ -89,6 +88,11 @@ done
 # Enforce restrictions
 if [[ "$PARAM_RELEASE" != "true" ]] || [[ "$PARAM_COMMIT" != "true" ]]; then
     PARAM_TAG="false"
+fi
+
+if [[ "$PARAM_VERSION" = "$PARAM_VERSION_DEFAULT" ]]; then
+    log "ERROR: Missing <Version>"
+    exit 1
 fi
 
 log "PARAM_RELEASE=${PARAM_RELEASE}"
