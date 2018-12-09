@@ -105,12 +105,12 @@ Information about development of *Kurento itself* is also available:
    /dev/release
    /dev/hardening
    /dev/writing_documentation
+   /dev/testing
 
 ..
    This sections are commented out, for now:
    /dev/changelog
    /dev/architecture
-   /dev/testing
 
 
 
