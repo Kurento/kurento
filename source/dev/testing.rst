@@ -61,6 +61,14 @@ Stability tests verifies Kurento capabilities in different scenarios:
 
 - Using a lot of resources (CPU, memory) of a KMS instance.
 
+Stability tests have been also created using Java, and they are contained in the project `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_. Again, we use Maven to execute stability tests against a local KMS and using also local browsers (Chrome, Firefox):
+
+.. code-block:: bash
+
+   git clone https://github.com/Kurento/kurento-java
+   cd kurento-java
+   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemStabilityTests
+
 Tutorials
 ---------
 
