@@ -83,7 +83,15 @@ The documentation of Kurento includes a number of tutorials `tutorials <https://
 API
 ---
 
-The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS. In you want to run API tests for Java, please take a look to the next section of this document. In order to run JavaScript API tests against a running instance of local KMS, the command to be used is the following:
+The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS. In you want to run API tests for Java, as usual for Kurento tests, Maven is required, as follows:
+
+.. code-block:: bash
+
+   git clone https://github.com/Kurento/kurento-java
+   cd kurento-java
+   mvn verify -pl kurento-integration-tests/kurento-client-test -Pintegration -Dgroups=org.kurento.commons.testing.KurentoClientTests
+
+In order to run JavaScript API tests against a running instance of local KMS, the command to be used is the following:
 
 .. code-block:: bash
 
