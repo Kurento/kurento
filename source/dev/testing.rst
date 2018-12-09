@@ -28,7 +28,17 @@ This section introduces the different types of E2E implemented to assess differe
 Functional
 ----------
 
-Functional tests are aimed to evaluate a given capability provided by Kurento. The main types of functional tests for Kurento are the following:
+Functional tests are aimed to evaluate a given capability provided by Kurento. These tests have created in Java. You can find the source code in the repository `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ within `kurento-java <https://github.com/Kurento/kurento-java/>`_.  In order to run functional tests, Maven should be used as follows:
+
+.. code-block:: bash
+
+   git clone https://github.com/Kurento/kurento-java
+   cd kurento-java
+   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemFunctionalTests
+
+By default, these tests required a local Kurento Media Server installed in the machine running the tests. In addition, Chrome and Firefox browsers are also required. For further information about running these tests, please read next section.
+
+The main types of functional tests for Kurento are the following:
 
 - WebRTC. Real-time media in the web is one of the core Kurento capabilities, and therefore, a rich test suite to assess the use of WebRTC in Kurento has been implemented. Moreover, two special WebRTC features are also tested:
 
@@ -41,7 +51,6 @@ Functional tests are aimed to evaluate a given capability provided by Kurento. T
 - Player. KMS's ``PlayerEndpoint`` allows to inject media from seekable or non-seekable sources to a media pipeline. A suite of tests have been implemented to assess this feature.
 
 - Composite/Dispatcher. KMS allows to mix media using different media elements (``Composite`` and ``Dispatcher``). These tests are aimed to asses the result of this media mixing.
-
 
 Stability
 ---------
