@@ -367,9 +367,11 @@ The most important classes of this diagram are the following:
 
    - Retries mechanism: In order to detect flaky tests, a retries mechanism is present in KTF. This mechanism allows to repeat a failed test a configurable number of times.
 
-- `KurentoClientTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoClientTest.java>`_: It provides an instance of **Kurento Media Server** (KMS) together with a instance of a **Kurento Java Client** to control KMS. There are two options to run this KMS (see KTF API section for configuration details):
+- `KurentoClientTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoClientTest.java>`_: It provides an instance of **Kurento Media Server** (KMS) together with a instance of a **Kurento Java Client** to control KMS. There are three options to run this KMS (see parameter ``test.kms.scope``):
 
    - Local KMS. To use this option, it is a pre-requisite to have KMS installed in the machine running this type of tests.
+
+   - Remote KMS. To use this option, it is a pre-requisite that KMS is installed in a remote host. If this KMS is going to be started by tests, then it is also required to have SSH access to the remote host in which KMS is installed (using parameters ``kms.login`` and ``kms.key``).
 
    - KMS in a **Docker** container. To use this option, it is a pre-requisite to have `Docker <https://www.docker.com/>`_ installed in the machine running this type of tests.
 
