@@ -122,9 +122,11 @@ Let's take a closer look to the Maven command:
 
 - ``-Dgroups=org.kurento.commons.testing.IntegrationTests``: The Kurento E2E test suite is divided into different `JUnit 4's categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select different types of `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_. The most used values for this group are:
 
-   - ``SystemFunctionalTests`` : To run functional tests (as defined in section before).
+   - ``IntegrationTests``: Parent category for all Kurento E2E tests.
 
-   - ``SystemStabilityTests`` : To run stability tests (as defined in section before).
+   - ``SystemFunctionalTests``: To run functional tests (as defined in section before).
+
+   - ``SystemStabilityTests``: To run stability tests (as defined in section before).
 
    - ``KurentoClientTests``: To run Java API tests (as defined in section before). If this option is used, the project should be also changed using ``-pl kurento-integration-tests/kurento-client-test``
 
