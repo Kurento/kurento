@@ -283,7 +283,7 @@ Kurento is typically consumed using a web application. E2E tests follow this arc
 Fake clients
 ------------
 
-In some tests (typically in performance tests), another instance of KMS is used to generate what we call *fake clients*, which are WebRTC peers which are connected in a WebRTC one to many communication. The KMS used for this features (referred as *fake KMS*) is controlled with the parameteres summarized in the following table:
+In some tests (typically in performance or stability tests), another instance of KMS is used to generate what we call *fake clients*, which are WebRTC peers which are connected in a WebRTC one to many communication. The KMS used for this features (referred as *fake KMS*) is controlled with the parameters summarized in the following table:
 
 +------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
 | **Parameter**          | **Description**                                                                                                                                                                                                                                   | **Default value**               |
@@ -300,6 +300,8 @@ In some tests (typically in performance tests), another instance of KMS is used 
 |                        |                                                                                                                                                                                                                                                   |                                 |
 |                        | Following properties are honored when KMS is managed by test: ``fake.kms.scope``, ``test.kms.docker.image.name``, ``test.kms.debug``                                                                                                              |                                 |
 +------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
+
+Although available in KTF, the fake clients feature is not very used in the current tests. You can see an example in the stability test `LongStabilityCheckMemoryTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/test/java/org/kurento/test/longstability/LongStabilityCheckMemoryTest.java>`_.
 
 Other test features
 -------------------
