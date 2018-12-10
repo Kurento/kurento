@@ -1,3 +1,8 @@
+kms-jsonrpc (6.9.0) testing; urgency=medium
+
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Dec 2018 17:49:33 +0100
+
 kms-jsonrpc (6.8.0) testing; urgency=medium
 
   * Review changelog, control, copyright
