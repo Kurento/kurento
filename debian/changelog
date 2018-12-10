@@ -1,3 +1,8 @@
+kurento-module-creator (6.9.0) testing; urgency=medium
+
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Dec 2018 17:49:32 +0100
+
 kurento-module-creator (6.8.0) testing; urgency=medium
 
   * Prepare release 6.7.0
