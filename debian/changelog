@@ -1,3 +1,8 @@
+kms-elements (6.9.0) testing; urgency=medium
+
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Dec 2018 17:49:34 +0100
+
 kms-elements (6.8.0) testing; urgency=medium
 
   * debian/rules: Don't override target dh_auto_test
