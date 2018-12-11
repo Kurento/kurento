@@ -1,29 +1,47 @@
 # Build tools for Kurento projects - Dockerfile
 #
-# This image is used to test Debian packaging of Kurento repositories.
+# This image is used to generate Debian packages from Kurento repositories.
+# It runs *kurento-buildpackage* [1] from whithin a properly configured
+# system.
 #
-# Build:
-#     docker build --tag kurento-buildtools .
+# [1]: https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh
 #
-# Optional build arguments:
-#     --build-arg UBUNTU_VERSION=<Version>
-#       <Version> is like "14.04", "16.04", etc. Valid values are listed here:
-#       https://hub.docker.com/_/buildpack-deps/
-#       Default: "16.04"
 #
-# Usage:
-#     git clone https://github.com/Kurento/adm-scripts.git
-#     git clone https://github.com/Kurento/kms-core.git
-#     docker run --rm \
-#         --mount type=bind,source="$PWD/adm-scripts",target=/adm-scripts \
-#         --mount type=bind,source="$PWD/kms-core",target=/build \
-#         kurento-buildtools  [Args...]
+# Build command
+# -------------
 #
-# About [Args...]:
-#     It is possible to pass arguments to the build script: just append them
-#     to the `docker run` call. 'adm-scripts/kurento-buildpackage.sh' will be
-#     run as the Docker's ENTRYPOINT.
-#     For information about available arguments, use '--help'.
+# docker build --tag kurento/buildtools .
+#
+#
+# Build arguments
+# ---------------
+#
+# --build-arg UBUNTU_VERSION=<Version>
+#
+#     <Version> is like "14.04", "16.04", etc. Valid values are listed here:
+#     https://hub.docker.com/_/buildpack-deps/
+#
+#     Optional. Default: "16.04".
+#
+#
+# Run command
+# -----------
+#
+# git clone https://github.com/Kurento/kms-core.git
+# cd kms-core/
+# docker run --rm \
+#     --mount type=bind,source="$PWD",target=/build \
+#     kurento/buildtools  [Args...]
+#
+#
+# Run arguments
+# -------------
+#
+# It is possible to pass arguments to the build script: just append them
+# to the `docker run` call. *kurento-buildpackage* will be run as the
+# Docker's ENTRYPOINT, and will receive all arguments passed in `[Args...]`.
+#
+# Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
 ARG UBUNTU_VERSION=16.04
 
@@ -48,7 +66,7 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
 # * Tools will get installed anyway in most cases:
 #   - build-essential, cmake, pkg-config: Used by C/C++ based projects
 #   - default-jdk (Java JDK), maven: Used by Java based projects
-#   - jshon: Used by some Javascript tools
+#   - jshon: Used by some JavaScript tools
 # * Miscellaneous tools that are used by several jobs in CI
 RUN apt-get update \
  && apt-get install -y \
@@ -65,7 +83,7 @@ RUN apt-get update \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 8.x LTS (includes NPM) and Bower
-# Used by Javascript based projects
+# Used by JavaScript-based projects
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get update \
  && apt-get install -y \
@@ -74,18 +92,8 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && npm -g install bower \
  && npm cache clean --force
 
-# Install dependencies of 'kurento-buildpackage.sh':
-# * git-buildpackage
-#   - Python 3 (pip, setuptools, wheel)
-#   - debuild (package 'devscripts')
-#     - dpkg-buildpackage (package 'dpkg-dev')
-#     - lintian
-#   - git
-#     - openssh-client (for SSH access)
-# * lsb-release
-# * mk-build-deps (package 'devscripts')
-#   - equivs
-# * nproc (package 'coreutils')
+# Install dependencies of 'kurento-buildpackage'
+# (listed in the tool's help/header)
 RUN apt-get update \
  && apt-get install -y \
         python3 python3-pip python3-setuptools python3-wheel \
@@ -94,7 +102,6 @@ RUN apt-get update \
         lintian \
         git \
         openssh-client \
-        \
         lsb-release \
         equivs \
         coreutils \
@@ -110,7 +117,6 @@ RUN PIP_VERSION="$(python3 -c 'import pip; print(pip.__version__)')" \
 # - Create directories where the host will mount its file system
 RUN git config --global user.name "Kurento CI" \
  && git config --global user.email "kurento@googlegroups.com" \
- && mkdir /adm-scripts \
  && mkdir /build
 
 
