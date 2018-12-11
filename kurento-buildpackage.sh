@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-#/ Kurento build script.
+#/ Kurento packaging script for Debian/Ubuntu.
 #/
 #/ This shell script is used to build all Kurento Media Server
 #/ modules, and generate Debian/Ubuntu package files from them.
 #/
-#/ Arguments:
+#/
+#/ Arguments
+#/ ---------
 #/
 #/ --install-missing <Version>
 #/
@@ -58,24 +60,37 @@
 #/    Optional. Default: Current date and time, as given by the command
 #/    `date --utc +%Y%m%d%H%M%S`.
 #/
-#/ Dependency tree:
 #/
-#/ * git-buildpackage (???)
-#    2 options:
-#    - Ubuntu package: git-buildpackage 0.7.2 in Xenial
-#    - Python PIP: gbp 0.9.10
-#      - Python 3 (pip, setuptools, wheel)
-#      - sudo apt-get install python3-pip python3-setuptools
-#      - sudo pip3 install --upgrade gbp
+#/ Dependency tree
+#/ ---------------
+#/
+#/ * git-buildpackage
+#/   - Python 3 (pip, setuptools, wheel)
 #/   - debuild (package 'devscripts')
 #/     - dpkg-buildpackage (package 'dpkg-dev')
 #/     - lintian
 #/   - git
-#/     - openssh-client (for SSH access)
+#/     - openssh-client (for Git SSH access)
 #/ * lsb-release
 #/ * mk-build-deps (package 'devscripts')
 #/   - equivs
 #/ * nproc (package 'coreutils')
+#/
+#/
+#/ Dependency install
+#/ ------------------
+#/
+#/ apt-get update && apt-get install --yes \
+#/     python3 python3-pip python3-setuptools python3-wheel \
+#/     devscripts \
+#/     dpkg-dev \
+#/     lintian \
+#/     git \
+#/     openssh-client \
+#/     lsb-release \
+#/     equivs \
+#/     coreutils
+#/ pip3 install --upgrade gbp
 
 
 
