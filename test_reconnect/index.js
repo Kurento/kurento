@@ -180,8 +180,7 @@ function getOnError(done) {
 function sleep(seconds) {
   var e = new Date().getTime() + (seconds * 1000);
 
-  while (new Date().getTime() <= e) {;
-  }
+  while (new Date().getTime() <= e) {}
 }
 
 Timeout.factor = parseFloat(QUnit.config.timeout_factor) || 1;
