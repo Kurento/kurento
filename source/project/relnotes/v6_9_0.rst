@@ -48,7 +48,11 @@ Added
 
 - [kms-elements] The port range that *PlayerEndpoint* uses for incoming RTP streams can now be configured with the ``rtspClientPortRange`` property in ``/etc/kurento/modules/kurento/PlayerEndpoint.conf.ini``. Thanks `Mislav Čakarić <https://github.com/chax>`__ for the `Pull Request #14 <https://github.com/Kurento/kms-elements/pull/14>`__!
 
-- [kms-omni-build] The ``bin/`` folder contains now a set of scripts that help developers run Valgrind to find memory leaks and access errors.
+- [kms-omni-build] The ``bin/`` folder now contains a set of scripts that help developers run Valgrind to find memory leaks and access errors.
+
+- [doc-kurento] Our documentation has received a big bump in the project management section, this time related to how our End-to-End tests are designed and how Kurento developers can use them. This has little to no relevance to end users, but it's a first step into the long-term objective of letting developers who use Kurento have better knowledge about our testing software.
+
+  If you want to have a look, check out the :doc:`Testing section </dev/testing>`. Thanks `Boni García <https://github.com/bonigarcia>`__ for `all the work <https://github.com/Kurento/doc-kurento/search?o=desc&q=author%3Abonigarcia+author-date%3A2018-11-08..2018-12-10&s=author-date&type=Commits>`__!
 
 
 
