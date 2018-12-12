@@ -482,25 +482,25 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
    .. code-block:: bash
 
       PACKAGES=(
-        build-essential
-        debhelper
-        curl
-        fakeroot
-        flex
-        git openssh-client
-        libcommons-validator-java
-        python
-        python-apt
-        python-debian
-        python-git
-        python-requests
-        python-yaml
-        subversion
-        wget
+          build-essential
+          debhelper
+          curl
+          fakeroot
+          flex
+          git openssh-client
+          libcommons-validator-java
+          python
+          python-apt
+          python-debian
+          python-git
+          python-requests
+          python-yaml
+          subversion
+          wget
       )
 
       sudo apt-get update
-      sudo apt-get install "${PACKAGES[@]}"
+      sudo apt-get install --yes "${PACKAGES[@]}"
 
    .. note::
 
@@ -508,30 +508,25 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
       - ``libcommons-validator-java`` seems to be required to build *gstreamer* (it failed with lots of errors from *jade*, when building documentation files).
       - ``subversion`` (svn) is used in the Python build script (*compile_project.py*) due to GitHub's lack of support for git-archive protocol (see https://github.com/isaacs/github/issues/554).
 
-4. Download the Kurento CI scripts and the desired module. Run:
+4. Download the Kurento CI scripts and the desired module (change *kms-core* to the name of the module you want to build). Run:
 
    .. code-block:: text
 
       git clone https://github.com/Kurento/adm-scripts.git
       git clone https://github.com/Kurento/kms-core.git
 
-   But instead of *kms-core*, use the one you intend to build.
-
 5. Build packages for the desired module. Run:
 
    .. code-block:: text
 
       sudo -s
-      cd kms-core/
-
       export PYTHONUNBUFFERED=1
-      export PATH="$PWD/../adm-scripts:$PATH"
+      export PATH="$PWD/adm-scripts:$PWD/adm-scripts/kms:$PATH"
 
-      ../adm-scripts/kms/compile_project.py \
-          --base_url https://github.com/Kurento \
-          compile
+      cd kms-core/
+      compile_project.py --base_url https://github.com/Kurento compile
 
-   Other variable you can export is ``DEB_BUILD_OPTIONS``, in order to disable any of unit testing, doc generation (which at the Debian level is mostly nothing, this doesn't refer to the whole Kurento project documentation site), and binary stripping. For example:
+   Another variable you can export is ``DEB_BUILD_OPTIONS``, in order to disable any of unit testing, doc generation (which at the Debian level is mostly nothing, this doesn't refer to the whole Kurento project documentation site), and binary stripping. For example:
 
    .. code-block:: text
 
