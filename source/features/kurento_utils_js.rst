@@ -414,7 +414,7 @@ Be sure to have :term:`Node.js` and :term:`Bower` installed in your system:
 
 .. sourcecode:: bash
 
-   curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -
+   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
    sudo apt-get install -y nodejs
    sudo npm install -g bower
 
