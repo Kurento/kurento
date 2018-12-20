@@ -16,9 +16,9 @@ Media Server
 Media Server crashed
 --------------------
 
-If the Media Server crashes, it will generate an **error log** file. Also, in typical Ubuntu systems, the Linux Kernel will generate a **crash core dump**.
+If the Media Server crashes, it will write an stack trace into the file **/var/log/kurento-media-server/errors.log**. Also, in typical Ubuntu systems, the Linux Kernel will generate a crash core dump in **/var/crash/** (although your system might be configured to generate them into a different directory).
 
-However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to run your breaking test case *after* having installed all debugging packages:
+However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to run your breaking test case **with all debugging packages already installed**:
 
 .. code-block:: bash
 
@@ -56,87 +56,39 @@ However, these files won't contain much useful information if the relevant debug
     sudo apt-get update
     sudo apt-get install "${PACKAGES[@]}"
 
-As an example, see what an error log from Kurento looks like after a crash, when debug symbols are NOT installed. **This doesn't help** to debug the crash, because there is no source code information in the stack trace:
+For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in the example**:
 
 .. code-block:: text
 
+   # ==== NOT USEFUL: WITHOUT debugging symbols ====
    $ cat /var/log/kurento-media-server/errors.log
-   Segmentation fault (thread 139667051341568, pid 1)
+   Segmentation fault (thread 139667051341568, pid 14132)
    Stack trace:
    [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
    /usr/lib/x86_64-linux-gnu/libkmscoreimpl.so.6:0x1025E0
-   [virtual thunk to kurento::MediaElementImpl::getGstreamerDot(std::shared_ptr<kurento::GstreamerDotDetails>)]
-   /usr/lib/x86_64-linux-gnu/libkmscoreimpl.so.6:0xFA469
-   [g_closure_invoke]
-   /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:0xFFA5
-   [g_signal_handler_disconnect]
-   /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:0x21FC1
-   [g_signal_emit_valist]
-   /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:0x2AD5C
    [g_signal_emit]
    /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:0x2B08F
    [check_if_flow_media]
    /usr/lib/x86_64-linux-gnu/libkmsgstcommons.so.6:0x1F9E4
-   [gst_mini_object_steal_qdata]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x6C29B
    [g_hook_list_marshal]
    /lib/x86_64-linux-gnu/libglib-2.0.so.0:0x3A904
-   [gst_mini_object_steal_qdata]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x6AAFB
-   [gst_flow_get_name]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x6E98B
-   [gst_pad_push]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x76533
-   [gst_proxy_pad_chain_default]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x5F5E3
-   [gst_flow_get_name]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x6E5CF
-   [gst_pad_push]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x76533
-   [gst_proxy_pad_chain_default]
-   /usr/lib/x86_64-linux-gnu/libgstreamer-1.5.so.0:0x5F5E3
 
-And now this is that same crash, after installing (among others) the packages *libglib2.0-0-dbg*, *libgstreamer1.5-0-dbg*, and *kms-core-dbg*. This stack trace is much more helpful, because it now indicates the exact file names and line numbers where the crash happened:
-
-.. code-block:: text
-
-   # cat /var/log/kurento-media-server/errors.log
+   # ==== USEFUL: WITH debugging symbols ====
+   $ cat /var/log/kurento-media-server/errors.log
    Segmentation fault (thread 140672899761920, pid 15217)
    Stack trace:
    [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
    /home/kurento/kms-omni-build/kms-core/src/server/implementation/objects/MediaElementImpl.cpp:479
-   [std::__shared_count<(__gnu_cxx::_Lock_policy)2>::~__shared_count()]
-   /usr/include/c++/5/bits/shared_ptr_base.h:659
-   [closure_invoke_notifiers]
-   /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gclosure.c:290
-   [accumulate]
-   /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gsignal.c:3134
-   [g_signal_emit_valist]
-   /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gsignal.c:3413 (discriminator 1)
    [g_signal_emit]
    /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gsignal.c:3443
    [cb_buffer_received]
    /home/kurento/kms-omni-build/kms-core/src/gst-plugins/commons/kmselement.c:578
-   [probe_hook_marshal]
-   /opt/kurento/gst/gstpad.c:3450
    [g_hook_list_marshal]
    /build/glib2.0-prJhLS/glib2.0-2.48.2/./glib/ghook.c:673
-   [do_probe_callbacks]
-   /opt/kurento/gst/gstpad.c:3605
-   [gst_pad_chain_data_unchecked]
-   /opt/kurento/gst/gstpad.c:4163
-   [gst_pad_push]
-   /opt/kurento/gst/gstpad.c:4556
-   [gst_proxy_pad_chain_default]
-   /opt/kurento/gst/gstghostpad.c:127
-   [gst_pad_chain_data_unchecked]
-   /opt/kurento/gst/gstpad.c:4185
-   [gst_pad_push]
-   /opt/kurento/gst/gstpad.c:4556
-   [gst_proxy_pad_chain_default]
-   /opt/kurento/gst/gstghostpad.c:127
 
-Now that file names and line numbers are present in the stack trace, a developer will know where to start looking for any potential bug. However, it's important to note that such an stack trace, while helpful, is not a replacement for proper runtime information provided by a debugging session. So most crashes like this will need further investigation before they can be fixed.
+The second stack trace is much more helpful, because it indicates the exact file names and line numbers where the crash happened. With these, a developer will at least have a starting point where to start looking for any potential bug.
+
+It's important to note that stack traces, while helpful, are not a replacement for actually running the software under a debugger. Most crashes like this will need further investigation before they can be fixed.
 
 
 
