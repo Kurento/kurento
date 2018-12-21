@@ -1,7 +1,31 @@
 # Kurento Media Server / Release / Ubuntu 16.04 (Xenial)
 #
 # This Docker image is used to run a Release instance of Kurento Media Server.
-# JSON-RPC interface is exposed on port 8888.
+# JSON-RPC API interface is exposed on port 8888.
+#
+#
+# Build command
+# -------------
+#
+# docker build [Args...] --tag kurento/kurento-media-server .
+#
+#
+# Build arguments
+# ---------------
+#
+# --build-arg KMS_VERSION=<Version>
+#
+#     <Version> is like "6.7.2", "6.9.0", etc.
+#     Alternatively, "dev" is used to build a nightly version of KMS.
+#
+#     Optional. Default: "0.0.0" (an invalid value).
+#
+#
+# Run command
+# -----------
+#
+# docker run -d --name kms -p 8888:8888 kurento/kurento-media-server
+
 
 FROM ubuntu:16.04
 
@@ -9,7 +33,7 @@ MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 MAINTAINER Fede Diaz <nordri@gmail.com>
 MAINTAINER Juan Navarro <juan.navarro@gmx.es>
 
-ARG KMS_VERSION
+ARG KMS_VERSION=0.0.0
 
 # Configure environment
 # * LANG: Set the default locale for all commands
@@ -28,7 +52,7 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
 # Install everything needed
 # * Kurento Media Server core packages
 # * Additional modules
-# * [FIXME] OpenH264 dependency: wget
+# * [FIXME] OpenH264 dependency: bzip2 wget
 #   Remove this when the openh264 package is released with a fix
 RUN apt-get update \
  && apt-get install -y \
@@ -39,7 +63,7 @@ RUN apt-get update \
         kms-platedetector \
         kms-pointerdetector \
         \
-        wget \
+        bzip2 wget \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8888
