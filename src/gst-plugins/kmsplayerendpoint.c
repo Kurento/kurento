@@ -1290,9 +1290,9 @@ kms_player_endpoint_uridecodebin_element_added (GstBin * bin,
 
   if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
               (gst_element_get_factory (element))), RTSPSRC) == 0) {
-    g_object_set (G_OBJECT (element), 
+    g_object_set (G_OBJECT (element),
         "latency", self->priv->network_cache,
-        "drop-on-latency", TRUE, 
+        "drop-on-latency", TRUE,
         "port-range", self->priv->port_range,
         NULL);
   }
