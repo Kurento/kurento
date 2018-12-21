@@ -45,7 +45,7 @@ G_DEFINE_QUARK (APPSINK_KEY, appsink);
 G_DEFINE_QUARK (PTS_KEY, pts);
 
 #define NETWORK_CACHE_DEFAULT 2000
-#define PORT_RANGE_DEFAULT NULL
+#define PORT_RANGE_DEFAULT    "0-0"
 #define IS_PREROLL TRUE
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
@@ -1103,9 +1103,10 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
   g_object_class_install_property (gobject_class, PROP_PORT_RANGE,
-      g_param_spec_string ("port-range", "UDP Port range for RTSP client",
-          "Range of ports that can be allocated when acting as RTSP client",
-          PORT_RANGE_DEFAULT, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_string ("port-range", "UDP port range for RTSP client",
+          "Range of ports that can be allocated when acting as RTSP client, "
+          "eg. '3000-3005' ('0-0' = no restrictions)", PORT_RANGE_DEFAULT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_PIPELINE,
       g_param_spec_object ("pipeline", "Internal pipeline",
@@ -1364,7 +1365,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", NULL);
   self->priv->network_cache = NETWORK_CACHE_DEFAULT;
-  self->priv->port_range = PORT_RANGE_DEFAULT;
+  self->priv->port_range = g_strdup (PORT_RANGE_DEFAULT);
 
   self->priv->stats.probes = kms_list_new_full (g_direct_equal, g_object_unref,
       (GDestroyNotify) kms_stats_probe_destroy);
