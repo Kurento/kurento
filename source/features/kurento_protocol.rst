@@ -122,7 +122,9 @@ The Kurento Protocol allows that Kurento Media Server sends requests to clients:
 Ping
 ----
 
-In order to warrant the WebSocket connectivity between the client and the Kurento Media Server, a *keep-alive* method is implemented. This method is based on a ``ping`` method sent by the client, which must be replied with a ``pong`` message from the server. If no response is obtained in a time interval, the client will assume that the connectivity with the media server has been lost. The parameter ``interval`` is the time available to receive the ``pong`` message from the server, in milliseconds. By default this value is **240000** (40 seconds).
+In order to warrant the WebSocket connectivity between the client and the Kurento Media Server, a *keep-alive* method is implemented. This method is based on a ``ping`` method sent by the client, which must be replied with a ``pong`` message from the server. If no response is obtained in a time interval, the client will assume that the connectivity with the media server has been lost. The parameter ``interval`` is the time available to receive the ``pong`` message from the server, in milliseconds. By default this value is `240000`_ (**4 minutes**).
+
+.. _240000: https://github.com/Kurento/kurento-java/blob/6.9.0/kurento-client/src/main/java/org/kurento/client/KurentoClient.java#L55
 
 This is an example of a ``ping`` request::
 
