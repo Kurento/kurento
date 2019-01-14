@@ -28,7 +28,6 @@ import org.apache.catalina.Context;
 import org.apache.tomcat.websocket.server.WsSci;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.internal.http.JsonRpcHttpRequestHandler;
-import org.kurento.jsonrpc.internal.server.HandshakeInterceptor;
 import org.kurento.jsonrpc.internal.server.PerSessionJsonRpcHandler;
 import org.kurento.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
@@ -50,7 +49,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
-import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 @Configuration
 @EnableWebSocket
@@ -231,8 +229,6 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
       if (handler.isSockJSEnabled()) {
         registration.withSockJS().setSessionCookieNeeded(false);
       }
-      
-      registration.addInterceptors(new HandshakeInterceptor());
     
       if (handler.getLabel() != null) {
         wsHandler.setLabel(handler.getLabel());
