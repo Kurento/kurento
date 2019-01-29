@@ -9,33 +9,50 @@
 #/ Arguments
 #/ ---------
 #/
-#/ --install-missing <Version>
+#/ --install-kurento <Version>
 #/
-#/     Use `apt-get` to download and install any missing packages from the
-#/     Kurento packages repository for Ubuntu.
+#/     Install Kurento dependencies that are required to build the package.
 #/
 #/     <Version> indicates which Kurento version must be used to download
 #/     packages from. E.g.: "6.8.0". If "dev" or "nightly" is given, the
-#/     Kurento Pre-Release package snapshots will be used instead. Typically,
-#/     you will provide an actual version number when also using the '--release'
-#/     flag, and just use "nightly" otherwise.
+#/     Kurento nightly packages will be used instead.
 #/
-#/     If this argument is not provided, all required dependencies are expected
-#/     to be already installed in the system.
+#/     Typically, you will provide an actual version number when also using
+#/     the '--release' flag, and just use "nightly" otherwise. In this mode,
+#/     `apt-get` will download and install all required packages from the
+#/     Kurento repository for Ubuntu.
+#/
+#/     If none of the '--install-*' arguments are provided, all required
+#/     dependencies are expected to be already installed in the system.
 #/
 #/     This option is useful for end users, or external developers which may
 #/     want to build a specific component of Kurento without having to build
-#/     all the corresponding dependencies.
+#/     all the dependencies.
 #/
 #/     Optional. Default: Disabled.
+#/     See also: --install-files
+#/
+#/ --install-files <Path>
+#/
+#/     Install Kurento dependencies that are required to build the package.
+#/
+#/     <Path> indicates a directory where all '.deb' files are located with
+#/     required dependencies. This is useful during incremental builds where
+#/     dependencies have been built previously but are still not available to
+#/     download with `apt-get`, maybe as a product of previous jobs in a CI
+#/     pipeline.
+#/
+#/     If none of the '--install-*' arguments are provided, all required
+#/     dependencies are expected to be already installed in the system.
+#/
+#/     Optional. Default: Disabled.
+#/     See also: --install-kurento
 #/
 #/ --allow-dirty
 #/
-#/     Build packages intended for Release.
-#/     If this option is not given, packages are built as nightly snapshots.
-#/
-#/     If none of the '--install-missing' options are given, this build script
-#/     expects that all required packages are manually installed beforehand.
+#/     Allows building packages from a working directory where there are
+#/     unstaged and/or uncommited changes.
+#/     If this option is not given, the working directory must be clean.
 #/
 #/     Optional. Default: Disabled.
 #/
@@ -43,9 +60,6 @@
 #/
 #/     Build packages intended for Release.
 #/     If this option is not given, packages are built as nightly snapshots.
-#/
-#/     If none of the '--install-missing' options are given, this build script
-#/     expects that all required packages are manually installed beforehand.
 #/
 #/     Optional. Default: Disabled.
 #/
@@ -116,21 +130,33 @@ source "$CONF_FILE"
 
 # ---- Parse arguments ----
 
-PARAM_INSTALL_MISSING="false"
-PARAM_INSTALL_VERSION="0.0.0"
+PARAM_INSTALL_KURENTO="false"
+PARAM_INSTALL_KURENTO_VERSION="0.0.0"
+PARAM_INSTALL_FILES="false"
+PARAM_INSTALL_FILES_PATH="."
 PARAM_ALLOW_DIRTY="false"
 PARAM_RELEASE="false"
 PARAM_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --install-missing)
+        --install-kurento)
             if [[ -n "${2-}" ]]; then
-                PARAM_INSTALL_MISSING="true"
-                PARAM_INSTALL_VERSION="$2"
+                PARAM_INSTALL_KURENTO="true"
+                PARAM_INSTALL_KURENTO_VERSION="$2"
                 shift
             else
-                log "ERROR: Missing <Version>"
+                log "ERROR: --install-kurento expects <Version>"
+                exit 1
+            fi
+            ;;
+        --install-files)
+            if [[ -n "${2-}" ]]; then
+                PARAM_INSTALL_FILES="true"
+                PARAM_INSTALL_FILES_PATH="$2"
+                shift
+            else
+                log "ERROR: --install-files expects <Path>"
                 exit 1
             fi
             ;;
@@ -145,7 +171,7 @@ while [[ $# -gt 0 ]]; do
                 PARAM_TIMESTAMP="$2"
                 shift
             else
-                log "ERROR: Missing <Timestamp>"
+                log "ERROR: --timestamp expects <Timestamp>"
                 exit 1
             fi
             ;;
@@ -157,36 +183,69 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-log "PARAM_INSTALL_MISSING=${PARAM_INSTALL_MISSING}"
-log "PARAM_INSTALL_VERSION=${PARAM_INSTALL_VERSION}"
+log "PARAM_INSTALL_KURENTO=${PARAM_INSTALL_KURENTO}"
+log "PARAM_INSTALL_KURENTO_VERSION=${PARAM_INSTALL_KURENTO_VERSION}"
+log "PARAM_INSTALL_FILES=${PARAM_INSTALL_FILES}"
+log "PARAM_INSTALL_FILES_PATH=${PARAM_INSTALL_FILES_PATH}"
 log "PARAM_ALLOW_DIRTY=${PARAM_ALLOW_DIRTY}"
 log "PARAM_RELEASE=${PARAM_RELEASE}"
 log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
 
 
 
+# ---- Internal control variables ----
+
+APT_UPDATE_NEEDED="true"
+
+
+
 # ---- Apt configuration ----
 
 # If requested, add the repository
-if [[ "$PARAM_INSTALL_MISSING" = "true" ]]; then
-    log "Requested installation of missing packages"
+if [[ "$PARAM_INSTALL_KURENTO" = "true" ]]; then
+    log "Requested installation of Kurento packages"
 
     log "Add the Kurento Apt repository key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-    # Set correct repo name for nightly versions
-    if [[ "$PARAM_INSTALL_VERSION" = "nightly" ]]; then
-        PARAM_INSTALL_VERSION="dev"
+    if [[ "$PARAM_INSTALL_KURENTO_VERSION" = "nightly" ]]; then
+        # Set correct repo name for nightly versions
+        REPO="dev"
+    else
+        REPO="$PARAM_INSTALL_KURENTO_VERSION"
     fi
 
     log "Add the Kurento Apt repository line"
     APT_FILE="$(mktemp /etc/apt/sources.list.d/kurento-XXXXX.list)"
     DISTRO="$(lsb_release --codename --short)"
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/$PARAM_INSTALL_VERSION $DISTRO kms6" \
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRO kms6" \
         >"$APT_FILE"
 
-    # This requires an Apt cache update
-    apt-get update
+    # Adding a new repo requires updating the Apt cache
+    if [[ "$APT_UPDATE_NEEDED" = "true" ]]; then
+        apt-get update
+        APT_UPDATE_NEEDED="false"
+    fi
+fi
+
+# If requested, install local packages
+if [[ "$PARAM_INSTALL_FILES" = "true" ]]; then
+    log "Requested installation of local packages"
+
+    SRCPATH="$PARAM_INSTALL_FILES_PATH"
+
+    if ls -f "${SRCPATH}"/*.*deb >/dev/null 2>&1; then
+        dpkg --install "${SRCPATH}"/*.*deb || {
+            log "Try to install remaining dependencies"
+            if [[ "$APT_UPDATE_NEEDED" = "true" ]]; then
+                apt-get update
+                APT_UPDATE_NEEDED="false"
+            fi
+            apt-get install --yes --fix-broken --no-remove
+        }
+    else
+        log "Requested local install, but no .deb files are present!"
+    fi
 fi
 
 
@@ -194,9 +253,32 @@ fi
 # ---- Dependencies ----
 
 log "Install build dependencies"
+
+if [[ "$APT_UPDATE_NEEDED" = "true" ]]; then
+    apt-get update
+    APT_UPDATE_NEEDED="false"
+fi
+
 mk-build-deps --install --remove \
     --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     ./debian/control
+
+# HACK
+# By default, 'dh_strip' in Debian will generate '-dbgsym' packages automatically
+# from each binary package defined in the control file. This eliminates the need
+# to define '-dbg' files explicitly and manually:
+#     https://wiki.debian.org/AutomaticDebugPackages
+#
+# This mechanism also works in Ubuntu 16.04 (Xenial) and earlier, but only if
+# the package 'pkg-create-dbgsym' is already installed at build time, so we need
+# to install it before building the package.
+#
+# Ubuntu 18.04 (Bionic) doesn't need this any more, because it already comes
+# with Debhelper v10, which has this as the default behavior.
+DISTRO_YEAR="$(lsb_release -s -r | cut -d. -f1)"
+if [[ $DISTRO_YEAR -lt 18 ]]; then
+    apt-get install --yes pkg-create-dbgsym
+fi
 
 
 

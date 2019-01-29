@@ -41,7 +41,7 @@
 
 # ------------ Shell setup ------------
 
-# Shell options for strict error checking
+# Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
 
 # Log function
