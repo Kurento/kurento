@@ -16,16 +16,17 @@ trap on_error ERR
 
 # ------------ Script start ------------
 
+ADM_SCRIPTS_PATH="/adm-scripts"
+
 
 # ==== Clone or update 'adm-scripts' ====
 
-if [[ -d /adm-scripts/.git ]]; then
-    echo "Kurento 'adm-scripts' found: update"
-    cd /adm-scripts
-    git pull --rebase || true
+if [[ -d "$ADM_SCRIPTS_PATH/.git" ]]; then
+    echo "Kurento 'adm-scripts' found in $ADM_SCRIPTS_PATH"
 else
-    echo "Kurento 'adm-scripts' not found: clone"
-    git clone https://github.com/Kurento/adm-scripts.git /adm-scripts
+    echo "Kurento 'adm-scripts' not found in $ADM_SCRIPTS_PATH"
+    echo "Clone 'adm-scripts' from Git repo ..."
+    git clone https://github.com/Kurento/adm-scripts.git "$ADM_SCRIPTS_PATH"
 fi
 
 
