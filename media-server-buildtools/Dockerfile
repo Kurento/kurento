@@ -125,6 +125,14 @@ RUN git config --global user.name "Kurento CI" \
 
 
 
+# ------------ Final configuration ------------
+
+# Configure apt-get: enable caching of downloaded packages
+# Allows setting up a persistent cache in an external Docker volume
+RUN rm --force /etc/apt/apt.conf.d/docker-clean
+
+
+
 # ------------ Runtime command ------------
 
 COPY entrypoint.sh /
