@@ -5,74 +5,78 @@
 #/ This shell script is used to build all Kurento Media Server
 #/ modules, and generate Debian/Ubuntu package files from them.
 #/
+#/ The script must be called from within a Git repository.
+#/
 #/
 #/ Arguments
 #/ ---------
 #/
-#/ --install-kurento <Version>
+#/ --install-kurento <KurentoVersion>
 #/
-#/     Install Kurento dependencies that are required to build the package.
+#/   Install Kurento dependencies that are required to build the package.
 #/
-#/     <Version> indicates which Kurento version must be used to download
-#/     packages from. E.g.: "6.8.0". If "dev" or "nightly" is given, the
-#/     Kurento nightly packages will be used instead.
+#/   <KurentoVersion> indicates which Kurento version must be used to download
+#/   packages from. E.g.: "6.8.0". If "dev" or "nightly" is given, the
+#/   Kurento nightly packages will be used instead.
 #/
-#/     Typically, you will provide an actual version number when also using
-#/     the '--release' flag, and just use "nightly" otherwise. In this mode,
-#/     `apt-get` will download and install all required packages from the
-#/     Kurento repository for Ubuntu.
+#/   Typically, you will provide an actual version number when also using
+#/   the '--release' flag, and just use "nightly" otherwise. In this mode,
+#/   `apt-get` will download and install all required packages from the
+#/   Kurento repository for Ubuntu.
 #/
-#/     If none of the '--install-*' arguments are provided, all required
-#/     dependencies are expected to be already installed in the system.
+#/   If none of the '--install-*' arguments are provided, all required
+#/   dependencies are expected to be already installed in the system.
 #/
-#/     This option is useful for end users, or external developers which may
-#/     want to build a specific component of Kurento without having to build
-#/     all the dependencies.
+#/   This argument is useful for end users, or external developers which may
+#/   want to build a specific component of Kurento without having to build
+#/   all the dependencies.
 #/
-#/     Optional. Default: Disabled.
-#/     See also: --install-files
+#/   Optional. Default: Disabled.
+#/   See also: --install-files
 #/
-#/ --install-files <Path>
+#/ --install-files [FilesDir]
 #/
-#/     Install Kurento dependencies that are required to build the package.
+#/   Install Kurento dependencies that are required to build the package.
 #/
-#/     <Path> indicates a directory where all '.deb' files are located with
-#/     required dependencies. This is useful during incremental builds where
-#/     dependencies have been built previously but are still not available to
-#/     download with `apt-get`, maybe as a product of previous jobs in a CI
-#/     pipeline.
+#/   [FilesDir] is optional, it sets a directory where all '.deb' files
+#/   are located with required dependencies.
 #/
-#/     If none of the '--install-*' arguments are provided, all required
-#/     dependencies are expected to be already installed in the system.
+#/   This argument is useful during incremental builds where dependencies have
+#/   been built previously but are still not available to download with
+#/   `apt-get`, maybe as a product of previous jobs in a CI pipeline.
 #/
-#/     Optional. Default: Disabled.
-#/     See also: --install-kurento
+#/   If none of the '--install-*' arguments are provided, all required
+#/   dependencies are expected to be already installed in the system.
+#/
+#/   Optional. Default: Disabled.
+#/   See also: --install-kurento
+#/
 #/
 #/ --allow-dirty
 #/
-#/     Allows building packages from a working directory where there are
-#/     unstaged and/or uncommited changes.
-#/     If this option is not given, the working directory must be clean.
+#/   Allows building packages from a working directory where there are
+#/   unstaged and/or uncommited changes.
+#/   If this option is not given, the working directory must be clean.
 #/
-#/     Optional. Default: Disabled.
+#/   Optional. Default: Disabled.
 #/
 #/ --release
 #/
-#/     Build packages intended for Release.
-#/     If this option is not given, packages are built as nightly snapshots.
+#/   Build packages intended for Release.
+#/   If this option is not given, packages are built as nightly snapshots.
 #/
-#/     Optional. Default: Disabled.
+#/   Optional. Default: Disabled.
 #/
 #/ --timestamp <Timestamp>
 #/
-#/    Apply the provided timestamp instead of using the date and time this
-#/    script is being run.
+#/   Apply the provided timestamp instead of using the date and time this
+#/   script is being run.
 #/
-#/    <Timestamp> must be a decimal number. Ideally, it represents some date
-#     and time when the build was done. It can also be any arbitrary number.
+#/   <Timestamp> must be a decimal number. Ideally, it represents some date
+#/   and time when the build was done. It can also be any arbitrary number.
 #/
-#/    Optional. Default: Current date and time, as given by the command
-#/    `date --utc +%Y%m%d%H%M%S`.
+#/   Optional. Default: Current date and time, as given by the command
+#/   `date --utc +%Y%m%d%H%M%S`.
 #/
 #/
 #/ Dependency tree
@@ -89,21 +93,22 @@
 #/ * mk-build-deps (package 'devscripts')
 #/   - equivs
 #/ * nproc (package 'coreutils')
+#/ * realpath (package 'coreutils')
 #/
 #/
 #/ Dependency install
 #/ ------------------
 #/
 #/ apt-get update && apt-get install --yes \
-#/     python3 python3-pip python3-setuptools python3-wheel \
-#/     devscripts \
-#/     dpkg-dev \
-#/     lintian \
-#/     git \
-#/     openssh-client \
-#/     lsb-release \
-#/     equivs \
-#/     coreutils
+#/   python3 python3-pip python3-setuptools python3-wheel \
+#/   devscripts \
+#/   dpkg-dev \
+#/   lintian \
+#/   git \
+#/   openssh-client \
+#/   lsb-release \
+#/   equivs \
+#/   coreutils
 #/ pip3 install --upgrade gbp
 
 
