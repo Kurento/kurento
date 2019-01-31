@@ -151,7 +151,8 @@ while [[ $# -gt 0 ]]; do
                 PARAM_INSTALL_KURENTO_VERSION="$2"
                 shift
             else
-                log "ERROR: --install-kurento expects <Version>"
+                log "ERROR: --install-kurento expects <KurentoVersion>"
+                log "Run with '--help' to read usage details"
                 exit 1
             fi
             ;;
@@ -161,7 +162,8 @@ while [[ $# -gt 0 ]]; do
                 PARAM_INSTALL_FILES_PATH="$2"
                 shift
             else
-                log "ERROR: --install-files expects <Path>"
+                log "ERROR: --dstdir expects <DstDir>"
+                log "Run with '--help' to read usage details"
                 exit 1
             fi
             ;;
@@ -177,11 +179,13 @@ while [[ $# -gt 0 ]]; do
                 shift
             else
                 log "ERROR: --timestamp expects <Timestamp>"
+                log "Run with '--help' to read usage details"
                 exit 1
             fi
             ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
+            log "Run with '--help' to read usage details"
             exit 1
             ;;
     esac
@@ -234,6 +238,9 @@ if [[ "$PARAM_INSTALL_KURENTO" = "true" ]]; then
 fi
 
 # If requested, install local packages
+# This is done _after_ installing from the Kurento repository, because
+# installation of local files might be useful to overwrite some default
+# version of packages.
 if [[ "$PARAM_INSTALL_FILES" = "true" ]]; then
     log "Requested installation of local packages"
 
@@ -306,7 +313,7 @@ fi
 #   the "debian-branch" specified in 'gbp.conf' (or 'master' by default).
 # --git-author uses the Git user details for the entry in 'debian/changelog'.
 if [[ "$PARAM_RELEASE" = "true" ]]; then
-    log "Update debian/changelog for a release version build"
+    log "Update debian/changelog for a RELEASE version build"
     gbp dch \
         --ignore-branch \
         --git-author \
@@ -314,7 +321,7 @@ if [[ "$PARAM_RELEASE" = "true" ]]; then
         --release \
         ./debian/
 else
-    log "Update debian/changelog for a nightly snapshot build"
+    log "Update debian/changelog for a NIGHTLY snapshot build"
     gbp dch \
         --ignore-branch \
         --git-author \
@@ -345,14 +352,14 @@ if [[ "$PARAM_ALLOW_DIRTY" = "true" ]]; then
 fi
 
 if [[ "$PARAM_RELEASE" = "true" ]]; then
-    log "Run git-buildpackage to generate a release version build"
+    log "Run git-buildpackage to generate a RELEASE version build"
     gbp buildpackage \
         --git-ignore-branch \
         --git-ignore-new \
         --git-upstream-tree=SLOPPY \
         $ARGS
 else
-    log "Run git-buildpackage to generate a nightly snapshot build"
+    log "Run git-buildpackage to generate a NIGHTLY snapshot build"
     gbp buildpackage \
         --git-ignore-branch \
         --git-ignore-new \
