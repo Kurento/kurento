@@ -10,16 +10,16 @@
 # Build command
 # -------------
 #
-# docker build [Args...] --tag kurento/buildtools .
+# docker build [Args...] --tag kurento/buildtools:<UbuntuVersion> .
 #
 #
 # Build arguments
 # ---------------
 #
-# --build-arg UBUNTU_VERSION=<Version>
+# --build-arg UBUNTU_VERSION=<UbuntuVersion>
 #
-#     <Version> is like "xenial", "bionic", etc. Valid values are listed here:
-#     https://hub.docker.com/_/buildpack-deps/
+#     <UbuntuVersion> is like "xenial", "bionic", etc.
+#     Valid values are listed here: https://hub.docker.com/_/buildpack-deps/
 #
 #     Optional. Default: "xenial".
 #
@@ -48,6 +48,7 @@
 # Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
 
+
 ARG UBUNTU_VERSION=xenial
 
 FROM buildpack-deps:${UBUNTU_VERSION}-curl
@@ -62,8 +63,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PATH="/adm-scripts:${PATH}" \
     PYTHONUNBUFFERED=1
 
-# Configure apt-get:
-# - Disable installation of recommended and suggested packages
+# Configure apt-get: disable installation of recommended and suggested packages
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends
 
