@@ -45,13 +45,12 @@ fi
 # ==== Finish ====
 
 BASENAME="$(basename "$0")"  # Complete file name
-echo "[$BASENAME] Generated files:"
-# `dh_builddeb` puts the generated .'deb' files in '../'
-find .. -maxdepth 1 -type f ! -name "$BASENAME"
+echo "[$BASENAME] Debian packages:"
+find . -maxdepth 1 -type f -name '*.*deb'
 
 # Get results out from the Docker container
 if [[ -d /hostdir ]]; then
-    mv ../*.*deb /hostdir/ 2>/dev/null || true
+    mv ./*.*deb /hostdir/ 2>/dev/null || true
 else
     echo "WARNING: No host dir where to put build artifacts"
 fi
