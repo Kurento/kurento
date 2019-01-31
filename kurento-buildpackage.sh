@@ -51,6 +51,28 @@
 #/   Optional. Default: Disabled.
 #/   See also: --install-kurento
 #/
+#/ --srcdir <SrcDir>
+#/
+#/   Specifies in which sub-directory the script should work. If not specified,
+#/   all operations will be done in the current directory where the script has
+#/   been called.
+#/
+#/   The <SrcDir> MUST contain a 'debian/' directory with all Debian files,
+#/   which are used to define how to build the project and generate packages.
+#/
+#/   This argument is useful for Git projects that contain submodules. Running
+#/   directly from a submodule directory might cause some problems if the
+#/   command `git-buildpackage` is not able to identify the submodule as a
+#/   proper Git repository.
+#/
+#/   Optional. Default: Current working directory.
+#/
+#/ --dstdir <DstDir>
+#/
+#/   Specifies where the resulting Debian package files ('*.deb') should be
+#/   placed after the build finishes.
+#/
+#/   Optional. Default: Current working directory.
 #/
 #/ --allow-dirty
 #/
@@ -139,6 +161,8 @@ PARAM_INSTALL_KURENTO="false"
 PARAM_INSTALL_KURENTO_VERSION="0.0.0"
 PARAM_INSTALL_FILES="false"
 PARAM_INSTALL_FILES_DIR="$PWD"
+PARAM_SRCDIR="$PWD"
+PARAM_DSTDIR="$PWD"
 PARAM_ALLOW_DIRTY="false"
 PARAM_RELEASE="false"
 PARAM_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
@@ -163,6 +187,19 @@ while [[ $# -gt 0 ]]; do
                 shift
             fi
             ;;
+        --srcdir)
+            if [[ -n "${2-}" ]]; then
+                PARAM_SRCDIR="$2"
+                shift
+            else
+                log "ERROR: --srcdir expects <SrcDir>"
+                log "Run with '--help' to read usage details"
+                exit 1
+            fi
+            ;;
+        --dstdir)
+            if [[ -n "${2-}" ]]; then
+                PARAM_DSTDIR="$2"
                 shift
             else
                 log "ERROR: --dstdir expects <DstDir>"
@@ -199,6 +236,8 @@ log "PARAM_INSTALL_KURENTO=${PARAM_INSTALL_KURENTO}"
 log "PARAM_INSTALL_KURENTO_VERSION=${PARAM_INSTALL_KURENTO_VERSION}"
 log "PARAM_INSTALL_FILES=${PARAM_INSTALL_FILES}"
 log "PARAM_INSTALL_FILES_DIR=${PARAM_INSTALL_FILES_DIR}"
+log "PARAM_SRCDIR=${PARAM_SRCDIR}"
+log "PARAM_DSTDIR=${PARAM_DSTDIR}"
 log "PARAM_ALLOW_DIRTY=${PARAM_ALLOW_DIRTY}"
 log "PARAM_RELEASE=${PARAM_RELEASE}"
 log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
@@ -262,6 +301,15 @@ if [[ "$PARAM_INSTALL_FILES" = "true" ]]; then
         log "Requested local install, but no .deb files are present!"
     fi
 fi
+
+
+
+# ---- Change to Work Directory ----
+
+# All next commands expect to be run from the path that contains
+# the actual project and its 'debian/' directory
+
+pushd "$PARAM_SRCDIR"
 
 
 
@@ -369,5 +417,20 @@ else
         --git-upstream-tree=SLOPPY \
         $ARGS
 fi
+
+
+
+# ---- Move packages and restore previous directory ----
+
+# `dh_builddeb` puts by default the generated '.deb' files in '../'
+# so move them to the target destination directory.
+# Use 'find | xargs' here because we need to skip moving if the source
+# and destination paths are the same.
+find "$(realpath ..)" -type f -name '*.*deb' -not -path "$PARAM_DSTDIR/*" -print0 \
+    | xargs -0 --no-run-if-empty mv --target-directory="$PARAM_DSTDIR"
+
+popd  # Restore dir from "$PARAM_SRCDIR"
+
+
 
 log "Done!"
