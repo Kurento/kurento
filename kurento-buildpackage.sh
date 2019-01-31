@@ -138,7 +138,7 @@ source "$CONF_FILE"
 PARAM_INSTALL_KURENTO="false"
 PARAM_INSTALL_KURENTO_VERSION="0.0.0"
 PARAM_INSTALL_FILES="false"
-PARAM_INSTALL_FILES_PATH="."
+PARAM_INSTALL_FILES_DIR="$PWD"
 PARAM_ALLOW_DIRTY="false"
 PARAM_RELEASE="false"
 PARAM_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
@@ -157,9 +157,12 @@ while [[ $# -gt 0 ]]; do
             fi
             ;;
         --install-files)
+            PARAM_INSTALL_FILES="true"
             if [[ -n "${2-}" ]]; then
-                PARAM_INSTALL_FILES="true"
-                PARAM_INSTALL_FILES_PATH="$2"
+                PARAM_INSTALL_FILES_DIR="$2"
+                shift
+            fi
+            ;;
                 shift
             else
                 log "ERROR: --dstdir expects <DstDir>"
@@ -195,7 +198,7 @@ done
 log "PARAM_INSTALL_KURENTO=${PARAM_INSTALL_KURENTO}"
 log "PARAM_INSTALL_KURENTO_VERSION=${PARAM_INSTALL_KURENTO_VERSION}"
 log "PARAM_INSTALL_FILES=${PARAM_INSTALL_FILES}"
-log "PARAM_INSTALL_FILES_PATH=${PARAM_INSTALL_FILES_PATH}"
+log "PARAM_INSTALL_FILES_DIR=${PARAM_INSTALL_FILES_DIR}"
 log "PARAM_ALLOW_DIRTY=${PARAM_ALLOW_DIRTY}"
 log "PARAM_RELEASE=${PARAM_RELEASE}"
 log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
@@ -244,10 +247,10 @@ fi
 if [[ "$PARAM_INSTALL_FILES" = "true" ]]; then
     log "Requested installation of local packages"
 
-    SRCPATH="$PARAM_INSTALL_FILES_PATH"
+    FILESDIR="$PARAM_INSTALL_FILES_DIR"
 
-    if ls -f "${SRCPATH}"/*.*deb >/dev/null 2>&1; then
-        dpkg --install "${SRCPATH}"/*.*deb || {
+    if ls -f "${FILESDIR}"/*.*deb >/dev/null 2>&1; then
+        dpkg --install "${FILESDIR}"/*.*deb || {
             log "Try to install remaining dependencies"
             if [[ "$APT_UPDATE_NEEDED" = "true" ]]; then
                 apt-get update
