@@ -19,7 +19,7 @@ trap on_error ERR
 ADM_SCRIPTS_PATH="/adm-scripts"
 
 
-# ==== Clone or update 'adm-scripts' ====
+# ==== Find or clone 'adm-scripts' ====
 
 if [[ -d "$ADM_SCRIPTS_PATH/.git" ]]; then
     echo "Kurento 'adm-scripts' found in $ADM_SCRIPTS_PATH"
