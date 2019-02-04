@@ -237,9 +237,6 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
   }
 
   public void enableHeartbeat() {
-    if (this.heartbeatInterval == 0) {
-      this.heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
-    }
     this.enableHeartbeat(this.heartbeatInterval);
   }
 
@@ -247,12 +244,12 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
     if (heartbeat == null || heartbeat.isCancelled()) {
 
-      pingParams = new PingParams();
-      pingParams.interval = interval;
-
-      log.debug("{} Enabling heartbeat with an interval of {} ms", label, interval);
       this.heartbeating = true;
-      this.heartbeatInterval = interval;
+      this.heartbeatInterval = interval == 0 ? DEFAULT_HEARTBEAT_INTERVAL : interval;
+      pingParams = new PingParams();
+      pingParams.interval = this.heartbeatInterval;
+
+      log.debug("{} Enabling heartbeat with an interval of {} ms", label, this.heartbeatInterval);
 
       if (hearbeatExec.isShutdown()) {
         hearbeatExec = createScheduler();

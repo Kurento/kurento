@@ -325,6 +325,11 @@ public class KurentoClient {
     }
     log.debug("Closing KurentoClient");
     manager.destroy();
+    try {
+      client.close();
+    } catch (IOException e) {
+      log.error("Error while closing KurentoClient", e);
+    }
     if (kmsUrlLoader != null) {
       kmsUrlLoader.clientDestroyed(id);
     }
@@ -373,7 +378,7 @@ public class KurentoClient {
     }
     client.setLabel(clientLabel);
   }
-  
+
   public Response<JsonElement> sendJsonRpcRequest(Request<JsonObject> request) throws IOException {
 	  return client.sendRequest(request);
   }
