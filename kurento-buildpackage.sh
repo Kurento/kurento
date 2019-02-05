@@ -341,10 +341,13 @@ mk-build-deps --install --remove \
 #
 # Ubuntu 18.04 (Bionic) doesn't need this any more, because it already comes
 # with Debhelper v10, which has this as the default behavior.
-DISTRO_YEAR="$(lsb_release -s -r | cut -d. -f1)"
-if [[ $DISTRO_YEAR -lt 18 ]]; then
-    apt-get install --yes pkg-create-dbgsym
-fi
+#
+# REVIEW 2019-02-05 - Disable automatic generation of debug packages
+# For now, we'll keep on defining '-dbg' packages in 'debian/control'.
+# DISTRO_YEAR="$(lsb_release -s -r | cut -d. -f1)"
+# if [[ $DISTRO_YEAR -lt 18 ]]; then
+#     apt-get install --yes pkg-create-dbgsym
+# fi
 
 
 
