@@ -253,13 +253,13 @@ APT_UPDATE_NEEDED="true"
 # ---- Apt configuration ----
 
 # If requested, add the repository
-if [[ "$PARAM_INSTALL_KURENTO" = "true" ]]; then
+if [[ "$PARAM_INSTALL_KURENTO" == "true" ]]; then
     log "Requested installation of Kurento packages"
 
     log "Add the Kurento Apt repository key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-    if [[ "$PARAM_INSTALL_KURENTO_VERSION" = "nightly" ]]; then
+    if [[ "$PARAM_INSTALL_KURENTO_VERSION" == "nightly" ]]; then
         # Set correct repo name for nightly versions
         REPO="dev"
     else
@@ -273,7 +273,7 @@ if [[ "$PARAM_INSTALL_KURENTO" = "true" ]]; then
         >"$APT_FILE"
 
     # Adding a new repo requires updating the Apt cache
-    if [[ "$APT_UPDATE_NEEDED" = "true" ]]; then
+    if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
         apt-get update
         APT_UPDATE_NEEDED="false"
     fi
@@ -283,22 +283,22 @@ fi
 # This is done _after_ installing from the Kurento repository, because
 # installation of local files might be useful to overwrite some default
 # version of packages.
-if [[ "$PARAM_INSTALL_FILES" = "true" ]]; then
-    log "Requested installation of local packages"
+if [[ "$PARAM_INSTALL_FILES" == "true" ]]; then
+    log "Requested installation of package files"
 
     FILESDIR="$PARAM_INSTALL_FILES_DIR"
 
     if ls -f "${FILESDIR}"/*.*deb >/dev/null 2>&1; then
         dpkg --install "${FILESDIR}"/*.*deb || {
             log "Try to install remaining dependencies"
-            if [[ "$APT_UPDATE_NEEDED" = "true" ]]; then
+            if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
                 apt-get update
                 APT_UPDATE_NEEDED="false"
             fi
             apt-get install --yes --fix-broken --no-remove
         }
     else
-        log "Requested local install, but no .deb files are present!"
+        log "No '.deb' package files are present!"
     fi
 fi
 
@@ -309,7 +309,10 @@ fi
 # All next commands expect to be run from the path that contains
 # the actual project and its 'debian/' directory
 
-pushd "$PARAM_SRCDIR"
+pushd "$PARAM_SRCDIR" || {
+    log "ERROR: Cannot change to source dir: '$PARAM_SRCDIR'"
+    exit 1
+}
 
 
 
@@ -317,7 +320,7 @@ pushd "$PARAM_SRCDIR"
 
 log "Install build dependencies"
 
-if [[ "$APT_UPDATE_NEEDED" = "true" ]]; then
+if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
     apt-get update
     APT_UPDATE_NEEDED="false"
 fi
@@ -363,7 +366,7 @@ fi
 #   If it wasn't set, GBP would enforce that the current branch is
 #   the "debian-branch" specified in 'gbp.conf' (or 'master' by default).
 # --git-author uses the Git user details for the entry in 'debian/changelog'.
-if [[ "$PARAM_RELEASE" = "true" ]]; then
+if [[ "$PARAM_RELEASE" == "true" ]]; then
     log "Update debian/changelog for a RELEASE version build"
     gbp dch \
         --ignore-branch \
@@ -398,11 +401,11 @@ fi
 
 # Arguments passed to 'dpkg-buildpackage'
 ARGS="-uc -us -j$(nproc)"
-if [[ "$PARAM_ALLOW_DIRTY" = "true" ]]; then
+if [[ "$PARAM_ALLOW_DIRTY" == "true" ]]; then
     ARGS="$ARGS -b"
 fi
 
-if [[ "$PARAM_RELEASE" = "true" ]]; then
+if [[ "$PARAM_RELEASE" == "true" ]]; then
     log "Run git-buildpackage to generate a RELEASE version build"
     gbp buildpackage \
         --git-ignore-branch \
@@ -429,7 +432,7 @@ fi
 find "$(realpath ..)" -type f -name '*.*deb' -not -path "$PARAM_DSTDIR/*" -print0 \
     | xargs -0 --no-run-if-empty mv --target-directory="$PARAM_DSTDIR"
 
-popd  # Restore dir from "$PARAM_SRCDIR"
+popd || true  # Restore dir from "$PARAM_SRCDIR"
 
 
 
