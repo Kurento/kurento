@@ -432,8 +432,9 @@ fi
 # so move them to the target destination directory.
 # Use 'find | xargs' here because we need to skip moving if the source
 # and destination paths are the same.
-find "$(realpath ..)" -type f -name '*.*deb' -not -path "$PARAM_DSTDIR/*" -print0 \
-    | xargs -0 --no-run-if-empty mv --target-directory="$PARAM_DSTDIR"
+find "$(realpath ..)" -maxdepth 1 -type f -name '*.*deb' \
+    -not -path "$PARAM_DSTDIR/*" -print0 \
+| xargs -0 --no-run-if-empty mv --target-directory="$PARAM_DSTDIR"
 
 popd || true  # Restore dir from "$PARAM_SRCDIR"
 
