@@ -4,3 +4,4 @@ target/classes/FindKurentoModuleCreator.cmake /usr/share/cmake-2.8/Modules/
 target/classes/FindKurentoModuleCreator.cmake /usr/share/cmake-3.0/Modules/
 target/classes/FindKurentoModuleCreator.cmake /usr/share/cmake-3.2/Modules/
 target/classes/FindKurentoModuleCreator.cmake /usr/share/cmake-3.5/Modules/
+target/classes/FindKurentoModuleCreator.cmake /usr/share/cmake-3.10/Modules/

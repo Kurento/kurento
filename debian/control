@@ -1,9 +1,10 @@
 Source: kurento-module-creator
-Section: java
 Priority: optional
 Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
- default-jdk,
+ build-essential,
+ default-jdk-headless,
+ maven (>= 3.0),
  maven-debian-helper (>= 1.5)
 Build-Depends-Indep:
  junit4,
@@ -21,8 +22,10 @@ Homepage: https://www.kurento.org
 
 Package: kurento-module-creator
 Architecture: all
+Section: java
 Depends: ${misc:Depends},
- ${maven:Depends}
+ ${maven:Depends},
+ default-jre-headless
 Suggests: ${maven:OptionalDepends}
 Description: Kurento Module Creator
  This tool generates client stubs in different languages for communication

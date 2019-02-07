@@ -1,15 +1,10 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Kurento Module Creator
-Source: https://www.kurento.org
+Upstream-Contact: Kurento <kurento@googlegroups.com>
+Source: https://github.com/Kurento/kurento-module-creator
 
 Files: *
-Copyright: 2018, Kurento
-License: Apache-2.0
-
-Files: debian/*
-Copyright: 2018, Kurento
-License: Apache-2.0
-
+Copyright: 2018, Kurento (https://www.kurento.org)
 License: Apache-2.0
  On Debian systems, the full text of the Apache-2.0 license
  can be found in the file '/usr/share/common-licenses/Apache-2.0'
