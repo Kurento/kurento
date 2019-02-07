@@ -1,13 +1,8 @@
-kms-elements (6.9.1) UNRELEASED; urgency=medium
+kms-elements (6.9.1-1kurento1) UNRELEASED; urgency=medium
 
-  * UNRELEASED
+  * debian: Review for 18.04 build
 
- -- Juan Navarro <juan.navarro@gmx.es>  Tue, 11 Dec 2018 16:39:45 +0100
-
-kms-elements (6.9.0) testing; urgency=medium
-
-
- -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Dec 2018 17:49:34 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 07 Feb 2019 18:31:41 +0100
 
 kms-elements (6.8.0) testing; urgency=medium
 
