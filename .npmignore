@@ -1,6 +1,0 @@
-debian/
-pom.xml
-scripts/
-src/
-target/*
-!target/kurento-module-creator-jar-with-dependencies.jar
