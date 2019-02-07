@@ -45,7 +45,7 @@ G_DEFINE_QUARK (APPSINK_KEY, appsink);
 G_DEFINE_QUARK (PTS_KEY, pts);
 
 #define NETWORK_CACHE_DEFAULT 2000
-#define PORT_RANGE_DEFAULT    "0-0"
+#define PORT_RANGE_DEFAULT "0-0"
 #define IS_PREROLL TRUE
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);

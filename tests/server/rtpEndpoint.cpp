@@ -43,7 +43,7 @@ struct GF {
   ~GF();
 };
 
-BOOST_GLOBAL_FIXTURE (GF)
+BOOST_GLOBAL_FIXTURE (GF);
 
 GF::GF()
 {
@@ -166,12 +166,14 @@ media_state_changes_impl (bool useIpv6)
 static void
 media_state_changes ()
 {
+  BOOST_TEST_MESSAGE ("Start test: media_state_changes");
   media_state_changes_impl (false);
 }
 
 static void
 media_state_changes_ipv6 ()
 {
+  BOOST_TEST_MESSAGE ("Start test: media_state_changes_ipv6");
   media_state_changes_impl (true);
 }
 
@@ -234,12 +236,14 @@ connection_state_changes_impl (bool useIpv6)
 static void
 connection_state_changes ()
 {
+  BOOST_TEST_MESSAGE ("Start test: connection_state_changes");
   connection_state_changes_impl (false);
 }
 
 static void
 connection_state_changes_ipv6 ()
 {
+  BOOST_TEST_MESSAGE ("Start test: connection_state_changes_ipv6");
   connection_state_changes_impl (true);
 }
 

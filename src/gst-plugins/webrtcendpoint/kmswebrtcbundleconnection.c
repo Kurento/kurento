@@ -94,8 +94,8 @@ kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
 
   g_object_set (G_OBJECT (tr->sink->dtlssrtpenc), "is-client", active, NULL);
 
-  gst_bin_add (bin, g_object_ref (tr->src));
-  gst_bin_add (bin, g_object_ref (tr->sink));
+  gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->src)));
+  gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->sink)));
 }
 
 static void

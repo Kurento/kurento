@@ -323,7 +323,9 @@ kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
     GInetAddress *addr;
     gboolean is_ipv6 = FALSE;
 
+    GST_DEBUG_OBJECT (self, "Check local address: %s", (const gchar*)l->data);
     addr = g_inet_address_new_from_string (l->data);
+
     if (G_IS_INET_ADDRESS (addr)) {
       switch (g_inet_address_get_family (addr)) {
         case G_SOCKET_FAMILY_INVALID:
@@ -339,7 +341,7 @@ kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
 
           g_object_get (self, "use-ipv6", &use_ipv6, NULL);
           if (is_ipv6 != use_ipv6) {
-            GST_DEBUG_OBJECT (self, "No valid address type: %d", is_ipv6);
+            GST_DEBUG_OBJECT (self, "Skip address (wanted IPv6: %d)", use_ipv6);
             break;
           }
 
