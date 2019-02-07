@@ -1,43 +1,52 @@
 Source: kms-filters
-Maintainer: Kurento <kurento@googlegroups.com>
 Priority: optional
+Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
  cmake,
- pkg-config,
- libopencv-dev,
- libsoup2.4-dev,
  kms-cmake-utils (>= 6.7.0),
  kms-core-dev (>= 6.7.0),
- kms-elements-dev (>= 6.7.0)
+ kms-elements-dev (>= 6.7.0),
+ kurento-module-creator (>= 6.7.0),
+ libboost-filesystem-dev,
+ libboost-system-dev,
+ libglibmm-2.4-dev,
+ libopencv-dev,
+ libsigc++-2.0-dev,
+ libsoup2.4-dev
 Standards-Version: 4.0.0
-Homepage: www.kurento.org
-Vcs-Browser: https://github.com/Kurento/kms-filters
 Vcs-Git: https://github.com/Kurento/kms-filters.git
+Vcs-Browser: https://github.com/Kurento/kms-filters
+Homepage: https://www.kurento.org
 
 Package: kms-filters
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends},
- ${misc:Depends},
+Depends: ${shlibs:Depends}, ${misc:Depends},
  kms-elements (>= 6.7.0),
  opencv-data
 Breaks: kms-filters-6.0
 Replaces: kms-filters-6.0
 Description: Kurento Filters module
- Kurento Filters module - Binary libraries
+ Kurento Filters module - Binary libraries.
 
 Package: kms-filters-dev
 Architecture: any
 Section: libdevel
 Depends: kms-filters (= ${binary:Version}),
- libopencv-dev,
  kms-cmake-utils (>= 6.7.0),
- kms-core-dev,
- kms-elements-dev
+ kms-core-dev (>= 6.7.0),
+ kms-elements-dev (>= 6.7.0),
+ kurento-module-creator (>= 6.7.0),
+ libboost-filesystem-dev,
+ libboost-system-dev,
+ libglibmm-2.4-dev,
+ libopencv-dev,
+ libsigc++-2.0-dev,
+ libsoup2.4-dev
 Breaks: kms-filters-6.0-dev
 Replaces: kms-filters-6.0-dev
 Description: Kurento Filters module
- Kurento Filters module - Development files
+ Kurento Filters module - Development files.
 
 Package: kms-filters-dbg
 Architecture: any
@@ -46,4 +55,4 @@ Depends: kms-filters (= ${binary:Version})
 Breaks: kms-filters-6.0-dbg
 Replaces: kms-filters-6.0-dbg
 Description: Kurento Filters module
- Kurento Filters module - Debugging symbols
+ Kurento Filters module - Debugging symbols.
