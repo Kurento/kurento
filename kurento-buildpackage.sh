@@ -183,13 +183,13 @@ while [[ $# -gt 0 ]]; do
         --install-files)
             PARAM_INSTALL_FILES="true"
             if [[ -n "${2-}" ]]; then
-                PARAM_INSTALL_FILES_DIR="$2"
+                PARAM_INSTALL_FILES_DIR="$(realpath $2)"
                 shift
             fi
             ;;
         --srcdir)
             if [[ -n "${2-}" ]]; then
-                PARAM_SRCDIR="$2"
+                PARAM_SRCDIR="$(realpath $2)"
                 shift
             else
                 log "ERROR: --srcdir expects <SrcDir>"
@@ -199,7 +199,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dstdir)
             if [[ -n "${2-}" ]]; then
-                PARAM_DSTDIR="$2"
+                PARAM_DSTDIR="$(realpath $2)"
                 shift
             else
                 log "ERROR: --dstdir expects <DstDir>"
