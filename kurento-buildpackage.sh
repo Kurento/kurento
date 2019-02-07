@@ -80,6 +80,12 @@
 #/   unstaged and/or uncommited changes.
 #/   If this option is not given, the working directory must be clean.
 #/
+#/   NOTE: This tells `dpkg-buildpackage` to skip calling `dpkg-source` and
+#/   build a Binary-only package. It makes easier creating a test package, but
+#/   in the long run the objective is to create oficially valid packages which
+#/   comply with Debian/Ubuntu's policies, so this option should not be used
+#/   for final published packages.
+#/
 #/   Optional. Default: Disabled.
 #/
 #/ --release
@@ -410,7 +416,16 @@ fi
 
 # Arguments passed to 'dpkg-buildpackage'
 ARGS="-uc -us -j$(nproc)"
+
+if [[ "$PARAM_INSTALL_FILES" == "true" ]]; then
+    # Tell `dpkg-source` to generate its source tarball by
+    # ignoring *.deb and *.ddeb files inside $PARAM_INSTALL_FILES_DIR
+    ARGS="$ARGS --source-option=--extend-diff-ignore=.*\.d?deb$"
+fi
+
 if [[ "$PARAM_ALLOW_DIRTY" == "true" ]]; then
+    # Tell `dpkg-buildpackage` to build a Binary-only package,
+    # skipping `dpkg-source` source tarball altogether.
     ARGS="$ARGS -b"
 fi
 
