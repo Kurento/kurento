@@ -378,9 +378,6 @@ mk-build-deps --install --remove \
 #   If not set, GBP would search for upstream source files in
 #   the "upstream-branch" specified in 'gbp.conf' (or 'upstream' by default).
 #
-# --git-no-pristine-tar skips using `pristine-tar` to create an upstream
-#   source tarball.
-#
 # --git-author uses the Git user details for the entry in 'debian/changelog'.
 #
 # Other arguments are passed to `debuild` and `dpkg-buildpackage`.
