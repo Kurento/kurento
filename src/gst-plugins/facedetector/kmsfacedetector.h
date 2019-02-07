@@ -18,6 +18,10 @@
 #ifndef _KMS_FACE_DETECTOR_H_
 #define _KMS_FACE_DETECTOR_H_
 
+#include "opencv2/core/version.hpp"
+#if CV_MAJOR_VERSION == 3
+#include <opencv2/core/fast_math.hpp>
+#endif
 #include <gst/video/gstvideofilter.h>
 #include <opencv/cv.h>
 

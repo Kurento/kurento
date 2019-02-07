@@ -42,7 +42,7 @@ static Classifier lbpClassifier = Classifier ();
 void classify_image (IplImage *img, CvSeq *facesList)
 {
   std::vector<Rect> faces;
-  Mat frame (img);
+  Mat frame (cv::cvarrToMat(img));
   Mat frame_gray;
 
   cvtColor ( frame, frame_gray, COLOR_BGR2GRAY );

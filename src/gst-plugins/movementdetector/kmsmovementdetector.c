@@ -149,7 +149,7 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
   imgBW = cvCreateImage (cvGetSize (movementdetector->img),
       movementdetector->img->depth, 1);
 
-  cvConvertImage (movementdetector->img, imgBW, CV_BGR2GRAY);
+  cvCvtColor (movementdetector->img, imgBW, CV_BGR2GRAY);
   if (imagesChanged) {
     movementdetector->imgOldBW = imgBW;
     goto end;

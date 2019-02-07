@@ -30,9 +30,10 @@
 #include <string.h>
 #include <errno.h>
 
+#include <opencv2/opencv_modules.hpp>
 #include <opencv/cv.h>
-
 #include <opencv/highgui.h>
+
 #include <libsoup/soup.h>
 
 #define TEMP_PATH "/tmp/XXXXXX"

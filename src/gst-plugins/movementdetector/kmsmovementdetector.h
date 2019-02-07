@@ -20,6 +20,11 @@
 
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
+
+#include "opencv2/core/version.hpp"
+#if CV_MAJOR_VERSION == 3
+#include <opencv2/core/fast_math.hpp>
+#endif
 #include <opencv/cv.h>
 #include <stdio.h>
 
