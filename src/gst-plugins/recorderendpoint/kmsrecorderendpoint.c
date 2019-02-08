@@ -18,8 +18,7 @@
 #include "config.h"
 #endif
 
-#define _GNU_SOURCE // Enable GNU Extensions: 'ALLPERMS' is not POSIX
-#include <sys/stat.h>
+#include <sys/stat.h>  // 'ACCESSPERMS' is not POSIX, requires GNU extensions in GCC
 
 #include <string.h>
 #include <gst/gst.h>
@@ -734,7 +733,7 @@ kms_recorder_endpoint_create_parent_directories (KmsRecorderEndpoint * self)
     gchar *dir = g_path_get_dirname (file);
 
     // Try to create directory
-    if (g_mkdir_with_parents (dir, ALLPERMS) != 0) {
+    if (g_mkdir_with_parents (dir, ACCESSPERMS) != 0) {
       GST_WARNING_OBJECT (self, "Directory %s could not be created", dir);
     }
 

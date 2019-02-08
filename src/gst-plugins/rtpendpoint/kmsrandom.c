@@ -15,8 +15,7 @@
  *
  */
 
-#define _GNU_SOURCE // Enable GNU Extensions: 'syscall()' is not POSIX
-#include <unistd.h>
+#include <unistd.h>  // 'syscall()' is not POSIX, requires GNU extensions in GCC
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/stat.h>
