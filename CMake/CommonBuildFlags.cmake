@@ -56,8 +56,8 @@ function(common_buildflags_set)
   dpkg_buildflags_get_ldflags(DPKG_LDFLAGS)
 
   # General flags, covering all build configurations
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c11   -Wall -pthread" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pthread" PARENT_SCOPE)
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu11   -Wall -pthread" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -pthread" PARENT_SCOPE)
 
   # Debug builds
   #
