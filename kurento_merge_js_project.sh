@@ -42,10 +42,16 @@ kurento_npm_publish.sh
 # kurento-client via NPM. They should not be available independently in Maven
 # or Bower.
 case "$KURENTO_PROJECT" in
-    kurento-client-core-js \
-    | kurento-client-elements-js \
-    | kurento-client-filters-js)
-        exit 0 ;;
+kurento-client-core-js \
+| kurento-client-elements-js \
+| kurento-client-filters-js)
+    # Only create a tag if the deployment process was successful
+    kurento_check_version.sh true || {
+      echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging enabled)"
+      exit 1
+    }
+    exit 0
+    ;;
 esac
 
 # Convert into a valid Maven artifact

@@ -40,13 +40,10 @@ GIT_COMMIT="$(git rev-parse --short HEAD)"
       }
     }
 
+    kurento_check_version.sh true || {
+        echo "[kurento_generate_js_module] ERROR: Command failed: kurento_check_version (tagging enabled)"
+        exit 1
+    }
+
     popd  # $JS_PROJECT
 }
-
-# Only create a tag if the deployment process was successful
-# Commented out because this is currently being done in the main kms-{core,elements,filters} job.
-# Uncomment when this is sorted out and we know WHEN we want to create tags.
-# kurento_check_version.sh true || {
-#   echo "[kurento_generate_js_module] ERROR: Command failed: kurento_check_version (tagging enabled)"
-#   exit 1
-# }
