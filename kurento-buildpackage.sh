@@ -141,24 +141,24 @@
 
 
 
-# ------------ Shell setup ------------
+# Shell setup
+# -----------
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
+
+
+
+# Check permissions
+# -----------------
+
+[[ "$(id -u)" -eq 0 ]] || {
+    log "ERROR: Please run as root user (or with 'sudo')"
     exit 1
 }
 
 
-
-# ------------ Script start ------------
-
-# Check root permissions
-[[ "$(id -u)" -eq 0 ]] || { log "Please run as root"; exit 1; }
-
-
-
-# ---- Parse arguments ----
 
 PARAM_INSTALL_KURENTO="false"
 PARAM_INSTALL_KURENTO_VERSION="0.0.0"
@@ -169,6 +169,9 @@ PARAM_DSTDIR="$PWD"
 PARAM_ALLOW_DIRTY="false"
 PARAM_RELEASE="false"
 PARAM_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
+# Parse call arguments
+# --------------------
+
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -247,13 +250,15 @@ log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
 
 
 
-# ---- Internal control variables ----
+# Setup control variables
+# -----------------------
 
 APT_UPDATE_NEEDED="true"
 
 
 
-# ---- Apt configuration ----
+# Apt configuration
+# -----------------
 
 # If requested, add the repository
 if [[ "$PARAM_INSTALL_KURENTO" == "true" ]]; then
@@ -307,7 +312,8 @@ fi
 
 
 
-# ---- Enter Work Directory ----
+# Enter Work Directory
+# --------------------
 
 # All next commands expect to be run from the path that contains
 # the actual project and its 'debian/' directory
@@ -319,7 +325,8 @@ pushd "$PARAM_SRCDIR" || {
 
 
 
-# ---- Dependencies ----
+# Install dependencies
+# --------------------
 
 log "Install build dependencies"
 
@@ -354,7 +361,8 @@ mk-build-deps --install --remove \
 
 
 
-# ---- Run git-buildpackage ----
+# Run git-buildpackage
+# --------------------
 
 # To build Release packages, the 'debian/changelog' file must be updated and
 # committed by a developer, as part of the release process. Then the build
@@ -387,7 +395,8 @@ mk-build-deps --install --remove \
 
 
 
-# Changelog
+# Update debian/changelog
+# -----------------------
 
 if [[ "$PARAM_RELEASE" == "true" ]]; then
     log "Update debian/changelog for a RELEASE version build"
@@ -409,7 +418,8 @@ fi
 
 
 
-# Build
+# Build Debian packages
+# ---------------------
 
 # Arguments passed to 'dpkg-buildpackage'
 ARGS="-uc -us -j$(nproc)"
@@ -444,7 +454,10 @@ fi
 
 
 
-# ---- Move packages ----
+
+
+# Move packages
+# -------------
 
 # `dh_builddeb` puts by default the generated '.deb' files in '../'
 # so move them to the target destination directory.
@@ -456,9 +469,10 @@ find "$(realpath ..)" -maxdepth 1 -type f -name '*.*deb' \
 
 
 
-# ---- Exit Work Directory ----
+# Exit Work Directory
+# -------------------
 
-popd || true
+popd || true  # "$CFG_SRCDIR"
 
 
 
