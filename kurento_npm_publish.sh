@@ -62,7 +62,7 @@ pubRelease=$(echo $pubVersion | awk -F"-" '{print $1}') || {
 echo "Local version found, V: $localVersion, R: $localRelease"
 echo "Public version found, V: $pubVersion, R: $pubRelease"
 
-[[ $localRelease != $localVersion ]] && {
+[[ "$localRelease" != "$localVersion" ]] && {
   echo "[kurento_npm_publish] Exit: Version is development"
   exit 0
 }
