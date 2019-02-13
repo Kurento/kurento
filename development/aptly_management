@@ -15,9 +15,6 @@ KMS_VERSION="$(
 )"
 [ -z "$KMS_VERSION" ] && { echo "Cannot parse KMS Version field"; exit 1; }
 
-# Get external packages
-aws s3 sync "s3://ubuntu.openvidu.io/externals/${DISTRIBUTION}/" .
-
 aptly repo create -distribution="${DISTRIBUTION}" -component=kms6 "kurento-${DISTRIBUTION}-${KMS_VERSION}"
 aptly repo add "kurento-${DISTRIBUTION}-${KMS_VERSION}" ./*.*deb
 aptly snapshot create "snap-kurento-${DISTRIBUTION}-${KMS_VERSION}" from repo "kurento-${DISTRIBUTION}-${KMS_VERSION}"
