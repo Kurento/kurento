@@ -160,25 +160,25 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 
 
 
-PARAM_INSTALL_KURENTO="false"
-PARAM_INSTALL_KURENTO_VERSION="0.0.0"
-PARAM_INSTALL_FILES="false"
-PARAM_INSTALL_FILES_DIR="$PWD"
-PARAM_SRCDIR="$PWD"
-PARAM_DSTDIR="$PWD"
-PARAM_ALLOW_DIRTY="false"
-PARAM_RELEASE="false"
-PARAM_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
 # Parse call arguments
 # --------------------
 
+CFG_INSTALL_KURENTO="false"
+CFG_INSTALL_KURENTO_VERSION="0.0.0"
+CFG_INSTALL_FILES="false"
+CFG_INSTALL_FILES_DIR="$PWD"
+CFG_SRCDIR="$PWD"
+CFG_DSTDIR="$PWD"
+CFG_ALLOW_DIRTY="false"
+CFG_RELEASE="false"
+CFG_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --install-kurento)
             if [[ -n "${2-}" ]]; then
-                PARAM_INSTALL_KURENTO="true"
-                PARAM_INSTALL_KURENTO_VERSION="$2"
+                CFG_INSTALL_KURENTO="true"
+                CFG_INSTALL_KURENTO_VERSION="$2"
                 shift
             else
                 log "ERROR: --install-kurento expects <KurentoVersion>"
@@ -187,15 +187,15 @@ while [[ $# -gt 0 ]]; do
             fi
             ;;
         --install-files)
-            PARAM_INSTALL_FILES="true"
+            CFG_INSTALL_FILES="true"
             if [[ -n "${2-}" ]]; then
-                PARAM_INSTALL_FILES_DIR="$(realpath $2)"
+                CFG_INSTALL_FILES_DIR="$(realpath $2)"
                 shift
             fi
             ;;
         --srcdir)
             if [[ -n "${2-}" ]]; then
-                PARAM_SRCDIR="$(realpath $2)"
+                CFG_SRCDIR="$(realpath $2)"
                 shift
             else
                 log "ERROR: --srcdir expects <SrcDir>"
@@ -205,7 +205,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dstdir)
             if [[ -n "${2-}" ]]; then
-                PARAM_DSTDIR="$(realpath $2)"
+                CFG_DSTDIR="$(realpath $2)"
                 shift
             else
                 log "ERROR: --dstdir expects <DstDir>"
@@ -214,14 +214,14 @@ while [[ $# -gt 0 ]]; do
             fi
             ;;
         --allow-dirty)
-            PARAM_ALLOW_DIRTY="true"
+            CFG_ALLOW_DIRTY="true"
             ;;
         --release)
-            PARAM_RELEASE="true"
+            CFG_RELEASE="true"
             ;;
         --timestamp)
             if [[ -n "${2-}" ]]; then
-                PARAM_TIMESTAMP="$2"
+                CFG_TIMESTAMP="$2"
                 shift
             else
                 log "ERROR: --timestamp expects <Timestamp>"
@@ -238,15 +238,15 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-log "PARAM_INSTALL_KURENTO=${PARAM_INSTALL_KURENTO}"
-log "PARAM_INSTALL_KURENTO_VERSION=${PARAM_INSTALL_KURENTO_VERSION}"
-log "PARAM_INSTALL_FILES=${PARAM_INSTALL_FILES}"
-log "PARAM_INSTALL_FILES_DIR=${PARAM_INSTALL_FILES_DIR}"
-log "PARAM_SRCDIR=${PARAM_SRCDIR}"
-log "PARAM_DSTDIR=${PARAM_DSTDIR}"
-log "PARAM_ALLOW_DIRTY=${PARAM_ALLOW_DIRTY}"
-log "PARAM_RELEASE=${PARAM_RELEASE}"
-log "PARAM_TIMESTAMP=${PARAM_TIMESTAMP}"
+log "CFG_INSTALL_KURENTO=${CFG_INSTALL_KURENTO}"
+log "CFG_INSTALL_KURENTO_VERSION=${CFG_INSTALL_KURENTO_VERSION}"
+log "CFG_INSTALL_FILES=${CFG_INSTALL_FILES}"
+log "CFG_INSTALL_FILES_DIR=${CFG_INSTALL_FILES_DIR}"
+log "CFG_SRCDIR=${CFG_SRCDIR}"
+log "CFG_DSTDIR=${CFG_DSTDIR}"
+log "CFG_ALLOW_DIRTY=${CFG_ALLOW_DIRTY}"
+log "CFG_RELEASE=${CFG_RELEASE}"
+log "CFG_TIMESTAMP=${CFG_TIMESTAMP}"
 
 
 
@@ -261,17 +261,17 @@ APT_UPDATE_NEEDED="true"
 # -----------------
 
 # If requested, add the repository
-if [[ "$PARAM_INSTALL_KURENTO" == "true" ]]; then
+if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
     log "Requested installation of Kurento packages"
 
     log "Add the Kurento Apt repository key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-    if [[ "$PARAM_INSTALL_KURENTO_VERSION" == "nightly" ]]; then
+    if [[ "$CFG_INSTALL_KURENTO_VERSION" == "nightly" ]]; then
         # Set correct repo name for nightly versions
         REPO="dev"
     else
-        REPO="$PARAM_INSTALL_KURENTO_VERSION"
+        REPO="$CFG_INSTALL_KURENTO_VERSION"
     fi
 
     log "Add the Kurento Apt repository line"
@@ -291,13 +291,11 @@ fi
 # This is done _after_ installing from the Kurento repository, because
 # installation of local files might be useful to overwrite some default
 # version of packages.
-if [[ "$PARAM_INSTALL_FILES" == "true" ]]; then
+if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     log "Requested installation of package files"
 
-    FILESDIR="$PARAM_INSTALL_FILES_DIR"
-
-    if ls -f "${FILESDIR}"/*.*deb >/dev/null 2>&1; then
-        dpkg --install "${FILESDIR}"/*.*deb || {
+    if ls -f "${CFG_INSTALL_FILES_DIR}"/*.*deb >/dev/null 2>&1; then
+        dpkg --install "${CFG_INSTALL_FILES_DIR}"/*.*deb || {
             log "Try to install remaining dependencies"
             if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
                 apt-get update
@@ -318,8 +316,8 @@ fi
 # All next commands expect to be run from the path that contains
 # the actual project and its 'debian/' directory
 
-pushd "$PARAM_SRCDIR" || {
-    log "ERROR: Cannot change to source dir: '$PARAM_SRCDIR'"
+pushd "$CFG_SRCDIR" || {
+    log "ERROR: Cannot change to source dir: '$CFG_SRCDIR'"
     exit 1
 }
 
@@ -398,7 +396,7 @@ mk-build-deps --install --remove \
 # Update debian/changelog
 # -----------------------
 
-if [[ "$PARAM_RELEASE" == "true" ]]; then
+if [[ "$CFG_RELEASE" == "true" ]]; then
     log "Update debian/changelog for a RELEASE version build"
     gbp dch \
         --ignore-branch \
@@ -412,7 +410,7 @@ else
         --ignore-branch \
         --git-author \
         --spawn-editor=never \
-        --snapshot --snapshot-number="$PARAM_TIMESTAMP" \
+        --snapshot --snapshot-number="$CFG_TIMESTAMP" \
         ./debian/
 fi
 
@@ -436,7 +434,7 @@ if [[ "$PARAM_ALLOW_DIRTY" == "true" ]]; then
     ARGS="$ARGS -b"
 fi
 
-if [[ "$PARAM_RELEASE" == "true" ]]; then
+if [[ "$CFG_RELEASE" == "true" ]]; then
     log "Run git-buildpackage to generate a RELEASE version build"
     gbp buildpackage \
         --git-ignore-new \
@@ -464,8 +462,8 @@ fi
 # Use 'find | xargs' here because we need to skip moving if the source
 # and destination paths are the same.
 find "$(realpath ..)" -maxdepth 1 -type f -name '*.*deb' \
-    -not -path "$PARAM_DSTDIR/*" -print0 \
-| xargs -0 --no-run-if-empty mv --target-directory="$PARAM_DSTDIR"
+    -not -path "$CFG_DSTDIR/*" -print0 \
+| xargs -0 --no-run-if-empty mv --target-directory="$CFG_DSTDIR"
 
 
 
