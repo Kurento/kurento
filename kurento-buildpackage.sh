@@ -439,38 +439,42 @@ fi
 # Build Debian packages
 # ---------------------
 
-# Arguments passed to 'dpkg-buildpackage'
-ARGS="-uc -us -j$(nproc)"
+GBP_ARGS=""
 
-if [[ "$PARAM_INSTALL_FILES" == "true" ]]; then
-    # Tell `dpkg-source` to generate its source tarball by
-    # ignoring *.deb and *.ddeb files inside $PARAM_INSTALL_FILES_DIR
-    ARGS="$ARGS --source-option=--extend-diff-ignore=.*\.d?deb$"
-fi
+# `dpkg-buildpackage`: skip signing, use multiple cores
+GBP_ARGS="$GBP_ARGS -uc -us -j$(nproc)"
 
-if [[ "$PARAM_ALLOW_DIRTY" == "true" ]]; then
-    # Tell `dpkg-buildpackage` to build a Binary-only package,
-    # skipping `dpkg-source` source tarball altogether.
-    ARGS="$ARGS -b"
+if [[ "$CFG_ALLOW_DIRTY" == "true" ]]; then
+    # `dpkg-buildpackage`: build a Binary-only package,
+    # skipping `dpkg-source` source tarball altogether
+    #GBP_ARGS="$GBP_ARGS -b"
+
+    # `dpkg-source`: generate the source tarball by ignoring
+    # ALL changed files in the working directory
+    GBP_ARGS="$GBP_ARGS --source-option=--extend-diff-ignore=.*"
+elif [[ "$CFG_INSTALL_FILES" == "true" ]]; then
+    # `dpkg-source`: generate the source tarball by ignoring
+    # '*.deb' and '*.ddeb' files inside $CFG_INSTALL_FILES_DIR
+    GBP_ARGS="$GBP_ARGS --source-option=--extend-diff-ignore=.*\.d?deb$"
 fi
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
     log "Run git-buildpackage to generate a RELEASE version build"
-    gbp buildpackage \
-        --git-ignore-new \
-        --git-ignore-branch \
-        --git-upstream-tree=SLOPPY \
-        $ARGS
 else
     log "Run git-buildpackage to generate a NIGHTLY snapshot build"
-    gbp buildpackage \
-        --git-ignore-new \
-        --git-ignore-branch \
-        --git-upstream-tree=SLOPPY \
-        $ARGS
 fi
 
+# `debuild`: don't check that the source tarball (".orig.tar.gz") exists;
+# this check isn't needed because `git-buildpackage` is just going to create
+# the source tarball when it doesn't find it in the working directory.
+GBP_BUILDER="debuild --no-tgz-check -i -I"
 
+gbp buildpackage \
+    --git-ignore-new \
+    --git-ignore-branch \
+    --git-upstream-tree=SLOPPY \
+    --git-builder="$GBP_BUILDER" \
+    $GBP_ARGS
 
 
 
