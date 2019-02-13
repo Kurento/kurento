@@ -1,17 +1,18 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# (shebang not really needed, but required by ShellCheck)
 
-# Default settings for Kurento shell scripts.
+# Default settings for Bash scripts.
 #
-# This file sets safer settings than the defaults in a Bash shell,
+# This config file sets safer settings than the defaults in a Bash shell,
 # and also defines some useful functions that other scripts can use.
 #
 # Checking your scripts with ShellCheck.net is still needed!
 # ShellCheck is an online static analyzer that will help you
 # write better and safer scripts. USE IT!
 #
-# To load this file, source it from any other Bash script:
+# To use this file, source it from any other Bash script:
 #
-#     source kurento.conf.sh
+#     source bash.conf.sh
 #
 #
 # Features
@@ -28,8 +29,8 @@
 #   run before the script exits, to print information about its success.
 #
 # * Log function.
-#   The log() function prints log messages. If the shell debug traces are
-#   enabled (set -x), this function takes care of first disabling it;
+#   The log() function prints log messages. If the shell debug trace mode
+#   is enabled (`set -x`), this function takes care of first disabling it;
 #   that way, the `echo` commands don't get duplicated at the output.
 #
 # * Help comments.
@@ -45,7 +46,7 @@
 set -o errexit -o errtrace -o pipefail -o nounset
 
 # Log function
-# These disable and re-enable debug mode (only if it was already set)
+# This disables and re-enables debug trace mode (only if it was already set)
 # Source: https://superuser.com/a/1338887/922762
 shopt -s expand_aliases  # This trick requires enabling aliases in Bash
 BASENAME="$(basename "$0")"  # Complete file name
@@ -64,7 +65,7 @@ trap on_error ERR
 
 on_exit() {
     _ERR="${_ERR:-$?}"  # Get either trap code, or this script's exit code
-    if (($_ERR)); then log "ERROR ($_ERR)"; else log "SUCCESS"; fi
+    if ((_ERR)); then log "ERROR ($_ERR)"; else log "SUCCESS"; fi
     log "#################### END ####################"
 }
 trap on_exit EXIT

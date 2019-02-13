@@ -144,13 +144,10 @@
 # ------------ Shell setup ------------
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-CONF_FILE="$BASEPATH/kurento.conf.sh"
-[[ -f "$CONF_FILE" ]] || {
-    echo "[$0] ERROR: Shell config file not found: $CONF_FILE"
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
     exit 1
 }
-# shellcheck source=kurento.conf.sh
-source "$CONF_FILE"
 
 
 
