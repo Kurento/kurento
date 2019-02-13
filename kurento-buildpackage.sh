@@ -396,12 +396,31 @@ mk-build-deps --install --remove \
 # Update debian/changelog
 # -----------------------
 
+# A Debian/Ubuntu package repository stores all packages for all components
+# and distributions under the same 'pool/' directory. The assumption is that
+# two packages with same (name, version, arch) will be exactly the same (MD5).
+#
+# In our case this is still not true, so we need to differenciate equal packages
+# between Ubuntu distributions. For that, the distro version is appended to
+# our package version.
+#
+# This is based on the version scheme used by Firefox packages on Ubuntu:
+#
+#   Ubuntu Xenial: 65.0+build2-0ubuntu0.16.04.1
+#   Ubuntu Bionic: 65.0+build2-0ubuntu0.18.04.1
+#
+# In which "16.04" or "18.04" is appended to the usual package version.
+
+PACKAGE_VERSION="$(dpkg-parsechangelog --show-field Version)"
+DISTRO_VERSION="$(lsb_release --release --short)"
+
 if [[ "$CFG_RELEASE" == "true" ]]; then
     log "Update debian/changelog for a RELEASE version build"
     gbp dch \
         --ignore-branch \
         --git-author \
         --spawn-editor=never \
+        --new-version="${PACKAGE_VERSION}.${DISTRO_VERSION}" \
         --release \
         ./debian/
 else
@@ -410,6 +429,7 @@ else
         --ignore-branch \
         --git-author \
         --spawn-editor=never \
+        --new-version="${PACKAGE_VERSION}.${DISTRO_VERSION}" \
         --snapshot --snapshot-number="$CFG_TIMESTAMP" \
         ./debian/
 fi
