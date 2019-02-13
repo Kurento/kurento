@@ -2,18 +2,20 @@
 
 #/ Generate and commit source files for Read The Docs.
 #/
-#/ Arguments:
+#/ Arguments
+#/ ---------
 #/
 #/ --release
 #/
-#/     Build documentation sources intended for Release.
-#/     If this option is not given, sources are built as nightly snapshots.
+#/   Build documentation sources intended for Release.
+#/   If this option is not given, sources are built as nightly snapshots.
 #/
-#/     Optional. Default: Disabled.
+#/   Optional. Default: Disabled.
 
 
 
-# ------------ Shell setup ------------
+# Shell setup
+# -----------
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
@@ -21,30 +23,30 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 
 
 
-# ------------ Script start ------------
+# Parse call arguments
+# --------------------
 
-# ---- Parse arguments ----
-
-PARAM_RELEASE="false"
+CFG_RELEASE="false"
 
 while [[ $# -gt 0 ]]; do
-case "${1-}" in
-    --release)
-        PARAM_RELEASE="true"
-        shift
-        ;;
-    *)
-        log "WARNING: Unknown argument '${1-}'"
-        shift
-        ;;
-esac
+    case "${1-}" in
+        --release)
+            CFG_RELEASE="true"
+            ;;
+        *)
+            log "WARNING: Unknown argument '${1-}'"
+            log "Run with '--help' to read usage details"
+            ;;
+    esac
+    shift
 done
 
-log "PARAM_RELEASE=${PARAM_RELEASE}"
+log "CFG_RELEASE=${CFG_RELEASE}"
 
 
 
-# ---- Generate sources ----
+# Generate documentation sources
+# ------------------------------
 
 kurento_clone_repo.sh "$KURENTO_PROJECT"
 
@@ -62,7 +64,7 @@ kurento_clone_repo.sh "$KURENTO_PROJECT"
     make --file=Makefile.ci ci-readthedocs
     rm Makefile.ci
 
-    if [[ "$PARAM_RELEASE" = "true" ]]; then
+    if [[ "$CFG_RELEASE" = "true" ]]; then
         log "Command: kurento_check_version (tagging enabled)"
         kurento_check_version.sh "true"
     else
@@ -75,7 +77,8 @@ kurento_clone_repo.sh "$KURENTO_PROJECT"
 
 
 
-# ---- Commit generated sources ----
+# Commit generated sources
+# ------------------------
 
 RTD_PROJECT="${KURENTO_PROJECT}-readthedocs"
 
@@ -97,7 +100,7 @@ GIT_COMMIT="$(git rev-parse --short HEAD)"
       git push origin master
     }
 
-    if [[ "$PARAM_RELEASE" = "true" ]]; then
+    if [[ "$CFG_RELEASE" = "true" ]]; then
         log "Command: kurento_check_version (tagging enabled)"
         kurento_check_version.sh "true"
     else
