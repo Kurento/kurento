@@ -6,4 +6,11 @@ set -o errexit -o errtrace -o pipefail -o nounset
 echo "##################### EXECUTE: aptly_dev_management #####################"
 
 aptly repo add -force-replace "kurento-openvidu-${DISTRIBUTION}-dev" ./*.*deb
-aptly -gpg-key="${GPGKEY}" publish update "${DISTRIBUTION}" s3:ubuntu:dev
+
+# Check if repo is already published
+IS_PUBLISHED=$(aptly publish list -raw | grep "s3:ubuntu:dev ${DISTRIBUTION}" | wc -l)
+if [ "${IS_PUBLISHED}" == 0 ]; then
+	aptly -gpg-key="${GPGKEY}" publish repo "kurento-openvidu-${DISTRIBUTION}-dev" s3:ubuntu:dev
+else
+	aptly -gpg-key="${GPGKEY}" publish update "${DISTRIBUTION}" s3:ubuntu:dev
+fi	
