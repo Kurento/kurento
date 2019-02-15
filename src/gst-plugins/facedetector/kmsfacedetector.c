@@ -96,8 +96,14 @@ kms_face_detector_initialize_classifiers (KmsFaceDetector * facedetector)
 {
   GST_DEBUG ("Loading classifier: %s",
       HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
+
   facedetector->priv->pCascadeFace = (CvHaarClassifierCascade *)
       cvLoad ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE), 0, 0, 0);
+
+  if (facedetector->priv->pCascadeFace == NULL) {
+    GST_ERROR ("Failed loading classifier: %s",
+        HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
+  }
 }
 
 static void
