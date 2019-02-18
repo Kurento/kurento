@@ -1,6 +1,6 @@
-# Kurento Media Server / Nightly / Ubuntu 16.04 (Xenial)
+# Kurento Media Server / Nightly builds
 #
-# This Docker image is used to run a Nightly instance of Kurento Media Server.
+# This Docker image is used to run a Nightly build of Kurento Media Server.
 # JSON-RPC API interface is exposed on port 8888.
 #
 #
@@ -13,12 +13,19 @@
 # Build arguments
 # ---------------
 #
-# --build-arg KMS_VERSION=<Version>
+# --build-arg UBUNTU_VERSION=<UbuntuVersion>
 #
-#     <Version> is like "6.7.2", "6.9.0", etc.
-#     Alternatively, "dev" is used to build a nightly version of KMS.
+#   <UbuntuVersion> is like "xenial", "bionic", etc.
+#   Valid values are listed here: https://hub.docker.com/_/buildpack-deps/
 #
-#     Optional. Default: "0.0.0" (an invalid value).
+#   Optional. Default: "xenial".
+#
+# --build-arg KMS_VERSION=<KmsVersion>
+#
+#   <KmsVersion> is like "6.7.2", "6.9.0", etc.
+#   Alternatively, "dev" is used to build a nightly version of KMS.
+#
+#   Optional. Default: "0.0.0" (an invalid value).
 #
 #
 # Run command
@@ -27,7 +34,10 @@
 # docker run -d --name kms -p 8888:8888 kurento/kurento-media-server-dev
 
 
-FROM ubuntu:16.04
+
+ARG UBUNTU_VERSION=xenial
+
+FROM ubuntu:${UBUNTU_VERSION}
 
 MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 MAINTAINER Fede Diaz <nordri@gmail.com>
@@ -46,7 +56,7 @@ ENV LANG=C.UTF-8 \
 # * Add Kurento package repository
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
- && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} xenial kms6" >/etc/apt/sources.list.d/kurento.list \
+ && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 # Install everything needed
