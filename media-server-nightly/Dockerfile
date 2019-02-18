@@ -69,21 +69,25 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 # Install everything needed
-# * Kurento Media Server core packages
-# * Additional modules
 # * [FIXME] OpenH264 dependency: bzip2 wget
 #   Remove this when the openh264 package is released with a fix
+# * Kurento Media Server
 RUN apt-get update \
  && apt-get install --yes \
+        bzip2 wget \
         kurento-media-server \
-        \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install additional modules
+# These might not be available in Ubuntu 18.04 (Bionic)
+RUN apt-get update \
+ && apt-get install --yes \
         kms-chroma \
         kms-crowddetector \
         kms-platedetector \
         kms-pointerdetector \
-        \
-        bzip2 wget \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
+ && apt-get clean && rm -rf /var/lib/apt/lists/* \
+ || true
 
 EXPOSE 8888
 
