@@ -51,6 +51,12 @@ ARG KMS_VERSION=0.0.0
 ENV LANG=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive
 
+# Install GnuPG, needed for `apt-key adv` (since Ubuntu 18.04)
+RUN apt-get update \
+ && apt-get install --yes \
+        gnupg \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Configure apt-get
 # * Disable installation of recommended and suggested packages
 # * Add Kurento package repository
@@ -65,7 +71,7 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
 # * [FIXME] OpenH264 dependency: bzip2 wget
 #   Remove this when the openh264 package is released with a fix
 RUN apt-get update \
- && apt-get install -y \
+ && apt-get install --yes \
         kurento-media-server \
         \
         kms-chroma \
