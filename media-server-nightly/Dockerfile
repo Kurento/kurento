@@ -62,7 +62,10 @@ RUN apt-get update \
 # * Add Kurento package repository
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
- && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" >/etc/apt/sources.list.d/kurento.list \
+ && echo "UBUNTU_VERSION=${UBUNTU_VERSION}" \
+ && echo "KMS_VERSION=${KMS_VERSION}" \
+ && echo "Apt source line: deb http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" \
+ && echo "deb http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 # Install everything needed
