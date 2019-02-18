@@ -43,6 +43,7 @@ MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 MAINTAINER Fede Diaz <nordri@gmail.com>
 MAINTAINER Juan Navarro <juan.navarro@gmx.es>
 
+ARG UBUNTU_VERSION=xenial
 ARG KMS_VERSION=0.0.0
 
 # Configure environment
