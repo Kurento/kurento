@@ -47,7 +47,7 @@ Reporting Issues
 
 When reporting a bug, please include as much information as possible, this will help us solve the problem. Also, try to follow these guidelines as closely as possible, because they make it easier for people to work on the issue, and that means more chances that the issue gets fixed:
 
-- **Be proactive**. If you are working with an old version of Kurento, please check with newer versions, specially with the :doc:`latest development version </user/installation_dev>`. We can't emphasize this enough: *it's the first thing that we are going to ask*.
+- **Be proactive**. If you are working with an old version of Kurento, please check with newer versions, specially with the :doc:`nightly version </user/installation_dev>`. We can't emphasize this enough: *it's the first thing that we are going to ask*.
 
 - **Be curious**. Has it been asked before? Is it really a bug? Everybody hates duplicated reports. The Search tool is your friend!
 

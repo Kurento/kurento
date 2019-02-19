@@ -1,15 +1,15 @@
-=============================
-Installing Pre-Release Builds
-=============================
+=========================
+Installing Nightly Builds
+=========================
 
 Some components of KMS are built nightly, with the code developed during that same day. Other components are built immediately when code is merged into the source repositories.
 
 These builds end up being uploaded to *Development* repositories so they can be installed by anyone. Use these if you want to develop *Kurento itself*, or if you want to try the latest changes before they are officially released.
 
 .. warning::
-   Pre-release builds always represent the current state on the software development; 99% of the time this is stable code, very close to what will end up being released.
+   Nightly builds always represent the current state on the software development; 99% of the time this is stable code, very close to what will end up being released.
 
-   However, it's also possible (although unlikely) that these builds might include undocumented changes, regressions, bugs or deprecations. It's safer to be conservative and avoid using pre-release builds in a production environment, unless you have a strong reason to do it.
+   However, it's also possible (although unlikely) that these builds might include undocumented changes, regressions, bugs or deprecations. It's safer to be conservative and avoid using nightly builds in a production environment, unless you have a strong reason to do it.
 
 .. note::
    If you are looking to build KMS from the source code, then you should check the section aimed at development of *KMS itself*: :ref:`dev-sources`.
@@ -19,7 +19,7 @@ These builds end up being uploaded to *Development* repositories so they can be 
 Kurento Media Server
 ====================
 
-The steps to install a pre-release version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
+The steps to install a nightly version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
 1. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these commands:
 
@@ -53,7 +53,7 @@ The steps to install a pre-release version of KMS are pretty much the same as th
       sudo apt-get update
       sudo apt-get install kurento-media-server
 
-This will install the latest KMS pre-release (potentially unstable) version.
+This will install the latest KMS nightly (potentially unstable) version.
 
 
 

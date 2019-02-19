@@ -189,7 +189,7 @@ These steps are pretty much the same as those explained in :ref:`installation-lo
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
    sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Kurento Media Server - Pre-Release packages
+   # Kurento Media Server - Nightly packages
    deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
    EOF
 
