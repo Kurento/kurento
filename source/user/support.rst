@@ -34,7 +34,7 @@ Bugs & Support Issues
 
 You can file bug reports on our `Issue Tracker`_, and they will be addressed as soon as possible.
 
-**Support is a volunteer effort**, and there is no guaranteed response time. If you need answers quickly, you can buy commercial support as explained below.
+**Support is a volunteered effort**, and there is no guaranteed response time. If you need answers quickly, you can get in contact with us to request :ref:`Commercial Support <support-commercial>`.
 
 .. _Issue Tracker: https://github.com/Kurento/bugtracker/issues
 
@@ -65,7 +65,13 @@ If you definitely think you have hit a bug, try to include these in your bug rep
 
 
 
+.. _support-commercial:
+
 Commercial Support
 ==================
 
-We offer commercial support for Kurento, custom features, as well as consulting around all media server issues. You can contact us at openvidu@gmail.com to learn more.
+Kurento is formed by a small team of people. This means that our task pipeline is quite restricted, and most feature or support requests end up being stored in the backlog for a long time. We advance as fast as we can, but time and resources are limited and at the end of the day there is so much that we can do.
+
+If you have some needs that require urgent attention, or want to help with funding development on the Kurento project, we offer consultancy and support services on demand.
+
+Please contact us at openvidu@gmail.com and let us know about your project!

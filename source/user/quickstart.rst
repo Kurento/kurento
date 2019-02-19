@@ -36,7 +36,7 @@ Generally speaking, these are the first steps that any user interested in Kurent
 
    If you face any issue with Kurento itself or have difficulties configuring the plethora of mechanisms that form part of WebRTC, don't hesitate to :doc:`ask for help </user/support>` to our community of users.
 
-   Still, there are times when the problems at hand require more specialized study. If you wish to get help from expert people with more inside knowledge of Kurento, we also offer the option of direct :doc:`support contracts </business/index>`.
+   Still, there are times when the problems at hand require more specialized study. If you wish to get help from expert people with more inside knowledge of Kurento, get in contact with us to request :ref:`Commercial Support <support-commercial>`.
 
 6. **Enjoy!**
 

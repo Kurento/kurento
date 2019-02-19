@@ -16,7 +16,6 @@ The main documentation for the project is organized into different sections:
 - :ref:`user-docs`
 - :ref:`feature-docs`
 - :ref:`project-docs`
-- :ref:`business-docs`
 
 Information about development of *Kurento itself* is also available:
 
@@ -81,16 +80,6 @@ Information about development of *Kurento itself* is also available:
    /project/sponsors
    /project/opensource
    /project/story
-
-
-
-.. _business-docs:
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Business Documentation
-
-   /business/index
 
 
 
