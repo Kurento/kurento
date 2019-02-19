@@ -25,13 +25,13 @@ The steps to install a nightly version of KMS are pretty much the same as those 
 
    .. code-block:: bash
 
-      # KMS for Ubuntu 14.04 (Trusty)
-      DISTRO="trusty"
+      # KMS for Ubuntu 16.04 (Xenial)
+      DISTRO="xenial"
 
    .. code-block:: bash
 
-      # KMS for Ubuntu 16.04 (Xenial)
-      DISTRO="xenial"
+      # KMS for Ubuntu 18.04 (Bionic)
+      DISTRO="bionic"
 
 2. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
 
@@ -53,7 +53,7 @@ The steps to install a nightly version of KMS are pretty much the same as those 
       sudo apt-get update
       sudo apt-get install kurento-media-server
 
-This will install the latest KMS nightly (potentially unstable) version.
+This will install the latest KMS nightly version.
 
 
 
