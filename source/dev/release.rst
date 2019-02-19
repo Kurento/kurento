@@ -68,15 +68,15 @@ KMS extra modules
 Kurento external libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- gstreamer
+- jsoncpp
 - libsrtp
 - openh264
 - usrsctp
-- jsoncpp
+- gstreamer
 - gst-plugins-base
 - gst-plugins-good
-- gst-plugins-ugly
 - gst-plugins-bad
+- gst-plugins-ugly
 - gst-libav
 - openwebrtc-gst-plugins
 - libnice
