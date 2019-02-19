@@ -66,7 +66,7 @@ However, these files won't contain much useful information if the relevant debug
     sudo apt-get update
     sudo apt-get install "${PACKAGES[@]}"
 
-For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in the example**:
+For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in this example**:
 
 .. code-block:: text
 
@@ -174,9 +174,9 @@ Check these points in an attempt to find possible causes for the high CPU usage:
 
 * Also check if other processes are running in the same machine and using the CPU. For example, if Coturn is running and using a lot of resources because too many users end up connecting via Relay (TURN).
 
-Of these, video transcoding is the main user of CPU cycles, because encoding video is a computationally expensive operation. As mentioned earlier, keep an eye on the *TRANSCODING* events sent from Kurento to your Application Server, or alternatively look for ``TRANSCODING is ACTIVE`` messages in the media server logs.
+Of these, video transcoding is the main user of CPU cycles, because encoding video is a computationally expensive operation. As mentioned earlier, keep an eye on the *TRANSCODING* events sent from Kurento to your Application Server, or alternatively look for ``TRANSCODING ACTIVE`` messages in the media server logs.
 
-If you see that TRANSCODING is ACTIVE at some point, you may get a bit more information about why, by enabling this line:
+If you see that transcoding is active at some point, you may get a bit more information about why, by enabling this line:
 
 .. code-block:: bash
 
@@ -186,23 +186,23 @@ in your daemon settings file, ``/etc/default/kurento-media-server``.
 
 Then look for these messages in the media server log output:
 
-* ``Current output caps: [...]``
-* ``Downstream input caps: [...]``
-* ``Find TreeBin with output caps: [...]``
+* ``Upstream provided caps: [...]``
+* ``Downstream requested caps: [...]``
+* ``Find TreeBin with requested caps: [...]``
 
 Which will end up with either of these sets of messages:
 
 * If source codec is compatible with destination:
 
-  - ``TreeBin found! Reuse it``
-  - ``TRANSCODING is INACTIVE for this media``
+  - ``TreeBin found! Use it for (audio|video)``
+  - ``TRANSCODING INACTIVE for (audio|video)``
 
 * If source codec is **not** compatible with destination:
 
-  - ``TreeBin not found! Connection requires transcoding``
-  - ``TRANSCODING is ACTIVE for this media``
+  - ``TreeBin not found! Transcoding required for (audio|video)``
+  - ``TRANSCODING ACTIVE for (audio|video)``
 
-The *input caps* and *output caps* mentioned in the first messages can help understand what codec is being received by Kurento and what is being expected at the other side.
+The *output caps* and *input caps* mentioned in the first messages can help understand what codec settings are being received by Kurento ("*current caps*") and what is being expected at the other side ("*downstream caps*"). Don't let the  "*output*" and "*input*" terminology here confuse you: these words refer to the *output of the receiver module*, thus it refers to the inbound stream from the point of view of the whole Kurento Media Server; and the *input of the sender module*, referring in this case to the outbound stream from KMS.
 
 
 
