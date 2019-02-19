@@ -3,6 +3,17 @@ Troubleshooting Issues
 ======================
 
 Kurento Media Server is a complex piece of technology, encompassing multiple components and services, both written in-house and by third parties. All is well whenever every piece in the puzzle is playing along the others, however things can get messy when one little component breaks and it gets very difficult to pinpoint the exact reasons for the errors that can appear in a log file, or the misbehaviours that can occur.
+If you are facing an issue with Kurento Media Server, follow this basic check list:
+
+* Step 1. Test with the **latest version** of Kurento Media Server: **|VERSION_KMS|**. Follow the installation instructions here: :doc:`/user/installation`.
+
+* Step 2: If the problem still happens in the latest version, and the Kurento developers are already tracking progress for a solution in a bug report or a support contract, you may test the latest (unreleased) changes by installing a nightly version of KMS: :doc:`/user/installation_dev`.
+
+* Step 3: When your issue exists in both the latest and nightly versions, try resorting to the :ref:`Open-Source Community <support-community>`. Kurento users might be having the same issue and maybe you can find help in there.
+
+* Step 4: If you want full attention from the Kurento team, get in contact with us to request :ref:`Commercial Support <support-commercial>`.
+
+
 
 This document will try to outline several bits of knowledge that can prove very useful when studying a failure or error in KMS.
 

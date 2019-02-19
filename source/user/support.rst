@@ -4,6 +4,16 @@ Support
 
 Usage Questions
 ===============
+If you are facing an issue with Kurento Media Server, follow this basic check list:
+
+* Step 1. Test with the **latest version** of Kurento Media Server: **|VERSION_KMS|**. Follow the installation instructions here: :doc:`/user/installation`.
+
+* Step 2: If the problem still happens in the latest version, and the Kurento developers are already tracking progress for a solution in a bug report or a support contract, you may test the latest (unreleased) changes by installing a nightly version of KMS: :doc:`/user/installation_dev`.
+
+* Step 3: When your issue exists in both the latest and nightly versions, try resorting to the :ref:`Open-Source Community <support-community>`. Kurento users might be having the same issue and maybe you can find help in there.
+
+* Step 4: If you want full attention from the Kurento team, get in contact with us to request :ref:`Commercial Support <support-commercial>`.
+
 
 If you have questions about how to use Kurento, or have an issue that isn't related to a bug, `Stack Overflow`_ is the best place to ask. Tag questions with ``kurento`` so other folks can find them easily.
 
