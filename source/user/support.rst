@@ -2,8 +2,6 @@
 Support
 =======
 
-Usage Questions
-===============
 If you are facing an issue with Kurento Media Server, follow this basic check list:
 
 * Step 1. Test with the **latest version** of Kurento Media Server: **|VERSION_KMS|**. Follow the installation instructions here: :doc:`/user/installation`.
@@ -15,9 +13,17 @@ If you are facing an issue with Kurento Media Server, follow this basic check li
 * Step 4: If you want full attention from the Kurento team, get in contact with us to request :ref:`Commercial Support <support-commercial>`.
 
 
-If you have questions about how to use Kurento, or have an issue that isn't related to a bug, `Stack Overflow`_ is the best place to ask. Tag questions with ``kurento`` so other folks can find them easily.
 
-Another option you have is to contact the community through the `Kurento Public Mailing List`_, which is a medium that allows more discussion to happen around topics.
+.. _support-community:
+
+Community Support
+=================
+
+Kurento is a project mainly supported by its Open-Source Community. **All people answering your questions are doing it with their own time, so please be kind and provide as much information as possible.**
+
+If you have questions about configuration, infrastructure, or general usage of Kurento Media Server, `Stack Overflow`_ is the best place to ask. Tag questions with `kurento`_ so other folks can find them easily.
+
+Another option is to contact the Community through the `Kurento Public Mailing List`_, which is a discussion forum.
 
 Good questions to ask would be:
 
@@ -25,17 +31,9 @@ Good questions to ask would be:
 - How do I check that the ICE connectivity checks are working properly for WebRTC?
 - Which audio/video codec combination should I use to ensure no transcoding needs to take place?
 
+.. _kurento:
 .. _Stack Overflow: https://stackoverflow.com/questions/tagged/kurento?sort=frequent
 .. _Kurento Public Mailing List: https://groups.google.com/forum/#!forum/kurento
-
-
-
-.. _support-community:
-
-Community Support
-=================
-
-Kurento is a community supported project, nobody is paid explicitly to offer user support. **All people answering your questions are doing it with their own time, so please be kind and provide as much information as possible.**
 
 
 
