@@ -137,7 +137,7 @@ This is an example of a ``ping`` request::
       "jsonrpc": "2.0"
     }
 
-The response to a ``ping`` request must contain a ``result`` object with a ``value`` parameter with a fixed name: ``pong``. The following snippet shows the ``pong`` response to the previous ``ping`` request::
+The response to a ``ping`` request must contain a ``result`` object with the parameter ``value: pong``. The following snippet shows the ``pong`` response to the previous ``ping`` request::
 
     {
       "id": 1,
