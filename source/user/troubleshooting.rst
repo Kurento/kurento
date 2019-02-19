@@ -2,7 +2,6 @@
 Troubleshooting Issues
 ======================
 
-Kurento Media Server is a complex piece of technology, encompassing multiple components and services, both written in-house and by third parties. All is well whenever every piece in the puzzle is playing along the others, however things can get messy when one little component breaks and it gets very difficult to pinpoint the exact reasons for the errors that can appear in a log file, or the misbehaviours that can occur.
 If you are facing an issue with Kurento Media Server, follow this basic check list:
 
 * Step 1. Test with the **latest version** of Kurento Media Server: **|VERSION_KMS|**. Follow the installation instructions here: :doc:`/user/installation`.
