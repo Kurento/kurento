@@ -40,25 +40,13 @@ If you are installing Kurento in a NAT environment (eg. in any cloud provider), 
 
 Apart from that, you need to open all UDP ports in your security group, as STUN/TURN will use any port available from the whole 0-65535 range.
 
-On Ubuntu 16.04 (Xenial), Coturn can be installed directly from the package repositories:
+On Ubuntu, Coturn can be installed directly from the package repositories:
 
 .. code-block:: bash
 
    sudo apt-get install coturn
 
-However, Ubuntu 14.04 (Trusty) lacks this package, but it can be downloaded and installed manually from the Debian repositories:
-
-1. Download the file ``coturn_<...>_amd64.deb`` from any of the mirrors listed here: https://packages.debian.org/jessie-backports/amd64/coturn/download
-
-2. Install it, together with all dependencies.
-
-   .. code-block:: bash
-
-      sudo apt-get update
-      sudo apt-get install gdebi-core
-      sudo gdebi coturn*.deb
-
-3. Edit the file ``/etc/turnserver.conf`` and configure the TURN server.
+1. Edit the file ``/etc/turnserver.conf`` and configure the TURN server.
 
    - For Amazon EC2 or similar, the Local and External IPs should be configured via the ``relay-ip`` and ``external-ip`` parameters, respectively.
 
@@ -77,9 +65,9 @@ However, Ubuntu 14.04 (Trusty) lacks this package, but it can be downloaded and 
      - https://github.com/coturn/coturn/wiki/turnserver
      - https://github.com/coturn/coturn/wiki/CoturnConfig
 
-4. Edit the file ``/etc/default/coturn`` and uncomment ``TURNSERVER_ENABLED=1``, so the TURN server initiates automatically as a system service daemon.
+2. Edit the file ``/etc/default/coturn`` and uncomment ``TURNSERVER_ENABLED=1``, so the TURN server initiates automatically as a system service daemon.
 
-5. Configure KMS and point it to where the TURN server is listening for connections. Edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set the ``turnURL`` parameter:
+3. Configure KMS and point it to where the TURN server is listening for connections. Edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set the ``turnURL`` parameter:
 
    .. code-block:: bash
 
@@ -96,7 +84,7 @@ However, Ubuntu 14.04 (Trusty) lacks this package, but it can be downloaded and 
    .. note::
       While the RFC specifies the ports used by TURN, if you are using STUN you will need to open **all UDP ports**, as STUN doesn't constrain the range of ports that might be used.
 
-6. Lastly, start the ``Coturn`` server and the media server:
+4. Lastly, start the ``Coturn`` server and the media server:
 
    .. code-block:: bash
 

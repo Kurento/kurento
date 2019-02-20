@@ -1,4 +1,3 @@
-
 ==================
 Installation Guide
 ==================
@@ -72,25 +71,15 @@ Local Installation
 
 With this method, you will install KMS from the native Ubuntu package repositories made available by the Kurento project.
 
-KMS has explicit support for two Long-Term Support (*LTS*) distributions of Ubuntu: **Ubuntu 14.04 (Trusty)** and **Ubuntu 16.04 (Xenial)**. Only the 64-bits editions are supported.
+KMS has explicit support KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only). To install KMS, follow these steps:
 
-Currently, the main development environment for KMS is Ubuntu 16.04 (Xenial), so if you are in doubt, this is the preferred Ubuntu distribution to choose. However, all features and bug fixes are still being backported and tested on Ubuntu 14.04 (Trusty), so you can continue running this version if strictly required.
-
-.. warning::
-
-   **Ubuntu 14.04 (Trusty) is in the path of deprecation** and will stop receiving updates in the end of 2018.
-
-1. Define what version of Ubuntu is in use. Open a terminal and copy **only one** of these commands:
+1. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these lines:
 
    .. code-block:: bash
 
-      # KMS for Ubuntu 14.04 (Trusty)
-      DISTRO="trusty"
-
-   .. code-block:: bash
-
-      # KMS for Ubuntu 16.04 (Xenial)
-      DISTRO="xenial"
+      # Run ONLY ONE of these lines:
+      DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
+      DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
 
 2. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
 

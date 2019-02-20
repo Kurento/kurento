@@ -19,7 +19,7 @@ This is an overview of the tools and technologies used by KMS:
 - The code style is heavily influenced by that of Gtk and GStreamer projects.
 - CMake is the build tool of choice, and is used to build all modules.
 - Source code is versioned in several GitHub repositories.
-- The officially supported platforms are Ubuntu LTS distributions: 14.04 (Trusty) and 16.04 (Xenial).
+- The officially supported platforms are Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
 - The GStreamer multimedia framework sits at the heart of Kurento Media Server.
 - In addition to GStreamer, KMS uses other libraries like boost, jsoncpp, libnice, etc.
 
@@ -174,24 +174,26 @@ Add Kurento repository
 
 These steps are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
-**First Step**. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these lines:
+1. Define what version of Ubuntu is installed in your system. Open a terminal and copy **only one** of these lines:
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   # Choose one:
-   DISTRO="trusty"  # KMS for Ubuntu 14.04 (Trusty)
-   DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
+      # Run ONLY ONE of these lines:
+      DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
+      DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
 
-**Second Step**. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
+2. Add the Kurento repository to your system configuration. Run these two commands in the same terminal you used in the previous step:
 
-.. code-block:: text
+   .. code-block:: text
 
-   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Kurento Media Server - Nightly packages
-   deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
-   EOF
+   .. code-block:: text
+
+      sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+      # Kurento Media Server - Nightly packages
+      deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
+      EOF
 
 
 
@@ -213,10 +215,6 @@ Run:
       maven
       pkg-config
       wget
-
-      # 'maven-debian-helper' installs an old Maven version in Ubuntu 14.04 (Trusty),
-      # so this ensures that the effective version is the one from 'maven'.
-      maven-debian-helper-
 
       # System development libraries
       libboost-dev
@@ -549,10 +547,6 @@ It is very important to keep in mind the dependency resolution mechanism that ha
 
 This can have a very big impact on the amount of modules that need to be built to satisfy the dependencies of a given project. The most prominent example is **kurento-media-server**: it basically depends on *everything* else. If the Kurento repo is available to ``apt-get``, then all of KMS libraries will be downloaded and installed. If the repo is not available, then all source code of KMS will get downloaded and built, including the whole GStreamer libraries and other forked libraries.
 
-.. note::
-
-   This only applies to Ubuntu 16.04 (Xenial), for which the official package repositories already contain all required development libraries to build the whole KMS. However, for Ubuntu 14.04 (Trusty) the official repos are missing some required packages, so the Kurento Packages Repository must be configured in the system in order to build all of KMS. Refer to the following sections.
-
 
 
 Package generation script
@@ -565,35 +559,6 @@ This is the full procedure followed by the *compile_project.py* script:
 3. For each dependency defined in the file *.build.yaml*, the script checks if it got installed during the previous step. If it wasn't, then the script checks if these dependencies can be found in the source code repository given as argument. The script then proceeds to find this dependency's real name and requirements by checking its online copy of the *debian/control* file.
 4. Every dependency with source repository, as found in the previous step, is cloned and the script is run recursively with that module.
 5. When all development dependencies are installed (either from package repositories or compiling from source code), the initially requested module is built, and its Debian packages are generated and installed.
-
-
-
-Building KMS on Ubuntu 14.04 (Trusty)
--------------------------------------
-
-KMS cannot be built in Trusty without adding the Kurento Packages Repository, because some of the system development libraries are required in a more recent version than the one available by default in the official Ubuntu Trusty repos. This is a non exhaustive list of those required libraries, compared with the versions available in Xenial and in the Kurento repo:
-
-================  ===============================  ==============  ==============  ===============  =====
-Name              Requirement                      In Trusty repo  In Xenial repo  In Kurento repo  Notes
-================  ===============================  ==============  ==============  ===============  =====
-kms-core          libglib2.0-dev (>= 2.46)         2.40            2.48            2.46             [1]
-gst-plugins-base  libsoup2.4-dev (>= 2.48)         2.44            2.52            2.50
-libsrtp           libssl-dev (>= 1.0.2)            1.0.1f          1.0.2g          1.0.2g
-gst-plugins-bad   libde265-dev (any)               none            1.0.2           0.9
-gst-plugins-bad   libx265-dev (any)                none            1.9             1.7
-gst-plugins-bad   libass-dev (>= 0.10.2)           0.10.1          0.13.1          0.10.2
-gst-plugins-bad   libgnutls28-dev, librtmp-dev                                                      [2]
-kms-elements      libnice-dev (>= 0.1.13)          0.1.4           0.1.13          0.1.13
-libnice           libgupnp-igd-1.0-dev (>= 0.2.4)  0.2.2           0.2.4           0.2.4
-================  ===============================  ==============  ==============  ===============  =====
-
-[1] It actually builds and works fine with 2.40, but the required version of GLib was first raised from 2.40 to 2.42 and later to 2.46 in commits ``b10d318b`` and ``7f703bed``, justified as providing huge performance improvements in ``mutex`` and ``g_object_ref``.
-
-[2] The latter depends on *libgnutls-dev*, which conflicts with the former (only in 14.04). Solution: use *librtmp-dev* from Kurento repo, which doesn't depend on *libgnutls-dev*.
-
-This list of dependencies means that it is not possible to build the whole KMS on Ubuntu Trusty, at least not without the Kurento Packages Repository already configured in the system. But as we mentioned in the previous section, the mere presence of this repo will skip building as many packages as possible if the build script is able to find them already available for install with ``apt-get``.
-
-In case that we want to force building the whole KMS libraries and modules -*as opposed to downloading them from the repo*- the solution to this problem is to clone each module separately, and manually build them one by one, in the order given by their :ref:`dev-code-repos`.
 
 
 

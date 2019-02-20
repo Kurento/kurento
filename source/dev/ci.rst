@@ -2,22 +2,19 @@
 Continuous Integration
 ======================
 
-We have two types of repositories containing Debian packages: either Release or Nightly builds of the KMS Main Repositories and KMS Fork Repositories. Each of these types of repos are made available for the currently supported Ubuntu editions, which as of this writing are Ubuntu 14.04 (Trusty) and Ubuntu 16.04 (Xenial).
+We have two types of repositories containing Debian packages: either Release or Nightly builds of the KMS Main Repositories and KMS Fork Repositories.
 
-After some exploration of the different options we had, in the end we settled on the option to have self-contained repos, where all Kurento packages are stored and no dependencies with additional repositories are needed (*).
+Each of these types of repos are made available for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
+
+After some exploration of the different options we had, in the end we settled on the option to have self-contained repos, where all Kurento packages are stored and no dependencies with additional repositories are needed.
 
 There is an independent repository for each released version of Kurento, and one single repository for nightly builds:
 
-- Repositories for Ubuntu 14.04 (Trusty):
+- Release: ``deb http://ubuntu.openvidu.io/<KmsVersion> <UbuntuCodename> kms6``
+- Nightly: ``deb http://ubuntu.openvidu.io/dev          <UbuntuCodename> kms6``
 
-   - Release: ``deb [arch=amd64] http://ubuntu.openvidu.io/<Version> trusty kms6``
-   - Nightly: ``deb [arch=amd64] http://ubuntu.openvidu.io/dev trusty kms6``
+Here, ``<KmsVersion>`` is any of the released versions of KMS (e.g. ``6.7.2``, ``6.8.1``, ``6.9.0``, etc.) and ``<UbuntuCodename>`` is the name of each supported Ubuntu version (e.g. ``xenial``, ``bionic``, etc. if more added in the future.)
 
-- Repositories for Ubuntu 16.04 (Xenial):
-
-   - Release: ``deb [arch=amd64] http://ubuntu.openvidu.io/<Version> xenial kms6``
-   - Nightly: ``deb [arch=amd64] http://ubuntu.openvidu.io/dev xenial kms6``
-
-We also have several Continuous-Integration (*CI*) jobs such that every time a patch is accepted in Git's ``master`` branch, a new package build of that repository is generated, and uploaded to the nightly repositories.
+We also have several Continuous-Integration (*CI*) jobs such that new nightly packages can be built from each Git repository's ``master`` branch, to be then uploaded to the nightly repositories.
 
 All scripts used by CI are stored in the Git repo `adm-scripts <https://github.com/Kurento/adm-scripts>`__.
