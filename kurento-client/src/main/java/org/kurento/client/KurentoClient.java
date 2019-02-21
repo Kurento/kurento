@@ -52,7 +52,8 @@ import com.google.gson.JsonObject;
  */
 public class KurentoClient {
 
-  private static final int KEEPALIVE_TIME = 4 * 60 * 1000;
+  private static final int KEEPALIVE_TIME =
+	      PropertiesManager.getProperty("kurento.client.keepAliveTime", 240000);
 
   private static final long WARN_CONNECTION_TIME = 5000;
 
