@@ -101,7 +101,7 @@ for BUILD_ARG in ${BUILD_ARGS:-}; do
     build_args+=("--build-arg $BUILD_ARG")
 done
 
-docker build --no-cache --rm=true "${build_args[@]}" -t "$BUILD_NAME" -f "$DOCKERFILE" "$FOLDER" || {
+docker build --no-cache --rm=true ${build_args[@]} -t "$BUILD_NAME" -f "$DOCKERFILE" "$FOLDER" || {
     echo "ERROR: Command failed: docker build"
     exit 1
 }
