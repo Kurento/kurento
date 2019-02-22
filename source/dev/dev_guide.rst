@@ -271,7 +271,7 @@ Run:
 .. code-block:: bash
 
    git clone https://github.com/Kurento/kms-omni-build.git
-   cd kms-omni-build/
+   cd kms-omni-build
    git submodule update --init --recursive
    git submodule update --remote
 
@@ -300,7 +300,7 @@ Run:
 
    TYPE=Debug
    mkdir build-$TYPE
-   cd build-$TYPE/
+   cd build-$TYPE
    cmake -DCMAKE_BUILD_TYPE=$TYPE ..
    make
 
@@ -321,7 +321,7 @@ It is also possible to enable GCC's AddressSanitizer or ThreadSanitizer with the
    -DSANITIZE_THREAD=ON
    -DSANITIZE_LINK_STATIC=ON
 
-[TODO: finish testing that these modes do actually work]
+[TODO: integration with these tools is not really finished]
 
 Verbose mode can be enabled too:
 
@@ -527,7 +527,7 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
       export PYTHONUNBUFFERED=1
       export PATH="$PWD/adm-scripts:$PWD/adm-scripts/kms:$PATH"
 
-      cd kms-core/
+      cd kms-core
       compile_project.py --base_url https://github.com/Kurento compile
 
    Another variable you can export is ``DEB_BUILD_OPTIONS``, in order to disable any of unit testing, doc generation (which at the Debian level is mostly nothing, this doesn't refer to the whole Kurento project documentation site), and binary stripping. For example:
