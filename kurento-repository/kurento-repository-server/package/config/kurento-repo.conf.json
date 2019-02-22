@@ -3,7 +3,7 @@
     "port": 7676,
     "hostname": "127.0.0.1",
     
-    //mongodb or filesystem
+    "//": "mongodb or filesystem",
     "type": "mongodb",
     
     "mongodb": {
