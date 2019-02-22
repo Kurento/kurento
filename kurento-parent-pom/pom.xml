@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.9.0</version>
+	<version>6.9.1</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
