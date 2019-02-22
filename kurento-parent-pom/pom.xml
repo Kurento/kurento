@@ -64,11 +64,17 @@
 	<!-- Project configuration -->
 
 	<properties>
-		<!-- Kurento core components -->
 		<version.kurento-java>${project.version}</version.kurento-java>
-		<version.kms-api-core>${project.version}</version.kms-api-core>
-		<version.kms-api-elements>${project.version}</version.kms-api-elements>
-		<version.kms-api-filters>${project.version}</version.kms-api-filters>
+
+		<!-- Kurento Media Server API.
+		These properties select which version of the Kurento API definition files
+		(the .kmd JSON files found in Kurento Media Server modules) will be used.
+		It's not critical that these versions coincide with the latest available,
+		but whenever an API update is done in those files and released,
+		these version numbers should get updated accordingly. -->
+		<version.kms-api-core>6.9.0</version.kms-api-core>
+		<version.kms-api-elements>6.9.0</version.kms-api-elements>
+		<version.kms-api-filters>6.9.0</version.kms-api-filters>
 
 		<version.kurento-utils-js>6.7.0</version.kurento-utils-js>
 		<version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
