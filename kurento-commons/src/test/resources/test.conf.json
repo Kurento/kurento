@@ -5,7 +5,7 @@
    },
    "mediaServer":{
 		"netInterface":{
-			/*Uncomment just one of them*/
+			"//": "Uncomment just one of them",
 			"websocket": {
         "port": 8888,
         "path": "kurento",
