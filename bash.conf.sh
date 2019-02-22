@@ -77,11 +77,6 @@ log "==================== BEGIN ===================="
 
 
 # Help message (extracted from script headers)
-usage() {
-    grep '^#/' "$0" | cut --characters=4-
-    exit 0
-}
+usage() { grep '^#/' "$0" | cut --characters=4- ; exit 0 }
 REGEX='^(-h|--help)$'
-if [[ "${1:-}" =~ $REGEX ]]; then
-    usage
-fi
+[[ "${1:-}" =~ $REGEX ]] && usage
