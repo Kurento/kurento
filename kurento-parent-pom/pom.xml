@@ -184,7 +184,6 @@
 		<version.jxr.plugin>2.5</version.jxr.plugin>
 		<version.license.plugin>1.8</version.license.plugin>
 		<version.pir.plugin>2.8.1</version.pir.plugin><!-- maven-project-info-reports-plugins -->
-		<version.release.plugin>2.5.3</version.release.plugin>
 		<version.resources.plugin>2.7</version.resources.plugin>
 		<version.site.plugin>3.4</version.site.plugin>
 		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
@@ -193,7 +192,6 @@
 		<version.source.plugin>3.0.1</version.source.plugin>
 		<version.surefire.plugin>2.19.1</version.surefire.plugin>
 		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
-		<version.versions.plugin>2.7</version.versions.plugin>
 		<version.wagon.ssh.plugin>2.10</version.wagon.ssh.plugin>
 		<version.wagon.s3.plugin>1.2.1</version.wagon.s3.plugin>
 		<version.war.plugin>2.6</version.war.plugin>
@@ -224,10 +222,6 @@
 		<!-- maven-eclipse-plugin -->
 		<downloadSources>true</downloadSources>
 		<downloadJavadocs>true</downloadJavadocs>
-
-		<!-- maven-release-plugin -->
-		<useReleaseProfile>false</useReleaseProfile>
-		<arguments>-Pkurento-release</arguments>
 
 		<!-- maven-assembly-plugin -->
 		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
@@ -1079,22 +1073,6 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-release-plugin</artifactId>
-					<version>${version.release.plugin}</version>
-					<dependencies>
-						<dependency>
-							<groupId>org.apache.maven.scm</groupId>
-							<artifactId>maven-scm-provider-gitexe</artifactId>
-							<version>1.10.0</version>
-						</dependency>
-					</dependencies>
-					<configuration>
-						<preparationGoals>versions:use-releases</preparationGoals>
-						<pushChanges>false</pushChanges>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
 					<version>${version.resources.plugin}</version>
 				</plugin>
@@ -1179,11 +1157,6 @@
 							<java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
 						</systemProperties>
 					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>versions-maven-plugin</artifactId>
-					<version>${version.versions.plugin}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
