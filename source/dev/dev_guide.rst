@@ -174,9 +174,16 @@ Add Kurento repository
 
 These steps are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
-1. Define what version of Ubuntu is installed in your system.
+1. Make sure that GnuPG is installed.
 
-   Open a terminal and run **only one** of these lines:
+   .. code-block:: bash
+
+      sudo apt-get update \
+        && sudo apt-get install --yes --no-install-recommends gnupg
+
+2. Define what version of Ubuntu is installed in your system.
+
+   Run **only one** of these lines:
 
    .. code-block:: bash
 
@@ -184,7 +191,7 @@ These steps are pretty much the same as those explained in :ref:`installation-lo
       DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
       DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
 
-2. Add the Kurento repository to your system configuration.
+3. Add the Kurento repository to your system configuration.
 
    Run these two commands in the same terminal you used in the previous step:
 
@@ -258,8 +265,8 @@ Run:
       ffmpeg
     )
 
-    sudo apt-get update
-    sudo apt-get install "${PACKAGES[@]}"
+    sudo apt-get update \
+      && sudo apt-get install "${PACKAGES[@]}"
 
 
 

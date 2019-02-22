@@ -71,11 +71,18 @@ Local Installation
 
 With this method, you will install KMS from the native Ubuntu package repositories made available by the Kurento project.
 
-KMS has explicit support KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only). To install KMS, follow these steps:
+KMS has explicit support KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only). To install KMS, open a terminal and follow these steps:
 
-1. Define what version of Ubuntu is installed in your system.
+1. Make sure that GnuPG is installed.
 
-   Open a terminal and run **only one** of these lines:
+   .. code-block:: bash
+
+      sudo apt-get update \
+        && sudo apt-get install --yes --no-install-recommends gnupg
+
+2. Define what version of Ubuntu is installed in your system.
+
+   Run **only one** of these lines:
 
    .. code-block:: bash
 
@@ -83,7 +90,7 @@ KMS has explicit support KMS has explicit support for two Long-Term Support (*LT
       DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
       DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
 
-2. Add the Kurento repository to your system configuration.
+3. Add the Kurento repository to your system configuration.
 
    Run these two commands in the same terminal you used in the previous step:
 
@@ -98,12 +105,12 @@ KMS has explicit support KMS has explicit support for two Long-Term Support (*LT
       deb [arch=amd64] http://ubuntu.openvidu.io/|VERSION_KMS| $DISTRO kms6
       EOF
 
-3. Install KMS:
+4. Install KMS:
 
    .. code-block:: text
 
-      sudo apt-get update
-      sudo apt-get install kurento-media-server
+      sudo apt-get update \
+        && sudo apt-get install kurento-media-server
 
 This will install the KMS release version that was specified in the previous commands.
 
