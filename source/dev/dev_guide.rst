@@ -159,11 +159,24 @@ Building from sources
 To work directly with KMS source code, or to just build KMS from sources, the easiest way is using the module **kms-omni-build**. Just follow these steps:
 
 1. Add the Kurento repository to your system configuration.
-2. Install development packages: tools like Git, GCC, CMake, etc., and KMS development libraries.
-3. Clone **kms-omni-build**.
+2. Clone **kms-omni-build**.
+3. Install build dependencies: tools like GCC, CMake, etc., and KMS development libraries.
 4. Build with CMake and Make.
 5. Run the newly compiled KMS.
 6. Run KMS tests.
+
+
+
+Install required tools
+----------------------
+
+This command will install the basic set of tools that are needed for the next steps:
+
+.. code-block:: bash
+
+   sudo apt-get update \
+     && sudo apt-get install --no-install-recommends --yes \
+        git gnupg devscripts equivs
 
 
 
@@ -172,101 +185,28 @@ To work directly with KMS source code, or to just build KMS from sources, the ea
 Add Kurento repository
 ----------------------
 
-These steps are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
+These commands will add the Kurento repository to be accessed by ``apt-get``. Run all inside the same terminal:
 
-1. Make sure that GnuPG is installed.
+.. code-block:: text
 
-   .. code-block:: bash
-
-      sudo apt-get update \
-        && sudo apt-get install --yes --no-install-recommends gnupg
-
-2. Define what version of Ubuntu is installed in your system.
-
-   Run **only one** of these lines:
-
-   .. code-block:: bash
-
-      # Run ONLY ONE of these lines:
-      DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
-      DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
-
-3. Add the Kurento repository to your system configuration.
-
-   Run these two commands in the same terminal you used in the previous step:
-
-   .. code-block:: text
-
-      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
-
-   .. code-block:: text
-
-      sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-      # Kurento Media Server - Nightly packages
-      deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
-      EOF
-
-
-
-Install development packages
-----------------------------
-
-Run:
+   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 .. code-block:: bash
 
-    PACKAGES=(
-      # Development tools
-      build-essential
-      cmake
-      debhelper
-      default-jdk
-      gdb
-      git openssh-client
-      maven
-      pkg-config
-      wget
+   # Run *ONLY ONE* of these lines:
+   DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
+   DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
 
-      # System development libraries
-      libboost-dev
-      libboost-filesystem-dev
-      libboost-log-dev
-      libboost-program-options-dev
-      libboost-regex-dev
-      libboost-system-dev
-      libboost-test-dev
-      libboost-thread-dev
-      libevent-dev
-      libglib2.0-dev
-      libglibmm-2.4-dev
-      libopencv-dev
-      libsigc++-2.0-dev
-      libsoup2.4-dev
-      libssl-dev
-      libvpx-dev
-      libxml2-utils
-      uuid-dev
+.. code-block:: text
 
-      # Kurento external libraries
-      gstreamer1.5-plugins-base
-      gstreamer1.5-plugins-good
-      gstreamer1.5-plugins-bad
-      gstreamer1.5-plugins-ugly
-      gstreamer1.5-libav
-      gstreamer1.5-nice
-      gstreamer1.5-tools
-      gstreamer1.5-x
-      libgstreamer1.5-dev
-      libgstreamer-plugins-base1.5-dev
-      libnice-dev
-      openh264-gst-plugins-bad-1.5
-      openwebrtc-gst-plugins-dev
-      kmsjsoncpp-dev
-      ffmpeg
-    )
+   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+   # Kurento Media Server - Nightly packages
+   deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
+   EOF
 
-    sudo apt-get update \
-      && sudo apt-get install "${PACKAGES[@]}"
+.. code-block:: bash
+
+   apt-get update
 
 
 
@@ -286,7 +226,7 @@ Run:
 
    ``--recursive`` and ``--remote`` are not used together, because each individual submodule may have some other submodules that are intended to be loaded in some specific commit, and we don't want to update those with upstream's latest changes.
 
-Change to the *master* branch of each submodule, if you will be developing on each one of those:
+*OPTIONAL*: Change to the *master* branch of each submodule, if you will be developing on each one of those:
 
 .. code-block:: text
 
@@ -295,6 +235,31 @@ Change to the *master* branch of each submodule, if you will be developing on ea
    do pushd $d ; git checkout "$REF" ; popd ; done
 
 You can also set ``REF`` to any other branch or tag, such as ``REF=6.7.1``. This will bring the code to the state it had in that version.
+
+
+
+Install build dependencies
+--------------------------
+
+Run:
+
+.. code-block:: bash
+
+   DIRS=(
+       kurento-module-creator
+       kms-cmake-utils
+       kms-jsonrpc
+       kms-core
+       kms-elements
+       kms-filters
+       kurento-media-server
+   )
+
+   for DIR in "${DIRS[@]}"; do
+       mk-build-deps --install --remove \
+           --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+           "${DIR}/debian/control"
+   done
 
 
 
@@ -309,6 +274,11 @@ Run:
    mkdir build-$TYPE
    cd build-$TYPE
    cmake -DCMAKE_BUILD_TYPE=$TYPE ..
+   make
+
+.. code-block:: text
+
+   export MAKEFLAGS="-j$(nproc)"
    make
 
 CMake accepts the following build types: *Debug*, *Release*, *RelWithDebInfo*. So, for a Release build, you would run ``TYPE=Release`` instead of ``TYPE=Debug``.
@@ -510,8 +480,9 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
           wget
       )
 
-      sudo apt-get update
-      sudo apt-get install --yes "${PACKAGES[@]}"
+      sudo apt-get update \
+        && sudo apt-get install --no-install-recommends --yes \
+           "${PACKAGES[@]}"
 
    .. note::
 
