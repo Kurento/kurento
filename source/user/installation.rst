@@ -78,7 +78,8 @@ KMS has explicit support KMS has explicit support for two Long-Term Support (*LT
    .. code-block:: bash
 
       sudo apt-get update \
-        && sudo apt-get install --yes --no-install-recommends gnupg
+        && sudo apt-get install --no-install-recommends --yes \
+           gnupg
 
 2. Define what version of Ubuntu is installed in your system.
 
@@ -110,7 +111,7 @@ KMS has explicit support KMS has explicit support for two Long-Term Support (*LT
    .. code-block:: text
 
       sudo apt-get update \
-        && sudo apt-get install kurento-media-server
+        && sudo apt-get install --yes kurento-media-server
 
 This will install the KMS release version that was specified in the previous commands.
 

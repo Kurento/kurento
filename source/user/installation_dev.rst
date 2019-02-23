@@ -26,7 +26,8 @@ The steps to install a nightly version of KMS are pretty much the same as those 
    .. code-block:: bash
 
       sudo apt-get update \
-        && sudo apt-get install --yes --no-install-recommends gnupg
+        && sudo apt-get install --no-install-recommends --yes \
+           gnupg
 
 2. Define what version of Ubuntu is installed in your system.
 
@@ -58,7 +59,7 @@ The steps to install a nightly version of KMS are pretty much the same as those 
    .. code-block:: text
 
       sudo apt-get update \
-        && sudo apt-get install kurento-media-server
+        && sudo apt-get install --yes kurento-media-server
 
 This will install the latest KMS nightly version.
 
