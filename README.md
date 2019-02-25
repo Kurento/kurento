@@ -15,6 +15,8 @@ for web applications and Node.js.
 
 The source code of this project can be cloned from the [GitHub repository].
 
+supports async-await out of the box
+
 Installation instructions
 -------------------------
 
