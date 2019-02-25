@@ -39,9 +39,14 @@ What are STUN and TURN?
 .. _faq-stun:
 
 When is STUN needed?
-====================
+--------------------
 
-**STUN is needed for every peer behind a NAT**. All NAT-ed peers need to open their own NAT ports, doing :term:`NAT traversal` by using a STUN server that is *outside of the NAT*.
+**STUN is needed for every endpoint behind a NAT**. All NAT-ed peers need to open their own NAT ports, doing :term:`NAT traversal` by using a STUN server that is *outside of the NAT*.
+
+If you are installing Kurento in a NAT environment (eg. in any cloud provider), you need to use a STUN or TURN server, and configure KMS appropriately in
+``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Apart from that, you need to open all UDP ports in your security group, as STUN/TURN will use any port available from the whole 0-65535 range.
+
+Similarly, all browser endpoints that are behind a NAT need to configure the STUN and/or TURN server details with the ``iceServers`` field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
 
 Let's see this with an example: The typical installation scenario for Kurento Media Server is to have a strict separation between Application Server and client. KMS and Application Server are running in a cloud machine **without any NAT** or port restriction on incoming connections, while a browser client runs from any (possibly restricted) network that forbids incoming connections on any port that hasn't been "opened" in advance. The client may communicate with the Application Server for signaling purposes, but at the end of the day the bulk of the communication is done between the WebRTC engines of the browser and KMS.
 
@@ -55,11 +60,13 @@ In scenarios such as this one, the client is able to send data to KMS because it
    :align:  center
    :alt:    NAT client with STUN
 
-This procedure is called :term:`ICE`. Note that in reality you *can* also deploy KMS behind a NAT firewall, as long as KMS itself is also configured to open its own NAT ports by following the same procedure (again, with a STUN server that is outside of the NAT).
+This procedure is called :term:`ICE`.
+
+Note that you *can* also deploy KMS behind a NAT firewall, as long as KMS itself is also configured to open its own NAT ports by following the same procedure (again, with a STUN server that is outside of the NAT).
 
 .. note::
 
-   The features provided by TURN are a superset of those provided by STUN. This means that *you don't need to configure a STUN server if you are already using a TURN server*.
+   **TURN is an extension of STUN**. This means that *you don't need to configure a STUN server if you are already using a TURN server*.
 
 
 
