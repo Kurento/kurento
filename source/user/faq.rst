@@ -2,6 +2,40 @@
 Frequently Asked Questions
 ==========================
 
+About NAT, ICE, STUN, TURN
+==========================
+
+What is NAT?
+------------
+
+*Network Address Translation* (**NAT**) is a mechanism that hides from the public access the private IP addresses of machines inside a network. This NAT mechanism is typically found in all types of network devices, ranging from home routers to full-fledged corporate firewalls. In all cases the effect is the same: machines inside the NAT cannot be freely accessed from outside.
+
+The effects of a NAT is very negative for WebRTC communications: machines inside the network will be able to send data to the outside, but they won't be able to receive data from remote endpoints that are sitting outside the network. In order to allow for this need, NAT devices typically allow to configure **NAT bindings** to let data come in from the outside part of the network; creating these NAT bindings is what is called :term:`NAT traversal`, also commonly referred as "opening ports".
+
+
+
+What is ICE?
+------------
+
+*Interactive Connectivity Establishment* (**ICE**) is a protocol used for :term:`NAT traversal`. It defines a technique that allows communication between two endpoints when one is inside a NAT and the other is outside of it. The net effect of the ICE process is that the NAT will be left with all needed ports open for communication, and both endpoints will have complete information about the IP address and ports where the other endpoint can be contacted.
+
+ICE doesn't work standalone: it needs to use a helper protocol called STUN.
+
+
+
+What are STUN and TURN?
+-----------------------
+
+*Session Traversal Utilities for NAT* (**STUN**) is a protocol that complements ICE in the task of solving the :term:`NAT traversal` issue. It can be used by any endpoints to determine the IP address and port allocated to it by a NAT. It can also be used to check connectivity between two endpoints, and as a keep-alive protocol to maintain NAT bindings. STUN works with many existing NATs, and does not require any special behavior from them.
+
+*Traversal Using Relays around NAT* (**TURN**) is an extension of STUN, used where the NAT security policies are too strict and the needed NAT bindings cannot be successfully created. In these situations, it is necessary for the host to use the services of an intermediate node that acts as a communication relay.
+
+.. note::
+
+   **TURN is an extension of STUN**. This means that *you don't need to configure a STUN server if you are already using a TURN server*.
+
+
+
 .. _faq-stun:
 
 When is STUN needed?
