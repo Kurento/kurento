@@ -343,7 +343,8 @@ When a client is subscribed to some events from an object, the server sends an `
 
 - **source**: The object source of the event.
 - **type**: The type of the event.
-- **timestamp**: Date and time of the media server.
+- **timestamp**: [**DEPRECATED**: Use timestampMillis] The timestamp associated with this event: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
+- **timestampMillis**: The timestamp associated with this event: Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
 - **tags**: Media elements can be labeled using the methods ``setSendTagsInEvents`` and ``addTag``, present in each element. These tags are key-value metadata that can be used by developers for custom purposes. Tags are returned with each event by the media server in this field.
 
 The following example shows a notification sent from server to client, notifying of an event ``EndOfStream`` for a ``PlayerEndpoint`` object::
@@ -357,6 +358,7 @@ The following example shows a notification sent from server to client, notifying
             "source":"681f1bc8-2d13-4189-a82a-2e2b92248a21_kurento.MediaPipeline/e983997e-ac19-4f4b-9575-3709af8c01be_kurento.PlayerEndpoint",
             "tags":[],
             "timestamp":"1441277150",
+            "timestampMillis":"1441277150433",
             "type":"EndOfStream"
           },
           "object":"681f1bc8-2d13-4189-a82a-2e2b92248a21_kurento.MediaPipeline/e983997e-ac19-4f4b-9575-3709af8c01be_kurento.PlayerEndpoint",
