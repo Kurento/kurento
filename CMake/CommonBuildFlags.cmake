@@ -7,7 +7,7 @@
 # to a set of well tested values. The defined flags will also enforce a set
 # of common rules which are intended to maintain a good level of security and
 # code quality. These are:
-# - Language selection: C11 and C++11.
+# - Language selection: C11 and C++11 with GNU extensions.
 # - Warnings are forbidden during development (but allowed for production):
 #   '-Werror' is used for Debug builds.
 #   Developers can opt-out of this rule, setting '-Wno-error=<WarningName>'.
