@@ -155,7 +155,7 @@ From that baseline, one can add any other values to extend the amount of informa
 
   .. code-block:: text
 
-     export GST_DEBUG="${GST_DEBUG:-3},KurentoWebSocketTransport:5"
+     export GST_DEBUG="${GST_DEBUG:-3},KurentoWebSocket*:5"
 
 - RTP Sync
 
