@@ -46,7 +46,7 @@ public:
   ${event.name} (<#rt>
     <#lt><#assign first = true><#rt>
     <#lt><#list event.parentProperties as property><#rt>
-      <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+      <#lt><#if !property.name?starts_with("timestamp") && property.name != "tags"><#rt>
         <#lt><#if !property.optional><#rt>
           <#lt><#if !first>, </#if><#rt>
           <#lt><#assign first = false><#rt>
@@ -55,7 +55,7 @@ public:
       <#lt></#if><#rt>
     <#lt></#list><#rt>
     <#lt><#list event.properties as property><#rt>
-      <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+      <#lt><#if !property.name?starts_with("timestamp") && property.name != "tags"><#rt>
         <#lt><#if !property.optional><#rt>
           <#lt><#if !first>, </#if><#rt>
           <#lt><#assign first = false><#rt>
@@ -67,7 +67,7 @@ public:
     <#lt><#if event.extends??> : ${event.extends.name} (<#rt>
       <#lt><#if event.name != "RaiseBase"><#rt>
         <#lt><#list event.parentProperties as property><#rt>
-          <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+          <#lt><#if !property.name?starts_with("timestamp") && property.name != "tags"><#rt>
             <#lt><#if !property.optional><#rt>
               <#lt><#if !first>, </#if><#rt>
               <#lt><#assign first = false><#rt>
@@ -76,7 +76,7 @@ public:
           <#lt></#if><#rt>
       <#lt></#list>)</#if> {
       <#list event.properties as property><#rt>
-        <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+        <#lt><#if !property.name?starts_with("timestamp") && property.name != "tags"><#rt>
           <#lt><#if !property.optional><#rt>
       this->${property.name} = ${property.name};
           </#if><#rt>

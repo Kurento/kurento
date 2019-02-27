@@ -10,6 +10,7 @@ ${event.name}.cpp
 #include "${property.type.name}.hpp"
 </#if>
 </#list>
+#include <chrono>
 #include <ctime>
 #include <string>
 
@@ -26,10 +27,20 @@ std::string getCurrentTime ()
   return std::to_string ((int)(timer));
 }
 
+static
+std::string getCurrentTimeMillis ()
+{
+  const auto epoch = std::chrono::high_resolution_clock::now ()
+      .time_since_epoch ();
+  const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>
+      (epoch).count ();
+  return std::to_string (millis);
+}
+
 ${event.name}::${event.name} (<#rt>
   <#lt><#assign first = true><#rt>
   <#lt><#list event.properties as property><#rt>
-  <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+  <#lt><#if !property.name?starts_with("timestamp") && property.name != "tags"><#rt>
     <#lt><#if !property.optional><#rt>
       <#lt><#if !first>, </#if><#rt>
       <#lt><#assign first = false><#rt>
@@ -39,13 +50,14 @@ ${event.name}::${event.name} (<#rt>
   <#lt></#list><#rt>)
   {
   <#list event.properties as property><#rt>
-    <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+    <#lt><#if !property.name?starts_with("timestamp") && property.name != "tags"><#rt>
       <#lt><#if !property.optional><#rt>
   this->${property.name} = ${property.name};
       </#if><#rt>
     </#if><#rt>
   <#lt></#list>
   this->setTimestamp (getCurrentTime());
+  this->setTimestampMillis (getCurrentTimeMillis ());
   if (source != nullptr) {
     if (source->getSendTagsInEvents ()) {
       this->setTags (source->getTags ());
