@@ -68,7 +68,7 @@ This will install the latest KMS nightly version.
 Kurento Java Client
 ===================
 
-The development builds of the Kurento Java Client are made available for Maven in https://maven.openvidu.io/index.action
+The development builds of the Kurento Java Client are made available for Maven in https://maven.openvidu.io/
 To use these, you need to add first this repository to your Maven configuration.
 
 Adding a repository to Maven can be done at three scope levels:
@@ -119,7 +119,7 @@ Adding a repository to Maven can be done at three scope levels:
         <dependency>
           <groupId>org.kurento</groupId>
           <artifactId>kurento-client</artifactId>
-          <version>6.6.3-SNAPSHOT</version>
+          <version>|VERSION_CLIENT_JAVA|-SNAPSHOT</version>
         </dependency>
 
   2. If you have not specified a dependency version, use the ``-U`` switch in your next Maven run to force updating all dependencies.
