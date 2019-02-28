@@ -55,6 +55,8 @@ public interface JsonRpcHandler<P> {
   JsonRpcHandler<P> withSockJS();
 
   JsonRpcHandler<P> withAllowedOrigins(String... string);
+  
+  JsonRpcHandler<P> withInterceptors(Object... interceptors);
 
   boolean isSockJSEnabled();
 
@@ -65,4 +67,6 @@ public interface JsonRpcHandler<P> {
   String getLabel();
 
   boolean isPingWatchdog();
+  
+  List<Object> interceptors();
 }

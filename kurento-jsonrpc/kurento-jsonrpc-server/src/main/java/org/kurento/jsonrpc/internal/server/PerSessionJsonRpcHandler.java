@@ -48,6 +48,8 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>, BeanFacto
   private String label;
 
   private List<String> allowedOrigins = ImmutableList.of();
+  
+  private List<Object> interceptors = ImmutableList.of();
 
   private boolean pingWachdog;
 
@@ -199,6 +201,17 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>, BeanFacto
   @Override
   public List<String> allowedOrigins() {
     return this.allowedOrigins;
+  }
+
+  @Override
+  public JsonRpcHandler<T> withInterceptors(Object... interceptors) {
+    this.interceptors = ImmutableList.copyOf(interceptors);
+    return this;
+  }
+
+  @Override
+  public List<Object> interceptors() {
+    return this.interceptors;
   }
 
 }

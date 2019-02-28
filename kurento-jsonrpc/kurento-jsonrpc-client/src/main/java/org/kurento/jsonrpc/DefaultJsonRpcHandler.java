@@ -33,6 +33,8 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
   private boolean pingWatchdog = false;
 
   private List<String> allowedOrigins = ImmutableList.of();
+  
+  private List<Object> interceptors = ImmutableList.of();
 
   @Override
   public void afterConnectionEstablished(Session session) throws Exception {
@@ -99,5 +101,16 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
   @Override
   public boolean isPingWatchdog() {
     return pingWatchdog;
+  }
+  
+  @Override
+  public JsonRpcHandler<P> withInterceptors(Object... interceptors) {
+    this.interceptors = ImmutableList.copyOf(interceptors);
+    return this;
+  }
+
+  @Override
+  public List<Object> interceptors() {
+    return this.interceptors;
   }
 }

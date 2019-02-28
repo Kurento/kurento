@@ -49,6 +49,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 
 @Configuration
 @EnableWebSocket
@@ -233,6 +234,17 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
       if (handler.getLabel() != null) {
         wsHandler.setLabel(handler.getLabel());
       }
+      
+      HandshakeInterceptor[] interceptors = new HandshakeInterceptor[handler.interceptors().size()];
+      int i = 0;
+      for (Object obj : handler.interceptors()) {
+    	  if (obj instanceof HandshakeInterceptor) {
+	    	  interceptors[i] = (HandshakeInterceptor) obj;
+	    	  i++;
+    	  }
+      }
+      registration.addInterceptors(interceptors);
+      
     }
   }
 
