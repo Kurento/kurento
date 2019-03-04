@@ -315,12 +315,20 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
     }
   };
 
-  server = HttpEndPointServer::getHttpEndPointServer (
-             getConfigValue<int, HttpEndpoint> (HTTP_SERVICE_PORT,
-                 HttpEndPointServer::DEFAULT_PORT),
-             getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ADDRESS, ""),
-             getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ANNOUNCED_ADDRESS,
-                 "") );
+  uint httpServicePort;
+  getConfigValue <uint, HttpEndpoint> (&httpServicePort, HTTP_SERVICE_PORT,
+      HttpEndPointServer::DEFAULT_PORT);
+
+  std::string httpServiceAddress;
+  getConfigValue <std::string, HttpEndpoint> (&httpServiceAddress,
+      HTTP_SERVICE_ADDRESS, std::string());
+
+  std::string httpServiceAnnouncedAddress;
+  getConfigValue <std::string, HttpEndpoint> (&httpServiceAnnouncedAddress,
+      HTTP_SERVICE_ANNOUNCED_ADDRESS, std::string());
+
+  server = HttpEndPointServer::getHttpEndPointServer (httpServicePort,
+      httpServiceAddress, httpServiceAnnouncedAddress);
 
   if (server == nullptr) {
     throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR ,

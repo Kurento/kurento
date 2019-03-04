@@ -49,7 +49,7 @@ public:
 
   ~HttpEndPointServer ();
 
-  static const uint DEFAULT_PORT = 9091;
+  enum { DEFAULT_PORT = 9091 };
 
 private:
   static std::shared_ptr<HttpEndPointServer> instance;

@@ -108,11 +108,10 @@ PlayerEndpointImpl::PlayerEndpointImpl (const boost::property_tree::ptree &conf,
   g_object_set (G_OBJECT (element), "use-encoded-media", useEncodedMedia,
                 "network-cache", networkCache, NULL);
 
-  try {
-    std::string portRange = getConfigValue <std::string, PlayerEndpoint> (RTSP_CLIENT_PORT_RANGE);
+  std::string portRange;
+  if (getConfigValue <std::string, PlayerEndpoint> (&portRange,
+      RTSP_CLIENT_PORT_RANGE)) {
     g_object_set (G_OBJECT (element), "port-range", portRange.c_str(), NULL);
-  } catch (boost::property_tree::ptree_error &) {
-    GST_DEBUG ("PlayerEndpoint config file doesn't contain property %s. Ignoring.", RTSP_CLIENT_PORT_RANGE);
   }
 }
 
