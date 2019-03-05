@@ -8,44 +8,40 @@
 #/
 #/ For example:
 #/
-#/     ms_print valgrind-massif-13522.out > valgrind-massif-13522.out.txt
+#/     ms_print valgrind-massif-13522.out >valgrind-massif-13522.out.txt
 #/
 #/ Massif manual: http://valgrind.org/docs/manual/ms-manual.html
 #/
-#/ Arguments:
+#/
+#/ Arguments
+#/ ---------
 #/
 #/ - Path to the program that will be analyzed.
 #/ - Any additional arguments will be passed to the analyzed program.
 #/
-#/ Dependencies:
+#/
+#/ Dependencies
+#/ ------------
 #/
 #/ - Tested with Valgrind 3.14.0 (Git development branch)
 
 
 
-# ------------ Shell setup ------------
+# Shell setup
+# -----------
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 
-CONF_FILE="$BASEPATH/bash.conf.sh"
-[[ -f "$CONF_FILE" ]] || {
-    echo "[$0] ERROR: Config file not found: $CONF_FILE"
-    exit 1
-}
 # shellcheck source=bash.conf.sh
-source "$CONF_FILE"
+source "$BASEPATH/bash.conf.sh" || exit 1
 
-CONF_FILE="$BASEPATH/valgrind.conf.sh"
-[[ -f "$CONF_FILE" ]] || {
-    echo "[$0] ERROR: Config file not found: $CONF_FILE"
-    exit 1
-}
 # shellcheck source=valgrind.conf.sh
-source "$CONF_FILE"
+source "$BASEPATH/valgrind.conf.sh" || exit 1
 
 
 
-# ------------ Script start ------------
+# Script start
+# ------------
 
 # Trace all commands
 set -o xtrace

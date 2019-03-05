@@ -40,9 +40,10 @@
 
 
 
-# ------------ Shell setup ------------
+# Shell setup
+# -----------
 
-# Shell options for strict error checking
+# Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
 
 # Log function
@@ -62,7 +63,6 @@ on_error() {
     _ERR=$?
 }
 trap on_error ERR
-
 on_exit() {
     _ERR="${_ERR:-$?}"  # Get either trap code, or this script's exit code
     if ((_ERR)); then log "ERROR ($_ERR)"; else log "SUCCESS"; fi
@@ -77,11 +77,6 @@ log "==================== BEGIN ===================="
 
 
 # Help message (extracted from script headers)
-usage() {
-    grep '^#/' "$0" | cut --characters=4-
-    exit 0
-}
+usage() { grep '^#/' "$0" | cut --characters=4- ; exit 0 ; }
 REGEX='^(-h|--help)$'
-if [[ "${1:-}" =~ $REGEX ]]; then
-    usage
-fi
+[[ "${1:-}" =~ $REGEX ]] && usage || true

@@ -2,258 +2,246 @@
 
 #/ Version change helper.
 #/
-#/ This shell script will traverse all KMS projects and change their
-#/ project versions to the one provided as argument.
+#/ This shell script will traverse all subprojects and change their
+#/ versions to the one provided as argument.
 #/
-#/ Arguments:
+#/
+#/ Arguments
+#/ ---------
 #/
 #/ <Version>
 #/
-#/    Apply the provided version number.
-#/    <Version> should be in a format compatible with Semantic Versioning,
-#/    such as "1.2.3" or, in general terms, "<Major>.<Minor>.<Patch>".
+#/   Base version number to set. When '--release' is used, this version will
+#/   be used as-is; otherwise, a nightly/snapshot indicator will be appended.
+#/
+#/   <Version> should be in a format compatible with Semantic Versioning,
+#/   such as "1.2.3" or, in general terms, "<Major>.<Minor>.<Patch>".
 #/
 #/ --release
 #/
-#/     Use version numbers intended for Release builds.
-#/     If this option is not given, versions are set for nightly snapshots.
+#/   Use version numbers intended for Release builds, such as "1.2.3".
+#/   If this option is not given, a nightly/snapshot indicator is appended.
 #/
-#/     Optional. Default: Disabled.
+#/   Optional. Default: Disabled.
 #/
 #/ --commit
 #/
-#/     Commit to Git the version changes.
-#/     This will commit only the changed files.
+#/   Commit to Git the version changes.
+#/   This will commit only the changed files.
 #/
-#/     Optional. Default: Disabled.
+#/   Optional. Default: Disabled.
 #/
 #/ --tag
 #/
-#/     Create Git annotated tags with the results of the version change.
-#/     This only can only be used if '--commit' is used too.
-#/     Also, to avoid mistakes, this can only be used together with '--release'.
+#/   Create Git annotated tags with the results of the version change.
+#/   This requires that '--commit' is used too.
+#/   Also, to avoid mistakes, this can only be used together with '--release'.
 #/
-#/     Optional. Default: Disabled.
+#/   Optional. Default: Disabled.
 
 
 
-# ------------ Shell setup ------------
+# Shell setup
+# -----------
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-
-CONF_FILE="$BASEPATH/bash.conf.sh"
-[[ -f "$CONF_FILE" ]] || {
-    echo "[$0] ERROR: Config file not found: $CONF_FILE"
-    exit 1
-}
 # shellcheck source=bash.conf.sh
-source "$CONF_FILE"
+source "$BASEPATH/bash.conf.sh" || exit 1
 
 
 
-# ------------ Script start ------------
+# Parse call arguments
+# --------------------
 
-PARAM_VERSION_DEFAULT="0.0.0"
-
-
-
-# ---- Parse arguments ----
-
-PARAM_RELEASE="false"
-PARAM_COMMIT="false"
-PARAM_TAG="false"
-PARAM_VERSION="$PARAM_VERSION_DEFAULT"
+CFG_RELEASE="false"
+CFG_COMMIT="false"
+CFG_TAG="false"
+CFG_VERSION_DEFAULT="0.0.0"
+CFG_VERSION="$CFG_VERSION_DEFAULT"
 
 while [[ $# -gt 0 ]]; do
-case "${1-}" in
-    --release)
-        PARAM_RELEASE="true"
-        shift
-        ;;
-    --commit)
-        PARAM_COMMIT="true"
-        shift
-        ;;
-    --tag)
-        PARAM_TAG="true"
-        shift
-        ;;
-    *)
-        PARAM_VERSION="$1"
-        shift
-        ;;
-esac
+    case "${1-}" in
+        --release)
+            CFG_RELEASE="true"
+            ;;
+        --commit)
+            CFG_COMMIT="true"
+            ;;
+        --tag)
+            CFG_TAG="true"
+            ;;
+        *)
+            CFG_VERSION="$1"
+            ;;
+    esac
+    shift
 done
 
-# Enforce restrictions
-if [[ "$PARAM_RELEASE" != "true" ]] || [[ "$PARAM_COMMIT" != "true" ]]; then
-    PARAM_TAG="false"
+
+
+# Apply config restrictions
+# -------------------------
+
+if [[ "$CFG_TAG" == "true" ]]; then
+    if [[ "$CFG_RELEASE" != "true" ]] || [[ "$CFG_COMMIT" != "true" ]]; then
+        log "WARNING: Ignoring '--tag': Requires '--release' and '--commit'"
+        CFG_TAG="false"
+    fi
 fi
 
-if [[ "$PARAM_VERSION" = "$PARAM_VERSION_DEFAULT" ]]; then
+if [[ "$CFG_VERSION" == "$CFG_VERSION_DEFAULT" ]]; then
     log "ERROR: Missing <Version>"
     exit 1
 fi
 
-log "PARAM_RELEASE=${PARAM_RELEASE}"
-log "PARAM_COMMIT=${PARAM_COMMIT}"
-log "PARAM_TAG=${PARAM_TAG}"
-log "PARAM_VERSION=${PARAM_VERSION}"
+log "CFG_RELEASE=${CFG_RELEASE}"
+log "CFG_COMMIT=${CFG_COMMIT}"
+log "CFG_TAG=${CFG_TAG}"
+log "CFG_VERSION=${CFG_VERSION}"
 
 
 
-# ---- Helper functions ----
+# Helper functions
+# ----------------
+
+update_changelog() {
+    if [[ "$CFG_RELEASE" == "true" ]]; then
+        # First appearance of 'UNRELEASED': Put our commit message
+        sed --in-place --expression="s|* UNRELEASED|* ${COMMIT_MSG}|" \
+            ./debian/changelog
+
+        gbp dch \
+            --ignore-branch \
+            --git-author \
+            --new-version="$CFG_VERSION" \
+            --spawn-editor=never \
+            \
+            --release \
+            --distribution='testing' \
+            --force-distribution \
+            \
+            ./debian/
+
+        # Remaining appearances of 'UNRELEASED': Delete line
+        sed --in-place --expression="/* UNRELEASED/d" \
+            ./debian/changelog
+    else
+        gbp dch \
+            --ignore-branch \
+            --git-author \
+            --new-version="$CFG_VERSION" \
+            --spawn-editor=never \
+            ./debian/
+    fi
+}
 
 commit_and_tag() {
     [[ $# -eq 0 ]] && return 1
 
-    if [[ "$PARAM_COMMIT" = "true" ]]; then
+    if [[ "$CFG_COMMIT" == "true" ]]; then
         git add "$1"
+        git add debian/changelog
         git commit -m "$COMMIT_MSG"
 
-        if [[ "$PARAM_TAG" = "true" ]]; then
-            git tag -a -m "$COMMIT_MSG" "$PARAM_VERSION"
+        if [[ "$CFG_TAG" == "true" ]]; then
+            git tag -a -m "$COMMIT_MSG" "$CFG_VERSION"
         fi
     fi
 }
 
 
 
-# ---- Apply versions ----
+# Apply versions
+# --------------
 
-if [[ "$PARAM_RELEASE" = "true" ]]; then
-    COMMIT_MSG="Prepare release $PARAM_VERSION"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    COMMIT_MSG="Prepare release $CFG_VERSION"
+    SUFFIX_C=""
+    SUFFIX_JAVA=""
 else
     COMMIT_MSG="Prepare for next development iteration"
+    SUFFIX_C="-dev"
+    SUFFIX_JAVA="-SNAPSHOT"
 fi
 
 
 
-# kurento-module-creator
-
-VERSION="$PARAM_VERSION"
-[[ "$PARAM_RELEASE" != "true" ]] && VERSION="${VERSION}-SNAPSHOT"
-
 pushd kurento-module-creator
-
 sed --in-place --expression="
     \|<artifactId>kurento-module-creator</artifactId>$|{
         N
-        s|<version>.*</version>|<version>${VERSION}</version>|
+        s|<version>.*</version>|<version>${CFG_VERSION}${SUFFIX_JAVA}</version>|
     }" \
     ./pom.xml
-
+update_changelog
 commit_and_tag ./pom.xml
-
-popd
-
+popd  # kurento-module-creator
 
 
-# kms-cmake-utils
-
-VERSION="$PARAM_VERSION"
-[[ "$PARAM_RELEASE" != "true" ]] && VERSION="${VERSION}-dev"
 
 pushd kms-cmake-utils
-
 sed --in-place --expression="
-    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${VERSION})|" \
+    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${CFG_VERSION}${SUFFIX_C})|" \
     ./CMakeLists.txt
-
+update_changelog
 commit_and_tag ./CMakeLists.txt
-
-popd
-
+popd  # kms-cmake-utils
 
 
-# kms-jsonrpc
-
-VERSION="$PARAM_VERSION"
-[[ "$PARAM_RELEASE" != "true" ]] && VERSION="${VERSION}-dev"
 
 pushd kms-jsonrpc
-
 sed --in-place --expression="
-    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${VERSION})|" \
+    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${CFG_VERSION}${SUFFIX_C})|" \
     ./CMakeLists.txt
-
+update_changelog
 commit_and_tag ./CMakeLists.txt
-
-popd
-
+popd  # kms-jsonrpc
 
 
-# kms-core
-
-VERSION="$PARAM_VERSION"
-[[ "$PARAM_RELEASE" != "true" ]] && VERSION="${VERSION}-dev"
 
 pushd kms-core
-
 sed --in-place --expression="
     \|\"name\": \"core\",$|{
         N
-        s|\"version\": \".*\"|\"version\": \"${VERSION}\"|
+        s|\"version\": \".*\"|\"version\": \"${CFG_VERSION}${SUFFIX_C}\"|
     }" \
     ./src/server/interface/core.kmd.json
-
+update_changelog
 commit_and_tag ./src/server/interface/core.kmd.json
-
-popd
-
+popd  # kms-core
 
 
-# kms-elements
-
-VERSION="$PARAM_VERSION"
-[[ "$PARAM_RELEASE" != "true" ]] && VERSION="${VERSION}-dev"
 
 pushd kms-elements
-
 sed --in-place --expression="
     \|\"name\": \"elements\",$|{
         N
-        s|\"version\": \".*\"|\"version\": \"${VERSION}\"|
+        s|\"version\": \".*\"|\"version\": \"${CFG_VERSION}${SUFFIX_C}\"|
     }" \
     ./src/server/interface/elements.kmd.json
-
+update_changelog
 commit_and_tag ./src/server/interface/elements.kmd.json
-
-popd
-
+popd  # kms-elements
 
 
-# kms-filters
-
-VERSION="$PARAM_VERSION"
-[[ "$PARAM_RELEASE" != "true" ]] && VERSION="${VERSION}-dev"
 
 pushd kms-filters
-
 sed --in-place --expression="
     \|\"name\": \"filters\",$|{
         N
-        s|\"version\": \".*\"|\"version\": \"${VERSION}\"|
+        s|\"version\": \".*\"|\"version\": \"${CFG_VERSION}${SUFFIX_C}\"|
     }" \
     ./src/server/interface/filters.kmd.json
-
+update_changelog
 commit_and_tag ./src/server/interface/filters.kmd.json
-
-popd
-
+popd  # kms-filters
 
 
-# kurento-media-server
-
-VERSION="$PARAM_VERSION"
-[[ "$PARAM_RELEASE" != "true" ]] && VERSION="${VERSION}-dev"
 
 pushd kurento-media-server
-
 sed --in-place --expression="
-    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${VERSION})|" \
+    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${CFG_VERSION}${SUFFIX_C})|" \
     ./CMakeLists.txt
-
+update_changelog
 commit_and_tag ./CMakeLists.txt
-
-popd
+popd  # kurento-media-server
