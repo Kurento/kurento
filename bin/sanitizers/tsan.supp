@@ -1,0 +1,73 @@
+# ThreadSanitizer suppressions file for Kurento Media Server.
+#
+# Doc: https://github.com/google/sanitizers/wiki/ThreadSanitizerSuppressions
+
+# GLib
+# ----
+
+deadlock:g_module_open
+race:g_malloc
+race:g_object_get_valist
+race:g_object_set_valist
+race:g_object_unref
+race:g_realloc
+race:g_slice_alloc0
+race:g_strdup
+race:g_type_create_instance
+
+
+
+# GStreamer
+# ---------
+
+race:gst_allocator_alloc
+race:gst_buffer_new
+race:gst_buffer_new_wrapped
+race:gst_bus_post
+race:gst_clock_get_time
+race:gst_clock_id_wait
+race:gst_clock_id_wait_async
+race:gst_clock_new_single_shot_id
+race:gst_debug_category_set_threshold
+race:gst_element_change_state
+race:gst_element_get_request_pad
+race:gst_iterator_free
+race:gst_iterator_new
+race:gst_iterator_next
+race:gst_mini_object_ref
+race:gst_mini_object_unref
+race:gst_object_replace
+race:gst_pad_push
+race:gst_pad_query
+race:gst_poll_wait
+race:libgstrtpmanager.so
+
+
+
+# kms-core
+# --------
+
+# register_signal_handler<void, _GstBus*, _GstMessage*> kms-core/src/server/implementation/SignalHandler.hpp:77 (libkmscoreimpl.so.6)
+race:^register_signal_handler$
+
+race:SignalHandler.hpp
+
+# WARNING: ThreadSanitizer: data race (pid=12929)
+#   Write of size 8 at 0x7b80000b0788 by thread T37 (mutexes: write M2606, write M1438):
+#     #0 kms_rtp_synchronizer_process_rtp_buffer_mapped /hostdir/kms-core/src/gst-plugins/commons/kmsrtpsynchronizer.c:472 (libkmsgstcommons.so.6+0x37584)
+#     #1 kms_rtp_synchronizer_process_rtp_buffer /hostdir/kms-core/src/gst-plugins/commons/kmsrtpsynchronizer.c:579 (libkmsgstcommons.so.6+0x37584)
+#     #2 kms_base_rtp_endpoint_sync_rtp_probe /hostdir/kms-core/src/gst-plugins/commons/kmsbasertpendpoint.c:1910 (libkmsgstcommons.so.6+0x1bae4)
+#     #3 <null> <null> (libgstreamer-1.5.so.0+0x6c1fa)
+#
+#   Previous read of size 8 at 0x7b80000b0788 by thread T35 (mutexes: write M2567, write M2570, write M2584, write M2611):
+#     #0 kms_utils_depayloader_adjust_pts_out /hostdir/kms-core/src/gst-plugins/commons/kmsutils.c:1414 (libkmsgstcommons.so.6+0x3998f)
+#     #1 kms_utils_depayloader_pts_out_probe /hostdir/kms-core/src/gst-plugins/commons/kmsutils.c:1460 (libkmsgstcommons.so.6+0x3a047)
+#     #2 <null> <null> (libgstreamer-1.5.so.0+0x6c1fa)
+
+
+
+# kurento-media-server
+# --------------------
+
+# kurento::RequestCache::addResponse([...]) kurento-media-server/server/RequestCache.cpp:68 (kurento-media-server)
+race:kurento::RequestCache::addResponse

@@ -1,0 +1,4 @@
+# AddressSanitizer suppressions file for Kurento Media Server.
+#
+# Doc: https://github.com/google/sanitizers/wiki/AddressSanitizerFlags
+

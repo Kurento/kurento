@@ -21,8 +21,9 @@ file(GLOB SUPPRESSIONS
 
 add_subdirectory(kms-cmake-utils)
 
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-cmake-utils")
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-cmake-utils/CMake")
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-cmake-utils/")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-cmake-utils/3rdparty/sanitizers-cmake/cmake")
 
 add_subdirectory(kms-jsonrpc)
 
@@ -80,6 +81,15 @@ add_custom_target(kurento-module-creator
 
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator")
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/classes")
+
+find_package(Sanitizers QUIET MODULE)
+if(DEFINED SANITIZE_LINK_STATIC)
+  set(SANITIZERS_ENABLED ON)
+endif()
+
+if(SANITIZERS_ENABLED)
+  sanitizer_add_blacklist_file("bin/sanitizers/blacklist.txt")
+endif()
 
 add_subdirectory(kms-core)
 

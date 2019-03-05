@@ -1,0 +1,22 @@
+# Sanitizer blacklist file for Kurento Media Server.
+#
+# Doc: https://clang.llvm.org/docs/SanitizerSpecialCaseList.html
+
+
+
+# AddressSanitizer
+# ================
+
+[address]
+
+
+
+# libsigc++-2.0
+# -------------
+
+# new-delete-type-mismatch on alloc/dealloc
+# in sigc::slot0<bool>::~slot0()
+# https://github.com/libsigcplusplus/libsigcplusplus/issues/10
+# FIXME: Blacklist is NOT supported by GCC yet, so instead you'll need to run
+# with ASAN_OPTIONS="new_delete_type_mismatch=0".
+src:/usr/include/sigc++-2.0/sigc++/functors/slot.h
