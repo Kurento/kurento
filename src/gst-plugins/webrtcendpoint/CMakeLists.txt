@@ -55,6 +55,9 @@ add_library(webrtcdataproto SHARED
   ${KMS_WEBRTC_DATA_PROTOCOL_SOURCES}
   ${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}
 )
+if(SANITIZERS_ENABLED)
+  add_sanitizers(webrtcdataproto)
+endif()
 
 target_link_libraries(webrtcdataproto
   ${KmsGstCommons_LIBRARIES}
@@ -119,6 +122,9 @@ set(KMS_WEBRTC_HEADERS
 add_glib_marshal(KMS_WEBRTC_SOURCES KMS_WEBRTC_HEADERS kms-webrtc-marshal __kms_webrtc_marshal)
 
 add_library(kmswebrtcendpointlib SHARED ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(kmswebrtcendpointlib)
+endif()
 
 add_dependencies(kmswebrtcendpointlib rtcpdemux)
 
@@ -167,6 +173,9 @@ install(FILES
 )
 
 add_library(webrtcendpoint MODULE kmswebrtc.c)
+if(SANITIZERS_ENABLED)
+  add_sanitizers(webrtcendpoint)
+endif()
 
 set_property (TARGET webrtcendpoint
   PROPERTY INCLUDE_DIRECTORIES

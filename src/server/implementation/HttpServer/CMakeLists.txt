@@ -28,6 +28,9 @@ add_glib_marshal(HTTP_EP_SOURCES HTTP_EP_HEADERS http-marshal http_marshal)
 add_glib_enumtypes(HTTP_EP_SOURCES HTTP_EP_HEADERS http-enumtypes KMS ${ENUM_HEADERS})
 
 add_library(kmshttpep ${HTTP_EP_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(kmshttpep)
+endif()
 
 set_target_properties(kmshttpep PROPERTIES
   PUBLIC_HEADER "${HTTP_EP_HEADERS}"

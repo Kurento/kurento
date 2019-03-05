@@ -12,6 +12,9 @@ include(GLibHelpers)
 add_glib_marshal(RTCPDEMUX_SOURCES RTCPDEMUX_HEADERS kms-marshal __kms_marshal)
 
 add_library(rtcpdemux MODULE ${RTCPDEMUX_SOURCES} ${RTCPDEMUX_HEADERS})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(rtcpdemux)
+endif()
 
 target_link_libraries(rtcpdemux
   ${gstreamer-1.5_LIBRARIES}

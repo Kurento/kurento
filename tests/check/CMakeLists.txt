@@ -4,7 +4,12 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 set(KMS_TEST_UTILS_SOURCES
   kmstestutils.h kmstestutils.c
 )
+
 add_library(kmstestutils ${KMS_TEST_UTILS_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(kmstestutils)
+endif()
+
 target_link_libraries(kmstestutils
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}

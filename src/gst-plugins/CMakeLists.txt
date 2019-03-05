@@ -40,6 +40,9 @@ add_glib_marshal(KMS_ELEMENTS_SOURCES KMS_ELEMENTS_HEADERS kms-elements-marshal 
 add_glib_enumtypes(KMS_ELEMENTS_SOURCES KMS_ELEMENTS_HEADERS kms-elements-enumtypes KMS ${ENUM_HEADERS})
 
 add_library(${LIBRARY_NAME}plugins MODULE ${KMS_ELEMENTS_SOURCES} ${KMS_ELEMENTS_HEADERS})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(${LIBRARY_NAME}plugins)
+endif()
 
 add_dependencies(${LIBRARY_NAME}plugins webrtcendpoint rtpendpoint recorderendpoint)
 

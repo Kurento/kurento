@@ -15,6 +15,9 @@ set(KMS_RECORDERENDPOINT_HEADERS
 )
 
 add_library(recorderendpoint MODULE ${KMS_RECORDERENDPOINT_SOURCES} ${KMS_RECORDERENDPOINT_HEADERS})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(recorderendpoint)
+endif()
 
 set_property (TARGET recorderendpoint
   PROPERTY INCLUDE_DIRECTORIES
