@@ -76,8 +76,8 @@ function(common_buildflags_set)
   #
   # CMake adds '-O3' by default for the Release build type, but here we want
   # to change that to '-O2', which is the default used by Debian toolchain.
-  set(CMAKE_C_FLAGS_RELEASE   "${DPKG_CFLAGS}   -DNDEBUG -O2" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS_RELEASE "${DPKG_CXXFLAGS} -DNDEBUG -O2" PARENT_SCOPE)
+  set(CMAKE_C_FLAGS_RELEASE   "${DPKG_CFLAGS}   -DNDEBUG -g -O2" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS_RELEASE "${DPKG_CXXFLAGS} -DNDEBUG -g -O2" PARENT_SCOPE)
   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE    "${DPKG_LDFLAGS}" PARENT_SCOPE)
