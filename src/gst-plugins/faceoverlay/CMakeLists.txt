@@ -4,6 +4,9 @@ set(FACEOVERLAY_SOURCES
 )
 
 add_library(faceoverlay MODULE ${FACEOVERLAY_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(faceoverlay)
+endif()
 
 add_dependencies(faceoverlay imageoverlay facedetector)
 

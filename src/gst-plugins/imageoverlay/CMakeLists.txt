@@ -4,6 +4,9 @@ set(IMAGEOVERLAY_SOURCES
 )
 
 add_library(imageoverlay MODULE ${IMAGEOVERLAY_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(imageoverlay)
+endif()
 
 target_link_libraries(imageoverlay
   ${gstreamer-1.5_LIBRARIES}

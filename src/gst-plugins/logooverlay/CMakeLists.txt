@@ -4,6 +4,9 @@ set(LOGOOVERLAY_SOURCES
 )
 
 add_library(logooverlay MODULE ${LOGOOVERLAY_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(logooverlay)
+endif()
 
 target_link_libraries(logooverlay
   ${gstreamer-1.5_LIBRARIES}

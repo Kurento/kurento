@@ -4,6 +4,9 @@ set(OPENCV_FILTER_SOURCES
 )
 
 add_library(opencvfilter MODULE ${OPENCV_FILTER_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(opencvfilter)
+endif()
 
 target_link_libraries(opencvfilter
   ${gstreamer-1.5_LIBRARIES}

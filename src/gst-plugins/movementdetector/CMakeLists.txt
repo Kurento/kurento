@@ -4,6 +4,9 @@ set(MOVEMENTDETECTOR_SOURCES
 )
 
 add_library(movementdetector MODULE ${MOVEMENTDETECTOR_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(movementdetector)
+endif()
 
 target_link_libraries(movementdetector
   ${gstreamer-1.5_LIBRARIES}

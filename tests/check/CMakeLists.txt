@@ -2,6 +2,9 @@ set(KMS_TEST_UTILS_SOURCES
   kmstestutils.h kmstestutils.c
 )
 add_library(kmsfilterstestutils ${KMS_TEST_UTILS_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(kmsfilterstestutils)
+endif()
 target_link_libraries(kmsfilterstestutils
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}

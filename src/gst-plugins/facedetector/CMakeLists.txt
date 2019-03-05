@@ -5,6 +5,9 @@ set(FACEDETECTOR_SOURCES
 )
 
 add_library(facedetector MODULE ${FACEDETECTOR_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(facedetector)
+endif()
 
 target_link_libraries(facedetector
   ${gstreamer-1.5_LIBRARIES}
