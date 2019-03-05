@@ -16,6 +16,9 @@ set (HEADER_FILES
 )
 
 add_library(jsonrpc SHARED ${SOURCE_FILES} ${HEADER_FILES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(jsonrpc)
+endif()
 
 set_target_properties(jsonrpc PROPERTIES PUBLIC_HEADER "${HEADER_FILES}")
 
