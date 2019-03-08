@@ -110,6 +110,7 @@ Information about development of *Kurento itself* is also available:
    :caption: Knowledge Base
 
    /knowledge/congestion_rmcat
+   /knowledge/h264
    /knowledge/nat
    /knowledge/rtp_streaming
    /knowledge/safari
