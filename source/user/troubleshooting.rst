@@ -186,9 +186,9 @@ in your daemon settings file, ``/etc/default/kurento-media-server``.
 
 Then look for these messages in the media server log output:
 
-* ``Upstream provided caps: [...]``
-* ``Downstream requested caps: [...]``
-* ``Find TreeBin with requested caps: [...]``
+* ``Upstream provided caps: (caps)``
+* ``Downstream wanted caps: (caps)``
+* ``Find TreeBin with wanted caps: (caps)``
 
 Which will end up with either of these sets of messages:
 
@@ -202,7 +202,7 @@ Which will end up with either of these sets of messages:
   - ``TreeBin not found! Transcoding required for (audio|video)``
   - ``TRANSCODING ACTIVE for (audio|video)``
 
-The *output caps* and *input caps* mentioned in the first messages can help understand what codec settings are being received by Kurento ("*current caps*") and what is being expected at the other side ("*downstream caps*"). Don't let the  "*output*" and "*input*" terminology here confuse you: these words refer to the *output of the receiver module*, thus it refers to the inbound stream from the point of view of the whole Kurento Media Server; and the *input of the sender module*, referring in this case to the outbound stream from KMS.
+These messages can help understand what codec settings are being received by Kurento ("*Upstream provided caps*") and what is being expected at the other side by the stream receiver ("*Downstream wanted caps*").
 
 
 
