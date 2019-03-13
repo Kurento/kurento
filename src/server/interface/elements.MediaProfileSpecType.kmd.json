@@ -2,13 +2,16 @@
   "complexTypes": [
     {
       "name": "MediaProfileSpecType",
-      "doc": "Media Profile.\n\nCurrently WEBM, MP4 and JPEG are supported.",
+      "doc": "Media Profile.\n\nCurrently WEBM, MKV, MP4 and JPEG are supported.",
       "typeFormat": "ENUM",
       "values": [
         "WEBM",
+        "MKV",
         "MP4",
         "WEBM_VIDEO_ONLY",
         "WEBM_AUDIO_ONLY",
+        "MKV_VIDEO_ONLY",
+        "MKV_AUDIO_ONLY",
         "MP4_VIDEO_ONLY",
         "MP4_AUDIO_ONLY",
         "JPEG_VIDEO_ONLY",

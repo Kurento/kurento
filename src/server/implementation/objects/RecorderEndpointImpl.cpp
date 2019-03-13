@@ -88,6 +88,11 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     GST_INFO ("Set MP4 profile");
     break;
 
+  case MediaProfileSpecType::MKV:
+    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_MKV, NULL);
+    GST_INFO ("Set MKV profile");
+    break;
+
   case MediaProfileSpecType::WEBM_VIDEO_ONLY:
     g_object_set ( G_OBJECT (element), "profile",
                    KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY, NULL);
@@ -98,6 +103,18 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     g_object_set ( G_OBJECT (element), "profile",
                    KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY, NULL);
     GST_INFO ("Set WEBM AUDIO ONLY profile");
+    break;
+
+  case MediaProfileSpecType::MKV_VIDEO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY, NULL);
+    GST_INFO ("Set MKV VIDEO ONLY profile");
+    break;
+
+  case MediaProfileSpecType::MKV_AUDIO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY, NULL);
+    GST_INFO ("Set MKV AUDIO ONLY profile");
     break;
 
   case MediaProfileSpecType::MP4_VIDEO_ONLY:

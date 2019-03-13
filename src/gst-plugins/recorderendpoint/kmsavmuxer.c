@@ -153,6 +153,11 @@ kms_av_muxer_create_muxer (KmsAVMuxer * self)
     case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
       return gst_element_factory_make ("webmmux", NULL);
+    case KMS_RECORDING_PROFILE_MKV:
+    case KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY:
+    case KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY:{
+      return gst_element_factory_make ("matroskamux", NULL);
+    }
     case KMS_RECORDING_PROFILE_MP4:
     case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY:{
