@@ -56,31 +56,13 @@ function(common_buildflags_set)
   dpkg_buildflags_get_cxxflags(DPKG_CXXFLAGS)
   dpkg_buildflags_get_ldflags(DPKG_LDFLAGS)
 
-  # General flags, covering all build configurations
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu11   -Wall -pthread" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -pthread" PARENT_SCOPE)
-
-  # Debug builds
-  #
-  # FIXME Ideal is '-Og' but a bug in GCC prevents this, causing
-  #       "may be used uninitialized" errors:
-  #       https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58455
-  #       Affects GCC 5.4.0 (Ubuntu 16.04 "Xenial")
-  set(CMAKE_C_FLAGS_DEBUG   "${DPKG_CFLAGS}   -Werror -g -O0" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${DPKG_CXXFLAGS} -Werror -g -O0" PARENT_SCOPE)
-  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${DPKG_LDFLAGS}" PARENT_SCOPE)
-  set(CMAKE_MODULE_LINKER_FLAGS_DEBUG "${DPKG_LDFLAGS}" PARENT_SCOPE)
-  set(CMAKE_EXE_LINKER_FLAGS_DEBUG    "${DPKG_LDFLAGS}" PARENT_SCOPE)
-
-  # Release builds
-  #
-  # CMake adds '-O3' by default for the Release build type, but here we want
-  # to change that to '-O2', which is the default used by Debian toolchain.
-  set(CMAKE_C_FLAGS_RELEASE   "${DPKG_CFLAGS}   -DNDEBUG -g -O2" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS_RELEASE "${DPKG_CXXFLAGS} -DNDEBUG -g -O2" PARENT_SCOPE)
-  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${DPKG_LDFLAGS}" PARENT_SCOPE)
-  set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${DPKG_LDFLAGS}" PARENT_SCOPE)
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE    "${DPKG_LDFLAGS}" PARENT_SCOPE)
+  # General flags, used for all build configurations
+  # `dpkg-buildflags` sets "-g -O2"
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu11   -Wall -pthread ${DPKG_CFLAGS}"   PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -pthread ${DPKG_CXXFLAGS}" PARENT_SCOPE)
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DPKG_LDFLAGS}" PARENT_SCOPE)
+  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${DPKG_LDFLAGS}" PARENT_SCOPE)
+  set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    ${DPKG_LDFLAGS}" PARENT_SCOPE)
 
   # Build all targets with '-fPIC'/'-fPIE' by default, including static libs
   set(CMAKE_POSITION_INDEPENDENT_CODE ON PARENT_SCOPE)
@@ -88,8 +70,29 @@ function(common_buildflags_set)
   # FIXME CMake doesn't link executables with '-pie', even if
   #       CMAKE_POSITION_INDEPENDENT_CODE is ON.
   #       See: CMake issue #14983 (https://gitlab.kitware.com/cmake/cmake/issues/14983)
-  #       Affects CMake 3.5.1 (Ubuntu 16.04 "Xenial")
+  #       Affects CMake 3.5.1 (Ubuntu 16.04 Xenial)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie" PARENT_SCOPE)
+
+  # Build type: Debug
+  # CMake appends CMAKE_{C,CXX}_FLAGS_DEBUG="-g" to CMAKE_{C,CXX}_FLAGS
+  # We want to ensure no optimization and "warnings are errors"
+  #
+  # FIXME Ideally we'd use '-Og' but a bug in GCC prevents this, causing
+  #       "may be used uninitialized" errors:
+  #       https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58455
+  #       Affects GCC 5.4.0 (Ubuntu 16.04 Xenial)
+  set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -Werror -O0" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -O0" PARENT_SCOPE)
+
+  # Build type: RelWithDebInfo
+  # CMake appends CMAKE_{C,CXX}_FLAGS_RELWITHDEBINFO="-O2 -g -DNDEBUG" to CMAKE_{C,CXX}_FLAGS
+  # set(CMAKE_C_FLAGS_RELWITHDEBINFO   "${CMAKE_C_FLAGS_RELEASE}   <Your flags here>"   PARENT_SCOPE)
+  # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} <Your flags here>" PARENT_SCOPE)
+
+  # Build type: Release
+  # CMake appends CMAKE_{C,CXX}_FLAGS_RELEASE="-O3 -DNDEBUG" to CMAKE_{C,CXX}_FLAGS
+  # set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   <Your flags here>" PARENT_SCOPE)
+  # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} <Your flags here>" PARENT_SCOPE)
 endfunction()
 
 
@@ -108,6 +111,13 @@ function(common_buildflags_print)
   message("CMAKE_SHARED_LINKER_FLAGS_DEBUG: ${CMAKE_SHARED_LINKER_FLAGS_DEBUG}")
   message("CMAKE_MODULE_LINKER_FLAGS_DEBUG: ${CMAKE_MODULE_LINKER_FLAGS_DEBUG}")
   message("CMAKE_EXE_LINKER_FLAGS_DEBUG:    ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
+
+  message("CMAKE_C_FLAGS_RELWITHDEBINFO:             ${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+  message("CMAKE_CXX_FLAGS_RELWITHDEBINFO:           ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  message("CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO: ${CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO}")
+  message("CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO: ${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO}")
+  message("CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO: ${CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO}")
+  message("CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:    ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
 
   message("CMAKE_C_FLAGS_RELEASE:             ${CMAKE_C_FLAGS_RELEASE}")
   message("CMAKE_CXX_FLAGS_RELEASE:           ${CMAKE_CXX_FLAGS_RELEASE}")
