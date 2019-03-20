@@ -19,6 +19,7 @@
 #include <glib.h>
 #include <valgrind/valgrind.h>
 
+#include <commons/kmsrecordingprofile.h>
 #include <commons/kmsuriendpointstate.h>
 
 #define SINK_VIDEO_STREAM "sink_video_default"
@@ -319,8 +320,8 @@ GST_START_TEST (check_states_pipeline)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
   fail_unless (recorder != NULL);
 
-  g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/state_recorder.webm", "profile", 0 /* WEBM */ , NULL);
+  g_object_set (G_OBJECT (recorder), "uri", "file:///tmp/state_recorder.webm",
+      "profile", KMS_RECORDING_PROFILE_WEBM, NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -391,8 +392,8 @@ GST_START_TEST (warning_pipeline)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
   fail_unless (recorder != NULL);
 
-  g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/warning_pipeline.webm", "profile", 0 /* WEBM */ , NULL);
+  g_object_set (G_OBJECT (recorder), "uri", "file:///tmp/warning_pipeline.webm",
+      "profile", KMS_RECORDING_PROFILE_WEBM, NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -497,9 +498,8 @@ GST_START_TEST (check_video_only)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
   fail_unless (recorder != NULL);
 
-  g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/check_video_only.webm", "profile", 2 /* WEBM_VIDEO_ONLY */ ,
-      NULL);
+  g_object_set (G_OBJECT (recorder), "uri", "file:///tmp/check_video_only.webm",
+      "profile", KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY, NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -561,9 +561,8 @@ GST_START_TEST (check_audio_only)
   encoder = gst_element_factory_make ("vorbisenc", NULL);
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
-  g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/check_audio_only.webm", "profile", 3 /* WEBM_AUDIO_ONLY */ ,
-      NULL);
+  g_object_set (G_OBJECT (recorder), "uri", "file:///tmp/check_audio_only.webm",
+      "profile", KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY, NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -679,9 +678,8 @@ GST_START_TEST (check_ksm_sink_request)
   pipeline = gst_pipeline_new (__FUNCTION__);
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
-  g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/output.ksr", "profile", 6 /* KMS_RECORDING_PROFILE_KSR */ ,
-      NULL);
+  g_object_set (G_OBJECT (recorder), "uri", "file:///tmp/output.ksr",
+      "profile", KMS_RECORDING_PROFILE_KSR, NULL);
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_ksr),
       loop);
