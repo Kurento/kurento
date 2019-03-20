@@ -22,11 +22,22 @@
 #/
 #/ --release
 #/
-#/   Build in Release mode. If this option is not given, CMake will be
-#/   configured for a Debug build.
+#/   Build in Release mode with debugging symbols.
 #/
-#/   Note that with default CMake scripts from Kurento, the Release builds
-#/   are also include debugging symbols.
+#/   If this option is not given, CMake will be configured for a Debug build.
+#/
+#/   Optional. Default: Disabled.
+#/
+#/ --gdb
+#/
+#/   Run KMS in a GDB session. Useful to set break points and get backtraces.
+#/
+#/   Optional. Default: Disabled.
+#/
+#/ --verbose
+#/
+#/   Tells CMake to generate verbose Makefiles, that will print every build
+#/   command as they get executed by `make`.
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -35,18 +46,20 @@
 #/   Build and runs with the instrumentation provided by the compiler's
 #/   AddressSanitizer (available in GCC and Clang).
 #/
-#/   Implies '--release'.
-#/
 #/   See: https://clang.llvm.org/docs/AddressSanitizer.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
 #/
 #/ --thread-sanitizer
 #/
 #/   Build and runs with the instrumentation provided by the compiler's
 #/   ThreadSanitizer (available in GCC and Clang).
 #/
-#/   Implies '--release'.
-#/
 #/   See: https://clang.llvm.org/docs/ThreadSanitizer.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
 
 
 
@@ -63,6 +76,8 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 # --------------------
 
 CFG_RELEASE="false"
+CFG_GDB="false"
+CFG_VERBOSE="false"
 CFG_ADDRESS_SANITIZER="false"
 CFG_THREAD_SANITIZER="false"
 
@@ -70,6 +85,12 @@ while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --release)
             CFG_RELEASE="true"
+            ;;
+        --gdb)
+            CFG_GDB="true"
+            ;;
+        --verbose)
+            CFG_VERBOSE="true"
             ;;
         --address-sanitizer)
             CFG_ADDRESS_SANITIZER="true"
@@ -100,6 +121,8 @@ if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
 fi
 
 log "CFG_RELEASE=$CFG_RELEASE"
+log "CFG_GDB=$CFG_GDB"
+log "CFG_VERBOSE=$CFG_VERBOSE"
 log "CFG_ADDRESS_SANITIZER=$CFG_ADDRESS_SANITIZER"
 log "CFG_THREAD_SANITIZER=$CFG_THREAD_SANITIZER"
 
@@ -113,17 +136,25 @@ BUILD_DIR_SUFFIX=""
 CMAKE_ARGS=""
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    BUILD_TYPE="Release"
+    BUILD_TYPE="RelWithDebInfo"
+fi
+
+if [[ "$CFG_VERBOSE" == "true" ]]; then
+    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_VERBOSE_MAKEFILE=ON"
 fi
 
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
-    BUILD_DIR_SUFFIX="-asan"
-    CMAKE_ARGS="-DSANITIZE_ADDRESS=ON"
+    BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-asan"
+    CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_ADDRESS=ON"
 fi
 
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    BUILD_DIR_SUFFIX="-tsan"
-    CMAKE_ARGS="-DSANITIZE_THREAD=ON"
+    BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-tsan"
+    CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_THREAD=ON"
+fi
+
+if [[ -f /.dockerenv ]]; then
+    BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-docker"
 fi
 
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
@@ -134,9 +165,6 @@ if ! ls -f "./${BUILD_DIR}/CMakeCache.txt"; then
     cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" $CMAKE_ARGS ..
     popd || exit 1  # Exit $BUILD_DIR
 fi
-
-# Other CMake options:
-# -DCMAKE_VERBOSE_MAKEFILE=ON
 
 # Other Make alternatives:
 # make check_build       # Build all tests
@@ -150,20 +178,27 @@ fi
 # -----------------------
 
 RUN_VARS=()
+RUN_WRAPPER=""
+
+if [[ "$CFG_GDB" == "true" ]]; then
+    #RUN_WRAPPER="gdb -ex run --args"
+    RUN_WRAPPER="gdb --args"
+    RUN_VARS+=("G_DEBUG=fatal-warnings")
+fi
 
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libasan.so.?' | head -n1)"
-    RUN_VARS=(
+    RUN_VARS+=(
         "LD_PRELOAD=""$LIBSAN"
-        "ASAN_OPTIONS=""suppressions=$PWD/bin/sanitizers/asan.supp new_delete_type_mismatch=0"
+        "ASAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/asan.supp new_delete_type_mismatch=0"
     )
 fi
 
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libtsan.so.?' | head -n1)"
-    RUN_VARS=(
+    RUN_VARS+=(
         "LD_PRELOAD=""$LIBSAN"
-        "TSAN_OPTIONS=""suppressions=$PWD/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1"
+        "TSAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1"
     )
 fi
 
@@ -172,7 +207,8 @@ unset GST_DEBUG
 export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
 # (Optional) Extra GST_DEBUG categories
-#export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
+# export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
+# export GST_DEBUG="${GST_DEBUG:-3},baseparse:6,h264parse:6"
 
 
 
@@ -191,7 +227,7 @@ make -j"$(nproc)"
         export "$RUN_VAR"
     done
 
-    ./kurento-media-server/server/kurento-media-server \
+    $RUN_WRAPPER ./kurento-media-server/server/kurento-media-server \
         --modules-path=. \
         --modules-config-path=./config \
         --conf-file=./config/kurento.conf.json \
