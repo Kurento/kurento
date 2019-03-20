@@ -1,45 +1,54 @@
 #!/usr/bin/env bash
-set -eu -o pipefail  # Abort on errors, disallow undefined variables
-IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
 # Uninstall every packge related to KMS and its development.
 #
 # Sources:
 # - Installation scripts.
 # - Installing KMS and running `aptitude search '~mkurento'`.
-#
-# Changes:
-# 2017-10-03 Juan Navarro <juan.navarro@gmx.es>
-# - Initial version.
-# 2018-02-02
-# - Use a Bash Array to define all packages.
-# 2018-03-23
-# - Add log function.
 
-# Set up logging function
-BASENAME="$(basename "$0")"  # Complete file name
-log() { echo "[$BASENAME] $*"; }
 
-# Check root permissions
-[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/../bash.conf.sh" || exit 1
+
+
+
+# Check permissions
+# -----------------
+
+[[ "$(id -u)" -eq 0 ]] || {
+    log "ERROR: Please run as root user (or with 'sudo')"
+    exit 1
+}
+
+
+
+# Uninstall everything
+# --------------------
 
 PACKAGES=(
-    # KMS main components + extra modules
+    # Main+Extra packages
     '^(kms|kurento).*'
 
-    # Kurento external libraries
-    ffmpeg
-    '^gir1.2-gst.*1.5'
-    gir1.2-nice-0.1
-    '^(lib)?gstreamer.*1.5.*'
-    '^lib(nice|s3-2|srtp|usrsctp).*'
-    '^srtp-.*'
+    # Fork packages
+    '^kmsjsoncpp.*'
+    '^libsrtp1.*'
     '^openh264(-gst-plugins-bad-1.5)?'
+    '^libusrsctp.*'
+    '^(lib)?gstreamer.*1.5.*'
+    '^gir1.2-gst.*1.5'
     '^openwebrtc-gst-plugins.*'
+    gir1.2-nice-0.1
+    '^lib(nice|s3-2).*'
 
-    # System development libraries
+    # System libraries
     '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
     '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
+    '^srtp-.*'
     uuid-dev
 
     # Packages installed by kurento-module-creator
@@ -54,14 +63,10 @@ PACKAGES=(
 )
 
 # Run a loop over all names and uninstall them.
-# apt-get is *stupid*, and won't allow unexisting names, so we cannot do it
-# the fancy way and run a single `apt-get` command.
+# apt-get won't allow unexisting names, so we cannot do it the fancy way
+# and uninstall everything on a single command. Blame's on you, apt-get.
 for PACKAGE in "${PACKAGES[@]}"; do
     apt-get purge --auto-remove --yes "$PACKAGE" || { log "Skip unexisting"; }
 done
 
 log "All packages uninstalled successfully"
-
-# ------------
-
-log "Done."

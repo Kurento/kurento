@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -eu -o pipefail  # Abort on errors, disallow undefined variables
-IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
 # Install packages needed to build Kurento Media Server.
 #
@@ -11,114 +9,63 @@ IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 # Notes:
 # - gstreamer1.5-x is needed for the "timeoverlay" GStreamer plugin,
 #   used by some tests in kms-elements.
-#
-# Changes:
-# 2017-10-03 Juan Navarro <juan.navarro@gmx.es>
-# - Initial version.
-# 2018-02-02
-# - Use a Bash Array to define all packages; run a single `apt-get` command.
-# 2018-02-07
-# - Add package: gstreamer1.5-tools.
-# 2018-02-12
-# - Move debugging packages to their own install script.
-# 2018-02-25
-# - Remove 'clang' and sort dev tools by name.
-# 2018-03-16
-# - Add command line argument parsing with 'getopts'.
-# - Add argument '-n' to skip running `apt-get update`.
-# 2018-03-23
-# - Add log function.
-# - FIXME for Trusty: openwebrtc-gst-plugins=0.10.0.20160909214034.trusty
 
-# Set up logging function
-BASENAME="$(basename "$0")"  # Complete file name
-log() { echo "[$BASENAME] $*"; }
 
-# Check root permissions
-[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
 
-PACKAGES=(
-    # Development tools
-    build-essential
-    cmake
-    debhelper
-    default-jdk
-    gdb
-    git openssh-client
-    maven
-    pkg-config
-    wget
+# Shell setup
+# -----------
 
-    # 'maven-debian-helper' installs an old Maven version in Ubuntu 14.04 (Trusty),
-    # so this ensures that the effective version is the one from 'maven'.
-    maven-debian-helper-
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/../bash.conf.sh" || exit 1
 
-    # System development libraries
-    libboost-dev
-    libboost-filesystem-dev
-    libboost-log-dev
-    libboost-program-options-dev
-    libboost-regex-dev
-    libboost-system-dev
-    libboost-test-dev
-    libboost-thread-dev
-    libevent-dev
-    libglib2.0-dev
-    libglibmm-2.4-dev
-    libopencv-dev
-    libsigc++-2.0-dev
-    libsoup2.4-dev
-    libssl-dev
-    libvpx-dev
-    libxml2-utils
-    uuid-dev
 
-    # Kurento external libraries
-    gstreamer1.5-plugins-base
-    gstreamer1.5-plugins-good
-    gstreamer1.5-plugins-ugly
-    gstreamer1.5-plugins-bad
-    gstreamer1.5-libav
-    gstreamer1.5-nice
-    gstreamer1.5-tools
-    gstreamer1.5-x
-    libgstreamer1.5-dev
-    libgstreamer-plugins-base1.5-dev
-    libnice-dev
-    openh264-gst-plugins-bad-1.5
-    #openwebrtc-gst-plugins-dev # FIXME - Workaround for Ubuntu 14.04 (Trusty)
-    kmsjsoncpp-dev
-    ffmpeg
-)
 
-# Parse command line arguments
-update=1
-while getopts 'n' flag; do
-    case "${flag}" in
-        n) update=0 ;;
-        *) ;;
-    esac
-done
+# Check permissions
+# -----------------
 
-(( $update )) && apt-get update
+[[ "$(id -u)" -eq 0 ]] || {
+    log "ERROR: Please run as root user (or with 'sudo')"
+    exit 1
+}
 
-apt-get install --yes "${PACKAGES[@]}"
 
-# FIXME - Workaround for Ubuntu 14.04 (Trusty)
-if [ "$(lsb_release -sc)" = "trusty" ]; then
-    apt-get install --yes \
-        openwebrtc-gst-plugins=0.10.0.20160909214034.trusty \
-        openwebrtc-gst-plugins-dev=0.10.0.20160909214034.trusty \
-    || apt-get install --yes \
-        openwebrtc-gst-plugins=0.10.0.1.trusty~20180213160509.1.33ccf19 \
-        openwebrtc-gst-plugins-dev=0.10.0.1.trusty~20180213160509.1.33ccf19
-else
-    apt-get install --yes \
-        openwebrtc-gst-plugins-dev
+
+# Ask for confirmation
+# --------------------
+
+echo "==== Install Kurento build dependencies ===="
+echo "This script should be run from 'kms-omni-build'"
+echo ""
+read -p "Are you sure? Type 'yes': " -r SURE
+if [[ "$SURE" != "yes" && "$SURE" != "YES" ]]; then
+    echo "Exit ..."
+    exit 0
 fi
 
+
+
+# Install Build-Depends
+# ---------------------
+
+apt-get update \
+  && apt-get install --no-install-recommends --yes \
+     git devscripts equivs
+
+DIRS=(
+    kurento-module-creator
+    kms-cmake-utils
+    kms-jsonrpc
+    kms-core
+    kms-elements
+    kms-filters
+    kurento-media-server
+)
+for DIR in "${DIRS[@]}"; do
+    log "Install Build-Depends for '${DIR}'"
+    mk-build-deps --install --remove \
+        --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+        "${DIR}/debian/control"
+done
+
 log "All packages installed successfully"
-
-# ------------
-
-log "Done."

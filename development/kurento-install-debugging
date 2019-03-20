@@ -1,72 +1,102 @@
 #!/usr/bin/env bash
-set -eu -o pipefail  # Abort on errors, disallow undefined variables
-IFS=$'\n\t'          # Apply word splitting only on newlines and tabs
 
 # Install debugging symbols for Kurento Media Server.
-#
-# Changes:
-# 2018-02-12 Juan Navarro <juan.navarro@gmx.es>
-# - Initial version (merged from other install scripts).
-# - Add package: libsrtp1-dbg.
-# 2018-03-16
-# - Add command line argument parsing with 'getopts'.
-# - Add argument '-n' to skip running `apt-get update`.
-# 2018-03-23
-# - Add log function.
 
-# Set up logging function
-BASENAME="$(basename "$0")"  # Complete file name
-log() { echo "[$BASENAME] $*"; }
 
-# Check root permissions
-[ "$(id -u)" -eq 0 ] || { log "Please run as root"; exit 1; }
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/../bash.conf.sh" || exit 1
+
+
+
+# Check permissions
+# -----------------
+
+[[ "$(id -u)" -eq 0 ]] || {
+    log "ERROR: Please run as root user (or with 'sudo')"
+    exit 1
+}
+
+
+
+# Ask for confirmation
+# --------------------
+
+echo "==== Install Kurento debug symbols ===="
+echo "This will add the Ubuntu 'dbgsym' repository sources"
+echo ""
+read -p "Are you sure? Type 'yes': " -r SURE
+if [[ "$SURE" != "yes" && "$SURE" != "YES" ]]; then
+    echo "Exit ..."
+    exit 0
+fi
+
+
+
+# Add Ubuntu 'dbgsym' repository sources
+# --------------------------------------
+
+if [[ -f /etc/upstream-release/lsb-release ]]; then
+    source /etc/upstream-release/lsb-release
+else
+    source /etc/lsb-release
+fi
+
+tee /etc/apt/sources.list.d/ddebs.list >/dev/null <<EOF
+# Ubuntu '-dbgsym.ddeb' (debug symbols) packages
+deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
+deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
+deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-proposed main restricted universe multiverse
+EOF
+
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+
+apt-get update
+
+
+
+# Install debug symbols
+# ---------------------
 
 PACKAGES=(
-    # Third-party libraries
-    libglib2.0-0-dbg
-    libssl1.0.0-dbg
+    # System libraries
+    libglib2.0-0-dbgsym
+    libsrtp0-dbgsym
+    libssl1.0.0-dbgsym
 
-    # Kurento external libraries
+    # Fork packages
+    kmsjsoncpp-dbg
+    libusrsctp-dbgsym
+    libgstreamer1.5-0-dbg
     gstreamer1.5-plugins-base-dbg
     gstreamer1.5-plugins-good-dbg
-    gstreamer1.5-plugins-ugly-dbg
     gstreamer1.5-plugins-bad-dbg
+    gstreamer1.5-plugins-ugly-dbg
     gstreamer1.5-libav-dbg
-    libgstreamer1.5-0-dbg
-    libnice-dbg
-    libsrtp1-dbg
     openwebrtc-gst-plugins-dbg
-    kmsjsoncpp-dbg
+    libnice10-dbgsym
+    gstreamer1.5-nice-dbgsym
 
-    # KMS main components
-    kms-jsonrpc-1.0-dbg
-    kms-core-6.0-dbg
-    kms-elements-6.0-dbg
-    kms-filters-6.0-dbg
-    kurento-media-server-6.0-dbg
+    # Main packages
+    kms-jsonrpc-dbg
+    kms-core-dbg
+    kms-elements-dbg
+    kms-filters-dbg
+    kurento-media-server-dbg
 
-    # KMS extra modules
-    kms-chroma-6.0-dbg
-    kms-crowddetector-6.0-dbg
-    kms-platedetector-6.0-dbg
-    kms-pointerdetector-6.0-dbg
+    # Extra packages
+    #kms-chroma-dbg
+    #kms-crowddetector-dbg
+    #kms-platedetector-dbg
+    #kms-pointerdetector-dbg
 )
 
-# Parse command line arguments
-update=1
-while getopts 'n' flag; do
-    case "${flag}" in
-        n) update=0 ;;
-        *) ;;
-    esac
-done
-
-(( $update )) && apt-get update
-
-apt-get install --yes "${PACKAGES[@]}"
+apt-get update \
+  && apt-get install --no-install-recommends --yes \
+     "${PACKAGES[@]}"
 
 log "All packages installed successfully"
-
-# ------------
-
-log "Done."
