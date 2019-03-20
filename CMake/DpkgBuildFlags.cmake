@@ -37,37 +37,37 @@ mark_as_advanced(FLAGS_EXECUTABLE)
 
 function(dpkg_buildflags_get_cflags var)
   if(FLAGS_EXECUTABLE)
-    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CFLAGS
-        OUTPUT_VARIABLE cflags
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
     execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CPPFLAGS
         OUTPUT_VARIABLE cppflags
         ERROR_QUIET
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CFLAGS
+        OUTPUT_VARIABLE cflags
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    set(${var} "${cflags} ${cppflags}" CACHE INTERNAL "dpkg-buildflags for C")
+    set(${var} "${cppflags} ${cflags}" CACHE INTERNAL "dpkg-buildflags for C")
 
-    unset(cflags)
     unset(cppflags)
+    unset(cflags)
   endif()
 endfunction()
 
 function(dpkg_buildflags_get_cxxflags var)
   if(FLAGS_EXECUTABLE)
-    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CXXFLAGS
-        OUTPUT_VARIABLE cxxflags
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
     execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CPPFLAGS
         OUTPUT_VARIABLE cppflags
         ERROR_QUIET
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${FLAGS_EXECUTABLE} --get CXXFLAGS
+        OUTPUT_VARIABLE cxxflags
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    set(${var} "${cxxflags} ${cppflags}" CACHE INTERNAL "dpkg-buildflags for C++")
+    set(${var} "${cppflags} ${cxxflags}" CACHE INTERNAL "dpkg-buildflags for C++")
 
-    unset(cxxflags)
     unset(cppflags)
+    unset(cxxflags)
   endif()
 endfunction()
 
@@ -81,6 +81,5 @@ function(dpkg_buildflags_get_ldflags var)
     set(${var} "${ldflags}" CACHE INTERNAL "dpkg-buildflags for linker")
 
     unset(ldflags)
-    unset(dbf_cppflags)
   endif()
 endfunction()
