@@ -2,8 +2,9 @@
 
 #/ Kurento packaging script for Debian/Ubuntu.
 #/
-#/ This shell script is used to build all Kurento Media Server
-#/ modules, and generate Debian/Ubuntu package files from them.
+#/ This shell script is used to build all Kurento Media Server modules, and
+#/ generate Debian/Ubuntu package files from them. It will automatically
+#/ install all required dependencies with `apt-get`, then build the project.
 #/
 #/ The script must be called from within a Git repository.
 #/
@@ -13,9 +14,10 @@
 #/
 #/ --install-kurento <KurentoVersion>
 #/
-#/   Install Kurento dependencies that are required to build the package.
+#/   Install dependencies that are required to build the package, using the
+#/   Kurento package repository for those packages that need it.
 #/
-#/   <KurentoVersion> indicates which Kurento version must be used to download
+#/   <KurentoVersion> indicates which Kurento repo must be used to download
 #/   packages from. E.g.: "6.8.0". If "dev" or "nightly" is given, the
 #/   Kurento nightly packages will be used instead.
 #/
@@ -24,19 +26,16 @@
 #/   `apt-get` will download and install all required packages from the
 #/   Kurento repository for Ubuntu.
 #/
-#/   If none of the '--install-*' arguments are provided, all required
-#/   dependencies are expected to be already installed in the system.
-#/
 #/   This argument is useful for end users, or external developers which may
 #/   want to build a specific component of Kurento without having to build
 #/   all the dependencies.
 #/
 #/   Optional. Default: Disabled.
-#/   See also: --install-files
+#/   See also: '--install-files'.
 #/
 #/ --install-files [FilesDir]
 #/
-#/   Install Kurento dependencies that are required to build the package.
+#/   Install specific dependency files that are required to build the package.
 #/
 #/   [FilesDir] is optional, it sets a directory where all '.deb' files
 #/   are located with required dependencies.
@@ -45,11 +44,12 @@
 #/   been built previously but are still not available to download with
 #/   `apt-get`, maybe as a product of previous jobs in a CI pipeline.
 #/
-#/   If none of the '--install-*' arguments are provided, all required
-#/   dependencies are expected to be already installed in the system.
+#/   '--install-files' can be used together with '--install-kurento'. If none
+#/   of the '--install-*' arguments are provided, all non-system dependencies
+#/   are expected to be already installed.
 #/
 #/   Optional. Default: Disabled.
-#/   See also: --install-kurento
+#/   See also: '--install-kurento'.
 #/
 #/ --srcdir <SrcDir>
 #/
@@ -77,21 +77,21 @@
 #/ --allow-dirty
 #/
 #/   Allows building packages from a working directory where there are
-#/   unstaged and/or uncommited changes.
-#/   If this option is not given, the working directory must be clean.
+#/   unstaged and/or uncommited source code changes. If this option is not
+#/   given, the working directory must be clean.
 #/
 #/   NOTE: This tells `dpkg-buildpackage` to skip calling `dpkg-source` and
 #/   build a Binary-only package. It makes easier creating a test package, but
 #/   in the long run the objective is to create oficially valid packages which
 #/   comply with Debian/Ubuntu's policies, so this option should not be used
-#/   for final published packages.
+#/   for final release builds.
 #/
 #/   Optional. Default: Disabled.
 #/
 #/ --release
 #/
-#/   Build packages intended for Release.
-#/   If this option is not given, packages are built as nightly snapshots.
+#/   Build packages intended for Release. If this option is not given, packages
+#/   are built as nightly snapshots.
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -238,20 +238,40 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-log "CFG_INSTALL_KURENTO=${CFG_INSTALL_KURENTO}"
-log "CFG_INSTALL_KURENTO_VERSION=${CFG_INSTALL_KURENTO_VERSION}"
-log "CFG_INSTALL_FILES=${CFG_INSTALL_FILES}"
-log "CFG_INSTALL_FILES_DIR=${CFG_INSTALL_FILES_DIR}"
-log "CFG_SRCDIR=${CFG_SRCDIR}"
-log "CFG_DSTDIR=${CFG_DSTDIR}"
-log "CFG_ALLOW_DIRTY=${CFG_ALLOW_DIRTY}"
-log "CFG_RELEASE=${CFG_RELEASE}"
-log "CFG_TIMESTAMP=${CFG_TIMESTAMP}"
+
+
+# Review config settings
+# ----------------------
+
+[[ -d "$CFG_INSTALL_FILES_DIR" ]] || {
+    log "ERROR: --install-files given an unexisting path: '$CFG_INSTALL_FILES_DIR'"
+    exit 1
+}
+
+[[ -d "$CFG_SRCDIR" ]] || {
+    log "ERROR: --srcdir given an unexisting path: '$CFG_SRCDIR'"
+    exit 1
+}
+
+[[ -d "$CFG_DSTDIR" ]] || {
+    log "ERROR: --dstdir given an unexisting path: '$CFG_DSTDIR'"
+    exit 1
+}
+
+log "CFG_INSTALL_KURENTO=$CFG_INSTALL_KURENTO"
+log "CFG_INSTALL_KURENTO_VERSION=$CFG_INSTALL_KURENTO_VERSION"
+log "CFG_INSTALL_FILES=$CFG_INSTALL_FILES"
+log "CFG_INSTALL_FILES_DIR=$CFG_INSTALL_FILES_DIR"
+log "CFG_SRCDIR=$CFG_SRCDIR"
+log "CFG_DSTDIR=$CFG_DSTDIR"
+log "CFG_ALLOW_DIRTY=$CFG_ALLOW_DIRTY"
+log "CFG_RELEASE=$CFG_RELEASE"
+log "CFG_TIMESTAMP=$CFG_TIMESTAMP"
 
 
 
-# Setup control variables
-# -----------------------
+# Internal control variables
+# --------------------------
 
 APT_UPDATE_NEEDED="true"
 
@@ -259,6 +279,13 @@ APT_UPDATE_NEEDED="true"
 
 # Apt configuration
 # -----------------
+
+function apt_update_maybe {
+    if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
+        apt-get update
+        APT_UPDATE_NEEDED="false"
+    fi
+}
 
 # If requested, add the repository
 if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
@@ -275,32 +302,22 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
     fi
 
     log "Add the Kurento Apt repository line"
-    APT_FILE="$(mktemp /etc/apt/sources.list.d/kurento-XXXXX.list)"
     DISTRO="$(lsb_release --codename --short)"
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRO kms6" \
-        >"$APT_FILE"
+        >/etc/apt/sources.list.d/kurento.list
 
     # Adding a new repo requires updating the Apt cache
-    if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
-        apt-get update
-        APT_UPDATE_NEEDED="false"
-    fi
+    apt_update_maybe
 fi
 
-# If requested, install local packages
-# This is done _after_ installing from the Kurento repository, because
-# installation of local files might be useful to overwrite some default
-# version of packages.
+# If requested, install local package files
 if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
-    log "Requested installation of package files"
+    log "Install package files from '$CFG_INSTALL_FILES_DIR'"
 
-    if ls -f "${CFG_INSTALL_FILES_DIR}"/*.*deb >/dev/null 2>&1; then
-        dpkg --install "${CFG_INSTALL_FILES_DIR}"/*.*deb || {
+    if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
+        dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
             log "Try to install remaining dependencies"
-            if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
-                apt-get update
-                APT_UPDATE_NEEDED="false"
-            fi
+            apt_update_maybe
             apt-get install --yes --fix-broken --no-remove
         }
     else
@@ -328,11 +345,7 @@ pushd "$CFG_SRCDIR" || {
 
 log "Install build dependencies"
 
-if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
-    apt-get update
-    APT_UPDATE_NEEDED="false"
-fi
-
+apt_update_maybe
 mk-build-deps --install --remove \
     --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     ./debian/control
@@ -485,6 +498,7 @@ gbp buildpackage \
 # so move them to the target destination directory.
 # Use 'find | xargs' here because we need to skip moving if the source
 # and destination paths are the same.
+log "Move resulting packages to destination dir: '$CFG_DSTDIR'"
 find "$(realpath ..)" -maxdepth 1 -type f -name '*.*deb' \
     -not -path "$CFG_DSTDIR/*" -print0 \
 | xargs -0 --no-run-if-empty mv --target-directory="$CFG_DSTDIR"
