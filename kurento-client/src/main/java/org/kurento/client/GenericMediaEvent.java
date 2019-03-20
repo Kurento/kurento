@@ -8,10 +8,11 @@ public class GenericMediaEvent extends MediaEvent {
 
 	public GenericMediaEvent(@org.kurento.client.internal.server.Param("source") org.kurento.client.MediaObject source,
 			@org.kurento.client.internal.server.Param("timestamp") String timestamp,
+			@org.kurento.client.internal.server.Param("timestampMillis") String timestampMillis,
 			@org.kurento.client.internal.server.Param("tags") java.util.List<org.kurento.client.Tag> tags,
 			@org.kurento.client.internal.server.Param("type") String type,
 			@org.kurento.client.internal.server.Param("genericData") Props data) {
-		super(source, timestamp, tags, type);
+		super(source, timestamp, timestampMillis, tags, type);
 		this.data = data;
 	}
 
