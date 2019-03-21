@@ -266,7 +266,7 @@ void
 RecorderEndpointImpl::collectEndpointStats (std::map
     <std::string, std::shared_ptr<Stats>>
     &statsReport, std::string id, const GstStructure *stats,
-    double timestamp)
+    double timestamp, int64_t timestampMillis)
 {
   std::shared_ptr<Stats> endpointStats;
   GstStructure *e2e_stats;
@@ -282,7 +282,7 @@ RecorderEndpointImpl::collectEndpointStats (std::map
 
   endpointStats = std::make_shared <EndpointStats> (id,
                   std::make_shared <StatsType> (StatsType::endpoint), timestamp,
-                  0.0, 0.0, inputStats, 0.0, 0.0, e2eStats);
+                  timestampMillis, 0.0, 0.0, inputStats, 0.0, 0.0, e2eStats);
 
   setDeprecatedProperties (std::dynamic_pointer_cast <EndpointStats>
                            (endpointStats) );
@@ -293,17 +293,18 @@ RecorderEndpointImpl::collectEndpointStats (std::map
 void
 RecorderEndpointImpl::fillStatsReport (std::map
                                        <std::string, std::shared_ptr<Stats>>
-                                       &report, const GstStructure *stats, double timestamp)
+                                       &report, const GstStructure *stats,
+                                       double timestamp, int64_t timestampMillis)
 {
   const GstStructure *e_stats;
 
   e_stats = kms_utils_get_structure_by_name (stats, KMS_MEDIA_ELEMENT_FIELD);
 
   if (e_stats != nullptr) {
-    collectEndpointStats (report, getId (), e_stats, timestamp);
+    collectEndpointStats (report, getId (), e_stats, timestamp, timestampMillis);
   }
 
-  UriEndpointImpl::fillStatsReport (report, stats, timestamp);
+  UriEndpointImpl::fillStatsReport (report, stats, timestamp, timestampMillis);
 }
 
 MediaObjectImpl *

@@ -823,7 +823,7 @@ createtRTCDataChannelStats (const GstStructure *stats)
 
   std::shared_ptr<RTCDataChannelStats> rtcDataStats =
     std::make_shared <RTCDataChannelStats> (id,
-        std::make_shared <StatsType> (StatsType::datachannel), 0.0, label,
+        std::make_shared <StatsType> (StatsType::datachannel), 0.0, 0, label,
         protocol, channelid, getRTCDataChannelState (state), messages_sent,
         bytes_sent, message_recv, bytes_recv);
 
@@ -846,7 +846,7 @@ createtRTCPeerConnectionStats (const GstStructure *stats)
 
   std::shared_ptr<RTCPeerConnectionStats> peerConnStats =
     std::make_shared <RTCPeerConnectionStats> (id,
-        std::make_shared <StatsType> (StatsType::session), 0.0, opened, closed);
+        std::make_shared <StatsType> (StatsType::session), 0.0, 0, opened, closed);
   g_free (id);
 
   return peerConnStats;
@@ -854,7 +854,8 @@ createtRTCPeerConnectionStats (const GstStructure *stats)
 
 static void
 collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
-                            &statsReport, double timestamp, const GstStructure *stats)
+                            &statsReport, double timestamp,
+                            int64_t timestampMillis, const GstStructure *stats)
 {
   gint i, n;
 
@@ -885,29 +886,34 @@ collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
 
     rtcDataStats = createtRTCDataChannelStats (gst_value_get_structure (value) );
     rtcDataStats->setTimestamp (timestamp);
+    rtcDataStats->setTimestampMillis (timestampMillis);
     statsReport[rtcDataStats->getId ()] = rtcDataStats;
   }
 
   std::shared_ptr<RTCPeerConnectionStats> peerConnStats =
     createtRTCPeerConnectionStats (stats);
   peerConnStats->setTimestamp (timestamp);
+  peerConnStats->setTimestampMillis (timestampMillis);
   statsReport[peerConnStats->getId ()] = peerConnStats;
 }
 
 void
 WebRtcEndpointImpl::fillStatsReport (std::map
                                      <std::string, std::shared_ptr<Stats>>
-                                     &report, const GstStructure *stats, double timestamp)
+                                     &report, const GstStructure *stats,
+                                     double timestamp, int64_t timestampMillis)
 {
   const GstStructure *data_stats = nullptr;
 
-  BaseRtpEndpointImpl::fillStatsReport (report, stats, timestamp);
+  BaseRtpEndpointImpl::fillStatsReport (report, stats, timestamp,
+      timestampMillis);
 
   data_stats = kms_utils_get_structure_by_name (stats,
                KMS_DATA_SESSION_STATISTICS_FIELD);
 
   if (data_stats != nullptr) {
-    return collectRTCDataChannelStats (report, timestamp, data_stats);
+    return collectRTCDataChannelStats (report, timestamp, timestampMillis,
+        data_stats);
   }
 }
 

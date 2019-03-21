@@ -65,7 +65,7 @@ public:
 protected:
   virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
                                 &report, const GstStructure *stats,
-                                double timestamp) override;
+                                double timestamp, int64_t timestampMillis) override;
 
   virtual void postConstructor () override;
 
@@ -82,7 +82,7 @@ private:
 
   void collectEndpointStats (std::map <std::string, std::shared_ptr<Stats>>
                              &statsReport, std::string id, const GstStructure *stats,
-                             double timestamp);
+                             double timestamp, int64_t timestampMillis);
 
   class StaticConstructor
   {

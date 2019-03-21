@@ -101,7 +101,7 @@ protected:
   virtual void postConstructor () override;
   virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
                                 &report, const GstStructure *stats,
-                                double timestamp) override;
+                                double timestamp, int64_t timestampMillis) override;
 
 private:
 
