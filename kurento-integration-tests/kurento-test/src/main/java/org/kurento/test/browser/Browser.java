@@ -253,7 +253,7 @@ public class Browser implements Closeable {
 
         String hostName;
         log.debug("BrowserScope is {}", scope);
-        if (scope == BrowserScope.DOCKER) {
+        if (scope == BrowserScope.DOCKER || scope == BrowserScope.ELASTEST) {
           if (docker.isRunningInContainer()) {
             hostName = docker.getContainerIpAddress();
           } else {
@@ -344,7 +344,7 @@ public class Browser implements Closeable {
       // cam
       options.addArguments("--use-fake-device-for-media-stream=fps=30");
 
-      if (video != null && (isLocal() || isDocker())) {
+      if (video != null && (isLocal() || isDocker() || isElastest())) {
 
         if (!Files.exists(Paths.get(video))) {
           throw new RuntimeException("Trying to create a browser using video file " + video
@@ -413,6 +413,13 @@ public class Browser implements Closeable {
       createRemoteDriver(capabilities);
     } else if (scope == BrowserScope.DOCKER) {
       driver = getDockerManager().createDockerDriver(id, capabilities);
+    } else if (scope == BrowserScope.ELASTEST) {
+      // String eusURL = System.getenv("ET_EUS_API");
+      // driver = new RemoteWebDriver(new URL(eusURL), capabilities);
+      capabilities.setCapability("live", true);
+      capabilities.setCapability("elastestTimeout", 0);
+      capabilities.setCapability("testName", "Kurento");
+      driver = new RemoteWebDriver(new URL("http://172.18.0.5:8091/eus/v1/"), capabilities);
     } else {
       driver = newWebDriver(options);
     }
@@ -807,6 +814,10 @@ public class Browser implements Closeable {
     return BrowserScope.DOCKER.equals(this.scope);
   }
 
+  public boolean isElastest() {
+    return BrowserScope.ELASTEST.equals(this.scope);
+  }
+
   public BrowserType getBrowserType() {
     return browserType;
   }
@@ -938,8 +949,7 @@ public class Browser implements Closeable {
     }
 
     // Stop docker containers (if necessary)
-    if (scope == BrowserScope.DOCKER) {
-
+    if (scope == BrowserScope.DOCKER || scope == BrowserScope.ELASTEST) {
       Path logFile = KurentoTest.getDefaultOutputFolder().toPath();
 
       try {
@@ -1046,7 +1056,7 @@ public class Browser implements Closeable {
       String appAutostart = getProperty(TestConfiguration.TEST_APP_AUTOSTART_PROPERTY,
           TestConfiguration.TEST_APP_AUTOSTART_DEFAULT);
 
-      if (BrowserScope.DOCKER.equals(scope)
+      if ((BrowserScope.DOCKER.equals(scope) || scope == BrowserScope.ELASTEST)
           && !appAutostart.equals(TestConfiguration.AUTOSTART_FALSE_VALUE)) {
 
         if (docker.isRunningInContainer()) {
