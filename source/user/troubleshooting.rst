@@ -102,62 +102,6 @@ It's important to note that stack traces, while helpful, are not a replacement f
 
 
 
-Media Server disconnects from Application Server
-------------------------------------------------
-
-E.g. Kurento keeps disconnecting every 30 minutes on high load peak time.
-
-Checklist:
-
-- Deploy a properly configured STUN or TURN server. Coturn tends to work fine for this, and Kurento has some documentation about how to install and configure it: https://doc-kurento.readthedocs.io/en/latest/user/faq.html#install-coturn-turn-stun-server
-
-- Use this WebRTC sample page to test that your STUN/TURN server is working properly: https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
-
-- Configure your STUN/TURN server in Kurento, as explained here: https://doc-kurento.readthedocs.io/en/latest/user/installation.html#stun-and-turn-servers
-
-  .. note::
-
-     The features provided by TURN are a superset of those provided by STUN. This means that *you don’t need to configure a STUN server if you are already using a TURN server*.
-
-- Make sure your Kurento settings syntax is correct. For STUN servers, this would be:
-
-  .. code-block:: text
-
-     stunServerAddress=<serverAddress>
-     stunServerPort=<serverPort>
-
-  For TURN servers, the correct line is like this:
-
-  .. code-block:: text
-
-     turnURL=username:password@address:port
-
-- Check the debug logs of the STUN/TURN server. Maybe the server is failing and some useful error messages are being printed there.
-
-- Check the debug logs of KMS. In case of an incorrect configuration, you'll find these messages:
-
-  .. code-block:: text
-
-     INFO  STUN server Port not found in config; using default value: 3478
-     INFO  STUN server IP address not found in config; NAT traversal requires either STUN or TURN server
-     INFO  TURN server IP address not found in config; NAT traversal requires either STUN or TURN server
-
-  In case of having correctly configured a STUN server in KMS, the log messages will read like this:
-
-  .. code-block:: text
-
-     INFO  Using STUN reflexive server IP: <IpAddress>
-     INFO  Using STUN reflexive server Port: <Port>
-
-  And in case of a TURN server:
-
-  .. code-block:: text
-
-     INFO  Using TURN relay server: <user:password>@<IpAddress>:<Port>
-     INFO  TURN server info set: <user:password>@<IpAddress>:<Port>
-
-
-
 CPU usage grows too high
 ------------------------
 
@@ -275,6 +219,24 @@ If you see these messages, it's a clear indication that STUN or TURN are not pro
 
 
 
+Low video quality
+-----------------
+
+You have several ways to override the default settings for variable bitrate:
+
+- Methods in `org.kurento.client.BaseRtpEndpoint <https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__:
+
+  - *setMinVideoRecvBandwidth()* / *setMaxVideoRecvBandwidth()*
+  - *setMinVideoSendBandwidth()* / *setMaxVideoSendBandwidth()*
+
+- Methods in `org.kurento.client.MediaElement <https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/MediaElement.html>`__:
+
+  - *setMinOutputBitrate()* / *setMaxOutputBitrate()*
+
+    This setting is also configurable in */etc/kurento/modules/kurento/MediaElement.conf.ini*
+
+
+
 Application Server
 ==================
 
@@ -381,6 +343,13 @@ This is how this process would look like. In this example, KMS was restarted so 
 
 
 
+Node.js / NPM failures
+----------------------
+
+Kurento Client does not currently support Node v10 (LTS), you will have to use Node v8 or below.
+
+
+
 "Expects at least 4 fields"
 ---------------------------
 
@@ -407,6 +376,124 @@ The solution is to ensure that both peers are able to find a match in their supp
        { "name": "VP8/90000" },
        { "name": "H264/90000" }
      ]
+
+
+
+Networking issues
+=================
+
+WebRTC connection is not established
+------------------------------------
+
+There is a multitude of possible reasons for a failed WebRTC connection, so you can start by following this checklist:
+
+- Deploy a properly configured STUN or TURN server. Coturn tends to work fine for this, and Kurento has some documentation about how to install and configure it: https://doc-kurento.readthedocs.io/en/latest/user/faq.html#install-coturn-turn-stun-server
+
+- Use this WebRTC sample page to test that your STUN/TURN server is working properly: https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+
+- Configure your STUN/TURN server in Kurento, as explained here: https://doc-kurento.readthedocs.io/en/latest/user/installation.html#stun-and-turn-servers
+
+  .. note::
+
+     The features provided by TURN are a superset of those provided by STUN. This means that *you don’t need to configure a STUN server if you are already using a TURN server*.
+
+- Make sure your Kurento settings syntax is correct. For STUN servers, this would be:
+
+  .. code-block:: text
+
+     stunServerAddress=<serverAddress>
+     stunServerPort=<serverPort>
+
+  For TURN servers, the correct line is like this:
+
+  .. code-block:: text
+
+     turnURL=username:password@address:port
+
+- Check the debug logs of the STUN/TURN server. Maybe the server is failing and some useful error messages are being printed there.
+
+- Check the debug logs of KMS. In case of an incorrect configuration, you'll find these messages:
+
+  .. code-block:: text
+
+     INFO  STUN server Port not found in config; using default value: 3478
+     INFO  STUN server IP address not found in config; NAT traversal requires either STUN or TURN server
+     INFO  TURN server IP address not found in config; NAT traversal requires either STUN or TURN server
+
+  In case of having correctly configured a STUN server in KMS, the log messages will read like this:
+
+  .. code-block:: text
+
+     INFO  Using STUN reflexive server IP: <IpAddress>
+     INFO  Using STUN reflexive server Port: <Port>
+
+  And in case of a TURN server:
+
+  .. code-block:: text
+
+     INFO  Using TURN relay server: <user:password>@<IpAddress>:<Port>
+     INFO  TURN server info set: <user:password>@<IpAddress>:<Port>
+
+- Check that any SDP mangling you might be doing in your Application Server is being done correctly.
+
+  This is one of the most hard to catch examples we've seen in our `mailing list <https://groups.google.com/d/topic/kurento/t25_QQSc_Bo/discussion>`__:
+
+      > The problem was that our Socket.IO client did not correctly *URL-Encode* its JSON payload when *xhr-polling*, which resulted in all "plus" signs ('+') being changed into spaces (' ') on the server. This meant that the ``ufrag`` in the client's SDP was invalid if it contained a plus sign! Only some of the connections failed because not all ``ufrags`` contain plus signs.
+
+
+
+ICE fails with timeouts
+-----------------------
+
+**Problem**:
+
+- You have configured a STUN/TURN server in a different machine than Kurento Media Server.
+- The ICE connection tests fail due to timeout on trying pairs.
+
+**Solution**:
+
+Make sure that all required UDP ports for media content are open on the sever; otherwise, not only the ICE process will fail, but also the video or audio streams themselves won't be able to reach either server.
+
+
+
+Multicast fails in Docker
+-------------------------
+
+**Problem**:
+
+- Your Kurento Media Server is running in a Docker container.
+- MULTICAST streams playback fail with an error such as this one:
+
+  .. code-block:: text
+
+     DEBUG rtspsrc gstrtspsrc.c:7553:gst_rtspsrc_handle_message:<source> timeout on UDP port
+
+  Note that in this example, to see this message you would need to enable ``DEBUG`` log level for the ``rtspsrc`` category; see :ref:`logging-levels`.
+
+**Solution**:
+
+For Multicast streaming to work properly, you need to disable Docker's network namespacing and use ``--net host``. Note that this gives the container direct access to the host interfaces, and you'll need to connect through published ports to access others containers.
+
+This is a limitation of Docker; you can follow the current status with this issue: https://github.com/moby/moby/issues/23659
+
+If using Docker Compose, use ``network_mode: host`` such as this:
+
+.. code-block:: text
+
+   version: "3.7"
+   services:
+     kms:
+       image: kurento/kurento-media-server:6.9.0
+       container_name: kms
+       restart: always
+       network_mode: host
+       environment:
+         - GST_DEBUG=2,Kurento*:5
+
+References:
+
+- https://github.com/Kurento/bugtracker/issues/349
+- https://stackoverflow.com/questions/51737969/how-to-support-multicast-network-in-docker
 
 
 
