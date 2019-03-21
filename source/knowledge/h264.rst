@@ -1,37 +1,42 @@
-=====
-H.264
-=====
+=================
+H.264 video codec
+=================
+
+.. contents:: Table of Contents
+
+
 
 NAL Units (NALU)
 ================
 
 Sources:
+
 - https://en.wikipedia.org/wiki/Network_Abstraction_Layer
 - https://stackoverflow.com/questions/24884827/possible-locations-for-sequence-picture-parameter-sets-for-h-264-stream/24890903#24890903
 
 An H.264 video is organized into Network Abstraction Layer Units ("NAL units" or "NALU") that help transporting it with optimal performance depending on whether the transport is stream-oriented or packet-oriented:
 
-* For stream-oriented transports: the **Byte-Stream Format**. The NAL units are delivered as a continuous stream of bytes, which means that some boundary mechanism will be needed for the receiver to detect when one unit ends and the next one starts. This is done with the typical method of adding a unique byte pattern before each unit: The receiver will scan the incoming stream, searching for this **3-byte start code prefix**, and finding one will mark the beginning of a new unit.
+- For stream-oriented transports: the **Byte-Stream Format**. The NAL units are delivered as a continuous stream of bytes, which means that some boundary mechanism will be needed for the receiver to detect when one unit ends and the next one starts. This is done with the typical method of adding a unique byte pattern before each unit: The receiver will scan the incoming stream, searching for this **3-byte start code prefix**, and finding one will mark the beginning of a new unit.
 
-* For packet-oriented transports: the **Packet-Transport Format**. This is the preferred method for the **Advanced Video Coding (AVC)** standard, and it builds upon the fact that all data is carried in packets that are already framed by the system transport protocol (such as RTP/UDP), so start code prefix patterns are not needed for identification of the boundaries of NAL units.
+- For packet-oriented transports: the **Packet-Transport Format**. This is the preferred method for the **Advanced Video Coding (AVC)** standard, and it builds upon the fact that all data is carried in packets that are already framed by the system transport protocol (such as RTP/UDP), so start code prefix patterns are not needed for identification of the boundaries of NAL units.
 
 The NAL units can contain either actual data video (*VCL units*) or codec metadata (*non-VCL units*). Some of the most important types of NAL units are:
 
-* **Sequence Parameter Set (SPS)**: This non-VCL NALU contains information required to configure the decoder such as profile, level, resolution, frame rate.
-* **Picture Parameter Set (PPS)**: Similar to the SPS, this non-VCL NALU contains information on entropy coding mode, slice groups, motion prediction, quantization parameters (QP), and deblocking filters.
-* **Instantaneous Decoder Refresh (IDR)**: This VCL NALU is a self contained image slice. That is, an IDR can be decoded and displayed without referencing any other NALU save SPS and PPS.
-* **Access Unit Delimiter (AUD)**: An AUD is an optional NALU that can be use to delimit frames in an elementary stream. It is not required (unless otherwise stated by the container/protocol, like TS), and is often not included in order to save space, but it can be useful to finds the start of a frame without having to fully parse each NALU.
+- **Sequence Parameter Set (SPS)**: This non-VCL NALU contains information required to configure the decoder such as profile, level, resolution, frame rate.
+- **Picture Parameter Set (PPS)**: Similar to the SPS, this non-VCL NALU contains information on entropy coding mode, slice groups, motion prediction, quantization parameters (QP), and deblocking filters.
+- **Instantaneous Decoder Refresh (IDR)**: This VCL NALU is a self contained image slice. That is, an IDR can be decoded and displayed without referencing any other NALU save SPS and PPS.
+- **Access Unit Delimiter (AUD)**: An AUD is an optional NALU that can be use to delimit frames in an elementary stream. It is not required (unless otherwise stated by the container/protocol, like TS), and is often not included in order to save space, but it can be useful to finds the start of a frame without having to fully parse each NALU.
 
 
 
 SPS, PPS
 ========
 
-A large number of NAL units are combined to form a single video frame; the metadata of such frame would be transmitted in a **Picture Parameter Set (PPS)**. Likewise, a set of PPS would form an actual video sequence, and the metadata for it would be transmitted in a **Sequence Parameter Set (SPS)**. Both PPS and SPS could be sent well ahead of the actual units that will refer to them; then, each unit will just contain an index pointing to the corresponding parameter set, so the receiver is able to successfully decode the video.
+A large number of NAL units are combined to form a single video frame; the metadata of such frame would be transmitted in a **Picture Parameter Set (PPS)**. Likewise, a set of PPS would form an actual video sequence, and the metadata for it would be transmitted in a **Sequence Parameter Set (SPS)**. Both PPS and SPS can be sent well ahead of the actual units that will refer to them; then, each individual unit will just contain an index pointing to the corresponding parameter set, so the receiver is able to successfully decode the video.
 
 Details about the exact contents of PPS and SPS packets can be found in the specification document for `ISO/IEC 14496-10`_ (also known as *H.264* or *MPEG-4 Part 10, Advanced Video Coding (MPEG-4 AVC)*), sections "*Sequence parameter set data syntax*" and "*Picture parameter set RBSP syntax*".
 
-Parameter sets can be sent in-band with the actual video, or sent out-of-band via some channel which might be more reliable than the transport of the video itself. This second option makes sense for transports where it is possible that some corruption or information loss might happen; losing a *PPS* could prevent decoding of a whole frame, and losing an *SPS* could render a whole chunk of the video impossible to decode, so it is important to transmit these parameter sets via the most reliable channel.
+Parameter sets can be sent in-band with the actual video, or sent out-of-band via some channel which might be more reliable than the transport of the video itself. This second option makes sense for transports where it is possible that some corruption or information loss might happen; losing a *PPS* could prevent decoding of a whole frame, and losing an *SPS* would be worse as it could render a whole chunk of the video impossible to decode, so it is important to transmit these parameter sets via the most reliable channel.
 
 
 
@@ -51,11 +56,11 @@ Whenever using H.264 as the video codec in Kurento, we'll see log messages such 
 
 This describes in detail all aspects of the encoded video; some of them are universal properties of any video (such as the width, height and framerate), while others are highly specific to the H.264 encoding.
 
-* ``stream-format``: Indicates if the H.264 video is stream-oriented (*stream-format* = *byte-stream*) or packet-oriented (*stream-format* = *avc*). For *byte-stream* videos the required parameter sets will be sent in-band with the video, but for *avc* the video metadata is conveyed via an additional *caps* field named ``codec_data``.
+- ``stream-format``: Indicates if the H.264 video is stream-oriented (*stream-format* = *byte-stream*) or packet-oriented (*stream-format* = *avc*). For *byte-stream* videos the required parameter sets will be sent in-band with the video, but for *avc* the video metadata is conveyed via an additional *caps* field named ``codec_data``.
 
-* ``codec_data``: Only present when the video is packet oriented (*stream-format* = *avc*), this value represents an **AVCDecoderConfigurationRecord** struct.
+- ``codec_data``: Only present when the video is packet oriented (*stream-format* = *avc*), this value represents an **AVCDecoderConfigurationRecord** struct.
 
-* Other information such as *level*, *profile*, *width*, *height*, *framerate*, *interlace-mode*, and the various *chroma* and *luma* settings, are just duplicated values that were extracted from the ``codec_data`` by an H.264 parser (namely the **h264parse** GStreamer element). This is also indicated by means of setting the field *parsed=true*.
+- Other information such as *level*, *profile*, *width*, *height*, *framerate*, *interlace-mode*, and the various *chroma* and *luma* settings, are just duplicated values that were extracted from the ``codec_data`` by an H.264 parser (namely the **h264parse** GStreamer element). This is also indicated by means of setting the field *parsed=true*.
 
 
 
@@ -101,22 +106,22 @@ GStreamer passes a *codec_data* field in its *caps* when the H.264 video is usin
        }
    }
 
-* ``AVCProfileIndication``: profile code as defined in `ISO/IEC 14496-10`_. (*profile_idc*)
-* ``profile_compatibility``: byte which occurs between the *profile_idc* and *level_idc* in a sequence parameter set (SPS), as defined in ISO/IEC 14496-10. (*constraint_setx_flag*)
-* ``AVCLevelIndication``: level code as defined in ISO/IEC 14496-10. (*level_idc*)
-* ``lengthSizeMinusOne``: length in bytes of the *NALUnitLength* field in an AVC video sample or AVC parameter set sample of the associated stream minus one. For example, a size of one byte is indicated with a value of 0. The value of this field shall be one of 0, 1, or 3 corresponding to a length encoded with 1, 2, or 4 bytes, respectively.
-* ``numOfSequenceParameterSets``: number of SPSs that are used as the initial set of SPSs for decoding the AVC elementary stream.
-* ``sequenceParameterSetLength``: length in bytes of the SPS NAL unit as defined in ISO/IEC 14496-10.
-* ``sequenceParameterSetNALUnit``: a SPS NAL unit, as specified in ISO/IEC 14496-10. SPSs shall occur in order of ascending parameter set identifier with gaps being allowed.
-* ``numOfPictureParameterSets``: number of picture parameter sets (PPSs) that are used as the initial set of PPSs for decoding the AVC elementary stream.
-* ``pictureParameterSetLength``: length in bytes of the PPS NAL unit as defined in ISO/IEC 14496-10.
-* ``pictureParameterSetNALUnit``: a PPS NAL unit, as specified in ISO/IEC 14496-10. PPSs shall occur in order of ascending parameter set identifier with gaps being allowed.
-* ``chroma_format``: *chroma_format* indicator as defined by the *chroma_format_idc* parameter in ISO/IEC 14496-10.
-* ``bit_depth_luma_minus8``: bit depth of the samples in the Luma arrays. For example, a bit depth of 8 is indicated with a value of zero (bit depth = 8 + *bit_depth_luma_minus8*). The value of this field shall be in the range of 0 to 4, inclusive.
-* ``bit_depth_chroma_minus8``: bit depth of the samples in the Chroma arrays. For example, a bit depth of 8 is indicated with a value of zero (bit depth = 8 + *bit_depth_chroma_minus8*). The value of this field shall be in the range of 0 to 4, inclusive.
-* ``numOfSequenceParameterSetExt``: number of Sequence Parameter Set Extensions that are used for decoding the AVC elementary stream.
-* ``sequenceParameterSetExtLength``: length in bytes of the SPS Extension NAL unit as defined in ISO/IEC 14496-10.
-* ``sequenceParameterSetExtNALUnit``: a SPS Extension NAL unit, as specified in ISO/IEC 14496-10.
+- ``AVCProfileIndication``: profile code as defined in `ISO/IEC 14496-10`_. (*profile_idc*)
+- ``profile_compatibility``: byte which occurs between the *profile_idc* and *level_idc* in a sequence parameter set (SPS), as defined in ISO/IEC 14496-10. (*constraint_setx_flag*)
+- ``AVCLevelIndication``: level code as defined in ISO/IEC 14496-10. (*level_idc*)
+- ``lengthSizeMinusOne``: length in bytes of the *NALUnitLength* field in an AVC video sample or AVC parameter set sample of the associated stream minus one. For example, a size of one byte is indicated with a value of 0. The value of this field shall be one of 0, 1, or 3 corresponding to a length encoded with 1, 2, or 4 bytes, respectively.
+- ``numOfSequenceParameterSets``: number of SPSs that are used as the initial set of SPSs for decoding the AVC elementary stream.
+- ``sequenceParameterSetLength``: length in bytes of the SPS NAL unit as defined in ISO/IEC 14496-10.
+- ``sequenceParameterSetNALUnit``: a SPS NAL unit, as specified in ISO/IEC 14496-10. SPSs shall occur in order of ascending parameter set identifier with gaps being allowed.
+- ``numOfPictureParameterSets``: number of picture parameter sets (PPSs) that are used as the initial set of PPSs for decoding the AVC elementary stream.
+- ``pictureParameterSetLength``: length in bytes of the PPS NAL unit as defined in ISO/IEC 14496-10.
+- ``pictureParameterSetNALUnit``: a PPS NAL unit, as specified in ISO/IEC 14496-10. PPSs shall occur in order of ascending parameter set identifier with gaps being allowed.
+- ``chroma_format``: *chroma_format* indicator as defined by the *chroma_format_idc* parameter in ISO/IEC 14496-10.
+- ``bit_depth_luma_minus8``: bit depth of the samples in the Luma arrays. For example, a bit depth of 8 is indicated with a value of zero (bit depth = 8 + *bit_depth_luma_minus8*). The value of this field shall be in the range of 0 to 4, inclusive.
+- ``bit_depth_chroma_minus8``: bit depth of the samples in the Chroma arrays. For example, a bit depth of 8 is indicated with a value of zero (bit depth = 8 + *bit_depth_chroma_minus8*). The value of this field shall be in the range of 0 to 4, inclusive.
+- ``numOfSequenceParameterSetExt``: number of Sequence Parameter Set Extensions that are used for decoding the AVC elementary stream.
+- ``sequenceParameterSetExtLength``: length in bytes of the SPS Extension NAL unit as defined in ISO/IEC 14496-10.
+- ``sequenceParameterSetExtNALUnit``: a SPS Extension NAL unit, as specified in ISO/IEC 14496-10.
 
 
 
