@@ -59,7 +59,7 @@ media element is connected to itself so that the media it receives (from browser
 
    *Kurento Hello World Media Pipeline in context*
 
-This is a web application, and therefore it follows a client-server architecture. At the client-side, the logic is implemented in **JavaScript**. At the server-side, we use a Spring-Boot based server application consuming the **Kurento Java Client** API, to control **Kurento Media Server** capabilities. All in all, the high level architecture of this demo is three-tier. To communicate these entities, two WebSockets are used:
+This is a web application, and therefore it follows a client-server architecture. At the client-side, the logic is implemented in **JavaScript**. At the server-side, we use a Spring-Boot based application server consuming the **Kurento Java Client** API, to control **Kurento Media Server** capabilities. All in all, the high level architecture of this demo is three-tier. To communicate these entities, two WebSockets are used:
 
 1. A WebSocket is created between client and application server to implement a custom signaling protocol.
 2. Another WebSocket is used to perform the communication between the Kurento Java Client and the Kurento Media Server.

@@ -49,7 +49,7 @@ Understanding this example
 
 To implement this behavior we have to create a :term:`Media Pipeline`, composed of an **RtpEndpoint** and a **WebRtcEndpoint**. The former acts as an RTP receiver, and the later is used to show the video in the demo page.
 
-This is a web application, and therefore it follows a client-server architecture. At the client-side, the logic is implemented in **JavaScript**. At the server-side, we use a Spring-Boot based server application consuming the **Kurento Java Client** API, to control **Kurento Media Server** capabilities. All in all, the high level architecture of this demo is three-tier.
+This is a web application, and therefore it follows a client-server architecture. At the client-side, the logic is implemented in **JavaScript**. At the server-side, we use a Spring-Boot based application server consuming the **Kurento Java Client** API, to control **Kurento Media Server** capabilities. All in all, the high level architecture of this demo is three-tier.
 
 To communicate these entities, two WebSockets channels are used:
 
@@ -80,6 +80,6 @@ This graph shows the class diagram of the Application Server:
 Client-Side Logic
 =================
 
-We use a specific Kurento JavaScript library called **kurento-utils.js** to simplify the WebRTC interaction between browser and server application. This library depends on **adapter.js**, which is a JavaScript WebRTC utility maintained by Google that abstracts away browser differences.
+We use a specific Kurento JavaScript library called **kurento-utils.js** to simplify the WebRTC interaction between browser and application server. This library depends on **adapter.js**, which is a JavaScript WebRTC utility maintained by Google that abstracts away browser differences.
 
 These libraries are linked in the *index.html* page, and are used in the *index.js* file.

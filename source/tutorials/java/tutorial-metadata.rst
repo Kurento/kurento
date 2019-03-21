@@ -65,7 +65,7 @@ there is info about faces, the filter draws the faces into the image.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
-At the server-side, we use a Spring-Boot based server application consuming the
+At the server-side, we use a Spring-Boot based application server consuming the
 **Kurento Java Client** API, to control **Kurento Media Server** capabilities.
 All in all, the high level architecture of this demo is three-tier. To
 communicate these entities, two WebSockets are used. First, a WebSocket is

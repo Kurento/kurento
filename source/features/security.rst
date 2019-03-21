@@ -138,7 +138,7 @@ Configure Javascript applications to use HTTPS
    http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
 
-Securing server applications
+Securing application servers
 ============================
 
 Configure Kurento Media Server to use Secure WebSocket (WSS)
