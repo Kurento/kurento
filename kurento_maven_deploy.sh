@@ -52,7 +52,7 @@ echo "[kurento_maven_deploy] Build and deploy version: $PROJECT_VERSION"
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
     echo "[kurento_maven_deploy] Version to deploy is SNAPSHOT"
-    mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package \
+    mvn --batch-mode -U $PARAM_MAVEN_SETTINGS clean package \
         org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
         -Pdefault -Pdeploy \
         $OPTS \
@@ -66,7 +66,7 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
     if [[ $SIGN_ARTIFACTS == "true" ]]; then
         echo "[kurento_maven_deploy] Artifact signing on deploy is ENABLED"
         # Deploy signing artifacts
-        mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package \
+        mvn --batch-mode -U $PARAM_MAVEN_SETTINGS clean package \
             javadoc:jar source:jar gpg:sign \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
             $OPTS \
@@ -94,10 +94,9 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
     else
         echo "[kurento_maven_deploy] Artifact signing on deploy is DISABLED"
         # Deploy without signing artifacts
-        mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package \
+        mvn --batch-mode -U $PARAM_MAVEN_SETTINGS clean package \
             javadoc:jar source:jar \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
-            -U \
             $OPTS \
             -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || {
                 echo "[kurento_maven_deploy] ERROR: Command failed: mvn deploy (unsigned release)"

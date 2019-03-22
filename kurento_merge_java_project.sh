@@ -106,7 +106,7 @@ kurento_check_version.sh false || {
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
     # Drop the SNAPSHOT suffix
-    mvn versions:set -DgenerateBackupPoms=false \
+    mvn --batch-mode versions:set -DgenerateBackupPoms=false \
         -DremoveSnapshot=true \
         --file "$CFG_VERSION_FILE"
 
@@ -162,7 +162,7 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
     git tag -a -m "$RELEASE_COMMIT_MSG" "$RELEASE_VERSION"
 
     # Bump to next SNAPSHOT version
-    mvn versions:set -DgenerateBackupPoms=false \
+    mvn --batch-mode versions:set -DgenerateBackupPoms=false \
         -DnextSnapshot=true \
         --file "$CFG_VERSION_FILE"
 
