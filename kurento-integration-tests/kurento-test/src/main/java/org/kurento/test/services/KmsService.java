@@ -43,6 +43,7 @@ import static org.kurento.test.config.TestConfiguration.KMS_PASSWD_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_PEM_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_SCOPE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_SCOPE_DOCKER;
+import static org.kurento.test.config.TestConfiguration.KMS_SCOPE_ELASTEST;
 import static org.kurento.test.config.TestConfiguration.KMS_SCOPE_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_SERVER_COMMAND_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_SERVER_COMMAND_PROP;
@@ -131,12 +132,14 @@ public class KmsService extends TestService {
   // FIXME replace with a registration mechanism
   protected static String monitoredDockerContainerName;
 
-  protected String dockerContainerName = "kms";
+  protected String defaultDockerContainerName = "kms";
+  protected String dockerContainerName = defaultDockerContainerName;
   protected SshConnection remoteKmsSshConnection;
   protected Path workspace;
   protected String wsUri;
   protected boolean isKmsRemote;
   protected boolean isKmsDocker;
+  protected boolean isKmsElastest;
   protected boolean isKmsStarted;
   protected String registrarUri;
   protected String registrarLocalAddress = "127.0.0.1";
@@ -195,8 +198,9 @@ public class KmsService extends TestService {
       return;
     }
 
-    isKmsRemote = !wsUri.contains("localhost") && !wsUri.contains("127.0.0.1") && !isKmsDocker;
+    isKmsRemote = !wsUri.contains("localhost") && !wsUri.contains("127.0.0.1") && !isKmsDocker && !isKmsElastest;
     isKmsDocker = KMS_SCOPE_DOCKER.equals(getProperty(kmsScopeProp, kmsScopeDefault));
+    isKmsElastest = KMS_SCOPE_ELASTEST.equals(getProperty(kmsScopeProp, kmsScopeDefault));
 
     // Assertion: if KMS remote, credentials should be available
     String kmsLogin = getProperty(kmsLoginProp);
@@ -217,10 +221,10 @@ public class KmsService extends TestService {
       throw new KurentoException("KMS cannot be started in URI: " + wsUri + ". Port is not free");
     }
 
-    if (isKmsDocker) {
-      log.debug("Starting KMS dockerized");
+    if (isKmsDocker || isKmsElastest) {
+      log.debug("Starting KMS dockerized" + (isKmsElastest ? "from ElasTest" : ""));
       Docker dockerClient = Docker.getSingleton();
-      if (dockerClient.isRunningInContainer()) {
+      if (dockerClient.isRunningInContainer() && !isKmsElastest) {
         setDockerContainerName(dockerClient.getContainerName() + getDockerContainerNameSuffix()
             + "-" + KurentoTest.getTestClassName() + "-" + +new Random().nextInt(3000));
       }
@@ -384,9 +388,11 @@ public class KmsService extends TestService {
       remoteKmsSshConnection.runAndWaitCommand("sh", "-c", kmsLogPath + "kurento.sh > /dev/null");
       log.debug("Remote KMS started in URI {}", wsUri);
 
-    } else if (isKmsDocker) {
+    } else if (isKmsDocker || isKmsElastest) {
+        if(isKmsElastest) {
+            dockerContainerName = System.getenv("ET_SUT_CONTAINER_NAME") + "_" + defaultDockerContainerName;
+        }
       startDockerizedKms();
-
     } else {
       Shell.run("sh", "-c", kmsLogPath + "kurento.sh");
       log.debug("Local KMS started in URI {}", wsUri);
@@ -534,6 +540,11 @@ public class KmsService extends TestService {
 
     if (dockerClient.isRunningInContainer()) {
       createContainerCmd.withVolumesFrom(new VolumesFrom(dockerClient.getContainerId()));
+      if(isKmsElastest) {
+          String elastestNetwork = dockerClient.getContainerFirstNetworkName();
+          log.debug("Using Elastest network: {}", elastestNetwork);
+          createContainerCmd.withNetworkMode(elastestNetwork);
+      }
     } else {
       String testFilesPath = KurentoTest.getTestFilesDiskPath();
       Volume volume = new Volume(testFilesPath);
@@ -666,8 +677,11 @@ public class KmsService extends TestService {
   }
 
   public void stopKms() {
-    if (isKmsDocker) {
+    if (isKmsDocker || isKmsElastest) {
       Docker.getSingleton().stopContainer(dockerContainerName, false);
+      if(isKmsElastest) {
+          Docker.getSingleton().removeContainer(dockerContainerName);
+      }
 
     } else {
       killKmsProcesses();
