@@ -632,10 +632,13 @@ class JsonPropsAdapter implements JsonDeserializer<Props>, JsonSerializer<Props>
       double value = number.doubleValue();
       if ((int) value == value) {
         return Integer.valueOf((int) value);
+      } else if ((long) value == value) {
+        return Long.valueOf((long) value);
+      } else if ((float) value == value) {
+        return Float.valueOf((float) value);
+      } else {
+        return Double.valueOf((double) value);
       }
-
-      return Float.valueOf((float) value);
-
     } else if (primitive.isString()) {
       return primitive.getAsString();
     } else {
