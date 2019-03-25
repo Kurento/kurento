@@ -424,10 +424,19 @@ public class ParamsFlattener {
   }
 
   private boolean isPrimitiveClass(Class<?> clazz) {
-    return clazz == String.class || clazz == Boolean.class || clazz == Float.class
-        || clazz == Integer.class || clazz == boolean.class || clazz == float.class
-        || clazz == int.class || clazz == void.class || clazz == Void.class || clazz == double.class
-        || clazz == Double.class || clazz == long.class || clazz == Long.class;
+    return clazz == String.class
+        || clazz == Void.class
+        || clazz == void.class
+        || clazz == Boolean.class
+        || clazz == boolean.class
+        || clazz == Integer.class
+        || clazz == int.class
+        || clazz == Long.class
+        || clazz == long.class
+        || clazz == Float.class
+        || clazz == float.class
+        || clazz == Double.class
+        || clazz == double.class;
   }
 
   private Object unflattedComplexType(Class<?> clazz, Props props, ObjectRefsManager manager) {
@@ -549,20 +558,20 @@ public class ParamsFlattener {
   }
 
   public RomType getRomType(Type type) {
-    if (type == Void.class || type == void.class) {
+    if (type == String.class) {
+      return RomType.STRING;
+    } else if (type == Void.class || type == void.class) {
       return RomType.VOID;
-    } else if (type == Integer.class || type == int.class) {
-      return RomType.INTEGER;
-    } else if (type == Float.class || type == float.class) {
-      return RomType.FLOAT;
-    } else if (type == Long.class || type == long.class) {
-      return RomType.LONG;
-    } else if (type == Double.class || type == double.class) {
-      return RomType.DOUBLE;
     } else if (type == Boolean.class || type == boolean.class) {
       return RomType.BOOLEAN;
-    } else if (type == String.class) {
-      return RomType.STRING;
+    } else if (type == Integer.class || type == int.class) {
+      return RomType.INTEGER;
+    } else if (type == Long.class || type == long.class) {
+      return RomType.LONG;
+    } else if (type == Float.class || type == float.class) {
+      return RomType.FLOAT;
+    } else if (type == Double.class || type == double.class) {
+      return RomType.DOUBLE;
     } else if (isEnum(type)) {
       return RomType.CT_ENUM;
     } else if (isComplexTypeRegister(type)) {
