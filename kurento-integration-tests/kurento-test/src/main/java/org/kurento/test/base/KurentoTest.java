@@ -57,7 +57,10 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
@@ -91,6 +94,9 @@ public class KurentoTest {
   @Rule
   public KurentoTestWatcher watcher = new KurentoTestWatcher();
 
+  @Rule
+  public TestName name = new TestName();
+  
   @Parameter
   public TestScenario testScenario;
 
@@ -177,6 +183,18 @@ public class KurentoTest {
     }
   }
 
+  
+  @Before
+  public void logStart() {
+      log.info("##### Start test: " + name.getMethodName());
+  }
+
+  @After
+  public void logEnd() {
+      log.info("##### Finish test: " + name.getMethodName());
+  }
+
+  
   // @Before
   // public void setupKurentoTest() {
   // logMessage("| TEST STARTING: " + getTestClassName() + "."
