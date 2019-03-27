@@ -27,7 +27,7 @@ This is an overview of the tools and technologies used by KMS:
 
 .. _dev-code-repos:
 
-Code Repositories
+Code repositories
 =================
 
 Kurento source code is stored in several GitHub repositories at https://github.com/Kurento. Each one of these repositories has a specific purpose and usually contains the code required to build a shared library of the same name.
@@ -38,9 +38,9 @@ An overview of the relationships between all repos forming the Kurento Media Ser
    :align: center
    :caption: All dependency relationships
 
-As the dependency graph is not strictly linear, there are multiple possible ways to order all modules into a linear dependency list; this section provides one possible order, which will be consistently used through all Kurento documents.
+As the dependency graph is not strictly linear, there are multiple possible ways to order all modules into a linear dependency list; this section provides one possible ordered list, which will be consistently used through all Kurento documents.
 
-**Fork Repositories**:
+**Fork repositories**:
 
 KMS depends on several open source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries.
 
@@ -57,7 +57,7 @@ KMS depends on several open source libraries, the main one being GStreamer. Some
 - `openwebrtc-gst-plugins <https://github.com/Kurento/openwebrtc-gst-plugins>`__
 - `libnice <https://github.com/Kurento/libnice>`__ (produces gstreamer1.0-nice, gstreamer1.5-nice)
 
-**Main Repositories**
+**Main repositories**
 
 - `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
 - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
@@ -67,7 +67,7 @@ KMS depends on several open source libraries, the main one being GStreamer. Some
 - `kms-filters <https://github.com/Kurento/kms-filters>`__: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
 - `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__: Contains the main entry point of KMS. That is, the main() function for the server executable code. This program depends on libraries located in the above repositories. It has mainly C++ code.
 
-**Extra Repositories**
+**Extra repositories**
 
 KMS is distributed with some basic GStreamer pipeline elements, but other elements are available in form of modules.
 These modules are *demos* of what third party modules could be written and integrated into Kurento. These are just for instructional purposes, and shouldn't be used in production servers.
@@ -77,13 +77,13 @@ These modules are *demos* of what third party modules could be written and integ
 - `kms-platedetector <https://github.com/Kurento/kms-platedetector>`__
 - `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`__
 
-**Omni-Build Repository**
+**Omni-Build repository**
 
-This repository is an special project because it is designed to build all KMS Main Repositories from a single entry point. This repo brings the other KMS Main Repositories as Git submodules: it makes KMS development easier because if you build this project, you don’t need to manually install the libraries of the other KMS Main Repositories. However, all other development and support libraries must still be installed manually.
+This repository is an special project because it is designed to build all KMS Main repositories from a single entry point. This repo brings the other KMS Main repositories as Git submodules: it makes KMS development easier because if you build this project, you don’t need to manually install the libraries of the other KMS Main repositories. However, all other development and support libraries must still be installed manually.
 
 - `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__
 
-**Client Repositories**
+**Client repositories**
 
 Application Servers can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their support tools made available in their respective repositories.
 
@@ -101,7 +101,7 @@ There are several repositories that contain sample code for developers that use 
 - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
 - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
 
-A KMS developer must know how to work with KMS Fork and Main Repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at theK MS Main Repositories, while it's unusual to make changes in Fork Repositories except for updating their upstream versions.
+A KMS developer must know how to work with KMS Fork and Main repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at theK MS Main repositories, while it's unusual to make changes in Fork repositories except for updating their upstream versions.
 
 
 
@@ -456,7 +456,7 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
 
 1. (**Optional**) Make sure the system is in a clean state. The section :ref:`dev-clean` explains how to do this.
 
-2. (**Optional**) Add Kurento Packages Repository. The section about :ref:`Dependency resolution <dev-depresolution>` explains what is the effect of adding the repo, and the section :ref:`dev-repository` explains how to do this.
+2. (**Optional**) Add Kurento Packages repository. The section about :ref:`Dependency resolution <dev-depresolution>` explains what is the effect of adding the repo, and the section :ref:`dev-repository` explains how to do this.
 
 3. Install system tools and Python modules. Run:
 
@@ -523,11 +523,11 @@ Dependency resolution: to repo or not to repo
 
 The script *compile_project.py* is able to resolve all dependencies for any given module. For each dependency, the following process will happen:
 
-1. If the dependency is already available to ``apt-get`` from the Kurento Packages Repository, it will get downloaded and installed. This means that the dependency will not get built locally.
+1. If the dependency is already available to ``apt-get`` from the Kurento Packages repository, it will get downloaded and installed. This means that the dependency will not get built locally.
 
 2. If the dependency is not available to ``apt-get``, its corresponding project will be cloned from the Git repo, built, and packaged itself. This triggers a recursive call to *compile_project.py*, which in turn will try to satisfy all the dependencies corresponding to that sub-project.
 
-It is very important to keep in mind the dependency resolution mechanism that happens in the Python script, because it can affect which packages get built in the development machine. **If the Kurento Packages Repository has been configured for ``apt-get``, then all dependencies for a given module will be downloaded and installed from the repo, instead of being built**. On the other hand, if the Kurento repo has not been configured, then all dependencies will be built from source.
+It is very important to keep in mind the dependency resolution mechanism that happens in the Python script, because it can affect which packages get built in the development machine. **If the Kurento Packages repository has been configured for ``apt-get``, then all dependencies for a given module will be downloaded and installed from the repo, instead of being built**. On the other hand, if the Kurento repo has not been configured, then all dependencies will be built from source.
 
 This can have a very big impact on the amount of modules that need to be built to satisfy the dependencies of a given project. The most prominent example is **kurento-media-server**: it basically depends on *everything* else. If the Kurento repo is available to ``apt-get``, then all of KMS libraries will be downloaded and installed. If the repo is not available, then all source code of KMS will get downloaded and built, including the whole GStreamer libraries and other forked libraries.
 
