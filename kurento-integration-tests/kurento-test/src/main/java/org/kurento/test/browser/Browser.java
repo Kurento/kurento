@@ -415,11 +415,14 @@ public class Browser implements Closeable {
       driver = getDockerManager().createDockerDriver(id, capabilities);
     } else if (scope == BrowserScope.ELASTEST) {
       String eusURL = System.getenv("ET_EUS_API");
-      capabilities.setCapability("testName",  KurentoTest.getTestMethodName());
-      driver = new RemoteWebDriver(new URL(eusURL), capabilities);
-      capabilities.setCapability("live", true);
-      capabilities.setCapability("elastestTimeout", 0);
-      driver = new RemoteWebDriver(new URL("http://172.18.0.5:8091/eus/v1/"), capabilities);
+      try {
+        capabilities.setCapability("testName", KurentoTest.getTestMethodName());
+        driver = new RemoteWebDriver(new URL(eusURL), capabilities);
+      } catch (MalformedURLException e) {
+        String errMessage = "ElasTest EUS API URL is Null";
+        log.error(errMessage);
+        throw new KurentoException(errMessage);
+      }
     } else {
       driver = newWebDriver(options);
     }
