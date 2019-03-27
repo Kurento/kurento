@@ -274,7 +274,6 @@ Run:
    mkdir build-$TYPE
    cd build-$TYPE
    cmake -DCMAKE_BUILD_TYPE=$TYPE ..
-   make
 
 .. code-block:: text
 
@@ -294,11 +293,17 @@ It is also possible to enable GCC's AddressSanitizer or ThreadSanitizer with the
 .. code-block:: text
 
    -DENABLE_ANALYZER_ASAN=ON  # Enable the AddressSanitizer (aka ASan) memory error detector. Implies ``CMAKE_BUILD_TYPE=Release``.
+
    -DSANITIZE_ADDRESS=ON
+   -DSANITIZE_MEMORY=ON
    -DSANITIZE_THREAD=ON
+   -DSANITIZE_UNDEFINED=ON
    -DSANITIZE_LINK_STATIC=ON
 
 [TODO: integration with these tools is not really finished]
+
+ASan: Launch with
+LD_PRELOAD=/usr/lib/gcc/x86_64-linux-gnu/5/libasan.so kurento-media-server
 
 Verbose mode can be enabled too:
 
