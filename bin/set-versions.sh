@@ -17,6 +17,22 @@
 #/   <Version> should be in a format compatible with Semantic Versioning,
 #/   such as "1.2.3" or, in general terms, "<Major>.<Minor>.<Patch>".
 #/
+#/ --debian <DebianVersion>
+#/
+#/   Debian version used for packaging. This gets appended to the base version
+#/   in the Debian control file, ./debian/changelog
+#/
+#/   Check the Debian Policy for the syntax of this field:
+#/      https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
+#/
+#/   For Kurento packages, <DebianVersion> should be like "1kurento1":
+#/   - The first "1" indicates upstream package version, typically 1.
+#/   - The second "1" indicates the package revision from Kurento. If the same
+#/     version of some software is repackaged, this should be incremented, e.g.
+#/     "1kurento2".
+#/
+#/   Optional. Default: "1kurento1".
+#/
 #/ --release
 #/
 #/   Use version numbers intended for Release builds, such as "1.2.3".
@@ -53,14 +69,25 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 # Parse call arguments
 # --------------------
 
+CFG_VERSION_DEFAULT="0.0.0"
+CFG_VERSION="$CFG_VERSION_DEFAULT"
+CFG_DEBIAN="1kurento1"
 CFG_RELEASE="false"
 CFG_COMMIT="false"
 CFG_TAG="false"
-CFG_VERSION_DEFAULT="0.0.0"
-CFG_VERSION="$CFG_VERSION_DEFAULT"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
+        --debian)
+            if [[ -n "${2-}" ]]; then
+                CFG_DEBIAN="$2"
+                shift
+            else
+                log "ERROR: --debian expects <DebianVersion>"
+                log "Run with '--help' to read usage details"
+                exit 1
+            fi
+            ;;
         --release)
             CFG_RELEASE="true"
             ;;
@@ -94,10 +121,26 @@ if [[ "$CFG_VERSION" == "$CFG_VERSION_DEFAULT" ]]; then
     exit 1
 fi
 
+log "CFG_VERSION=${CFG_VERSION}"
+log "CFG_DEBIAN=${CFG_DEBIAN}"
 log "CFG_RELEASE=${CFG_RELEASE}"
 log "CFG_COMMIT=${CFG_COMMIT}"
 log "CFG_TAG=${CFG_TAG}"
-log "CFG_VERSION=${CFG_VERSION}"
+
+
+
+# Init internal variables
+# -----------------------
+
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    COMMIT_MSG="Prepare release $CFG_VERSION"
+    SUFFIX_C=""
+    SUFFIX_JAVA=""
+else
+    COMMIT_MSG="Prepare for next development iteration"
+    SUFFIX_C="-dev"
+    SUFFIX_JAVA="-SNAPSHOT"
+fi
 
 
 
@@ -105,15 +148,24 @@ log "CFG_VERSION=${CFG_VERSION}"
 # ----------------
 
 update_changelog() {
+    local PACKAGE_VERSION="${CFG_VERSION}-${CFG_DEBIAN}"
+
+    local SNAPSHOT_ENTRY="* UNRELEASED"
+    local RELEASE_ENTRY="* $COMMIT_MSG"
+
     if [[ "$CFG_RELEASE" == "true" ]]; then
         # First appearance of 'UNRELEASED': Put our commit message
-        sed --in-place --expression="s|* UNRELEASED|* ${COMMIT_MSG}|" \
+        sed --in-place --expression="0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
+            ./debian/changelog
+
+        # Remaining appearances of 'UNRELEASED': Delete line
+        sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
             ./debian/changelog
 
         gbp dch \
             --ignore-branch \
             --git-author \
-            --new-version="$CFG_VERSION" \
+            --new-version="$PACKAGE_VERSION" \
             --spawn-editor=never \
             \
             --release \
@@ -121,15 +173,11 @@ update_changelog() {
             --force-distribution \
             \
             ./debian/
-
-        # Remaining appearances of 'UNRELEASED': Delete line
-        sed --in-place --expression="/* UNRELEASED/d" \
-            ./debian/changelog
     else
         gbp dch \
             --ignore-branch \
             --git-author \
-            --new-version="$CFG_VERSION" \
+            --new-version="$PACKAGE_VERSION" \
             --spawn-editor=never \
             ./debian/
     fi
@@ -153,18 +201,6 @@ commit_and_tag() {
 
 # Apply versions
 # --------------
-
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    COMMIT_MSG="Prepare release $CFG_VERSION"
-    SUFFIX_C=""
-    SUFFIX_JAVA=""
-else
-    COMMIT_MSG="Prepare for next development iteration"
-    SUFFIX_C="-dev"
-    SUFFIX_JAVA="-SNAPSHOT"
-fi
-
-
 
 pushd kurento-module-creator
 sed --in-place --expression="
