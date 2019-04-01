@@ -416,7 +416,10 @@ public class Browser implements Closeable {
     } else if (scope == BrowserScope.ELASTEST) {
       String eusURL = System.getenv("ET_EUS_API");
       try {
-        capabilities.setCapability("testName", KurentoTest.getTestMethodName());
+        String testNameCap = KurentoTest.getTestMethodName()
+            + (id != null && !id.isEmpty() ? "_" + id : "");
+
+        capabilities.setCapability("testName", testNameCap);
         driver = new RemoteWebDriver(new URL(eusURL), capabilities);
       } catch (MalformedURLException e) {
         String errMessage = "ElasTest EUS API URL is Null";
