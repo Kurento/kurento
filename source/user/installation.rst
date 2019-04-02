@@ -10,7 +10,7 @@ Installation Guide
 
 - A local installation with ``apt-get install``, in any Ubuntu machine. This method allows to have total control of the installation process. Besides installing KMS, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT` firewall.
 
-If you want to try pre-release builds of KMS, then head to the section :doc:`/user/installation_dev`.
+If you want to try nightly builds of KMS, then head to the section :doc:`/user/installation_dev`.
 
 
 
@@ -60,7 +60,7 @@ Follow these steps to use it:
 Docker image
 ============
 
-Kurento's Docker Hub contains images built from each KMS Release. Just head to the `kurento-media-server image page <https://hub.docker.com/r/kurento/kurento-media-server/>`__, and follow the instructions you'll find there.
+Kurento's Docker Hub contains images built from each KMS release. Just head to the `kurento-media-server Docker Hub page <https://hub.docker.com/r/kurento/kurento-media-server>`__, and follow the instructions you'll find there.
 
 
 

@@ -7,17 +7,29 @@ Some components of KMS are built nightly, with the code developed during that sa
 These builds end up being uploaded to *Development* repositories so they can be installed by anyone. Use these if you want to develop *Kurento itself*, or if you want to try the latest changes before they are officially released.
 
 .. warning::
+
    Nightly builds always represent the current state on the software development; 99% of the time this is stable code, very close to what will end up being released.
 
    However, it's also possible (although unlikely) that these builds might include undocumented changes, regressions, bugs or deprecations. It's safer to be conservative and avoid using nightly builds in a production environment, unless you have a strong reason to do it.
 
 .. note::
+
    If you are looking to build KMS from the source code, then you should check the section aimed at development of *KMS itself*: :ref:`dev-sources`.
 
 
 
 Kurento Media Server
 ====================
+
+Docker image
+------------
+
+Kurento's Docker Hub contains images built from each KMS nightly version. These work exactly the same as :ref:`Kurento Docker release images <installation-docker>`, but you need to use the `kurento-media-server-dev image <https://hub.docker.com/r/kurento/kurento-media-server-dev>`__ instead.
+
+
+
+Local Installation
+------------------
 
 The steps to install a nightly version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
