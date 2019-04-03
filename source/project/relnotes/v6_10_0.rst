@@ -9,7 +9,7 @@ Kurento Media Server **6.10** is seeing the light with some important news!
 Hello Ubuntu Bionic
 ===================
 
-Preliminary support for **`Ubuntu 18.04 LTS (Bionic Beaver) <http://releases.ubuntu.com/18.04/>`__** has landed in Kurento, and all the CI machinery is already prepared to compile and generate Debian packages into a new repository.
+Preliminary support for `Ubuntu 18.04 LTS (Bionic Beaver) <http://releases.ubuntu.com/18.04/>`__ has landed in Kurento, and all the CI machinery is already prepared to compile and generate Debian packages into a new repository.
 
 To install KMS on this version of Ubuntu, just follow the usual :doc:`installation instructions </user/installation>`:
 
@@ -59,7 +59,7 @@ These are some of the objectives that we'd like to approach:
 
 - Using standard tools to create Ubuntu packages.
 
-  We're dropping the custom `compile_project.py <https://github.com/Kurento/adm-scripts/blob/master/kms/compile_project.py>`__ tool and instead will be pushing the use of `**git-buildpackage** <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__. Our newer `kurento-buildpackage.sh <https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh>`__ uses *git-buildpackage* for the actual creation of Debian packages from Git repositories.
+  We're dropping the custom `compile_project.py <https://github.com/Kurento/adm-scripts/blob/master/kms/compile_project.py>`__ tool and instead will be pushing the use of `git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__. Our newer `kurento-buildpackage.sh <https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh>`__ uses *git-buildpackage* for the actual creation of Debian packages from Git repositories.
 
 - Dropping as many forks as possible. As shown in :ref:`dev-code-repos`, Kurento uses a good number of forked libraries that are packaged and distributed as part of the usual releases, via the Kurento package repositories.
 
@@ -80,7 +80,7 @@ Clearer Transcoding log messages
 
 Codec transcoding is always a controversial feature, because it is *needed* for some cases which cannot be resolver in any other way, but it is *undesired* because it will consume a lot of CPU power.
 
-All debug log messages related to transcoding have been reviewed to make them as clear as possible, and the section :doc:`</user/troubleshooting>` has been updated accordingly.
+All debug log messages related to transcoding have been reviewed to make them as clear as possible, and the section :doc:`/user/troubleshooting` has been updated accordingly.
 
 If you see that transcoding is active at some point, you may get a bit more information about why, by enabling this line:
 
@@ -119,7 +119,7 @@ It's now possible, thanks to a user contribution, to configure the RecorderEndpo
 
 This has big implications for the robustness of the recording, because with the MP4 container format it was possible to lose the whole file if the recorder process crashed for any reason. MP4 stores its metadata only at the end of the file, so if the file gets truncated it means that it won't be playable. Matroska improves the situation here, and a truncated file will still be readable.
 
-For more information about the issues of the MP4 container, have a look a then new knowledge section: :doc:`</knowledge/h264>`.
+For more information about the issues of the MP4 container, have a look a then new knowledge section: :doc:`/knowledge/h264`.
 
 
 
@@ -187,13 +187,11 @@ A great community is a key part of what makes any open source project special. F
 
 Additionally, special thanks to these awesome community members for their contributions:
 
-- [@prlanzarin](https://github.com/prlanzarin) (Paulo Lanzarin)
-  - Add API support for MKV profile for recordings [Kurento/kms-core#14](https://github.com/Kurento/kms-core/pull/14), [Kurento/kms-elements#13](https://github.com/Kurento/kms-elements/pull/13)
-  - Fixed config-interval prop type checking in basertpendpoint and rtppaytreebin [Kurento/kms-core#15](https://github.com/Kurento/kms-core/pull/15)
+- `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for:
 
+  - *Add API support for MKV profile for recordings* `Kurento/kms-core#14 <https://github.com/Kurento/kms-core/pull/14>`__, `Kurento/kms-elements#13 <https://github.com/Kurento/kms-elements/pull/13>`__.
+  - *Fixed config-interval prop type checking in basertpendpoint and rtppaytreebin* `Kurento/kms-core#15 <https://github.com/Kurento/kms-core/pull/15>`__ and `@leetal <https://github.com/leetal>`__ (Alexander Widerberg) for reporting `#321 <https://github.com/Kurento/bugtracker/issues/321>`__.
 
+- `@tioperez <https://github.com/tioperez>`__ (Luis Alfredo Perez Medina) for reporting `#349 <https://github.com/Kurento/bugtracker/issues/349>`__ and sharing his results with RTSP and Docker.
 
-
-
-TRANSCODING ACTIVE
-the troubleshooting page has been updated with the new messages.
+- `@goroya <https://github.com/goroya>`__ for `Kurento/kurento-media-server#10 <https://github.com/Kurento/kurento-media-server/pull/10>`__.
