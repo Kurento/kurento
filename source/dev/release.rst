@@ -14,21 +14,46 @@ Introduction
 Kurento as a project spans across a multitude of different technologies and languages, each of them with their sets of conventions and *best practices*. This document aims to summarize all release procedures that apply to each one of the modules that compose the Kurento project. The main form of categorization is by technology type: C/C++ based modules, Java modules, JavaScript modules, and others.
 
 
+.. _dev-release-general:
+
 General considerations
 ======================
 
-- Kurento components to be released must use development version numbers:
+- Lists of projects in this document are sorted according to the repository lists given in :ref:`dev-code-repos`.
+
+- Kurento projects to be released have supposedly been under development, and will have development version numbers:
 
   - In Java (Maven) projects, development versions are indicated by the suffix ``-SNAPSHOT`` after the version number. Example: ``6.7.0-SNAPSHOT``.
   - In C/C++ (CMake) projects, development versions are indicated by the suffix ``-dev`` after the version number. Example: ``6.7.0-dev``.
 
+  These suffixes must be removed for release, and then recovered again to resume development.
+
 - All dependencies to development versions will be changed to a release version during the release procedure. Concerning people will be asked to choose an appropriate release version for each development dependency.
 
-- Tags will be named with the version number of the release. Example: ``6.7.0``.
+- Tags are named with the version number of the release. Example: ``6.7.0``.
 
-- Kurento uses Semantic Versioning. Please refer to www.semver.org for more information.
+- Contrary to the project version, the Debian package versions don't contain development suffixes, and should always be of the form ``1.2.3-0kurento1``:
 
-- Lists of projects in this document are sorted according to the repository lists given in :ref:`dev-code-repos`.
+  - The first part (*1.2.3*) is the project's **base version number**.
+  - The second part (*0kurento1*) is the **Debian package revision**. The first number (*0*) means that the package only exists in Kurento (not in Debian or Ubuntu); this is typically the case for the projects forked by Kurento. The rest (*kurento1*) means that this is the *1st* package released by Kurento for the corresponding base version.
+
+  Please check the `Debian Policy Manual`_ and `this Ask Ubuntu answer`_ for more information about the package versions.
+
+  .. note::
+
+     Most Kurento fork packages have a *Debian package revision* that starts with *1* instead of *0*. This was due to a mistake, but changing it back to 0 would cause more problems than solutions so we're maintaining those until the projects get updated to a newer base version.
+
+- Kurento uses `Semantic Versioning`_. Whenever you need to decide what is going to be the *definitive release version* for a new release, try to follow the SemVer guidelines:
+
+  .. code-block:: text
+
+     Given a version number MAJOR.MINOR.PATCH, increment the:
+
+     1. MAJOR version when you make incompatible API changes,
+     2. MINOR version when you add functionality in a backwards-compatible manner, and
+     3. PATCH version when you make backwards-compatible bug fixes.
+
+  Please refer to https://semver.org/ for more information.
 
 
 
@@ -62,7 +87,50 @@ For each project above:
 2. Push a new tag to Git.
 3. Move to next development version.
 
-[TODO: Fill with information for each one of the forked projects]
+
+
+Release steps
+-------------
+
+#. Set the Debian package version, commit the results, and create a tag:
+
+   .. code-block:: bash
+
+      cd gst-plugins-bad
+
+      # Edit these
+      NEW_VERSION="0.1.15"
+      NEW_DEBIAN="1kurento3"
+
+      PACKAGE_VERSION="${NEW_VERSION}-${NEW_DEBIAN}"
+      COMMIT_MSG="Prepare release $PACKAGE_VERSION"
+
+      gbp dch \
+          --ignore-branch \
+          --git-author \
+          --spawn-editor=never \
+          --new-version="$PACKAGE_VERSION" \
+          ./debian/
+
+      SNAPSHOT_ENTRY="* UNRELEASED"
+      RELEASE_ENTRY="* $COMMIT_MSG"
+
+      # First appearance of 'UNRELEASED': Put our commit message
+      sed --in-place --expression="0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
+          ./debian/changelog
+
+      # Remaining appearances of 'UNRELEASED' (if any): Delete line
+      sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
+          ./debian/changelog
+
+      git add debian/changelog
+      git commit -m "$COMMIT_MSG"
+      git tag -a -m "$COMMIT_MSG" "$PACKAGE_VERSION"
+      git push --follow-tags
+
+#. Start the `KMS CI build job`_ with the ``JOB_RELEASE`` parameter **ENABLED**.
+
+#. Wait until all packages get created and published correctly. Fix any issues that appear.
 
 
 
@@ -152,6 +220,8 @@ Release steps
 
       git log "$(git describe --tags --abbrev=0)"..HEAD --oneline
 
+#. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
+
 #. Set the definitive release version in all projects. Use the script `kms-omni-build/bin/set-versions.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/set-versions.sh>`__ to set version numbers, commit the results, and create a tag:
 
    .. code-block:: bash
@@ -162,7 +232,7 @@ Release steps
 
    **Example**
 
-   If the last Kurento release was **6.9.0** (with e.g. Debian package version *6.9.0-1kurento3*, because it had been repackaged 3 times) then after release the project versions should have been left as **6.9.1-dev** (or *6.9.1-SNAPSHOT* for Java components).
+   If the last Kurento release was **6.9.0** (with e.g. Debian package version *6.9.0-0kurento3*, because it had been repackaged 3 times) then after release the project versions should have been left as **6.9.1-dev** (or *6.9.1-SNAPSHOT* for Java components).
 
    If the next release of Kurento only includes patches, then the next version number *6.9.1* is already good. However, maybe our release includes new functionality, which according to Semantic Versioning should be accompanied with a bump in the *minor* version number, so the next release version number should be *6.10.0*.
 
@@ -171,12 +241,12 @@ Release steps
    .. code-block:: bash
 
       cd kms-omni-build
-      ./bin/set-versions.sh 6.10.0 --debian 1kurento1 \
+      ./bin/set-versions.sh 6.10.0 --debian 0kurento1 \
           --release --commit --tag
 
-   The result is that now all project versions are **6.10.0** and all Debian package versions will be **6.10.0-1kurento1**. All changes have been committed, and the tag ``6.10.0`` has been created.
+   The result is that now all project versions are **6.10.0** and all Debian package versions will be **6.10.0-0kurento1**. All changes have been committed, and the tag ``6.10.0`` has been created.
 
-   If you are repackaging an already released version (for example, because maybe after release you found out that the packages fail to install) then just increment the Debian package version: *1kurento2*.
+   If you are repackaging an already released version (for example, because maybe after release you found out that the packages fail to install) then just increment the Debian package version: *0kurento2*.
 
 #. Push the changes to all remote repositories.
 
@@ -228,8 +298,25 @@ Release steps
    .. code-block:: bash
 
       cd kms-omni-build
-      ./bin/set-versions.sh 6.10.1 --debian 1kurento1 \
+      ./bin/set-versions.sh 6.10.1 --debian 0kurento1 \
           --commit
+
+
+
+Closing: kms-omni-build
+-----------------------
+
+As part of the release, update the submodule references of this repo, and create a tag just like in all the other repos:
+
+TODO: test and then write here
+
+git clone git@github.com:Kurento/kms-omni-build.git  omni-build
+cd omni-build
+
+git submodule update --init --recursive
+git submodule update --remote
+git submodule foreach 'git checkout master'
+
 
 
 
@@ -502,6 +589,9 @@ For this reason, the documentation must be built only after all the other module
 
 .. External links
 
+.. _Debian Policy Manual: https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
+.. _this Ask Ubuntu answer: https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names/620539#620539
+.. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
 .. _KMS CI build job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
 .. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
 .. _Kurento Docker Hub: https://hub.docker.com/u/kurento/
