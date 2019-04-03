@@ -128,7 +128,7 @@ New JSON settings parser
 
 Kurento uses the JSON parser that comes with the Boost C++ library; this parser accepted comments in JSON files, so we could comment out some lines when needed. The most common example of this was to force using only VP8 or H.264 video codecs in the Kurento settings file, ``/etc/kurento/modules/kurento/SdpEndpoint.conf.json``:
 
-.. code-block:: json
+.. code-block:: json-object
 
    "videoCodecs" : [
      {
@@ -141,7 +141,7 @@ Kurento uses the JSON parser that comes with the Boost C++ library; this parser 
 
 This is the default form of the mentioned file, allowing Kurento to use either VP8 or H.264, as needed. To disable VP8, this would change as follows:
 
-.. code-block:: json
+.. code-block:: json-object
 
    "videoCodecs" : [
    //  {
@@ -158,7 +158,7 @@ However, starting from `Boost version 1.59.0 <https://www.boost.org/users/histor
 
 The devised workaround has been to allow inline comment characters inside the JSON attribute fields, so the former comment can now be done like this:
 
-.. code-block:: json
+.. code-block:: json-object
 
    "videoCodecs": [
        { "//name": "VP8/90000" },
