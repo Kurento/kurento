@@ -104,20 +104,24 @@ kurento_check_version.sh false || {
 # Release
 # -------
 
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    # Drop the SNAPSHOT suffix
-    mvn --batch-mode versions:set -DgenerateBackupPoms=false \
-        -DremoveSnapshot=true \
-        --file "$CFG_VERSION_FILE"
+# TODO FIXME This won't work for all Java projects!
+# The commands for tutorial are different...
+# Review: Maybe it's better to do locally
 
-    # Release data
-    RELEASE_VERSION="$(kurento_get_version.sh)"
-    RELEASE_COMMIT_MSG="Prepare release $RELEASE_VERSION"
-
-    # Commit version change
-    git ls-files --modified | grep 'pom.xml' | xargs -r git add
-    git commit -m "$RELEASE_COMMIT_MSG"
-fi
+# if [[ "$CFG_RELEASE" == "true" ]]; then
+#     # Drop the SNAPSHOT suffix
+#     mvn --batch-mode versions:set -DgenerateBackupPoms=false \
+#         -DremoveSnapshot=true \
+#         --file "$CFG_VERSION_FILE"
+#
+#     # Release data
+#     RELEASE_VERSION="$(kurento_get_version.sh)"
+#     RELEASE_COMMIT_MSG="Prepare release $RELEASE_VERSION"
+#
+#     # Commit version change
+#     git ls-files --modified | grep 'pom.xml' | xargs -r git add
+#     git commit -m "$RELEASE_COMMIT_MSG"
+# fi
 
 
 
@@ -157,22 +161,22 @@ fi
 
 # Only if the whole deployment process ran with success...
 
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    # Tag current commit (Release commit)
-    git tag -a -m "$RELEASE_COMMIT_MSG" "$RELEASE_VERSION"
-
-    # Bump to next SNAPSHOT version
-    mvn --batch-mode versions:set -DgenerateBackupPoms=false \
-        -DnextSnapshot=true \
-        --file "$CFG_VERSION_FILE"
-
-    # Commit version change
-    git ls-files --modified | grep 'pom.xml' | xargs -r git add
-    git commit -m "Prepare for next development iteration"
-
-    # Push everything
-    git push --follow-tags
-fi
+# if [[ "$CFG_RELEASE" == "true" ]]; then
+#     # Tag current commit (Release commit)
+#     git tag -a -m "$RELEASE_COMMIT_MSG" "$RELEASE_VERSION"
+#
+#     # Bump to next SNAPSHOT version
+#     mvn --batch-mode versions:set -DgenerateBackupPoms=false \
+#         -DnextSnapshot=true \
+#         --file "$CFG_VERSION_FILE"
+#
+#     # Commit version change
+#     git ls-files --modified | grep 'pom.xml' | xargs -r git add
+#     git commit -m "Prepare for next development iteration"
+#
+#     # Push everything
+#     git push --follow-tags
+# fi
 
 
 
