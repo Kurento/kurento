@@ -87,7 +87,7 @@
 		<version.kurento-pointerdetector>6.6.0</version.kurento-pointerdetector>
 
 		<!-- External versions -->
-		<webjars-locator.version>0.32</webjars-locator.version>
+		<webjars-locator.version>0.36</webjars-locator.version>
 		<webjars.bootstrap.version>3.3.6</webjars.bootstrap.version>
 		<webjars.demo-console.version>1.5.1</webjars.demo-console.version>
 		<webjars.draggabilly.version>2.1.0</webjars.draggabilly.version>
