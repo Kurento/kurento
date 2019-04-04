@@ -61,7 +61,9 @@ apt-get update
 
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
-  gpg --import $GNUPG_KEY
+  echo "GNUPGHOME=$GNUPGHOME"
+  echo "HOME=$HOME"
+  gpg --homedir "$HOME/.gnupg" --import "$GNUPG_KEY"
 fi
 
 # For backwards compatibility with kurento_clone_repo / Update to use github instead of gerrit
