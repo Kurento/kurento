@@ -1,8 +1,9 @@
-kurento-module-creator (6.9.1-1kurento1) UNRELEASED; urgency=medium
+kurento-module-creator (6.10.0-0kurento1) testing; urgency=medium
 
   * debian: Review for 18.04 build
+  * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Thu, 07 Feb 2019 18:08:05 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:29 +0200
 
 kurento-module-creator (6.8.0) testing; urgency=medium
 
