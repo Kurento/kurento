@@ -154,14 +154,6 @@ update_changelog() {
     local RELEASE_ENTRY="* $COMMIT_MSG"
 
     if [[ "$CFG_RELEASE" == "true" ]]; then
-        # First appearance of 'UNRELEASED': Put our commit message
-        sed --in-place --expression="0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
-            ./debian/changelog
-
-        # Remaining appearances of 'UNRELEASED' (if any): Delete line
-        sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
-            ./debian/changelog
-
         gbp dch \
             --ignore-branch \
             --git-author \
@@ -173,6 +165,14 @@ update_changelog() {
             --force-distribution \
             \
             ./debian/
+
+        # First appearance of 'UNRELEASED': Put our commit message
+        sed --in-place --expression="0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
+            ./debian/changelog
+
+        # Remaining appearances of 'UNRELEASED' (if any): Delete line
+        sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
+            ./debian/changelog
     else
         gbp dch \
             --ignore-branch \
