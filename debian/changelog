@@ -1,8 +1,9 @@
-kms-cmake-utils (6.9.1-1kurento1) UNRELEASED; urgency=medium
+kms-cmake-utils (6.10.0-0kurento1) testing; urgency=medium
 
   * debian: Review for 18.04 build
+  * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Thu, 07 Feb 2019 18:11:15 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:30 +0200
 
 kms-cmake-utils (6.8.0) testing; urgency=medium
 
