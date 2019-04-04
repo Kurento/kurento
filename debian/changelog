@@ -1,8 +1,9 @@
-kms-filters (6.9.1) UNRELEASED; urgency=medium
+kms-filters (6.10.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
+  * Prepare release 6.10.0
+  * debian: Review for 18.04 build
 
- -- Juan Navarro <juan.navarro@gmx.es>  Tue, 11 Dec 2018 16:39:45 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:32 +0200
 
 kms-filters (6.9.0) testing; urgency=medium
 
