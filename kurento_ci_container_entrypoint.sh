@@ -28,6 +28,9 @@ DIST=$(lsb_release -c)
 DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
 export DEBIAN_FRONTEND=noninteractive
 
+echo "[kurento_ci_container_entrypoint] Show environment..."
+env | sort
+
 # Configure SSH keys
 if [ -f "$GIT_KEY" ]; then
     mkdir -p /root/.ssh
