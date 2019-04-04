@@ -1,5 +1,9 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
+
 echo "##################### EXECUTE: kurento_ci_container_entrypoint #####################"
+
+# Enable command traces for debugging
+set -o xtrace
 
 #/
 #/ Arguments:
