@@ -158,15 +158,15 @@ update_changelog() {
         sed --in-place --expression="0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
             ./debian/changelog
 
-        # Remaining appearances of 'UNRELEASED': Delete line
+        # Remaining appearances of 'UNRELEASED' (if any): Delete line
         sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
             ./debian/changelog
 
         gbp dch \
             --ignore-branch \
             --git-author \
-            --new-version="$PACKAGE_VERSION" \
             --spawn-editor=never \
+            --new-version="$PACKAGE_VERSION" \
             \
             --release \
             --distribution='testing' \
@@ -177,8 +177,8 @@ update_changelog() {
         gbp dch \
             --ignore-branch \
             --git-author \
-            --new-version="$PACKAGE_VERSION" \
             --spawn-editor=never \
+            --new-version="$PACKAGE_VERSION" \
             ./debian/
     fi
 }
