@@ -188,8 +188,8 @@ module.exports = function (grunt) {
             'repository'
           ],
           overrides: {
-            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors ||
-              [])
+            authors: (pkg.author ? [pkg.author] : []).concat(pkg
+              .contributors || [])
           }
         }
       }
