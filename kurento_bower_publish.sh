@@ -90,5 +90,5 @@ if [ ${CREATE_TAG} = true ] && [[ $VERSION != *-SNAPSHOT ]]; then
 
   # Add tag
   git tag $VERSION || exit 1
-  git push --tags || exit 1
+  git push --follow-tags || exit 1
 fi
