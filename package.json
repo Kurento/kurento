@@ -1,6 +1,6 @@
 {
   "name": "kurento-client",
-  "version": "6.9.0",
+  "version": "6.10.0",
   "description": "JavaScript Client API for Kurento Media Server",
   "keywords": [
     "kurento",
