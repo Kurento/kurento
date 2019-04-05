@@ -17,8 +17,8 @@ echo "##################### EXECUTE: kurento_merge_js_project ##################
 # MAVEN_SONATYPE_NEXUS_STAGING url
 #   URL of Central staging repositories
 #
-# BOWER_REPOSITORY url
-#   URL to bower repository
+# BOWER_REPO_NAME string
+#   Name of the Git repo which contains Bower files
 
 # Path information
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path

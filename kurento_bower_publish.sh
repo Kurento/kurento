@@ -13,11 +13,15 @@ echo "##################### EXECUTE: kurento_bower_publish #####################
 #
 # CREATE_TAG true | false
 #   Whether a TAG must be created in bower repository. Default value is false
+#
+# BOWER_REPO_NAME string
+#   Name of the Git repo which contains Bower files
 
-# Validate mandatory parameters
+# Validate parameters
 [ -z "$FILES" ] && exit 1
 [ -z "$REFSPEC" ] && REFSPEC=master
 [ -z "$CREATE_TAG" ] && CREATE_TAG=false
+[ -z "$BOWER_REPO_NAME" ] && BOWER_REPO_NAME="${KURENTO_PROJECT}-bower"
 
 # Checkout to reference in source code repository
 git checkout $REFSPEC || git checkout -b $REFSPEC origin/$REFSPEC || exit 1
@@ -36,12 +40,9 @@ VERSION="$(kurento_get_version.sh)" || {
 BOWER_DIR="bower_code"
 [ -d $BOWER_DIR ] && rm -rf $BOWER_DIR
 
-# Internal variables
-BOWER_PROJECT="${KURENTO_PROJECT}-bower"
-
 # Do not declare error if bower repository does not exist
-kurento_clone_repo.sh "$BOWER_PROJECT" master "$BOWER_DIR" \
-|| { echo "[kurento_bower_publish] WARNING: Command failed: kurento_clone_repo $BOWER_PROJECT"; exit 0; }
+kurento_clone_repo.sh "$BOWER_REPO_NAME" master "$BOWER_DIR" \
+|| { echo "[kurento_bower_publish] WARNING: Command failed: kurento_clone_repo $BOWER_REPO_NAME"; exit 0; }
 
 cd $BOWER_DIR || exit 1
 
