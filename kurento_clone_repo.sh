@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-#/
 #/ Clone a Git repository.
 #/
 #/ Arguments:
@@ -17,6 +16,12 @@
 #/      Optional.
 #/      Default: Repository name.
 #/
+#/
+#/ Environment variables:
+#/
+#/ KURENTO_GIT_REPOSITORY="git@github.com:Kurento"
+#/   Defined in Jenkins
+
 
 # ------------ Shell setup ------------
 
@@ -66,7 +71,7 @@ CLONE_URL="${KURENTO_GIT_REPOSITORY}/${CLONE_NAME}.git"
 
 log "Git clone $CLONE_URL ($CLONE_REF) to $PWD/$CLONE_DIR"
 
-if [ -z "${GIT_KEY:+x}" ]; then
+if [ -z "${GIT_KEY}" ]; then
     git clone "$CLONE_URL" "$CLONE_DIR" \
     || { log "ERROR Command failed: git clone"; exit 1; }
 else
@@ -86,7 +91,7 @@ fi
     || { log "ERROR Command failed: git checkout"; exit 1; }
 
     if [ -f .gitmodules ]; then
-        if [ -z "${GIT_KEY:+x}" ]; then
+        if [ -z "${GIT_KEY}" ]; then
             git submodule update --init --recursive \
             || { log "ERROR Command failed: git submodule update"; exit 1; }
         else
