@@ -307,7 +307,8 @@ lifecycle = {
                   Timeout.factor;
 
                 var options = {
-                  request_timeout: 5000 * Timeout.factor
+                  request_timeout: 5000 * Timeout
+                    .factor
                 };
 
                 self.kurento = new kurentoClient(ws_uri,

@@ -34,9 +34,10 @@ QUnit.test('Get unknown constructor', function (assert) {
 
   function noop() {}
 
-  var mediaObject = MediaObjectCreator(null, noop, noop, null, noop).createInmediate({
-    type: 'dummyUnknownType'
-  })
+  var mediaObject = MediaObjectCreator(null, noop, noop, null, noop)
+    .createInmediate({
+      type: 'dummyUnknownType'
+    })
 
   assert.ok(mediaObject instanceof MediaObject)
 });

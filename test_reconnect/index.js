@@ -262,7 +262,8 @@ QUnit.module('reconnect', {
 
                 self.client.create('MediaPipeline',
                   function (error, pipeline) {
-                    if (error) return onerror(error);
+                    if (error) return onerror(
+                      error);
                     self.pipeline = pipeline;
                     QUnit.start();
                   });
@@ -328,7 +329,8 @@ QUnit.test('MediaServer restarted', function (assert) {
         console.log('stderr: ' + data);
       });
 
-      console.log("Waiting KMS is started again... KMS pid:", self.server
+      console.log("Waiting KMS is started again... KMS pid:", self
+        .server
         .pid)
 
       var grep = spawn('grep', ['kurento']);
