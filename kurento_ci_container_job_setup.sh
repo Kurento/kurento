@@ -1,6 +1,10 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
+
 echo "##################### EXECUTE: kurento_ci_container_job_setup #####################"
 trap cleanup EXIT
+
+# Enable command traces for debugging
+set -o xtrace
 
 # Starts a Docker container, prepares CI environment, and runs commands
 
@@ -136,9 +140,8 @@ RUN_COMMANDS=("$@")
 # Create temporary folders
 [ -d $WORKSPACE/tmp ] || mkdir -p $WORKSPACE/tmp
 [ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
+[ -d /var/lib/jenkins/test-files ] || mkdir -p /var/lib/jenkins/test-files
 
-# Download or update test files
-[ -d /var/lib/jenkins/test-files ] && mkdir -p /var/lib/jenkins/test-files
 docker run \
   --rm \
   --name $BUILD_TAG-TEST-FILES-$(date +"%s") \
@@ -288,7 +291,7 @@ docker run \
   -w "$CONTAINER_WORKSPACE" \
   --entrypoint /bin/bash \
   $CONTAINER_IMAGE \
-  /opt/adm-scripts/kurento_ci_container_entrypoint.sh "${RUN_COMMANDS[@]}"
+  "${CONTAINER_ADM_SCRIPTS}/kurento_ci_container_entrypoint.sh" "${RUN_COMMANDS[@]}"
 status=$?
 
 # Change worspace ownership to avoid permission errors caused by docker usage of root
