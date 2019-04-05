@@ -49,16 +49,16 @@ file from its URL and stream it over HTTP :
 
    ```Javascript
    var kurento = kurentoClient.KurentoClient(ws_uri);
-   
+
    kurento.then(function(kurento)
    {
      // Connection success
-     …
+     ...
    },
    function(error)
    {
      // Connection error
-     …
+     ...
    });
    ```
 
@@ -66,12 +66,12 @@ file from its URL and stream it over HTTP :
    kurentoClient.KurentoClient(ws_uri, function(kurento)
    {
      // Connection success
-     …
+     ...
    },
    function(error)
    {
      // Connection error
-     …
+     ...
    });
    ```
 
@@ -82,7 +82,7 @@ file from its URL and stream it over HTTP :
    ```Javascript
    kurento.create('MediaPipeline', function(error, pipeline)
    {
-     …
+     ...
    });
    ```
 
@@ -94,17 +94,17 @@ file from its URL and stream it over HTTP :
    {uri: "https://ci.kurento.com/video/format/small.webm"},
    function(error, player)
    {
-     …
+     ...
    });
 
    pipeline.create('HttpGetEndpoint', function(error, httpGet)
    {
      httpGet.on('EndOfStream', function(event)
      {
-       …
+       ...
      });
 
-     …
+     ...
    });
    ```
 
@@ -113,7 +113,7 @@ file from its URL and stream it over HTTP :
    ```Javascript
    player.connect(httpGet, function(error, pipeline)
    {
-     …
+     ...
    });
    ```
 
@@ -122,7 +122,7 @@ file from its URL and stream it over HTTP :
    ```Javascript
    httpGet.getUrl(function(error, url)
    {
-     …
+     ...
    });
    ```
 
@@ -131,7 +131,7 @@ file from its URL and stream it over HTTP :
    ```Javascript
    player.play(function(error)
    {
-     …
+     ...
    });
    ```
 

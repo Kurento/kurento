@@ -170,7 +170,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
   if (usePromise) {
     var self = this;
 
-    var promise = new Promise(function(resolve, reject) {
+    var promise = new Promise(function(resolve, reject) {
 
       function callback2(error, values) {
         resolve(values)
