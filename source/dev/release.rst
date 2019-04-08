@@ -320,6 +320,7 @@ As part of the release, update the submodule references of this repo, and create
 
    NEW_VERSION="6.9.0"
    COMMIT_MSG="Prepare release $NEW_VERSION"
+
    git add .
    git commit -m "$COMMIT_MSG"
    git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
@@ -752,7 +753,17 @@ For this reason, the documentation must be built only after all the other module
 
       make html
 
-#. Git add, commit, push.
+#. Git add, commit, tag, push:
+
+   .. code-block:: bash
+
+      NEW_VERSION="6.9.0"
+      COMMIT_MSG="Prepare release $NEW_VERSION"
+
+      git add VERSIONS.conf.sh
+      git commit -m "$COMMIT_MSG"
+      git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+      git push --follow-tags
 
 #. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
 
