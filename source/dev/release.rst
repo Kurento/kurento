@@ -128,9 +128,7 @@ Release steps
       git tag -a -m "$COMMIT_MSG" "$PACKAGE_VERSION"
       git push --follow-tags
 
-#. Start the `KMS CI build job`_ with the ``JOB_RELEASE`` parameter **ENABLED**.
-
-#. Wait until all packages get created and published correctly. Fix any issues that appear.
+#. Follow on with releasing Kurento Media Server.
 
 
 
@@ -252,11 +250,15 @@ Release steps
 
    .. code-block:: bash
 
-      git push --follow-tags
+      git submodule foreach 'git push --follow-tags'
 
-#. Start the `KMS CI build job`_ with the ``JOB_RELEASE`` parameter **ENABLED**.
+#. Start the `KMS CI job`_ with the parameters ``JOB_RELEASE`` **ENABLED** and ``JOB_ONLY_KMS`` **DISABLED**.
+
+   If the release doesn't include any version of the
 
 #. Wait until all packages get created and published correctly. Fix any issues that appear.
+
+   The KMS CI job is a *Jenkins MultiJob Project*. If it fails at any stage, after fixing the cause of the error it's not needed to start the job again from the beginning; instead, it is possible to resume the build from the point it was before the failure. For this, just open the latest build number that failed (with a red marker in the *Build History* panel at the left of the job page); in the description of the build, the action *Resume build* is available on the left side.
 
 #. Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain API Definition files (``.KMD``):
 
@@ -271,7 +273,7 @@ Release steps
 #. When all repos have been released, and CI jobs have finished successfully:
 
    - Open the `Nexus Sonatype Staging Repositories`_ section.
-   - Select **kurento** repositories.
+   - Select **kurento** repository.
    - Inspect contents to ensure they are as expected:
 
      - kurento-module-creator (if it was released)
@@ -279,13 +281,13 @@ Release steps
      - kms-api-elements
      - kms-api-filters
 
-   - **Close repositories**.
+   - **Close** repository.
    - Wait a bit.
    - **Refresh**.
-   - **Release repositories**.
+   - **Release** repository.
    - Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
 
-#. Set the next development version in all projects. Use the script ``kms-omni-build/bin/set-versions.sh`` to set version numbers, and commit.
+#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. Use the script ``kms-omni-build/bin/set-versions.sh`` to set version numbers, and commit.
 
    .. code-block:: bash
 
@@ -293,13 +295,19 @@ Release steps
       ./bin/set-versions.sh <NextVersion> --debian <DebianVersion> \
           --commit
 
-   To choose the next version number, just increment the **patch** number. For example, if the last release has been **6.10.0**, then the next development version number should be **6.10.1**:
+   To choose the next version number, increment the **patch** number. For example, if the last release has been **6.10.0**, then the next development version number should be **6.10.1**:
 
    .. code-block:: bash
 
       cd kms-omni-build
       ./bin/set-versions.sh 6.10.1 --debian 0kurento1 \
           --commit
+
+#. Push the changes to all remote repositories.
+
+   .. code-block:: bash
+
+      git submodule foreach 'git push'
 
 
 
@@ -308,15 +316,143 @@ Closing: kms-omni-build
 
 As part of the release, update the submodule references of this repo, and create a tag just like in all the other repos:
 
-TODO: test and then write here
+.. code-block:: bash
 
-git clone git@github.com:Kurento/kms-omni-build.git  omni-build
-cd omni-build
+   NEW_VERSION="6.9.0"
+   COMMIT_MSG="Prepare release $NEW_VERSION"
+   git add .
+   git commit -m "$COMMIT_MSG"
+   git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+   git push --follow-tags
 
-git submodule update --init --recursive
-git submodule update --remote
-git submodule foreach 'git checkout master'
 
+
+Kurento JavaScript client
+=========================
+
+Release order:
+
+- kurento-jsonrpc-js
+- kurento-utils-js
+- kurento-client-js
+- kurento-tutorial-js
+- kurento-tutorial-node
+
+For each project above:
+
+1. Prepare release.
+2. Push a new tag to Git.
+3. Move to next development version.
+
+
+
+Release steps
+-------------
+
+#. Set the definitive release version in all projects. This operation varies between projects:
+
+   - kurento-jsonrpc-js, kurento-utils-js, kurento-client-js: in file **package.json**.
+   - kurento-tutorial-js: in each one of the **bower.json** files.
+   - kurento-tutorial-node: in each one of the **package.json** files.
+
+#. Review all dependencies to remove *-dev* versions.
+
+   This command can be used to search for all *-dev* versions:
+
+   .. code-block:: bash
+
+      grep -Fr -- '-dev"'
+
+#. Test the build.
+
+   Use the profile '*kurento-release*' to enforce no *SNAPSHOT* dependencies are present.
+
+   .. code-block:: bash
+
+      PROJECTS=(
+          kurento-jsonrpc-js
+          kurento-utils-js
+          kurento-client-js
+      )
+
+      for PROJECT in "${PROJECTS[@]}"; do
+          pushd "$PROJECT"
+          npm install
+          node_modules/.bin/grunt
+          node_modules/.bin/grunt sync:bower
+          popd  # $PROJECT
+      done
+
+   If the beautifier step fails, use Grunt to run the beautifier and fix all files that need it:
+
+   .. code-block:: bash
+
+      npm install
+      node_modules/.bin/grunt jsbeautifier::file:<FilePath>.js
+
+   Some times it's needed to run Grunt a couple of times until it ends without errors.
+
+#. **All-In-One** script:
+
+   (Note: Always use ``mvn --batch-mode`` if you copy this to an actual script!)
+
+   .. code-block:: bash
+
+      NEW_VERSION="6.9.0"
+      COMMIT_MSG="Prepare release $NEW_VERSION"
+
+      PROJECTS=(
+          kurento-jsonrpc-js
+          kurento-utils-js
+          kurento-client-js
+          kurento-tutorial-js
+          kurento-tutorial-node
+      )
+
+      for PROJECT in "${PROJECTS[@]}"; do
+          pushd "$PROJECT"
+          git pull --rebase
+          for FILE in $(find . -name *.json); do
+              TEMP="$(mktemp)"
+              jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
+                  "$FILE" > "$TEMP" && mv "$TEMP" "$FILE"
+              git add "$FILE"
+          done
+          git commit -m "$COMMIT_MSG"
+          git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+          git push --follow-tags
+          popd  # $PROJECT
+      done
+
+#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-dev*".
+
+   **All-In-One** script:
+
+   .. code-block:: bash
+
+      NEW_VERSION="6.9.1-dev"
+      COMMIT_MSG="Prepare for next development iteration"
+
+      PROJECTS=(
+          kurento-jsonrpc-js
+          kurento-utils-js
+          kurento-client-js
+          kurento-tutorial-js
+          kurento-tutorial-node
+      )
+
+      for PROJECT in "${PROJECTS[@]}"; do
+          pushd "$PROJECT"
+          for FILE in $(find . -name *.json); do
+              TEMP="$(mktemp)"
+              jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
+                  "$FILE" > "$TEMP" && mv "$TEMP" "$FILE"
+              git add "$FILE"
+          done
+          git commit -m "$COMMIT_MSG"
+          git push
+          popd  # $PROJECT
+      done
 
 
 
@@ -437,7 +573,26 @@ Release steps
 
       grep -Fr -- '-SNAPSHOT'
 
-#. Test the build. Use the profile '*kurento-release*' to enforce no *SNAPSHOT* dependencies are present.
+#. Test the build.
+
+   Use the profile '*kurento-release*' to enforce no *SNAPSHOT* dependencies are present.
+
+   .. code-block:: bash
+
+      pushd kurento-qa-pom
+      mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
+      popd  # kurento-qa-pom
+
+      pushd kurento-java
+      mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
+      popd  # kurento-java
+
+      PROJECTS=(kurento-tutorial-java kurento-tutorial-test)
+      for PROJECT in "${PROJECTS[@]}"; do
+          pushd "$PROJECT"
+          mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
+          popd  # $PROJECT
+      done
 
 #. (Only *kurento-java*) If the build works, install locally. This will be needed to later update the version of *kurento-tutorial-java* and *kurento-tutorial-test*.
 
@@ -451,6 +606,7 @@ Release steps
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
       pushd kurento-qa-pom
+      git pull --rebase
       mvn versions:set -DgenerateBackupPoms=false \
           -DnewVersion="$NEW_VERSION"
       git ls-files --modified | grep 'pom.xml' | xargs -r git add
@@ -460,6 +616,7 @@ Release steps
       popd  # kurento-qa-pom
 
       pushd kurento-java
+      git pull --rebase
       mvn versions:set -DgenerateBackupPoms=false \
           -DnewVersion="$NEW_VERSION" \
           --file kurento-parent-pom/pom.xml
@@ -475,6 +632,7 @@ Release steps
       PROJECTS=(kurento-tutorial-java kurento-tutorial-test)
       for PROJECT in "${PROJECTS[@]}"; do
           pushd "$PROJECT"
+          git pull --rebase
           mvn versions:update-parent -DgenerateBackupPoms=false \
               -DallowSnapshots=false \
               -DparentVersion="[${NEW_VERSION}]"
@@ -499,7 +657,31 @@ Release steps
    - **Release repositories**.
    - Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
 
-#. Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-SNAPSHOT*". Maven can do this automatically with the `Maven Versions Plugin`_.
+   - Open the `Nexus Sonatype Staging Repositories`_ section.
+   - Select **kurento** repository.
+   - Inspect contents to ensure they are as expected:
+
+     - kurento-client
+     - kurento-commons
+     - kurento-integration-tests
+     - kurento-java
+     - kurento-jsonrpc
+     - kurento-jsonrpc-client
+     - kurento-jsonrpc-client-jetty
+     - kurento-jsonrpc-server
+     - kurento-parent-pom
+     - kurento-repository (ABANDONED PROJECT)
+     - kurento-repository-client (ABANDONED)
+     - kurento-repository-internal (ABANDONED)
+     - kurento-test
+
+   - **Close** repository.
+   - Wait a bit.
+   - **Refresh**.
+   - **Release** repository.
+   - Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
+
+#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-SNAPSHOT*". Maven can do this automatically with the `Maven Versions Plugin`_.
 
    **All-In-One** script:
 
@@ -544,17 +726,10 @@ Release steps
 
 
 
-Kurento JavaScript client
-=========================
-
-[Work In Progress]
-
-
-
 Docker images
 =============
 
-A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `KMS CI build job`_ is triggered.
+A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `KMS CI job`_ is triggered.
 
 
 
@@ -565,11 +740,11 @@ The documentation scripts will download both Java and JavaScript clients, genera
 
 For this reason, the documentation must be built only after all the other modules have been released.
 
-#. Ensure that the whole CI chain works:
+#. Ensure that the whole nightly CI chain works:
 
    Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at ReadTheDocs <https://readthedocs.org/projects/doc-kurento/builds/>`__.
 
-#. Edit `VERSIONS.conf.sh <https://github.com/Kurento/doc-kurento/blob/e021a6c98bcea4db351faf423e90b64b8aa977f6/VERSIONS.conf.sh>`__ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries. These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency.
+#. Edit `VERSIONS.conf.sh`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries. These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency.
 
 #. Test the build locally, check everything works:
 
@@ -579,6 +754,8 @@ For this reason, the documentation must be built only after all the other module
 
 #. Git add, commit, push.
 
+#. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
+
 #. CI automatically tags Release versions in `doc-kurento <https://github.com/Kurento/doc-kurento/releases>`__ and in `doc-kurento-readthedocs <https://github.com/Kurento/doc-kurento-readthedocs/releases>`__, so the release will show up as "*stable*" in ReadTheDocs.
 
 #. Open the `ReadTheDocs Versions dashboard <https://readthedocs.org/dashboard/doc-kurento/versions/>`__ and in the *Default Version* Combo Box select the latest version available.
@@ -587,12 +764,19 @@ For this reason, the documentation must be built only after all the other module
 
 
 
+.. Kurento links
+
+.. _Kurento Docker Hub: https://hub.docker.com/u/kurento/
+.. _KMS CI job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
+.. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
+.. _VERSIONS.conf.sh: https://github.com/Kurento/doc-kurento/blob/e021a6c98bcea4db351faf423e90b64b8aa977f6/VERSIONS.conf.sh
+
+
+
 .. External links
 
 .. _Debian Policy Manual: https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
-.. _this Ask Ubuntu answer: https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names/620539#620539
-.. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
-.. _KMS CI build job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
-.. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
-.. _Kurento Docker Hub: https://hub.docker.com/u/kurento/
 .. _Maven Versions Plugin: https://www.mojohaus.org/versions-maven-plugin/set-mojo.html#nextSnapshot
+.. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
+.. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
+.. _this Ask Ubuntu answer: https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names/620539#620539
