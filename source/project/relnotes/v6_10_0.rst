@@ -4,6 +4,8 @@
 
 Kurento Media Server **6.10** is seeing the light with some important news!
 
+To install it: :doc:`/user/installation`.
+
 
 
 Hello Ubuntu Bionic
@@ -154,7 +156,7 @@ This is the default form of the mentioned file, allowing Kurento to use either V
 
 And it worked fine. The Boost JSON parser would ignore all lines starting with ``//``, disregarding them as comments.
 
-However, starting from `Boost version 1.59.0 <https://www.boost.org/users/history/version_1_59_0.html>`__, the JSON parser was rewritten without any consideration for backwards-compatibility (yeah, a bit of "*Do NOT break users*" philosoy from Linus Torvalds or a bit of Semantic Versioning love wouldn't be a bad thing for these people to gain...) so it started leveraging the great capability of not allowing comments from the JSON standard.
+However, starting from `Boost version 1.59.0 <https://www.boost.org/users/history/version_1_59_0.html>`__, the Boost JSON parser gained the great ability of not allowing comments; it was rewritten without any consideration for backwards-compatibility (yeah, it wouldn't hurt the Boost devs if they practiced a bit of "*Do NOT Break Users*" philosophy from Linus Torvalds, or at least followed Semantic Versioning...)
 
 The devised workaround has been to allow inline comment characters inside the JSON attribute fields, so the former comment can now be done like this:
 
@@ -165,7 +167,7 @@ The devised workaround has been to allow inline comment characters inside the JS
        { "name": "H264/90000" }
    ]
 
-Whenever you want to comment out some line in a JSON settings file, just append the `//` characters to the beginning of the field name.
+Whenever you want to comment out some line in a JSON settings file, just append the ``//`` characters to the beginning of the field name.
 
 
 
