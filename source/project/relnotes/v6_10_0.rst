@@ -29,11 +29,13 @@ To install KMS on this version of Ubuntu, just follow the usual :doc:`installati
    sudo apt-get update \
      && sudo apt-get install --yes kurento-media-server
 
-Mostly everything is already ported to Bionic and working properly, except for two big omissions:
+Mostly everything is already ported to Bionic and working properly, but **the port is not 100% finished yet**. You can track progress in this board: https://github.com/orgs/Kurento/projects/1
+
+The two biggest omissions so far are:
 
 - None of the *extra* modules have been ported yet; i.e. the example plugins that are provided for demonstration purposes, such as *kms-chroma*, *kms-crowddetector*, *kms-platedetector*, *kms-pointerdetector*.
 
-- OpenCV plugins in Kurento still use the old C API. This still worked out fine in Ubuntu 16.04, but it doesn't any more in 18.04 for plugins that use external training resouces, such as the HAAR filters.
+- OpenCV plugins in Kurento still uses the old C API. This still worked out fine in Ubuntu 16.04, but it doesn't any more in 18.04 for plugins that use external training resouces, such as the HAAR filters.
 
   **Plugins that need to load external OpenCV training data files won't work**. For now, the only plugin affected by this limitation in KMS seems to be **facedetector** because it won't be able to load the newer training data sets provided by OpenCV 3.2.0 on Ubuntu 18.04. Consequently, other plugins that depend on this one, such as the **faceoverlay** filter and its FaceOverlayFilter API, won't work either.
 
@@ -43,12 +45,23 @@ Mostly everything is already ported to Bionic and working properly, except for t
 
 
 
+Hello Chrome 74
+===============
+
+Google is moving forward the security of WebRTC world by dropping support for the old DTLS 1.0 protocol. Starting from Chrome 74, DTLS 1.2 will be required for all WebRTC connections, and all endpoints that want to keep compatibility must be updated to use this version of the protocol.
+
+Our current target operating system, Ubuntu 16.04 (Xenial), provides the library OpenSSL version **1.0.2g**, which already offers support for DTLS 1.2 [#openssl]_. So, the only change that was needed to bring Kurento up to date in compatibility with Chrome was to actually make use of this newer version of the DTLS protocol.
+
+
+
 Bye Ubuntu Trusty
 =================
 
-Our resources are pretty limited here and the more simple is our CI pipeline, and the less work we need to dedicate making sure KMS works as expected in all Operating Systems, the best effort we'll be able to make improving the stability and features of the server.
+Our resources are pretty limited here and the simpler is our CI pipeline, and the less work we need to dedicate making sure KMS works as expected in all Operating Systems, the best effort we'll be able to make improving the stability and features of the server.
 
 Our old friend **Ubuntu 14.04 LTS (Trusty Tahr)** is reaching its deprecation and End Of Life date in April 2019 (source: https://wiki.ubuntu.com/Releases) so this seems like the best time to drop support for this version of Ubuntu.
+
+Canonical is not the only one setting an end to Trusty with their lifecycle schedules; Google is also doing so because by requiring DTLS 1.2 support for WebRTC connections, Trusty is left out of the game, given that it only provides OpenSSL **1.0.1f** which doesn't support DTLS 1.2 [#openssl]_.
 
 
 
@@ -61,7 +74,7 @@ These are some of the objectives that we'd like to approach:
 
 - Using standard tools to create Ubuntu packages.
 
-  We're dropping the custom `compile_project.py <https://github.com/Kurento/adm-scripts/blob/master/kms/compile_project.py>`__ tool and instead will be pushing the use of `git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__. Our newer `kurento-buildpackage.sh <https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh>`__ uses *git-buildpackage* for the actual creation of Debian packages from Git repositories.
+  We're dropping the custom `compile_project.py <https://github.com/Kurento/adm-scripts/blob/3813d958fab87faf2d0d2451da94cde9cf28eb9e/kms/compile_project.py>`__ tool and instead will be pushing the use of `git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__. Our newer `kurento-buildpackage.sh <https://github.com/Kurento/adm-scripts/blob/273c6236338b3c364717ed4374f8f1467362d01b/kurento-buildpackage.sh>`__ uses *git-buildpackage* for the actual creation of Debian packages from Git repositories.
 
 - Dropping as many forks as possible. As shown in :ref:`dev-code-repos`, Kurento uses a good number of forked libraries that are packaged and distributed as part of the usual releases, via the Kurento package repositories.
 
@@ -80,7 +93,7 @@ These are some of the objectives that we'd like to approach:
 Clearer Transcoding log messages
 ================================
 
-Codec transcoding is always a controversial feature, because it is *needed* for some cases which cannot be resolver in any other way, but it is *undesired* because it will consume a lot of CPU power.
+Codec transcoding is always a controversial feature, because it is *needed* for some cases which cannot be resolved in any other way, but it is *undesired* because it will consume a lot of CPU power.
 
 All debug log messages related to transcoding have been reviewed to make them as clear as possible, and the section :doc:`/user/troubleshooting` has been updated accordingly.
 
@@ -192,8 +205,18 @@ Additionally, special thanks to these awesome community members for their contri
 - `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for:
 
   - *Add API support for MKV profile for recordings* `Kurento/kms-core#14 <https://github.com/Kurento/kms-core/pull/14>`__, `Kurento/kms-elements#13 <https://github.com/Kurento/kms-elements/pull/13>`__.
+
   - *Fixed config-interval prop type checking in basertpendpoint and rtppaytreebin* `Kurento/kms-core#15 <https://github.com/Kurento/kms-core/pull/15>`__ and `@leetal <https://github.com/leetal>`__ (Alexander Widerberg) for reporting `#321 <https://github.com/Kurento/bugtracker/issues/321>`__.
+
+  - *rtph26[45]depay: Don't handle NALs inside STAP units twice (cherry-picked from upstream)* `Kurento/gst-plugins-good#2 <https://github.com/Kurento/gst-plugins-good/pull/2>`__.
+
 
 - `@tioperez <https://github.com/tioperez>`__ (Luis Alfredo Perez Medina) for reporting `#349 <https://github.com/Kurento/bugtracker/issues/349>`__ and sharing his results with RTSP and Docker.
 
 - `@goroya <https://github.com/goroya>`__ for `Kurento/kurento-media-server#10 <https://github.com/Kurento/kurento-media-server/pull/10>`__.
+
+
+
+.. Footnotes
+
+.. [#openssl] DTLS 1.2 was added in OpenSSL 1.0.2: `Major changes between OpenSSL 1.0.1l and OpenSSL 1.0.2 [22 Jan 2015] <https://www.openssl.org/news/openssl-1.0.2-notes.html>`__.
