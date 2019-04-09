@@ -1,0 +1,3 @@
+image:
+  name: kurento/kurento-buildpackage
+  version: 2.0.0
