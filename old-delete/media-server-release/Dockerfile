@@ -1,49 +1,38 @@
-# Kurento Media Server / Nightly builds
+# Kurento Media Server - Release version
 #
-# This Docker image is used to run a Nightly build of Kurento Media Server.
+# This Docker image is used to run a Release version of Kurento Media Server.
 # JSON-RPC API interface is exposed on port 8888.
 #
 #
 # Build command
 # -------------
 #
-# docker build [Args...] --tag kurento/kurento-media-server-dev .
+# docker build [Args...] --tag kurento/kurento-media-server .
 #
 #
 # Build arguments
 # ---------------
 #
-# --build-arg UBUNTU_VERSION=<UbuntuVersion>
+# --build-arg KMS_VERSION=<Version>
 #
-#   <UbuntuVersion> is like "xenial", "bionic", etc.
-#   Valid values are listed here: https://hub.docker.com/_/buildpack-deps/
+#     <Version> is like "6.7.2", "6.9.0", etc.
+#     Alternatively, "dev" is used to build a nightly version of KMS.
 #
-#   Optional. Default: "xenial".
-#
-# --build-arg KMS_VERSION=<KmsVersion>
-#
-#   <KmsVersion> is like "6.7.2", "6.9.0", etc.
-#   Alternatively, "dev" is used to build a nightly version of KMS.
-#
-#   Optional. Default: "0.0.0" (an invalid value).
+#     Optional. Default: "0.0.0" (an invalid value).
 #
 #
 # Run command
 # -----------
 #
-# docker run -d --name kms -p 8888:8888 kurento/kurento-media-server-dev
+# docker run -d --name kms -p 8888:8888 kurento/kurento-media-server
 
 
-
-ARG UBUNTU_VERSION=xenial
-
-FROM ubuntu:${UBUNTU_VERSION}
+FROM ubuntu:16.04
 
 MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 MAINTAINER Fede Diaz <nordri@gmail.com>
 MAINTAINER Juan Navarro <juan.navarro@gmx.es>
 
-ARG UBUNTU_VERSION=xenial
 ARG KMS_VERSION=0.0.0
 
 # Configure environment
@@ -52,43 +41,30 @@ ARG KMS_VERSION=0.0.0
 ENV LANG=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive
 
-# Install GnuPG, needed for `apt-key adv` (since Ubuntu 18.04)
-RUN apt-get update \
- && apt-get install --yes \
-        gnupg \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Configure apt-get
 # * Disable installation of recommended and suggested packages
 # * Add Kurento package repository
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
- && echo "UBUNTU_VERSION=${UBUNTU_VERSION}" \
- && echo "KMS_VERSION=${KMS_VERSION}" \
- && echo "Apt source line: deb http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" \
- && echo "deb http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" >/etc/apt/sources.list.d/kurento.list \
+ && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} xenial kms6" >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 # Install everything needed
+# * Kurento Media Server core packages
+# * Additional modules
 # * [FIXME] OpenH264 dependency: bzip2 wget
 #   Remove this when the openh264 package is released with a fix
-# * Kurento Media Server
 RUN apt-get update \
- && apt-get install --yes \
-        bzip2 wget \
+ && apt-get install -y \
         kurento-media-server \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install additional modules
-# These might not be available in Ubuntu 18.04 (Bionic)
-RUN apt-get update \
- && apt-get install --yes \
+        \
         kms-chroma \
         kms-crowddetector \
         kms-platedetector \
         kms-pointerdetector \
- && apt-get clean && rm -rf /var/lib/apt/lists/* \
- || true
+        \
+        bzip2 wget \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8888
 
