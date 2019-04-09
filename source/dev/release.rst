@@ -2,8 +2,6 @@
 Release Procedures
 ==================
 
-[WORK-IN-PROGRESS]
-
 .. contents:: Table of Contents
 
 
@@ -23,19 +21,19 @@ General considerations
 
 - Kurento projects to be released have supposedly been under development, and will have development version numbers:
 
-  - In Java (Maven) projects, development versions are indicated by the suffix ``-SNAPSHOT`` after the version number. Example: ``6.7.0-SNAPSHOT``.
-  - In C/C++ (CMake) projects, development versions are indicated by the suffix ``-dev`` after the version number. Example: ``6.7.0-dev``.
+  - In Java (Maven) projects, development versions are indicated by the suffix ``-SNAPSHOT`` after the version number. Example: ``6.9.1-SNAPSHOT``.
+  - In C/C++ (CMake) projects, development versions are indicated by the suffix ``-dev`` after the version number. Example: ``6.9.1-dev``.
 
   These suffixes must be removed for release, and then recovered again to resume development.
 
 - All dependencies to development versions will be changed to a release version during the release procedure. Concerning people will be asked to choose an appropriate release version for each development dependency.
 
-- Tags are named with the version number of the release. Example: ``6.7.0``.
+- Tags are named with the version number of the release. Example: ``6.9.0``.
 
 - Contrary to the project version, the Debian package versions don't contain development suffixes, and should always be of the form ``1.2.3-0kurento1``:
 
   - The first part (*1.2.3*) is the project's **base version number**.
-  - The second part (*0kurento1*) is the **Debian package revision**. The first number (*0*) means that the package only exists in Kurento (not in Debian or Ubuntu); this is typically the case for the projects forked by Kurento. The rest (*kurento1*) means that this is the *1st* package released by Kurento for the corresponding base version.
+  - The second part (*0kurento1*) is the **Debian package revision**. The first number (*0*) means that the package only exists in Kurento (not in Debian or Ubuntu); this is typically the case for the projects forked by Kurento. The rest (*kurento1*) means that this is the *first* package released by Kurento for the corresponding base version.
 
   Please check the `Debian Policy Manual`_ and `this Ask Ubuntu answer`_ for more information about the package versions.
 
@@ -54,6 +52,61 @@ General considerations
      3. PATCH version when you make backwards-compatible bug fixes.
 
   Please refer to https://semver.org/ for more information.
+
+  **Example**
+
+  If the last Kurento release was **6.8.2** (with e.g. Debian package version *6.8.2-0kurento3*, because it had been repackaged 3 times) then after release the project versions should have been left as **6.8.3-dev** (or *6.8.3-SNAPSHOT* for Java components).
+
+  If the **next release** of Kurento only includes patches, then the next version number *6.8.3* is already good. However, maybe our release includes new functionality, which according to Semantic Versioning should be accompanied with a bump in the *minor* version number, so the next release version number should be *6.9.0*. The Debian package version is reset accordignly, so the full version is **6.9.0-0kurento1**.
+
+  If you are repackaging an already released version (for example, because maybe after release you found out that the packages fail to install) then just increment the Debian package version: *0kurento2*.
+
+
+
+.. note::
+
+   Made a mistake?
+
+   Don't be afraid of applying some Git magic to solve mistakes during the release process. Here are some which can be useful:
+
+   - How to remove a release tag?
+
+     - Remove the local tag:
+
+       .. code-block:: bash
+
+          git tag --delete <TagName>
+
+     - Remove the remote tag:
+
+       .. code-block:: bash
+
+          git push --delete origin <TagName>
+
+   - How to push just a local tag?
+
+     .. code-block:: bash
+
+        git push origin <TagName>
+
+   - How to ammend a commit and push it again?
+
+     See: https://www.atlassian.com/git/tutorials/rewriting-history#git-commit--amend
+
+     .. code-block:: bash
+
+        # <Remove Tag>
+        # <Amend>
+        # <Create Tag>
+        git push --force --follow-tags
+
+
+
+.. warning::
+
+   As of this writing, there is a mix of methods in the CI scripts (adm-scripts) when it comes to handle the release versions. The instructions in this document favor creating and pushing git tags manually in the developer computer, however some projects also make use of the script ``kurento_check_version.sh``, which tries to detect when a project's version is *not* a development snapshot, then creates and pushes a git tag automatically. However if the tag alreeady exists (created manually by the developer), then the ``git tag`` command fails, and this script prints a warning message before continuing with its work.
+
+   We've been toying with different methodologies between handling the tags automatically in CI or handling them manually by the developer before releasing new versions; both of these methods have pros and cons. For example, if tags are handled manually by the developer, solving mistakes in the release process becomes simpler because there are no surprises from CI creating tags inadvertently; on the other hand, leaving them to be created by CI seems to simplify a bit the release process, but not really by a big margin.
 
 
 
@@ -92,7 +145,7 @@ For each project above:
 Release steps
 -------------
 
-#. Set the Debian package version, commit the results, and create a tag:
+#. Set the Debian package version, commit the results, and create a tag.
 
    .. code-block:: bash
 
@@ -182,7 +235,7 @@ If **kurento-maven-plugin** is going to get also a new release, then edit the fi
 Preparation: KMS API Java modules
 ---------------------------------
 
-Test the KMS API Java module generation (local check):
+Test the KMS API Java module generation (local check).
 
 .. code-block:: bash
 
@@ -210,9 +263,9 @@ Test the KMS API Java module generation (local check):
 Release steps
 -------------
 
-#. For all Kurento projects, edit *CHANGELOG.md* to add latest changes.
+#. Review changes in all KMS sub-projects, and edit `kurento-media-server/CHANGELOG.md`_ to add them.
 
-   Use this command to get a list of commit messages since last release:
+   You can use this command to get a list of commit messages since last release:
 
    .. code-block:: bash
 
@@ -220,7 +273,7 @@ Release steps
 
 #. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
 
-#. Set the definitive release version in all projects. Use the script `kms-omni-build/bin/set-versions.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/set-versions.sh>`__ to set version numbers, commit the results, and create a tag:
+#. Set the definitive release version in all projects. Use the helper script `kms-omni-build/bin/set-versions.sh`_ to set version numbers, commit the results, and create a tag.
 
    .. code-block:: bash
 
@@ -228,39 +281,44 @@ Release steps
       ./bin/set-versions.sh <ReleaseVersion> --debian <DebianVersion> \
           --release --commit --tag
 
-   **Example**
+   - **Example**
 
-   If the last Kurento release was **6.9.0** (with e.g. Debian package version *6.9.0-0kurento3*, because it had been repackaged 3 times) then after release the project versions should have been left as **6.9.1-dev** (or *6.9.1-SNAPSHOT* for Java components).
+     To set all project versions to **6.9.0**, all Debian package versions to **6.9.0-0kurento1**, commit everything, and create the tag ``6.9.0``, run this:
 
-   If the next release of Kurento only includes patches, then the next version number *6.9.1* is already good. However, maybe our release includes new functionality, which according to Semantic Versioning should be accompanied with a bump in the *minor* version number, so the next release version number should be *6.10.0*.
+     .. code-block:: bash
 
-   To bump all versions to *6.10.0* run this:
+        cd kms-omni-build
+        ./bin/set-versions.sh 6.9.0 --debian 0kurento1 \
+            --release --commit --tag
 
-   .. code-block:: bash
-
-      cd kms-omni-build
-      ./bin/set-versions.sh 6.10.0 --debian 0kurento1 \
-          --release --commit --tag
-
-   The result is that now all project versions are **6.10.0** and all Debian package versions will be **6.10.0-0kurento1**. All changes have been committed, and the tag ``6.10.0`` has been created.
-
-   If you are repackaging an already released version (for example, because maybe after release you found out that the packages fail to install) then just increment the Debian package version: *0kurento2*.
-
-#. Push the changes to all remote repositories.
+   Now push changes:
 
    .. code-block:: bash
 
       git submodule foreach 'git push --follow-tags'
 
-#. Start the `KMS CI job`_ with the parameters ``JOB_RELEASE`` **ENABLED** and ``JOB_ONLY_KMS`` **DISABLED**.
 
-   If the release doesn't include any version of the
+
+#. It's also nice to update the git-submodule references of the all-in-one repo ``kms-omni-build``, and create a tag just like in all the other repos.
+
+   .. code-block:: bash
+
+      NEW_VERSION="6.9.0"
+      COMMIT_MSG="Prepare release $NEW_VERSION"
+
+      cd kms-omni-build
+      git add .
+      git commit -m "$COMMIT_MSG"
+      git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+      git push --follow-tags
+
+#. Start the `KMS CI job`_ with the parameters ``JOB_RELEASE`` **ENABLED** and ``JOB_ONLY_KMS`` **DISABLED**.
 
 #. Wait until all packages get created and published correctly. Fix any issues that appear.
 
    The KMS CI job is a *Jenkins MultiJob Project*. If it fails at any stage, after fixing the cause of the error it's not needed to start the job again from the beginning; instead, it is possible to resume the build from the point it was before the failure. For this, just open the latest build number that failed (with a red marker in the *Build History* panel at the left of the job page); in the description of the build, the action *Resume build* is available on the left side.
 
-#. Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain API Definition files (``.KMD``):
+#. Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain API Definition files (``.KMD``).
 
    - kms-core -> kurento-client-core-js
    - kms-elements -> kurento-client-elements-js
@@ -270,7 +328,7 @@ Release steps
    - kms-platedetector -> kurento-module-platedetector-js
    - kms-pointerdetector -> kurento-module-pointerdetector-js
 
-#. When all repos have been released, and CI jobs have finished successfully:
+#. When all repos have been released, and CI jobs have finished successfully,
 
    - Open the `Nexus Sonatype Staging Repositories`_ section.
    - Select **kurento** repository.
@@ -287,7 +345,7 @@ Release steps
    - **Release** repository.
    - Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
 
-#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. Use the script ``kms-omni-build/bin/set-versions.sh`` to set version numbers, and commit.
+#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number. Use the helper script *kms-omni-build/bin/set-versions.sh* to set version numbers and commit.
 
    .. code-block:: bash
 
@@ -295,36 +353,21 @@ Release steps
       ./bin/set-versions.sh <NextVersion> --debian <DebianVersion> \
           --commit
 
-   To choose the next version number, increment the **patch** number. For example, if the last release has been **6.10.0**, then the next development version number should be **6.10.1**:
+   - **Example**
 
-   .. code-block:: bash
+     If the last release has been **6.9.0**, then the next development version number should be **6.9.1**:
 
-      cd kms-omni-build
-      ./bin/set-versions.sh 6.10.1 --debian 0kurento1 \
-          --commit
+     .. code-block:: bash
 
-#. Push the changes to all remote repositories.
+        cd kms-omni-build
+        ./bin/set-versions.sh 6.9.1 --debian 0kurento1 \
+            --commit
+
+   Now push changes:
 
    .. code-block:: bash
 
       git submodule foreach 'git push'
-
-
-
-Closing: kms-omni-build
------------------------
-
-As part of the release, update the submodule references of this repo, and create a tag just like in all the other repos:
-
-.. code-block:: bash
-
-   NEW_VERSION="6.9.0"
-   COMMIT_MSG="Prepare release $NEW_VERSION"
-
-   git add .
-   git commit -m "$COMMIT_MSG"
-   git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
-   git push --follow-tags
 
 
 
@@ -350,7 +393,9 @@ For each project above:
 Release steps
 -------------
 
-#. Set the definitive release version in all projects. This operation varies between projects:
+#. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
+
+#. Set the definitive release version in all projects. This operation varies between projects.
 
    - kurento-jsonrpc-js, kurento-utils-js, kurento-client-js: in file **package.json**.
    - kurento-tutorial-js: in each one of the **bower.json** files.
@@ -365,8 +410,6 @@ Release steps
       grep -Fr -- '-dev"'
 
 #. Test the build.
-
-   Use the profile '*kurento-release*' to enforce no *SNAPSHOT* dependencies are present.
 
    .. code-block:: bash
 
@@ -384,7 +427,7 @@ Release steps
           popd  # $PROJECT
       done
 
-   If the beautifier step fails, use Grunt to run the beautifier and fix all files that need it:
+   If the beautifier step fails, use Grunt to run the beautifier and fix all files that need it.
 
    .. code-block:: bash
 
@@ -393,7 +436,7 @@ Release steps
 
    Some times it's needed to run Grunt a couple of times until it ends without errors.
 
-#. **All-In-One** script:
+#. **All-In-One** script.
 
    (Note: Always use ``mvn --batch-mode`` if you copy this to an actual script!)
 
@@ -427,7 +470,7 @@ Release steps
 
 #. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-dev*".
 
-   **All-In-One** script:
+   **All-In-One** script.
 
    .. code-block:: bash
 
@@ -460,7 +503,17 @@ Release steps
 Kurento Maven plugin
 ====================
 
-1. Edit *pom.xml* to update the version field: remove "*-SNAPSHOT*".
+#. Review changes in all KMS sub-projects, and edit *changelog* to add them.
+
+   You can use this command to get a list of commit messages since last release:
+
+   .. code-block:: bash
+
+      git log "$(git describe --tags --abbrev=0)"..HEAD --oneline
+
+#. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
+
+#. Set the definitive release version in *pom.xml*. Remove "*-SNAPSHOT*".
 
    .. code-block:: xml
 
@@ -470,15 +523,7 @@ Kurento Maven plugin
       +  <version>1.2.3</version>
          <packaging>maven-plugin</packaging>
 
-2. Edit *changelog* to add latest changes.
-
-   Use this command to get a list of commit messages since last release:
-
-   .. code-block:: bash
-
-      git log "$(git describe --tags --abbrev=0)"..HEAD --oneline
-
-3. Commit & push.
+#. Git add, commit, tag, and push.
 
    .. code-block:: bash
 
@@ -489,9 +534,9 @@ Kurento Maven plugin
       git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
       git push --follow-tags
 
-4. The release procedure should start automatically; some tests are run as a result of this commit, so you should wait for their completion.
+#. The CI jobs should start automatically; some tests are run as a result of this commit, so you should wait for their completion.
 
-5. Edit *pom.xml* to update the version field: increment the **patch** number and add "*-SNAPSHOT*".
+#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-SNAPSHOT*".
 
    .. code-block:: xml
 
@@ -501,7 +546,7 @@ Kurento Maven plugin
       +  <version>1.2.4-SNAPSHOT</version>
          <packaging>maven-plugin</packaging>
 
-6. Commit & push.
+6. Git add, commit, and push.
 
    .. code-block:: bash
 
@@ -564,9 +609,19 @@ Similarly, update the version numbers of any other Kurento project that has been
 Release steps
 -------------
 
-#. Set the definitive release version in all projects. This operation varies between projects. Also, *kurento-tutorial-java* and *kurento-tutorial-test* require that *kurento-java* has been installed locally before being able to change their version numbers programmatically.
+#. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
 
-#. Review all dependencies to remove *SNAPSHOT* versions. In project *kurento-java*, all dependencies are defined as properties in the file *kurento-parent-pom/pom.xml*.
+#. Set the definitive release version in all projects. This operation varies between projects.
+
+   .. note::
+
+      *kurento-tutorial-java* and *kurento-tutorial-test* require that *kurento-java* has been installed locally before being able to change their version numbers programmatically with Maven.
+
+#. Review all dependencies to remove *SNAPSHOT* versions.
+
+   .. note::
+
+      In project *kurento-java*, all dependencies are defined as properties in the file *kurento-parent-pom/pom.xml*.
 
    This command can be used to search for all *SNAPSHOT* versions:
 
@@ -594,8 +649,6 @@ Release steps
           mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
           popd  # $PROJECT
       done
-
-#. (Only *kurento-java*) If the build works, install locally. This will be needed to later update the version of *kurento-tutorial-java* and *kurento-tutorial-test*.
 
 #. **All-In-One** script:
 
@@ -682,7 +735,11 @@ Release steps
    - **Release** repository.
    - Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
 
-#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-SNAPSHOT*". Maven can do this automatically with the `Maven Versions Plugin`_.
+#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-SNAPSHOT*".
+
+   .. note::
+
+      Maven can do this automatically with the `Maven Versions Plugin`_.
 
    **All-In-One** script:
 
@@ -743,17 +800,21 @@ For this reason, the documentation must be built only after all the other module
 
 #. Ensure that the whole nightly CI chain works:
 
-   Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at ReadTheDocs <https://readthedocs.org/projects/doc-kurento/builds/>`__.
+   Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at ReadTheDocs`_.
 
 #. Edit `VERSIONS.conf.sh`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries. These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency.
 
-#. Test the build locally, check everything works:
+#. Test the build locally, check everything works.
 
    .. code-block:: bash
 
       make html
 
-#. Git add, commit, tag, push:
+   Note that the JavaDoc and JsDoc pages won't be generated locally if you don't have your system prepared to do so; also there are some Sphinx constructs or plugins that might fail if you don't have them ready to use, but the ReadTheDocs servers have them so they should end up working fine.
+
+   In any case, **always check the final result** of the intermediate documentation builds at https://doc-kurento.readthedocs.io/en/latest/, to have an idea of how the final release build will end up looking like.
+
+#. Git add, commit, tag, and push:
 
    .. code-block:: bash
 
@@ -767,16 +828,20 @@ For this reason, the documentation must be built only after all the other module
 
 #. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
 
-#. CI automatically tags Release versions in `doc-kurento <https://github.com/Kurento/doc-kurento/releases>`__ and in `doc-kurento-readthedocs <https://github.com/Kurento/doc-kurento-readthedocs/releases>`__, so the release will show up as "*stable*" in ReadTheDocs.
+#. CI automatically tags Release versions in the ReadTheDocs source repo, `doc-kurento-readthedocs`_, so the release will show up as "*stable*" in ReadTheDocs.
 
-#. Open the `ReadTheDocs Versions dashboard <https://readthedocs.org/dashboard/doc-kurento/versions/>`__ and in the *Default Version* Combo Box select the latest version available.
+#. Open the `ReadTheDocs Versions dashboard`_ and in the *Default Version* ComboBox select the latest version available.
 
-   This field is not set to "*stable*" because we want that the actual version number gets shown in the upper part of the side panel (below the Kurento logo, above the search box) when users open the documentation. If "*stable*" was selected here, then users would just see the word "*stable*" in the mentioned panel.
+   .. note::
+
+      We don't set the *Default Version* field to "*stable*", because we want that the actual version number gets shown in the upper part of the side panel (below the Kurento logo, above the search box) when users open the documentation. If "*stable*" was selected here, then users would just see the word "*stable*" in the mentioned panel.
 
 
 
 .. Kurento links
 
+.. _kurento-media-server/CHANGELOG.md: https://github.com/Kurento/kurento-media-server/blob/master/CHANGELOG.md
+.. _kms-omni-build/bin/set-versions.sh: https://github.com/Kurento/kms-omni-build/blob/master/bin/set-versions.sh
 .. _Kurento Docker Hub: https://hub.docker.com/u/kurento/
 .. _KMS CI job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
 .. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
@@ -791,3 +856,6 @@ For this reason, the documentation must be built only after all the other module
 .. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
 .. _this Ask Ubuntu answer: https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names/620539#620539
+.. _New build at ReadTheDocs: https://readthedocs.org/projects/doc-kurento/builds/
+.. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs/releases
+.. _ReadTheDocs Versions dashboard: https://readthedocs.org/dashboard/doc-kurento/versions/
