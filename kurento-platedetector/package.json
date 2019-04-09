@@ -1,6 +1,6 @@
 {
   "name": "kurento-platedetector",
-  "version": "6.10.0",
+  "version": "6.10.1-dev",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"
