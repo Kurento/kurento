@@ -1,6 +1,6 @@
 {
   "name": "kurento-pointerdetector",
-  "version": "6.10.0",
+  "version": "6.10.1-dev",
   "description": "Kurento Browser JavaScript Tutorial: Pointer Detector",
   "keywords": [
     "kurento",
