@@ -30,19 +30,19 @@
 # cd kms-core/
 # docker run --rm \
 #     --mount type=bind,src="$PWD",dst=/hostdir \
-#     kurento/kurento-buildpackage:xenial  [Args...]
+#     kurento/kurento-buildpackage:xenial \
+#     --install-kurento nightly \
+#     [RunArguments...]
 #
 #
 # Run arguments
 # -------------
 #
-# It is possible to pass arguments to the build script: just append them
-# to the `docker run` call. *kurento-buildpackage* will be run as the
-# Docker's ENTRYPOINT, and will receive all arguments passed in `[Args...]`.
+# It is possible to pass arguments to the *kurento-buildpackage* script: just
+# append them to the `docker run` call.
 #
 # The argument '--install-kurento <Version>' is strongly recommended, because
-# this Docker image doesn't include any dependencies except for the most
-# basic and common ones for most of the Kurento projects.
+# this Docker image doesn't include any build dependencies.
 #
 # Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
