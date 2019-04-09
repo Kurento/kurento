@@ -41,11 +41,6 @@ if [[ -d /hostdir ]]; then
     cd /workdir
 fi
 
-if [[ ! -f ./debian/control ]]; then
-    echo "Skip building packages: No debian/control file"
-    exit 0
-fi
-
 
 
 # Build packages for current dir
