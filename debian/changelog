@@ -1,8 +1,9 @@
-kms-elements (6.10.1-0kurento1) UNRELEASED; urgency=medium
+kms-elements (6.11.0-0kurento1) UNRELEASED; urgency=medium
 
   * UNRELEASED
+  * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Tue, 09 Apr 2019 10:47:55 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 10 Apr 2019 14:14:39 +0200
 
 kms-elements (6.10.0-0kurento1) testing; urgency=medium
 
