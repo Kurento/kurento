@@ -1,7 +1,7 @@
-# Debian package builder for Kurento projects - Dockerfile
+# Package creation tool for Kurento projects - Dockerfile
 #
-# This image is used to generate Debian packages from Kurento repositories.
-# It runs *kurento-buildpackage* [1] from a properly configured system.
+# This Docker image is used to generate Debian packages from Kurento projects.
+# It runs [kurento-buildpackage.sh][1] from a properly configured system.
 #
 # [1]: https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh
 #
@@ -38,8 +38,8 @@
 # Run arguments
 # -------------
 #
-# It is possible to pass arguments to the *kurento-buildpackage* script: just
-# append them to the `docker run` call.
+# It is possible to pass arguments to the *kurento-buildpackage.sh* script:
+# just append them to the `docker run` call.
 #
 # The argument '--install-kurento <Version>' is strongly recommended, because
 # this Docker image doesn't include any build dependencies.
@@ -100,11 +100,10 @@ RUN PIP_VERSION="$(python3 -c 'import pip; print(pip.__version__)')" \
     dpkg --compare-versions "$PIP_VERSION" ge "1.6.0" && ARGS="--no-cache-dir"; \
     pip3 $ARGS install --upgrade gbp==0.9.10
 
-# Prepare workspace:
-# - Configure Git user, which will appear in the Debian Changelog files
-# - Create directories where the host will mount its file system
 RUN git config --global user.name "Kurento CI" \
  && git config --global user.email "kurento@googlegroups.com"
+# Configure Git user, which will appear in the Debian Changelog files
+# (this is needed by git-buildpackage)
 
 
 
@@ -112,6 +111,8 @@ RUN git config --global user.name "Kurento CI" \
 
 # Configure apt-get: enable caching of downloaded packages
 # Allows setting up a persistent cache in an external Docker volume
+# Useful if you're doing lots of (re)builds and want to avoid downloading the
+# same packages over and over...
 RUN rm -f /etc/apt/apt.conf.d/docker-clean
 
 

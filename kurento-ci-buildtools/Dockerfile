@@ -1,8 +1,11 @@
 # CI build tools for Kurento projects - Dockerfile
 #
-# This image is used to run all CI jobs related to Kurento projects. It contains
-# all tools needed for the different repositories, such as *git-buildpackage*
-# to generate Debian packages, Maven for Java projects, and Node.js for JS.
+# This Docker image is used to run all CI jobs related to Kurento projects. It
+# contains all tools needed for the different repositories, such as
+# [git-buildpackage][1] to generate Debian packages, Maven for Java projects,
+# and Node.js for JavaScript projects.
+#
+# [1]: https://hub.docker.com/r/kurento/kurento-buildpackage
 #
 #
 # Build command
