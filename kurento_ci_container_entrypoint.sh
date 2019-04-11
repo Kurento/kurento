@@ -37,22 +37,24 @@ if [ -f "$GIT_KEY" ]; then
     cp $GIT_KEY /root/.ssh/git_id_rsa
     chmod 600 /root/.ssh/git_id_rsa
     export KEY=/root/.ssh/git_id_rsa
-    cat >> /root/.ssh/config <<-EOF
-      StrictHostKeyChecking no
-      User $([ -n "$GERRIT_USER" ] && echo $GERRIT_USER || echo jenkinskurento)
-      IdentityFile /root/.ssh/git_id_rsa
+    tee /root/.ssh/config >/dev/null <<EOF
+StrictHostKeyChecking no
+User $([ -n "$GERRIT_USER" ] && echo $GERRIT_USER || echo jenkinskurento)
+IdentityFile /root/.ssh/git_id_rsa
 EOF
     if [ "$DIST" = "xenial" ]; then
-      cat >> /root/.ssh/config<<-EOF
-        KexAlgorithms +diffie-hellman-group1-sha1
+        tee --append /root/.ssh/config >/dev/null <<EOF
+KexAlgorithms +diffie-hellman-group1-sha1
 EOF
     fi
 fi
 
 if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then
-  echo "AccessKeyId = $UBUNTU_PRIV_S3_ACCESS_KEY_ID
-  SecretAccessKey = $UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
-  Token = ''" >/etc/apt/s3auth.conf
+    tee /etc/apt/s3auth.conf >/dev/null <<EOF
+AccessKeyId = $UBUNTU_PRIV_S3_ACCESS_KEY_ID
+SecretAccessKey = $UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
+Token = ''
+EOF
 fi
 
 wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
@@ -73,12 +75,12 @@ fi
 export KURENTO_GIT_REPOSITORY=${KURENTO_GIT_REPOSITORY}
 
 # Configure private bower Repository
-cat >/root/.bowerrc << EOL
+tee /root/.bowerrc >/dev/null <<EOF
 {
-   "registry": "http://bower.kurento.org:5678" ,
+   "registry": "http://bower.kurento.org:5678",
    "strict-ssl": false
 }
-EOL
+EOF
 
 CODE_KURENTO_ORG=$(getent hosts code.kurento.org | awk '{ print $1 }')
 while [ -z $CODE_KURENTO_ORG ]
