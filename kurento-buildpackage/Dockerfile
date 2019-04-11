@@ -100,10 +100,10 @@ RUN PIP_VERSION="$(python3 -c 'import pip; print(pip.__version__)')" \
     dpkg --compare-versions "$PIP_VERSION" ge "1.6.0" && ARGS="--no-cache-dir"; \
     pip3 $ARGS install --upgrade gbp==0.9.10
 
-RUN git config --global user.name "Kurento CI" \
- && git config --global user.email "kurento@googlegroups.com"
 # Configure Git user, which will appear in the Debian Changelog files
 # (this is needed by git-buildpackage)
+RUN git config --system user.name "kurento-buildpackage" \
+ && git config --system user.email "kurento@googlegroups.com"
 
 
 
