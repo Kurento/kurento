@@ -132,6 +132,7 @@ RUN_COMMANDS=("$@")
 [ -z "$WORKSPACE" ] && WORKSPACE="."
 [ -z "$KMS_AUTOSTART" ] && KMS_AUTOSTART="test"
 [ -z "$KMS_SCOPE" ] && KMS_SCOPE="docker"
+[ -z "$KURENTO_SSH_USER" ] && KURENTO_SSH_USER="jenkinskurento"
 [ -z "$SELENIUM_SCOPE" ] && SELENIUM_SCOPE=docker
 [ -z "$MAVEN_GOALS" ] && MAVEN_GOALS="verify"
 [ -z "$MAVEN_LOCAL_REPOSITORY" ] && MAVEN_LOCAL_REPOSITORY="$WORKSPACE/m2"
@@ -178,10 +179,10 @@ if [ "$START_KMS_CONTAINER" == 'true' ]; then
     KMS_AUTOSTART=false
 fi
 
-# Checkout projects if requested
+# Checkout projects if requested (DEPRECATED: Delete some day)
 [ -z "$GERRIT_HOST" ] && GERRIT_HOST=${KURENTO_GIT_REPOSITORY_SERVER%:*}
 [ -z "$GERRIT_PORT" ] && GERRIT_PORT=12345
-[ -z "$GERRIT_USER" ] && GERRIT_USER=$(whoami)
+[ -z "$GERRIT_USER" ] && GERRIT_USER="jenkinskurento"
 
 # Set maven options
 MAVEN_OPTIONS+=" -Dtest.kms.docker.image.forcepulling=false"
@@ -232,6 +233,7 @@ docker run \
   $([ "${BUILD_TAG}x" != "x" ] && echo "-e BUILD_TAG=$BUILD_TAG") \
   $([ "${BUILD_URL}x" != "x" ] && echo "-e BUILD_URL=$BUILD_URL") \
   $([ "${CLUSTER_REFSPEC}x" != "x" ] && echo "-e CLUSTER_REFSPEC=$CLUSTER_REFSPEC") \
+  -e "KURENTO_SSH_USER=$KURENTO_SSH_USER" \
   -e "CREATE_TAG=$CREATE_TAG" \
   -e "CUSTOM_PRE_COMMAND=$CUSTOM_PRE_COMMAND" \
   -e "EXTRA_PACKAGES=$EXTRA_PACKAGES" \

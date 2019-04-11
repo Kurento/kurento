@@ -39,7 +39,7 @@ if [ -f "$GIT_KEY" ]; then
     export KEY=/root/.ssh/git_id_rsa
     tee /root/.ssh/config >/dev/null <<EOF
 StrictHostKeyChecking no
-User $([ -n "$GERRIT_USER" ] && echo $GERRIT_USER || echo jenkinskurento)
+User $KURENTO_SSH_USER
 IdentityFile /root/.ssh/git_id_rsa
 EOF
     if [ "$DIST" = "xenial" ]; then
