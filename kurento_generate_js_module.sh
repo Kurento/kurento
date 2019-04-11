@@ -2,6 +2,15 @@
 
 echo "##################### EXECUTE: kurento_generate_js_module #####################"
 
+echo "Git local config (per project):"
+git config --local --list
+
+echo "Git global config (per user):"
+git config --global --list
+
+echo "Git system config:"
+git config --system --list
+
 rm -rf build
 mkdir build && cd build
 cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
@@ -29,6 +38,15 @@ echo "Commit and push changes to repo: $JS_PROJECT"
 GIT_COMMIT="$(git rev-parse --short HEAD)"
 {
     pushd "$JS_PROJECT"
+
+    echo "Git local config (per project):"
+    git config --local --list
+
+    echo "Git global config (per user):"
+    git config --global --list
+
+    echo "Git system config:"
+    git config --system --list
 
     git status
     git diff-index --quiet HEAD || {
