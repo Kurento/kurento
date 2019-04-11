@@ -143,6 +143,22 @@ RUN_COMMANDS=("$@")
 [ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
 [ -d /var/lib/jenkins/test-files ] || mkdir -p /var/lib/jenkins/test-files
 
+# Find path to Git config file, if any
+JENKINS_GIT_CONFIG=""
+if [[ -n "$GIT_CONFIG" ]]; then
+    # GIT_CONFIG defined by the job, possibly with a Jenkins managed file
+    # `git` also uses GIT_CONFIG to override default search paths
+    JENKINS_GIT_CONFIG="$GIT_CONFIG"
+elif [[ -f "$HOME/.gitconfig" ]]; then
+    # No config provided by the job; use defaults set by Jenkins Git plugin
+    JENKINS_GIT_CONFIG="$HOME/.gitconfig"
+elif [[ -f "$HOME/.config/git/config" ]]; then
+    # No config provided by the job; use defaults set by Jenkins Git plugin
+    # (alternative path, see git-config docs)
+    JENKINS_GIT_CONFIG="$HOME/.config/git/config"
+fi
+
+# Update test files
 docker run \
   --rm \
   --name $BUILD_TAG-TEST-FILES-$(date +"%s") \
@@ -222,7 +238,7 @@ docker run \
   $([ -f "$HTTP_CERT" ] && echo "-v $HTTP_CERT:$CONTAINER_HTTP_CERT") \
   $([ -f "$HTTP_KEY" ] && echo "-v $HTTP_KEY:$CONTAINER_HTTP_KEY") \
   $([ -f "$GIT_KEY" ] && echo "-v $GIT_KEY:$CONTAINER_GIT_KEY" ) \
-  $([ -f "$GIT_CONFIG" ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
+  $([ -n "$JENKINS_GIT_CONFIG" ] && echo "-v $JENKINS_GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
   $([ -f "$GNUPG_KEY" ] && echo "-v $GNUPG_KEY:$CONTAINER_GNUPG_KEY") \
   $([ -f "$NPM_CONFIG" ] && echo "-v $NPM_CONFIG:$CONTAINER_NPM_CONFIG") \
   $([ -f "$SCENARIO_TEST_CONFIG_JSON" ] && echo "-v $SCENARIO_TEST_CONFIG_JSON:$CONTAINER_TEST_CONFIG_JSON") \
