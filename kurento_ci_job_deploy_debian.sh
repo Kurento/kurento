@@ -55,7 +55,7 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     ARGS="$ARGS --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
     ARGS="$ARGS --publish-name s3:ubuntu:${KMS_VERSION}"
     ARGS="$ARGS --release"
-elif [[ -z "$JOB_DEPLOY_NAME" ]]; then
+elif [[ -z "${JOB_DEPLOY_NAME:-}" ]]; then
     log "Deploy to nightly packages repo"
     ARGS="$ARGS --repo-name kurento-openvidu-${JOB_DISTRO}-dev"
     ARGS="$ARGS --publish-name s3:ubuntu:dev"
