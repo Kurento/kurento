@@ -18,6 +18,25 @@
 #/   Generate client code for JavaScript.
 #/
 #/ Either '--java' or '--js' must be provided.
+#/
+#/
+#/ Variables
+#/ ---------
+#/
+#/ This script expects some environment variables to be exported.
+#/
+#/ * Variable(s) from job parameters (with "This project is parameterized"):
+#/
+#/ JOB_GIT_NAME
+#/
+#/   Git branch or tag that should be checked out, if it exists.
+#/
+#/
+#/ * Variable(s) from job Custom Tools (with "Install custom tools"):
+#/
+#/ KURENTO_SCRIPTS_HOME
+#/
+#/   Jenkins path to 'adm-scripts', containing all Kurento CI scripts.
 
 
 
@@ -66,8 +85,8 @@ if [[ "$CFG_JAVA" != "true" ]] && [[ "$CFG_JS" != "true" ]]; then
     exit 1
 fi
 
-log "CFG_JAVA=${CFG_JAVA}"
-log "CFG_JS=${CFG_JS}"
+log "CFG_JAVA=$CFG_JAVA"
+log "CFG_JS=$CFG_JS"
 
 
 
@@ -75,7 +94,7 @@ log "CFG_JS=${CFG_JS}"
 # ---------
 
 # Check out the requested branch
-"${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" "${JOB_GIT_NAME}"
+"${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" "$JOB_GIT_NAME"
 
 
 
@@ -94,5 +113,5 @@ RUN_COMMANDS=(
 )
 
 export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:xenial"
-docker pull "${CONTAINER_IMAGE}"
+docker pull "$CONTAINER_IMAGE"
 "${KURENTO_SCRIPTS_HOME}/kurento_ci_container_job_setup.sh" "${RUN_COMMANDS[@]}"

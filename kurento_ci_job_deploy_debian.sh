@@ -4,12 +4,57 @@
 #/
 #/ This script is meant to be called from the "Execute shell" section of all
 #/ Jenkins jobs which want to deploy Debian packages.
-
-# ${KEY_PUB}
-# ${JOB_RELEASE}
-# ${JOB_DISTRO}
-# ${JOB_TIMESTAMP}
-# ${APTLY_GPG_SUBKEY}
+#/
+#/
+#/ Variables
+#/ ---------
+#/
+#/ This script expects some environment variables to be exported.
+#/
+#/ * Variable(s) from Jenkins global configuration:
+#/
+#/ APTLY_GPG_SUBKEY
+#/
+#/   The GnuPG key used to sign Debian package repositories with Aptly.
+#/
+#/
+#/ * Variable(s) from job parameters (with "This project is parameterized"):
+#/
+#/ JOB_RELEASE
+#/
+#/   "true" for release versions. "false" for nightly snapshot builds.
+#/
+#/ JOB_TIMESTAMP
+#/
+#/   Numeric timestamp shown in the version of nightly packages.
+#/
+#/ JOB_DEPLOY_NAME
+#/
+#/   Special identifier for the repository.
+#/   This variable can be empty or unset, in which case the default of "dev"
+#/   will be used for nightly repos, or "<Version>" for release repos.
+#/
+#/
+#/ * Variable(s) from Multi-Configuration ("Matrix") Project axis:
+#/
+#/ JOB_DISTRO
+#/
+#/   Name of the Ubuntu distribution where this job is run.
+#/   E.g.: "xenial", "bionic".
+#/
+#/
+#/ * Variable(s) from job files (with "Provide Configuration files"):
+#/
+#/ KEY_PUB
+#/
+#/   Public SSH key file for user 'kurento' in Aptly proxy server.
+#/
+#/
+#/ * Variable(s) from job Custom Tools (with "Install custom tools"):
+#/
+#/ KURENTO_SCRIPTS_HOME
+#/
+#/   Jenkins path to 'adm-scripts', containing all Kurento CI scripts.
 
 
 
