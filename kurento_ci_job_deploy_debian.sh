@@ -147,14 +147,14 @@ scp -o StrictHostKeyChecking=no -i ./secret.pem \
     ubuntu@193.147.51.5:"$TEMP_DIR"
 
 scp -o StrictHostKeyChecking=no -i secret.pem \
-    /adm-scripts/kurento_ci_aptly_repo_create.sh \
+    /adm-scripts/kurento_ci_aptly_repo_publish.sh \
     ubuntu@193.147.51.5:"$TEMP_DIR"
 
 ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
     ubuntu@193.147.51.5 '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
-           ./kurento_ci_aptly_repo_create.sh $ARGS'
+           ./kurento_ci_aptly_repo_publish.sh $ARGS'
 EOF
 
 
