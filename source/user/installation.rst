@@ -71,7 +71,7 @@ Local Installation
 
 With this method, you will install KMS from the native Ubuntu package repositories made available by the Kurento project.
 
-KMS has explicit support KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only). To install KMS, open a terminal and follow these steps:
+KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only). To install KMS, open a terminal and follow these steps:
 
 1. Make sure that GnuPG is installed.
 
