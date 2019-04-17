@@ -2,7 +2,10 @@
 
 #/ CI - Create or update Aptly repos to store Debian packages.
 #/
-#/ This script is meant to run in the remote server that hosts Aptly repos. It
+#/ This script will handle all Aptly operations to create or update already
+#/ existing repositories.
+#/
+#/ The script is meant to run in the remote server that hosts Aptly repos. It
 #/ won't work if you run this script locally or in the Jenkins machine; instead,
 #/ you should copy it to the target server and run remotelly via SSH.
 #/
@@ -40,9 +43,8 @@
 # Shell setup
 # -----------
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+# Bash options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
 
 # Trace all commands
 set -o xtrace
@@ -65,8 +67,8 @@ while [[ $# -gt 0 ]]; do
                 CFG_DISTRO_NAME="$2"
                 shift
             else
-                log "ERROR: --distro-name expects <Name>"
-                log "Run with '--help' to read usage details"
+                echo "ERROR: --distro-name expects <Name>"
+                echo "Run with '--help' to read usage details"
                 exit 1
             fi
             ;;
@@ -75,8 +77,8 @@ while [[ $# -gt 0 ]]; do
                 CFG_REPO_NAME="$2"
                 shift
             else
-                log "ERROR: --repo-name expects <Name>"
-                log "Run with '--help' to read usage details"
+                echo "ERROR: --repo-name expects <Name>"
+                echo "Run with '--help' to read usage details"
                 exit 1
             fi
             ;;
@@ -85,8 +87,8 @@ while [[ $# -gt 0 ]]; do
                 CFG_PUBLISH_NAME="$2"
                 shift
             else
-                log "ERROR: --publish-name expects <Name>"
-                log "Run with '--help' to read usage details"
+                echo "ERROR: --publish-name expects <Name>"
+                echo "Run with '--help' to read usage details"
                 exit 1
             fi
             ;;
@@ -94,8 +96,8 @@ while [[ $# -gt 0 ]]; do
             CFG_RELEASE="true"
             ;;
         *)
-            log "ERROR: Unknown argument '${1-}'"
-            log "Run with '--help' to read usage details"
+            echo "ERROR: Unknown argument '${1-}'"
+            echo "Run with '--help' to read usage details"
             exit 1
             ;;
     esac
@@ -108,24 +110,24 @@ done
 # -------------------------
 
 if [[ "$CFG_DISTRO_NAME" == "$CFG_NAME_DEFAULT" ]]; then
-    log "ERROR: Missing --distro-name <Name>"
+    echo "ERROR: Missing --distro-name <Name>"
     exit 1
 fi
 
 if [[ "$CFG_REPO_NAME" == "$CFG_NAME_DEFAULT" ]]; then
-    log "ERROR: Missing --repo-name <Name>"
+    echo "ERROR: Missing --repo-name <Name>"
     exit 1
 fi
 
 if [[ "$CFG_PUBLISH_NAME" == "$CFG_NAME_DEFAULT" ]]; then
-    log "ERROR: Missing --publish-name <Name>"
+    echo "ERROR: Missing --publish-name <Name>"
     exit 1
 fi
 
-log "CFG_DISTRO_NAME=${CFG_DISTRO_NAME}"
-log "CFG_REPO_NAME=${CFG_REPO_NAME}"
-log "CFG_PUBLISH_NAME=${CFG_PUBLISH_NAME}"
-log "CFG_RELEASE=${CFG_RELEASE}"
+echo "CFG_DISTRO_NAME=${CFG_DISTRO_NAME}"
+echo "CFG_REPO_NAME=${CFG_REPO_NAME}"
+echo "CFG_PUBLISH_NAME=${CFG_PUBLISH_NAME}"
+echo "CFG_RELEASE=${CFG_RELEASE}"
 
 
 
@@ -134,7 +136,7 @@ log "CFG_RELEASE=${CFG_RELEASE}"
 
 REPO_EXISTS="$(aptly repo list | grep --count "$CFG_REPO_NAME")" || true
 if [[ "$REPO_EXISTS" == "0" ]]; then
-    log "Create new repo: $CFG_REPO_NAME"
+    echo "Create new repo: $CFG_REPO_NAME"
     aptly repo create -distribution="$CFG_DISTRO_NAME" -component=kms6 "$CFG_REPO_NAME"
 fi
 
@@ -152,20 +154,20 @@ aptly repo add -force-replace "$CFG_REPO_NAME" ./*.*deb
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
     SNAP_NAME="snap-${CFG_REPO_NAME}"
-    log "Create and publish new release snapshot: $SNAP_NAME"
+    echo "Create and publish new release snapshot: $SNAP_NAME"
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
     aptly -gpg-key="$GPGKEY" publish snapshot "$SNAP_NAME" "$CFG_PUBLISH_NAME"
 else
     REPO_PUBLISHED="$(aptly publish list -raw | grep --count "$CFG_PUBLISH_NAME $CFG_DISTRO_NAME")" || true
     if [[ "$REPO_PUBLISHED" == "0" ]]; then
-        log "Publish new development repo: $CFG_REPO_NAME"
+        echo "Publish new development repo: $CFG_REPO_NAME"
         aptly -gpg-key="$GPGKEY" publish repo "$CFG_REPO_NAME" "$CFG_PUBLISH_NAME"
     else
-        log "Update already published development repo: $CFG_REPO_NAME"
+        echo "Update already published development repo: $CFG_REPO_NAME"
         aptly -gpg-key="$GPGKEY" publish update "$CFG_DISTRO_NAME" "$CFG_PUBLISH_NAME"
     fi
 fi
 
 
 
-log "Done!"
+echo "Done!"
