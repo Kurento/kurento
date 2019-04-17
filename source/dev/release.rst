@@ -351,7 +351,7 @@ Release steps
 
       cd kms-omni-build
       ./bin/set-versions.sh <NextVersion> --debian <DebianVersion> \
-          --commit
+          --development --commit
 
    - **Example**
 
@@ -361,7 +361,7 @@ Release steps
 
         cd kms-omni-build
         ./bin/set-versions.sh 6.9.1 --debian 0kurento1 \
-            --commit
+            --development --commit
 
    Now push changes:
 
@@ -438,7 +438,13 @@ Release steps
 
 #. **All-In-One** script.
 
-   (Note: Always use ``mvn --batch-mode`` if you copy this to an actual script!)
+   .. note::
+
+      You'll need to install the *jq* command-line JSON processor.
+
+   .. note::
+
+      Always use ``mvn --batch-mode`` if you copy this to an actual script!
 
    .. code-block:: bash
 
@@ -825,6 +831,10 @@ For this reason, the documentation must be built only after all the other module
       git commit -m "$COMMIT_MSG"
       git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
       git push --follow-tags
+
+   .. note::
+
+      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. ReadTheDocs CI servers will refer to the last one to obtain the documentation sources and release tags.
 
 #. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
 
