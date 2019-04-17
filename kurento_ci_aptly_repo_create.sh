@@ -26,7 +26,11 @@
 #/ --publish-name <PublishName>
 #/
 #/   Name of the Aptly publishing endpoint that should be used.
-#/   E.g.: "s3:ubuntu:packages"
+#/   E.g.: "mypackages"
+#/
+#/   The repository URL will be like:
+#/
+#/       http://ubuntu.openvidu.io/<PublishName> <DistroName> kms6
 #/
 #/ --release
 #/
@@ -124,10 +128,10 @@ if [[ "$CFG_PUBLISH_NAME" == "$CFG_NAME_DEFAULT" ]]; then
     exit 1
 fi
 
-echo "CFG_DISTRO_NAME=${CFG_DISTRO_NAME}"
-echo "CFG_REPO_NAME=${CFG_REPO_NAME}"
-echo "CFG_PUBLISH_NAME=${CFG_PUBLISH_NAME}"
-echo "CFG_RELEASE=${CFG_RELEASE}"
+echo "CFG_DISTRO_NAME=$CFG_DISTRO_NAME"
+echo "CFG_REPO_NAME=$CFG_REPO_NAME"
+echo "CFG_PUBLISH_NAME=$CFG_PUBLISH_NAME"
+echo "CFG_RELEASE=$CFG_RELEASE"
 
 
 
@@ -152,19 +156,21 @@ aptly repo add -force-replace "$CFG_REPO_NAME" ./*.*deb
 # Step 3: Publish repo
 # --------------------
 
+PUBLISH_ENDPOINT="s3:ubuntu:${CFG_PUBLISH_NAME}"
+
 if [[ "$CFG_RELEASE" == "true" ]]; then
     SNAP_NAME="snap-${CFG_REPO_NAME}"
     echo "Create and publish new release snapshot: $SNAP_NAME"
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
-    aptly -gpg-key="$GPGKEY" publish snapshot "$SNAP_NAME" "$CFG_PUBLISH_NAME"
+    aptly -gpg-key="$GPGKEY" publish snapshot "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
-    REPO_PUBLISHED="$(aptly publish list -raw | grep --count "$CFG_PUBLISH_NAME $CFG_DISTRO_NAME")" || true
+    REPO_PUBLISHED="$(aptly publish list -raw | grep --count "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME")" || true
     if [[ "$REPO_PUBLISHED" == "0" ]]; then
         echo "Publish new development repo: $CFG_REPO_NAME"
-        aptly -gpg-key="$GPGKEY" publish repo "$CFG_REPO_NAME" "$CFG_PUBLISH_NAME"
+        aptly -gpg-key="$GPGKEY" publish repo "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
     else
         echo "Update already published development repo: $CFG_REPO_NAME"
-        aptly -gpg-key="$GPGKEY" publish update "$CFG_DISTRO_NAME" "$CFG_PUBLISH_NAME"
+        aptly -gpg-key="$GPGKEY" publish update "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
     fi
 fi
 

@@ -53,16 +53,16 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     fi
 
     ARGS="$ARGS --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
-    ARGS="$ARGS --publish-name s3:ubuntu:${KMS_VERSION}"
+    ARGS="$ARGS --publish-name ${KMS_VERSION}"
     ARGS="$ARGS --release"
 elif [[ -z "${JOB_DEPLOY_NAME:-}" ]]; then
     log "Deploy to nightly packages repo"
     ARGS="$ARGS --repo-name kurento-openvidu-${JOB_DISTRO}-dev"
-    ARGS="$ARGS --publish-name s3:ubuntu:dev"
+    ARGS="$ARGS --publish-name dev"
 else
     log "Deploy to experimental feature repo"
     ARGS="$ARGS --repo-name kurento-labs-${JOB_DISTRO}-${JOB_DEPLOY_NAME}"
-    ARGS="$ARGS --publish-name s3:ubuntu:${JOB_DEPLOY_NAME}"
+    ARGS="$ARGS --publish-name ${JOB_DEPLOY_NAME}"
 fi
 
 
