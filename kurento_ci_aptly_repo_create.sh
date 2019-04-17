@@ -13,17 +13,17 @@
 #/ Arguments
 #/ ---------
 #/
-#/ --distro-name <Name>
+#/ --distro-name <DistroName>
 #/
 #/   Name of the Ubuntu distribution for which the repo will be created or
 #/   updated. E.g.: "xenial", "bionic"
 #/
-#/ --repo-name <Name>
+#/ --repo-name <RepoName>
 #/
 #/   Name of the repository that will be created or updated.
 #/   E.g.: "kurento-packages"
 #/
-#/ --publish-name <Name>
+#/ --publish-name <PublishName>
 #/
 #/   Name of the Aptly publishing endpoint that should be used.
 #/   E.g.: "s3:ubuntu:packages"
@@ -67,7 +67,7 @@ while [[ $# -gt 0 ]]; do
                 CFG_DISTRO_NAME="$2"
                 shift
             else
-                echo "ERROR: --distro-name expects <Name>"
+                echo "ERROR: --distro-name expects <DistroName>"
                 echo "Run with '--help' to read usage details"
                 exit 1
             fi
@@ -77,7 +77,7 @@ while [[ $# -gt 0 ]]; do
                 CFG_REPO_NAME="$2"
                 shift
             else
-                echo "ERROR: --repo-name expects <Name>"
+                echo "ERROR: --repo-name expects <RepoName>"
                 echo "Run with '--help' to read usage details"
                 exit 1
             fi
@@ -87,7 +87,7 @@ while [[ $# -gt 0 ]]; do
                 CFG_PUBLISH_NAME="$2"
                 shift
             else
-                echo "ERROR: --publish-name expects <Name>"
+                echo "ERROR: --publish-name expects <PublishName>"
                 echo "Run with '--help' to read usage details"
                 exit 1
             fi
@@ -110,17 +110,17 @@ done
 # -------------------------
 
 if [[ "$CFG_DISTRO_NAME" == "$CFG_NAME_DEFAULT" ]]; then
-    echo "ERROR: Missing --distro-name <Name>"
+    echo "ERROR: Missing --distro-name <DistroName>"
     exit 1
 fi
 
 if [[ "$CFG_REPO_NAME" == "$CFG_NAME_DEFAULT" ]]; then
-    echo "ERROR: Missing --repo-name <Name>"
+    echo "ERROR: Missing --repo-name <RepoName>"
     exit 1
 fi
 
 if [[ "$CFG_PUBLISH_NAME" == "$CFG_NAME_DEFAULT" ]]; then
-    echo "ERROR: Missing --publish-name <Name>"
+    echo "ERROR: Missing --publish-name <PublishName>"
     exit 1
 fi
 
