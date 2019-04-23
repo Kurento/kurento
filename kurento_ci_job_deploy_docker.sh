@@ -58,7 +58,7 @@ set -o xtrace
 
 # Check required parameters
 if [[ "$JOB_KMS_VERSION" == "0.0.0" ]]; then
-    echo "ERROR: Missing parameter JOB_KMS_VERSION"
+    log "ERROR: Missing parameter JOB_KMS_VERSION"
     exit 1
 fi
 
@@ -105,4 +105,4 @@ else
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
-echo "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}'"
+log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}'"
