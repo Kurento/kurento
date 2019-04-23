@@ -11,13 +11,6 @@
 #/
 #/ This script expects some environment variables to be exported.
 #/
-        #/ * Variable(s) from Jenkins global configuration:
-        #/
-        #/ APTLY_GPG_SUBKEY
-        #/
-        #/   The GnuPG key used to sign Debian package repositories with Aptly.
-#/
-#/
 #/ * Variable(s) from job parameters (with "This project is parameterized"):
 #/
 #/ JOB_RELEASE
@@ -38,21 +31,6 @@
 #/
 #/   Version of Kurento Media Server that will be installed in the image.
 #/   Required. Default: "0.0.0" (invalid version).
-#/
-#/
-#/ * Variable(s) from Multi-Configuration ("Matrix") Project axis:
-#/
-        #/ JOB_DISTRO
-        #/
-        #/   Name of the Ubuntu distribution where this job is run.
-        #/   E.g.: "xenial", "bionic".
-#/
-#/
-#/ * Variable(s) from job files (with "Provide Configuration files"):
-#/
-        #/ KEY_PUB
-        #/
-        #/   Public SSH key file for user 'kurento' in Aptly proxy server.
 #/
 #/
 #/ * Variable(s) from job Custom Tools (with "Install custom tools"):
