@@ -148,6 +148,9 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+# Trace all commands
+set -o xtrace
+
 
 
 # Check permissions
