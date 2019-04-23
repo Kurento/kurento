@@ -73,14 +73,23 @@ set -o xtrace
 # Job setup
 # ---------
 
+# Check optional parameters
+if [[ -z "${JOB_DEPLOY_NAME:-}" ]]; then
+    DEPLOY_SPECIAL="false"
+else
+    DEPLOY_SPECIAL="true"
+fi
+
 # Temp dir to store all packages in remote machine
 TEMP_DIR="pkg_${JOB_DISTRO}_${JOB_TIMESTAMP}"
 
 # Aptly runner script arguments
 ARGS="--distro-name $JOB_DISTRO"
 
+# Define parameters for the repository creation
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy to release repo"
+
     # shellcheck disable=SC2012
     KMS_DEB_PKG="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
     if [[ -z "$KMS_DEB_PKG" ]]; then
@@ -100,14 +109,14 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     ARGS="$ARGS --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
     ARGS="$ARGS --publish-name ${KMS_VERSION}"
     ARGS="$ARGS --release"
-elif [[ -z "${JOB_DEPLOY_NAME:-}" ]]; then
-    log "Deploy to nightly packages repo"
-    ARGS="$ARGS --repo-name kurento-openvidu-${JOB_DISTRO}-dev"
-    ARGS="$ARGS --publish-name dev"
-else
+elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy to experimental feature repo"
     ARGS="$ARGS --repo-name kurento-labs-${JOB_DISTRO}-${JOB_DEPLOY_NAME}"
     ARGS="$ARGS --publish-name ${JOB_DEPLOY_NAME}"
+else
+    log "Deploy to nightly packages repo"
+    ARGS="$ARGS --repo-name kurento-openvidu-${JOB_DISTRO}-dev"
+    ARGS="$ARGS --publish-name dev"
 fi
 
 
