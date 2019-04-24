@@ -212,8 +212,8 @@ public class KmsService extends TestService {
               + kmsPemProp + "=" + kmsPem);
     }
 
-    // Assertion: if local or remote KMS, port should be available
-    if (!isKmsDocker && !isKmsRemote && !isFreePort(wsUri)) {
+    // Assertion: if local or Dockerized KMS, port should be available
+    if (!isKmsRemote && !isFreePort(wsUri)) {
       throw new KurentoException("KMS cannot be started in URI: " + wsUri + ". Port is not free");
     }
 
