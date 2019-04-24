@@ -209,10 +209,19 @@ MAVEN_OPTIONS+=" -Dproject.path=$CONTAINER_WORKSPACE$([ -n "$MAVEN_MODULE" ] && 
 MAVEN_OPTIONS+=" -Dtest.workspace=$CONTAINER_WORKSPACE/tmp"
 MAVEN_OPTIONS+=" -Dtest.workspace.host=$WORKSPACE/tmp"
 MAVEN_OPTIONS+=" -Dtest.files=$CONTAINER_TEST_FILES"
+
+# Seems unused by any Kurento repo
 [ -n "$DOCKER_HUB_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.hub.image=$DOCKER_HUB_IMAGE"
+
+# Default: "kurento/kurento-media-server-dev:latest", set in kurento-java/kurento-integration-tests/.../TestConfiguration.java
 [ -n "$DOCKER_NODE_KMS_IMAGE" ] && MAVEN_OPTIONS+=" -Dtest.kms.docker.image.name=$DOCKER_NODE_KMS_IMAGE"
+
+# Default: "elastestbrowsers/chrome:latest", set in kurento-java/kurento-integration-tests/.../TestConfiguration.java
 [ -n "$DOCKER_NODE_CHROME_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.node.chrome.image=$DOCKER_NODE_CHROME_IMAGE"
+
+# Default: "elastestbrowsers/firefox:latest", set in kurento-java/kurento-integration-tests/.../TestConfiguration.java
 [ -n "$DOCKER_NODE_FIREFOX_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.node.firefox.image=$DOCKER_NODE_FIREFOX_IMAGE"
+
 MAVEN_OPTIONS+=" -Dtest.selenium.scope=$SELENIUM_SCOPE"
 MAVEN_OPTIONS+=" -Dtest.selenium.record=$RECORD_TEST"
 [ -n "$TEST_GROUP" ] && MAVEN_OPTIONS+=" -Dgroups=$TEST_GROUP"
