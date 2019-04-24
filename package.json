@@ -71,7 +71,7 @@
     "bower": "~1.7.9",
     "browserify": "^13.0.1",
     "browserify-optional": "^1.0.0",
-    "chromedriver": "^2.21.2",
+    "chromedriver": "74.0.0",
     "coveralls": "~2.11.2",
     "fs-extra": "^0.30.0",
     "grunt": "^0.4.0",
