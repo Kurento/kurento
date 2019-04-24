@@ -45,12 +45,6 @@ var userMediaConstraints = {
 	video : defaultVideoConstraints
 };
 
-try {
-	kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
-} catch (e) {
-	console.warn(e);
-}
-
 window.onload = function() {
 	console = new Console("console", console);
 	local = document.getElementById("local");
