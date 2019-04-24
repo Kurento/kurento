@@ -287,8 +287,8 @@ lifecycle = {
               "HostPort": ws_port.toString()
             }]
           }
-        }, function (err, data, container) {
-          if (err) console.error(err);
+        }, function (error, data, container) {
+          if (error) return onerror(error);
         }).on('container', function (container_) {
           container = container_;
           container.inspect(function (err, data) {
@@ -341,16 +341,20 @@ lifecycle = {
       this.kurento.close();
       QUnit.stop();
       container.stop(function (error, data) {
-        console.log("Container KMS stopped.")
+        if (error) console.error(error);
+        if (error) return onerror(error);
+        console.log("KMS container stopped.")
         container.remove(function (error, data) {
-          console.log("Container KMS removed.")
+          if (error) console.error(error);
+          if (error) return onerror(error);
+          console.log("KMS container removed.")
           QUnit.start();
         })
       });
     } else {
       if (this.pipeline)
         this.pipeline.release(function (error) {
-          if (error) console.error(error);
+          if (error) return onerror(error);
         });
       this.kurento.close();
     }
