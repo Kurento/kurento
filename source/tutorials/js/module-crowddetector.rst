@@ -8,7 +8,7 @@ agglomeration in video streams.
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-javascript-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-javascript-applications-to-use-https>`_
    for securing your application.
 
 For the impatient: running this example
@@ -23,8 +23,7 @@ be also installed:
 
     sudo apt-get install kms-crowddetector
 
-Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
-an Ubuntu machine, you can install both as follows:
+Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In an Ubuntu machine, you can install both as follows:
 
 .. sourcecode:: bash
 
@@ -32,16 +31,13 @@ an Ubuntu machine, you can install both as follows:
    sudo apt-get install -y nodejs
    sudo npm install -g bower
 
-Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
-A very simple way of doing this is by means of an HTTP Node.js server which can
-be installed using `npm`:term: :
+Due to `Same-origin policy`:term:, this demo has to be served by a HTTP server from ``localhost``. A very simple way of doing this is by means of an HTTP Node.js server which can be installed using `npm`:term: :
 
 .. sourcecode:: bash
 
-   sudo npm install http-server -g
+   sudo npm install -g http-server
 
-You also need the source code of this demo. You can clone it from GitHub. Then
-start the HTTP server:
+You also need the source code of this demo. You can clone it from GitHub, then start the HTTP server:
 
 .. sourcecode:: bash
 
@@ -51,24 +47,17 @@ start the HTTP server:
     bower install
     http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
-Finally, access the application connecting to the URL https://localhost:8443/
-through a WebRTC capable browser (Chrome, Firefox).
+Finally, access the application by using a WebRTC-capable browser to open this URL:
+
+https://localhost:8443/index.html?ws_uri=ws://localhost:8888/kurento
 
 .. note::
 
-   These instructions work only if Kurento Media Server is up and running in the same machine
-   as the tutorial. Kurento Media Server must use WebSockets over SSL/TLS (WSS), so make sure
-   you check `this <../../faq.html?highlight=wss#configure-kurento-media-server-to-use-secure-websocket-wss>`_ too. 
-   It is possible to locate the KMS in other machine simple adding the parameter ``ws_uri`` to the URL:
+   These instructions work only if Kurento Media Server is up and running in the same machine as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply changing the parameter ``ws_uri`` in the URL, as follows:
 
    .. sourcecode:: bash
 
-      https://localhost:8443/index.html?ws_uri=wss://kms_host:kms_port/kurento
-
-   Notice that the Kurento Media Server must connected using a **Secure WebSocket** (i.e., the KMS URI
-   starts with *wss://*). For this reason, the support for secure WebSocket must be enabled in the Kurento
-   Media Server you are using to run this tutorial. For further information about securing applications,
-   please visit the following :doc:`page </features/security>`.
+      https://localhost:8443/index.html?ws_uri=ws://localhost:8888/kurento
 
 Understanding this example
 ==========================
@@ -175,7 +164,7 @@ Then, each ROI should be configured. To do that, we have the following methods:
 .. note::
 
    Modules can have options. For configuring these options, you'll need to get the constructor for them.
-   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is
    an example in the code.
 
 All in all, the media pipeline of this demo is is implemented as follows:
@@ -188,7 +177,7 @@ All in all, the media pipeline of this demo is is implemented as follows:
     const RegionOfInterestConfig = kurentoClient.getComplexType('crowddetector.RegionOfInterestConfig')
     const RelativePoint          = kurentoClient.getComplexType('crowddetector.RelativePoint')
     ...
-  
+
     kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
