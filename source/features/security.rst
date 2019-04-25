@@ -141,6 +141,8 @@ Configure Javascript applications to use HTTPS
 Securing application servers
 ============================
 
+.. _features-security-kms-wss:
+
 Configure Kurento Media Server to use Secure WebSocket (WSS)
 ------------------------------------------------------------
 
@@ -170,11 +172,10 @@ by default. For this reason, you'll need to force them to accept it.
 
 * Browser applications: You'll need to manually accept the certificate as
   trusted one before secure WebSocket connections can be established. By
-  default, this can be done by connecting to connecting to
-  https://localhost:8433/kurento and accepting the certificate in the browser.
+  default, this can be done by connecting to https://localhost:8433/kurento
+  and accepting the certificate in the browser.
 
-* Java applications, follow the instructions of this
-  `link <https://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__
+* Java applications: Follow the instructions of `this link <https://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__
   (get ``InstallCert.java`` from
   `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`__).
   You'll need to instruct the ``KurentoClient`` needs to be configured to allow
@@ -188,12 +189,9 @@ by default. For this reason, you'll need to force them to accept it.
    JsonRpcClientWebSocket rpcClient = new JsonRpcClientWebSocket(uri, sec);
    KurentoClient kuretoClient = KurentoClient.createFromJsonRpcClient(rpcClient);
 
-* Node applications, please take a look to this
-  `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`__.
+* Node applications: Take a look at `this page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`__.
 
-Second, you have to change the WebSocket URI in your application logic. For
-instance, in the *hello-world* application within the tutorials, this would be
-done as follows:
+After having configured the certificate in your Application Server, you have to change the WebSocket URI in your application logic, and make sure the WebSocket URL starts with ``wss://`` instead of the insecure version ``ws://``. For instance, in the *hello-world* application within the tutorials, this would be done as follows:
 
 * Java: Changing this line in
   `HelloWorldApp.java <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`__::
@@ -209,3 +207,5 @@ done as follows:
   `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`__::
 
    const ws_uri = "wss://localhost:8433/kurento";
+
+* All: Passing the WebSocket URL to the Application as a startup parameter (see each individual tutorial page to get the syntax for doing so).

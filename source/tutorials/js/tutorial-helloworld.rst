@@ -17,10 +17,17 @@ section before starting this tutorial.
 For the impatient: running this example
 =======================================
 
-You'll need to install Kurento Media Server before running this example. Read
-:doc:`installation guide </user/installation>` for further information.
+First of all, install Kurento Media Server: :doc:`/user/installation`.
 
-Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In an Ubuntu machine, you can install both as follows:
+.. note::
+
+   If you will run this tutorial from a remote machine (i.e. not from ``localhost``), then **you need to configure Secure WebSocket (wss://) in Kurento Media Server**. For instructions, check :ref:`features-security-kms-wss`.
+
+   This is not an issue if you will run both KMS and the tutorial demo locally, because browsers (at least Chrome at the time of this writing) allow connecting to insecure WebSockets from HTTPS pages, as long as everything happens in ``localhost``.
+
+After getting a properly configured KMS installation, leave the media server running in the background.
+
+Install :term:`Node.js` and :term:`Bower` in your system:
 
 .. sourcecode:: bash
 
@@ -28,13 +35,13 @@ Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In a
    sudo apt-get install -y nodejs
    sudo npm install -g bower
 
-Due to `Same-origin policy`:term:, this demo has to be served by a HTTP server from ``localhost``. A very simple way of doing this is by means of an HTTP Node.js server which can be installed using `npm`:term: :
+WebRTC requires HTTPS, so this tutorial demo must be served by a secure web server. You can use whichever one you prefer, such as Nginx or Apache. For quick tests, a very straightforward option is to use Node.js to run the simple, zero-configuration `http-server <https://www.npmjs.com/package/http-server>`__:
 
 .. sourcecode:: bash
 
    sudo npm install -g http-server
 
-You also need the source code of this demo. You can clone it from GitHub, then start the HTTP server:
+You also need the source code of this demo; clone it from GitHub, then start the web server:
 
 .. sourcecode:: bash
 
@@ -42,19 +49,23 @@ You also need the source code of this demo. You can clone it from GitHub, then s
     cd kurento-tutorial-js/kurento-hello-world
     git checkout |VERSION_TUTORIAL_JS|
     bower install
-    http-server -p 8443 -S -C keys/server.crt -K keys/server.key
+    http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
 
-Finally, access the application by using a WebRTC-capable browser to open this URL:
+Finally, access the web application by using a WebRTC-capable browser (Firefox, Chrome) to open the appropriate URL:
 
-https://localhost:8443/index.html?ws_uri=ws://localhost:8888/kurento
+* If KMS is running in your local machine:
 
-.. note::
+  .. code-block:: text
 
-   These instructions work only if Kurento Media Server is up and running in the same machine as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply changing the parameter ``ws_uri`` in the URL, as follows:
+     https://localhost:8443/
 
-   .. sourcecode:: bash
+* If KMS is running in a remote server:
 
-      https://localhost:8443/index.html?ws_uri=ws://localhost:8888/kurento
+  .. code-block:: text
+
+     https://localhost:8443/index.html?ws_uri=wss://<KmsIp>:<KmsPort>/kurento
+
+
 
 Understanding this example
 ==========================
