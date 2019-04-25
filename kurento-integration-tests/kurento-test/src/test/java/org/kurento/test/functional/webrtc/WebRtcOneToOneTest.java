@@ -88,7 +88,7 @@ public class WebRtcOneToOneTest extends FunctionalTest {
     getPresenter().initWebRtc(masterWebRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
     getViewer().initWebRtc(viewerWebRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
     getViewer().subscribeEvents("playing");
-    getViewer().waitForEvent("playing"));
+    getViewer().waitForEvent("playing");
 
     // Guard time to play the video
     waitSeconds(PLAYTIME);
