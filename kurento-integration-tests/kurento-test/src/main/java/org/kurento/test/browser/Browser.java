@@ -67,6 +67,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -89,6 +90,9 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
@@ -192,6 +196,10 @@ public class Browser implements Closeable {
 
     try {
       DesiredCapabilities capabilities = new DesiredCapabilities();
+
+      LoggingPreferences logs = new LoggingPreferences();
+      logs.enable(LogType.BROWSER, Level.INFO);
+      capabilities.setCapability(CapabilityType.LOGGING_PREFS, logs);
 
       if (driverClass.equals(FirefoxDriver.class)) {
 
