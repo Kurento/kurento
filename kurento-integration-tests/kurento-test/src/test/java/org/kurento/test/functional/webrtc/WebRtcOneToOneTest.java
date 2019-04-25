@@ -83,11 +83,12 @@ public class WebRtcOneToOneTest extends FunctionalTest {
     final WebRtcEndpoint masterWebRtcEp = new WebRtcEndpoint.Builder(mp).build();
     final WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(mp).build();
     masterWebRtcEp.connect(viewerWebRtcEP);
-    
+
     // WebRTC setup
     getPresenter().initWebRtc(masterWebRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
     getViewer().initWebRtc(viewerWebRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
     getViewer().subscribeEvents("playing");
+    getViewer().waitForEvent("playing"));
 
     // Guard time to play the video
     waitSeconds(PLAYTIME);
