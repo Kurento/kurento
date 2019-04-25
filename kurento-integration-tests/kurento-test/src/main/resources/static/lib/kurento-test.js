@@ -24,6 +24,9 @@
  * if you are planning to introduce new changes on this file, please minify the
  * result and update kurento-test-min.js.
  *
+ * You can use this tool with default options to minify this file:
+ * https://javascript-minifier.com/
+ *
  */
 function KurentoTest() {
 	// Required for compatibility in color gathering
