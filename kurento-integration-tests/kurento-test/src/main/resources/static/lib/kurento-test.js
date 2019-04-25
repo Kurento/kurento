@@ -229,13 +229,15 @@ KurentoTest.prototype.checkColorIn = function(videoTagId) {
 					+ " to " + self.colorInfo[videoTagId].currentColor);
 			self.colorInfo[videoTagId].changeColor = self.colorInfo[videoTagId].currentColor;
 
-			if (videoTagId == self.latencyVideoTagsId[1] && self.firstLatency) {
+			if (self.latencyVideoTagsId != null
+					&& videoTagId == self.latencyVideoTagsId[1]
+					&& self.firstLatency) {
 				self.firstLatency = false;
 			} else {
 				self.latencyTime[videoTagId] = self.colorInfo[videoTagId].changeTime;
 			}
 
-			if (self.latencyVideoTagsId
+			if (self.latencyVideoTagsId != null
 					&& self.latencyTime[self.latencyVideoTagsId[0]]
 					&& self.latencyTime[self.latencyVideoTagsId[1]]) {
 				self.latencyTime = {};
