@@ -12,7 +12,7 @@ add_test_program(test_constructors constructors.cpp)
 if(TARGET ${LIBRARY_NAME}module)
   add_dependencies(test_constructors ${LIBRARY_NAME}module)
 endif()
-add_dependencies(test_constructors ${LIBRARY_NAME}plugins)
+add_dependencies(test_constructors ${LIBRARY_NAME})
 set_property(TARGET test_constructors
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}/../..
@@ -24,7 +24,7 @@ set_property(TARGET test_constructors
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
     ${KMSCORE_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
 )
 target_link_libraries(test_constructors
   ${LIBRARY_NAME}impl
@@ -45,7 +45,7 @@ target_link_libraries(test_constructors
 #     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
 #     ${KMSCORE_INCLUDE_DIRS}
 #     ${glibmm-2.4_INCLUDE_DIRS}
-#     ${gstreamer-1.5_INCLUDE_DIRS}
+#     ${gstreamer-1.0_INCLUDE_DIRS}
 # )
 # target_link_libraries(test_webrtc_endpoint
 #   ${LIBRARY_NAME}impl
@@ -54,7 +54,7 @@ target_link_libraries(test_constructors
 # )
 
 add_test_program(test_rtp_endpoint rtpEndpoint.cpp)
-add_dependencies(test_rtp_endpoint kmselementsplugins)
+add_dependencies(test_rtp_endpoint kmselements)
 set_property(TARGET test_rtp_endpoint
   PROPERTY INCLUDE_DIRECTORIES
     ${KmsJsonRpc_INCLUDE_DIRS}
@@ -65,7 +65,7 @@ set_property(TARGET test_rtp_endpoint
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
     ${KMSCORE_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
 )
 target_link_libraries(test_rtp_endpoint
   ${LIBRARY_NAME}impl
@@ -73,7 +73,7 @@ target_link_libraries(test_rtp_endpoint
 )
 
 add_test_program(test_recorder recorderEndpoint.cpp)
-add_dependencies(test_recorder kmselementsplugins)
+add_dependencies(test_recorder kmselements)
 set_property(TARGET test_recorder
   PROPERTY INCLUDE_DIRECTORIES
     ${KmsJsonRpc_INCLUDE_DIRS}
@@ -84,7 +84,7 @@ set_property(TARGET test_recorder
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
     ${KMSCORE_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
 )
 target_link_libraries(test_recorder
   ${LIBRARY_NAME}impl
@@ -92,7 +92,7 @@ target_link_libraries(test_recorder
 )
 
 add_test_program(test_player playerEndpoint.cpp)
-add_dependencies(test_player kmselementsplugins)
+add_dependencies(test_player kmselements)
 set_property(TARGET test_player
   PROPERTY INCLUDE_DIRECTORIES
     ${KmsJsonRpc_INCLUDE_DIRS}
@@ -103,7 +103,7 @@ set_property(TARGET test_player
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
     ${KMSCORE_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
 )
 target_link_libraries(test_player
   ${LIBRARY_NAME}impl

@@ -760,6 +760,8 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     if (g_strcmp0 (attr->key, "rtcp") == 0) {
       gst_sdp_media_remove_attribute (media, a);
       /* TODO: complete rtcp attr with addr and rtcp port */
+      attr_len--;
+      a--;
     }
   }
 

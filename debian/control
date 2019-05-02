@@ -4,8 +4,8 @@ Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
  cmake,
  ffmpeg | libav-tools,
- gstreamer1.5-nice,
- gstreamer1.5-x,
+ gstreamer1.0-nice,
+ gstreamer1.0-x,
  kms-cmake-utils (>= 6.7.0),
  kms-core-dev (>= 6.7.0),
  kurento-module-creator (>= 6.7.0),
@@ -27,9 +27,9 @@ Package: kms-elements
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
- gstreamer1.5-nice,
+ gstreamer1.0-nice,
  kms-core (>= 6.7.0),
- openh264-gst-plugins-bad-1.5,
+ openh264-gst-plugins-bad-1.0,
  openwebrtc-gst-plugins
 Breaks: kms-elements-6.0
 Replaces: kms-elements-6.0

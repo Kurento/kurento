@@ -11,15 +11,15 @@ if(SANITIZERS_ENABLED)
 endif()
 
 target_link_libraries(kmstestutils
-  ${gstreamer-1.5_LIBRARIES}
-  ${gstreamer-base-1.5_LIBRARIES}
-  ${gstreamer-sdp-1.5_LIBRARIES}
-  ${gstreamer-pbutils-1.5_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-sdp-1.0_LIBRARIES}
+  ${gstreamer-pbutils-1.0_LIBRARIES}
 )
 set_property(TARGET kmstestutils
   PROPERTY INCLUDE_DIRECTORIES
-    ${gstreamer-1.5_INCLUDE_DIRS}
-    ${gstreamer-video-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
+    ${gstreamer-video-1.0_INCLUDE_DIRS}
 )
 
 include(TestHelpers)

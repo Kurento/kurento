@@ -18,7 +18,7 @@ find_path(KmsWebRtcEndpointLib_INCLUDE_DIR
 
 set (KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
 
-if (TARGET kmswebrtcendpointlib)
+if (TARGET kmswebrtcendpoint)
 
   set (KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR "${KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins/")
 
@@ -38,14 +38,14 @@ set(KmsWebRtcEndpointLib_INCLUDE_DIRS ${KmsWebRtcEndpointLib_INCLUDE_DIR} ${KmsW
   CACHE INTERNAL "Include directories for KmsWebRtcEndpointLib library"
 )
 
-if (TARGET kmswebrtcendpointlib)
+if (TARGET kmswebrtcendpoint)
   #Just get the target for the library
-  set (KmsWebRtcEndpointLib_LIBRARY kmswebrtcendpointlib)
+  set (KmsWebRtcEndpointLib_LIBRARY kmswebrtcendpoint)
 else()
 
 find_library (KmsWebRtcEndpointLib_LIBRARY
   NAMES
-    kmswebrtcendpointlib
+    kmswebrtcendpoint
   PATH_SUFFIXES
     ${KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins/webrtcendpoint
 )

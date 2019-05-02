@@ -23,33 +23,33 @@ set(ENUM_HEADERS
 list(APPEND KMS_RTPENDPOINT_HEADERS ${ENUM_HEADERS})
 add_glib_enumtypes(KMS_RTPENDPOINT_SOURCES KMS_RTPENDPOINT_HEADERS kms-rtp-enumtypes KMS ${ENUM_HEADERS})
 
-add_library(rtpendpoint MODULE ${KMS_RTPENDPOINT_SOURCES} ${KMS_RTPENDPOINT_HEADERS})
+add_library(kmsrtpendpoint MODULE ${KMS_RTPENDPOINT_SOURCES} ${KMS_RTPENDPOINT_HEADERS})
 if(SANITIZERS_ENABLED)
   add_sanitizers(rtpendpoint)
 endif()
 
-add_dependencies(rtpendpoint rtcpdemux)
+add_dependencies(kmsrtpendpoint rtcpdemux)
 
-set_property(TARGET rtpendpoint
+set_property(TARGET kmsrtpendpoint
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
 )
 
-target_link_libraries(rtpendpoint
+target_link_libraries(kmsrtpendpoint
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.5_LIBRARIES}
-  ${gstreamer-base-1.5_LIBRARIES}
-  ${gstreamer-sdp-1.5_LIBRARIES}
-  ${gstreamer-pbutils-1.5_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-sdp-1.0_LIBRARIES}
+  ${gstreamer-pbutils-1.0_LIBRARIES}
   ${nice_LIBRARIES}
 )
 
 install(
-  TARGETS rtpendpoint
+  TARGETS kmsrtpendpoint
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

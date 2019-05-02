@@ -27,7 +27,7 @@ generate_code(
       ${openssl_INCLUDE_DIRS}
   SERVER_IMPL_LIB_EXTRA_LIBRARIES
       kmshttpep
-      kmswebrtcendpointlib
+      kmswebrtcendpoint
       ${nice_LIBRARIES}
       ${KmsGstCommons_LIBRARIES}
       ${openssl_LIBRARIES}

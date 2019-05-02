@@ -39,33 +39,33 @@ set(ENUM_HEADERS
 add_glib_marshal(KMS_ELEMENTS_SOURCES KMS_ELEMENTS_HEADERS kms-elements-marshal __kms_elements_marshal)
 add_glib_enumtypes(KMS_ELEMENTS_SOURCES KMS_ELEMENTS_HEADERS kms-elements-enumtypes KMS ${ENUM_HEADERS})
 
-add_library(${LIBRARY_NAME}plugins MODULE ${KMS_ELEMENTS_SOURCES} ${KMS_ELEMENTS_HEADERS})
+add_library(${LIBRARY_NAME} MODULE ${KMS_ELEMENTS_SOURCES} ${KMS_ELEMENTS_HEADERS})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(${LIBRARY_NAME}plugins)
+  add_sanitizers(${LIBRARY_NAME})
 endif()
 
-add_dependencies(${LIBRARY_NAME}plugins webrtcendpoint rtpendpoint recorderendpoint)
+add_dependencies(${LIBRARY_NAME} webrtcendpoint kmsrtpendpoint kmsrecorderendpoint)
 
-set_property (TARGET ${LIBRARY_NAME}plugins
+set_property (TARGET ${LIBRARY_NAME}
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/../..
     ${KmsGstCommons_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
 )
 
-target_link_libraries(${LIBRARY_NAME}plugins
+target_link_libraries(${LIBRARY_NAME}
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.5_LIBRARIES}
-  ${gstreamer-base-1.5_LIBRARIES}
-  ${gstreamer-app-1.5_LIBRARIES}
-  ${gstreamer-pbutils-1.5_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-app-1.0_LIBRARIES}
+  ${gstreamer-pbutils-1.0_LIBRARIES}
   ${libsoup-2.4_LIBRARIES}
 )
 
 install(
-  TARGETS ${LIBRARY_NAME}plugins
+  TARGETS ${LIBRARY_NAME}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

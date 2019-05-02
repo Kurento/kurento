@@ -61,10 +61,10 @@ endif()
 
 target_link_libraries(webrtcdataproto
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.5_LIBRARIES}
-  ${gstreamer-base-1.5_LIBRARIES}
-  ${gstreamer-app-1.5_LIBRARIES}
-  ${gstreamer-sctp-1.5_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-app-1.0_LIBRARIES}
+  ${gstreamer-sctp-1.0_LIBRARIES}
 )
 
 set_property (TARGET webrtcdataproto
@@ -73,7 +73,8 @@ set_property (TARGET webrtcdataproto
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
+${gstreamer-sctp-1.0_INCLUDE_DIRS}
 )
 
 set_target_properties(webrtcdataproto PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}")
@@ -121,36 +122,37 @@ set(KMS_WEBRTC_HEADERS
 
 add_glib_marshal(KMS_WEBRTC_SOURCES KMS_WEBRTC_HEADERS kms-webrtc-marshal __kms_webrtc_marshal)
 
-add_library(kmswebrtcendpointlib SHARED ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
+add_library(kmswebrtcendpoint SHARED ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(kmswebrtcendpointlib)
+  add_sanitizers(kmswebrtcendpoint)
 endif()
 
-add_dependencies(kmswebrtcendpointlib rtcpdemux)
+add_dependencies(kmswebrtcendpoint rtcpdemux)
 
-target_link_libraries(kmswebrtcendpointlib
+target_link_libraries(kmswebrtcendpoint
   webrtcdataproto
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.5_LIBRARIES}
-  ${gstreamer-base-1.5_LIBRARIES}
-  ${gstreamer-pbutils-1.5_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-pbutils-1.0_LIBRARIES}
   ${nice_LIBRARIES}
 )
 
-set_property (TARGET kmswebrtcendpointlib
+set_property (TARGET kmswebrtcendpoint
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
+${gstreamer-sctp-1.0_INCLUDE_DIRS}
     ${nice_INCLUDE_DIRS}
 )
 
-set_target_properties(kmswebrtcendpointlib PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_HEADERS}")
-set_target_properties(kmswebrtcendpointlib PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties(kmswebrtcendpoint PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_HEADERS}")
+set_target_properties(kmswebrtcendpoint PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 install(
-  TARGETS kmswebrtcendpointlib
+  TARGETS kmswebrtcendpoint
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -181,11 +183,12 @@ set_property (TARGET webrtcendpoint
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
-    ${gstreamer-1.5_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
+${gstreamer-sctp-1.0_INCLUDE_DIRS}
 )
 
 target_link_libraries(webrtcendpoint
-  kmswebrtcendpointlib
+  kmswebrtcendpoint
 )
 
 install(
