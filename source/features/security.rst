@@ -1,19 +1,16 @@
-.. _securingapps:
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+=============================
 Securing Kurento Applications
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+=============================
 
 [TODO full review]
 
-Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or
-localhost). Check their
-`release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`__
-for further information about this issue.
+Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or localhost). Check their `release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`__ for further information about this issue.
 
 .. note::
 
-      Keep in mind that serving your application through HTTPS, forces you to use WebSockets Secure (WSS) if you are using websockets to control your application server.
+   Keep in mind that serving your application through HTTPS, forces you to use WebSockets Secure (WSS) if you are using websockets to control your application server.
+
+
 
 Securing Application Servers
 ============================
@@ -23,37 +20,32 @@ Securing Application Servers
 Configure a Java server to use HTTPS
 ------------------------------------
 
-
 * The application needs a certificate in order to enable HTTPS:
 
    * Request a certificate from a local certification authority.
 
    * Create an self-signed certificate.
 
-      .. sourcecode:: bash
+     .. sourcecode:: bash
 
-         keytool -genkey -keyalg RSA -alias selfsigned -keystore \
-         keystore.jks -storepass password -validity 360 -keysize 2048
+        keytool -genkey -keyalg RSA -alias selfsigned -keystore \
+        keystore.jks -storepass password -validity 360 -keysize 2048
 
 * Use the certificate in your application:
 
-     * Include a valid keystore in the *jar* file:
+  * Include a valid keystore in the *jar* file:
 
-        File *keystore.jks* must be in the project's root path, and a
-        file named *application.properties* must exist in
-        *src/main/resources/*, with the following content:
+    A file *keystore.jks* must be in the project's root path, and a file named *application.properties* must exist in *src/main/resources/*, with the following content:
 
-         .. sourcecode:: bash
+    .. sourcecode:: text
 
-            server.port: 8443
-            server.ssl.key-store: keystore.jks
-            server.ssl.key-store-password: yourPassword
-            server.ssl.keyStoreType: JKS
-            server.ssl.keyAlias: yourKeyAlias
+       server.port: 8443
+       server.ssl.key-store: keystore.jks
+       server.ssl.key-store-password: yourPassword
+       server.ssl.keyStoreType: JKS
+       server.ssl.keyAlias: yourKeyAlias
 
-      * You can also specify the location of the properties file. When
-        launching your Spring-Boot based app, issue the flag
-        ``-Dspring.config.location=<path-to-properties>`` .
+    * You can also specify the location of the properties file. When launching your Spring-Boot based app, issue the flag ``-Dspring.config.location=<path-to-properties>`` .
 
 * Start application
 
@@ -63,7 +55,7 @@ Configure a Java server to use HTTPS
 
 .. note::
 
-      If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#websocket-server-allowed-origins>`__ entry for more info.
+   If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#websocket-server-allowed-origins>`__ entry for more info.
 
 
 
@@ -72,16 +64,13 @@ Configure a Java server to use HTTPS
 Configure a Node server to use HTTPS
 ------------------------------------
 
-* The application requires a valid SSL certificate in order to enable HTTPS:
+* You will need to provide a valid SSL certificate in order to enable HTTPS. Here, there are two alternatives:
 
-   * Request a certificate from a local certification authority.
+  1. Request a certificate from a local Certification Authority (*CA*).
 
-   * Create your own self-signed certificate as explained
-     `here <https://www.akadia.com/services/ssh_test_certificate.html>`__. This
-     will show you how to create the required files: *server.crt*, *server.key*
-     and *server.csr*.
+  2. Create your own self-signed certificate as explained `here <https://www.akadia.com/services/ssh_test_certificate.html>`__. This link will teach you how to create the required files: *server.crt*, *server.key*, and *server.csr*.
 
-Add the following changes to *server.js* in order to enable HTTPS:
+* Add the following changes to *server.js* in order to enable HTTPS:
 
 .. sourcecode:: javascript
 
@@ -149,13 +138,10 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
 
 
 
-Securing application servers
-============================
-
 .. _features-security-kms-wss:
 
-Configure Kurento Media Server to use Secure WebSocket (WSS)
-------------------------------------------------------------
+Securing Kurento Media Server
+=============================
 
 First, you need to change the configuration file of Kurento Media Server, i.e.
 ``/etc/kurento/kurento.conf.json``, uncommenting the following lines::
