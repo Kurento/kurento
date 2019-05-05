@@ -67,6 +67,8 @@ Configure a Java server to use HTTPS
 
 
 
+.. _features-security-node-https:
+
 Configure a Node server to use HTTPS
 ------------------------------------
 
@@ -118,24 +120,33 @@ Add the following changes to *server.js* in order to enable HTTPS:
 
    npm start
 
-Configure Javascript applications to use HTTPS
+
+
+.. _features-security-js-https:
+
+Configure JavaScript applications to use HTTPS
 ----------------------------------------------
 
-* You'll need to provide a valid SSL certificate in order to enable HTTPS:
+WebRTC requires HTTPS, so your JavaScript application must be served by a secure web server. You can use whichever one you prefer, such as Nginx or Apache. For quick tests, a very straightforward option is to use the simple, zero-configuration `http-server <https://www.npmjs.com/package/http-server>`__ based on Node.js:
 
-   * Request a certificate from a local certification authority.
+.. code-block:: bash
 
-   * Create your own self-signed certificate as explained
-     `here <https://www.akadia.com/services/ssh_test_certificate.html>`__. This
-     will show you how to create the required files: *server.crt*, *server.key*
-     and *server.csr*.
+   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+   sudo apt-get install -y nodejs
+   sudo npm install -g http-server
 
+* You will need to provide a valid SSL certificate in order to enable HTTPS. Here, there are two alternatives:
 
-* Start the application using the certificates:
+  1. Request a certificate from a local Certification Authority (*CA*).
 
-.. sourcecode:: bash
+  2. Create your own self-signed certificate as explained `here <https://www.akadia.com/services/ssh_test_certificate.html>`__. This link will teach you how to create the required files: *server.crt*, *server.key*, and *server.csr*.
 
-   http-server -p 8443 -S -C keys/server.crt -K keys/server.key
+* Start the web server using the SSL certificate:
+
+  .. code-block:: bash
+
+     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
+
 
 
 Securing application servers

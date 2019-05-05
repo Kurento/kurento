@@ -5,15 +5,12 @@ JavaScript Module - Pointer Detector Filter
 This web application consists on a `WebRTC`:term: video communication in mirror
 (*loopback*) with a pointer tracking filter element.
 
-.. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-javascript-applications-to-use-https>`_
-   for securing your application.
 
-For the impatient: running this example
-=======================================
+Running this example
+====================
 
-First of all, install Kurento Media Server: :doc:`/user/installation`.
+First of all, install Kurento Media Server: :doc:`/user/installation`. Start the media server and leave it running in the background.
 
 .. note::
 
@@ -21,21 +18,20 @@ First of all, install Kurento Media Server: :doc:`/user/installation`.
 
    This is not an issue if you will run both KMS and the tutorial demo locally, because browsers (at least Chrome at the time of this writing) allow connecting to insecure WebSockets from HTTPS pages, as long as everything happens in ``localhost``.
 
-After getting a properly configured KMS installation, leave the media server running in the background.
+Install :term:`Node.js`, :term:`Bower`, and a web server in your system:
 
-Install :term:`Node.js` and :term:`Bower` in your system:
-
-.. sourcecode:: bash
+.. code-block:: bash
 
    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
    sudo apt-get install -y nodejs
    sudo npm install -g bower
-
-WebRTC requires HTTPS, so this tutorial demo must be served by a secure web server. You can use whichever one you prefer, such as Nginx or Apache. For quick tests, a very straightforward option is to use Node.js to run the simple, zero-configuration `http-server <https://www.npmjs.com/package/http-server>`__:
-
-.. sourcecode:: bash
-
    sudo npm install -g http-server
+
+Here, we suggest using the simple Node.js ``http-server``, but you could use any other web server.
+
+.. note::
+
+   You need to configure the web server with HTTPS. For more information, check :ref:`features-security-js-https`.
 
 You also need the source code of this demo; clone it from GitHub, then start the web server:
 
@@ -60,6 +56,8 @@ Finally, access the web application by using a WebRTC-capable browser (Firefox, 
   .. code-block:: text
 
      https://localhost:8443/index.html?ws_uri=wss://<KmsIp>:<KmsPort>/kurento
+
+
 
 Understanding this example
 ==========================
