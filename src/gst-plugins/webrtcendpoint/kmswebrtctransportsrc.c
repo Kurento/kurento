@@ -29,7 +29,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define kms_webrtc_transport_src_parent_class parent_class
 G_DEFINE_TYPE (KmsWebrtcTransportSrc, kms_webrtc_transport_src, GST_TYPE_BIN);
 
-#define SRTPDEC_NAME "srtp-decoder"
+#define SRTPDEC_FACTORY_NAME "srtpdec"
 
 static void
 kms_webrtc_transport_src_init (KmsWebrtcTransportSrc * self)
@@ -40,18 +40,41 @@ kms_webrtc_transport_src_init (KmsWebrtcTransportSrc * self)
 void
 kms_webrtc_transport_src_connect_elements (KmsWebrtcTransportSrc * self)
 {
-  GstElement *srtpdec;
+  GstElement *element;
 
   gst_bin_add_many (GST_BIN (self), self->src, self->dtlssrtpdec, NULL);
   gst_element_link (self->src, self->dtlssrtpdec);
 
-  srtpdec = gst_bin_get_by_name (GST_BIN (self->dtlssrtpdec), SRTPDEC_NAME);
-  if (srtpdec != NULL) {
-    g_object_set (srtpdec, "replay-window-size", RTP_RTX_SIZE, NULL);
-    g_object_unref (srtpdec);
-  } else {
-    GST_WARNING ("Cannot get srtpdec with name %s", SRTPDEC_NAME);
+  // Iterate over the dtlssrtpdec bin to set the srtpdec
+  GstIterator *it = gst_bin_iterate_elements (GST_BIN (self->dtlssrtpdec));
+  GValue item = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  while (!done) {
+    switch (gst_iterator_next (it, &item)) {
+      case GST_ITERATOR_OK:
+        element = g_value_get_object (&item);
+
+        if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
+                (gst_element_get_factory (element))), SRTPDEC_FACTORY_NAME) == 0) {
+          g_object_set (element, "replay-window-size", RTP_RTX_SIZE, NULL);
+        }
+
+        g_value_reset (&item);
+        break;
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        done = TRUE;
+        break;
+      case GST_ITERATOR_DONE:
+        done = TRUE;
+        break;
+    }
   }
+
+  gst_iterator_free (it);
 }
 
 void

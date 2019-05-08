@@ -29,8 +29,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define kms_webrtc_transport_sink_parent_class parent_class
 G_DEFINE_TYPE (KmsWebrtcTransportSink, kms_webrtc_transport_sink, GST_TYPE_BIN);
 
-#define FUNNEL_NAME "funnel"
-#define SRTPENC_NAME "srtp-encoder"
+#define FUNNEL_FACTORY_NAME "funnel"
+#define SRTPENC_FACTORY_NAME "srtpenc"
 
 static void
 kms_webrtc_transport_sink_init (KmsWebrtcTransportSink * self)
@@ -41,27 +41,45 @@ kms_webrtc_transport_sink_init (KmsWebrtcTransportSink * self)
 void
 kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink * self)
 {
-  GstElement *funnel, *srtpenc;
+  GstElement *element;
 
   gst_bin_add_many (GST_BIN (self), self->dtlssrtpenc, self->sink, NULL);
   gst_element_link (self->dtlssrtpenc, self->sink);
 
-  funnel = gst_bin_get_by_name (GST_BIN (self->dtlssrtpenc), FUNNEL_NAME);
-  if (funnel != NULL) {
-    g_object_set (funnel, "forward-sticky-events-mode", 0 /* never */ , NULL);
-    g_object_unref (funnel);
-  } else {
-    GST_WARNING ("Cannot get funnel with name %s", FUNNEL_NAME);
+  // Iterate over the dtlssrtpenc bin to set the srtpenc and funnel props
+  GstIterator *it = gst_bin_iterate_elements (GST_BIN (self->dtlssrtpenc));
+  GValue item = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  while (!done) {
+    switch (gst_iterator_next (it, &item)) {
+      case GST_ITERATOR_OK:
+        element = g_value_get_object (&item);
+
+        if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
+                (gst_element_get_factory (element))), SRTPENC_FACTORY_NAME) == 0) {
+          g_object_set (G_OBJECT (element),
+              "allow-repeat-tx", TRUE, "replay-window-size", RTP_RTX_SIZE, NULL);
+        } else if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
+                (gst_element_get_factory (element))), FUNNEL_FACTORY_NAME) == 0) {
+          g_object_set (element, "forward-sticky-events-mode", 0 /* never */ , NULL);
+        }
+
+        g_value_reset (&item);
+        break;
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        done = TRUE;
+        break;
+      case GST_ITERATOR_DONE:
+        done = TRUE;
+        break;
+    }
   }
 
-  srtpenc = gst_bin_get_by_name (GST_BIN (self->dtlssrtpenc), SRTPENC_NAME);
-  if (srtpenc != NULL) {
-    g_object_set (srtpenc, "allow-repeat-tx", TRUE, "replay-window-size",
-        RTP_RTX_SIZE, NULL);
-    g_object_unref (srtpenc);
-  } else {
-    GST_WARNING ("Cannot get srtpenc with name %s", SRTPENC_NAME);
-  }
+  gst_iterator_free (it);
 }
 
 void
