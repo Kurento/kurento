@@ -1,0 +1,21 @@
+#!/bin/bash -x
+set -eu -o pipefail
+
+# CRON: 0 1 * * * /usr/local/bin/update_ubuntu_images > /var/log/update-ubuntu-images.log
+# Will download newest images for Ubuntu in our infra every night at 1 am
+
+PS1='\$ '
+source /etc/admin-openrc
+TMPDIR=$(mktemp -d)
+
+wget -q -O $TMPDIR/ubuntu16.img http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+openstack image delete "Ubuntu Xenial"
+openstack image create "Ubuntu Xenial" --file $TMPDIR/ubuntu16.img --disk-format qcow2 --container-format bare --public
+
+wget -q -O $TMPDIR/ubuntu18.img http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img
+openstack image delete "Ubuntu Beaver"
+openstack image create "Ubuntu Beaver" --file $TMPDIR/ubuntu18.img --disk-format qcow2 --container-format bare --public
+
+# Cleaning
+rm -rf $TMPDIR
+
