@@ -58,6 +58,12 @@ RUN apt-get update \
         gnupg \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install curl, needed for health check
+RUN apt-get update \
+ && apt-get install --yes \
+        curl \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Configure apt-get
 # * Disable installation of recommended and suggested packages
 # * Add Kurento package repository
