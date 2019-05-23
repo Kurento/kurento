@@ -47,24 +47,20 @@ ARG UBUNTU_VERSION=xenial
 ARG KMS_VERSION=0.0.0
 
 # Configure environment
+# * DEBIAN_FRONTEND: Disable interactive questions and messages
 # * LANG: Set the default locale for all commands
-# * DEBIAN_FRONTEND: Disable user-facing questions and messages
-ENV LANG=C.UTF-8 \
-    DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
 
-# Install GnuPG, needed for `apt-key adv` (since Ubuntu 18.04)
-RUN apt-get update \
- && apt-get install --yes \
+# Install required tools:
+# * gnupg: For `apt-key adv` (since Ubuntu 18.04)
+# * curl: For `healthchecker.sh`
+RUN apt-get update && apt-get install --yes \
         gnupg \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install curl, needed for health check
-RUN apt-get update \
- && apt-get install --yes \
         curl \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
-# Configure apt-get
+# Configure `apt-get`:
 # * Disable installation of recommended and suggested packages
 # * Add Kurento package repository
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
@@ -76,21 +72,19 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
 # Install Kurento Media Server
-RUN apt-get update \
- && apt-get install --yes \
+RUN apt-get update && apt-get install --yes \
         kurento-media-server \
- ; apt-get clean && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
 # Install additional modules
 # These might not be available in Ubuntu 18.04 (Bionic)
-RUN apt-get update \
- && apt-get install --yes \
+RUN apt-get update && apt-get install --yes \
         kms-chroma \
         kms-crowddetector \
         kms-platedetector \
         kms-pointerdetector \
- || true \
- ; apt-get clean && rm -rf /var/lib/apt/lists/*
+    || true \
+ && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8888
 

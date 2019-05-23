@@ -31,22 +31,21 @@ ARG UBUNTU_VERSION=xenial
 FROM kurento/kurento-buildpackage:${UBUNTU_VERSION}
 
 # Install a basic set of packages
-# * default-jdk (Java JDK), maven: Used by Java based projects
-# * jshon: Used by some JavaScript tools
-RUN apt-get update \
- && apt-get install --yes \
+# * default-jdk (Java JDK): For Java projects
+# * maven: For Java projects
+# * jshon: For some JavaScript tools
+RUN apt-get update && apt-get install --yes \
         default-jdk \
         maven \
         jshon \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 8.x LTS (includes NPM) and Bower
 # Used by JavaScript-based projects
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
- && apt-get update \
- && apt-get install --yes \
+ && apt-get update && apt-get install --yes \
         nodejs \
- && apt-get clean && rm -rf /var/lib/apt/lists/* \
+ && rm -rf /var/lib/apt/lists/* \
  && npm -g install bower \
  && npm cache clean --force
 
