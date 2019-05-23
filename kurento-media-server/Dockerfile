@@ -92,8 +92,13 @@ EXPOSE 8888
 # * Use default suggested logging levels:
 #   https://doc-kurento.readthedocs.io/en/latest/features/logging.html#suggested-levels
 # * Disable colors in debug logs
+# * Provide STUN and TURN server details (can be empty):
+#   https://doc-kurento.readthedocs.io/en/latest/user/installation.html#stun-and-turn-servers
 ENV GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4" \
-    GST_DEBUG_NO_COLOR=1
+    GST_DEBUG_NO_COLOR=1 \
+    KMS_STUN_IP="" \
+    KMS_STUN_PORT="" \
+    KMS_TURN_URL=""
 
 COPY ./entrypoint.sh /entrypoint.sh
 COPY ./healthchecker.sh /healthchecker.sh

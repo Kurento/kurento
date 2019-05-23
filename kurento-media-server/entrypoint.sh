@@ -1,5 +1,10 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+
+# Bash options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
+
+# Trace all commands
+set -o xtrace
 
 if [ -n "$KMS_TURN_URL" ]; then
   echo "turnURL=$KMS_TURN_URL" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
