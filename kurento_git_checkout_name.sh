@@ -83,7 +83,7 @@ BRANCH_NAME="refs/remotes/origin/${CFG_NAME}"
 TAG_NAME="refs/tags/${CFG_NAME}"
 
 if git rev-parse --verify --quiet "$BRANCH_NAME"; then
-    git checkout "$BRANCH_NAME"
+    git checkout --track "$BRANCH_NAME"
 elif git rev-parse --verify --quiet "$TAG_NAME"; then
     git checkout "$TAG_NAME"
 else
