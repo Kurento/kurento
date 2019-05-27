@@ -32,6 +32,14 @@
 #/   Git branch or tag that should be checked out, if it exists.
 #/
 #/
+#/ * Variable(s) from job Multi-Configuration ("Matrix") Project axis:
+#/
+#/ JOB_DISTRO
+#/
+#/   Name of the Ubuntu distribution where this job is run.
+#/   E.g.: "xenial", "bionic".
+#/
+#/
 #/ * Variable(s) from job Custom Tools (with "Install custom tools"):
 #/
 #/ KURENTO_SCRIPTS_HOME
@@ -94,7 +102,8 @@ log "CFG_JS=$CFG_JS"
 # ---------
 
 # Check out the requested branch
-"${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" "$JOB_GIT_NAME"
+"${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
+    --name "$JOB_GIT_NAME" --fallback "$JOB_DISTRO"
 
 
 
@@ -113,5 +122,4 @@ RUN_COMMANDS=(
 )
 
 export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:xenial"
-docker pull "$CONTAINER_IMAGE"
 "${KURENTO_SCRIPTS_HOME}/kurento_ci_container_job_setup.sh" "${RUN_COMMANDS[@]}"

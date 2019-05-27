@@ -10,9 +10,20 @@
 #/ Arguments
 #/ ---------
 #/
-#/ <Name>
+#/ --name <GitName>
 #/
-#/   Branch or tag name that should be checked out.
+#/   Git branch or tag name that should be checked out, if it exists.
+#/
+#/   Optional. Default: 'master'.
+#/   See also: '--fallback'.
+#/
+#/ --fallback <FallbackName>
+#/
+#/   Branch name that should be checked out when a <GitName> has been
+#/   requested but it doesn't exist in the current repository.
+#/
+#/   Optional. Default: 'master'.
+#/   See also: '--name'.
 
 
 
@@ -31,29 +42,37 @@ set -o xtrace
 # Parse call arguments
 # --------------------
 
-CFG_NAME_DEFAULT="0"
-CFG_NAME="$CFG_NAME_DEFAULT"
+CFG_NAME="master"
+CFG_FALLBACK="master"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        *)
-            CFG_NAME="$1"
+        --name)
+            if [[ -n "${2-}" ]]; then
+                CFG_NAME="$2"
+                shift
+            else
+                log "ERROR: --name expects <GitName>"
+                log "Run with '--help' to read usage details"
+                exit 1
+            fi
+            ;;
+        --fallback)
+            if [[ -n "${2-}" ]]; then
+                CFG_FALLBACK="$2"
+                shift
+            else
+                log "ERROR: --fallback expects <FallbackName>"
+                log "Run with '--help' to read usage details"
+                exit 1
+            fi
             ;;
     esac
     shift
 done
 
-
-
-# Apply config restrictions
-# -------------------------
-
-if [[ "$CFG_NAME" == "$CFG_NAME_DEFAULT" ]]; then
-    log "ERROR: Missing <Name>"
-    exit 1
-fi
-
-log "CFG_NAME=${CFG_NAME}"
+log "CFG_NAME=$CFG_NAME"
+log "CFG_FALLBACK=$CFG_FALLBACK"
 
 
 
@@ -68,5 +87,18 @@ if git rev-parse --verify --quiet "$BRANCH_NAME"; then
 elif git rev-parse --verify --quiet "$TAG_NAME"; then
     git checkout "$TAG_NAME"
 else
-    git checkout master
+    # Use the fallback name
+    case "$CFG_FALLBACK" in
+        xenial|bionic)
+            BRANCH_NAME="refs/remotes/origin/ubuntu/${CFG_FALLBACK}"
+            ;;
+        *)
+            BRANCH_NAME="refs/remotes/origin/${CFG_FALLBACK}"
+            ;;
+    esac
+    if git rev-parse --verify --quiet "$BRANCH_NAME"; then
+        git checkout "$BRANCH_NAME"
+    else
+        git checkout master
+    fi
 fi

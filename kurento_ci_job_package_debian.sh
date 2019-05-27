@@ -58,7 +58,8 @@ set -o xtrace
 # ---------
 
 # Check out the requested branch
-"${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" "$JOB_GIT_NAME"
+"${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
+    --name "$JOB_GIT_NAME" --fallback "$JOB_DISTRO"
 
 # Set build arguments
 ARGS="--timestamp $JOB_TIMESTAMP"
