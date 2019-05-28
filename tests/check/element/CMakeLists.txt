@@ -92,7 +92,7 @@ target_include_directories(test_webrtcendpoint PRIVATE
                            ${nice_INCLUDE_DIRS}
                            "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
 target_link_libraries(test_webrtcendpoint
-                      kmswebrtcendpointlib
+                      kmswebrtcendpoint
                       ${gstreamer-1.0_LIBRARIES}
                       ${gstreamer-sdp-1.0_LIBRARIES}
                       ${gstreamer-check-1.0_LIBRARIES}
@@ -204,7 +204,7 @@ target_include_directories(test_ice_candidates PRIVATE
                            ${nice_INCLUDE_DIRS}
                            "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
 target_link_libraries(test_ice_candidates
-                      kmswebrtcendpointlib
+                      kmswebrtcendpoint
                       ${gstreamer-1.0_LIBRARIES}
                       ${gstreamer-sdp-1.0_LIBRARIES}
                       ${gstreamer-check-1.0_LIBRARIES}
