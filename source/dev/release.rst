@@ -33,7 +33,7 @@ General considerations
 - Contrary to the project version, the Debian package versions don't contain development suffixes, and should always be of the form ``1.2.3-0kurento1``:
 
   - The first part (*1.2.3*) is the project's **base version number**.
-  - The second part (*0kurento1*) is the **Debian package revision**. The first number (*0*) means that the package only exists in Kurento (not in Debian or Ubuntu); this is typically the case for the projects forked by Kurento. The rest (*kurento1*) means that this is the *first* package released by Kurento for the corresponding base version.
+  - The second part (*0kurento1*) is the **Debian package revision**. The first number (*0*) means that the package only exists in Kurento (not in Debian or Ubuntu); this is typically the case for the projects owned or forked by Kurento. The rest (*kurento1*) means that this is the *first* package released by Kurento for the corresponding base version.
 
   Please check the `Debian Policy Manual`_ and `this Ask Ubuntu answer`_ for more information about the package versions.
 
@@ -145,25 +145,32 @@ For each project above:
 Release steps
 -------------
 
-#. Set the Debian package version, commit the results, and create a tag.
+#. Decide what is going to be the *definitive release version*. For this, follow the upstream version and the SemVer guidelines, as explained above in :ref:`dev-release-general`.
+
+#. Set the definitive release version, commit the results, and create a tag.
 
    .. code-block:: bash
 
-      cd gst-plugins-bad
+      cd libnice
 
       # Edit these
       NEW_VERSION="0.1.15"
-      NEW_DEBIAN="1kurento3"
+      NEW_DEBIAN="0kurento1"
 
       PACKAGE_VERSION="${NEW_VERSION}-${NEW_DEBIAN}"
       COMMIT_MSG="Prepare release $PACKAGE_VERSION"
 
       gbp dch \
-          --ignore-branch \
-          --git-author \
-          --spawn-editor=never \
-          --new-version="$PACKAGE_VERSION" \
-          ./debian/
+            --ignore-branch \
+            --git-author \
+            --spawn-editor=never \
+            --new-version="$PACKAGE_VERSION" \
+            \
+            --release \
+            --distribution='testing' \
+            --force-distribution \
+            \
+            ./debian/
 
       SNAPSHOT_ENTRY="* UNRELEASED"
       RELEASE_ENTRY="* $COMMIT_MSG"
@@ -182,6 +189,30 @@ Release steps
       git push --follow-tags
 
 #. Follow on with releasing Kurento Media Server.
+
+#. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number.
+
+   .. code-block:: bash
+
+      cd libnice
+
+      # Edit these
+      NEW_VERSION="0.1.16"
+      NEW_DEBIAN="0kurento1"
+
+      PACKAGE_VERSION="${NEW_VERSION}-${NEW_DEBIAN}"
+      COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
+
+      gbp dch \
+            --ignore-branch \
+            --git-author \
+            --spawn-editor=never \
+            --new-version="$PACKAGE_VERSION" \
+            ./debian/
+
+      git add debian/changelog
+      git commit -m "$COMMIT_MSG"
+      git push
 
 
 
@@ -303,7 +334,9 @@ Release steps
 
    .. code-block:: bash
 
+      # Edit this
       NEW_VERSION="6.9.0"
+
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
       cd kms-omni-build
@@ -448,7 +481,9 @@ Release steps
 
    .. code-block:: bash
 
+      # Edit this
       NEW_VERSION="6.9.0"
+
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
       PROJECTS=(
@@ -480,7 +515,9 @@ Release steps
 
    .. code-block:: bash
 
+      # Edit this
       NEW_VERSION="6.9.1-dev"
+
       COMMIT_MSG="Prepare for next development iteration"
 
       PROJECTS=(
@@ -533,8 +570,11 @@ Kurento Maven plugin
 
    .. code-block:: bash
 
+      # Edit this
       NEW_VERSION="1.2.3"
+
       COMMIT_MSG="Prepare release $NEW_VERSION"
+
       git add pom.xml changelog
       git commit -m "$COMMIT_MSG"
       git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
@@ -662,7 +702,9 @@ Release steps
 
    .. code-block:: bash
 
+      # Edit this
       NEW_VERSION="6.9.0"
+
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
       pushd kurento-qa-pom
@@ -824,7 +866,9 @@ For this reason, the documentation must be built only after all the other module
 
    .. code-block:: bash
 
+      # Edit this
       NEW_VERSION="6.9.0"
+
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
       git add VERSIONS.conf.sh
