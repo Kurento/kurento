@@ -97,7 +97,7 @@ else
             ;;
     esac
     if git rev-parse --verify --quiet "$BRANCH_NAME"; then
-        git checkout "$BRANCH_NAME"
+        git checkout --track "$BRANCH_NAME"
     else
         git checkout master
     fi
