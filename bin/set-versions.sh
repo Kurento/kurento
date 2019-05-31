@@ -25,18 +25,39 @@
 #/   Check the Debian Policy for the syntax of this field:
 #/      https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
 #/
-#/   For Kurento packages, <DebianVersion> should be like "1kurento1":
-#/   - The first "1" indicates upstream package version, typically 1.
+#/   For Kurento packages, <DebianVersion> should be like "0kurento1":
+#/   - The first "0" indicates upstream package version, typically 0 meaning
+#/     that the package doesn't exist in upstream distribution (Ubuntu).
 #/   - The second "1" indicates the package revision from Kurento. If the same
 #/     version of some software is repackaged, this should be incremented, e.g.
-#/     "1kurento2".
+#/     "0kurento2".
 #/
-#/   Optional. Default: "1kurento1".
+#/   Optional. Default: "0kurento1".
 #/
 #/ --release
 #/
-#/   Use version numbers intended for Release builds, such as "1.2.3".
-#/   If this option is not given, a nightly/snapshot indicator is appended.
+#/   Use version numbers intended for Release builds, such as "1.2.3" instead
+#/   of "1.2.3-SNAPSHOT" or "1.2.3-dev".
+#/
+#/   If this option is not given, a nightly/snapshot indicator is appended:
+#/   "-dev" for C/C++ projects, and "-SNAPSHOT" for Java projects.
+#/
+#/   Optional. Default: Disabled.
+#/
+#/ --development
+#/
+#/   Mark the start of a new development iteration.
+#/
+#/   This option only has the effect of using the standard commit message
+#/   "Prepare for next development iteration" if '--commit' is also present.
+#/   The convention is to use this message to start development on a new
+#/   project version after having finished a release.
+#/
+#/   If this option is not given, the commit message will be
+#/   "Bump development version to <Version>", because this script doesn't know
+#/   if you are changing the version number after a release, or just as part
+#/   of normal development (e.g. according to SemVer, after adding a new feature
+#/   you should bump the minor version number).
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -71,8 +92,9 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 
 CFG_VERSION_DEFAULT="0.0.0"
 CFG_VERSION="$CFG_VERSION_DEFAULT"
-CFG_DEBIAN="1kurento1"
+CFG_DEBIAN="0kurento1"
 CFG_RELEASE="false"
+CFG_DEVELOPMENT="false"
 CFG_COMMIT="false"
 CFG_TAG="false"
 
@@ -90,6 +112,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --release)
             CFG_RELEASE="true"
+            ;;
+        --development)
+            CFG_DEVELOPMENT="true"
             ;;
         --commit)
             CFG_COMMIT="true"
@@ -109,6 +134,10 @@ done
 # Apply config restrictions
 # -------------------------
 
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    CFG_DEVELOPMENT="false"
+fi
+
 if [[ "$CFG_TAG" == "true" ]]; then
     if [[ "$CFG_RELEASE" != "true" ]] || [[ "$CFG_COMMIT" != "true" ]]; then
         log "WARNING: Ignoring '--tag': Requires '--release' and '--commit'"
@@ -124,6 +153,7 @@ fi
 log "CFG_VERSION=${CFG_VERSION}"
 log "CFG_DEBIAN=${CFG_DEBIAN}"
 log "CFG_RELEASE=${CFG_RELEASE}"
+log "CFG_DEVELOPMENT=${CFG_DEVELOPMENT}"
 log "CFG_COMMIT=${CFG_COMMIT}"
 log "CFG_TAG=${CFG_TAG}"
 
@@ -132,14 +162,20 @@ log "CFG_TAG=${CFG_TAG}"
 # Init internal variables
 # -----------------------
 
+PACKAGE_VERSION="${CFG_VERSION}-${CFG_DEBIAN}"
+
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    COMMIT_MSG="Prepare release $CFG_VERSION"
     SUFFIX_C=""
     SUFFIX_JAVA=""
+    COMMIT_MSG="Prepare release $PACKAGE_VERSION"
 else
-    COMMIT_MSG="Prepare for next development iteration"
     SUFFIX_C="-dev"
     SUFFIX_JAVA="-SNAPSHOT"
+    if [[ "$CFG_DEVELOPMENT" == "true" ]]; then
+        COMMIT_MSG="Prepare for next development iteration"
+    else
+        COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
+    fi
 fi
 
 
@@ -148,8 +184,6 @@ fi
 # ----------------
 
 update_changelog() {
-    local PACKAGE_VERSION="${CFG_VERSION}-${CFG_DEBIAN}"
-
     local SNAPSHOT_ENTRY="* UNRELEASED"
     local RELEASE_ENTRY="* $COMMIT_MSG"
 
