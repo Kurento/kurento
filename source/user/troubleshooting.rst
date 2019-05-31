@@ -57,10 +57,10 @@ However, these files won't contain much useful information if the relevant debug
       kurento-media-server-dbg
 
       # KMS extra modules
-      kms-chroma-dbg
-      kms-crowddetector-dbg
-      kms-platedetector-dbg
-      kms-pointerdetector-dbg
+      #kms-chroma-dbg
+      #kms-crowddetector-dbg
+      #kms-platedetector-dbg
+      #kms-pointerdetector-dbg
     )
 
     sudo apt-get update
