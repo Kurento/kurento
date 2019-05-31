@@ -30,7 +30,7 @@ Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
  gstreamer1.0-nice,
  kms-core (>= 6.7.0),
- openh264-gst-plugins-bad-1.0,
+ openh264-gst-plugin,
  openwebrtc-gst-plugins
 Breaks: kms-elements-6.0
 Replaces: kms-elements-6.0
