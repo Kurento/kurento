@@ -26,8 +26,10 @@ include(CommonBuildFlags)
 common_buildflags_set()
 #common_buildflags_print()
 
-# Development: Exceptions to "Warnings are Errors" rule
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+# Development: Add here exceptions to the "Warnings are Errors" rule.
+# Also, DOCUMENT WHY and always remove them as soon as the problem is fixed.
+# For example:
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 
 # FIXME Disable error when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered
 include(CheckCXXCompilerFlag)
@@ -35,6 +37,10 @@ CHECK_CXX_COMPILER_FLAG("-Wno-error=date-time" HAS_WARNING_DATE_TIME)
 if(HAS_WARNING_DATE_TIME)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=date-time")
 endif()
+
+# FIXME Disable error from deprecated function RSA_generate_key()
+# in src/server/implementation/CertificateManager.cpp:188
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
