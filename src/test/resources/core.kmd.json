@@ -875,7 +875,7 @@
         },
         {
           "name": "timestamp",
-          "doc": "@deprecated\n[DEPRECATED: Use timestampMillis] The timestamp associated with this object: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).",
+          "doc": "[DEPRECATED: Use timestampMillis] The timestamp associated with this object: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).",
           "type": "double"
         },
         {
@@ -1557,7 +1557,7 @@
         },
         {
           "name": "timestamp",
-          "doc": "@deprecated\n[DEPRECATED: Use timestampMillis] The timestamp associated with this object: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).",
+          "doc": "[DEPRECATED: Use timestampMillis] The timestamp associated with this object: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).",
           "type": "String"
         },
         {
