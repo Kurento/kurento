@@ -1186,7 +1186,7 @@ kms_http_ep_server_finalize (GObject *obj)
   }
 
   if (self->priv->server != nullptr) {
-    soup_server_disconnect (self->priv->server);
+    // soup_server_disconnect (self->priv->server);  g_clear_object -> dispose -> Already does soup_server_disconnect
     g_clear_object (&self->priv->server);
   }
 
