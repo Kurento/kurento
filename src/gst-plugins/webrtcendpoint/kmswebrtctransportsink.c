@@ -62,7 +62,7 @@ kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink * self)
               "allow-repeat-tx", TRUE, "replay-window-size", RTP_RTX_SIZE, NULL);
         } else if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
                 (gst_element_get_factory (element))), FUNNEL_FACTORY_NAME) == 0) {
-          g_object_set (element, "forward-sticky-events-mode", 0 /* never */ , NULL);
+          g_object_set (element, "forward-sticky-events", FALSE, NULL);
         }
 
         g_value_reset (&item);
