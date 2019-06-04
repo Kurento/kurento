@@ -136,12 +136,16 @@ kms_base_media_muxer_get_sink_fallback (KmsBaseMediaMuxer * self,
     if (kms_is_valid_uri (uri)) {
       /* We use souphttpclientsink */
       sink = gst_element_factory_make ("curlhttpsink", NULL);
-      g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE,
-          "async", FALSE, NULL);
+      if (sink != NULL) {
+        g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE,
+            "async", FALSE, NULL);
+      }
+      else {
+        GST_ERROR_OBJECT (self, "CURL HTTP element not available: curlhttpsink");
+      }
     } else {
       GST_ERROR_OBJECT (self, "URL not valid");
     }
-
   }
 
   g_free (prot);
