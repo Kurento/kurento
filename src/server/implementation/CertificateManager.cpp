@@ -16,9 +16,11 @@
  */
 
 #include "CertificateManager.hpp"
-#include <openssl/ssl.h>
-#include <openssl/err.h>
 #include <gst/gst.h>
+#include <openssl/bn.h>
+#include <openssl/err.h>
+#include <openssl/rsa.h>
+#include <openssl/ssl.h>
 #include <memory>
 
 #define GST_CAT_DEFAULT kurento_certificate_manager
@@ -179,16 +181,21 @@ generateCertificate (EVP_PKEY *private_key)
 std::string
 CertificateManager::generateRSACertificate ()
 {
-  RSA *rsa;
   std::shared_ptr <EVP_PKEY> private_key;
   std::string pem;
   std::string rsaKey;
   std::string certificateRSA;
 
-  rsa = RSA_generate_key(2048, RSA_F4, nullptr, nullptr);
+  BIGNUM *e = BN_new();
+  BN_set_word(e, RSA_F4);
+  RSA *rsa = RSA_new();
 
-  if (rsa == nullptr) {
-    GST_ERROR ("RSA not created");
+  // May need CRYPTO_cleanup_all_ex_data() at the end of the program
+  int rc = RSA_generate_key_ex(rsa, 2048, e, NULL);
+  BN_free(e);
+  if (rc == 0) {
+    GST_ERROR ("RSA_generate_key_ex(): %s",
+        ERR_reason_error_string (ERR_get_error ()));
     return certificateRSA;
   }
 
@@ -199,17 +206,14 @@ CertificateManager::generateRSACertificate ()
 
   if (private_key == nullptr) {
     GST_ERROR ("Private key not created");
-    RSA_free (rsa);
     return certificateRSA;
   }
 
+  // Takes ownership of 'rsa'
   if (EVP_PKEY_assign_RSA (private_key.get(), rsa) == 0) {
     GST_ERROR ("Private key not assigned");
-    RSA_free (rsa);
     return certificateRSA;
   }
-
-  rsa = nullptr;
 
   pem = generateCertificate (private_key.get() );
 
