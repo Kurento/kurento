@@ -91,7 +91,7 @@ kms_webrtc_transport_new (KmsIceBaseAgent * agent,
   tr = KMS_WEBRTC_TRANSPORT (g_object_new (KMS_TYPE_WEBRTC_TRANSPORT, NULL));
 
   if (tr->sink->dtlssrtpenc == NULL || tr->src->dtlssrtpdec == NULL) {
-    GST_ERROR ("SRTP elements not available: dtlssrtpenc, dtlssrtpdec");
+    GST_ERROR ("SRTP plugin not available: dtlssrtpenc, dtlssrtpdec");
     g_object_unref (tr);
     return NULL;
   }
