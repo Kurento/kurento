@@ -141,7 +141,7 @@ kms_base_media_muxer_get_sink_fallback (KmsBaseMediaMuxer * self,
             "async", FALSE, NULL);
       }
       else {
-        GST_ERROR_OBJECT (self, "CURL HTTP element not available: curlhttpsink");
+        GST_ERROR_OBJECT (self, "CURL HTTP plugin not available: curlhttpsink");
       }
     } else {
       GST_ERROR_OBJECT (self, "URL not valid");
