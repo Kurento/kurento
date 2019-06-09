@@ -292,8 +292,6 @@ function apt_update_maybe {
 
 # If requested, add the repository
 if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
-    log "Requested installation of Kurento packages"
-
     log "Add the Kurento Apt repository key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
@@ -349,6 +347,10 @@ pushd "$CFG_SRCDIR" || {
 log "Install build dependencies"
 
 apt_update_maybe
+
+# In clean Ubuntu systems 'tzdata' might not be installed yet, but it may be now,
+# so make sure interactive prompts from it are disabled
+DEBIAN_FRONTEND=noninteractive \
 mk-build-deps --install --remove \
     --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     ./debian/control
