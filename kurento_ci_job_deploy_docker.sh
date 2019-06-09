@@ -21,6 +21,11 @@
 #/
 #/   Numeric timestamp shown in the version of nightly packages.
 #/
+#/ JOB_DISTRO
+#/
+#/   Name of the Ubuntu distribution where this job is run.
+#/   E.g.: "xenial", "bionic".
+#/
 #/ JOB_DEPLOY_NAME
 #/
 #/   Special identifier for the repository.
@@ -31,14 +36,6 @@
 #/
 #/   Version of Kurento Media Server that will be installed in the image.
 #/   Required. Default: "0.0.0" (invalid version).
-#/
-#/
-#/ * Variable(s) from Multi-Configuration ("Matrix") Project axis:
-#/
-#/ JOB_DISTRO
-#/
-#/   Name of the Ubuntu distribution where this job is run.
-#/   E.g.: "xenial", "bionic".
 #/
 #/
 #/ * Variable(s) from job Custom Tools (with "Install custom tools"):
