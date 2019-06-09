@@ -33,6 +33,14 @@
 #/   Required. Default: "0.0.0" (invalid version).
 #/
 #/
+#/ * Variable(s) from Multi-Configuration ("Matrix") Project axis:
+#/
+#/ JOB_DISTRO
+#/
+#/   Name of the Ubuntu distribution where this job is run.
+#/   E.g.: "xenial", "bionic".
+#/
+#/
 #/ * Variable(s) from job Custom Tools (with "Install custom tools"):
 #/
 #/ KURENTO_SCRIPTS_HOME
@@ -93,7 +101,7 @@ cd ./kurento-media-server/
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
-export BUILD_ARGS="UBUNTU_VERSION=xenial KMS_VERSION=$DOCKER_KMS_VERSION"
+export BUILD_ARGS="UBUNTU_VERSION=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION"
 export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$DEPLOY_SPECIAL" == "true" ]]; then
