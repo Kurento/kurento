@@ -24,9 +24,9 @@
 #   Any of these situations will abort the script and exit, instead of
 #   the normal behavior of continuing silently.
 #
-# * Exit traps.
-#   To complement the strict error checking, trap functions will
-#   run before the script exits, to print information about its success.
+# * Exit trap.
+#   To complement the strict error checking, an exit function will run
+#   before the script ends, to print information about its success.
 #
 # * Log function.
 #   The log() function prints log messages. If the shell debug trace mode
@@ -40,7 +40,8 @@
 
 
 
-# ------------ Shell setup ------------
+# Shell setup
+# -----------
 
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
@@ -53,19 +54,15 @@ BASENAME="$(basename "$0")"  # Complete file name
 echo_and_restore() {
     echo "[${BASENAME}] $(cat -)"
     # shellcheck disable=SC2154
-    case "$flags" in (*x*) set -x ; esac
+    case "$flags" in (*x*) set -x; esac
 }
 alias log='({ flags="$-"; set +x; } 2>/dev/null; echo_and_restore) <<<'
 
-# Trap functions
-on_error() {
-    _ERR=$?
-}
-trap on_error ERR
-
+# Exit trap
+# This runs at the end or, thanks to 'errexit', upon any error
 on_exit() {
-    _ERR="${_ERR:-$?}"  # Get either trap code, or this script's exit code
-    if ((_ERR)); then log "ERROR ($_ERR)"; else log "SUCCESS"; fi
+    { _RC="$?"; set +x; } 2>/dev/null
+    if ((_RC)); then log "ERROR ($_RC)"; else log "SUCCESS"; fi
     log "#################### END ####################"
 }
 trap on_exit EXIT
