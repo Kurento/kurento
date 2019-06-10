@@ -44,20 +44,20 @@
 #/
 #/   Optional. Default: Disabled.
 #/
-#/ --development
+#/ --new-development
 #/
 #/   Mark the start of a new development iteration.
 #/
 #/   This option only has the effect of using the standard commit message
-#/   "Prepare for next development iteration" if '--commit' is also present.
-#/   The convention is to use this message to start development on a new
-#/   project version after having finished a release.
+#/   "Prepare for next development iteration" if '--commit' is also present. The
+#/   convention is to use this message to start development on a new project
+#/   version after having finished a release.
 #/
-#/   If this option is not given, the commit message will be
-#/   "Bump development version to <Version>", because this script doesn't know
-#/   if you are changing the version number after a release, or just as part
-#/   of normal development (e.g. according to SemVer, after adding a new feature
-#/   you should bump the minor version number).
+#/   If neither '--release' nor '--new-development' are given, the commit
+#/   message will be "Bump development version to <Version>", because this
+#/   script doesn't know if you are changing the version number after a release,
+#/   or just as part of normal development (e.g. according to SemVer, after
+#/   adding a new feature you should bump the Minor version number).
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -94,7 +94,7 @@ CFG_VERSION_DEFAULT="0.0.0"
 CFG_VERSION="$CFG_VERSION_DEFAULT"
 CFG_DEBIAN="0kurento1"
 CFG_RELEASE="false"
-CFG_DEVELOPMENT="false"
+CFG_NEWDEVELOPMENT="false"
 CFG_COMMIT="false"
 CFG_TAG="false"
 
@@ -113,8 +113,8 @@ while [[ $# -gt 0 ]]; do
         --release)
             CFG_RELEASE="true"
             ;;
-        --development)
-            CFG_DEVELOPMENT="true"
+        --new-development)
+            CFG_NEWDEVELOPMENT="true"
             ;;
         --commit)
             CFG_COMMIT="true"
@@ -135,7 +135,7 @@ done
 # -------------------------
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    CFG_DEVELOPMENT="false"
+    CFG_NEWDEVELOPMENT="false"
 fi
 
 if [[ "$CFG_TAG" == "true" ]]; then
@@ -153,9 +153,9 @@ fi
 log "CFG_VERSION=${CFG_VERSION}"
 log "CFG_DEBIAN=${CFG_DEBIAN}"
 log "CFG_RELEASE=${CFG_RELEASE}"
-log "CFG_DEVELOPMENT=${CFG_DEVELOPMENT}"
 log "CFG_COMMIT=${CFG_COMMIT}"
 log "CFG_TAG=${CFG_TAG}"
+log "CFG_NEWDEVELOPMENT=$CFG_NEWDEVELOPMENT"
 
 
 
@@ -171,7 +171,7 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 else
     SUFFIX_C="-dev"
     SUFFIX_JAVA="-SNAPSHOT"
-    if [[ "$CFG_DEVELOPMENT" == "true" ]]; then
+    if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
     else
         COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
