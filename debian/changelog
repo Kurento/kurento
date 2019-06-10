@@ -1,9 +1,18 @@
-kms-filters (6.11.0-0kurento1) UNRELEASED; urgency=medium
+kms-filters (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
+  [ Juan Navarro ]
   * UNRELEASED
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 10 Apr 2019 14:14:39 +0200
+  [ Mario Jr ]
+  * First version of GStreamer 1.14 port
+
+  [ Juan Navarro ]
+  * debian/control: Add deps needed for building and testing
+  * debian/control: Add deps needed for unit tests
+  * debian/control: Add deps needed for building and testing
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Jun 2019 11:12:36 +0200
 
 kms-filters (6.10.0-0kurento1) testing; urgency=medium
 
