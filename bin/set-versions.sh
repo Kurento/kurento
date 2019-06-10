@@ -26,10 +26,10 @@
 #/      https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
 #/
 #/   For Kurento packages, <DebianVersion> should be like "0kurento1":
-#/   - The first "0" indicates upstream package version, typically 0 meaning
-#/     that the package doesn't exist in upstream distribution (Ubuntu).
-#/   - The second "1" indicates the package revision from Kurento. If the same
-#/     version of some software is repackaged, this should be incremented, e.g.
+#/   - The "0" indicates upstream package version, typically 0 meaning that the
+#/     package doesn't exist in upstream distribution (Ubuntu).
+#/   - The "1" indicates the package revision from Kurento. If the same version
+#/     of some software is repackaged, this should be incremented, e.g.
 #/     "0kurento2".
 #/
 #/   Optional. Default: "0kurento1".
@@ -38,6 +38,10 @@
 #/
 #/   Use version numbers intended for Release builds, such as "1.2.3" instead
 #/   of "1.2.3-SNAPSHOT" or "1.2.3-dev".
+#/
+#/   This option uses the standard commit message "Prepare release <Version>"
+#/   if '--commit' is also present. The convention is to use this message to
+#/   make a new final release.
 #/
 #/   If this option is not given, a nightly/snapshot indicator is appended:
 #/   "-dev" for C/C++ projects, and "-SNAPSHOT" for Java projects.
@@ -63,16 +67,15 @@
 #/
 #/ --commit
 #/
-#/   Commit to Git the version changes.
-#/   This will commit only the changed files.
+#/   Commit to Git the version changes. This will commit only the changed files.
 #/
 #/   Optional. Default: Disabled.
 #/
 #/ --tag
 #/
-#/   Create Git annotated tags with the results of the version change.
-#/   This requires that '--commit' is used too.
-#/   Also, to avoid mistakes, this can only be used together with '--release'.
+#/   Create Git annotated tags with the results of the version change. This
+#/   requires that '--commit' is used too. Also, to avoid mistakes, this can
+#/   only be used together with '--release'.
 #/
 #/   Optional. Default: Disabled.
 
@@ -150,12 +153,12 @@ if [[ "$CFG_VERSION" == "$CFG_VERSION_DEFAULT" ]]; then
     exit 1
 fi
 
-log "CFG_VERSION=${CFG_VERSION}"
-log "CFG_DEBIAN=${CFG_DEBIAN}"
-log "CFG_RELEASE=${CFG_RELEASE}"
-log "CFG_COMMIT=${CFG_COMMIT}"
-log "CFG_TAG=${CFG_TAG}"
+log "CFG_VERSION=$CFG_VERSION"
+log "CFG_DEBIAN=$CFG_DEBIAN"
+log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_NEWDEVELOPMENT=$CFG_NEWDEVELOPMENT"
+log "CFG_COMMIT=$CFG_COMMIT"
+log "CFG_TAG=$CFG_TAG"
 
 
 
