@@ -1,9 +1,19 @@
-kms-elements (6.11.0-0kurento1) UNRELEASED; urgency=medium
+kms-elements (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
+  [ Juan Navarro ]
   * UNRELEASED
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 10 Apr 2019 14:14:39 +0200
+  [ Mario Jr ]
+  * First version of GStreamer 1.14 port
+
+  [ Juan Navarro ]
+  * debian/control: Set dependencies for Ubuntu 18.04
+  * debian: Change OpenH264 package name to openh264-gst-plugin
+  * debian/control: Add deps needed for unit tests
+  * debian/control: Add deps needed for building
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Jun 2019 11:12:35 +0200
 
 kms-elements (6.10.0-0kurento1) testing; urgency=medium
 
