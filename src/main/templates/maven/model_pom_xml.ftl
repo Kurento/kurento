@@ -53,7 +53,7 @@ pom.xml
 			<plugin>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>
-				<version>6.7.0</version>
+				<version>7.0.0</version>
 				<executions>
 					<execution>
 						<goals>
