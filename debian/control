@@ -8,9 +8,9 @@ Build-Depends: debhelper (>= 9),
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-good,
  gstreamer1.0-x,
- kms-cmake-utils (>= 6.7.0),
- kms-core-dev (>= 6.7.0),
- kurento-module-creator (>= 6.7.0),
+ kms-cmake-utils,
+ kms-core-dev,
+ kurento-module-creator,
  libboost-filesystem-dev,
  libboost-system-dev,
  libboost-test-dev,
@@ -32,11 +32,9 @@ Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
  gstreamer1.0-nice,
- kms-core (>= 6.7.0),
+ kms-core,
  openh264-gst-plugin,
  openwebrtc-gst-plugins
-Breaks: kms-elements-6.0
-Replaces: kms-elements-6.0
 Description: Kurento Elements module
  Kurento Elements module - Binary libraries.
 
@@ -44,9 +42,9 @@ Package: kms-elements-dev
 Architecture: any
 Section: libdevel
 Depends: kms-elements (= ${binary:Version}),
- kms-cmake-utils (>= 6.7.0),
- kms-core-dev (>= 6.7.0),
- kurento-module-creator (>= 6.7.0),
+ kms-cmake-utils,
+ kms-core-dev,
+ kurento-module-creator,
  libboost-filesystem-dev,
  libboost-system-dev,
  libboost-test-dev,
@@ -57,8 +55,6 @@ Depends: kms-elements (= ${binary:Version}),
  libsigc++-2.0-dev,
  libsoup2.4-dev,
  libssl-dev
-Breaks: kms-elements-6.0-dev
-Replaces: kms-elements-6.0-dev
 Description: Kurento Elements module
  Kurento Elements module - Development files.
 
@@ -66,7 +62,5 @@ Package: kms-elements-dbg
 Architecture: any
 Section: debug
 Depends: kms-elements (= ${binary:Version})
-Breaks: kms-elements-6.0-dbg
-Replaces: kms-elements-6.0-dbg
 Description: Kurento Elements module
  Kurento Elements module - Debugging symbols.
