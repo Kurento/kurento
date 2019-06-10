@@ -1,7 +1,7 @@
 {
   "name": "filters",
   "version": "7.0.0-dev",
-  "kurentoVersion": "^6.7.0",
+  "kurentoVersion": "^7.0.0",
   "code": {
     "kmd": {
       "java": {
