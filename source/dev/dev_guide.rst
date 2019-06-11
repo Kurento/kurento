@@ -174,9 +174,8 @@ This command will install the basic set of tools that are needed for the next st
 
 .. code-block:: bash
 
-   sudo apt-get update \
-     && sudo apt-get install --no-install-recommends --yes \
-        git gnupg devscripts equivs
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+       git gnupg devscripts equivs
 
 
 
@@ -206,7 +205,7 @@ These commands will add the Kurento repository to be accessed by ``apt-get``. Ru
 
 .. code-block:: bash
 
-   apt-get update
+   sudo apt-get update
 
 
 
@@ -224,15 +223,15 @@ Run:
 
 .. note::
 
-   ``--recursive`` and ``--remote`` are not used together, because each individual submodule may have some other submodules that are intended to be loaded in some specific commit, and we don't want to update those with upstream's latest changes.
+   ``--recursive`` and ``--remote`` are not used together, because each individual submodule may have their own submodules that might be expected to check out some specific commit, and we don't want to update those.
 
 *OPTIONAL*: Change to the *master* branch of each submodule, if you will be developing on each one of those:
 
 .. code-block:: text
 
    REF=master
-   for d in $(find . -maxdepth 1 -mindepth 1 -type d)
-   do pushd $d ; git checkout "$REF" ; popd ; done
+   git checkout "$REF"
+   git submodule foreach "git checkout $REF || true"
 
 You can also set ``REF`` to any other branch or tag, such as ``REF=6.7.1``. This will bring the code to the state it had in that version.
 
@@ -254,8 +253,8 @@ Run:
        kms-filters
        kurento-media-server
    )
-
    for DIR in "${DIRS[@]}"; do
+       echo "+ Install Build-Depends for '${DIR}'"
        mk-build-deps --install --remove \
            --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
            "${DIR}/debian/control"
@@ -270,10 +269,10 @@ Run:
 
 .. code-block:: text
 
-   TYPE=Debug
-   mkdir build-$TYPE
-   cd build-$TYPE
-   cmake -DCMAKE_BUILD_TYPE=$TYPE ..
+   BUILD_TYPE=Debug
+   BUILD_DIR="build-$BUILD_TYPE"
+   mkdir "$BUILD_DIR" && cd "$BUILD_DIR"
+   cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
 
 .. code-block:: text
 
@@ -486,8 +485,8 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
       )
 
       sudo apt-get update \
-        && sudo apt-get install --no-install-recommends --yes \
-           "${PACKAGES[@]}"
+          && sudo apt-get install --no-install-recommends --yes \
+              "${PACKAGES[@]}"
 
    .. note::
 
