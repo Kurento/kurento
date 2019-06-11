@@ -33,7 +33,7 @@ set(JSON_CPP_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-jsonrpc" CACHE P
 
 include(GenericFind)
 
-generic_find(LIBNAME KurentoModuleCreator VERSION ^6.7.0)
+generic_find(LIBNAME KurentoModuleCreator VERSION ^7.0.0)
 
 if(NOT KurentoModuleCreator_FOUND)
   message(STATUS "Generating module creator")
