@@ -168,6 +168,7 @@
 		<version.ear.plugin>3.0.11</version.ear.plugin>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.0.0-M2</version.enforcer.plugin>
+		<version.enforcer.rules.plugin>1.2</version.enforcer.rules.plugin>
 		<version.gpg.plugin>1.6</version.gpg.plugin>
 		<version.help.plugin>3.2.0</version.help.plugin>
 		<version.install.plugin>3.0.0-M1</version.install.plugin>
@@ -1206,7 +1207,7 @@
 									<maxJdkVersion>${jdk.max.version}</maxJdkVersion>
 								</enforceBytecodeVersion>
 							</rules>
-							<fail>false</fail>
+							<fail>true</fail>
 						</configuration>
 					</execution>
 					<execution>
@@ -1240,7 +1241,7 @@
 					<dependency>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>extra-enforcer-rules</artifactId>
-						<version>1.0-beta-4</version>
+						<version>${version.enforcer.rules.plugin}</version>
 					</dependency>
 				</dependencies>
 			</plugin>
