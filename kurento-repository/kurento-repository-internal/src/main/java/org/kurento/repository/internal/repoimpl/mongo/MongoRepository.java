@@ -54,7 +54,8 @@ public class MongoRepository implements RepositoryWithHttp {
 
   @PostConstruct
   private void postConstruct() {
-    gridFS = new GridFS(mongoTemplate.getDb());
+	  // TODO: refactor GridFS API to SpringBoot 2
+	  // gridFS = new GridFS(mongoTemplate.getDb());
   }
 
   // TODO Define ways to let users access to low level mongo backend. I prefer

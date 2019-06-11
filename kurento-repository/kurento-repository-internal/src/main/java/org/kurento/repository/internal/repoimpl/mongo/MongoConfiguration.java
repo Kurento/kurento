@@ -17,14 +17,11 @@
 
 package org.kurento.repository.internal.repoimpl.mongo;
 
-import java.net.UnknownHostException;
-
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 
-import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
@@ -35,7 +32,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
   RepositoryApiConfiguration config;
 
   @Override
-  public Mongo mongo() throws UnknownHostException {
+  public MongoClient mongoClient() {
     return new MongoClient(new MongoClientURI(config.getMongoUrlConnection()));
   }
 

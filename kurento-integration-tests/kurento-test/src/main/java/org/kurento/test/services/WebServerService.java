@@ -28,8 +28,8 @@ import org.kurento.commons.PropertiesManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
@@ -46,8 +46,8 @@ public class WebServerService extends TestService {
 
     @Bean
     @ConditionalOnMissingBean
-    public EmbeddedServletContainerFactory servletContainer() {
-      TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+    public ServletWebServerFactory servletContainer() {
+    	TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
       Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
       connector.setScheme("http");
       connector.setPort(getAppHttpPort());

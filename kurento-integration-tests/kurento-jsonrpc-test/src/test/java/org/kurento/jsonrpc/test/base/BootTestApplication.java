@@ -101,7 +101,7 @@ public class BootTestApplication implements JsonRpcConfigurer {
   @Bean
   public ServletServerContainerFactoryBean createWebSocketContainer() {
     ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-    container.setMaxSessionIdleTimeout(10000);
+    container.setMaxSessionIdleTimeout((long)10000);
     container.setMaxTextMessageBufferSize(1000000);
     container.setMaxBinaryMessageBufferSize(1000000);
     return container;

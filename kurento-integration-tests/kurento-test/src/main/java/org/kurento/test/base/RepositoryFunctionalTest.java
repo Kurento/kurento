@@ -27,7 +27,7 @@ import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.services.WebServerService;
 import org.kurento.test.services.WebServerService.WebServer;
-import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -52,10 +52,10 @@ public class RepositoryFunctionalTest extends KurentoClientBrowserTest<WebRtcTes
     }
 
     @Bean
-    public ServletRegistrationBean repositoryServletRegistrationBean(
+    public ServletRegistrationBean<?> repositoryServletRegistrationBean(
         RepositoryHttpServlet repositoryHttpServlet) {
-      ServletRegistrationBean servletRegistrationBean =
-          new ServletRegistrationBean(repositoryHttpServlet, "/repository_servlet/*");
+      ServletRegistrationBean<?> servletRegistrationBean =
+          new ServletRegistrationBean<>(repositoryHttpServlet, "/repository_servlet/*");
       servletRegistrationBean.setLoadOnStartup(1);
       return servletRegistrationBean;
     }

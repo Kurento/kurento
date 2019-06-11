@@ -107,7 +107,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
           this.connectionTimeout);
 
       jettyClient = new WebSocketClient(sslContextFactory);
-      jettyClient.setConnectTimeout(this.connectionTimeout);
+      jettyClient.setConnectTimeout((long)this.connectionTimeout);
       WebSocketPolicy policy = jettyClient.getPolicy();
       policy.setMaxBinaryMessageBufferSize(maxPacketSize);
       policy.setMaxTextMessageBufferSize(maxPacketSize);

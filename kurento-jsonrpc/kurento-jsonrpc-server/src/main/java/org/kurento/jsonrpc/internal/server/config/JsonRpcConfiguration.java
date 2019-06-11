@@ -34,8 +34,8 @@ import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.internal.ws.JsonRpcWebSocketHandler;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.tomcat.TomcatContextCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,37 +54,6 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 @Configuration
 @EnableWebSocket
 public class JsonRpcConfiguration implements WebSocketConfigurer {
-
-  // public static class LoggerHandshakeInterceptor implements
-  // HandshakeInterceptor {
-  //
-  // private static final Logger log = LoggerFactory
-  // .getLogger(LoggerHandshakeInterceptor.class);
-  //
-  // @Override
-  // public boolean beforeHandshake(ServerHttpRequest request,
-  // ServerHttpResponse response, WebSocketHandler wsHandler,
-  // Map<String, Object> attributes) throws Exception {
-  //
-  // log.debug(
-  // "Websocket request before handshake. Request: headers={} uri={}
-  // Attributes:{},",
-  // request.getHeaders(), request.getURI(), attributes);
-  //
-  // return true;
-  // }
-  //
-  // @Override
-  // public void afterHandshake(ServerHttpRequest request,
-  // ServerHttpResponse response, WebSocketHandler wsHandler,
-  // Exception exception) {
-  //
-  // log.debug(
-  // "Websocket request after handshake. Request: headers={} uri={}
-  // Exception:{},",
-  // request.getHeaders(), request.getURI(), exception);
-  // }
-  // }
 
   @Autowired
   protected ApplicationContext ctx;
@@ -251,8 +220,8 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
   // This methods workaround the bug
   // https://jira.springsource.org/browse/SPR-10841
   @Bean
-  public TomcatEmbeddedServletContainerFactory tomcatContainerFactory() {
-    TomcatEmbeddedServletContainerFactory factory = new TomcatEmbeddedServletContainerFactory();
+  public TomcatServletWebServerFactory tomcatContainerFactory() {
+	  TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
     factory.setTomcatContextCustomizers(
         Arrays.asList(new TomcatContextCustomizer[] { tomcatContextCustomizer() }));
     return factory;
