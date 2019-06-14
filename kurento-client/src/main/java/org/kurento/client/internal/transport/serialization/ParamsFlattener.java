@@ -44,6 +44,8 @@ import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+
 public class ParamsFlattener {
 
   private static final String MODULE_PROPERTY = "__module__";
@@ -442,15 +444,26 @@ public class ParamsFlattener {
   private Object unflattedComplexType(Class<?> clazz, Props props, ObjectRefsManager manager) {
 
     Constructor<?> constructor = clazz.getConstructors()[0];
-
-    Object[] constParams = new Object[constructor.getParameterTypes().length];
-
+    
+    List<Type> constClasses = new ArrayList<>();
+    Class<?>[] parameterTypes = constructor.getParameterTypes();
+    Type[] parameterGenericTypes = constructor.getGenericParameterTypes();
+    for (int i = 0; i < parameterGenericTypes.length; i++) {
+    	if (parameterGenericTypes[i] instanceof ParameterizedTypeImpl) {
+    		// This is a class with a generic type
+    		// (for example, a java.util.List<java.lang.String>)
+    		constClasses.add(parameterGenericTypes[i]);
+    	} else {
+    		constClasses.add(parameterTypes[i]);
+    	}
+    }
+    
+    Object[] constParams = new Object[parameterTypes.length];
     List<String> paramNames = ParamAnnotationUtils.getParamNames(constructor);
-    Class<?>[] constClasses = constructor.getParameterTypes();
 
     for (int i = 0; i < constParams.length; i++) {
       String paramName = paramNames.get(i);
-      constParams[i] = unflattenValue(paramName, constClasses[i], props.getProp(paramName),
+      constParams[i] = unflattenValue(paramName, constClasses.get(i), props.getProp(paramName),
           manager);
     }
 
