@@ -46,8 +46,8 @@ MAINTAINER Juan Navarro <juan.navarro@gmx.es>
 ARG UBUNTU_VERSION=xenial
 ARG KMS_VERSION=0.0.0
 
-# Configure environment
-# * DEBIAN_FRONTEND: Disable interactive questions and messages
+# Configure environment:
+# * DEBIAN_FRONTEND: Disable interactive questions and messages in `apt-get`
 # * LANG: Set the default locale for all commands
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
@@ -88,8 +88,8 @@ RUN apt-get update && apt-get install --yes \
 
 EXPOSE 8888
 
-# Configure environment for KMS
-# * Use default suggested logging levels:
+# Configure environment for KMS:
+# * Use suggested logging levels:
 #   https://doc-kurento.readthedocs.io/en/latest/features/logging.html#suggested-levels
 # * Disable colors in debug logs
 # * Provide STUN and TURN server details (can be empty):

@@ -10,7 +10,7 @@ set -o errexit -o errtrace -o pipefail -o nounset
 
 # Trap functions
 on_error() {
-    echo "ERROR ($?)"
+    echo "[Docker $BASENAME] ERROR ($?)"
     exit 1
 }
 trap on_error ERR
@@ -23,10 +23,10 @@ trap on_error ERR
 ADM_SCRIPTS_PATH="/adm-scripts"
 
 if [[ -d "$ADM_SCRIPTS_PATH/.git" ]]; then
-    echo "Kurento 'adm-scripts' found in $ADM_SCRIPTS_PATH"
+    echo "[Docker $BASENAME] Kurento 'adm-scripts' found in $ADM_SCRIPTS_PATH"
 else
-    echo "Kurento 'adm-scripts' not found in $ADM_SCRIPTS_PATH"
-    echo "Clone 'adm-scripts' from Git repo..."
+    echo "[Docker $BASENAME] Kurento 'adm-scripts' not found in $ADM_SCRIPTS_PATH"
+    echo "[Docker $BASENAME] Clone 'adm-scripts' from Git repo..."
     git clone https://github.com/Kurento/adm-scripts.git "$ADM_SCRIPTS_PATH"
 fi
 
@@ -55,12 +55,12 @@ fi
 # ------
 
 BASENAME="$(basename "$0")"  # Complete file name
-echo "[$BASENAME] Debian packages:"
+echo "[Docker $BASENAME] Debian packages:"
 find . -maxdepth 1 -type f -name '*.*deb'
 
 # Get results out from the Docker container
 if [[ -d /hostdir ]]; then
     mv ./*.*deb /hostdir/ 2>/dev/null || true
 else
-    echo "WARNING: No host dir where to put built packages"
+    echo "[Docker $BASENAME] WARNING: No host dir where to put built packages"
 fi

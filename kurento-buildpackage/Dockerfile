@@ -109,9 +109,14 @@ RUN git config --system user.name "kurento-buildpackage" \
 # ------------ Final configuration ------------
 
 # Configure `apt-get`:
-# * Enable caching of downloaded packages. Allows setting up a persistent cache
-#   in an external Docker volume. Useful if you're doing lots of (re)builds and
-#   want to avoid downloading the same packages over and over...
+# * Automatically cleaning the apt cache breaks 'd-devlibdeps' (d-shlibs) < 0.83
+#   so this workaround is needed:
+#   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916856
+#
+#   Also, this enables persistently caching downloaded packages. This allows
+#   setting up a persistent cache in an external Docker volume. Useful if you're
+#   doing lots of (re)builds and want to avoid downloading the same packages
+#   over and over again...
 RUN rm -f /etc/apt/apt.conf.d/docker-clean
 
 
