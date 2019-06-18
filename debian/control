@@ -25,7 +25,8 @@ Architecture: all
 Section: java
 Depends: ${misc:Depends},
  ${maven:Depends},
- default-jre-headless
+ default-jre-headless,
+ maven (>= 3.0)
 Suggests: ${maven:OptionalDepends}
 Description: Kurento Module Creator
  This tool generates client stubs in different languages for communication
