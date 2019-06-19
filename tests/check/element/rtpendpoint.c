@@ -661,10 +661,13 @@ GST_START_TEST (generate_offer_bw_limited)
       g_array_ref (video_codecs_array),
       "max-audio-recv-bandwidth", AUDIO_BW,
       "max-video-recv-bandwidth", VIDEO_BW, NULL);
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
 
   g_signal_emit_by_name (rtpendpoint, "create-session", &sess_id);
   GST_DEBUG ("Created session with id '%s'", sess_id);
   g_signal_emit_by_name (rtpendpoint, "generate-offer", sess_id, &offer);
+  g_free (sess_id);
 
   for (i = 0; i < gst_sdp_message_medias_len (offer); i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (offer, i);
