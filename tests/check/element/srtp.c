@@ -364,16 +364,19 @@ static char *srtp_key = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234";
 static GstCaps *
 srtpdec_request_key (void)
 {
-  return gst_caps_new_simple ("application/x-srtp",
+  GstBuffer *key = gst_buffer_new_wrapped (g_strdup (srtp_key),
+      strlen (srtp_key));
+  GstCaps *caps = gst_caps_new_simple ("application/x-srtp",
       "payload", G_TYPE_INT, PCMU_BUF_PT,
       "ssrc", G_TYPE_UINT, PCMU_BUF_SSRC,
-      "srtp-key", GST_TYPE_BUFFER,
-          gst_buffer_new_wrapped (g_strdup (srtp_key), strlen (srtp_key)),
+      "srtp-key", GST_TYPE_BUFFER, key,
       "srtp-cipher", G_TYPE_STRING, "aes-128-icm",
       "srtp-auth", G_TYPE_STRING, "hmac-sha1-80",
       "srtcp-cipher", G_TYPE_STRING, "aes-128-icm",
       "srtcp-auth", G_TYPE_STRING, "hmac-sha1-80",
       NULL);
+  gst_buffer_unref (key);
+  return caps;
 }
 
 /* Force receiving repeated packets, which causes this warning:
@@ -401,9 +404,10 @@ GST_START_TEST (test_replay_rx_with_libsrtp_fork)
   GstFlowReturn ret;
 
   // Prepare srtp enc and dec
-  g_object_set (srtpenc,
-      "key", gst_buffer_new_wrapped (g_strdup (srtp_key), strlen (srtp_key)),
-      "allow-repeat-tx", TRUE, NULL);
+  GstBuffer *key = gst_buffer_new_wrapped (g_strdup (srtp_key),
+      strlen (srtp_key));
+  g_object_set (srtpenc, "key", key, "allow-repeat-tx", TRUE, NULL);
+  gst_buffer_unref (key);
   g_signal_connect (srtpdec, "request-key", G_CALLBACK (srtpdec_request_key),
       NULL);
 
