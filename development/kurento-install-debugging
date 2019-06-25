@@ -29,14 +29,12 @@ source "$BASEPATH/../bash.conf.sh" || {
 # Ask for confirmation
 # --------------------
 
-echo "==== Install Kurento debug symbols ===="
+echo "==== Install debug symbols for Kurento ===="
 echo "This will add the Ubuntu 'dbgsym' repository sources"
+IFS='' read -rs -n1 -p "Do you want to continue? [Y/n]" REPLY
 echo ""
-read -p "Are you sure? Type 'yes': " -r SURE
-if [[ "$SURE" != "yes" && "$SURE" != "YES" ]]; then
-    echo "Exit ..."
-    exit 0
-fi
+REGEX='^[Yy]?$'
+[[ "$REPLY" =~ $REGEX ]] || exit 0
 
 
 
