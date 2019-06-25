@@ -17,7 +17,10 @@
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
-source "$BASEPATH/../bash.conf.sh" || exit 1
+source "$BASEPATH/../bash.conf.sh" || {
+    # Bash options for strict error checking
+    set -o errexit -o errtrace -o pipefail -o nounset
+}
 
 
 
@@ -25,7 +28,7 @@ source "$BASEPATH/../bash.conf.sh" || exit 1
 # -----------------
 
 [[ "$(id -u)" -eq 0 ]] || {
-    log "ERROR: Please run as root user (or with 'sudo')"
+    echo "ERROR: Please run as root user (or with 'sudo')"
     exit 1
 }
 
@@ -62,10 +65,10 @@ DIRS=(
     kurento-media-server
 )
 for DIR in "${DIRS[@]}"; do
-    log "Install Build-Depends for '${DIR}'"
+    echo "+ Install Build-Depends for '${DIR}'"
     mk-build-deps --install --remove \
         --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
         "${DIR}/debian/control"
 done
 
-log "All packages installed successfully"
+echo "All packages installed successfully"

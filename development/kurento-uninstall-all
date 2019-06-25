@@ -13,7 +13,10 @@
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
-source "$BASEPATH/../bash.conf.sh" || exit 1
+source "$BASEPATH/../bash.conf.sh" || {
+    # Bash options for strict error checking
+    set -o errexit -o errtrace -o pipefail -o nounset
+}
 
 
 
@@ -21,7 +24,7 @@ source "$BASEPATH/../bash.conf.sh" || exit 1
 # -----------------
 
 [[ "$(id -u)" -eq 0 ]] || {
-    log "ERROR: Please run as root user (or with 'sudo')"
+    echo "ERROR: Please run as root user (or with 'sudo')"
     exit 1
 }
 
@@ -66,7 +69,7 @@ PACKAGES=(
 # apt-get won't allow unexisting names, so we cannot do it the fancy way
 # and uninstall everything on a single command. Blame's on you, apt-get.
 for PACKAGE in "${PACKAGES[@]}"; do
-    apt-get purge --auto-remove --yes "$PACKAGE" || { log "Skip unexisting"; }
+    apt-get purge --auto-remove --yes "$PACKAGE" || { echo "Skip unexisting"; }
 done
 
-log "All packages uninstalled successfully"
+echo "All packages uninstalled successfully"

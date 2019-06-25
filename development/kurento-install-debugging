@@ -9,7 +9,10 @@
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
-source "$BASEPATH/../bash.conf.sh" || exit 1
+source "$BASEPATH/../bash.conf.sh" || {
+    # Bash options for strict error checking
+    set -o errexit -o errtrace -o pipefail -o nounset
+}
 
 
 
@@ -17,7 +20,7 @@ source "$BASEPATH/../bash.conf.sh" || exit 1
 # -----------------
 
 [[ "$(id -u)" -eq 0 ]] || {
-    log "ERROR: Please run as root user (or with 'sudo')"
+    echo "ERROR: Please run as root user (or with 'sudo')"
     exit 1
 }
 
@@ -99,4 +102,3 @@ apt-get update \
   && apt-get install --no-install-recommends --yes \
      "${PACKAGES[@]}"
 
-log "All packages installed successfully"
