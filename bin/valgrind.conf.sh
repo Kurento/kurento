@@ -134,7 +134,7 @@ VALGRIND_ARGS=(
 
     # Leak kinds to show in a 'full' leak search.
     # =<definite,indirect,possible,reachable> [default: definite,possible]
-    #--memcheck:show-leak-kinds=definite,possible,indirect
+    --memcheck:show-leak-kinds=definite,indirect,possible
 
     # Output a 'Callgrind Format' execution tree file with leak results.
     # =<no|yes> [default: no]

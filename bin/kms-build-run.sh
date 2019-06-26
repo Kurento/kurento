@@ -41,12 +41,43 @@
 #/
 #/   Optional. Default: Disabled.
 #/
+#/ --valgrind-memcheck
+#/
+#/   Build and runs with Valgrind's Memcheck memory error detector.
+#/   Valgrind should be available in the PATH.
+#/
+#/   See:
+#/   * Memcheck manual: http://valgrind.org/docs/manual/mc-manual.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
+#/
+#/ --valgrind-massif
+#/
+#/   Build and runs with Valgrind's Massif heap profiler.
+#/   Valgrind should be available in the PATH.
+#/
+#/   Massif gathers profiling information, which then can be loaded with
+#/   the `ms_print` tool to present it in a readable way.
+#/
+#/   For example:
+#/
+#/       ms_print valgrind-massif-13522.out >valgrind-massif-13522.out.txt
+#/
+#/   See:
+#/   * Massif manual: http://valgrind.org/docs/manual/ms-manual.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
+#/
 #/ --address-sanitizer
 #/
 #/   Build and runs with the instrumentation provided by the compiler's
-#/   AddressSanitizer (available in GCC and Clang).
+#/   AddressSanitizer and LeakSanitizer (available in GCC and Clang).
 #/
-#/   See: https://clang.llvm.org/docs/AddressSanitizer.html
+#/   See:
+#/   * https://clang.llvm.org/docs/AddressSanitizer.html
+#/   * https://clang.llvm.org/docs/LeakSanitizer.html
 #/
 #/   Optional. Default: Disabled.
 #/   Implies '--release'.
@@ -78,26 +109,20 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 CFG_RELEASE="false"
 CFG_GDB="false"
 CFG_VERBOSE="false"
+CFG_VALGRIND_MEMCHECK="false"
+CFG_VALGRIND_MASSIF="false"
 CFG_ADDRESS_SANITIZER="false"
 CFG_THREAD_SANITIZER="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --release)
-            CFG_RELEASE="true"
-            ;;
-        --gdb)
-            CFG_GDB="true"
-            ;;
-        --verbose)
-            CFG_VERBOSE="true"
-            ;;
-        --address-sanitizer)
-            CFG_ADDRESS_SANITIZER="true"
-            ;;
-        --thread-sanitizer)
-            CFG_THREAD_SANITIZER="true"
-            ;;
+        --release) CFG_RELEASE="true" ;;
+        --gdb) CFG_GDB="true" ;;
+        --verbose) CFG_VERBOSE="true" ;;
+        --valgrind-memcheck) CFG_VALGRIND_MEMCHECK="true" ;;
+        --valgrind-massif) CFG_VALGRIND_MASSIF="true" ;;
+        --address-sanitizer) CFG_ADDRESS_SANITIZER="true" ;;
+        --thread-sanitizer) CFG_THREAD_SANITIZER="true" ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
             log "Run with '--help' to read usage details"
@@ -109,8 +134,16 @@ done
 
 
 
-# Apply config restrictions
-# -------------------------
+# Apply config logic
+# ------------------
+
+if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
+    CFG_RELEASE="true"
+fi
+
+if [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
+    CFG_RELEASE="true"
+fi
 
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
@@ -123,6 +156,8 @@ fi
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GDB=$CFG_GDB"
 log "CFG_VERBOSE=$CFG_VERBOSE"
+log "CFG_VALGRIND_MEMCHECK=$CFG_VALGRIND_MEMCHECK"
+log "CFG_VALGRIND_MASSIF=$CFG_VALGRIND_MASSIF"
 log "CFG_ADDRESS_SANITIZER=$CFG_ADDRESS_SANITIZER"
 log "CFG_THREAD_SANITIZER=$CFG_THREAD_SANITIZER"
 
@@ -186,15 +221,30 @@ if [[ "$CFG_GDB" == "true" ]]; then
     RUN_VARS+=("G_DEBUG=fatal-warnings")
 fi
 
-if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
+if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
+    # shellcheck source=valgrind.conf.sh
+    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    RUN_WRAPPER="valgrind --tool=memcheck --log-file=valgrind-memcheck-%p.log $VALGRIND_ARGS"
+    RUN_VARS+=(
+        "G_DEBUG=""gc-friendly"
+        #"G_SLICE=""always-malloc"
+        #"G_SLICE=""debug-blocks"
+        "G_SLICE=""all"
+    )
+
+elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
+    # shellcheck source=valgrind.conf.sh
+    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    RUN_WRAPPER="valgrind --tool=massif --log-file=valgrind-massif-%p.log --massif-out-file=valgrind-massif-%p.out $VALGRIND_ARGS"
+
+elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libasan.so.?' | head -n1)"
     RUN_VARS+=(
         "LD_PRELOAD=""$LIBSAN"
-        "ASAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/asan.supp new_delete_type_mismatch=0"
+        "ASAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/asan.supp detect_leaks=1 new_delete_type_mismatch=0 fast_unwind_on_malloc=0"
     )
-fi
 
-if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
+elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libtsan.so.?' | head -n1)"
     RUN_VARS+=(
         "LD_PRELOAD=""$LIBSAN"
@@ -203,8 +253,9 @@ if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
 fi
 
 # Set debug log settings
-unset GST_DEBUG
-export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
+if [[ -z "${GST_DEBUG:-}" ]]; then
+    export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
+fi
 
 # (Optional) Extra GST_DEBUG categories
 # export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
@@ -223,8 +274,11 @@ make -j"$(nproc)"
 
 # Run in a subshell so the exported variables don't pollute parent environment
 (
-    for RUN_VAR in "${RUN_VARS[@]}"; do
-        export "$RUN_VAR"
+    for RUN_VAR in "${RUN_VARS[@]:-}"; do
+        if [[ -n "$RUN_VAR" ]]; then
+            log "export RUN_VAR: {$RUN_VAR}"
+            export "$RUN_VAR"
+        fi
     done
 
     $RUN_WRAPPER ./kurento-media-server/server/kurento-media-server \
