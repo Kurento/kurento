@@ -34,26 +34,13 @@ source "$BASEPATH/../bash.conf.sh" || {
 
 
 
-# Ask for confirmation
-# --------------------
-
-echo "==== Install Kurento build dependencies ===="
-echo "This script should be run from 'kms-omni-build'"
-echo ""
-read -p "Are you sure? Type 'yes': " -r SURE
-if [[ "$SURE" != "yes" && "$SURE" != "YES" ]]; then
-    echo "Exit ..."
-    exit 0
-fi
-
-
-
 # Install Build-Depends
 # ---------------------
 
-apt-get update \
-  && apt-get install --no-install-recommends --yes \
-     git devscripts equivs
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update && apt-get install --no-install-recommends --yes \
+    git gnupg devscripts equivs
 
 DIRS=(
     kurento-module-creator
