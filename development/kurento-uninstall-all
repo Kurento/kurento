@@ -39,7 +39,7 @@ PACKAGES=(
 
     # Fork packages
     '^kmsjsoncpp.*'
-    '^libsrtp1.*'
+    '^libsrtp.*'
     '^openh264(-gst-plugins-bad-1.5)?'
     '^libusrsctp.*'
     '^(lib)?gstreamer.*1.5.*'
