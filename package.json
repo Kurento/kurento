@@ -60,9 +60,9 @@
     "test": "nodeunit test/index.js"
   },
   "dependencies": {
-    "bufferutil": "1.2.x",
+    "bufferutil": "^4.0.1",
     "inherits": "^2.0.1",
-    "ws": "^1.1.1"
+    "ws": "^7.1.0"
   },
   "devDependencies": {
     "bower": "~1.7.9",
