@@ -28,6 +28,7 @@
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
 #include <commons/kmsrefstruct.h>
+#include <commons/sdpagent/kmssdpsctpmediahandler.h>
 
 #include "kms-webrtc-marshal.h"
 #include "kms-webrtc-data-marshal.h"
@@ -216,7 +217,8 @@ kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
   self->min_port = min_port;
   self->max_port = max_port;
 
-  if (g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
+  // Check if the protocol is '(UDP/)?DTLS/SCTP'
+  if (kms_sdp_sctp_media_handler_manage_protocol (gst_sdp_media_get_proto (media))) {
     GST_DEBUG_OBJECT (self, "Create SCTP connection");
     conn =
         KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new
@@ -1223,7 +1225,6 @@ kms_webrtc_session_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
 static gboolean
 configure_data_session (KmsWebrtcSession * self, const GstSDPMedia * media)
 {
-  const gchar *sctpmap_attr = NULL;
   gint port = -1;
   guint i, len;
 
@@ -1239,29 +1240,50 @@ configure_data_session (KmsWebrtcSession * self, const GstSDPMedia * media)
   }
 
   for (i = 0; i < len; i++) {
-    const gchar *port_str;
-    gchar **attrs;
+    const gchar *fmt, *val, *attr;
 
-    port_str = gst_sdp_media_get_format (media, 0);
-    sctpmap_attr = sdp_utils_get_attr_map_value (media, "sctpmap", port_str);
+    fmt = gst_sdp_media_get_format (media, i);
 
-    attrs = g_strsplit (sctpmap_attr, " ", 0);
-    if (g_strcmp0 (attrs[1], "webrtc-datachannel") != 0) {
+    if (g_strcmp0 (fmt, SDP_MEDIA_SCTP_FMT) == 0) {
+      // New syntax
+      attr = SDP_MEDIA_SCTP_PORT_ATTR;
+      val = gst_sdp_media_get_attribute_val (media, attr);
+      if (val == NULL) {
+        GST_WARNING ("No 'a=%s' attribute found in media", attr);
+        continue;
+      }
+
+      if (get_port_from_string (val, &port)) {
+        break;
+      }
+    } else {
+      // Old syntax
+      attr = SDP_MEDIA_SCTPMAP_ATTR;
+      val = sdp_utils_get_attr_map_value (media, attr, fmt);
+      if (val == NULL) {
+        GST_WARNING ("No 'a=%s:%s' attribute found in media", attr, fmt);
+        continue;
+      }
+
+      gchar **attrs = g_strsplit (val, " ", 0);
+      gboolean ok =
+          (g_strcmp0 (attrs[1] /* subprotocol */ , SDP_MEDIA_SCTP_FMT) == 0);
       g_strfreev (attrs);
-      continue;
-    }
+      if (!ok) {
+        continue;
+      }
 
-    if (get_port_from_string (port_str, &port)) {
-      g_strfreev (attrs);
-      break;
+      if (get_port_from_string (fmt, &port)) {
+        break;
+      }
     }
-
-    g_strfreev (attrs);
   }
 
   if (port < 0) {
     GST_ERROR_OBJECT (self, "Data session can not be configured");
     return FALSE;
+  } else {
+    GST_INFO_OBJECT (self, "Data session configured with port %d", port);
   }
 
   g_object_set (self->data_session, "sctp-local-port", port,
@@ -1439,7 +1461,8 @@ kms_webrtc_session_configure_connection (KmsWebrtcSession * self,
     return FALSE;
   }
 
-  if (g_strcmp0 (neg_proto_str, "DTLS/SCTP") != 0) {
+  // Check if the protocol is '(UDP/)?DTLS/SCTP'
+  if (!kms_sdp_sctp_media_handler_manage_protocol (neg_proto_str)) {
     return FALSE;
   }
 
