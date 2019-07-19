@@ -120,7 +120,7 @@ process.
 
    You can use whatever Java server side technology you prefer to build web
    applications with Kurento. For example, a pure Java EE application, SIP
-   Servlets, Play, Vertex, etc. We have choose Spring Boot for convenience.
+   Servlets, Play, Vert.x, etc. We have choose Spring Boot for convenience.
 
 In the following figure you can see a class diagram of the server side code:
 
