@@ -32,39 +32,61 @@ However, these files won't contain much useful information if the relevant debug
 
 .. code-block:: bash
 
-    PACKAGES=(
-      # Third-party libraries
-      libglib2.0-0-dbg
-      libssl1.0.0-dbg
+   PACKAGES=(
+       # System libraries
+       libc6-dbg  # Required for Valgrind
+       libc6-dbgsym
+       libglib2.0-0-dbg
+       libglib2.0-0-dbgsym
+       libssl1.0.0-dbg
+       libssl1.0.0-dbgsym
 
-      # Kurento forked libraries
-      gstreamer1.5-plugins-base-dbg
-      gstreamer1.5-plugins-good-dbg
-      gstreamer1.5-plugins-ugly-dbg
-      gstreamer1.5-plugins-bad-dbg
-      gstreamer1.5-libav-dbg
-      libgstreamer1.5-0-dbg
-      libnice10-dbgsym
-      libsrtp1-dbg
-      openwebrtc-gst-plugins-dbg
-      kmsjsoncpp-dbg
+       # Kurento 3rd-party libraries
+       kmsjsoncpp-dbg
+       libnice10-dbgsym
+       libsrtp0-dbg
+       libsrtp0-dbgsym
+       libusrsctp-dbgsym
+       openwebrtc-gst-plugins-dbg
 
-      # KMS main components
-      kms-jsonrpc-dbg
-      kms-core-dbg
-      kms-elements-dbg
-      kms-filters-dbg
-      kurento-media-server-dbg
+       # GStreamer-1.0 (Ubuntu)
+       libgstreamer1.0-0-dbg
+       gstreamer1.0-libav-dbg
+       gstreamer1.0-nice-dbgsym
+       gstreamer1.0-plugins-bad-dbg
+       gstreamer1.0-plugins-base-dbg
+       gstreamer1.0-plugins-good-dbg
+       gstreamer1.0-plugins-ugly-dbg
 
-      # KMS extra modules
-      #kms-chroma-dbg
-      #kms-crowddetector-dbg
-      #kms-platedetector-dbg
-      #kms-pointerdetector-dbg
-    )
+       # GStreamer-1.5 (Kurento)
+       libgstreamer1.5-0-dbg
+       gstreamer1.5-libav-dbg
+       gstreamer1.5-nice-dbgsym
+       gstreamer1.5-plugins-bad-dbg
+       gstreamer1.5-plugins-base-dbg
+       gstreamer1.5-plugins-good-dbg
+       gstreamer1.5-plugins-ugly-dbg
 
-    sudo apt-get update
-    sudo apt-get install "${PACKAGES[@]}"
+       # Main packages
+       kms-jsonrpc-dbg
+       kms-core-dbg
+       kms-elements-dbg
+       kms-filters-dbg
+       kurento-media-server-dbg
+
+       # Extra packages
+       #kms-chroma-dbg
+       #kms-crowddetector-dbg
+       #kms-platedetector-dbg
+       #kms-pointerdetector-dbg
+   )
+
+   apt-get update
+
+   for PACKAGE in "${PACKAGES[@]}"; do
+       apt-get install --no-install-recommends --yes "$PACKAGE" \
+           || { echo "Skip unexisting"; }
+   done
 
 For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in this example**:
 
