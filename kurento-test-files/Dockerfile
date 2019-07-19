@@ -5,5 +5,4 @@ RUN apt-get update \
      subversion
 
 RUN mkdir -p /var/lib/test-files
-RUN svn checkout http://files.kurento.org/svn/kurento
-
+RUN svn checkout http://files.openvidu.io/svn/kurento
