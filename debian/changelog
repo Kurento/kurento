@@ -1,14 +1,14 @@
-kms-elements (6.11.0-0kurento1) UNRELEASED; urgency=medium
+kms-elements (6.11.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
-  * UNRELEASED
+  * Prepare release 6.11.0-0kurento1
+  * debian/control: Add deps needed for unit tests
+  * debian/control: Add deps needed for building
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 10 Apr 2019 14:14:39 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 19 Jul 2019 19:47:54 +0200
 
 kms-elements (6.10.0-0kurento1) testing; urgency=medium
 
   * debian: Review for 18.04 build
-  * UNRELEASED
 
  -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:31 +0200
 
