@@ -179,7 +179,7 @@ From that baseline, one can add any other values to extend the amount of informa
 
   .. code-block:: text
 
-     export GST_DEBUG="${GST_DEBUG:-3},check:5"
+     export GST_DEBUG="${GST_DEBUG:-3},check:5,test_base:5"
 
 
 

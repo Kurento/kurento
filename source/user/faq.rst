@@ -119,7 +119,7 @@ Coturn can be installed directly from the Ubuntu package repositories:
       # Disable log file rollover and use log file name as-is.
       simple-log
 
-   - The *external-ip* is necessary in cloud providers which use internal NATs, such as **Amazon EC2**. Write in ``<CoturnPublicIpAddress>`` your server's public IPv4 address, such as *111.222.333.444*. It must be an IP address, **not a domain name**.
+   - The *external-ip* is necessary in cloud providers which use internal NATs, such as **Amazon EC2** (**AWS**). Write in ``<CoturnPublicIpAddress>`` your server's public IPv4 address, such as *111.222.333.444*. It must be an IP address, **not a domain name**.
 
    - The options *fingerprint*, *lt-cred-mech*, and *realm* are needed for WebRTC.
 
@@ -159,7 +159,7 @@ Coturn can be installed directly from the Ubuntu package repositories:
 
    .. note::
 
-      Plain STUN doesn't constrain the range of ports that might be used, so by default you should open **all UDP ports**. You can, however, restrict which ports will be used by Kurento Media Server, by editing the file ``/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini``. That allows to have a reduced set of ports open in your server.
+      The STUN protocol doesn't constrain the range of ports that might be used, so with the default configuration you should **open all UDP ports**. However, it is possible to edit the file ``/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini`` and restrict the port range used by Kurento Media Server. That would allow to have a reduced set of ports open in your server.
 
 4. Lastly, start the ``Coturn`` server and the media server:
 

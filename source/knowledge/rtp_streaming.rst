@@ -315,7 +315,7 @@ Features:
 .. code-block:: text
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="$HOME/videos/bbb" \
+    SELF_PATH="video.mp4" \
     SELF_VSSRC=112233 \
     SELF_KEY="4142434445464748494A4B4C4D4E4F505152535455565758595A31323334" \
     bash -c 'gst-launch-1.5 -e \
@@ -367,7 +367,7 @@ Features:
 
     PEER_V=9004 PEER_VSSRC=332211 PEER_IP=127.0.0.1 \
     PEER_KEY="343332315A595857565554535251504F4E4D4C4B4A494847464544434241" \
-    SELF_PATH="$HOME/videos/bbb" \
+    SELF_PATH="video.mp4" \
     SELF_V=5004 SELF_VSSRC=112233 \
     SELF_KEY="4142434445464748494A4B4C4D4E4F505152535455565758595A31323334" \
     SRTP_CAPS="payload=(int)103,ssrc=(uint)$PEER_VSSRC,roc=(uint)0, \
@@ -478,7 +478,7 @@ The SRTP Master Key is the concatenation of (key, salt). With *AES_CM_128* + *HM
 Key formats:
 
 - GStreamer (*gst-launch*): Hexadecimal.
-- Kurento (*RtpEndpoint*): Plain text.
+- Kurento (*RtpEndpoint*): ASCII.
 - SDP Offer/Answer: Base64.
 
 Use this website to convert between formats: http://tomeko.net/online_tools/hex_to_base64.php
