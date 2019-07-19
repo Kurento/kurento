@@ -291,7 +291,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
       `Semantic Versioning <https://semver.org/>`__ is a formal convention for specifying compatibility using a three-part version number: major version; minor version; and patch.
 
    Signaling Plane
-       It is the layer of a media system in charge of the information exchanges concerning the establishment and control of the different media circuits and the management of the network, in contrast to the transfer of media, done by the :index:`Signaling Plane <single: Plane; Signaling>`.
+       It is the layer of a media system in charge of the information exchanges concerning the establishment and control of the different media circuits and the management of the network, in contrast to the transfer of media, done by the :index:`Media Plane <single: Plane; Media>`.
        Functions such as media negotiation, QoS parametrization, call establishment, user registration, user presence, etc. as managed in this plane.
 
        .. seealso::
