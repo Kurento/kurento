@@ -2,7 +2,7 @@
 Java Module - Pointer Detector Filter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on a `WebRTC`:term: video communication in mirror
+This web application consists of a `WebRTC`:term: video communication in mirror
 (*loopback*) with a pointer tracking filter element.
 
 .. note::

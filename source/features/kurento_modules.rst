@@ -71,7 +71,7 @@ The remainder of this page is structured in four sections in which the built-in 
 Module Tutorial - Pointer Detector Filter
 =========================================
 
-This web application consists on a :term:`WebRTC` video communication in mirror (*loopback*) with a pointer-tracking filter element.
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a pointer-tracking filter element.
 
 .. toctree::
    :maxdepth: 1
@@ -85,7 +85,7 @@ This web application consists on a :term:`WebRTC` video communication in mirror 
 Module Tutorial - Chroma Filter
 ===============================
 
-This web application consists on a :term:`WebRTC` video communication in mirror (*loopback*) with a chroma filter element.
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a chroma filter element.
 
 .. toctree::
    :maxdepth: 1
@@ -99,7 +99,7 @@ This web application consists on a :term:`WebRTC` video communication in mirror 
 Module Tutorial - Crowd Detector Filter
 =======================================
 
-This web application consists on a :term:`WebRTC` video communication in mirror (*loopback*) with a crowd detector filter. This filter detects people agglomeration in video streams.
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a crowd detector filter. This filter detects people agglomeration in video streams.
 
 .. toctree::
    :maxdepth: 1
@@ -113,7 +113,7 @@ This web application consists on a :term:`WebRTC` video communication in mirror 
 Module Tutorial - Plate Detector Filter
 =======================================
 
-This web application consists on a :term:`WebRTC` video communication in mirror (*loopback*) with a plate detector filter element.
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a plate detector filter element.
 
 .. toctree::
    :maxdepth: 1

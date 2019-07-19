@@ -39,7 +39,7 @@ This is one of the simplest WebRTC applications you can create with Kurento. It 
 WebRTC Magic Mirror
 ===================
 
-This web application consists on a :term:`WebRTC` *loopback* video communication, adding a funny hat over detected faces. This is an example of a Computer Vision and Augmented Reality filter.
+This web application consists of a :term:`WebRTC` *loopback* video communication, adding a funny hat over detected faces. This is an example of a Computer Vision and Augmented Reality filter.
 
 .. toctree::
    :maxdepth: 1

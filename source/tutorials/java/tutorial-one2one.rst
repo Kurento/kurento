@@ -2,7 +2,7 @@
 Java - One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on a one-to-one video call using `WebRTC`:term:
+This web application consists of a one-to-one video call using `WebRTC`:term:
 technology. In other words, this application provides a simple video softphone.
 
 .. note::

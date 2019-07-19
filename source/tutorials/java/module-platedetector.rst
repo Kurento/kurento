@@ -2,7 +2,7 @@
 Java Module - Plate Detector Filter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on a `WebRTC`:term: video communication in mirror
+This web application consists of a `WebRTC`:term: video communication in mirror
 (*loopback*) with a plate detector filter element.
 
 .. note::

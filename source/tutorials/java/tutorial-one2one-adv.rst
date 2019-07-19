@@ -2,7 +2,7 @@
 Java - Advanced One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on an advanced one to one video call using
+This web application consists of an advanced one to one video call using
 `WebRTC`:term: technology. It is an improved version of the
 :doc:`one 2 one call tutorial <./tutorial-one2one>`).
 
@@ -609,7 +609,7 @@ The media logic in this demo is implemented in the classes
 `CallMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/CallMediaPipeline.java>`_
 and
 `PlayMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/PlayMediaPipeline.java>`_.
-The first media pipeline consists on two ``WebRtcEndpoint`` elements
+The first media pipeline consists of two ``WebRtcEndpoint`` elements
 interconnected with a ``FaceOverlayFilter`` in between, and also with and
 ``RecorderEndpoint`` to carry out the recording of the WebRTC communication.
 Please take note that the WebRtc endpoints needs to be connected twice, one for
@@ -707,7 +707,7 @@ methods delegate to WebRtc endpoints to create the appropriate answer.
 
       mvn -U clean spring-boot:run -Dapp.server.url=https://app_server_host:app_server_port
 
-The second media pipeline consists on a ``PlayerEndpoint`` connected to a
+The second media pipeline consists of a ``PlayerEndpoint`` connected to a
 ``WebRtcEndpoint``. The ``PlayerEndpoint`` reads the previously recorded media
 in the file system of the Kurento Media Server. The ``WebRtcEndpoint`` is used
 in receive-only mode.

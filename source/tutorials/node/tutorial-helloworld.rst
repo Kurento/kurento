@@ -3,7 +3,7 @@ Node.js - Hello world
 %%%%%%%%%%%%%%%%%%%%%
 
 This web application has been designed to introduce the principles of
-programming with Kurento for Node.js developers. It consists on a
+programming with Kurento for Node.js developers. It consists of a
 `WebRTC`:term: video communication in mirror (*loopback*). This tutorial
 assumes you have basic knowledge of JavaScript, Node.js, HTML and WebRTC. We
 also recommend reading the

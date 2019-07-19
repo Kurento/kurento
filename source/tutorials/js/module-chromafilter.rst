@@ -2,7 +2,7 @@
 JavaScript Module - Chroma Filter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on a `WebRTC`:term: video communication in mirror
+This web application consists of a `WebRTC`:term: video communication in mirror
 (*loopback*) with a chroma filter element.
 
 
