@@ -56,7 +56,7 @@ Understanding this example
 
 On top of the recording capabilities from the base tutorial, this application
 creates a repository element to store media in that repository. Additionally,
-metadata about the recorded file can be also stored in the repository.
+metadata about the recorded file can also be stored in the repository.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.

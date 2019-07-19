@@ -53,7 +53,7 @@ When an *RPC call* is made, the server replies with a *response* message. In cas
 - **jsonrpc**: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
 - **id**: Must match the value of the *id* member in the *request* message.
 - **result**: Its value is determined by the method invoked on the server.
-- In case the connection is rejected, the response includes a message with a *rejected* attribute containing an message with a *code* and *message* attributes with the reason why the session was not accepted, and no ``sessionId`` is defined.
+- In case the connection is rejected, the response includes a message with a *rejected* attribute containing a message with a *code* and *message* attributes with the reason why the session was not accepted, and no ``sessionId`` is defined.
 
 The following example shows a typical successful response::
 
@@ -111,7 +111,7 @@ Once the WebSocket has been established, the Kurento Protocol offers different t
 - **invoke**: Calls a method of an existing media object.
 - **subscribe**: Subscribes to some specific event, to receive notifications when it gets emitted by a media object.
 - **unsubscribe**: Removes an existing subscription to an event.
-- **release**: Deletes the object and release resources used by it.
+- **release**: Deletes the object and releases resources used by it.
 
 The Kurento Protocol allows that Kurento Media Server sends requests to clients:
 
@@ -376,7 +376,7 @@ Network issues
 
 Resources handled by KMS are high-consuming. For this reason, KMS implements a garbage collector.
 
-A Media Element is collected when the client is disconnected longer than 4 minutes. After that time, these media elements are disposed automatically. Therefore, the WebSocket connection between client and KMS shoul be active at all times. In case of temporary network disconnection, KMS implements a mechanism that allows the client to reconnect.
+A Media Element is collected when the client is disconnected longer than 4 minutes. After that time, these media elements are disposed automatically. Therefore, the WebSocket connection between client and KMS shoul be active at all times. In case of a temporary network disconnection, KMS implements a mechanism that allows the client to reconnect.
 
 For this, there is a special kind of message with the format shown below. This message allows a client to reconnect to the same KMS instance to which it was previously connected::
 
@@ -537,7 +537,7 @@ the Media Session::
 Creating a custom Kurento Client
 ================================
 
-In order to implement a Kurento Client you need to follow the reference documentation. The best way to know all details is to take a look to the IDL file that defines the interface of the Kurento elements.
+In order to implement a Kurento Client you need to follow the reference documentation. The best way to know all details is to take a look at IDL files that define the interface of the Kurento elements.
 
 We have defined a custom IDL format based on JSON. From it, we automatically generate the client code for the Kurento Client libraries:
 
@@ -552,7 +552,7 @@ We have defined a custom IDL format based on JSON. From it, we automatically gen
 Kurento Module Creator
 ----------------------
 
-Kurento Clients contain code that is automatically generated from the IDL interface files, using a tool named **Kurento Module Creator**. This tool can be also used to create custom clients in other languages.
+Kurento Clients contain code that is automatically generated from the IDL interface files, using a tool named **Kurento Module Creator**. This tool can also be used to create custom clients in other languages.
 
 Kurento Module Creator can be installed in an Ubuntu machine using the  following command:
 
