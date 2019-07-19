@@ -1010,6 +1010,7 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>${version.javadoc.plugin}</version>
 					<configuration>
+						<notimestamp>true</notimestamp>
 						<header><![CDATA[<b>${project.name} ${project.version}</b>]]></header>
 						<footer><![CDATA[<b>${project.name} ${project.version}</b>]]></footer>
 						<archive>
