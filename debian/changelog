@@ -1,14 +1,13 @@
-kurento-module-creator (6.11.0-0kurento1) UNRELEASED; urgency=medium
+kurento-module-creator (6.11.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
-  * UNRELEASED
+  * Prepare release 6.11.0-0kurento1
+  * debian/control: Require maven >= 3.0
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 10 Apr 2019 14:14:37 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 19 Jul 2019 19:47:52 +0200
 
 kurento-module-creator (6.10.0-0kurento1) testing; urgency=medium
 
   * debian: Review for 18.04 build
-  * UNRELEASED
 
  -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:29 +0200
 
