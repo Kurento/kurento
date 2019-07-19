@@ -159,7 +159,7 @@ the ICE candidate
 
 Following the previous steps, we have:
 
-* Sent and SDP offer to a remote peer
+* Sent an SDP offer to a remote peer
 
 * Received an SDP answer from the remote peer, and have the ``webRtcPeer``
   process that answer.
