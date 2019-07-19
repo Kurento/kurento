@@ -34,28 +34,26 @@ function proxy(data) {
 
     switch (type) {
     case 'PlayerEndpoint':
-    case 'ZBarFilter':
-      {
-        var constructorParams = params.constructorParams;
-        var pipeline_id = constructorParams.mediaPipeline;
+    case 'ZBarFilter': {
+      var constructorParams = params.constructorParams;
+      var pipeline_id = constructorParams.mediaPipeline;
 
-        var pipeline = objects[pipeline_id];
-        if (pipeline == undefined) {
-          error = {
-            message: "Unknown pipeline: " + pipeline_id
-          };
-          break;
+      var pipeline = objects[pipeline_id];
+      if (pipeline == undefined) {
+        error = {
+          message: "Unknown pipeline: " + pipeline_id
         };
+        break;
       };
+    };
 
-    case 'MediaPipeline':
-      {
-        objects[id] = type;
-        result = {
-          value: id
-        };
-      }
-      break;
+    case 'MediaPipeline': {
+      objects[id] = type;
+      result = {
+        value: id
+      };
+    }
+    break;
 
     default:
       error = {
@@ -78,50 +76,46 @@ function proxy(data) {
 
     else
       switch (method) {
-      case 'invoke':
-        {
-          var operation = params.operation;
+      case 'invoke': {
+        var operation = params.operation;
 
-          switch (operation) {
-          case 'connect':
-          case 'play':
-            result = {};
+        switch (operation) {
+        case 'connect':
+        case 'play':
+          result = {};
 
-          default:
-            error = {
-              message: "Unknown operation: " + operation
-            };
+        default:
+          error = {
+            message: "Unknown operation: " + operation
           };
         };
-        break;
+      };
+      break;
 
-      case 'release':
-        {
+      case 'release': {
+        result = {};
+      };
+      break;
+
+      case 'subscribe': {
+        var type = params.type;
+
+        switch (type) {
+        case 'CodeFound':
           result = {};
-        };
-        break;
 
-      case 'subscribe':
-        {
-          var type = params.type;
-
-          switch (type) {
-          case 'CodeFound':
-            result = {};
-
-          default:
-            error = {
-              message: "Unknown event type: " + type
-            };
+        default:
+          error = {
+            message: "Unknown event type: " + type
           };
         };
-        break;
+      };
+      break;
 
-      case 'unsubscribe':
-        {
-          result = {};
-        };
-        break;
+      case 'unsubscribe': {
+        result = {};
+      };
+      break;
 
       default:
         error = {
