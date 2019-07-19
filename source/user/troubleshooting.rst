@@ -172,6 +172,19 @@ These messages can help understand what codec settings are being received by Kur
 
 
 
+Memory usage grows too high
+---------------------------
+
+If you are using ``top`` or ``ps`` to evaluate memory usage, keep in mind that these tools show memory usage as seen by the Operating System, not the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the OS. Typically, it won't! Typical C implementations do not return ``free``'d memory : it is available for use by the same program, but not to others. So ``top`` or ``ps`` won't be able to "see" the free'd memory.
+
+If you're trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; ``Valgrind`` is.
+
+See:
+
+* `free() in C doesn't reduce memory usage <https://stackoverflow.com/questions/6005333/problem-with-free-on-structs-in-c-it-doesnt-reduce-memory-usage>`__
+
+
+
 Service init doesn't work
 -------------------------
 
