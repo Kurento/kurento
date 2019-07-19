@@ -53,7 +53,7 @@ The following picture shows an schematic view of the Kurento Media Server with i
    :alt: Kurento modules architecture
 
    **Kurento modules architecture**
-   *Kurento Media Server can be extended with built-it modules (crowddetector, pointerdetector, chroma, platedetector) and also with other custom modules.*
+   *Kurento Media Server can be extended with built-in modules (crowddetector, pointerdetector, chroma, platedetector) and also with other custom modules.*
 
 Taking into account the built-in modules, the Kurento toolbox is extended as follows:
 

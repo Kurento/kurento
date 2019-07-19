@@ -53,7 +53,7 @@ Finally, Kurento Media Server can be expanded with new custom modules.
    :align:  center
    :alt:    Kurento modules architecture
 
-   *Kurento modules architecture. Kurento Media Server can be extended with built-it modules (crowddetector, pointerdetector, chroma, platedetector) and also with other custom modules.*
+   *Kurento modules architecture. Kurento Media Server can be extended with built-in modules (crowddetector, pointerdetector, chroma, platedetector) and also with other custom modules.*
 
 For more information, read the section :doc:`/features/kurento_modules`.
 

@@ -159,7 +159,7 @@ This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with
 application server by means of requests and responses. Specifically, the main
 app class implements the interface ``WebSocketConfigurer`` to register a
-``WebSocketHanlder`` to process WebSocket requests in the path
+``WebSocketHandler`` to process WebSocket requests in the path
 ``/senddatachannel``.
 
 `SendDataChannelHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-send-data-channel/src/main/java/org/kurento/tutorial/senddatachannel/SendDataChannelHandler.java>`_

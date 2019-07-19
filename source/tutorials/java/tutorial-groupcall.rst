@@ -150,7 +150,7 @@ This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with
 application server by means of requests and responses. Specifically, the main
 app class implements the interface ``WebSocketConfigurer`` to register a
-``WebSocketHanlder`` to process WebSocket requests in the path ``/groupcall``.
+``WebSocketHandler`` to process WebSocket requests in the path ``/groupcall``.
 
 `CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/CallHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.

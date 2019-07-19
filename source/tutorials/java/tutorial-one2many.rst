@@ -194,7 +194,7 @@ the *localhost* and listening in the port 8888.
 This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with server
 by means of requests and responses. Specifically, the main app class implements
-the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
+the interface ``WebSocketConfigurer`` to register a ``WebSocketHandler`` to
 process WebSocket requests in the path ``/call``.
 
 `CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/src/main/java/org/kurento/tutorial/one2manycall/CallHandler.java>`_

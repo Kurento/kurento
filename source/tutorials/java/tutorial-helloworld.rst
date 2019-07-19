@@ -146,7 +146,7 @@ Once the *Kurento Client* has been instantiated, you are ready for communicating
       }
     }
 
-This web application follows a *Single Page Application* architecture (:term:`SPA`), and uses a :term:`WebSocket` to communicate with the application server, by means of requests and responses. Specifically, the main app class implements the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` that processes WebSocket requests in the path ``/helloworld``.
+This web application follows a *Single Page Application* architecture (:term:`SPA`), and uses a :term:`WebSocket` to communicate with the application server, by means of requests and responses. Specifically, the main app class implements the interface ``WebSocketConfigurer`` to register a ``WebSocketHandler`` that processes WebSocket requests in the path ``/helloworld``.
 
 The class `HelloWorldHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldHandler.java>`__
 implements ``TextWebSocketHandler`` to handle text WebSocket requests. The central piece of this class is the method ``handleTextMessage``. This method implements the actions for requests, returning responses through the WebSocket. In other words, it implements the server part of the signaling protocol depicted in the previous sequence diagram.
