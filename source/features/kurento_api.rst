@@ -30,7 +30,7 @@ Kurento is based on two concepts that act as building blocks for application dev
      :align:  center
      :alt:    Media Pipeline example
 
-     *Example of a Media Pipeline implementing an interactive multimedia application receiving media from a WebRtcEndpoint, overlaying and image on the detected faces and sending back the resulting stream*
+     *Example of a Media Pipeline implementing an interactive multimedia application receiving media from a WebRtcEndpoint, overlaying an image on the detected faces and sending back the resulting stream*
 
 The Kurento API is :wikipedia:`Object-Oriented <Object-oriented programming>`. This means that it is based on Classes that can be instantiated in the form of Objects; these Objects provide *properties* that are a representation of the internal state of the Kurento server, and *methods* that expose the operations that can be performed by the server.
 
