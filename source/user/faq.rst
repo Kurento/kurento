@@ -43,8 +43,8 @@ When is STUN needed?
 
 **STUN is needed for every endpoint behind a NAT**. All NAT-ed peers need to open their own NAT ports, doing :term:`NAT traversal` by using a STUN server that is *outside of the NAT*.
 
-If you are installing Kurento in a NAT environment (eg. in any cloud provider), you need to use a STUN or TURN server, and configure KMS appropriately in
-``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Apart from that, you need to open all UDP ports in your security group, as STUN/TURN will use any port available from the whole 0-65535 range.
+If you are installing Kurento in a NAT environment (eg. if your server is behind a NAT firewall), you need to use a STUN or TURN server, and configure KMS appropriately in
+``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Apart from that, you need to open all UDP ports in your cloud provider's security group, as STUN/TURN will use any port available from the whole 0-65535 range.
 
 Similarly, all browser endpoints that are behind a NAT need to configure the STUN and/or TURN server details with the ``iceServers`` field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
 
