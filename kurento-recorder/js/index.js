@@ -14,7 +14,7 @@
 * limitations under the License.
 *
 */
- 
+
 function getopts(args, opts)
 {
   var result = opts.default || {};
@@ -130,7 +130,7 @@ function startRecording() {
             webRtcPeer.processAnswer(answer);
           });
 
-          client.connect(webRtc, recorder, function(error) {
+          client.connect(webRtc, webRtc, recorder, function(error) {
             if (error) return onError(error);
 
             console.log("Connected");
