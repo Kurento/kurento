@@ -65,7 +65,7 @@
     "merge": "^1.2.0",
     "sdp-translator": "^0.1.15",
     "ua-parser-js": "^0.7.7",
-    "uuid": "~2.0.1"
+    "uuid": "^3.0.0"
   },
   "devDependencies": {
     "bower": "~1.7.9",
