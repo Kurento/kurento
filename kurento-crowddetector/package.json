@@ -10,7 +10,7 @@
     "express": "~4.12.4",
     "express-session": "~1.10.3",
     "minimist": "^1.1.1",
-    "ws": "~1.0.1",
+    "ws": "^7.1.0",
     "kurento-client": "Kurento/kurento-client-js",
     "kurento-module-crowddetector": "Kurento/kurento-module-crowddetector-js"
   },
