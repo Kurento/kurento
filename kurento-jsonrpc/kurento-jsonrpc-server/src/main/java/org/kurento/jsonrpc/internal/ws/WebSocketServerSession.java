@@ -27,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.commons.ThreadFactoryCreator;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.TransportException;
@@ -56,7 +57,8 @@ public class WebSocketServerSession extends ServerSession {
 
   private final PendingRequests pendingRequests = new PendingRequests();
 
-  private ExecutorService execService = Executors.newCachedThreadPool();
+  private ExecutorService execService = Executors.newCachedThreadPool(
+      ThreadFactoryCreator.create("WebSocketServerSession-async"));
 
   public WebSocketServerSession(String sessionId, Object registerInfo,
       SessionsManager sessionsManager, WebSocketSession wsSession) {

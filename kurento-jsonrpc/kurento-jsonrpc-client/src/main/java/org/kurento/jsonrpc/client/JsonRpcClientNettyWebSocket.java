@@ -250,8 +250,10 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       final int maxRetries = 5;
       while (channel == null || !channel.isOpen()) {
         try {
-          channel = b.connect(host, port).sync().channel();
-          handler.handshakeFuture().sync();
+          ChannelFuture connectFuture = b.connect(host, port);
+          if (!connectFuture.await(this.connectionTimeout)) throw new WebSocketHandshakeException("Timeout");
+          channel = connectFuture.channel();
+          if (!handler.handshakeFuture().await(this.connectionTimeout)) throw new WebSocketHandshakeException("Timeout");
         } catch (InterruptedException e) {
           // This should never happen
           log.warn("{} ERROR connecting WS Netty client, opening channel", label, e);
@@ -298,7 +300,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
     if (channel != null) {
       log.debug("{} Closing client", label);
       try {
-        channel.close().sync();
+        channel.close().await(this.connectionTimeout);
       } catch (Exception e) {
         log.debug("{} Could not properly close websocket client. Reason: {}", label, e.getMessage(),
             e);
