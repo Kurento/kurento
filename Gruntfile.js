@@ -67,7 +67,7 @@ module.exports = function(grunt)
 
         options:
         {
-          exclude: ['ws', 'bufferutil', 'utf-8-validate' ],
+          exclude: ['ws', 'bufferutil' ],
           browserifyOptions: {
             debug: true,
             standalone: 'RpcBuilder'
@@ -82,7 +82,7 @@ module.exports = function(grunt)
 
         options:
         {
-          exclude: ['ws', 'bufferutil', 'utf-8-validate' ],
+          exclude: ['ws', 'bufferutil' ],
           debug: true,
           browserifyOptions: {
             debug: true,
@@ -105,7 +105,7 @@ module.exports = function(grunt)
 
         options:
         {
-          exclude: ['ws', 'bufferutil', 'utf-8-validate' ],
+          exclude: ['ws', 'bufferutil' ],
           debug: true,
           browserifyOptions: {
             debug: true,
