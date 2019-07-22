@@ -14,3 +14,8 @@ src/
 target/
 npm-debug.log
 reports/
+
+# Only apps should have lockfiles, not libs/packages
+npm-shrinkwrap.json
+package-lock.json
+yarn.lock
