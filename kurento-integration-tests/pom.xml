@@ -21,6 +21,9 @@
 	</description>
 
 	<!-- Project configuration -->
+	<properties>
+		<maven.javadoc.skip>true</maven.javadoc.skip>
+	</properties>
 
 	<dependencies>
 	</dependencies>
