@@ -65,9 +65,9 @@ General considerations
 
 .. note::
 
-   Made a mistake?
+   Made a mistake? Don't panic!
 
-   Don't be afraid of applying some Git magic to solve mistakes during the release process. Here are some which can be useful:
+   Do not be afraid of applying some Git magic to solve mistakes during the release process. Here are some which can be useful:
 
    - How to remove a release tag?
 
@@ -153,7 +153,7 @@ Release steps
 
       cd libnice
 
-      # Edit these
+      # Change these
       NEW_VERSION="0.1.15"
       NEW_DEBIAN="0kurento1"
 
@@ -196,7 +196,7 @@ Release steps
 
       cd libnice
 
-      # Edit these
+      # Change these
       NEW_VERSION="0.1.16"
       NEW_DEBIAN="0kurento1"
 
@@ -302,14 +302,25 @@ Release steps
 
       git log "$(git describe --tags --abbrev=0)"..HEAD --oneline
 
+   Then add the new *CHANGELOG.md* for the upcoming release commit:
+
+   .. code-block:: bash
+
+      cd kurento-media-server
+      git add CHANGELOG.md
+
 #. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
 
 #. Set the definitive release version in all projects. Use the helper script `kms-omni-build/bin/set-versions.sh`_ to set version numbers, commit the results, and create a tag.
 
    .. code-block:: bash
 
+      # Change these
+      NEW_VERSION="<ReleaseVersion>"
+      NEW_DEBIAN="<DebianVersion>"
+
       cd kms-omni-build
-      ./bin/set-versions.sh <ReleaseVersion> --debian <DebianVersion> \
+      ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
           --release --commit --tag
 
    - **Example**
@@ -318,8 +329,12 @@ Release steps
 
      .. code-block:: bash
 
+        # Change these
+        NEW_VERSION="6.9.0"
+        NEW_DEBIAN="0kurento1"
+
         cd kms-omni-build
-        ./bin/set-versions.sh 6.9.0 --debian 0kurento1 \
+        ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
             --release --commit --tag
 
    Now push changes:
@@ -328,13 +343,11 @@ Release steps
 
       git submodule foreach 'git push --follow-tags'
 
-
-
 #. It's also nice to update the git-submodule references of the all-in-one repo ``kms-omni-build``, and create a tag just like in all the other repos.
 
    .. code-block:: bash
 
-      # Edit this
+      # Change this
       NEW_VERSION="6.9.0"
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
@@ -365,12 +378,13 @@ Release steps
 
    - Open the `Nexus Sonatype Staging Repositories`_ section.
    - Select **kurento** repository.
-   - Inspect contents to ensure they are as expected:
+   - Inspect **Content** to ensure they are as expected:
 
      - kurento-module-creator (if it was released)
      - kms-api-core
      - kms-api-elements
      - kms-api-filters
+     - All of them must appear in the correct version, ``$NEW_VERSION``.
 
    - **Close** repository.
    - Wait a bit.
@@ -382,8 +396,12 @@ Release steps
 
    .. code-block:: bash
 
+      # Change these
+      NEW_VERSION="<NextVersion>"
+      NEW_DEBIAN="<DebianVersion>"
+
       cd kms-omni-build
-      ./bin/set-versions.sh <NextVersion> --debian <DebianVersion> \
+      ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
           --development --commit
 
    - **Example**
@@ -392,8 +410,12 @@ Release steps
 
      .. code-block:: bash
 
+        # Change these
+        NEW_VERSION="6.9.1"
+        NEW_DEBIAN="0kurento1"
+
         cd kms-omni-build
-        ./bin/set-versions.sh 6.9.1 --debian 0kurento1 \
+        ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
             --development --commit
 
    Now push changes:
@@ -428,11 +450,13 @@ Release steps
 
 #. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
 
-#. Set the definitive release version in all projects. This operation varies between projects.
+#. Set the definitive release version in all projects. This operation in different files, depending on the project:
 
-   - kurento-jsonrpc-js, kurento-utils-js, kurento-client-js: in file **package.json**.
-   - kurento-tutorial-js: in each one of the **bower.json** files.
-   - kurento-tutorial-node: in each one of the **package.json** files.
+   - ``kurento-jsonrpc-js/package.json``
+   - ``kurento-utils-js/package.json``
+   - ``kurento-client-js/package.json``
+   - Each one in ``kurento-tutorial-js/**/bower.json``
+   - Each one in ``kurento-tutorial-node/**/package.json``
 
 #. Review all dependencies to remove *-dev* versions.
 
@@ -455,6 +479,7 @@ Release steps
       for PROJECT in "${PROJECTS[@]}"; do
           pushd "$PROJECT"
           npm install
+          node_modules/.bin/grunt jsbeautifier || true
           node_modules/.bin/grunt
           node_modules/.bin/grunt sync:bower
           popd  # $PROJECT
@@ -467,7 +492,7 @@ Release steps
       npm install
       node_modules/.bin/grunt jsbeautifier::file:<FilePath>.js
 
-   Some times it's needed to run Grunt a couple of times until it ends without errors.
+   Some times it happens that Grunt needs to be run a couple of times until it ends without errors.
 
 #. **All-In-One** script.
 
@@ -481,7 +506,7 @@ Release steps
 
    .. code-block:: bash
 
-      # Edit this
+      # Change this
       NEW_VERSION="6.9.0"
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
@@ -496,18 +521,37 @@ Release steps
 
       for PROJECT in "${PROJECTS[@]}"; do
           pushd "$PROJECT"
+          git stash
           git pull --rebase
-          for FILE in $(find . -name *.json); do
+          for FILE in $(find . -name '*.json'); do
               TEMP="$(mktemp)"
               jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
-                  "$FILE" > "$TEMP" && mv "$TEMP" "$FILE"
+                  "$FILE" > "$TEMP" && mv --update "$TEMP" "$FILE"
               git add "$FILE"
           done
           git commit -m "$COMMIT_MSG"
           git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
           git push --follow-tags
+          git stash pop
           popd  # $PROJECT
       done
+
+#. When all repos have been released, and CI jobs have finished successfully,
+
+   - Open the `Nexus Sonatype Staging Repositories`_ section.
+   - Select **kurento** repository.
+   - Inspect **Content** to ensure they are as expected:
+
+     - kurento-jsonrpc-js
+     - kurento-utils-js
+     - kurento-client-js
+     - All of them must appear in the correct version, ``$NEW_VERSION``.
+
+   - **Close** repository.
+   - Wait a bit.
+   - **Refresh**.
+   - **Release** repository.
+   - Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
 
 #. AFTER THE WHOLE RELEASE HAS BEEN COMPLETED: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-dev*".
 
@@ -515,7 +559,7 @@ Release steps
 
    .. code-block:: bash
 
-      # Edit this
+      # Change this
       NEW_VERSION="6.9.1-dev"
 
       COMMIT_MSG="Prepare for next development iteration"
@@ -530,14 +574,16 @@ Release steps
 
       for PROJECT in "${PROJECTS[@]}"; do
           pushd "$PROJECT"
-          for FILE in $(find . -name *.json); do
+          git pull --rebase
+          for FILE in $(find . -name '*.json'); do
               TEMP="$(mktemp)"
               jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
-                  "$FILE" > "$TEMP" && mv "$TEMP" "$FILE"
+                  "$FILE" > "$TEMP" && mv --update "$TEMP" "$FILE"
               git add "$FILE"
           done
           git commit -m "$COMMIT_MSG"
           git push
+          git stash pop
           popd  # $PROJECT
       done
 
@@ -570,7 +616,7 @@ Kurento Maven plugin
 
    .. code-block:: bash
 
-      # Edit this
+      # Change this
       NEW_VERSION="1.2.3"
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
@@ -702,7 +748,7 @@ Release steps
 
    .. code-block:: bash
 
-      # Edit this
+      # Change this
       NEW_VERSION="6.9.0"
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
@@ -752,7 +798,7 @@ Release steps
 
    - Open the `Nexus Sonatype Staging Repositories`_ section.
    - Select **kurento** repositories.
-   - Inspect contents to ensure they are as expected: *kurento-java*, etc.
+   - Inspect **Content** to ensure they are as expected: *kurento-java*, etc.
    - **Close repositories**.
    - Wait a bit.
    - **Refresh**.
@@ -761,7 +807,7 @@ Release steps
 
    - Open the `Nexus Sonatype Staging Repositories`_ section.
    - Select **kurento** repository.
-   - Inspect contents to ensure they are as expected:
+   - Inspect **Content** to ensure they are as expected:
 
      - kurento-client
      - kurento-commons
@@ -776,6 +822,7 @@ Release steps
      - kurento-repository-client (ABANDONED)
      - kurento-repository-internal (ABANDONED)
      - kurento-test
+     - All of them must appear in the correct version, ``$NEW_VERSION``.
 
    - **Close** repository.
    - Wait a bit.
@@ -837,6 +884,8 @@ Docker images
 
 A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `KMS CI job`_ is triggered.
 
+The repository ``kurento-docker`` contains *Dockerfile*s for all the Kurento Docker images, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (like in: "*which one of the sub-dirs does the tag apply to?*").
+
 
 
 Kurento documentation
@@ -866,7 +915,7 @@ For this reason, the documentation must be built only after all the other module
 
    .. code-block:: bash
 
-      # Edit this
+      # Change this
       NEW_VERSION="6.9.0"
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
