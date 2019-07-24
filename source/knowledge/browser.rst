@@ -83,3 +83,12 @@ Chrome
     --v=0 \
     "https://localhost:8443/" \
     2>&1 | grep 'prflx'
+
+
+H.264 codec
+-----------
+
+Chrome uses OpenH264 (same lib as Firefox uses) for encoding, and FFmpeg (which is already used elsewhere in Chrome) for decoding.
+Feature page: https://www.chromestatus.com/feature/6417796455989248
+Since Chrome 52.
+Bug tracker: https://bugs.chromium.org/p/chromium/issues/detail?id=500605
