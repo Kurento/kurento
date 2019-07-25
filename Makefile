@@ -7,7 +7,7 @@
 #   See: https://www.gnu.org/software/make/manual/html_node/One-Shell.html
 .NOTPARALLEL:
 .ONESHELL:
-.PHONY: help init-workdir Makefile*
+.PHONY: help init-workdir langdoc Makefile*
 
 # Check required features
 ifeq ($(filter oneshell,$(.FEATURES)),)
