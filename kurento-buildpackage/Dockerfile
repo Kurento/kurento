@@ -117,7 +117,10 @@ RUN git config --system user.name "kurento-buildpackage" \
 #   setting up a persistent cache in an external Docker volume. Useful if you're
 #   doing lots of (re)builds and want to avoid downloading the same packages
 #   over and over again...
-RUN rm -f /etc/apt/apt.conf.d/docker-clean
+#
+#   WARNING: If you derive images from this one, you should start your
+#   Dockerfile with re-enabling this config file!
+RUN mv /etc/apt/apt.conf.d/docker-clean /etc/apt/apt.conf.d/docker-clean.off
 
 
 
