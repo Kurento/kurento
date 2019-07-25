@@ -757,6 +757,7 @@ Release steps
       git pull --rebase
       mvn versions:set -DgenerateBackupPoms=false \
           -DnewVersion="$NEW_VERSION"
+      git clean -xdf  # Delete build files
       git ls-files --modified | grep 'pom.xml' | xargs -r git add
       git commit -m "$COMMIT_MSG"
       git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
@@ -768,8 +769,7 @@ Release steps
       mvn versions:set -DgenerateBackupPoms=false \
           -DnewVersion="$NEW_VERSION" \
           --file kurento-parent-pom/pom.xml
-      mvn -U clean install -Dmaven.test.skip=true \
-          -Pkurento-release
+      mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
       git clean -xdf  # Delete build files
       git ls-files --modified | grep 'pom.xml' | xargs -r git add
       git commit -m "$COMMIT_MSG"
@@ -786,6 +786,7 @@ Release steps
               -DparentVersion="[${NEW_VERSION}]"
           mvn -N versions:update-child-modules -DgenerateBackupPoms=false \
               -DallowSnapshots=false
+          mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
           git clean -xdf  # Delete build files
           git ls-files --modified | grep 'pom.xml' | xargs -r git add
           git commit -m "$COMMIT_MSG"
@@ -884,7 +885,7 @@ Docker images
 
 A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `KMS CI job`_ is triggered.
 
-The repository ``kurento-docker`` contains *Dockerfile*s for all the Kurento Docker images, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (like in: "*which one of the sub-dirs does the tag apply to?*").
+The repository ``kurento-docker`` contains *Dockerfile*s for all the Kurento Docker images, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (because *which one of the sub-dirs would the tag apply to?*).
 
 
 
@@ -933,7 +934,11 @@ For this reason, the documentation must be built only after all the other module
 
 #. CI automatically tags Release versions in the ReadTheDocs source repo, `doc-kurento-readthedocs`_, so the release will show up as "*stable*" in ReadTheDocs.
 
-#. Open the `ReadTheDocs Versions dashboard`_ and in the *Default Version* ComboBox select the latest version available.
+#. Open `ReadTheDocs Builds`_ and use the *Build Version* button to force a build of the *latest* version.
+
+   Doing this, ReadTheDocs will "realize" that there is a new tagged release version of the documentation, in the *doc-kurento-readthedocs* repo. After the build is finished, the new release version will be available for selection in the next step.
+
+#. Open `ReadTheDocs Advanced Settings`_ and select the new version in the *Default Version* combo box.
 
    .. note::
 
@@ -959,6 +964,7 @@ For this reason, the documentation must be built only after all the other module
 .. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
 .. _this Ask Ubuntu answer: https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names/620539#620539
-.. _New build at ReadTheDocs: https://readthedocs.org/projects/doc-kurento/builds/
 .. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs/releases
-.. _ReadTheDocs Versions dashboard: https://readthedocs.org/dashboard/doc-kurento/versions/
+.. _ReadTheDocs Builds: https://readthedocs.org/projects/doc-kurento/builds/
+.. _New build at ReadTheDocs: https://readthedocs.org/projects/doc-kurento/builds/
+.. _ReadTheDocs Advanced Settings: https://readthedocs.org/dashboard/doc-kurento/advanced/
