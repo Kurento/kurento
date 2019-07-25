@@ -25,7 +25,7 @@ declare -A PROJECT_VERSIONS=(
     [VERSION_UTILS_JS]="6.11.0"
 
     # Version of each platform's tutorials
-    [VERSION_TUTORIAL_JAVA]="6.10.0"
+    [VERSION_TUTORIAL_JAVA]="6.11.0"
     [VERSION_TUTORIAL_JS]="6.11.0"
     [VERSION_TUTORIAL_NODE]="6.11.0"
 )
