@@ -34,6 +34,15 @@ FROM kurento/kurento-buildpackage:${UBUNTU_VERSION}
 # * Enable automatically cleaning the apt cache
 RUN mv /etc/apt/apt.conf.d/docker-clean.off /etc/apt/apt.conf.d/docker-clean
 
+# Install Node.js 8.x LTS (includes NPM) and Bower
+# Used by JavaScript-based projects
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+ && apt-get update && apt-get install --yes \
+        nodejs \
+ && rm -rf /var/lib/apt/lists/* \
+ && npm -g install bower \
+ && npm cache clean --force
+
 # Install a basic set of packages
 # * default-jdk (Java JDK): For Java projects
 # * maven: For Java projects
@@ -45,15 +54,6 @@ RUN apt-get update && apt-get install --yes \
         jshon \
         rsync \
  && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js 8.x LTS (includes NPM) and Bower
-# Used by JavaScript-based projects
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
- && apt-get update && apt-get install --yes \
-        nodejs \
- && rm -rf /var/lib/apt/lists/* \
- && npm -g install bower \
- && npm cache clean --force
 
 
 
