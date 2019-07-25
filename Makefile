@@ -48,9 +48,7 @@ init-workdir:
 	mkdir -p $(WORKDIR)
 	rsync -a $(SOURCEDIR)/ $(WORKDIR)
 
-langdoc:
-	echo "#### 'langdoc' target BEGIN ####"
-
+langdoc-init:
 	# Care must be taken because the Current Directory changes in this target,
 	# so it's better to use absolute paths for destination dirs.
 	# The 'client-doc' part must match the setting 'html_static_path' in 'conf.py',
@@ -60,11 +58,11 @@ langdoc:
 	mkdir -p $(WORKPATH)
 	mkdir -p $(DESTPATH)
 
-	# kurento-client javadoc
+langdoc-client-java: langdoc-init
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-java.git \
-		&& cd kurento-java
-	git checkout |VERSION_CLIENT_JAVA| || echo "Using master branch"
+	git clone https://github.com/Kurento/kurento-java.git
+	cd kurento-java
+	git checkout "|VERSION_CLIENT_JAVA|" || echo "Using master branch"
 	cd kurento-client || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
 	mvn --batch-mode --quiet clean package \
 		-DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
@@ -74,27 +72,27 @@ langdoc:
 		-Dsubpackages="org.kurento.client" -DexcludePackageNames="*.internal" \
 		|| { echo "ERROR: 'mvn javadoc' failed"; exit 1; }
 
-	# kurento-client-js jsdoc
+langdoc-client-js: langdoc-init
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-client-js.git \
-		&& cd kurento-client-js
-	git checkout |VERSION_CLIENT_JS| || echo "Using master branch"
+	git clone https://github.com/Kurento/kurento-client-js.git
+	cd kurento-client-js
+	git checkout "|VERSION_CLIENT_JS|" || echo "Using master branch"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
 	rsync -a doc/jsdoc/ $(DESTPATH)/client-jsdoc
 
-	# kurento-utils-js jsdoc
+langdoc-utils-js: langdoc-init
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-utils-js.git \
-		&& cd kurento-utils-js
-	git checkout |VERSION_UTILS_JS| || echo "Using master branch"
+	git clone https://github.com/Kurento/kurento-utils-js.git
+	cd kurento-utils-js
+	git checkout "|VERSION_UTILS_JS|" || echo "Using master branch"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
 	rsync -a doc/jsdoc/kurento-utils/*/ $(DESTPATH)/utils-jsdoc
 
-	echo "#### 'langdoc' target END ####"
+langdoc: langdoc-client-java langdoc-client-js langdoc-utils-js
 
 dist: langdoc html epub latexpdf
 	$(eval DISTDIR := $(BUILDDIR)/dist/kurento-doc-|VERSION_DOC|)
