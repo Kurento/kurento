@@ -30,6 +30,10 @@ ARG UBUNTU_VERSION=xenial
 
 FROM kurento/kurento-buildpackage:${UBUNTU_VERSION}
 
+# Configure `apt-get`:
+# * Enable automatically cleaning the apt cache
+RUN mv /etc/apt/apt.conf.d/docker-clean.off /etc/apt/apt.conf.d/docker-clean
+
 # Install a basic set of packages
 # * default-jdk (Java JDK): For Java projects
 # * maven: For Java projects
