@@ -34,10 +34,12 @@ FROM kurento/kurento-buildpackage:${UBUNTU_VERSION}
 # * default-jdk (Java JDK): For Java projects
 # * maven: For Java projects
 # * jshon: For some JavaScript tools
+# * rsync: For remote copies
 RUN apt-get update && apt-get install --yes \
         default-jdk \
         maven \
         jshon \
+        rsync \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 8.x LTS (includes NPM) and Bower
