@@ -1,6 +1,6 @@
 {
-  "mediaServer" : {
-    "net" : {
+  "mediaServer": {
+    "net": {
       "websocket": {
         "port": 8889,
         "path": "kurento",
