@@ -11,7 +11,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.11.0</version>
+	<version>6.11.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
