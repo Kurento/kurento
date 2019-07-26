@@ -1,6 +1,6 @@
 {
   "name": "kurento-platedetector",
-  "version": "6.11.0",
+  "version": "6.11.1-dev",
   "description": "Kurento Browser JavaScript Tutorial: Plate Detector",
   "keywords": [
     "kurento",
