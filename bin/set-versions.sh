@@ -153,6 +153,12 @@ if [[ "$CFG_VERSION" == "$CFG_VERSION_DEFAULT" ]]; then
     exit 1
 fi
 
+REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
+[[ "$CFG_VERSION" =~ $REGEX ]] || {
+    log "ERROR: '$CFG_VERSION' must be compatible with Semantic Versioning: <Major>.<Minor>.<Patch>"
+    exit 1
+}
+
 log "CFG_VERSION=$CFG_VERSION"
 log "CFG_DEBIAN=$CFG_DEBIAN"
 log "CFG_RELEASE=$CFG_RELEASE"
