@@ -131,7 +131,7 @@ Kurento Media Pipelines can get pretty complex if your use case requires so, whi
 
 Check these points in an attempt to find possible causes for the high CPU usage:
 
-* Currently Kurento has performance issues with source videos bigger or equal to 720p. 1080p is not recommended (although it might work but the Kurento team hasn't done any factual analysis to prove it).
+* Kurento Media Server is known to work well with videos of up to **720p** resolution (1280x720) at **30fps** and around **2Mbps**. Using values beyond those might work fine, but the Kurento team hasn't done any factual analysis to prove it. With heavier data loads there is a chance that KMS will be unable to process all incoming data on time, and this will cause that buffers fill up and frames get dropped. Try reducing the resolution of your input videos if you see video stuttering.
 
 * Source and destination video codecs must be compatible. This has always been a source of performance problems in WebRTC communications.
 
