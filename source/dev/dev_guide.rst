@@ -175,7 +175,7 @@ This command will install the basic set of tools that are needed for the next st
 .. code-block:: bash
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
-       git gnupg devscripts equivs
+       ca-certificates git gnupg devscripts equivs
 
 
 
@@ -255,6 +255,7 @@ Run:
    )
    for DIR in "${DIRS[@]}"; do
        echo "+ Install Build-Depends for '${DIR}'"
+       DEBIAN_FRONTEND=noninteractive \
        mk-build-deps --install --remove \
            --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
            "${DIR}/debian/control"
