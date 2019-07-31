@@ -897,10 +897,12 @@ kms_rtp_endpoint_comedia_manager_create(KmsRtpEndpoint *self,
   gulong signal_id = g_signal_connect (rtpsession, "on-ssrc-active",
       G_CALLBACK (kms_rtp_endpoint_comedia_on_ssrc_active), self);
 
-  g_hash_table_insert(self->priv->comedia.rtp_conns,
-      rtpsession, conn);
-  g_hash_table_insert(self->priv->comedia.signal_ids,
-      rtpsession, GUINT_TO_POINTER(signal_id));
+  g_hash_table_insert (self->priv->comedia.rtp_conns, g_object_ref (rtpsession),
+      conn);
+  g_hash_table_insert (self->priv->comedia.signal_ids,
+      g_object_ref (rtpsession), GUINT_TO_POINTER(signal_id));
+
+  g_object_unref (rtpsession);
 }
 
 static void
@@ -1149,8 +1151,10 @@ kms_rtp_endpoint_init (KmsRtpEndpoint * self)
   self->priv->sdes_keys = g_hash_table_new_full (g_str_hash, g_str_equal,
       g_free, (GDestroyNotify) kms_ref_struct_unref);
 
-  self->priv->comedia.rtp_conns = g_hash_table_new (g_direct_hash, NULL);
-  self->priv->comedia.signal_ids = g_hash_table_new (g_direct_hash, NULL);
+  self->priv->comedia.rtp_conns = g_hash_table_new_full (NULL, NULL,
+      g_object_unref, NULL);
+  self->priv->comedia.signal_ids = g_hash_table_new_full (NULL, NULL,
+      g_object_unref, NULL);
 
   g_object_set (G_OBJECT (self), "bundle",
       FALSE, "rtcp-mux", FALSE, "rtcp-nack", TRUE, "rtcp-remb", TRUE,
