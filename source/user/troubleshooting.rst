@@ -233,7 +233,7 @@ If the machine is disconnected during the actual installation of this package, t
 
 .. code-block:: bash
 
-   sudo apt-get install --reinstall openh264
+   sudo apt-get update && sudo apt-get install --reinstall openh264
 
 
 

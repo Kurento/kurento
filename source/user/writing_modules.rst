@@ -16,7 +16,7 @@ The starting point to develop a filter is to create the filter structure. For th
 
 .. sourcecode:: bash
 
-   sudo apt-get install kurento-media-server-dev
+   sudo apt-get update && sudo apt-get install --yes kurento-media-server-dev
 
 The tool usage is different depending on the chosen flavor:
 

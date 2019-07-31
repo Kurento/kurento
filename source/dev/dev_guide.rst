@@ -175,7 +175,11 @@ This command will install the basic set of tools that are needed for the next st
 .. code-block:: bash
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
-       ca-certificates git gnupg devscripts equivs
+       ca-certificates \
+       devscripts \
+       equivs \
+       git \
+       gnupg
 
 
 
@@ -485,9 +489,8 @@ Follow these steps to generate Debian packages from any of the Kurento repositor
           wget
       )
 
-      sudo apt-get update \
-          && sudo apt-get install --no-install-recommends --yes \
-              "${PACKAGES[@]}"
+      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+          "${PACKAGES[@]}"
 
    .. note::
 

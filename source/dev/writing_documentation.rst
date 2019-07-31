@@ -55,13 +55,20 @@ If you are writing documentation for Kurento, there is no need to commit every c
          python-sphinx-rtd-theme \
          sphinx-rtd-theme-common
 
+  .. code-block:: bash
+
      # Ensure that Sphinx is not installed with Python 3
      sudo pip3 uninstall sphinx
      sudo pip3 uninstall sphinx_rtd_theme
      sudo pip3 uninstall sphinxcontrib_websupport
 
+  .. code-block:: bash
+
      # Install Sphinx with Python 2
-     sudo apt-get install python-pip python-setuptools
+     sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+         python-pip \
+         python-setuptools
+
      sudo pip2 install --upgrade sphinx sphinx_rtd_theme
 
   And then just run ``make html`` to build and open your new shiny files:

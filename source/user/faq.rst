@@ -79,7 +79,8 @@ Coturn can be installed directly from the Ubuntu package repositories:
 
 .. code-block:: bash
 
-   sudo apt-get install coturn
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+       coturn
 
 1. Edit the file ``/etc/turnserver.conf`` and configure the server according to your needs.
 
@@ -212,7 +213,7 @@ This is a typical error which happens when you update Kurento Media Server from 
 
 .. code-block:: bash
 
-   sudo apt-get remove kurento*
+   sudo apt-get purge --auto-remove '^(kms|kurento).*'
    sudo apt-get autoremove
    sudo apt-get update
    sudo apt-get dist-upgrade

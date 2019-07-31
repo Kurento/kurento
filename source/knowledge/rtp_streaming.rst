@@ -16,8 +16,7 @@ To run these examples, follow these initial steps:
 
    .. code-block:: text
 
-      sudo apt-get update
-      sudo apt-get install --no-install-recommends \
+      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           gstreamer1.0-{tools,libav} \
           gstreamer1.0-plugins-{base,good,bad,ugly}
 
@@ -298,8 +297,7 @@ For the SRTP examples, you need to install the Kurento's fork of GStreamer:
 
 .. code-block:: text
 
-   sudo apt-get update
-   sudo apt-get install --no-install-recommends \
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        gstreamer1.5-{tools,libav} \
        gstreamer1.5-plugins-{base,good,bad,ugly}
 
