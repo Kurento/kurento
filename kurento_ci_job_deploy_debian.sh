@@ -142,25 +142,25 @@ set -o xtrace
 # Exit trap, used to clean up
 on_exit() {
     ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
-        ubuntu@193.147.51.5 '\
+        ubuntu@proxy.openvidu.io '\
             rm -rf "$TEMP_DIR"'
 }
 trap on_exit EXIT
 
 ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
-    ubuntu@193.147.51.5 '\
+    ubuntu@proxy.openvidu.io '\
         mkdir -p "$TEMP_DIR"'
 
 scp -o StrictHostKeyChecking=no -i ./secret.pem \
     ./*.*deb \
-    ubuntu@193.147.51.5:"$TEMP_DIR"
+    ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
 scp -o StrictHostKeyChecking=no -i secret.pem \
     /adm-scripts/kurento_ci_aptly_repo_publish.sh \
-    ubuntu@193.147.51.5:"$TEMP_DIR"
+    ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
 ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
-    ubuntu@193.147.51.5 '\
+    ubuntu@proxy.openvidu.io '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
            ./kurento_ci_aptly_repo_publish.sh $ARGS'
