@@ -54,10 +54,10 @@ Features:
 .. code-block:: text
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     bash -c 'gst-launch-1.0 -e \
-      filesrc location="$SELF_PATH" ! decodebin \
-        ! x264enc tune=zerolatency \
+      uridecodebin uri="file://$SELF_PATH" \
+        ! videoconvert ! x264enc tune=zerolatency \
         ! rtph264pay ! "application/x-rtp,payload=(int)103,clock-rate=(int)90000" \
         ! udpsink host=$PEER_IP port=$PEER_V'
 
@@ -74,12 +74,12 @@ Features:
 .. code-block:: text
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     SELF_V=5004 SELF_VSSRC=112233 \
     bash -c 'gst-launch-1.0 -e \
       rtpsession name=r sdes="application/x-rtp-source-sdes,cname=(string)\"user\@example.com\"" \
-      filesrc location="$SELF_PATH" ! decodebin \
-        ! x264enc tune=zerolatency \
+      uridecodebin uri="file://$SELF_PATH" \
+        ! videoconvert ! x264enc tune=zerolatency \
         ! rtph264pay ! "application/x-rtp,payload=(int)103,clock-rate=(int)90000,ssrc=(uint)$SELF_VSSRC" \
         ! r.send_rtp_sink \
       r.send_rtp_src ! udpsink host=$PEER_IP port=$PEER_V \
@@ -98,12 +98,12 @@ Features:
 .. code-block:: text
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     SELF_V=5004 SELF_VSSRC=112233 \
     bash -c 'gst-launch-1.0 -e \
       rtpsession name=r sdes="application/x-rtp-source-sdes,cname=(string)\"user\@example.com\"" \
-      filesrc location="$SELF_PATH" ! decodebin \
-        ! x264enc tune=zerolatency \
+      uridecodebin uri="file://$SELF_PATH" \
+        ! videoconvert ! x264enc tune=zerolatency \
         ! rtph264pay ! "application/x-rtp,payload=(int)103,clock-rate=(int)90000,ssrc=(uint)$SELF_VSSRC" \
         ! r.send_rtp_sink \
       r.send_rtp_src ! udpsink host=$PEER_IP port=$PEER_V \
@@ -124,12 +124,12 @@ Features:
 .. code-block:: text
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     SELF_V=5004 SELF_VSSRC=112233 \
     bash -c 'gst-launch-1.0 -e \
       rtpsession name=r sdes="application/x-rtp-source-sdes,cname=(string)\"user\@example.com\"" \
-      filesrc location="$SELF_PATH" ! decodebin \
-        ! x264enc tune=zerolatency \
+      uridecodebin uri="file://$SELF_PATH" \
+        ! videoconvert ! x264enc tune=zerolatency \
         ! rtph264pay ! "application/x-rtp,payload=(int)103,clock-rate=(int)90000,ssrc=(uint)$SELF_VSSRC" \
         ! r.send_rtp_sink \
       r.send_rtp_src ! udpsink host=$PEER_IP port=$PEER_V \
@@ -152,12 +152,12 @@ Features:
 .. code-block:: text
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     SELF_V=5004 SELF_VSSRC=112233 \
     bash -c 'gst-launch-1.0 -e \
       rtpsession name=r sdes="application/x-rtp-source-sdes,cname=(string)\"user\@example.com\"" \
-      filesrc location="$SELF_PATH" ! decodebin \
-        ! x264enc tune=zerolatency \
+      uridecodebin uri="file://$SELF_PATH" \
+        ! videoconvert ! x264enc tune=zerolatency \
         ! rtph264pay ! "application/x-rtp,payload=(int)103,clock-rate=(int)90000,ssrc=(uint)$SELF_VSSRC" \
         ! r.send_rtp_sink \
       r.send_rtp_src ! udpsink host=$PEER_IP port=$PEER_V bind-port=$SELF_V \
@@ -183,7 +183,7 @@ Features:
     SELF_A=5006 SELF_ASSRC=445566 \
     bash -c 'gst-launch-1.0 -e \
       rtpsession name=r sdes="application/x-rtp-source-sdes,cname=(string)\"user\@example.com\"" \
-      audiotestsrc volume=0.5 ! audioconvert ! opusenc \
+      audiotestsrc volume=0.5 ! audioconvert ! audioresample ! opusenc \
         ! rtpopuspay ! "application/x-rtp,payload=(int)96,clock-rate=(int)48000,ssrc=(uint)$SELF_ASSRC" \
         ! r.send_rtp_sink \
       r.send_rtp_src ! udpsink host=$PEER_IP port=$PEER_A bind-port=$SELF_A \
@@ -207,13 +207,13 @@ Features:
 .. code-block:: text
 
     PEER_A=9006 PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     SELF_A=5006 SELF_ASSRC=445566 \
     SELF_V=5004 SELF_VSSRC=112233 \
     bash -c 'gst-launch-1.0 -e \
       rtpbin name=r sdes="application/x-rtp-source-sdes,cname=(string)\"user\@example.com\"" \
-      filesrc location="$SELF_PATH" ! decodebin name=d \
-      d. ! queue ! audioconvert ! opusenc \
+      uridecodebin uri="file://$SELF_PATH" name=d \
+      d. ! queue ! audioconvert ! audioresample ! opusenc \
         ! rtpopuspay ! "application/x-rtp,payload=(int)96,clock-rate=(int)48000,ssrc=(uint)$SELF_ASSRC" \
         ! r.send_rtp_sink_0 \
       d. ! queue ! videoconvert ! x264enc tune=zerolatency \
@@ -313,12 +313,12 @@ Features:
 .. code-block:: text
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     SELF_VSSRC=112233 \
     SELF_KEY="4142434445464748494A4B4C4D4E4F505152535455565758595A31323334" \
     bash -c 'gst-launch-1.5 -e \
-      filesrc location="$SELF_PATH" ! decodebin \
-        ! x264enc tune=zerolatency \
+      uridecodebin uri="file://$SELF_PATH" \
+        ! videoconvert ! x264enc tune=zerolatency \
         ! rtph264pay ! "application/x-rtp,payload=(int)103,ssrc=(uint)$SELF_VSSRC" \
         ! srtpenc key="$SELF_KEY" \
           rtp-cipher="aes-128-icm" rtp-auth="hmac-sha1-80" \
@@ -365,7 +365,7 @@ Features:
 
     PEER_V=9004 PEER_VSSRC=332211 PEER_IP=127.0.0.1 \
     PEER_KEY="343332315A595857565554535251504F4E4D4C4B4A494847464544434241" \
-    SELF_PATH="video.mp4" \
+    SELF_PATH="$PWD/video.mp4" \
     SELF_V=5004 SELF_VSSRC=112233 \
     SELF_KEY="4142434445464748494A4B4C4D4E4F505152535455565758595A31323334" \
     SRTP_CAPS="payload=(int)103,ssrc=(uint)$PEER_VSSRC,roc=(uint)0, \
@@ -378,8 +378,8 @@ Features:
         rtp-cipher="aes-128-icm" rtp-auth="hmac-sha1-80" \
         rtcp-cipher="aes-128-icm" rtcp-auth="hmac-sha1-80" \
       srtpdec name=d \
-      filesrc location="$SELF_PATH" ! decodebin \
-        ! x264enc tune=zerolatency \
+      uridecodebin uri="file://$SELF_PATH" \
+        ! videoconvert ! x264enc tune=zerolatency \
         ! rtph264pay ! "application/x-rtp,payload=(int)103,ssrc=(uint)$SELF_VSSRC" \
         ! r.send_rtp_sink \
       r.send_rtp_src ! e.rtp_sink_0 \
