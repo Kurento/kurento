@@ -429,6 +429,115 @@ Run:
 
 
 
+.. _dev-dbg:
+
+Install debugging symbols
+=========================
+
+Whenever working with KMS source code itself, of during any anlysis of crash in either the server or any 3rd-party library, you'll want to have debugging symbols installed. These provide for full information about the source file name and line where problems are happening; this information is paramount for a successful debug session, and you'll also need to provide these details when requesting support or :ref:`filing a bug report <support-community>`.
+
+**Installing the debug symbols does not impose any extra load to the system**. So, it doesn't really hurt at all to have them installed even in production setups, where they will prove useful whenever an unexpected crash happens to bring the system down and a postmortem stack trace is automatically generated.
+
+To install all debug symbols relevant to KMS, run these commands:
+
+.. code-block:: bash
+
+   PACKAGES=(
+       # System libraries
+       libc6-dbg  # Required for Valgrind
+       libc6-dbgsym
+       libglib2.0-0-dbg
+       libglib2.0-0-dbgsym
+       libssl1.0.0-dbg
+       libssl1.0.0-dbgsym
+
+       # Kurento 3rd-party libraries
+       kmsjsoncpp-dbg
+       libnice10-dbgsym
+       libsrtp0-dbg
+       libsrtp0-dbgsym
+       libusrsctp-dbgsym
+       openwebrtc-gst-plugins-dbg
+
+       # GStreamer-1.0 (Ubuntu)
+       libgstreamer1.0-0-dbg
+       gstreamer1.0-libav-dbg
+       gstreamer1.0-nice-dbgsym
+       gstreamer1.0-plugins-bad-dbg
+       gstreamer1.0-plugins-base-dbg
+       gstreamer1.0-plugins-good-dbg
+       gstreamer1.0-plugins-ugly-dbg
+
+       # GStreamer-1.5 (Kurento)
+       libgstreamer1.5-0-dbg
+       gstreamer1.5-libav-dbg
+       gstreamer1.5-nice-dbgsym
+       gstreamer1.5-plugins-bad-dbg
+       gstreamer1.5-plugins-base-dbg
+       gstreamer1.5-plugins-good-dbg
+       gstreamer1.5-plugins-ugly-dbg
+
+       # Main packages
+       kms-jsonrpc-dbg
+       kms-core-dbg
+       kms-elements-dbg
+       kms-filters-dbg
+       kurento-media-server-dbg
+
+       # Extra packages
+       #kms-chroma-dbg
+       #kms-crowddetector-dbg
+       #kms-platedetector-dbg
+       #kms-pointerdetector-dbg
+   )
+
+   apt-get update
+
+   for PACKAGE in "${PACKAGES[@]}"; do
+       apt-get install --no-install-recommends --yes "$PACKAGE" \
+           || { echo "Skip unexisting"; }
+   done
+
+For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in this example**:
+
+.. code-block:: text
+
+   # ==== NOT USEFUL: WITHOUT debugging symbols ====
+
+   $ cat /var/log/kurento-media-server/errors.log
+   Segmentation fault (thread 139667051341568, pid 14132)
+   Stack trace:
+   [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
+   /usr/lib/x86_64-linux-gnu/libkmscoreimpl.so.6:0x1025E0
+   [g_signal_emit]
+   /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:0x2B08F
+   [check_if_flow_media]
+   /usr/lib/x86_64-linux-gnu/libkmsgstcommons.so.6:0x1F9E4
+   [g_hook_list_marshal]
+   /lib/x86_64-linux-gnu/libglib-2.0.so.0:0x3A904
+
+.. code-block:: text
+
+   # ==== USEFUL: WITH debugging symbols ====
+
+   $ cat /var/log/kurento-media-server/errors.log
+   Segmentation fault (thread 140672899761920, pid 15217)
+   Stack trace:
+   [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
+   /home/kurento/kms-omni-build/kms-core/src/server/implementation/objects/MediaElementImpl.cpp:479
+   [g_signal_emit]
+   /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gsignal.c:3443
+   [cb_buffer_received]
+   /home/kurento/kms-omni-build/kms-core/src/gst-plugins/commons/kmselement.c:578
+   [g_hook_list_marshal]
+   /build/glib2.0-prJhLS/glib2.0-2.48.2/./glib/ghook.c:673
+
+The second stack trace is much more helpful, because it indicates the exact file names and line numbers where the crash happened. With these, a developer will at least have a starting point where to start looking for any potential bug.
+
+It's important to note that stack traces, while helpful, are not a replacement for actually running the software under a debugger (**GDB**) or memory analyzer (**Valgrind**). Most crashes will need further investigation before they can be fixed.
+
+
+
 Working on a forked library
 ===========================
 
