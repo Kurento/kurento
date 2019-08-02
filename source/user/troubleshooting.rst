@@ -31,37 +31,47 @@ If the Media Server crashes, it will write an stack trace into the file **/var/l
 However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to run your breaking test case **with all debugging packages already installed**, by following these instructions: :ref:`dev-dbg`.
 
 
+
+``GStreamer-CRITICAL **`` messages in the log
+---------------------------------------------
+
+GLib and GStreamer use a lot of ``assert()`` functions to check for valid conditions whenever a function is called. If these conditions fail, messages such as these ones will appear in the log:
+
 .. code-block:: text
 
-   # ==== NOT USEFUL: WITHOUT debugging symbols ====
-   $ cat /var/log/kurento-media-server/errors.log
-   Segmentation fault (thread 139667051341568, pid 14132)
-   Stack trace:
-   [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
-   /usr/lib/x86_64-linux-gnu/libkmscoreimpl.so.6:0x1025E0
-   [g_signal_emit]
-   /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:0x2B08F
-   [check_if_flow_media]
-   /usr/lib/x86_64-linux-gnu/libkmsgstcommons.so.6:0x1F9E4
-   [g_hook_list_marshal]
-   /lib/x86_64-linux-gnu/libglib-2.0.so.0:0x3A904
+   (kurento-media-server:4619): GStreamer-CRITICAL **: gst_element_query: assertion 'GST_IS_ELEMENT (element)' failed
 
-   # ==== USEFUL: WITH debugging symbols ====
-   $ cat /var/log/kurento-media-server/errors.log
-   Segmentation fault (thread 140672899761920, pid 15217)
-   Stack trace:
-   [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
-   /home/kurento/kms-omni-build/kms-core/src/server/implementation/objects/MediaElementImpl.cpp:479
-   [g_signal_emit]
-   /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gsignal.c:3443
-   [cb_buffer_received]
-   /home/kurento/kms-omni-build/kms-core/src/gst-plugins/commons/kmselement.c:578
-   [g_hook_list_marshal]
-   /build/glib2.0-prJhLS/glib2.0-2.48.2/./glib/ghook.c:673
+.. code-block:: text
 
-The second stack trace is much more helpful, because it indicates the exact file names and line numbers where the crash happened. With these, a developer will at least have a starting point where to start looking for any potential bug.
+   (kurento-media-server:15636): GLib-CRITICAL **: g_error_free: assertion 'error != NULL' failed
 
-It's important to note that stack traces, while helpful, are not a replacement for actually running the software under a debugger. Most crashes like this will need further investigation before they can be fixed.
+However, these messages don't cause a crash in the server; instead, it will keep working, although there will be some session that is wrongly affected by this issue.
+
+Finding the spot where the ``assert()`` fails is a bit hard, though; you need to:
+
+1) Install debugging symbols: :ref:`dev-dbg`.
+
+2) Enable debug breaks in the asserts:
+
+   .. code-block:: bash
+
+      export G_DEBUG=fatal-warnings
+
+3) Enable kernel core dumps:
+
+   .. code-block:: bash
+
+      ulimit -c unlimited
+
+4) Run with GDB and get a backtrace:
+
+   .. code-block:: bash
+
+      gdb /usr/bin/kurento-media-server
+      (gdb) run
+      # Wait until the assert happens and GDB breaks
+      (gdb) info stack
+      (gdb) backtrace
 
 
 
@@ -118,7 +128,7 @@ Memory usage grows too high
 
 If you are using ``top`` or ``ps`` to evaluate memory usage, keep in mind that these tools show memory usage as seen by the Operating System, not the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the OS. Typically, it won't! Typical C implementations do not return ``free``'d memory : it is available for use by the same program, but not to others. So ``top`` or ``ps`` won't be able to "see" the free'd memory.
 
-If you're trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; ``Valgrind`` is.
+If you're trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; **Valgrind** is.
 
 See:
 
