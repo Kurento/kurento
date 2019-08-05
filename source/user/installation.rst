@@ -29,7 +29,11 @@ Follow these steps to use it:
 
 2. Click on *Create Stack*.
 
-3. Look for the section *Choose a template*, and choose the option *Specify an Amazon S3 template URL*. Then, in the text field that gets enabled, paste this URL: ``https://s3-eu-west-1.amazonaws.com/aws.kurento.org/KMS-Coturn-cfn.yaml``.
+3. Look for the section *Choose a template*, and choose the option *Specify an Amazon S3 template URL*. Then, in the text field that gets enabled, paste this URL:
+
+   .. code-block:: text
+
+      https://s3-eu-west-1.amazonaws.com/aws.kurento.org/KMS-Coturn-cfn-|VERSION_KMS|.yaml
 
 4. Follow through the steps of the configuration wizard:
 
