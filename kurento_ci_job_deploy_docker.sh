@@ -32,11 +32,6 @@
 #/   This variable can be empty or unset, in which case the default of "dev"
 #/   will be used for nightly repos, or "<Version>" for release repos.
 #/
-#/ JOB_KMS_VERSION
-#/
-#/   Version of Kurento Media Server that will be installed in the image.
-#/   Required. Default: "0.0.0" (invalid version).
-#/
 #/
 #/ * Variable(s) from job Custom Tools (with "Install custom tools"):
 #/
@@ -61,12 +56,6 @@ set -o xtrace
 # Job setup
 # ---------
 
-# Check required parameters
-if [[ "$JOB_KMS_VERSION" == "0.0.0" ]]; then
-    log "ERROR: Missing parameter JOB_KMS_VERSION"
-    exit 1
-fi
-
 # Check optional parameters
 if [[ -z "${JOB_DEPLOY_NAME:-}" ]]; then
     DEPLOY_SPECIAL="false"
@@ -74,8 +63,24 @@ else
     DEPLOY_SPECIAL="true"
 fi
 
-# Extract components of KMS version
-VERSION="$JOB_KMS_VERSION"
+# Get version number for the deployment
+# shellcheck disable=SC2012
+KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
+if [[ -z "$KMS_DEB_FILE" ]]; then
+    log "ERROR: Cannot find KMS package file: kurento-media-server_*.deb"
+    exit 1
+fi
+KMS_VERSION="$(
+    dpkg --field "$KMS_DEB_FILE" Version \
+        | grep --perl-regexp --only-matching '^(\d+\.\d+\.\d+)'
+)"
+if [[ -z "$KMS_VERSION" ]]; then
+    log "ERROR: Cannot parse KMS Version field"
+    exit 1
+fi
+
+# Extract version number components
+VERSION="$KMS_VERSION"
 VERSION_MAJ_MIN="$(echo "$VERSION" | cut -d. -f1,2)"
 VERSION_MAJ="$(echo "$VERSION" | cut -d. -f1)"
 
