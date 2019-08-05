@@ -90,15 +90,15 @@ ARGS="--distro-name $JOB_DISTRO"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy to release repo"
 
+    # Get version number for the deployment
     # shellcheck disable=SC2012
-    KMS_DEB_PKG="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
-    if [[ -z "$KMS_DEB_PKG" ]]; then
+    KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
+    if [[ -z "$KMS_DEB_FILE" ]]; then
         log "ERROR: Cannot find KMS package file: kurento-media-server_*.deb"
         exit 1
     fi
-
     KMS_VERSION="$(
-        dpkg --field "$KMS_DEB_PKG" Version \
+        dpkg --field "$KMS_DEB_FILE" Version \
             | grep --perl-regexp --only-matching '^(\d+\.\d+\.\d+)'
     )"
     if [[ -z "$KMS_VERSION" ]]; then
