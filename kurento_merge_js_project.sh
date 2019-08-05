@@ -91,8 +91,7 @@ FILES="$FILES dist/$BASE_NAME.map:js/$BASE_NAME.map"
 [ -f LICENSE ] && FILES="$FILES LICENSE:LICENSE"
 
 export FILES
-export CREATE_TAG=true
-kurento_bower_publish.sh
+CREATE_TAG="true" kurento_bower_publish.sh
 
 # Deploy to builds only when it is release
 VERSION="$(kurento_get_version.sh)" || {

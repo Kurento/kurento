@@ -16,17 +16,18 @@
 #/ --distro-name <DistroName>
 #/
 #/   Name of the Ubuntu distribution for which the repo will be created or
-#/   updated. E.g.: "xenial", "bionic"
+#/   updated.
+#/   E.g.: "xenial", "bionic"
 #/
 #/ --repo-name <RepoName>
 #/
 #/   Name of the repository that will be created or updated.
-#/   E.g.: "kurento-packages"
+#/   E.g.: "kurento-xenial-6.10.0", "kurento-xenial-test-branch"
 #/
 #/ --publish-name <PublishName>
 #/
 #/   Name of the Aptly publishing endpoint that should be used.
-#/   E.g.: "mypackages"
+#/   E.g.: "6.10.0", "test-branch"
 #/
 #/   The repository URL will be like:
 #/

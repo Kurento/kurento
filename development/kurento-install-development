@@ -37,10 +37,8 @@ source "$BASEPATH/../bash.conf.sh" || {
 # Install Build-Depends
 # ---------------------
 
-export DEBIAN_FRONTEND=noninteractive
-
 apt-get update && apt-get install --no-install-recommends --yes \
-    git gnupg devscripts equivs
+    ca-certificates git gnupg devscripts equivs
 
 DIRS=(
     kurento-module-creator
@@ -53,6 +51,7 @@ DIRS=(
 )
 for DIR in "${DIRS[@]}"; do
     echo "+ Install Build-Depends for '${DIR}'"
+    DEBIAN_FRONTEND=noninteractive \
     mk-build-deps --install --remove \
         --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
         "${DIR}/debian/control"

@@ -116,7 +116,7 @@ apt-get update
 
 for PACKAGE in "${PACKAGES[@]}"; do
     apt-get install --no-install-recommends --yes "$PACKAGE" \
-        || { echo "Skip unexisting"; }
+        || echo "Skip unexisting"
 done
 
 echo "All packages installed successfully"

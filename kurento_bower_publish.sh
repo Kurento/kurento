@@ -47,7 +47,7 @@ kurento_clone_repo.sh "$BOWER_REPO_NAME" master "$BOWER_DIR" \
 cd $BOWER_DIR || exit 1
 
 # Fail if a tag for that version already exists
-if [ ${CREATE_TAG} = true ] && [[ $VERSION != *-SNAPSHOT ]]; then
+if [[ "$CREATE_TAG" == "true" ]] && [[ $VERSION != *-SNAPSHOT ]]; then
   # If tag already exists terminate silently
   git ls-remote --tags|grep -q "refs/tags/$VERSION" && exit 0
 fi
@@ -86,7 +86,7 @@ if [ $(git status --porcelain|wc -l) -gt 0 ]; then
 fi
 
 # Check if a version has to be generated
-if [ ${CREATE_TAG} = true ] && [[ $VERSION != *-SNAPSHOT ]]; then
+if [[ "$CREATE_TAG" == "true" ]] && [[ $VERSION != *-SNAPSHOT ]]; then
   echo "Add Tag version: $VERSION"
 
   # Add tag
