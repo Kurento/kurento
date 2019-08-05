@@ -39,34 +39,38 @@ Parameters:
 
 Mappings:
   RegionMap:
-    us-east-1:
-      AMI: ami-da05a4a0
-    us-west-1:
-      AMI: ami-1c1d217c
-    ap-northeast-2:
-      AMI: ami-7b1cb915
-    ap-northeast-1:
-      AMI: ami-15872773
-    sa-east-1:
-      AMI: ami-466b132a
-    ap-southeast-1:
-      AMI: ami-67a6e604
-    ca-central-1:
-      AMI: ami-8a71c9ee
-    ap-southeast-2:
-      AMI: ami-41c12e23
-    us-west-2:
-      AMI: ami-0a00ce72
-    us-east-2:
-      AMI: ami-336b4456
+    eu-north-1:
+      AMI: ami-4bd45f35
     ap-south-1:
-      AMI: ami-bc0d40d3
-    eu-central-1:
-      AMI: ami-97e953f8
-    eu-west-1:
-      AMI: ami-add175d4
+      AMI: ami-03dcedc81ea3e7e27
+    eu-west-3:
+      AMI: ami-080d4d4c37b0aa206
     eu-west-2:
-      AMI: ami-ecbea388
+      AMI: ami-0cbe2951c7cd54704
+    eu-west-1:
+      AMI: ami-03746875d916becc0
+    ap-northeast-2:
+      AMI: ami-0a25005e83c56767a
+    ap-northeast-1:
+      AMI: ami-096c57cee908da809
+    sa-east-1:
+      AMI: ami-09beb384ba644b754
+    ca-central-1:
+      AMI: ami-0eb3e12d3927c36ef
+    ap-southeast-1:
+      AMI: ami-04613ff1fdcd2eab1
+    ap-southeast-2:
+      AMI: ami-000c2343cf03d7fd7
+    eu-central-1:
+      AMI: ami-0085d4f8878cddc81
+    us-east-1:
+      AMI: ami-0cfee17793b08a293
+    us-east-2:
+      AMI: ami-0f93b5fd8f220e428
+    us-west-1:
+      AMI: ami-09eb5e8a83c7aa890
+    us-west-2:
+      AMI: ami-0b37e9efc396e4c38
 
 Resources:
   KurentoMediaServer:
