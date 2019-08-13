@@ -158,7 +158,7 @@ function dispose() {
 
 function sendMessage(message) {
 	var jsonMessage = JSON.stringify(message);
-	console.log('Senging message: ' + jsonMessage);
+	console.log('Sending message: ' + jsonMessage);
 	ws.send(jsonMessage);
 }
 
