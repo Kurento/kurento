@@ -12,3 +12,8 @@ junitResult.xml
 npm-debug.log
 lib-cov/
 reports/
+
+# Only apps should have lockfiles, not libs/packages
+npm-shrinkwrap.json
+package-lock.json
+yarn.lock
