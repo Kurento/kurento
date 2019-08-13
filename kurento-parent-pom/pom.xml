@@ -1011,6 +1011,8 @@
 					<version>${version.javadoc.plugin}</version>
 					<configuration>
 						<notimestamp>true</notimestamp>
+						<doctitle>${project.name} API</doctitle>
+						<windowtitle>${project.name} API</windowtitle>
 						<header><![CDATA[<b>${project.name} ${project.version}</b>]]></header>
 						<footer><![CDATA[<b>${project.name} ${project.version}</b>]]></footer>
 						<archive>
