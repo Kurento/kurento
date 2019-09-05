@@ -21,9 +21,9 @@ Community Support
 
 Kurento is a project mainly supported by its Open-Source Community. **All people answering your questions are doing it with their own time, so please be kind and provide as much information as possible.**
 
-If you have questions about configuration, infrastructure, or general usage of Kurento Media Server, `Stack Overflow`_ is the best place to ask. Tag questions with `kurento`_ so other folks can find them easily.
+The `Kurento Public Mailing List`_ is *the best place to ask* if you have questions about configuration, infrastructure, or general usage of Kurento Media Server.
 
-Another option is to contact the Community through the `Kurento Public Mailing List`_, which is a discussion forum.
+Another option is `Stack Overflow`_; tag your questions with `kurento`_ so other folks can find them easily.
 
 Good questions to ask would be:
 
@@ -31,9 +31,9 @@ Good questions to ask would be:
 - How do I check that the ICE connectivity checks are working properly for WebRTC?
 - Which audio/video codec combination should I use to ensure no transcoding needs to take place?
 
+.. _Kurento Public Mailing List: https://groups.google.com/forum/#!forum/kurento
 .. _kurento:
 .. _Stack Overflow: https://stackoverflow.com/questions/tagged/kurento?sort=frequent
-.. _Kurento Public Mailing List: https://groups.google.com/forum/#!forum/kurento
 
 
 
