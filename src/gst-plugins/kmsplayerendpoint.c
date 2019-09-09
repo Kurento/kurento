@@ -346,6 +346,7 @@ kms_player_endpoint_dispose (GObject * object)
 
     bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
     gst_bus_set_sync_handler (bus, NULL, NULL, NULL);
+    gst_bus_remove_watch(bus);
     g_object_unref (bus);
 
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
@@ -899,12 +900,14 @@ kms_player_endpoint_uridecodebin_pad_removed (GstElement * element,
   appsink = g_object_steal_qdata (G_OBJECT (pad), appsink_quark ());
   appsrc = g_object_steal_qdata (G_OBJECT (pad), appsrc_quark ());
 
-  if (appsink != NULL) {
-    kms_utils_bin_remove (GST_BIN (self->priv->pipeline), appsink);
-  }
-
+  // remove appsrc before appsink to avoid segment fault 
+  // caused by invalid appsink in appsrc_query_probe
   if (appsrc != NULL) {
     kms_utils_bin_remove (GST_BIN (self), appsrc);
+  }
+  
+  if (appsink != NULL) {
+    kms_utils_bin_remove (GST_BIN (self->priv->pipeline), appsink);
   }
 }
 
@@ -1388,7 +1391,6 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
 
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
 
-  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
   gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
   g_object_unref (bus);
 }
