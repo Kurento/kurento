@@ -16,6 +16,7 @@
  */
 
 #include "kmsicecandidate.h"
+#include <gio/gio.h>
 #include <gst/gst.h>
 #include <stdlib.h>
 
@@ -55,7 +56,7 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
   " (?<componentid>(" DIGIT_ATTR_EXPR "){1,5})" \
   " (?<transport>(udp|UDP|tcp|TCP))" \
   " (?<priority>(" DIGIT_ATTR_EXPR "){1,10})" \
-  " (?<addr>[0-9.:a-zA-Z]+)" \
+  " (?<addr>[0-9.\\-:a-zA-Z]+)" \
   " (?<port>[0-9]+)" \
   " typ (?<type>(host|srflx|prflx|relay))" \
   "( raddr (?<raddr>[0-9.:a-zA-Z]+))?" \
@@ -111,8 +112,6 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
   g_free (self->priv->foundation);
   g_free (self->priv->ip);
   g_free (self->priv->related_addr);
-
-  self->priv->ip = g_match_info_fetch_named (match_info, "addr");
 
   tmp = g_match_info_fetch_named (match_info, "port");
   self->priv->port = atoi (tmp);
@@ -186,6 +185,45 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
     self->priv->related_port = atoi (tmp);
   } else {
     self->priv->related_port = -1;
+  }
+
+  self->priv->ip = g_match_info_fetch_named (match_info, "addr");
+
+  if (g_str_has_suffix (self->priv->ip, ".local")) {
+    // The IP is actually an mDNS address, try to resolve it.
+    // https://datatracker.ietf.org/doc/draft-ietf-rtcweb-mdns-ice-candidates/
+
+    GResolver *resolver = g_resolver_get_default ();
+    GError *err = NULL;
+    GList *addresses = g_resolver_lookup_by_name (resolver, self->priv->ip,
+        NULL, &err);
+
+    if (err) {
+      GST_WARNING_OBJECT (self, "Error code %d: '%s'", err->code,
+          (err->message ? err->message : "(None)"));
+      g_error_free (err);
+      err = NULL;
+    } else {
+      // Replace the ip and candidate strings with the resolved address
+      gchar **split = g_strsplit(self->priv->candidate, self->priv->ip, 2);
+      g_free(self->priv->candidate);
+
+      GInetAddress *address = (GInetAddress *) g_list_nth_data (addresses, 0);
+      gchar *mdns_ip = self->priv->ip;
+      self->priv->ip = g_inet_address_to_string (address);
+
+      self->priv->candidate = g_strjoinv (self->priv->ip, split);
+      g_strfreev (split);
+
+      GST_INFO_OBJECT (self, "mDNS address (%s) resolved: %s", mdns_ip,
+          self->priv->ip);
+      g_free (mdns_ip);
+    }
+
+    if (addresses) {
+      g_resolver_free_addresses (addresses);
+    }
+    g_object_unref (resolver);
   }
 
   ret = TRUE;
