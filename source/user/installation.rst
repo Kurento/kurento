@@ -237,24 +237,44 @@ It is rare to find a TURN server which works for free while offering good perfor
 Check your installation
 =======================
 
-To verify that KMS is up and running, use this command and look for the ``kurento-media-server`` process:
+To verify that the Kurento process is up and running, use this command and look for the ``kurento-media-server`` process:
 
 .. code-block:: text
 
-   ps -ef | grep kurento-media-server
+   $ ps -fC kurento-media-server
+   UID        PID  PPID  C STIME TTY          TIME CMD
+   kurento   7688     1  0 13:36 ?        00:00:00 /usr/bin/kurento-media-server
 
-   > nobody  1270  1  0 08:52 ?  00:01:00  /usr/bin/kurento-media-server
-
-Unless configured otherwise, KMS will open the port ``8888`` to receive requests and send responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is listening for incoming packets:
+Unless configured otherwise, KMS will open the port ``8888`` to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
 
 .. code-block:: text
 
-   sudo netstat -tupan | grep kurento
+   $ sudo netstat -tupln | grep kurento
+   tcp6  0  0  :::8888  :::*  LISTEN  7688/kurento-media-
 
-   > tcp6  0  0 :::8888  :::*  LISTEN  1270/kurento-media-server
+Lastly, you can check whether the RPC WebSocket of Kurento is healthy and able to receive and process messages. For this, send a dummy request and check that the response is as expected:
+
+.. code-block:: text
+
+   $ curl -i -N \
+       -H "Connection: Upgrade" \
+       -H "Upgrade: websocket" \
+       -H "Host: 127.0.0.1:8888" \
+       -H "Origin: 127.0.0.1" \
+       http://127.0.0.1:8888/kurento
+
+You should get a response similar to this one:
+
+.. code-block:: text
+
+   HTTP/1.1 500 Internal Server Error
+   Server: WebSocket++/0.7.0
+
+Ignore the error line: it is an expected error, because ``curl`` does not talk the Kurento protocol. We just checked that the ``WebSocket++`` server is actually up, and listening for connections. If you wanted, you could automate this check with a script similar to `healthchecker.sh`_, the one we use in Kurento Docker images.
 
 
 
 .. _Amazon Web Services: https://aws.amazon.com
 .. _Coturn: http://coturn.net
 .. _Numb: http://numb.viagenie.ca/
+.. _healthchecker.sh: https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh
