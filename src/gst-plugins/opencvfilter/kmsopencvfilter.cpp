@@ -167,7 +167,7 @@ kms_opencv_filter_transform_frame_ip (GstVideoFilter *filter,
 
   try {
     opencv_filter->priv->object->process (* (opencv_filter->priv->cv_image) );
-  } catch (kurento::KurentoException e) {
+  } catch (kurento::KurentoException &e) {
     GstMessage *message;
     GError *err = g_error_new (g_quark_from_string (e.getType ().c_str () ),
                                e.getCode (), "%s", GST_ELEMENT_NAME (opencv_filter) );
