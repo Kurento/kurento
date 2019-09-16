@@ -56,7 +56,8 @@ Depends: kms-elements (= ${binary:Version}),
  libnice-dev,
  libsigc++-2.0-dev,
  libsoup2.4-dev,
- libssl1.0-dev | libssl-dev
+ libssl1.0-dev | libssl-dev (<< 1.1.0),
+ openwebrtc-gst-plugins-dev
 Breaks: kms-elements-6.0-dev
 Replaces: kms-elements-6.0-dev
 Description: Kurento Elements module
