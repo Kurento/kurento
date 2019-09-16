@@ -89,6 +89,14 @@
 #/
 #/   See: https://clang.llvm.org/docs/ThreadSanitizer.html
 #/
+#/   NOTE: A recent version of GCC is required for ThreadSanitizer to work;
+#/   GCC 5, 6 and 7 have been tested and don't work; GCC 8 and 9 do.
+#/   On top of that, there's the issue of having some false positives due
+#/   to the custom thread-synchronization routines from GLib (like GMutex),
+#/   which TSAN doesn't understand and ends up considering as race conditions.
+#/
+#/   The official solution is to recompile GLib with TSAN instrumentation.
+#/
 #/   Optional. Default: Disabled.
 #/   Implies '--release'.
 
@@ -194,7 +202,7 @@ fi
 
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
-if ! ls -f "./${BUILD_DIR}/CMakeCache.txt"; then
+if [[ ! -f "$BUILD_DIR/CMakeCache.txt" ]]; then
     mkdir -p "$BUILD_DIR"
     pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
     cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" $CMAKE_ARGS ..
@@ -216,9 +224,8 @@ RUN_VARS=()
 RUN_WRAPPER=""
 
 if [[ "$CFG_GDB" == "true" ]]; then
-    #RUN_WRAPPER="gdb -ex run --args"
     RUN_WRAPPER="gdb --args"
-    RUN_VARS+=("G_DEBUG=fatal-warnings")
+    RUN_VARS+=("G_DEBUG='fatal-warnings'")
 fi
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
@@ -226,10 +233,10 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     source "$BASEPATH/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=memcheck --log-file=valgrind-memcheck-%p.log $VALGRIND_ARGS"
     RUN_VARS+=(
-        "G_DEBUG=""gc-friendly"
-        #"G_SLICE=""always-malloc"
-        #"G_SLICE=""debug-blocks"
-        "G_SLICE=""all"
+        "G_DEBUG='gc-friendly'"
+        #"G_SLICE='always-malloc'"
+        #"G_SLICE='debug-blocks'"
+        "G_SLICE='all'"
     )
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
@@ -238,23 +245,31 @@ elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     RUN_WRAPPER="valgrind --tool=massif --log-file=valgrind-massif-%p.log --massif-out-file=valgrind-massif-%p.out $VALGRIND_ARGS"
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
-    LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libasan.so.?' | head -n1)"
+    GCC_VERSION="$(gcc -dumpversion | head -c1)"
+    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/libasan.so"
     RUN_VARS+=(
-        "LD_PRELOAD=""$LIBSAN"
-        "ASAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/asan.supp detect_leaks=1 new_delete_type_mismatch=0 fast_unwind_on_malloc=0"
+        "LD_PRELOAD='$LIBSAN'"
+        "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_leaks=1 strict_string_checks=1 detect_invalid_pointer_pairs=2 check_initialization_order=1 strict_init_order=1'"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libtsan.so.?' | head -n1)"
+    GCC_VERSION="$(gcc -dumpversion | head -c1)"
+    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/libtsan.so"
     RUN_VARS+=(
-        "LD_PRELOAD=""$LIBSAN"
-        "TSAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1"
+        "LD_PRELOAD='$LIBSAN'"
+        "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
     )
 fi
 
 # Set debug log settings
-if [[ -z "${GST_DEBUG:-}" ]]; then
-    export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
+if [[ -n "${GST_DEBUG:-}" ]]; then
+    RUN_VARS+=(
+        "GST_DEBUG='$GST_DEBUG'"
+    )
+else
+    RUN_VARS+=(
+        "GST_DEBUG='3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
+    )
 fi
 
 # (Optional) Extra GST_DEBUG categories
@@ -274,18 +289,33 @@ make -j"$(nproc)"
 
 # Run in a subshell so the exported variables don't pollute parent environment
 (
+    # Enable kernel core dump
+    ulimit -c unlimited
+
+    #KERNEL_CORE_PATH="${PWD}/core_%e_%p_%u_%t"
+    #log "Set kernel core dump path: $KERNEL_CORE_PATH"
+    #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
+
+    # Prepare the final command
+    COMMAND=""
+
     for RUN_VAR in "${RUN_VARS[@]:-}"; do
         if [[ -n "$RUN_VAR" ]]; then
-            log "export RUN_VAR: {$RUN_VAR}"
-            export "$RUN_VAR"
+            COMMAND="$COMMAND $RUN_VAR"
         fi
     done
 
-    $RUN_WRAPPER ./kurento-media-server/server/kurento-media-server \
-        --modules-path=. \
-        --modules-config-path=./config \
-        --conf-file=./config/kurento.conf.json \
-        --gst-plugin-path=.
+    COMMAND="$COMMAND $RUN_WRAPPER"
+
+    COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
+        --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
+        --modules-config-path='$PWD/config' \
+        --conf-file='$PWD/config/kurento.conf.json' \
+        --gst-plugin-path='$PWD'"
+
+    log "Run command: $COMMAND"
+
+    eval $COMMAND
 )
 
 popd || exit 1  # Exit $BUILD_DIR
