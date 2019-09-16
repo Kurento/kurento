@@ -20,6 +20,12 @@
 #/ Arguments
 #/ ---------
 #/
+#/ --build-only
+#/
+#/   Only build the source code, without actually running KMS.
+#/
+#/   Optional. Default: Disabled.
+#/
 #/ --release
 #/
 #/   Build in Release mode with debugging symbols.
@@ -114,6 +120,7 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 # Parse call arguments
 # --------------------
 
+CFG_BUILD_ONLY="false"
 CFG_RELEASE="false"
 CFG_GDB="false"
 CFG_VERBOSE="false"
@@ -124,6 +131,7 @@ CFG_THREAD_SANITIZER="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
+        --build-only) CFG_BUILD_ONLY="true" ;;
         --release) CFG_RELEASE="true" ;;
         --gdb) CFG_GDB="true" ;;
         --verbose) CFG_VERBOSE="true" ;;
@@ -286,6 +294,10 @@ pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 # Always run `make`: if any source file changed, it needs building; if nothing
 # changed since last time, it is a "no-op" anyway
 make -j"$(nproc)"
+
+if [[ "$CFG_BUILD_ONLY" == "true" ]]; then
+    exit 0
+fi
 
 # Run in a subshell so the exported variables don't pollute parent environment
 (
