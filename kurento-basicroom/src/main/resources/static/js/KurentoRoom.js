@@ -100,7 +100,7 @@ function Room(kurento, options) {
 		if (stream !== undefined) {
 			stream.processSdpAnswer(msg.sdpAnswer);
 		} else {
-			console.warn("Receiving video response from an unexisting user: "
+			console.warn("Receiving video response from a nonexistent user: "
 					+ msg.name);
 		}
 	}
