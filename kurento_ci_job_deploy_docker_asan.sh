@@ -103,7 +103,7 @@ pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
-export BUILD_ARGS="UBUNTU_VERSION=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION KMS_IMAGE=kurento/kurento-media-server${IMAGE_NAME_SUFFIX}"
+export BUILD_ARGS="UBUNTU_VERSION=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION KMS_IMAGE=kurento/kurento-media-server${DOCKER_NAME_SUFFIX}"
 export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="-asan"
 if [[ "$DEPLOY_SPECIAL" == "true" ]]; then
