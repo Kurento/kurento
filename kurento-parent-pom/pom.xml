@@ -106,7 +106,7 @@
 		<version.apache.commons-lang>2.6</version.apache.commons-lang>
 		<version.apache.commons-logging>1.2</version.apache.commons-logging>
 		<version.apache.commons-pool>2.6.2</version.apache.commons-pool>
-		<version.apache.tika>1.21</version.apache.tika>
+		<version.apache.tika>[1.22,)</version.apache.tika>
 		<version.apache.fluent-hc>4.5.8</version.apache.fluent-hc>
 		<version.apache.httpclient>4.5.8</version.apache.httpclient>
 		<version.apache.httpcore>4.4.11</version.apache.httpcore>
