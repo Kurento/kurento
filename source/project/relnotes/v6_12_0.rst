@@ -1,0 +1,22 @@
+===================
+6.12.0 (UNRELEASED)
+===================
+
+Kurento **6.12** has been released!
+
+To install Kurento Media Server: :doc:`/user/installation`.
+
+
+
+More thanks
+===========
+
+There were many other changes and fixes contributed by users; these maybe didn't have an impact big enough to be featured in these Release Notes, but nevertheless their authors merit our sincere appreciation and thanks for sharing their work with the greater community:
+
+**kms-core**
+
+* `@slabajo <https://github.com/slabajo>`__ (Saúl Pablo Labajo) for `Kurento/kms-core#18 <https://github.com/Kurento/kms-core/pull/18>`__ (Update kmsremb.c).
+
+**kms-elements**
+
+* `@zhao85 <https://github.com/zhao85>`__ for `Kurento/kms-elements#18 <https://github.com/Kurento/kms-elements/pull/18>`__ (fix segfault and fd leaking problems).
