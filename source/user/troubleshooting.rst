@@ -6,7 +6,7 @@ If you are facing an issue with Kurento Media Server, follow this basic check li
 
 * Step 1. Test with the **latest version** of Kurento Media Server: **|VERSION_KMS|**. Follow the installation instructions here: :doc:`/user/installation`.
 
-* Step 2: If the problem still happens in the latest version, and the Kurento developers are already tracking progress for a solution in a bug report or a support contract, you may test the latest (unreleased) changes by installing a nightly version of KMS: :doc:`/user/installation_dev`.
+* Step 2: If the problem still happens in the latest version, and the Kurento developers have started working on a solution, they might instruct you to test with the latest (unreleased) changes by installing a nightly version of KMS: :doc:`/user/installation_dev`.
 
 * Step 3: When your issue exists in both the latest and nightly versions, try resorting to the :ref:`Open-Source Community <support-community>`. Kurento users might be having the same issue and maybe you can find help in there.
 
@@ -14,23 +14,43 @@ If you are facing an issue with Kurento Media Server, follow this basic check li
 
 
 
-This document will try to outline several bits of knowledge that can prove very useful when studying a failure or error in KMS.
+**My Kurento doesn't work, what should I do?**
+
+This document outlines several bits of knowledge that can prove very useful when studying a failure or error in KMS:
 
 .. contents:: Table of Contents
 
 
 
-Media Server
-============
+Media Server Crashes
+====================
 
-Media Server crashed
---------------------
+We want Kurento to be as stable as possible! When you notice a server crash, it's a good time to report a bug so we can know about the issue. But before that, we need you to collect some information about the crash:
 
-If the Media Server crashes, it will write an stack trace into the file **/var/log/kurento-media-server/errors.log**. Also, in typical Ubuntu systems, the Linux Kernel will generate a crash core dump in **/var/crash/** (although your system might be configured to generate them into a different directory).
+* Kurento tries to write an **execution stack trace** in the file ``/var/log/kurento-media-server/errors.log``. This stack trace will only be useful if you have **all debug packages installed**, by following these instructions: :ref:`dev-dbg`. If that's the case, open the *errors.log* file and look for a line similar to this one:
 
-However, these files won't contain much useful information if the relevant debug symbols are not installed. Before :ref:`filing a bug report <support-community>`, make sure to run your breaking test case **with all debugging packages already installed**, by following these instructions: :ref:`dev-dbg`.
+  .. code-block:: text
+
+     2019-09-19T13:44:48+02:00 -- New execution
+
+  Then, see if you can find the stack trace that matches with the time when the crash occured. Attach that stack trace to your bug report.
+
+* If you installed Kurento with ``apt-get install``, then the Ubuntu system generates a **crash report** that you will find in ``/var/crash/_usr_bin_kurento-media-server.<PID>.crash``. This contains information that can be used to inspect KMS with a debugger, so it tends to be very useful. Attach it to your bug report (or upload it to any hosting provider).
+
+  .. note::
+
+     The crash report file does not get overwritten on each crash. **If an old crash report exists, the new one will not be generated**. So if you are experiencing crashes, then make sure that the crash report file is always deleted, after having shared it with us, so future crashes will also generate new crash reports.
+
+* We might ask you to run with a special build of Kurento that comes with support for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, a memory access error detector.
+
+  For this, you would need to make several high-impact changes in your system, so instead of breaking everybody's setup we decided it's better to just publish a Docker image that contains everything you need: `Kurento Docker images with AddressSanitizer <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags?name=asan>`__. If we ask for it, you would have to provide the `Docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ from running this.
+
+  For this reason (and also for better test repeatability), it's a very good idea that you have your services thought out in a way that it's possible to **run Kurento Media Server from Docker**, at any time, regardless of what is your normal / usual method of deploying Kurento.
 
 
+
+Other Media Server issues
+=========================
 
 ``GStreamer-CRITICAL **`` messages in the log
 ---------------------------------------------
