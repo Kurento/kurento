@@ -424,7 +424,7 @@ Run:
 
     # Run a loop over all package names and uninstall them.
     for PACKAGE in "${PACKAGES[@]}"; do
-      sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unexisting"; }
+      sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unknown package"; }
     done
 
 
@@ -495,7 +495,7 @@ To install all debug symbols relevant to KMS, run these commands:
 
    for PACKAGE in "${PACKAGES[@]}"; do
        apt-get install --no-install-recommends --yes "$PACKAGE" \
-           || { echo "Skip unexisting"; }
+           || { echo "Skip unknown package"; }
    done
 
 For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in this example**:
