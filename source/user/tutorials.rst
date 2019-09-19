@@ -7,6 +7,15 @@ This section contains tutorials showing how to use Kurento framework to build di
 - **Java**: Showing applications where clients interact with *Spring Boot*-based
   applications, that host the logic orchestrating the communication among clients and control Kurento Media Server capabilities.
 
+  To run the Java tutorials, you need to first install the Java JDK and Maven:
+
+  .. code-block:: bash
+
+     sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+         git \
+         default-jdk \
+         maven
+
 - **Browser JavaScript**: These show applications executing at the browser and communicating directly with the Kurento Media Server. In these tutorials all logic is directly hosted by the browser. Hence, no application server is necessary.
 
 - **Node.js**: In which clients interact with an application server made with Node.js technology. The application server holds the logic orchestrating the communication among the clients and controlling Kurento Media Server capabilities for them.
