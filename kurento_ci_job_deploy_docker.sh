@@ -106,12 +106,20 @@ export PUSH_IMAGES="yes"
 export BUILD_ARGS="UBUNTU_VERSION=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION"
 export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
-if [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    export TAG="$JOB_DEPLOY_NAME"
+if [[ "$JOB_RELEASE" == "true" ]]; then
+    # Main tag: "1.2.3"
+    # Moving tags: "1.2", "1", "latest"
+    export TAG="${VERSION}"
+    export EXTRA_TAGS="$VERSION_MAJ_MIN $VERSION_MAJ latest"
+elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
+    # Main tag: "experiment"
+    export TAG="${JOB_DEPLOY_NAME}"
     export EXTRA_TAGS=""
 else
+    # Main tag: "1.2.3-20191231235959"
+    # Moving tags: "1.2.3", "1.2", "1", "latest"
     export TAG="${VERSION}-${JOB_TIMESTAMP}"
-    export EXTRA_TAGS="$VERSION $VERSION_MAJ_MIN $VERSION_MAJ latest"  # Moving tags, example: "1.2.3", "1.2", "1", "latest"
+    export EXTRA_TAGS="$VERSION $VERSION_MAJ_MIN $VERSION_MAJ latest"
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 

@@ -105,13 +105,19 @@ pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
 export PUSH_IMAGES="yes"
 export BUILD_ARGS="UBUNTU_VERSION=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION KMS_IMAGE=kurento/kurento-media-server${DOCKER_NAME_SUFFIX}"
 export TAG_COMMIT="no"
-export IMAGE_NAME_SUFFIX="-asan"
-if [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    export TAG="$JOB_DEPLOY_NAME"
+export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
+if [[ "$JOB_RELEASE" == "true" ]]; then
+    # Main tag: "1.2.3-asan"
+    export TAG="${VERSION}-asan"
+    export EXTRA_TAGS=""
+elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
+    # Main tag: "experiment-asan"
+    export TAG="${JOB_DEPLOY_NAME}-asan"
     export EXTRA_TAGS=""
 else
-    export TAG="${VERSION}-${JOB_TIMESTAMP}"
-    export EXTRA_TAGS="$VERSION $VERSION_MAJ_MIN $VERSION_MAJ latest"  # Moving tags, example: "1.2.3", "1.2", "1", "latest"
+    # Main tag: "1.2.3-20191231235959"
+    export TAG="${VERSION}-${JOB_TIMESTAMP}-asan"
+    export EXTRA_TAGS=""
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
