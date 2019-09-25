@@ -98,6 +98,8 @@ public:
 
   ${event.name} (const Json::Value &value);
 
+  <#if !event.extends??>virtual </#if>~${event.name}()<#if event.extends??> override</#if> = default;
+
   <#list event.properties as property>
   virtual void set${property.name?cap_first} (${getCppObjectType(property.type, true)}${property.name}) {
     this->${property.name} = ${property.name};
