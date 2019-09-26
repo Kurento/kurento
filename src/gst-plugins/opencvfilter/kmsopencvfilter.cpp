@@ -35,10 +35,10 @@
 using namespace cv;
 
 #define KMS_OPENCV_FILTER_LOCK(opencv_filter) \
-  (g_rec_mutex_lock (&( (KmsOpenCVFilter *) opencv_filter)->priv->mutex))
+  (g_rec_mutex_lock (&( (KmsOpenCVFilter *) (opencv_filter))->priv->mutex))
 
 #define KMS_OPENCV_FILTER_UNLOCK(opencv_filter) \
-  (g_rec_mutex_unlock (&( (KmsOpenCVFilter *) opencv_filter)->priv->mutex))
+  (g_rec_mutex_unlock (&( (KmsOpenCVFilter *) (opencv_filter))->priv->mutex))
 
 GST_DEBUG_CATEGORY_STATIC (kms_opencv_filter_debug_category);
 #define GST_CAT_DEFAULT kms_opencv_filter_debug_category
