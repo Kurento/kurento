@@ -39,7 +39,6 @@ pipeline {
             "kurento_js_build_sanity_checks" : {build job: 'Development/kurento_js_build_sanity_checks', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master'), string(name: 'BOWER_RELEASE_URL', value: '//builds.kurento.org/dev/master/latest')]},
             "_functional_parent" : {build job: 'Development/_functional_parent', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
             "_stability_parent" : {build job: 'Development/_stability_parent', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
-            "webrtc_audit" : {build job: 'Development/webrtc_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
             "_functional_ice_parent" : {build job: 'Development/_functional_ice_parent', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
             "_functional_datachannels_parent" : {build job: 'Development/datachannel_audit', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
             "kms_core_valgrind" : {build job: 'Development/kms_core_valgrind', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]},
