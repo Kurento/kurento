@@ -450,7 +450,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   remove_not_supported_codecs (element);
 
   //set properties
-  uint stunPort;
+  uint stunPort = 0;
   if (!getConfigValue <uint, WebRtcEndpoint> (&stunPort, "stunServerPort",
       DEFAULT_STUN_PORT)) {
     GST_INFO ("STUN server Port not found in config;"

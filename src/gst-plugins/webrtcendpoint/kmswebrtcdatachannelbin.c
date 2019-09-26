@@ -526,7 +526,6 @@ kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-  gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->set_property = kms_webrtc_data_channel_bin_set_property;
   gobject_class->get_property = kms_webrtc_data_channel_bin_get_property;
   gobject_class->finalize = kms_webrtc_data_channel_bin_finalize;
@@ -1079,7 +1078,7 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
   guint64 bytes_sent = 0;
   gpointer state = NULL;
   GstFlowReturn ret;
-  guint32 pr_param;
+  guint32 pr_param = 0;
   GstMapInfo info;
   GstBuffer *buff;
   GstMeta *meta;
@@ -1158,8 +1157,6 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
       gst_buffer_unref (send_buffer);
       return GST_FLOW_ERROR;
   }
-
-  pr_param = 0;
 
   if (self->priv->max_packet_life_time == -1
       && self->priv->max_packet_retransmits == -1) {
