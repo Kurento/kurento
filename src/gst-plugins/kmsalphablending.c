@@ -29,10 +29,10 @@
 #define PLUGIN_NAME "alphablending"
 
 #define KMS_ALPHA_BLENDING_LOCK(mixer) \
-  (g_rec_mutex_lock (&( (KmsAlphaBlending *) mixer)->priv->mutex))
+  (g_rec_mutex_lock (&( (KmsAlphaBlending *) (mixer))->priv->mutex))
 
 #define KMS_ALPHA_BLENDING_UNLOCK(mixer) \
-  (g_rec_mutex_unlock (&( (KmsAlphaBlending *) mixer)->priv->mutex))
+  (g_rec_mutex_unlock (&( (KmsAlphaBlending *) (mixer))->priv->mutex))
 
 GST_DEBUG_CATEGORY_STATIC (kms_alpha_blending_debug_category);
 #define GST_CAT_DEFAULT kms_alpha_blending_debug_category

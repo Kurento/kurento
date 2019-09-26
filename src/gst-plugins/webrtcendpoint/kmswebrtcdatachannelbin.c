@@ -45,8 +45,8 @@ G_DEFINE_TYPE_WITH_CODE (KmsWebRtcDataChannelBin, kms_webrtc_data_channel_bin,
 #define parent_class kms_webrtc_data_channel_bin_parent_class
 
 #define DEFAULT_ORDERED TRUE
-#define DEFAULT_MAX_PACKETS_LIFE_TIME -1
-#define DEFAULT_MAX_PACKET_RETRANSMITS -1
+#define DEFAULT_MAX_PACKETS_LIFE_TIME (-1)
+#define DEFAULT_MAX_PACKET_RETRANSMITS (-1)
 #define DEFAULT_PROTOCOL ""
 #define DEFAULT_NEGOTIATED FALSE
 #define DEFAULT_ID 0

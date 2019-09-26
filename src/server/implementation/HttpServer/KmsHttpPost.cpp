@@ -608,7 +608,7 @@ kms_http_post_configure_msg (KmsHttpPost *self)
 
   if (strncmp (content_type, "multipart/", 10) == 0) {
     if (strlen (content_type) >= 19 &&
-        strncmp (content_type + 11, "form-data", 9) ) {
+        strncmp (content_type + 11, "form-data", 9) != 0 ) {
       /* Content-Type: multipart/form-data */
       kms_http_post_init_multipart (self);
       self->priv->multipart->boundary =
