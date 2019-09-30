@@ -189,8 +189,8 @@ void WebRtcEndpointImpl::onIceCandidate (gchar *sessId,
     IceCandidateFound newEvent (shared_from_this(), IceCandidateFound::getName(),
                                 cand);
 
-    signalOnIceCandidate (event);
-    signalIceCandidateFound (newEvent);
+    sigcSignalEmit(signalOnIceCandidate, event);
+    sigcSignalEmit(signalIceCandidateFound, event);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -201,8 +201,8 @@ void WebRtcEndpointImpl::onIceGatheringDone (gchar *sessId)
     OnIceGatheringDone event (shared_from_this(), OnIceGatheringDone::getName() );
     IceGatheringDone newEvent (shared_from_this(), IceGatheringDone::getName() );
 
-    signalOnIceGatheringDone (event);
-    signalIceGatheringDone (newEvent);
+    sigcSignalEmit(signalOnIceGatheringDone, event);
+    sigcSignalEmit(signalIceGatheringDone, event);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -269,8 +269,8 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
     iceConnectionState.insert (std::pair
                                <std::string, std::shared_ptr <IceConnection>> (key, connectionState) );
 
-    signalOnIceComponentStateChanged (event);
-    signalIceComponentStateChange (newEvent);
+    sigcSignalEmit(signalOnIceComponentStateChanged, event);
+    sigcSignalEmit(signalIceComponentStateChange, event);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -310,7 +310,7 @@ void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
     NewCandidatePairSelected event (shared_from_this(),
                                     NewCandidatePairSelected::getName(), candidatePair);
 
-    signalNewCandidatePairSelected (event);
+    sigcSignalEmit(signalNewCandidatePairSelected, event);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -323,8 +323,9 @@ WebRtcEndpointImpl::onDataChannelOpened (gchar *sessId, guint stream_id)
                                stream_id);
     DataChannelOpen newEvent (shared_from_this(), DataChannelOpen::getName(),
                               stream_id);
-    signalOnDataChannelOpened (event);
-    signalDataChannelOpen (newEvent);
+
+    sigcSignalEmit(signalOnDataChannelOpened, event);
+    sigcSignalEmit(signalDataChannelOpen, event);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -337,8 +338,9 @@ WebRtcEndpointImpl::onDataChannelClosed (gchar *sessId, guint stream_id)
                                stream_id);
     DataChannelClose newEvent (shared_from_this(), DataChannelClose::getName(),
                                stream_id);
-    signalOnDataChannelClosed (event);
-    signalDataChannelClose (newEvent);
+
+    sigcSignalEmit(signalOnDataChannelClosed, event);
+    sigcSignalEmit(signalDataChannelClose, event);
   } catch (std::bad_weak_ptr &e) {
   }
 }

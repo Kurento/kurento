@@ -150,7 +150,8 @@ RtpEndpointImpl::onKeySoftLimit (gchar *media)
 
   try {
     OnKeySoftLimit event (shared_from_this(), OnKeySoftLimit::getName(), type);
-    signalOnKeySoftLimit (event);
+
+    sigcSignalEmit(signalOnKeySoftLimit, event);
   } catch (std::bad_weak_ptr &e) {
   }
 }

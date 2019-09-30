@@ -167,21 +167,24 @@ RecorderEndpointImpl::onStateChanged (gint newState)
   case KMS_URI_END_POINT_STATE_STOP: {
     GST_DEBUG_OBJECT (element, "State changed to Stopped");
     Stopped event (shared_from_this(), Stopped::getName() );
-    signalStopped (event);
+
+    sigcSignalEmit(signalStopped, event);
     break;
   }
 
   case KMS_URI_END_POINT_STATE_START: {
     GST_DEBUG_OBJECT (element, "State changed to Recording");
     Recording event (shared_from_this(), Recording::getName() );
-    signalRecording (event);
+
+    sigcSignalEmit(signalRecording, event);
     break;
   }
 
   case KMS_URI_END_POINT_STATE_PAUSE: {
     GST_DEBUG_OBJECT (element, "State changed to Paused");
     Paused event (shared_from_this(), Paused::getName() );
-    signalPaused (event);
+
+    sigcSignalEmit(signalPaused, event);
     break;
   }
   }

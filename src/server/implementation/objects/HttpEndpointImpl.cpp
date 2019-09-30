@@ -247,11 +247,11 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
       std::string errorMessage = "Invalid or unexpected request received";
 
       try {
-        Error error (shared_from_this(), "Invalid URI", 0, "INVALID_URI");
+        Error event (shared_from_this(), "Invalid URI", 0, "INVALID_URI");
 
         GST_ERROR ("%s", errorMessage.c_str() );
 
-        signalError (error);
+        sigcSignalEmit(signalError, event);
       } catch (std::bad_weak_ptr &e) {
       }
     } else {
@@ -259,7 +259,7 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
         MediaSessionStarted event (shared_from_this(),
                                    MediaSessionStarted::getName() );
 
-        signalMediaSessionStarted (event);
+        sigcSignalEmit(signalMediaSessionStarted, event);
       } catch (std::bad_weak_ptr &e) {
       }
     }
@@ -310,7 +310,7 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
       MediaSessionTerminated event (shared_from_this(),
                                     MediaSessionTerminated::getName() );
 
-      signalMediaSessionTerminated (event);
+      sigcSignalEmit(signalMediaSessionTerminated, event);
     } catch (std::bad_weak_ptr &e) {
     }
   };
