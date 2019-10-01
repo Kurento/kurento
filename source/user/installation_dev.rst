@@ -33,6 +33,8 @@ Local Installation
 
 The steps to install a nightly version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
+To install KMS, start from a **clean machine** (no KMS already installed), open a terminal, and follow these steps:
+
 1. Make sure that GnuPG is installed.
 
    .. code-block:: bash

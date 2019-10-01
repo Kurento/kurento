@@ -73,9 +73,9 @@ Kurento's Docker Hub contains images built from each KMS release. Just head to t
 Local Installation
 ==================
 
-With this method, you will install KMS from the native Ubuntu package repositories made available by the Kurento project.
+With this method, you will install KMS from the native Ubuntu package repositories made available by the Kurento project. KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
 
-KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only). To install KMS, open a terminal and follow these steps:
+To install KMS, start from a **clean machine** (no KMS already installed), open a terminal, and follow these steps:
 
 1. Make sure that GnuPG is installed.
 
@@ -115,7 +115,7 @@ KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: *
 
       sudo apt-get update && sudo apt-get install --yes kurento-media-server
 
-This will install the KMS release version that was specified in the previous commands.
+This will install the release KMS version.
 
 The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 
