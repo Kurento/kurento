@@ -186,12 +186,12 @@ public class KurentoTest {
   
   @Before
   public void logStart() {
-      log.info("##### Start test: " + name.getMethodName());
+      log.info("##### Start test: " + this.getClass().getName() + name.getMethodName());
   }
 
   @After
   public void logEnd() {
-      log.info("##### Finish test: " + name.getMethodName());
+      log.info("##### Finish test: " + this.getClass().getName() + name.getMethodName());
   }
 
   
