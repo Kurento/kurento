@@ -46,11 +46,12 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
 # Install a basic set of packages
 # * default-jdk (Java JDK): For Java projects
 # * maven: For Java projects
-# * jshon: For some JavaScript tools
+# * jq, jshon: For some JavaScript tools and jobs
 # * rsync: For remote copies
 RUN apt-get update && apt-get install --yes \
         default-jdk \
         maven \
+        jq \
         jshon \
         rsync \
  && rm -rf /var/lib/apt/lists/*
