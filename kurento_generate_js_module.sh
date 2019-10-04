@@ -23,6 +23,16 @@ cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE |
   exit 1
 }
 
+# FIXME - When generating for the kms-filters module, the JSON keys in
+# 'js/src/filters.kmd.json' change ordering each time this job runs. So the git
+# commit history is polluted with meaningless variations in key order.
+# I haven't found the cause for this issue, and it is really a time sink without
+# much payoff, so the easy way is to force a sorting order right here
+for FILE in js/src/*.kmd.json; do
+    jq '.remoteClasses? |= sort_by(.name)' "$FILE" >"${FILE}.tmp"
+    mv "${FILE}.tmp" "$FILE"
+done
+
 JS_PROJECT="$(cat js_project_name)-js"
 echo "[kurento_generate_js_module] Generated sources: $JS_PROJECT"
 
