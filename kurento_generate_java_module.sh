@@ -1,6 +1,20 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 
-echo "##################### EXECUTE: kurento_generate_java_module #####################"
+
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+# Trace all commands
+set -o xtrace
+
+
+
+log "##################### EXECUTE: kurento_generate_java_module #####################"
 
 # MAVEN_KURENTO_SNAPSHOTS url
 #   URL of Kurento repository for maven snapshots
@@ -17,19 +31,19 @@ echo "##################### EXECUTE: kurento_generate_java_module ##############
 PATH=$PATH:${KURENTO_SCRIPTS_HOME}
 
 kurento_check_version.sh false || {
-  echo "[kurento_generate_java_module] ERROR: Command failed: kurento_check_version (tagging disabled)"
+  log "ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
 }
 
 rm -rf build
 mkdir build && cd build
 cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
-  echo "[kurento_generate_java_module] ERROR: Command failed: cmake"
+  log "ERROR: Command failed: cmake"
   exit 1
 }
 
 cd java || {
-  echo "[kurento_generate_java_module] ERROR: Expected directory doesn't exist: $PWD/java"
+  log "ERROR: Expected directory doesn't exist: $PWD/java"
   exit 1
 }
 
@@ -37,7 +51,7 @@ cd java || {
 export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
 export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
 kurento_maven_deploy.sh || {
-  echo "[kurento_generate_java_module] ERROR: Command failed: kurento_maven_deploy (Kurento)"
+  log "ERROR: Command failed: kurento_maven_deploy (Kurento)"
   exit 1
 }
 
@@ -45,7 +59,7 @@ kurento_maven_deploy.sh || {
 export SNAPSHOT_REPOSITORY=
 export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
 kurento_maven_deploy.sh || {
-  echo "[kurento_generate_java_module] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
+  log "ERROR: Command failed: kurento_maven_deploy (Sonatype)"
   exit 1
 }
 
@@ -53,6 +67,6 @@ kurento_maven_deploy.sh || {
 # Commented out because this is currently being done in the main kms-{core,elements,filters} job.
 # Uncomment when this is sorted out and we know WHEN we want to create tags.
 # kurento_check_version.sh true || {
-#   echo "[kurento_generate_java_module] ERROR: Command failed: kurento_check_version (tagging enabled)"
+#   log "ERROR: Command failed: kurento_check_version (tagging enabled)"
 #   exit 1
 # }

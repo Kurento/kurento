@@ -1,6 +1,20 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 
-echo "##################### EXECUTE: npm-publish #####################"
+
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+# Trace all commands
+set -o xtrace
+
+
+
+log "##################### EXECUTE: npm-publish #####################"
 
 env
 
@@ -38,32 +52,32 @@ vercomp () {
 
 # Get project data
 projectName=$(jshon -e name -u < package.json) || {
-  echo "[kurento_npm_publish] ERROR: Command failed: jshon -e name"
+  log "ERROR: Command failed: jshon -e name"
   exit 1
 }
 localVersion=$(jshon -e version -u < package.json ) || {
-  echo "[kurento_npm_publish] ERROR: Command failed: jshon -e version"
+  log "ERROR: Command failed: jshon -e version"
   exit 1
 }
 pubVersion=$(npm info --json $projectName | jshon -e version -u || echo "0.0.0") || {
-  echo "[kurento_npm_publish] ERROR: Command failed: npm info"
+  log "ERROR: Command failed: npm info"
   exit 1
 }
 
 localRelease=$(echo $localVersion | awk -F"-" '{print $1}') || {
-  echo "[kurento_npm_publish] ERROR: Command failed: awk localVersion"
+  log "ERROR: Command failed: awk localVersion"
   exit 1
 }
 pubRelease=$(echo $pubVersion | awk -F"-" '{print $1}') || {
-  echo "[kurento_npm_publish] ERROR: Command failed: awk pubVersion"
+  log "ERROR: Command failed: awk pubVersion"
   exit 1
 }
 
-echo "Local version found, V: $localVersion, R: $localRelease"
-echo "Public version found, V: $pubVersion, R: $pubRelease"
+log "Local version found, V: $localVersion, R: $localRelease"
+log "Public version found, V: $pubVersion, R: $pubRelease"
 
 [[ "$localRelease" != "$localVersion" ]] && {
-  echo "[kurento_npm_publish] Exit: Version is development"
+  log "Exit: Version is development"
   exit 0
 }
 
@@ -71,12 +85,12 @@ echo "Public version found, V: $pubVersion, R: $pubRelease"
 vercomp $localRelease $pubRelease
 different=$?
 if [ $different -eq 1 ]; then
-  echo "Publishing to npm $projectName version $localVersion"
+  log "Publishing to npm $projectName version $localVersion"
   npm publish || {
-    echo "[kurento_npm_publish] ERROR: Command failed: npm publish"
+    log "ERROR: Command failed: npm publish"
     exit 1
   }
 else
-  echo "[kurento_npm_publish] Exit: public version is already greater or equal than local"
+  log "Exit: public version is already greater or equal than local"
   exit 0
 fi
