@@ -1,3 +1,7 @@
+# FIXME: Disable error when functions are unused
+# This is needed to temporarily disable test "player_with_filter"
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+
 include_directories(
   ${GSTREAMER_INCLUDE_DIRS}
   ${GSTREAMER_VIDEO_INCLUDE_DIRS}
