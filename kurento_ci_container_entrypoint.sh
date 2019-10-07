@@ -20,9 +20,9 @@ RUN_COMMANDS=("$@")
 
 echo "[kurento_ci_container_entrypoint] Preparing environment..."
 
-# Path information
+# Add "adm-scripts" to PATH
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-PATH="${BASEPATH}:${BASEPATH}/kms:${PATH}"
+export PATH="$BASEPATH:$PATH"
 
 DIST=$(lsb_release -c)
 DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')

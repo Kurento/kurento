@@ -28,8 +28,6 @@ log "##################### EXECUTE: kurento_generate_java_module ###############
 #   export MAVEN_SONATYPE_NEXUS_STAGING=
 #   kurento_merge_java_project.sh
 
-PATH=$PATH:${KURENTO_SCRIPTS_HOME}
-
 kurento_check_version.sh false || {
   log "ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
