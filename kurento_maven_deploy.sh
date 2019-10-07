@@ -35,10 +35,12 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 PATH="${BASEPATH}:${PATH}"
 
 # Get command line parameters for backward compatibility
-[ -n "$1" ] && MAVEN_SETTINGS=$1
-[ -n "$2" ] && SNAPSHOT_REPOSITORY=$2
-[ -n "$2" ] && RELEASE_REPOSITORY=$2
-[ -n "$3" ] && SIGN_ARTIFACTS=$3
+[ -n "${1:-}" ] && MAVEN_SETTINGS="$1"
+[ -n "${2:-}" ] && {
+    SNAPSHOT_REPOSITORY="$2"
+    RELEASE_REPOSITORY="$2"
+}
+[ -n "${3:-}" ] && SIGN_ARTIFACTS="$3"
 
 # Validate parameters
 log "Validate parameters"
@@ -49,11 +51,11 @@ if [ -n "$MAVEN_SETTINGS" ]; then
     }
     PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
 fi
-[ -z "$SIGN_ARTIFACTS" ] && SIGN_ARTIFACTS="true"
+[ -z "${SIGN_ARTIFACTS:-}" ] && SIGN_ARTIFACTS="true"
 
 # needed env vars
-export AWS_ACCESS_KEY_ID=$UBUNTU_PRIV_S3_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
+export AWS_ACCESS_KEY_ID="$UBUNTU_PRIV_S3_ACCESS_KEY_ID"
+export AWS_SECRET_ACCESS_KEY="$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID"
 
 # Maven options
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
@@ -70,7 +72,7 @@ if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
         org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
         -Pdefault -Pdeploy \
         $OPTS \
-        -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || {
+        -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY" || {
             log "ERROR: Command failed: mvn deploy (snapshot)"
             exit 1
         }
@@ -84,7 +86,7 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
             javadoc:jar source:jar gpg:sign \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
             $OPTS \
-            -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || {
+            -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY" || {
                 log "ERROR: Command failed: mvn deploy (signed release)"
                 exit 1
             }
@@ -98,8 +100,8 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
         }
 
         for FILE in $SIGNED_FILES; do
-            SIGNED_FILE=`echo $FILE | sed 's/.asc\+$//'`
-            gpg --verify $FILE $SIGNED_FILE || {
+            SIGNED_FILE="$(echo "$FILE" | sed 's/.asc\+$//')"
+            gpg --verify "$FILE" "$SIGNED_FILE" || {
                 log "ERROR: Command failed: gpg verify"
                 exit 1
             }
@@ -112,7 +114,7 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
             javadoc:jar source:jar \
             org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
             $OPTS \
-            -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || {
+            -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY" || {
                 log "ERROR: Command failed: mvn deploy (unsigned release)"
                 exit 1
             }
