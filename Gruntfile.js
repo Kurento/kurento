@@ -52,7 +52,10 @@ module.exports = function (grunt) {
           'node_modules/kurento-client-filters/lib/**/*.js',
           'test/*.js'
         ],
-        dest: 'doc/jsdoc'
+        dest: "doc/jsdoc",
+        options: {
+          configure: ".jsdoc.conf.js"
+        }
       }
     },
 
