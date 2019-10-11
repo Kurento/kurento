@@ -31,9 +31,21 @@ Kurento's Docker Hub contains images built from each KMS nightly version. Just h
 Local Installation
 ------------------
 
-The steps to install a nightly version of KMS are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
+The steps to install a nightly version of Kurento Media Server are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
-To install KMS, start from a **clean machine** (no KMS already installed), open a terminal, and follow these steps:
+To install KMS, start from a clean machine (**no KMS already installed**).
+
+.. note::
+
+   To uninstall Kurento, you can issue this command:
+
+   .. code-block:: bash
+
+      sudo aptitude remove kurento-media-server
+
+   We recommend using *aptitude* to uninstall packages, because it has a better removal algorithm and it does actually remove all dependencies that were installed with Kurento. *apt-get* does not.
+
+Open a terminal, and follow these steps:
 
 1. Make sure that GnuPG is installed.
 
