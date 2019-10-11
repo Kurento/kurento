@@ -495,11 +495,6 @@
 				<version>${version.apache.commons-pool}</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>${version.apache.commons-logging}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-artifact</artifactId>
 				<version>${version.apache.maven-artifact}</version>
