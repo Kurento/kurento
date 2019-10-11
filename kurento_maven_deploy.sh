@@ -35,23 +35,23 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 PATH="${BASEPATH}:${PATH}"
 
 # Get command line parameters for backward compatibility
-[ -n "${1:-}" ] && MAVEN_SETTINGS="$1"
-[ -n "${2:-}" ] && {
+[[ -n "${1:-}" ]] && MAVEN_SETTINGS="$1"
+[[ -n "${2:-}" ]] && {
     SNAPSHOT_REPOSITORY="$2"
     RELEASE_REPOSITORY="$2"
 }
-[ -n "${3:-}" ] && SIGN_ARTIFACTS="$3"
+[[ -n "${3:-}" ]] && SIGN_ARTIFACTS="$3"
 
 # Validate parameters
 log "Validate parameters"
-if [ -n "$MAVEN_SETTINGS" ]; then
-    [ -f "$MAVEN_SETTINGS" ] || {
+if [[ -n "$MAVEN_SETTINGS" ]]; then
+    [[ -f "$MAVEN_SETTINGS" ]] || {
         log "ERROR: Cannot read file: $MAVEN_SETTINGS"
         exit 1
     }
     PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
 fi
-[ -z "${SIGN_ARTIFACTS:-}" ] && SIGN_ARTIFACTS="true"
+[[ -z "${SIGN_ARTIFACTS:-}" ]] && SIGN_ARTIFACTS="true"
 
 # needed env vars
 export AWS_ACCESS_KEY_ID="$UBUNTU_PRIV_S3_ACCESS_KEY_ID"
@@ -66,7 +66,7 @@ PROJECT_VERSION="$(kurento_get_version.sh)" || {
 }
 log "Build and deploy version: $PROJECT_VERSION"
 
-if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
+if [[ $PROJECT_VERSION == *-SNAPSHOT ]] && [[ -n "$SNAPSHOT_REPOSITORY" ]]; then
     log "Version to deploy is SNAPSHOT"
     mvn --batch-mode -U $PARAM_MAVEN_SETTINGS clean package \
         org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
@@ -76,7 +76,7 @@ if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
             log "ERROR: Command failed: mvn deploy (snapshot)"
             exit 1
         }
-elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; then
+elif [[ $PROJECT_VERSION != *-SNAPSHOT ]] && [[ -n "$RELEASE_REPOSITORY" ]]; then
     log "Version to deploy is RELEASE"
     OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
     if [[ $SIGN_ARTIFACTS == "true" ]]; then
@@ -94,7 +94,7 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
         #Verify signed files (if any)
         SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
 
-        [ -z "$SIGNED_FILES" ] && {
+        [[ -z "$SIGNED_FILES" ]] && {
           log "Exit: No signed files found"
           exit 0
         }

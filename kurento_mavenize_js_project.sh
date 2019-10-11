@@ -13,17 +13,17 @@ echo "##################### EXECUTE: kurento_mavenice_js_project ###############
 #   one will be created
 
 # Get input parameters for backward compatibility
-[ -n "$1" ] && PROJECT_NAME=$1
-[ -n "$2" ] && MAVEN_SHELL_SCRIPT=$2
-[ -n "$3" ] && ASSEMBLY_FILE=$3
+[[ -n "${1:-}" ]] && PROJECT_NAME="$1"
+[[ -n "${2:-}" ]] && MAVEN_SHELL_SCRIPT="$2"
+[[ -n "${3:-}" ]] && ASSEMBLY_FILE="$3"
 
 # Validate parameters
-[ -z "$PROJECT_NAME" ] && {
   echo "[kurento_mavenize_js_project] ERROR: Undefined variable: PROJECT_NAME"
+[[ -z "$PROJECT_NAME" ]] && {
   exit 1
 }
 
-if [ -n "$MAVEN_SHELL_SCRIPT" ]; then
+if [[ -n "$MAVEN_SHELL_SCRIPT" ]]; then
 cat >maven_script.sh <<EOF
 #!/usr/bin/env bash
 # Shell options for strict error checking
@@ -51,11 +51,11 @@ fi
 
 chmod +x maven_script.sh
 
-[ -z "$ASSEMBLY_FILE" ] && ASSEMBLY_FILE="assembly.xml"
+[[ -z "$ASSEMBLY_FILE" ]] && ASSEMBLY_FILE="assembly.xml"
 
 # Validate project structure
-[ -f package.json ] || {
   echo "[kurento_mavenize_js_project] ERROR: Cannot read file: package.json"
+[[ -f package.json ]] || {
   exit 1
 }
 
@@ -72,16 +72,16 @@ echo "$VERSION" | grep -q -P "^\d+\.\d+\.\d+" || {
 }
 
 RELEASE="$(echo $VERSION | awk -F"-" '{print $1}')"
-[ -n "$(echo $VERSION | awk -F"-" '{print $2}')" ] && VERSION="${RELEASE}-SNAPSHOT"
+[[ -n "$(echo "$VERSION" | awk -F"-" '{print $2}')" ]] && VERSION="${RELEASE}-SNAPSHOT"
 
 # Exit if pom already present with correct version
-if [ -f pom.xml ]; then
+if [[ -f pom.xml ]]; then
   POM_VERSION="$(kurento_get_version.sh)" || {
     echo "[kurento_mavenize_js_project] ERROR: Command failed: kurento_get_version"
     exit 1
   }
-  [ "$VERSION" == "$POM_VERSION" ] && {
     echo "[kurento_mavenize_js_project] Exit: Valid pom.xml already exists"
+  [[ "$VERSION" == "$POM_VERSION" ]] && {
     exit 0
   }
 fi
