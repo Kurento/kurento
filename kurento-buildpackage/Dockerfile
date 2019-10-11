@@ -108,19 +108,21 @@ RUN git config --system user.name "kurento-buildpackage" \
 
 # ------------ Final configuration ------------
 
-# Configure `apt-get`:
-# * Automatically cleaning the apt cache breaks 'd-devlibdeps' (d-shlibs) < 0.83
-#   so this workaround is needed:
-#   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916856
+# Configure "apt-get" to keep the cache.
 #
-#   Also, this enables persistently caching downloaded packages. This allows
-#   setting up a persistent cache in an external Docker volume. Useful if you're
-#   doing lots of (re)builds and want to avoid downloading the same packages
-#   over and over again...
+# Automatically cleaning the apt cache breaks 'd-devlibdeps' (d-shlibs) < 0.83
+# so this workaround is needed:
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916856
 #
-#   WARNING: If you derive images from this one, you should start your
-#   Dockerfile with re-enabling this config file!
-RUN mv /etc/apt/apt.conf.d/docker-clean /etc/apt/apt.conf.d/docker-clean.off
+# Also, this enables persistently caching downloaded packages. This allows
+# setting up a persistent cache in an external Docker volume. Useful if you're
+# doing lots of (re)builds and want to avoid downloading the same packages
+# over and over again...
+#
+# WARNING:
+# If you derive images from this one, you probably want to begin
+# your Dockerfile with re-enabling this config file.
+RUN sed -i 's|^|//|' /etc/apt/apt.conf.d/docker-clean
 
 
 
