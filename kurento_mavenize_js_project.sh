@@ -210,8 +210,8 @@ cat >pom.xml <<EOF
 EOF
 
 # If there's an assembly file elsewhere, stop and use the file specified. It should be placed on the root of the workspace
-[ -n $ASSEMBLY_FILE ] && {
   echo "[kurento_mavenize_js_project] Exit: Assembly file already exists: $ASSEMBLY_FILE"
+[[ -f "$ASSEMBLY_FILE" ]] && {
   exit 0
 }
 
