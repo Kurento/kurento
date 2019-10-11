@@ -247,17 +247,17 @@ done
 # ----------------------
 
 [[ -d "$CFG_INSTALL_FILES_DIR" ]] || {
-    log "ERROR: --install-files given an unexisting path: '$CFG_INSTALL_FILES_DIR'"
+    log "ERROR: --install-files given a nonexistent path: '$CFG_INSTALL_FILES_DIR'"
     exit 1
 }
 
 [[ -d "$CFG_SRCDIR" ]] || {
-    log "ERROR: --srcdir given an unexisting path: '$CFG_SRCDIR'"
+    log "ERROR: --srcdir given a nonexistent path: '$CFG_SRCDIR'"
     exit 1
 }
 
 [[ -d "$CFG_DSTDIR" ]] || {
-    log "ERROR: --dstdir given an unexisting path: '$CFG_DSTDIR'"
+    log "ERROR: --dstdir given a nonexistent path: '$CFG_DSTDIR'"
     exit 1
 }
 
