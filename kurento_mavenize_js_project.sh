@@ -52,11 +52,6 @@ set -o errexit -o errtrace -o pipefail -o nounset
 # Trace all commands
 set -o xtrace
 echo "#### Run maven_script.sh ####"
-apt-get install --yes curl || { echo ERR1; exit 1; }
-( curl -sL https://deb.nodesource.com/setup_8.x | bash - ) || { echo ERR2; exit 1; }
-apt-get update || { echo ERR3; exit 1; }
-apt-get install --reinstall --yes nodejs || { echo ERR4; exit 1; }
-npm install --no-color --global npm || { echo ERR5; exit 1; }
 npm install --no-color || { echo ERR7; exit 1; }
 node_modules/.bin/grunt --no-color || { echo ERR8; exit 1; }
 node_modules/.bin/grunt --no-color sync:bower || { echo ERR9; exit 1; }
