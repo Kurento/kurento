@@ -902,6 +902,8 @@ For this reason, the documentation must be built only after all the other module
 
 #. Edit `VERSIONS.conf.sh`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries. These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency.
 
+#. In *VERSIONS.conf.sh*, set ``VERSION_RELEASE`` to ``true``. Remember to set it again to ``false`` after the release, when starting a new development iteration.
+
 #. Test the build locally, check everything works.
 
    .. code-block:: bash

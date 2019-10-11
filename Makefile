@@ -62,7 +62,7 @@ langdoc-client-java: langdoc-init
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-java.git
 	cd kurento-java
-	git checkout "|VERSION_CLIENT_JAVA|" || echo "Using master branch"
+	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JAVA|"
 	cd kurento-client || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
 	mvn --batch-mode --quiet clean package \
 		-DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
@@ -76,7 +76,7 @@ langdoc-client-js: langdoc-init
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-client-js.git
 	cd kurento-client-js
-	git checkout "|VERSION_CLIENT_JS|" || echo "Using master branch"
+	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JS|"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
@@ -86,7 +86,7 @@ langdoc-utils-js: langdoc-init
 	cd $(WORKPATH)
 	git clone https://github.com/Kurento/kurento-utils-js.git
 	cd kurento-utils-js
-	git checkout "|VERSION_UTILS_JS|" || echo "Using master branch"
+	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_UTILS_JS|"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
