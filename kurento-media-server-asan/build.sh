@@ -41,7 +41,7 @@ sed -i 's/return gobject_/return \&gobject_/' \
 
 # Build
 
-# Use flag recommended for aggressive diagnostics in AddressSanitizer FAQ:
+# Use flag recommended for aggressive diagnostics:
 # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
 CFLAGS="${CFLAGS:-} -fsanitize-address-use-after-scope" \
 CXXFLAGS="${CXXFLAGS:-} -fsanitize-address-use-after-scope" \
