@@ -1,6 +1,18 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 
-echo "##################### EXECUTE: kurento_merge_js_project #####################"
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+# Trace all commands
+set -o xtrace
+
+
+
+log "##################### EXECUTE: kurento_merge_js_project #####################"
 
 # KURENTO_PROJECT string
 #   Name of the project to be merged
@@ -25,12 +37,12 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 PATH="${BASEPATH}:${PATH}"
 
 [ -f package.json ] || {
-  echo "[kurento_merge_js_project] ERROR: File not found: package.json"
+  log "ERROR: File not found: package.json"
   exit 1
 }
 
 kurento_check_version.sh false || {
-  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging disabled)"
+  log "ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
 }
 
@@ -47,7 +59,7 @@ kurento-client-core-js \
 | kurento-client-filters-js)
     # Only create a tag if the deployment process was successful
     kurento_check_version.sh true || {
-      echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging enabled)"
+      log "ERROR: Command failed: kurento_check_version (tagging enabled)"
       exit 1
     }
     exit 0
@@ -56,7 +68,7 @@ esac
 
 # Convert into a valid Maven artifact
 kurento_mavenize_js_project.sh "$KURENTO_PROJECT" || {
-  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_mavenize_js_project"
+  log "ERROR: Command failed: kurento_mavenize_js_project"
   exit 1
 }
 
@@ -64,7 +76,7 @@ kurento_mavenize_js_project.sh "$KURENTO_PROJECT" || {
 export SNAPSHOT_REPOSITORY="$MAVEN_S3_KURENTO_SNAPSHOTS"
 export RELEASE_REPOSITORY="$MAVEN_S3_KURENTO_RELEASES"
 kurento_maven_deploy.sh || {
-  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_maven_deploy (Kurento)"
+  log "ERROR: Command failed: kurento_maven_deploy (Kurento)"
   exit 1
 }
 
@@ -72,7 +84,7 @@ kurento_maven_deploy.sh || {
 export SNAPSHOT_REPOSITORY=""
 export RELEASE_REPOSITORY="$MAVEN_SONATYPE_NEXUS_STAGING"
 kurento_maven_deploy.sh || {
-  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_maven_deploy (Sonatype)"
+  log "ERROR: Command failed: kurento_maven_deploy (Sonatype)"
   exit 1
 }
 
@@ -95,11 +107,11 @@ CREATE_TAG="true" kurento_bower_publish.sh
 
 # Deploy to builds only when it is release
 VERSION="$(kurento_get_version.sh)" || {
-  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_get_version"
+  log "ERROR: Command failed: kurento_get_version"
   exit 1
 }
 if [[ $VERSION != *-SNAPSHOT ]]; then
-  echo "[kurento_merge_js_project] Version is RELEASE, HTTP publish"
+  log "Version is RELEASE, HTTP publish"
 
   V_DIR="/release/$VERSION"
   S_DIR="/release/stable"
@@ -125,11 +137,11 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
   export FILES
   kurento_http_publish.sh
 else
-  echo "[kurento_merge_js_project] Skip HTTP publish: Version is SNAPSHOT"
+  log "Skip HTTP publish: Version is SNAPSHOT"
 fi
 
 # Only create a tag if the deployment process was successful
 kurento_check_version.sh true || {
-  echo "[kurento_merge_js_project] ERROR: Command failed: kurento_check_version (tagging enabled)"
+  log "ERROR: Command failed: kurento_check_version (tagging enabled)"
   exit 1
 }

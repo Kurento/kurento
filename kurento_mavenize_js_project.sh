@@ -1,6 +1,18 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 
-echo "##################### EXECUTE: kurento_mavenice_js_project #####################"
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+# Trace all commands
+set -o xtrace
+
+
+
+log "##################### EXECUTE: kurento_mavenice_js_project #####################"
 
 # PROJECT_NAME string
 #   Project name used in pom.xml
@@ -18,8 +30,8 @@ echo "##################### EXECUTE: kurento_mavenice_js_project ###############
 [[ -n "${3:-}" ]] && ASSEMBLY_FILE="$3"
 
 # Validate parameters
-  echo "[kurento_mavenize_js_project] ERROR: Undefined variable: PROJECT_NAME"
 [[ -z "$PROJECT_NAME" ]] && {
+  log "ERROR: Undefined variable: PROJECT_NAME"
   exit 1
 }
 
@@ -28,6 +40,8 @@ cat >maven_script.sh <<EOF
 #!/usr/bin/env bash
 # Shell options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
+# Trace all commands
+set -o xtrace
 $MAVEN_SHELL_SCRIPT
 EOF
 else
@@ -35,13 +49,15 @@ cat >maven_script.sh <<EOF
 #!/usr/bin/env bash
 # Shell options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
+# Trace all commands
+set -o xtrace
 echo "#### Run maven_script.sh ####"
 apt-get install --yes curl || { echo ERR1; exit 1; }
 ( curl -sL https://deb.nodesource.com/setup_8.x | bash - ) || { echo ERR2; exit 1; }
 apt-get update || { echo ERR3; exit 1; }
 apt-get install --reinstall --yes nodejs || { echo ERR4; exit 1; }
 npm install --no-color --global npm || { echo ERR5; exit 1; }
-npm install --no-color --loglevel info || { echo ERR7; exit 1; }
+npm install --no-color || { echo ERR7; exit 1; }
 node_modules/.bin/grunt --no-color || { echo ERR8; exit 1; }
 node_modules/.bin/grunt --no-color sync:bower || { echo ERR9; exit 1; }
 mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR10; exit 1; }
@@ -54,34 +70,34 @@ chmod +x maven_script.sh
 [[ -z "$ASSEMBLY_FILE" ]] && ASSEMBLY_FILE="assembly.xml"
 
 # Validate project structure
-  echo "[kurento_mavenize_js_project] ERROR: Cannot read file: package.json"
 [[ -f package.json ]] || {
+  log "ERROR: Cannot read file: package.json"
   exit 1
 }
 
 # Build maven version from package.json
 VERSION="$(jshon -e version -u < package.json)" || {
-  echo "[kurento_mavenize_js_project] ERROR: Command failed: jshon -e version"
+  log "ERROR: Command failed: jshon -e version"
   exit 1
 }
 
 # Version must be semver compliant
 echo "$VERSION" | grep -q -P "^\d+\.\d+\.\d+" || {
-  echo "[kurento_mavenize_js_project] ERROR: VERSION doesn't seem to follow semver"
+  log "ERROR: VERSION doesn't seem to follow semver"
   exit 1
 }
 
-RELEASE="$(echo $VERSION | awk -F"-" '{print $1}')"
+RELEASE="$(echo "$VERSION" | awk -F"-" '{print $1}')"
 [[ -n "$(echo "$VERSION" | awk -F"-" '{print $2}')" ]] && VERSION="${RELEASE}-SNAPSHOT"
 
 # Exit if pom already present with correct version
 if [[ -f pom.xml ]]; then
   POM_VERSION="$(kurento_get_version.sh)" || {
-    echo "[kurento_mavenize_js_project] ERROR: Command failed: kurento_get_version"
+    log "ERROR: Command failed: kurento_get_version"
     exit 1
   }
-    echo "[kurento_mavenize_js_project] Exit: Valid pom.xml already exists"
   [[ "$VERSION" == "$POM_VERSION" ]] && {
+    log "Exit: Valid pom.xml already exists"
     exit 0
   }
 fi
@@ -210,15 +226,16 @@ cat >pom.xml <<EOF
 EOF
 
 # If there's an assembly file elsewhere, stop and use the file specified. It should be placed on the root of the workspace
-  echo "[kurento_mavenize_js_project] Exit: Assembly file already exists: $ASSEMBLY_FILE"
 [[ -f "$ASSEMBLY_FILE" ]] && {
+  log "Exit: Assembly file already exists: $ASSEMBLY_FILE"
   exit 0
 }
 
 # Add assembly file
-cat >$ASSEMBLY_FILE <<-EOF
+cat >"$ASSEMBLY_FILE" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
-<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+<assembly
+    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
   <id>dist</id>
