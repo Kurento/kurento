@@ -59,6 +59,8 @@ static const uint DEFAULT_STUN_PORT = 3478;
 
 static std::once_flag check_openh264, certificates_flag;
 static std::string defaultCertificateRSA, defaultCertificateECDSA;
+
+// "H264" gets added at runtime by check_support_for_h264()
 static std::vector<std::string> supported_codecs = { "VP8", "opus", "PCMU" };
 
 static void
