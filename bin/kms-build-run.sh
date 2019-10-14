@@ -288,10 +288,24 @@ fi
 
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
-if [[ ! -f "$BUILD_DIR/CMakeCache.txt" ]]; then
+if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; then
+    # If only a partial build exists (or none at all), delete it
+    rm -rf "$BUILD_DIR"
+
     mkdir -p "$BUILD_DIR"
     pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
-    cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" $CMAKE_ARGS ..
+
+    # Prepare the final command
+    COMMAND=""
+    for BUILD_VAR in "${BUILD_VARS[@]:-}"; do
+        [[ -n "$BUILD_VAR" ]] && COMMAND="$COMMAND $BUILD_VAR"
+    done
+
+    COMMAND="$COMMAND cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON $CMAKE_ARGS .."
+
+    log "Run command: $COMMAND"
+    eval $COMMAND
+
     popd || exit 1  # Exit $BUILD_DIR
 fi
 
