@@ -40,6 +40,17 @@
 #/
 #/   Optional. Default: Disabled.
 #/
+#/ --clang
+#/
+#/   Build (and run, in case of using a Sanitizer) with Clang C/C++ compiler.
+#/
+#/   Note: You are still in charge of providing the desired version of Clang in
+#/   `/usr/bin/clang` for C; `/usr/bin/clang++` for C++.
+#/   For this, either create symlinks manually, or have a look into the
+#/   Debian/Ubuntu alternatives system (`update-alternatives`).
+#/
+#/   Optional. Default: Disabled. When disabled, the compiler will be GCC.
+#/
 #/ --verbose
 #/
 #/   Tells CMake to generate verbose Makefiles, that will print every build
@@ -123,6 +134,7 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 CFG_BUILD_ONLY="false"
 CFG_RELEASE="false"
 CFG_GDB="false"
+CFG_CLANG="false"
 CFG_VERBOSE="false"
 CFG_VALGRIND_MEMCHECK="false"
 CFG_VALGRIND_MASSIF="false"
@@ -134,6 +146,7 @@ while [[ $# -gt 0 ]]; do
         --build-only) CFG_BUILD_ONLY="true" ;;
         --release) CFG_RELEASE="true" ;;
         --gdb) CFG_GDB="true" ;;
+        --clang) CFG_CLANG="true" ;;
         --verbose) CFG_VERBOSE="true" ;;
         --valgrind-memcheck) CFG_VALGRIND_MEMCHECK="true" ;;
         --valgrind-massif) CFG_VALGRIND_MASSIF="true" ;;
@@ -171,6 +184,7 @@ fi
 
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GDB=$CFG_GDB"
+log "CFG_CLANG=$CFG_CLANG"
 log "CFG_VERBOSE=$CFG_VERBOSE"
 log "CFG_VALGRIND_MEMCHECK=$CFG_VALGRIND_MEMCHECK"
 log "CFG_VALGRIND_MASSIF=$CFG_VALGRIND_MASSIF"
@@ -182,6 +196,7 @@ log "CFG_THREAD_SANITIZER=$CFG_THREAD_SANITIZER"
 # Run CMake if not done yet
 # -------------------------
 
+BUILD_VARS=()
 BUILD_TYPE="Debug"
 BUILD_DIR_SUFFIX=""
 CMAKE_ARGS=""
@@ -194,9 +209,37 @@ if [[ "$CFG_VERBOSE" == "true" ]]; then
     CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_VERBOSE_MAKEFILE=ON"
 fi
 
+if [[ "$CFG_CLANG" == "true" ]]; then
+    BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-clang"
+    BUILD_VARS+=(
+        "CC='clang'"
+        "CXX='clang++'"
+    )
+else
+    # Default dirs are assumed to be GCC, no need for a suffix
+    BUILD_VARS+=(
+        "CC='gcc'"
+        "CXX='g++'"
+    )
+fi
+
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-asan"
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_ADDRESS=ON"
+
+    if [[ "$CFG_CLANG" == "true" ]]; then
+        BUILD_VARS+=(
+            "CFLAGS='${CFLAGS:-} -shared-libasan'"
+            "CXXFLAGS='${CXXFLAGS:-} -shared-libasan'"
+        )
+    else
+        BUILD_VARS+=(
+            # Use flag recommended for aggressive diagnostics:
+            # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
+            "CFLAGS='${CFLAGS:-} -fsanitize-address-use-after-scope'"
+            "CXXFLAGS='${CXXFLAGS:-} -fsanitize-address-use-after-scope'"
+        )
+    fi
 fi
 
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
@@ -253,8 +296,15 @@ elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     RUN_WRAPPER="valgrind --tool=massif --log-file=valgrind-massif-%p.log --massif-out-file=valgrind-massif-%p.out $VALGRIND_ARGS"
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
-    GCC_VERSION="$(gcc -dumpversion | head -c1)"
-    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/libasan.so"
+    if [[ "$CFG_CLANG" == "true" ]]; then
+        CLANG_VERSION="$(clang --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
+        CLANG_VERSION_MAJ="$(echo "$CLANG_VERSION" | head -c1)"
+        LIBSAN="/usr/lib/llvm-${CLANG_VERSION_MAJ}/lib/clang/${CLANG_VERSION}/lib/linux/libclang_rt.asan-x86_64.so"
+    else
+        GCC_VERSION="$(gcc -dumpversion | head -c1)"
+        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION}/libasan.so"
+    fi
+
     RUN_VARS+=(
         "LD_PRELOAD='$LIBSAN'"
         "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_leaks=1 strict_string_checks=1 detect_invalid_pointer_pairs=2 check_initialization_order=1 strict_init_order=1'"
