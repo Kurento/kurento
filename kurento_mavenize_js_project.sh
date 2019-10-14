@@ -185,6 +185,8 @@ cat >pom.xml <<EOF
         </executions>
       </plugin>
       <plugin>
+        <!-- Generates a ZIP file for distribution (currently unused?) -->
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
           <descriptors>
@@ -197,6 +199,15 @@ cat >pom.xml <<EOF
           </outputDirectory>
           <appendAssemblyId>false</appendAssemblyId>
         </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
     <extensions>
@@ -231,8 +242,7 @@ EOF
 # Add assembly file
 cat >"$ASSEMBLY_FILE" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
-<assembly
-    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
   <id>dist</id>
@@ -242,13 +252,16 @@ cat >"$ASSEMBLY_FILE" <<EOF
   <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
     <fileSet>
+      <directory>\${project.basedir}</directory>
+      <outputDirectory>/</outputDirectory>
       <includes>
-        <include>README.md</include>
-        <include>LICENSE</include>
+        <include>README.*</include>
+        <include>LICENSE*</include>
+        <include>NOTICE*</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>dist</directory>
+      <directory>\${project.basedir}/dist</directory>
       <outputDirectory>/js</outputDirectory>
       <includes>
         <include>*.js</include>
