@@ -257,12 +257,14 @@ To verify that the Kurento process is up and running, use this command and look 
    UID        PID  PPID  C STIME TTY          TIME CMD
    kurento   7688     1  0 13:36 ?        00:00:00 /usr/bin/kurento-media-server
 
-Unless configured otherwise, KMS will open the port ``8888`` to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
+Unless configured otherwise, KMS will listen on the IPv6 port ``8888`` to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
 
 .. code-block:: text
 
-   $ sudo netstat -tupln | grep kurento
+   $ sudo netstat -tupln | grep -e kurento -e 8888
    tcp6  0  0  :::8888  :::*  LISTEN  7688/kurento-media-
+
+You can change these parameters in the file */etc/kurento/kurento.conf.json*.
 
 Lastly, you can check whether the RPC WebSocket of Kurento is healthy and able to receive and process messages. For this, send a dummy request and check that the response is as expected:
 
