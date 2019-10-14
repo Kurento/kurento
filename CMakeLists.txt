@@ -33,6 +33,9 @@ set(JSON_CPP_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-jsonrpc" CACHE P
 
 include(GenericFind)
 
+# DEVELOPER NOTE:
+# If you want to force generating Kurento Module Creator, instead of using the
+# one installed in the system, just comment out this line:
 generic_find(LIBNAME KurentoModuleCreator VERSION ^6.7.0)
 
 if(NOT KurentoModuleCreator_FOUND)
