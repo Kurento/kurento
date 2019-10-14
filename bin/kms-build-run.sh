@@ -53,14 +53,14 @@
 #/
 #/ --verbose
 #/
-#/   Tells CMake to generate verbose Makefiles, that will print every build
+#/   Tell CMake to generate verbose Makefiles, that will print every build
 #/   command as they get executed by `make`.
 #/
 #/   Optional. Default: Disabled.
 #/
 #/ --valgrind-memcheck
 #/
-#/   Build and runs with Valgrind's Memcheck memory error detector.
+#/   Build and run with Valgrind's Memcheck memory error detector.
 #/   Valgrind should be available in the PATH.
 #/
 #/   See:
@@ -71,7 +71,7 @@
 #/
 #/ --valgrind-massif
 #/
-#/   Build and runs with Valgrind's Massif heap profiler.
+#/   Build and run with Valgrind's Massif heap profiler.
 #/   Valgrind should be available in the PATH.
 #/
 #/   Massif gathers profiling information, which then can be loaded with
@@ -89,7 +89,7 @@
 #/
 #/ --address-sanitizer
 #/
-#/   Build and runs with the instrumentation provided by the compiler's
+#/   Build and run with the instrumentation provided by the compiler's
 #/   AddressSanitizer and LeakSanitizer (available in GCC and Clang).
 #/
 #/   See:
@@ -101,7 +101,7 @@
 #/
 #/ --thread-sanitizer
 #/
-#/   Build and runs with the instrumentation provided by the compiler's
+#/   Build and run with the instrumentation provided by the compiler's
 #/   ThreadSanitizer (available in GCC and Clang).
 #/
 #/   See: https://clang.llvm.org/docs/ThreadSanitizer.html
@@ -195,6 +195,7 @@ if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
 fi
 
+log "CFG_BUILD_ONLY=$CFG_BUILD_ONLY"
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GDB=$CFG_GDB"
 log "CFG_CLANG=$CFG_CLANG"
@@ -413,11 +414,8 @@ fi
 
     # Prepare the final command
     COMMAND=""
-
     for RUN_VAR in "${RUN_VARS[@]:-}"; do
-        if [[ -n "$RUN_VAR" ]]; then
-            COMMAND="$COMMAND $RUN_VAR"
-        fi
+        [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
     done
 
     COMMAND="$COMMAND $RUN_WRAPPER"
@@ -429,7 +427,6 @@ fi
         --gst-plugin-path='$PWD'"
 
     log "Run command: $COMMAND"
-
     eval $COMMAND
 )
 
