@@ -116,6 +116,17 @@
 #/
 #/   Optional. Default: Disabled.
 #/   Implies '--release'.
+#/
+#/ --undefined-sanitizer
+#/
+#/   Build and run with the compiler's UndefinedBehaviorSanitizer, an
+#/   undefined behavior detector (available in GCC and Clang).
+#/
+#/   See:
+#/   * https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
 
 
 
@@ -140,6 +151,7 @@ CFG_VALGRIND_MEMCHECK="false"
 CFG_VALGRIND_MASSIF="false"
 CFG_ADDRESS_SANITIZER="false"
 CFG_THREAD_SANITIZER="false"
+CFG_UNDEFINED_SANITIZER="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -152,6 +164,7 @@ while [[ $# -gt 0 ]]; do
         --valgrind-massif) CFG_VALGRIND_MASSIF="true" ;;
         --address-sanitizer) CFG_ADDRESS_SANITIZER="true" ;;
         --thread-sanitizer) CFG_THREAD_SANITIZER="true" ;;
+        --undefined-sanitizer) CFG_UNDEFINED_SANITIZER="true" ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
             log "Run with '--help' to read usage details"
@@ -190,6 +203,7 @@ log "CFG_VALGRIND_MEMCHECK=$CFG_VALGRIND_MEMCHECK"
 log "CFG_VALGRIND_MASSIF=$CFG_VALGRIND_MASSIF"
 log "CFG_ADDRESS_SANITIZER=$CFG_ADDRESS_SANITIZER"
 log "CFG_THREAD_SANITIZER=$CFG_THREAD_SANITIZER"
+log "CFG_UNDEFINED_SANITIZER=$CFG_UNDEFINED_SANITIZER"
 
 
 
@@ -245,6 +259,27 @@ fi
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-tsan"
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_THREAD=ON"
+fi
+
+if [[ "$CFG_UNDEFINED_SANITIZER" == "true" ]]; then
+    BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-ubsan"
+    CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_UNDEFINED=ON"
+
+    # FIXME
+    # A bug in the `ld` linker (package "binutils") in Ubuntu 16.04 "Xenial"
+    # makes the CMake test for UBSan compatibility to fail.
+    # A simple workaround is to use `gold` instead of `ld`.
+    # Clang doesn't need this, because it uses `lld`, the LLVM linker.
+    # See: https://stackoverflow.com/questions/50024731/ld-unrecognized-option-push-state-no-as-needed
+    #
+    # The bug is fixed in Ubuntu 18.04 "Bionic". So this workaround can be
+    # removed when Kurento drops support for Xenial.
+    if [[ "$CFG_CLANG" != "true" ]]; then
+        BUILD_VARS+=(
+            "CFLAGS='${CFLAGS:-} -fuse-ld=gold'"
+            "CXXFLAGS='${CXXFLAGS:-} -fuse-ld=gold'"
+        )
+    fi
 fi
 
 if [[ -f /.dockerenv ]]; then
