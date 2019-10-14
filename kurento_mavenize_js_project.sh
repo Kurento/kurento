@@ -156,23 +156,25 @@ cat >pom.xml <<EOF
   </organization>
 
   <!-- Project configuration -->
-
   <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.6.0</version>
-        <!-- Have different executions for explicit CLI calls (e.g. to get
-        the project version) and implicit calls (e.g. 'mvn package') -->
         <executions>
+          <!-- Explicit CLI calls (e.g. from kurento_get_version.sh to get
+          the project version) are defined separately so maven_script.sh
+          doesn't get called. -->
           <execution>
             <id>default-cli</id>
             <phase/>
           </execution>
+          <!-- Use the "generate-resources" phase to call maven_script.sh
+          that generates all JS files and puts them into resources/ -->
           <execution>
             <id>default-package</id>
-            <phase>package</phase>
+            <phase>generate-resources</phase>
             <goals>
               <goal>exec</goal>
             </goals>
