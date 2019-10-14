@@ -82,7 +82,7 @@ add_custom_target(kurento-module-creator
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator")
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/classes")
 
-find_package(Sanitizers QUIET MODULE)
+find_package(Sanitizers MODULE)
 if(DEFINED SANITIZE_LINK_STATIC)
   set(SANITIZERS_ENABLED ON)
 endif()
