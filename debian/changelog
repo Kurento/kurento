@@ -1,8 +1,8 @@
-kurento-module-creator (6.11.1-0kurento1) UNRELEASED; urgency=medium
+kurento-module-creator (6.12.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
+  * Prepare release 6.12.0-0kurento1
 
- -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Jul 2019 12:03:23 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 14 Oct 2019 19:12:32 +0200
 
 kurento-module-creator (6.11.0-0kurento1) testing; urgency=medium
 
