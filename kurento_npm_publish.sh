@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-
-
 # Shell setup
 # -----------
 
@@ -51,34 +49,38 @@ vercomp () {
 }
 
 # Get project data
-projectName=$(jshon -e name -u < package.json) || {
-  log "ERROR: Command failed: jshon -e name"
-  exit 1
-}
-localVersion=$(jshon -e version -u < package.json ) || {
-  log "ERROR: Command failed: jshon -e version"
-  exit 1
-}
-pubVersion=$(npm info --json $projectName | jshon -e version -u || echo "0.0.0") || {
-  log "ERROR: Command failed: npm info"
-  exit 1
+projectName="$(jshon -e name -u <package.json)" || {
+    log "ERROR: Command failed: jshon -e name"
+    exit 1
 }
 
-localRelease=$(echo $localVersion | awk -F"-" '{print $1}') || {
-  log "ERROR: Command failed: awk localVersion"
-  exit 1
-}
-pubRelease=$(echo $pubVersion | awk -F"-" '{print $1}') || {
-  log "ERROR: Command failed: awk pubVersion"
-  exit 1
+localVersion="$(jshon -e version -u <package.json)" || {
+    log "ERROR: Command failed: jshon -e version"
+    exit 1
 }
 
-log "Local version found, V: $localVersion, R: $localRelease"
-log "Public version found, V: $pubVersion, R: $pubRelease"
+pubVersion="$(npm info --json "$projectName" | jshon -e version -u)" || {
+    log "ERROR: Command failed: npm info"
+    exit 1
+}
 
-[[ "$localRelease" != "$localVersion" ]] && {
-  log "Exit: Version is development"
-  exit 0
+localRelease="$(echo "$localVersion" | awk -F '-' '{print $1}')" || {
+    log "ERROR: Command failed: awk localVersion"
+    exit 1
+}
+
+pubRelease="$(echo "$pubVersion" | awk -F '-' '{print $1}')" || {
+    log "ERROR: Command failed: awk pubVersion"
+    exit 1
+}
+
+log "Local version: $localVersion ($localRelease)"
+log "Public version: $pubVersion ($pubRelease)"
+
+# Don't publish if local version is still in development
+[[ "$localVersion" != "$localRelease" ]] && {
+    log "Skip publishing: Local version is development"
+    exit 0
 }
 
 # Publish release only if greater than published
@@ -91,6 +93,6 @@ if [ $different -eq 1 ]; then
     exit 1
   }
 else
-  log "Exit: public version is already greater or equal than local"
-  exit 0
+    log "Skip publishing: local version <= public version"
+    exit 0
 fi
