@@ -104,7 +104,7 @@ General considerations
 
 .. warning::
 
-   As of this writing, there is a mix of methods in the CI scripts (adm-scripts) when it comes to handle the release versions. The instructions in this document favor creating and pushing git tags manually in the developer computer, however some projects also make use of the script ``kurento_check_version.sh``, which tries to detect when a project's version is *not* a development snapshot, then creates and pushes a git tag automatically. However if the tag alreeady exists (created manually by the developer), then the ``git tag`` command fails, and this script prints a warning message before continuing with its work.
+   As of this writing, there is a mix of methods in the CI scripts (adm-scripts) when it comes to handle the release versions. The instructions in this document favor creating and pushing git tags manually in the developer's computer, however some projects also make use of the script ``kurento_check_version.sh``, which tries to detect when a project's version is *not* a development snapshot, then creates and pushes a git tag automatically. However if the tag alreeady exists (created manually by the developer), then the ``git tag`` command fails, and this script prints a warning message before continuing with its work.
 
    We've been toying with different methodologies between handling the tags automatically in CI or handling them manually by the developer before releasing new versions; both of these methods have pros and cons. For example, if tags are handled manually by the developer, solving mistakes in the release process becomes simpler because there are no surprises from CI creating tags inadvertently; on the other hand, leaving them to be created by CI seems to simplify a bit the release process, but not really by a big margin.
 
@@ -154,8 +154,8 @@ Release steps
       cd libnice
 
       # Change these
-      NEW_VERSION="0.1.15"
-      NEW_DEBIAN="0kurento1"
+      NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
+      NEW_DEBIAN="<DebianRevision>"       # Eg.: 0kurento1
 
       PACKAGE_VERSION="${NEW_VERSION}-${NEW_DEBIAN}"
       COMMIT_MSG="Prepare release $PACKAGE_VERSION"
@@ -171,6 +171,7 @@ Release steps
             --force-distribution \
             \
             ./debian/
+      OK=$?
 
       SNAPSHOT_ENTRY="* UNRELEASED"
       RELEASE_ENTRY="* $COMMIT_MSG"
@@ -183,10 +184,12 @@ Release steps
       sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
           ./debian/changelog
 
-      git add debian/changelog
-      git commit -m "$COMMIT_MSG"
-      git tag -a -m "$COMMIT_MSG" "$PACKAGE_VERSION"
-      git push --follow-tags
+      ((! $OK)) && {
+          git add debian/changelog
+          git commit -m "$COMMIT_MSG"
+          git tag -a -m "$COMMIT_MSG" "$PACKAGE_VERSION"
+          git push --follow-tags
+      }
 
 #. Follow on with releasing Kurento Media Server.
 
@@ -197,8 +200,8 @@ Release steps
       cd libnice
 
       # Change these
-      NEW_VERSION="0.1.16"
-      NEW_DEBIAN="0kurento1"
+      NEW_VERSION="<NextVersion>"         # Eg.: 1.0.1-dev
+      NEW_DEBIAN="<NextDebianRevision>"   # Eg.: 0kurento1
 
       PACKAGE_VERSION="${NEW_VERSION}-${NEW_DEBIAN}"
       COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
@@ -209,10 +212,13 @@ Release steps
             --spawn-editor=never \
             --new-version="$PACKAGE_VERSION" \
             ./debian/
+      OK=$?
 
-      git add debian/changelog
-      git commit -m "$COMMIT_MSG"
-      git push
+      ((! $OK)) && {
+          git add debian/changelog
+          git commit -m "$COMMIT_MSG"
+          git push
+      }
 
 
 
@@ -281,12 +287,15 @@ Test the KMS API Java module generation (local check).
    cd kms-omni-build
 
    for DIR in kms-core kms-elements kms-filters; do
-       pushd "$DIR"
-       mkdir build && cd build/
-       cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
-       cd java/
-       mvn --batch-mode clean install -Dmaven.test.skip=true
-       popd
+       if pushd "$DIR"; then
+           mkdir build && cd build/
+           cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
+           cd java/
+           mvn --batch-mode clean install -Dmaven.test.skip=true
+           popd
+       else
+           echo "ERROR: cannot cd $DIR"
+       fi
    done
 
 
@@ -316,12 +325,16 @@ Release steps
    .. code-block:: bash
 
       # Change these
-      NEW_VERSION="<ReleaseVersion>"
-      NEW_DEBIAN="<DebianVersion>"
+      NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
+      NEW_DEBIAN="<DebianRevision>"       # Eg.: 0kurento1
 
-      cd kms-omni-build
-      ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
-          --release --commit --tag
+      if pushd kms-omni-build; then
+          ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
+              --release --commit --tag
+          popd
+      else
+          echo "ERROR: cannot cd kms-omni-build"
+      fi
 
    - **Example**
 
@@ -333,9 +346,13 @@ Release steps
         NEW_VERSION="6.9.0"
         NEW_DEBIAN="0kurento1"
 
-        cd kms-omni-build
-        ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
-            --release --commit --tag
+        if pushd kms-omni-build; then
+            ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
+                --release --commit --tag
+            popd
+        else
+            echo "ERROR: cannot cd kms-omni-build"
+        fi
 
    Now push changes:
 
@@ -348,15 +365,19 @@ Release steps
    .. code-block:: bash
 
       # Change this
-      NEW_VERSION="6.9.0"
+      NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
-      cd kms-omni-build
-      git add .
-      git commit -m "$COMMIT_MSG"
-      git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
-      git push --follow-tags
+      if pushd kms-omni-build; then
+          git add .
+          git commit -m "$COMMIT_MSG"
+          git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+          git push --follow-tags
+          popd
+      else
+          echo "ERROR: cannot cd kms-omni-build"
+      fi
 
 #. Start the `KMS CI job`_ with the parameters ``JOB_RELEASE`` **ENABLED** and ``JOB_ONLY_KMS`` **DISABLED**.
 
@@ -397,12 +418,16 @@ Release steps
    .. code-block:: bash
 
       # Change these
-      NEW_VERSION="<NextVersion>"
-      NEW_DEBIAN="<DebianVersion>"
+      NEW_VERSION="<NextVersion>"         # Eg.: 1.0.1
+      NEW_DEBIAN="<NextDebianRevision>"   # Eg.: 0kurento1
 
-      cd kms-omni-build
-      ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
-          --development --commit
+      if pushd kms-omni-build; then
+          ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
+              --new-development --commit
+          popd
+      else
+          echo "ERROR: cannot cd kms-omni-build"
+      fi
 
    - **Example**
 
@@ -414,9 +439,13 @@ Release steps
         NEW_VERSION="6.9.1"
         NEW_DEBIAN="0kurento1"
 
-        cd kms-omni-build
-        ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
-            --development --commit
+        if pushd kms-omni-build; then
+            ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
+                --new-development --commit
+            popd
+        else
+            echo "ERROR: cannot cd kms-omni-build"
+        fi
 
    Now push changes:
 
@@ -450,7 +479,7 @@ Release steps
 
 #. Decide what is going to be the *definitive release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
 
-#. Set the definitive release version in all projects. This operation in different files, depending on the project:
+#. Set the definitive release version in all projects. This operation is done in different files, depending on the project:
 
    - ``kurento-jsonrpc-js/package.json``
    - ``kurento-utils-js/package.json``
@@ -458,13 +487,15 @@ Release steps
    - Each one in ``kurento-tutorial-js/**/bower.json``
    - Each one in ``kurento-tutorial-node/**/package.json``
 
-#. Review all dependencies to remove *-dev* versions.
+#. Review all dependencies to remove development versions.
 
-   This command can be used to search for all *-dev* versions:
+   This command can be used to search for all development versions:
 
    .. code-block:: bash
 
-      grep -Fr -- '-dev"'
+      grep . -Fr -e '-dev"' -e '"git+'
+
+   For example: All dependencies to Kurento packages that point directly to their Git repos should be changed to point to a pinned semver number (or version range). Later, the Git URL can be restored for the next development iteration.
 
 #. Test the build.
 
@@ -477,12 +508,15 @@ Release steps
       )
 
       for PROJECT in "${PROJECTS[@]}"; do
-          pushd "$PROJECT"
-          npm install
-          node_modules/.bin/grunt jsbeautifier || true
-          node_modules/.bin/grunt
-          node_modules/.bin/grunt sync:bower
-          popd  # $PROJECT
+          if pushd "$PROJECT"; then
+              npm install
+              node_modules/.bin/grunt jsbeautifier || true
+              node_modules/.bin/grunt
+              node_modules/.bin/grunt sync:bower
+              popd  # $PROJECT
+          else
+            echo "ERROR: cannot cd $PROJECT"
+          fi
       done
 
    If the beautifier step fails, use Grunt to run the beautifier and fix all files that need it.
@@ -502,12 +536,12 @@ Release steps
 
    .. note::
 
-      Always use ``mvn --batch-mode`` if you copy this to an actual script!
+      Use ``mvn --batch-mode`` if you copy this to an actual script.
 
    .. code-block:: bash
 
       # Change this
-      NEW_VERSION="6.9.0"
+      NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
@@ -520,20 +554,32 @@ Release steps
       )
 
       for PROJECT in "${PROJECTS[@]}"; do
-          pushd "$PROJECT"
-          git stash
-          git pull --rebase
-          for FILE in $(find . -name '*.json'); do
-              TEMP="$(mktemp)"
-              jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
-                  "$FILE" > "$TEMP" && mv --update "$TEMP" "$FILE"
-              git add "$FILE"
-          done
-          git commit -m "$COMMIT_MSG"
-          git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
-          git push --follow-tags
-          git stash pop
-          popd  # $PROJECT
+          if grep "$PROJECT" -Fr -e '-dev"' -e '"git+'; then
+              echo "WARNING: Found development dependencies, fix them before continuing!"
+          fi
+      done
+
+      for PROJECT in "${PROJECTS[@]}"; do
+          if pushd "$PROJECT"; then
+              git stash
+              git pull --rebase
+
+              find . -path ./node_modules -prune , -name '*.json' | while read FILE; do
+                  TEMP="$(mktemp)"
+                  jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
+                      "$FILE" >"$TEMP" && mv --update "$TEMP" "$FILE"
+                  git add "$FILE"
+              done
+
+              git commit -m "$COMMIT_MSG"
+              git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+              git push --follow-tags
+
+              git stash pop
+              popd  # $PROJECT
+          else
+              echo "ERROR: cannot cd $PROJECT"
+          fi
       done
 
 #. When all repos have been released, and CI jobs have finished successfully,
@@ -560,7 +606,7 @@ Release steps
    .. code-block:: bash
 
       # Change this
-      NEW_VERSION="6.9.1-dev"
+      NEW_VERSION="<NextVersion>-dev"     # Eg.: 1.0.1-dev
 
       COMMIT_MSG="Prepare for next development iteration"
 
@@ -573,18 +619,24 @@ Release steps
       )
 
       for PROJECT in "${PROJECTS[@]}"; do
-          pushd "$PROJECT"
-          git pull --rebase
-          for FILE in $(find . -name '*.json'); do
-              TEMP="$(mktemp)"
-              jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
-                  "$FILE" > "$TEMP" && mv --update "$TEMP" "$FILE"
-              git add "$FILE"
-          done
-          git commit -m "$COMMIT_MSG"
-          git push
-          git stash pop
-          popd  # $PROJECT
+          if pushd "$PROJECT"; then
+              git stash
+              git pull --rebase
+
+              find . -path ./node_modules -prune , -name '*.json' | while read FILE; do
+                  TEMP="$(mktemp)"
+                  jq "if has(\"version\") then .version = \"$NEW_VERSION\" else . end" \
+                      "$FILE" >"$TEMP" && mv --update "$TEMP" "$FILE"
+                  git add "$FILE"
+              done
+
+              git commit -m "$COMMIT_MSG"
+              git push
+              git stash pop
+              popd  # $PROJECT
+          else
+              echo "ERROR: cannot cd $PROJECT"
+          fi
       done
 
 
@@ -617,14 +669,18 @@ Kurento Maven plugin
    .. code-block:: bash
 
       # Change this
-      NEW_VERSION="1.2.3"
+      NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
-      git add pom.xml changelog
-      git commit -m "$COMMIT_MSG"
-      git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
-      git push --follow-tags
+      if pushd kurento-maven-plugin; then
+          git add pom.xml changelog
+          git commit -m "$COMMIT_MSG"
+          git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+          git push --follow-tags
+      else
+          echo "ERROR: cannot cd kurento-maven-plugin"
+      fi
 
 #. The CI jobs should start automatically; some tests are run as a result of this commit, so you should wait for their completion.
 
@@ -643,9 +699,14 @@ Kurento Maven plugin
    .. code-block:: bash
 
       COMMIT_MSG="Prepare for next development iteration"
-      git add pom.xml
-      git commit -m "$COMMIT_MSG"
-      git push
+
+      if pushd kurento-maven-plugin; then
+          git add pom.xml
+          git commit -m "$COMMIT_MSG"
+          git push
+      else
+          echo "ERROR: cannot cd kurento-maven-plugin"
+      fi
 
 
 
@@ -719,7 +780,7 @@ Release steps
 
    .. code-block:: bash
 
-      grep -Fr -- '-SNAPSHOT'
+      grep . -Fr -e '-SNAPSHOT'
 
 #. Test the build.
 
@@ -727,19 +788,28 @@ Release steps
 
    .. code-block:: bash
 
-      pushd kurento-qa-pom
-      mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
-      popd  # kurento-qa-pom
+      if pushd kurento-qa-pom; then
+          mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
+          popd  # kurento-qa-pom
+      else
+          echo "ERROR: cannot cd kurento-qa-pom"
+      fi
 
-      pushd kurento-java
-      mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
-      popd  # kurento-java
+      if pushd kurento-java; then
+          mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
+          popd  # kurento-java
+      else
+          echo "ERROR: cannot cd kurento-java"
+      fi
 
       PROJECTS=(kurento-tutorial-java kurento-tutorial-test)
       for PROJECT in "${PROJECTS[@]}"; do
-          pushd "$PROJECT"
-          mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
-          popd  # $PROJECT
+          if pushd "$PROJECT"; then
+              mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
+              popd  # $PROJECT
+          else
+              echo "ERROR: cannot cd $PROJECT"
+          fi
       done
 
 #. **All-In-One** script:
@@ -749,50 +819,114 @@ Release steps
    .. code-block:: bash
 
       # Change this
-      NEW_VERSION="6.9.0"
+      NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
-      pushd kurento-qa-pom
-      git pull --rebase
-      mvn versions:set -DgenerateBackupPoms=false \
-          -DnewVersion="$NEW_VERSION"
-      git clean -xdf  # Delete build files
-      git ls-files --modified | grep 'pom.xml' | xargs -r git add
-      git commit -m "$COMMIT_MSG"
-      git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
-      git push --follow-tags
-      popd  # kurento-qa-pom
+      PROJECTS=(
+          kurento-qa-pom
+          kurento-java
+          kurento-tutorial-java
+          kurento-tutorial-test
+      )
 
-      pushd kurento-java
-      git pull --rebase
-      mvn versions:set -DgenerateBackupPoms=false \
-          -DnewVersion="$NEW_VERSION" \
-          --file kurento-parent-pom/pom.xml
-      mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
-      git clean -xdf  # Delete build files
-      git ls-files --modified | grep 'pom.xml' | xargs -r git add
-      git commit -m "$COMMIT_MSG"
-      git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
-      git push --follow-tags
-      popd  # kurento-java
-
-      PROJECTS=(kurento-tutorial-java kurento-tutorial-test)
       for PROJECT in "${PROJECTS[@]}"; do
-          pushd "$PROJECT"
+          if grep "$PROJECT" -Fr -e '-SNAPSHOT'; then
+              echo "WARNING: $PROJECT could contain development dependencies"
+          fi
+      done
+
+      if pushd kurento-qa-pom; then
+          git stash
           git pull --rebase
-          mvn versions:update-parent -DgenerateBackupPoms=false \
-              -DallowSnapshots=false \
-              -DparentVersion="[${NEW_VERSION}]"
-          mvn -N versions:update-child-modules -DgenerateBackupPoms=false \
-              -DallowSnapshots=false
-          mvn -U clean install -Dmaven.test.skip=true -Pkurento-release
+
+          mvn versions:set -DgenerateBackupPoms=false \
+                  -DnewVersion="$NEW_VERSION" || {
+              echo "ERROR: Command failed: mvn versions:set"
+          }
+
+          if grep . -Fr -e '-SNAPSHOT'; then
+              echo "WARNING: Found development dependencies, fix them before continuing!"
+          fi
+
           git clean -xdf  # Delete build files
           git ls-files --modified | grep 'pom.xml' | xargs -r git add
           git commit -m "$COMMIT_MSG"
           git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
           git push --follow-tags
-          popd  # $PROJECT
+
+          git stash pop
+          popd  # kurento-qa-pom
+      else
+          echo "ERROR: cannot cd kurento-qa-pom"
+      fi
+
+      if pushd kurento-java; then
+          git stash
+          git pull --rebase
+
+          mvn versions:set -DgenerateBackupPoms=false \
+                  -DnewVersion="$NEW_VERSION" \
+                  --file kurento-parent-pom/pom.xml || {
+              echo "ERROR: Command failed: mvn versions:set"
+          }
+
+          if grep . -Fr -e '-SNAPSHOT'; then
+              echo "WARNING: Found development dependencies, fix them before continuing!"
+          fi
+
+          mvn -U clean install -Dmaven.test.skip=true -Pkurento-release || {
+              echo "ERROR: Command failed: mvn clean install"
+          }
+
+          git clean -xdf  # Delete build files
+          git ls-files --modified | grep 'pom.xml' | xargs -r git add
+          git commit -m "$COMMIT_MSG"
+          git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+          git push --follow-tags
+
+          git stash pop
+          popd  # kurento-java
+      else
+          echo "ERROR: cannot cd kurento-java"
+      fi
+
+      PROJECTS=(kurento-tutorial-java kurento-tutorial-test)
+      for PROJECT in "${PROJECTS[@]}"; do
+          if pushd "$PROJECT"; then
+              git stash
+              git pull --rebase
+
+              mvn versions:update-parent -DgenerateBackupPoms=false \
+                      -DallowSnapshots=false \
+                      -DparentVersion="[${NEW_VERSION}]" || {
+                  echo "ERROR: Command failed: mvn versions:update-parent"
+              }
+
+              mvn -N versions:update-child-modules -DgenerateBackupPoms=false \
+                      -DallowSnapshots=false || {
+                  echo "ERROR: Command failed: mvn versions:update-child-modules"
+              }
+
+              if grep . -Fr -e '-SNAPSHOT'; then
+                  echo "WARNING: Found development dependencies, fix them before continuing!"
+              fi
+
+              mvn -U clean install -Dmaven.test.skip=true -Pkurento-release || {
+                  echo "ERROR: Command failed: mvn clean install"
+              }
+
+              git clean -xdf  # Delete build files
+              git ls-files --modified | grep 'pom.xml' | xargs -r git add
+              git commit -m "$COMMIT_MSG"
+              git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+              git push --follow-tags
+
+              git stash pop
+              popd  # $PROJECT
+          else
+              echo "ERROR: cannot cd $PROJECT"
+          fi
       done
 
 #. When all repos have been released, and CI jobs have finished successfully:
@@ -845,37 +979,54 @@ Release steps
 
       COMMIT_MSG="Prepare for next development iteration"
 
-      pushd kurento-qa-pom
-      mvn versions:set -DgenerateBackupPoms=false \
-          -DnextSnapshot=true
-      git ls-files --modified | grep 'pom.xml' | xargs -r git add
-      git commit -m "$COMMIT_MSG"
-      git push
-      popd  # kurento-qa-pom
+      if pushd kurento-qa-pom; then
+          mvn versions:set -DgenerateBackupPoms=false \
+              -DnextSnapshot=true
 
-      pushd kurento-java
-      mvn versions:set -DgenerateBackupPoms=false \
-          -DnextSnapshot=true \
-          --file kurento-parent-pom/pom.xml
-      mvn -U clean install -Dmaven.test.skip=true
-      git clean -xdf  # Delete build files
-      git ls-files --modified | grep 'pom.xml' | xargs -r git add
-      git commit -m "$COMMIT_MSG"
-      git push
-      popd  # kurento-java
+          git ls-files --modified | grep 'pom.xml' | xargs -r git add
+          git commit -m "$COMMIT_MSG"
+          git push
 
-      PROJECTS=(kurento-tutorial-java kurento-tutorial-test)
-      for PROJECT in "${PROJECTS[@]}"; do
-          pushd "$PROJECT"
-          mvn versions:update-parent -DgenerateBackupPoms=false \
-              -DallowSnapshots=true
-          mvn -N versions:update-child-modules -DgenerateBackupPoms=false \
-              -DallowSnapshots=true
+          popd  # kurento-qa-pom
+      else
+          echo "ERROR: cannot cd kurento-qa-pom"
+      fi
+
+      if pushd kurento-java; then
+          mvn versions:set -DgenerateBackupPoms=false \
+              -DnextSnapshot=true \
+              --file kurento-parent-pom/pom.xml
+
+          mvn -U clean install -Dmaven.test.skip=true
+
           git clean -xdf  # Delete build files
           git ls-files --modified | grep 'pom.xml' | xargs -r git add
           git commit -m "$COMMIT_MSG"
           git push
-          popd  # $PROJECT
+
+          popd  # kurento-java
+      else
+          echo "ERROR: cannot cd kurento-java"
+      fi
+
+      PROJECTS=(kurento-tutorial-java kurento-tutorial-test)
+      for PROJECT in "${PROJECTS[@]}"; do
+          if pushd "$PROJECT"; then
+              mvn versions:update-parent -DgenerateBackupPoms=false \
+                  -DallowSnapshots=true
+
+              mvn -N versions:update-child-modules -DgenerateBackupPoms=false \
+                  -DallowSnapshots=true
+
+              git clean -xdf  # Delete build files
+              git ls-files --modified | grep 'pom.xml' | xargs -r git add
+              git commit -m "$COMMIT_MSG"
+              git push
+
+              popd  # $PROJECT
+          else
+              echo "ERROR: cannot cd $PROJECT"
+          fi
       done
 
 
@@ -896,11 +1047,23 @@ The documentation scripts will download both Java and JavaScript clients, genera
 
 For this reason, the documentation must be built only after all the other modules have been released.
 
+#. Write the Release Notes in *doc-kurento/source/project/relnotes/*.
+
 #. Ensure that the whole nightly CI chain works:
 
    Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at ReadTheDocs`_.
 
-#. Edit `VERSIONS.conf.sh`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries. These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency.
+#. Edit `VERSIONS.conf.sh`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries.
+
+   These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency. Check each one of the Kurento repositories to verify what is the latest version of each one, and put it in the corresponding variable:
+
+   - *[VERSION_KMS]*: Repo *kurento-media-server*.
+   - *[VERSION_CLIENT_JAVA]*: Repo *kurento-java*.
+   - *[VERSION_CLIENT_JS]*: Repo *kurento-client-js*.
+   - *[VERSION_UTILS_JS]*: Repo *kurento-utils-js*.
+   - *[VERSION_TUTORIAL_JAVA]*: Repo *kurento-tutorial-java*.
+   - *[VERSION_TUTORIAL_JS]*: Repo *kurento-tutorial-js*.
+   - *[VERSION_TUTORIAL_NODE]*: Repo *kurento-tutorial-node*.
 
 #. In *VERSIONS.conf.sh*, set ``VERSION_RELEASE`` to ``true``. Remember to set it again to ``false`` after the release, when starting a new development iteration.
 
@@ -919,18 +1082,24 @@ For this reason, the documentation must be built only after all the other module
    .. code-block:: bash
 
       # Change this
-      NEW_VERSION="6.9.0"
+      NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
 
       COMMIT_MSG="Prepare release $NEW_VERSION"
 
-      git add VERSIONS.conf.sh
-      git commit -m "$COMMIT_MSG"
-      git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
-      git push --follow-tags
+      if pushd doc-kurento; then
+          git add source/project/relnotes/v*.rst
+          git add VERSIONS.conf.sh
+          git commit -m "$COMMIT_MSG"
+          git tag -a -m "$COMMIT_MSG" "$NEW_VERSION"
+          git push --follow-tags
+          pushd
+      else
+          echo "ERROR: cannot cd doc-kurento"
+      fi
 
    .. note::
 
-      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. ReadTheDocs CI servers will refer to the last one to obtain the documentation sources and release tags.
+      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. ReadTheDocs CI servers will read the later one to obtain the documentation sources and release tags.
 
 #. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
 
