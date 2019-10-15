@@ -14,40 +14,6 @@ set -o xtrace
 
 log "##################### EXECUTE: npm-publish #####################"
 
-env
-
-# Functions
-vercomp () {
-    if [[ $1 == $2 ]]
-    then
-        return 0
-    fi
-    local IFS=.
-    local i ver1=($1) ver2=($2)
-    # fill empty fields in ver1 with zeros
-    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
-    do
-        ver1[i]=0
-    done
-    for ((i=0; i<${#ver1[@]}; i++))
-    do
-        if [[ -z ${ver2[i]} ]]
-        then
-            # fill empty fields in ver2 with zeros
-            ver2[i]=0
-        fi
-        if ((10#${ver1[i]} > 10#${ver2[i]}))
-        then
-            return 1
-        fi
-        if ((10#${ver1[i]} < 10#${ver2[i]}))
-        then
-            return 2
-        fi
-    done
-    return 0
-}
-
 # Get project data
 projectName="$(jshon -e name -u <package.json)" || {
     log "ERROR: Command failed: jshon -e name"
@@ -83,15 +49,13 @@ log "Public version: $pubVersion ($pubRelease)"
     exit 0
 }
 
-# Publish release only if greater than published
-vercomp $localRelease $pubRelease
-different=$?
-if [ $different -eq 1 ]; then
-  log "Publishing to npm $projectName version $localVersion"
-  npm publish || {
-    log "ERROR: Command failed: npm publish"
-    exit 1
-  }
+# Don't publish versions lower than what is already published
+if dpkg --compare-versions "$localRelease" gt "$pubRelease"; then
+    log "Publishing to NPM: ${projectName}-${localVersion}"
+    npm publish || {
+        log "ERROR: Command failed: npm publish"
+        exit 1
+    }
 else
     log "Skip publishing: local version <= public version"
     exit 0
