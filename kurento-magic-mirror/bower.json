@@ -1,6 +1,6 @@
 {
   "name": "kurento-magic-mirror",
-  "version": "6.12.0",
+  "version": "6.12.1-dev",
   "description": "Kurento Browser JavaScript Tutorial: Magic Mirror",
   "keywords": [
     "kurento",
