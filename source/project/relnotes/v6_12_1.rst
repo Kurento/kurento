@@ -1,10 +1,10 @@
-==================
-1.2.3 (UNRELEASED)
-==================
+===================
+6.12.1 (UNRELEASED)
+===================
 
-<Short description>
+Kurento Media Server **6.12.1** has been released!
 
-To install Kurento Media Server: :doc:`/user/installation`.
+To install it: :doc:`/user/installation`.
 
 Added
 =====
@@ -14,7 +14,7 @@ Added
 Changed
 =======
 
-- Description.
+- kurento-utils-js: Dropped use of legacy `offerToReceiveAudio` / `offerToReceiveVideo` in `RTCPeerConnection.createOffer(options)`, in favor of the **Transceiver** API. This was needed because Safari does not implement the legacy attributes. As of this writing, all of Firefox, Chrome and Safari have good working support for RTCPeerConnection transceivers, with `RTCPeerConnection.addTransceiver() <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTransceiver>`__.
 
 Deprecated
 ==========
