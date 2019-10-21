@@ -25,7 +25,7 @@ This document outlines several bits of knowledge that can prove very useful when
 Media Server Crashes
 ====================
 
-We want Kurento to be as stable as possible! When you notice a server crash, it's a good time to report a bug so we can know about the issue. But before that, we need you to collect some information about the crash:
+We want Kurento to be as stable as possible! When you notice a server crash, it's a good time to report a bug so we can know about the issue. But before that, we need you to make sure that you are running the **latest version** of Kurento Media Server: **|VERSION_KMS|**, and then collect some information about the crash:
 
 * Kurento tries to write an **execution stack trace** in the file ``/var/log/kurento-media-server/errors.log``. This stack trace will only be useful if you have **all debug packages installed**, by following these instructions: :ref:`dev-dbg`. If that's the case, open the *errors.log* file and look for a line similar to this one:
 
@@ -440,11 +440,11 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
      INFO  Using TURN relay server: <user:password>@<IpAddress>:<Port>
      INFO  TURN server info set: <user:password>@<IpAddress>:<Port>
 
-- Check that any SDP mangling you might be doing in your Application Server is being done correctly.
+- Check that any SDP mangling you (or any of your third-party libraries) might be doing in your Application Server is being done correctly.
 
   This is one of the most hard to catch examples we've seen in our `mailing list <https://groups.google.com/d/topic/kurento/t25_QQSc_Bo/discussion>`__:
 
-      > The problem was that our Socket.IO client did not correctly *URL-Encode* its JSON payload when *xhr-polling*, which resulted in all "plus" signs ('+') being changed into spaces (' ') on the server. This meant that the ``ufrag`` in the client's SDP was invalid if it contained a plus sign! Only some of the connections failed because not all ``ufrags`` contain plus signs.
+      > The problem was that our Socket.IO client did not correctly *URL-Encode* its JSON payload when *xhr-polling*, which resulted in all "plus" signs ('+') being changed into spaces (' ') on the server. This meant that the ``ufrag`` in the client's SDP was invalid if it contained a plus sign! Only some of the connections failed because not all ``ufrag``s contain plus signs.
 
 
 
