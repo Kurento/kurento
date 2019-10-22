@@ -74,7 +74,7 @@ The following class diagram shows the relationships of the main endpoint classes
 
 .. graphviz:: /images/graphs/endpoints.dot
    :align: center
-   :caption: Class diagram of main Endpoints in Kurento API
+   :caption: Class diagram of Kurento Endpoints. In blue, the classes that a final API client will actually use.
 
 
 
@@ -102,7 +102,7 @@ The following class diagram shows the relationships of the main filter classes:
 
 .. graphviz:: /images/graphs/filters.dot
    :align: center
-   :caption: Class diagram of main Filters in Kurento API
+   :caption: Class diagram of Kurento Filters. In blue, the classes that a final API client will actually use.
 
 
 
@@ -130,4 +130,4 @@ The following class diagram shows the relationships of the hubs:
 
 .. graphviz:: /images/graphs/hubs.dot
    :align: center
-   :caption: Class diagram of main Hubs in Kurento API
+   :caption: Class diagram of Kurento Hubs. In blue, the classes that a final API client will actually use.

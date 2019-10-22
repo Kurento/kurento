@@ -4,14 +4,6 @@ digraph endpoints {
   fontsize = 8;
   size = "12,8";
 
-  node [
-    fillcolor = "#E7F2FA";
-    fontname = "Bitstream Vera Sans";
-    fontsize = 8;
-    shape = "record";
-    style = "filled";
-  ]
-
   edge [
     arrowtail = "empty";
     dir = "back";
@@ -19,17 +11,32 @@ digraph endpoints {
     fontsize = 8;
   ]
 
+  node [
+    fillcolor = "#E7F2FA";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+    shape = "record";
+    style = "dashed";
+  ]
+
+  "MediaObject" -> "MediaElement";
+
   "MediaElement" -> "Endpoint";
+
   "Endpoint" -> "SessionEndpoint";
   "Endpoint" -> "UriEndpoint";
 
   "SessionEndpoint" -> "HttpEndpoint";
   "SessionEndpoint" -> "SdpEndpoint";
 
+  "SdpEndpoint" -> "BaseRtpEndpoint";
+
+  node [ style = "filled" ]
+
   "HttpEndpoint" -> "HttpPostEndpoint";
 
-  "SdpEndpoint" -> "RtpEndpoint";
-  "SdpEndpoint" -> "WebRtcEndpoint";
+  "BaseRtpEndpoint" -> "RtpEndpoint";
+  "BaseRtpEndpoint" -> "WebRtcEndpoint";
 
   "UriEndpoint" -> "PlayerEndpoint";
   "UriEndpoint" -> "RecorderEndpoint";

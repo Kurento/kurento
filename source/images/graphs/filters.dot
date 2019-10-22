@@ -4,14 +4,6 @@ digraph filters {
   fontsize = 8;
   size = "12,8";
 
-  node [
-    fillcolor = "#E7F2FA";
-    fontname = "Bitstream Vera Sans";
-    fontsize = 8;
-    shape = "record";
-    style = "filled";
-  ]
-
   edge [
     arrowtail = "empty";
     dir = "back";
@@ -19,8 +11,23 @@ digraph filters {
     fontsize = 8;
   ]
 
+  node [
+    fillcolor = "#E7F2FA";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+    shape = "record";
+    style = "dashed";
+  ]
+
+  "MediaObject" -> "MediaElement";
+
   "MediaElement" -> "Filter";
-  "Filter" -> "ZBarFilter";
+
+  node [ style = "filled" ]
+
   "Filter" -> "FaceOverlayFilter";
   "Filter" -> "GStreamerFilter";
+  "Filter" -> "ImageOverlayFilter";
+  "Filter" -> "OpenCVFilter";
+  "Filter" -> "ZBarFilter";
 }

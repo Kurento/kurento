@@ -4,14 +4,6 @@ digraph hubs {
   fontsize = 8;
   size = "12,8";
 
-  node [
-    fillcolor = "#E7F2FA";
-    fontname = "Bitstream Vera Sans";
-    fontsize = 8;
-    shape = "record";
-    style = "filled";
-  ]
-
   edge [
     arrowtail = "empty";
     dir = "back";
@@ -19,14 +11,26 @@ digraph hubs {
     fontsize = 8;
   ]
 
+  node [
+    fillcolor = "#E7F2FA";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+    shape = "record";
+    style = "dashed";
+  ]
+
   "MediaObject" -> "Hub";
   "MediaObject" -> "MediaElement";
 
-  "Hub" -> "HubPort" [headlabel = "*", constraint = false, dir = normal, arrowhead = "vee", labelangle = 60];
+  node [ style = "filled" ]
 
   "MediaElement" -> "HubPort";
 
+  "Hub" -> "HubPort" [headlabel = "*", constraint = false, dir = normal, arrowhead = "vee", labelangle = -70.0, labeldistance = 0.9];
+
+  "Hub" -> "AlphaBlending";
   "Hub" -> "Composite";
   "Hub" -> "Dispatcher";
   "Hub" -> "DispatcherOneToMany";
+  "Hub" -> "Mixer";
 }
