@@ -158,12 +158,13 @@ Building from sources
 
 To work directly with KMS source code, or to just build KMS from sources, the easiest way is using the module **kms-omni-build**. Just follow these steps:
 
-1. Add the Kurento repository to your system configuration.
-2. Clone **kms-omni-build**.
-3. Install build dependencies: tools like GCC, CMake, etc., and KMS development libraries.
-4. Build with CMake and Make.
-5. Run the newly compiled KMS.
-6. Run KMS tests.
+1. Install required tools, like Git.
+2. Add the Kurento repository to your system configuration.
+3. Clone **kms-omni-build**.
+4. Install build dependencies: tools like GCC, CMake, etc., and KMS development libraries.
+5. Build with CMake and Make.
+6. Run the newly compiled KMS.
+7. Run KMS tests.
 
 
 
@@ -175,9 +176,9 @@ This command will install the basic set of tools that are needed for the next st
 .. code-block:: bash
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+       build-essential \
        ca-certificates \
-       devscripts \
-       equivs \
+       cmake \
        git \
        gnupg
 
@@ -229,7 +230,7 @@ Run:
 
    ``--recursive`` and ``--remote`` are not used together, because each individual submodule may have their own submodules that might be expected to check out some specific commit, and we don't want to update those.
 
-*OPTIONAL*: Change to the *master* branch of each submodule, if you will be developing on each one of those:
+*OPTIONAL*: Change to the *master* branch of each submodule, if you will be working with the latest version of the code:
 
 .. code-block:: text
 
@@ -237,7 +238,7 @@ Run:
    git checkout "$REF"
    git submodule foreach "git checkout $REF || true"
 
-You can also set ``REF`` to any other branch or tag, such as ``REF=6.7.1``. This will bring the code to the state it had in that version.
+You can also set ``REF`` to any other branch or tag, such as ``REF=6.12.0``. This will bring the code to the state it had in that version release.
 
 
 
@@ -248,43 +249,22 @@ Run:
 
 .. code-block:: bash
 
-   DIRS=(
-       kurento-module-creator
-       kms-cmake-utils
-       kms-jsonrpc
-       kms-core
-       kms-elements
-       kms-filters
-       kurento-media-server
-   )
-   for DIR in "${DIRS[@]}"; do
-       echo "+ Install Build-Depends for '${DIR}'"
-       DEBIAN_FRONTEND=noninteractive \
-       mk-build-deps --install --remove \
-           --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
-           "${DIR}/debian/control"
-   done
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+       kurento-media-server-dev
 
 
 
-Build KMS
----------
+Build and run KMS
+-----------------
 
-Run:
-
-.. code-block:: text
-
-   BUILD_TYPE=Debug
-   BUILD_DIR="build-$BUILD_TYPE"
-   mkdir "$BUILD_DIR" && cd "$BUILD_DIR"
-   cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+Make sure your current directory is already *kms-omni-build*, then run this command:
 
 .. code-block:: text
 
    export MAKEFLAGS="-j$(nproc)"
-   make
+   ./bin/kms-build-run.sh
 
-CMake accepts the following build types: *Debug*, *Release*, *RelWithDebInfo*. So, for a Release build, you would run ``TYPE=Release`` instead of ``TYPE=Debug``.
+By default, the script `kms-build-run.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/kms-build-run.sh>`__ will set up the environment and settings to make a Debug build of KMS. You can inspect that script to learn about all the other options it offers, including builds for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, selection between GCC and Clang compilers, and other modes.
 
 .. note::
 
@@ -292,56 +272,9 @@ CMake accepts the following build types: *Debug*, *Release*, *RelWithDebInfo*. S
 
    If you want to work with multiple build dirs at the same time, it's better to just work on a separate Git clone, outside the **kms-omni-build** directory.
 
-It is also possible to enable GCC's AddressSanitizer or ThreadSanitizer with these flags:
+You can set the logging level of specific categories by exporting the environment variable ``GST_DEBUG`` (see :doc:`/features/logging`).
 
-.. code-block:: text
-
-   -DENABLE_ANALYZER_ASAN=ON  # Enable the AddressSanitizer (aka ASan) memory error detector. Implies ``CMAKE_BUILD_TYPE=Release``.
-
-   -DSANITIZE_ADDRESS=ON
-   -DSANITIZE_MEMORY=ON
-   -DSANITIZE_THREAD=ON
-   -DSANITIZE_UNDEFINED=ON
-   -DSANITIZE_LINK_STATIC=ON
-
-[TODO: integration with these tools is not really finished]
-
-ASan: Launch with
-LD_PRELOAD=/usr/lib/gcc/x86_64-linux-gnu/5/libasan.so kurento-media-server
-
-Verbose mode can be enabled too:
-
-.. code-block:: text
-
-   -DCMAKE_VERBOSE_MAKEFILE=ON
-
-Lastly, it's possible to run either Unit tests or Valgrind tests, by using different *make* targets:
-
-.. code-block:: text
-
-   make check
-   make valgrind
-
-
-
-Launch KMS
-----------
-
-Run:
-
-.. code-block:: bash
-
-   export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
-
-   kurento-media-server/server/kurento-media-server \
-       --modules-path=. \
-       --modules-config-path=./config \
-       --conf-file=./config/kurento.conf.json \
-       --gst-plugin-path=.
-
-You can set the logging level of specific categories with the option ``--gst-debug``, which can be used multiple times, once for each category. Besides that, the global logging level is specified with ``--gst-debug-level``. These values can also be defined in the environment variable ``GST_DEBUG`` (see :doc:`/features/logging`).
-
-Other launch options that could be useful:
+You also have the option to launch KMS manually, basing your command on the launch line present in the script. In that case, other launch options that could be useful are:
 
 .. code-block:: text
 
@@ -403,28 +336,28 @@ Run:
 .. code-block:: text
 
     PACKAGES=(
-      # KMS main components + extra modules
-      '^(kms|kurento).*'
+        # KMS main components + extra modules
+        '^(kms|kurento).*'
 
-      # Kurento external libraries
-      ffmpeg
-      '^gir1.2-gst.*1.5'
-      gir1.2-nice-0.1
-      '^(lib)?gstreamer.*1.5.*'
-      '^lib(nice|s3-2|srtp|usrsctp).*'
-      '^srtp-.*'
-      '^openh264(-gst-plugins-bad-1.5)?'
-      '^openwebrtc-gst-plugins.*'
+        # Kurento external libraries
+        ffmpeg
+        '^gir1.2-gst.*1.5'
+        gir1.2-nice-0.1
+        '^(lib)?gstreamer.*1.5.*'
+        '^lib(nice|s3-2|srtp|usrsctp).*'
+        '^srtp-.*'
+        '^openh264(-gst-plugins-bad-1.5)?'
+        '^openwebrtc-gst-plugins.*'
 
-      # System development libraries
-      '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
-      '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
-      uuid-dev
+        # System development libraries
+        '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
+        '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
+        uuid-dev
     )
 
     # Run a loop over all package names and uninstall them.
     for PACKAGE in "${PACKAGES[@]}"; do
-      sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unknown package"; }
+        sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unknown package"; }
     done
 
 
@@ -434,69 +367,16 @@ Run:
 Install debugging symbols
 =========================
 
-Whenever working with KMS source code itself, of during any anlysis of crash in either the server or any 3rd-party library, you'll want to have debugging symbols installed. These provide for full information about the source file name and line where problems are happening; this information is paramount for a successful debug session, and you'll also need to provide these details when requesting support or :ref:`filing a bug report <support-community>`.
+Whenever working with KMS source code itself, of during any analysis of crash in either the server or any 3rd-party library, you'll want to have debugging symbols installed. These provide for full information about the source file name and line where problems are happening; this information is paramount for a successful debug session, and you'll also need to provide these details when requesting support or :ref:`filing a bug report <support-community>`.
 
 **Installing the debug symbols does not impose any extra load to the system**. So, it doesn't really hurt at all to have them installed even in production setups, where they will prove useful whenever an unexpected crash happens to bring the system down and a postmortem stack trace is automatically generated.
 
-To install all debug symbols relevant to KMS, run these commands:
+To install all debug symbols relevant to KMS, run:
 
 .. code-block:: bash
 
-   PACKAGES=(
-       # System libraries
-       libc6-dbg  # Required for Valgrind
-       libc6-dbgsym
-       libglib2.0-0-dbg
-       libglib2.0-0-dbgsym
-       libssl1.0.0-dbg
-       libssl1.0.0-dbgsym
-
-       # Kurento 3rd-party libraries
-       kmsjsoncpp-dbg
-       libnice10-dbgsym
-       libsrtp0-dbg
-       libsrtp0-dbgsym
-       libusrsctp-dbgsym
-       openwebrtc-gst-plugins-dbg
-
-       # GStreamer-1.0 (Ubuntu)
-       libgstreamer1.0-0-dbg
-       gstreamer1.0-libav-dbg
-       gstreamer1.0-nice-dbgsym
-       gstreamer1.0-plugins-bad-dbg
-       gstreamer1.0-plugins-base-dbg
-       gstreamer1.0-plugins-good-dbg
-       gstreamer1.0-plugins-ugly-dbg
-
-       # GStreamer-1.5 (Kurento)
-       libgstreamer1.5-0-dbg
-       gstreamer1.5-libav-dbg
-       gstreamer1.5-nice-dbgsym
-       gstreamer1.5-plugins-bad-dbg
-       gstreamer1.5-plugins-base-dbg
-       gstreamer1.5-plugins-good-dbg
-       gstreamer1.5-plugins-ugly-dbg
-
-       # Main packages
-       kms-jsonrpc-dbg
-       kms-core-dbg
-       kms-elements-dbg
-       kms-filters-dbg
-       kurento-media-server-dbg
-
-       # Extra packages
-       #kms-chroma-dbg
-       #kms-crowddetector-dbg
-       #kms-platedetector-dbg
-       #kms-pointerdetector-dbg
-   )
-
-   apt-get update
-
-   for PACKAGE in "${PACKAGES[@]}"; do
-       apt-get install --no-install-recommends --yes "$PACKAGE" \
-           || { echo "Skip unknown package"; }
-   done
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+       kurento-dbg
 
 For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in this example**:
 
@@ -718,5 +598,4 @@ What to do when you are developing a new feature that spans across KMS and the p
 Known problems
 --------------
 
-- Sometimes the GStreamer fork doesn't compile correctly. Try again.
 - Some unit tests can fail, especially if the storage server (which contains some required input files) is having connectivity issues. If tests fail, packages are not generated. To skip tests, edit the file *debian/rules* and change ``-DGENERATE_TESTS=TRUE`` to ``-DGENERATE_TESTS=FALSE -DDISABLE_TESTS=TRUE``.
