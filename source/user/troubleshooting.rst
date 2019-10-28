@@ -448,6 +448,49 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 
 
 
+mDNS ICE candidate fails: Name or service not known
+---------------------------------------------------
+
+**Problem**:
+
+When the browser conceals the local IP address behing an mDNS candidate, these errors appear in Kurento logs:
+
+.. code-block:: text
+
+   kmsicecandidate  [...] Error code 0: 'Error resolving '2da1b2bb-a601-44e8-b672-dc70e3493bc4.local': Name or service not known'
+   kmsiceniceagent  [...] Cannot parse remote candidate: 'candidate:2382557538 1 udp 2113937151 2da1b2bb-a601-44e8-b672-dc70e3493bc4.local 50635 typ host generation 0 ufrag /Og/ network-cost 999'
+   kmswebrtcsession [...] Adding remote candidate to ICE Agent: Agent failed, stream_id: '1'
+
+**Solution**:
+
+mDNS name resolution must be enabled in the system. Check out the contents of */etc/nsswitch.conf*, you should see something similar to this:
+
+.. code-block:: text
+
+   hosts: files mdns4_minimal [NOTFOUND=return] dns
+
+If not, try fully reinstalling the package *libnss-mdns*:
+
+.. code-block:: sh
+
+   sudo apt-get purge --yes libnss-mdns
+   sudo apt-get update
+   sudo apt-get install --yes libnss-mdns
+
+Installing this package does automatically edit the config file in an appropriate way. Now the *mdns4_minimal* module should appear listed in the hosts line.
+
+**Caveat**: **mDNS does not work from within Docker**
+
+See `mDNS and Crossbar.io Fabric (Docker) #21 <https://github.com/crossbario/crossbar-fabric-public/issues/21>`__:
+
+    Docker does not play well with mDNS/zeroconf/Bonjour: resolving ``.local`` hostnames from inside containers does not work (easily).
+    [...]
+    The reasons run deep into how Docker configures DNS *inside* a container.
+
+So if you are running a Docker image, ``.local`` names won't be correctly resolved even if you install the required packages. This happens with Kurento or whatever other software; it seems to be a Docker configuration problem / bug.
+
+
+
 ICE fails with timeouts
 -----------------------
 
