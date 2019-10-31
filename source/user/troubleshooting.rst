@@ -22,6 +22,8 @@ This document outlines several bits of knowledge that can prove very useful when
 
 
 
+.. _troubleshooting-crashes:
+
 Media Server Crashes
 ====================
 
@@ -146,13 +148,25 @@ These messages can help understand what codec settings are being received by Kur
 Memory usage grows too high
 ---------------------------
 
-If you are using ``top`` or ``ps`` to evaluate memory usage, keep in mind that these tools show memory usage as seen by the Operating System, not the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the OS. Typically, it won't! Typical C implementations do not return ``free``'d memory : it is available for use by the same program, but not to others. So ``top`` or ``ps`` won't be able to "see" the free'd memory.
+If you are trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; **Valgrind** is.
 
-If you're trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; **Valgrind** is.
+If you are using *top* or *ps* to evaluate memory usage, keep in mind that these tools show memory usage *as seen by the Operating System*, not by the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the Operating System. Typically, it won't! Memory allocator implementations do not return ``free``'d memory : it is available for use by the same program, but not by others. So *top* or *ps* won't be able to "see" the free'd memory.
 
-See:
+See: `free() in C doesn't reduce memory usage <https://stackoverflow.com/questions/6005333/problem-with-free-on-structs-in-c-it-doesnt-reduce-memory-usage>`__
 
-* `free() in C doesn't reduce memory usage <https://stackoverflow.com/questions/6005333/problem-with-free-on-structs-in-c-it-doesnt-reduce-memory-usage>`__
+To run Kurento Media Server with Valgrind and find memory leaks, the process is just a matter of following the steps outlined in :ref:`dev-sources`, but instead of
+
+.. code-block:: text
+
+   ./bin/kms-build-run.sh
+
+you'll want to do
+
+.. code-block:: text
+
+   ./bin/kms-build-run.sh --valgrind-memcheck
+
+Also, please have a look at the information shown in :ref:`troubleshooting-crashes` about our special Docker image based on **AddressSanitizer**. Running Kurento with this image might help finding memory-related issues.
 
 
 
