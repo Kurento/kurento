@@ -75,7 +75,7 @@
 		<version.checkstyle.plugin>2.17</version.checkstyle.plugin>
 		<version.findbugs.plugin>3.0.4</version.findbugs.plugin>
 		<version.s3.wagon>1.2.1</version.s3.wagon>
-		<version.puppycrawl.checkstyle>7.1.2</version.puppycrawl.checkstyle>
+		<version.puppycrawl.checkstyle>8.18</version.puppycrawl.checkstyle>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 	</properties>
 
