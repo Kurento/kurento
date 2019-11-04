@@ -367,7 +367,7 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (!self->gather_started) {
     GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
-        "Adding remote candidate to ICE Agent:"
+        "Adding remote candidate to libnice agent:"
         " ICE Gathering not started yet");
     if (allow_error) {
       GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
@@ -382,7 +382,7 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (sdp_sess->local_sdp == NULL) {
     GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
-        "Adding remote candidate to ICE Agent:"
+        "Adding remote candidate to libnice agent:"
         " Local SDP not generated yet");
     if (allow_error) {
       GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
@@ -399,7 +399,7 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (index >= gst_sdp_message_medias_len (sdp_sess->local_sdp)) {
     GST_ERROR_OBJECT (self,
-        "Adding remote candidate to ICE Agent:"
+        "Adding remote candidate to libnice agent:"
         " Invalid media index: %u", index);
     return FALSE;
   }
@@ -408,14 +408,14 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (media == NULL) {
     GST_ERROR_OBJECT (self,
-        "Adding remote candidate to ICE Agent:"
+        "Adding remote candidate to libnice agent:"
         " No media with index: %u", index);
     return FALSE;
   }
 
   if (gst_sdp_media_get_port (media) == 0) {
     GST_DEBUG_OBJECT (self,
-        "Adding remote candidate to ICE Agent:"
+        "Adding remote candidate to libnice agent:"
         " Unwanted media (port = 0): %s, index: %u",
         gst_sdp_media_get_media (media), index);
     return TRUE;
@@ -426,7 +426,7 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (handler == NULL) {
     GST_ERROR_OBJECT (self,
-        "Adding remote candidate to ICE Agent:"
+        "Adding remote candidate to libnice agent:"
         " No handler for media: %s, index: %u",
         gst_sdp_media_get_media (media), index);
     return FALSE;
@@ -437,7 +437,7 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (stream_id == NULL) {
     GST_ERROR_OBJECT (self,
-        "Adding remote candidate to ICE Agent:"
+        "Adding remote candidate to libnice agent:"
         " No stream_id, index: %u", index);
     return FALSE;
   }
@@ -445,13 +445,13 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
   if (!kms_ice_base_agent_add_ice_candidate (self->agent, candidate,
       stream_id)) {
     GST_ERROR_OBJECT (self,
-        "Adding remote candidate to ICE Agent:"
-        " Agent failed, stream_id: '%s'", stream_id);
+        "Adding remote candidate to libnice agent:"
+        " Parsing failed, stream_id: '%s'", stream_id);
     return FALSE;
   }
 
   GST_DEBUG_OBJECT (self,
-      "Added remote candidate to ICE Agent, stream_id: '%s'", stream_id);
+      "Added remote candidate to libnice agent, stream_id: '%s'", stream_id);
 
   return TRUE;
 }

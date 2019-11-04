@@ -446,8 +446,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
   g_free (candidate_str);
 
   if (nice_cand == NULL) {
-    GST_WARNING_OBJECT (self,
-        "Cannot parse remote candidate: '%s'",
+    GST_WARNING_OBJECT (self, "libnice failed parsing candidate: '%s'",
         kms_ice_candidate_get_candidate (candidate));
     return FALSE;
   }
