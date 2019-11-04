@@ -56,10 +56,10 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
   " (?<componentid>(" DIGIT_ATTR_EXPR "){1,5})" \
   " (?<transport>(udp|UDP|tcp|TCP))" \
   " (?<priority>(" DIGIT_ATTR_EXPR "){1,10})" \
-  " (?<addr>[0-9.\\-:a-zA-Z]+)" \
+  " (?<addr>[A-Za-z0-9.:-]+)" \
   " (?<port>[0-9]+)" \
   " typ (?<type>(host|srflx|prflx|relay))" \
-  "( raddr (?<raddr>[0-9.:a-zA-Z]+))?" \
+  "( raddr (?<raddr>[A-Za-z0-9.:]+))?" \
   "( rport (?<rport>[0-9]+))?" \
   EXTENSION_ATTR_EXP
 
