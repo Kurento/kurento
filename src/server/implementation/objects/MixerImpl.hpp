@@ -39,22 +39,24 @@ public:
   MixerImpl (const boost::property_tree::ptree &conf,
              std::shared_ptr<MediaPipeline> mediaPipeline);
 
-  virtual ~MixerImpl () {};
+  virtual ~MixerImpl () override = default;
 
-  void connect (std::shared_ptr<MediaType> media, std::shared_ptr<HubPort> source,
-                std::shared_ptr<HubPort> sink);
-  void disconnect (std::shared_ptr<MediaType> media,
-                   std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink);
+  virtual void connect (std::shared_ptr<MediaType> media,
+      std::shared_ptr<HubPort> source,
+      std::shared_ptr<HubPort> sink) override;
+
+  virtual void disconnect (std::shared_ptr<MediaType> media,
+      std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink) override;
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
-                        std::shared_ptr<EventHandler> handler);
+      std::shared_ptr<EventHandler> handler) override;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
-                       const std::string &methodName, const Json::Value &params,
-                       Json::Value &response);
+      const std::string &methodName, const Json::Value &params,
+      Json::Value &response) override;
 
-  virtual void Serialize (JsonSerializer &serializer);
+  virtual void Serialize (JsonSerializer &serializer) override;
 
 private:
 
