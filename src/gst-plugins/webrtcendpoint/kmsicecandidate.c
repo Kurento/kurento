@@ -199,7 +199,7 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
         NULL, &err);
 
     if (err) {
-      GST_WARNING_OBJECT (self, "Error code %d: '%s'", err->code,
+      GST_DEBUG_OBJECT (self, "Ignore foreign mDNS candidate: %s",
           (err->message ? err->message : "(None)"));
       g_error_free (err);
       err = NULL;
