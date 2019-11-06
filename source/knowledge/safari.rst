@@ -34,12 +34,18 @@ Until recently, this has been the recommended way of inserting a video element i
 
    <video id="myVideo" autoplay></video>
 
-All Kurento tutorials are written to follow this example. As a general rule, most browsers honor the *autoplay* attribute, *Desktop Safari* included; however, we have recently found that *iOS Safari* is an exception to this rule, because it implements a more restrictive set of rules that must be followed in order to allow playing video from a ``<video>`` HTML tag.
+All Kurento tutorials are written to follow this example. As a general rule, most browsers honor the *autoplay* attribute, *Desktop Safari* included; however, *iOS Safari* is an exception to this rule, because it implements a more restrictive set of rules that must be followed in order to allow playing video from a ``<video>`` HTML tag.
 
-There are two things to consider in order to make an HTML document that is compatible with *iOS Safari*:
+You should make a couple changes in order to follow with all the latest changes in browser's policies for automatically playing videos:
 
-1. Call the ``play()`` method, instead of using the ``autoplay`` attribute of the ``<video>`` tag.
-2. Add the ``playsinline`` attribute to the ``<video>`` tag.
+1. Start automatic video playback without audio, using the ``muted`` attribute together with ``autoplay``.
+2. Add the ``playsinline`` attribute if you want to avoid fullscreen videos in *iOS Safari*.
+
+A video tag that includes all these suggestions would be like this:
+
+.. code-block:: html
+
+   <video id="myVideo" muted autoplay playsinline></video>
 
 Sources for this section:
 
@@ -49,36 +55,40 @@ Sources for this section:
 
 
 
-<video autoplay>
-----------------
+muted autoplay
+--------------
 
-The *autoplay* attribute is honored by all browsers, and it makes the ``<video>`` tag to automatically start playing as soon as the source stream is available. In other words: the method ``video.play()`` gets implicitly called as soon as a source video stream becomes available and is set with ``video.srcObject = stream``:
+The *autoplay* attribute is honored by all browsers, and it makes the ``<video>`` tag to automatically start playing as soon as the source stream is available. In other words: the method ``video.play()`` gets implicitly called as soon as a source video stream becomes available and is set with ``video.srcObject = stream``.
+
+However, in *iOS Safari* (version >= 10), the *autoplay* attribute is only available for videos that **have no sound**, are **muted**, or have a **disabled audio track**. In any other case, the *autoplay* attribute will be ignored, and the video won't start playing automatically when a new stream is set.
+
+The solution that is most intuitive for the user is that a muted video is presented, and then the user is asked to click somewhere in order to enable the audio:
 
 .. code-block:: html
 
-   <video id="myVideo" autoplay></video>
+   <video id="myVideo" muted autoplay></video>
 
-However, in *iOS Safari* (version >= 10), the *autoplay* attribute is only available for videos that have **no sound**, are **muted**, or have a **disabled audio track**. In any other case, the *autoplay* attribute will be ignored, and the video won't start playing automatically when a new stream is set.
+This will allow the user interface to at least automatically start playing a video, so the user will see some movement and acknowledge that the media playback has started. Then, an optional label might ask the user to press to unmute, an action that would comply with the browser's *autoplay* policies.
 
-The currently recommended solution for this issue is to avoid using the *autoplay* attribute. Instead, manually call the ``play()`` method as a result of some user interaction. For example, when a user clicks a button. The safest way is to call the ``video.play()`` method from inside a button's ``onclick`` event handler.
+Another alternative is to avoid using the *autoplay* attribute altogether. Instead, manually call the ``play()`` method as a result of some user interaction. The safest way is to call the ``myVideo.play()`` method from inside a button's ``onclick`` event handler.
 
 
 
-<video playsinline>
--------------------
+playsinline
+-----------
 
 Most browsers assume that a video should be played from inside the specific area that the ``<video>`` element occupies. So, for example, a tag such as this one:
 
 .. code-block:: html
 
-   <video id="myVideo"></video>
+   <video id="myVideo" width="480px" height="360px"></video>
 
 will play the video in an area that is 480x360 pixels.
 
-That is not the case for *iOS Safari*: all videos play full screen by default: whenever a video starts playing, the browser will maximize its area to fill all the available space in the screen. This can be avoided by adding the *playsinline* attribute to the ``<video>`` tag:
+That is not the case for *iOS Safari*, where all videos play full screen by default: whenever a video starts playing, the browser will maximize its area to fill all the available space in the screen. This can be avoided by adding the *playsinline* attribute to the ``<video>`` tag:
 
 .. code-block:: html
 
-   <video id="myVideo" playsinline></video>
+   <video id="myVideo" width="480px" height="360px" playsinline></video>
 
-With this, videos will play in *iOS Safari* as they do in any other browser, effectively as inline videos inside their corresponding area.
+With this, videos will play in *iOS Safari* as they do in any other browser, as inline videos inside their corresponding area.
