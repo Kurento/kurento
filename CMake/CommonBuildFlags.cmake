@@ -57,12 +57,26 @@ function(common_buildflags_set)
   dpkg_buildflags_get_ldflags(DPKG_LDFLAGS)
 
   # General flags, used for all build configurations
-  # `dpkg-buildflags` sets "-g -O2"
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu11   -Wall -pthread ${DPKG_CFLAGS}"   PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -Wall -pthread ${DPKG_CXXFLAGS}" PARENT_SCOPE)
+  # Note: `dpkg-buildflags` sets "-g -O2"
+
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu11   -Wall -pthread ${DPKG_CFLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -Wall -pthread ${DPKG_CXXFLAGS}")
+
+  # Disable 'old-style-cast' warning
+  # All code is C-based and old style casts are widespread
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-old-style-cast")
+
+  # Final step: set local variables in the scope of the caller
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}"   PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
+
+  # --------
+
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${DPKG_LDFLAGS}" PARENT_SCOPE)
   set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    ${DPKG_LDFLAGS}" PARENT_SCOPE)
+
+  # ------------
 
   # Build all targets with '-fPIC'/'-fPIE' by default, including static libs
   set(CMAKE_POSITION_INDEPENDENT_CODE ON PARENT_SCOPE)
@@ -72,6 +86,8 @@ function(common_buildflags_set)
   #       See: CMake issue #14983 (https://gitlab.kitware.com/cmake/cmake/issues/14983)
   #       Affects CMake 3.5.1 (Ubuntu 16.04 Xenial)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie" PARENT_SCOPE)
+
+  # ------------
 
   # Build type: Debug
   # CMake appends CMAKE_{C,CXX}_FLAGS_DEBUG="-g" to CMAKE_{C,CXX}_FLAGS
