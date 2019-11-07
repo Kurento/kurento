@@ -1910,6 +1910,7 @@ kms_webrtc_session_init (KmsWebrtcSession * self)
   self->stun_server_ip = DEFAULT_STUN_SERVER_IP;
   self->stun_server_port = DEFAULT_STUN_SERVER_PORT;
   self->turn_url = DEFAULT_STUN_TURN_URL;
+  self->pem_certificate = DEFAULT_PEM_CERTIFICATE;
   self->external_ips = DEFAULT_EXTERNAL_IPS;
   self->gather_started = FALSE;
 

@@ -867,6 +867,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv->stun_server_ip = DEFAULT_STUN_SERVER_IP;
   self->priv->stun_server_port = DEFAULT_STUN_SERVER_PORT;
   self->priv->turn_url = DEFAULT_STUN_TURN_URL;
+  self->priv->pem_certificate = DEFAULT_PEM_CERTIFICATE;
   self->priv->external_ips = DEFAULT_EXTERNAL_IPS;
 
   self->priv->loop = kms_loop_new ();

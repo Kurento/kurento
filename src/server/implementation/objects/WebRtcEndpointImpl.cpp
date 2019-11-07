@@ -516,17 +516,17 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   uint stunPort = 0;
   if (!getConfigValue <uint, WebRtcEndpoint> (&stunPort, "stunServerPort",
       DEFAULT_STUN_PORT)) {
-    GST_INFO ("STUN server Port not found in config;"
+    GST_INFO ("STUN port not found in config;"
               " using default value: %d", DEFAULT_STUN_PORT);
   } else {
     std::string stunAddress;
     if (!getConfigValue <std::string, WebRtcEndpoint> (&stunAddress,
         "stunServerAddress")) {
-      GST_INFO ("STUN server IP address not found in config;"
-                " NAT traversal requires either STUN or TURN server");
+      GST_INFO ("STUN server not found in config;"
+                " remember that NAT traversal requires STUN or TURN");
     } else {
-      GST_INFO ("Using STUN reflexive server IP: %s", stunAddress.c_str());
-      GST_INFO ("Using STUN reflexive server Port: %d", stunPort);
+      GST_INFO ("Using STUN reflexive server: %s:%d", stunAddress.c_str(),
+          stunPort);
 
       g_object_set (G_OBJECT (element), "stun-server-port", stunPort, NULL);
       g_object_set (G_OBJECT (element), "stun-server", stunAddress.c_str(), NULL);
@@ -546,8 +546,8 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
     g_object_set (G_OBJECT (element), "turn-url", turnURL.c_str(), NULL);
   } else {
-    GST_INFO ("TURN server IP address not found in config;"
-              " NAT traversal requires either STUN or TURN server");
+    GST_INFO ("TURN server not found in config;"
+              " remember that NAT traversal requires STUN or TURN");
   }
 
   switch (certificateKeyType->getValue () ) {
