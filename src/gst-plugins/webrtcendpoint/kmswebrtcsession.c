@@ -56,6 +56,7 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 #define DEFAULT_STUN_TURN_URL NULL
 #define DEFAULT_DATA_CHANNELS_SUPPORTED FALSE
 #define DEFAULT_PEM_CERTIFICATE NULL
+#define DEFAULT_EXTERNAL_IPS NULL
 
 #define IP_VERSION_6 6
 
@@ -88,6 +89,7 @@ enum
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
   PROP_DATA_CHANNEL_SUPPORTED,
   PROP_PEM_CERTIFICATE,
+  PROP_EXTERNAL_IPS,
   N_PROPERTIES
 };
 
@@ -1692,6 +1694,10 @@ kms_webrtc_session_set_property (GObject * object, guint prop_id,
       g_free (self->pem_certificate);
       self->pem_certificate = g_value_dup_string (value);
       break;
+    case PROP_EXTERNAL_IPS:
+      g_free (self->external_ips);
+      self->external_ips = g_value_dup_string (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1724,6 +1730,9 @@ kms_webrtc_session_get_property (GObject * object, guint prop_id,
     case PROP_PEM_CERTIFICATE:
       g_value_set_string (value, self->pem_certificate);
       break;
+    case PROP_EXTERNAL_IPS:
+      g_value_set_string (value, self->external_ips);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1749,6 +1758,7 @@ kms_webrtc_session_finalize (GObject * object)
   g_free (self->turn_password);
   g_free (self->turn_address);
   g_free (self->pem_certificate);
+  g_free (self->external_ips);
 
   if (self->destroy_data != NULL && self->cb_data != NULL) {
     self->destroy_data (self->cb_data);
@@ -1794,10 +1804,55 @@ kms_webrtc_session_new_selected_pair_full (KmsIceBaseAgent * agent,
       component_id, lcandidate, rcandidate);
 }
 
+/**
+ * Parse comma-separated string containing local IP addresses.
+ *
+ * @param external_ips Comma-separated string with IP addresses.
+ * @return List of strings, each one containing one IP address.
+ */
+static GSList *
+kms_parse_external_ips (gchar * ips_str)
+{
+  if (ips_str == NULL) {
+    return NULL;
+  }
+
+  // ips_str == "192.168.1.2, 127.0.0.1,172.17.0.1"
+
+  gchar **ips_arr = g_strsplit_set (ips_str, " ,", -1);
+
+  // ips_arr[0] == "192.168.1.2"
+  // ips_arr[1] == ""
+  // ips_arr[2] == "127.0.0.1"
+  // ips_arr[3] == "172.17.0.1"
+  // ips_arr[4] == NULL
+
+  GSList *ips_list = NULL;
+
+  for (int i = 0; ips_arr[i] != NULL; ++i) {
+    if (strlen (ips_arr[i]) == 0) {
+      // ips_arr[i] == ""
+      g_free (ips_arr[i]);
+      continue;
+    }
+
+    ips_list = g_slist_append (ips_list, ips_arr[i]);
+  }
+
+  g_free (ips_arr);
+
+  return ips_list;
+}
+
 static void
 kms_webrtc_session_init_ice_agent (KmsWebrtcSession * self)
 {
-  self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context));
+  GSList *local_ips = kms_parse_external_ips (self->external_ips);
+
+  self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context,
+      local_ips));
+
+  g_slist_free_full (local_ips, g_free);
 
   kms_ice_base_agent_run_agent (self->agent);
 
@@ -1855,6 +1910,7 @@ kms_webrtc_session_init (KmsWebrtcSession * self)
   self->stun_server_ip = DEFAULT_STUN_SERVER_IP;
   self->stun_server_port = DEFAULT_STUN_SERVER_PORT;
   self->turn_url = DEFAULT_STUN_TURN_URL;
+  self->external_ips = DEFAULT_EXTERNAL_IPS;
   self->gather_started = FALSE;
 
   self->data_channels = g_hash_table_new_full (g_direct_hash,
@@ -1947,6 +2003,12 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
           "PemCertificate",
           "Pem certificate to be used in dtls",
           DEFAULT_PEM_CERTIFICATE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_EXTERNAL_IPS,
+      g_param_spec_string ("external-ips",
+          "ExternalIps",
+          "Predefined local IP addresses for gathering ICE candidates",
+          DEFAULT_EXTERNAL_IPS, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_DATA_CHANNEL_SUPPORTED,
       g_param_spec_boolean ("data-channel-supported",

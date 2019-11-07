@@ -503,6 +503,16 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   remove_not_supported_codecs (element);
 
   //set properties
+
+  std::string externalIps;
+  if (getConfigValue <std::string, WebRtcEndpoint> (&externalIps, "externalAddresses")) {
+    GST_INFO ("Predefined external IP address: %s", externalIps.c_str());
+    g_object_set (G_OBJECT (element), "external-ips", externalIps.c_str(), NULL);
+  } else {
+    GST_INFO ("External IP address not found in config;"
+              " IP will be automatically discovered by ICE");
+  }
+
   uint stunPort = 0;
   if (!getConfigValue <uint, WebRtcEndpoint> (&stunPort, "stunServerPort",
       DEFAULT_STUN_PORT)) {
