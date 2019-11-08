@@ -165,7 +165,6 @@
 		<version.compiler.plugin>3.8.1</version.compiler.plugin>
 		<version.dependency.plugin>3.1.1</version.dependency.plugin>
 		<version.deploy.plugin>3.0.0-M1</version.deploy.plugin>
-		<version.ear.plugin>3.0.11</version.ear.plugin>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.0.0-M2</version.enforcer.plugin>
 		<version.enforcer.rules.plugin>1.2</version.enforcer.rules.plugin>
@@ -934,11 +933,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
 					<version>${version.deploy.plugin}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-ear-plugin</artifactId>
-					<version>${version.ear.plugin}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
