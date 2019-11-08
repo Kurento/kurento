@@ -224,24 +224,8 @@ end:
   if (remote_candidate) { g_object_unref (remote_candidate); }
 }
 
-/**
- * Adds new local IP address to NiceAgent instance.
- *
- * @param addr pointer to the new local IP address.
- * @param agent NiceAgent instance.
- */
-void
-kms_ice_nice_agent_add_local_addr (const char * local_ip, NiceAgent * agent)
-{
-  NiceAddress *nice_address = nice_address_new ();
-
-  nice_address_set_from_string (nice_address, local_ip);
-  nice_agent_add_local_address (agent, nice_address);
-  nice_address_free (nice_address);
-}
-
 KmsIceNiceAgent *
-kms_ice_nice_agent_new (GMainContext * context, GSList * local_ips)
+kms_ice_nice_agent_new (GMainContext * context)
 {
   GObject *obj;
   KmsIceNiceAgent *self;
@@ -265,11 +249,6 @@ kms_ice_nice_agent_new (GMainContext * context, GSList * local_ips)
       G_CALLBACK (kms_ice_nice_agent_component_state_change), self);
   g_signal_connect (self->priv->agent, "new-selected-pair-full",
       G_CALLBACK (kms_ice_nice_agent_new_selected_pair_full), self);
-
-  if (local_ips != NULL) {
-    g_slist_foreach (local_ips, (GFunc) kms_ice_nice_agent_add_local_addr,
-        self->priv->agent);
-  }
 
   return self;
 }
