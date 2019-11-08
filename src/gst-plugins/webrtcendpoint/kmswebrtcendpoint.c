@@ -54,6 +54,7 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
 #define DEFAULT_STUN_SERVER_PORT 3478
 #define DEFAULT_STUN_TURN_URL NULL
 #define DEFAULT_PEM_CERTIFICATE NULL
+#define DEFAULT_EXTERNAL_IPS NULL
 
 enum
 {
@@ -62,6 +63,7 @@ enum
   PROP_STUN_SERVER_PORT,
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
   PROP_PEM_CERTIFICATE,
+  PROP_EXTERNAL_IPS,
   N_PROPERTIES
 };
 
@@ -93,6 +95,7 @@ struct _KmsWebrtcEndpointPrivate
   guint stun_server_port;
   gchar *turn_url;
   gchar *pem_certificate;
+  gchar *external_ips;
 };
 
 /* Internal session management begin */
@@ -307,11 +310,14 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       webrtc_sess, "turn-url", G_BINDING_DEFAULT);
   g_object_bind_property (self, "pem-certificate",
       webrtc_sess, "pem-certificate", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "external-ips",
+      webrtc_sess, "external-ips", G_BINDING_DEFAULT);
 
   g_object_set (webrtc_sess, "stun-server", self->priv->stun_server_ip,
       "stun-server-port", self->priv->stun_server_port,
       "turn-url", self->priv->turn_url,
-      "pem-certificate", self->priv->pem_certificate, NULL);
+      "pem-certificate", self->priv->pem_certificate,
+      "external-ips", self->priv->external_ips, NULL);
 
   g_signal_connect (webrtc_sess, "on-ice-candidate",
       G_CALLBACK (on_ice_candidate), self);
@@ -476,6 +482,10 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
       g_free (self->priv->pem_certificate);
       self->priv->pem_certificate = g_value_dup_string (value);
       break;
+    case PROP_EXTERNAL_IPS:
+      g_free (self->priv->external_ips);
+      self->priv->external_ips = g_value_dup_string (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -504,6 +514,9 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
       break;
     case PROP_PEM_CERTIFICATE:
       g_value_set_string (value, self->priv->pem_certificate);
+      break;
+    case PROP_EXTERNAL_IPS:
+      g_value_set_string (value, self->priv->external_ips);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -540,6 +553,7 @@ kms_webrtc_endpoint_finalize (GObject * object)
   g_free (self->priv->stun_server_ip);
   g_free (self->priv->turn_url);
   g_free (self->priv->pem_certificate);
+  g_free (self->priv->external_ips);
 
   g_main_context_unref (self->priv->context);
 
@@ -716,6 +730,12 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "Pem certificate to be used in dtls",
           DEFAULT_PEM_CERTIFICATE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (gobject_class, PROP_EXTERNAL_IPS,
+      g_param_spec_string ("external-ips",
+          "ExternalIps",
+          "Predefined local IP addresses for gathering ICE candidates",
+          DEFAULT_EXTERNAL_IPS, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   /**
   * KmsWebrtcEndpoint::on-ice-candidate:
   * @self: the object which received the signal
@@ -848,6 +868,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv->stun_server_port = DEFAULT_STUN_SERVER_PORT;
   self->priv->turn_url = DEFAULT_STUN_TURN_URL;
   self->priv->pem_certificate = DEFAULT_PEM_CERTIFICATE;
+  self->priv->external_ips = DEFAULT_EXTERNAL_IPS;
 
   self->priv->loop = kms_loop_new ();
   g_object_get (self->priv->loop, "context", &self->priv->context, NULL);

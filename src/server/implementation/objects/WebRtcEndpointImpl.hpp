@@ -46,8 +46,12 @@ public:
 
   virtual ~WebRtcEndpointImpl ();
 
+  std::string getExternalAddresses () override;
+  void setExternalAddresses (const std::string &externalAddresses) override;
+
   std::string getStunServerAddress () override;
   void setStunServerAddress (const std::string &stunServerAddress) override;
+
   int getStunServerPort () override;
   void setStunServerPort (int stunServerPort) override;
 

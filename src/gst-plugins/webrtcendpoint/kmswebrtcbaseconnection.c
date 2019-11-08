@@ -19,6 +19,8 @@
 #include <commons/kmsstats.h>
 #include "kmsiceniceagent.h"
 
+#include <string.h> // strlen()
+
 #define GST_CAT_DEFAULT kmswebrtcbaseconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "kmswebrtcbaseconnection"
@@ -172,6 +174,83 @@ kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection * self)
       KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
 
   return klass->get_certificate_pem (self);
+}
+
+/**
+ * Split comma-separated string containing IP addresses.
+ *
+ * @param external_ips Comma-separated string with IP addresses.
+ * @return List of strings, each one containing one IP address.
+ */
+static GSList *
+kms_webrtc_base_connection_split_ips (const char * ips_str)
+{
+  if (ips_str == NULL) {
+    return NULL;
+  }
+
+  // ips_str == "192.168.1.2, 127.0.0.1,172.17.0.1"
+
+  gchar **ips_arr = g_strsplit_set (ips_str, " ,", -1);
+
+  // ips_arr[0] == "192.168.1.2"
+  // ips_arr[1] == ""
+  // ips_arr[2] == "127.0.0.1"
+  // ips_arr[3] == "172.17.0.1"
+  // ips_arr[4] == NULL
+
+  GSList *ips_list = NULL;
+
+  for (int i = 0; ips_arr[i] != NULL; ++i) {
+    if (strlen (ips_arr[i]) == 0) {
+      // ips_arr[i] == ""
+      g_free (ips_arr[i]);
+      continue;
+    }
+
+    ips_list = g_slist_append (ips_list, ips_arr[i]);
+  }
+
+  g_free (ips_arr);
+
+  return ips_list;
+}
+
+/**
+ * Adds new local IP address to NiceAgent instance.
+ *
+ * @param addr pointer to the new local IP address.
+ * @param agent NiceAgent instance.
+ */
+static void
+kms_webrtc_base_connection_agent_add_local_addr (const char * local_ip,
+    NiceAgent * agent)
+{
+  NiceAddress *nice_address = nice_address_new ();
+
+  nice_address_set_from_string (nice_address, local_ip);
+  nice_agent_add_local_address (agent, nice_address);
+  nice_address_free (nice_address);
+}
+
+void
+kms_webrtc_base_connection_set_external_ips_info (KmsWebRtcBaseConnection *
+    self, const gchar * external_ips)
+{
+  if (KMS_IS_ICE_NICE_AGENT (self->agent)) {
+    KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self->agent);
+    NiceAgent *agent = kms_ice_nice_agent_get_agent (nice_agent);
+
+    GSList *local_ips = kms_webrtc_base_connection_split_ips (external_ips);
+
+    if (local_ips != NULL) {
+      g_slist_foreach (local_ips,
+          (GFunc) kms_webrtc_base_connection_agent_add_local_addr,
+          agent);
+    }
+
+    g_slist_free_full (local_ips, g_free);
+  }
 }
 
 void
