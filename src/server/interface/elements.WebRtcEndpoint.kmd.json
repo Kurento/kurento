@@ -160,47 +160,73 @@
   original stream.
 </p>
 <p>
-  The default bandwidth range of the endpoint is 100kbps-500kbps, but it can be
-  changed separately for input/output directions and for audio/video streams.
+  The default bandwidth range of the endpoint is
+  <strong>[100 kbps, 500 kbps]</strong>, but it can be changed separately for
+  input/output directions and for audio/video streams.
+</p>
+<p>
+  <strong>
+    Check the extended documentation of these parameters in
+    :rom:cls:`SdpEndpoint`, :rom:cls:`BaseRtpEndpoint`, and
+    :rom:cls:`RembParams`.
+  </strong>
 </p>
 <ul>
   <li>
-    Input bandwidth control mechanism: Configuration interval used to inform
-    remote peer the range of bitrates that can be pushed into this
-    WebRtcEndpoint object.
+    Input bandwidth: Configuration value used to inform remote peers about the
+    bitrate that can be pushed into this endpoint.
     <ul>
       <li>
-        setMin/MaxVideoRecvBandwidth: sets Min/Max bitrate limits expected for
-        received video stream.
+        <strong>{get,set}MinVideoRecvBandwidth</strong>: Minimum bitrate
+        expected for the received video stream. This is used to set a minimum
+        value of local REMB during bandwidth estimation, if supported by the
+        implementing class. It follows that min values will only have effect in
+        remote peers that support this congestion control mechanism, such as
+        Chrome.
       </li>
       <li>
-        setMin/MaxAudioRecvBandwidth: sets Min/Max bitrate limits expected for
-        received audio stream.
+        <strong>{get,set}Max{Audio,Video}RecvBandwidth</strong>: Maximum bitrate
+        expected for the received stream. This is used to put a limit on the
+        bitrate that the remote peer will send to this endpoint. The net effect
+        of setting this parameter is that
+        <i>when Kurento generates an SDP Offer</i>, an 'Application Specific'
+        (AS) maximum bandwidth attribute will be added to the SDP media section:
+        <code>b=AS:{value}</code>.
       </li>
     </ul>
-    Max values are announced in the SDP, while min values are set to limit the
-    lower value of REMB packages. It follows that min values will only have
-    effect in peers that support this control mechanism, such as Chrome.
+    Max values are announced in the SDP, while min values are used to set a
+    minimum value of local REMB during bandwidth estimation, if supported by the
+    implementing class. It follows that min values will only have effect in
+    remote peers that support this congestion control mechanism, such as Chrome.
   </li>
   <li>
-    Output bandwidth control mechanism: Configuration interval used to control
-    bitrate of the output video stream sent to remote peer. It is important to
-    keep in mind that pushed bitrate depends on network and remote peer
-    capabilities. Remote peers can also announce bandwidth limitation in their
-    SDPs (through the <code>b={modifier}:{value}</code> tag). Kurento will
-    always enforce bitrate limitations specified by the remote peer over
-    internal configurations.
+    Output bandwidth: Configuration values used to control bitrate of the output
+    video stream sent to remote peers. It is important to keep in mind that
+    pushed bitrate depends on network and remote peer capabilities. Remote peers
+    can also announce bandwidth limitation in their SDPs (through the
+    <code>b={modifier}:{value}</code> tag). Kurento will always enforce bitrate
+    limitations specified by the remote peer over internal configurations.
     <ul>
       <li>
-        setMin/MaxVideoSendBandwidth: sets Min/Max bitrate limits for video sent
-        to remote peer
+        <strong>{get,set}MinVideoSendBandwidth</strong>: Minimum video bitrate
+        sent to remote peer.
+      </li>
+      <li>
+        <strong>{get,set}MaxVideoSendBandwidth</strong>: Maximum video bitrate
+        sent to remote peer.
+      </li>
+      <li>
+        <strong>RembParams.rembOnConnect</strong>: Initial local REMB bandwidth
+        estimation that gets propagated when a new endpoint is connected.
       </li>
     </ul>
   </li>
 </ul>
 <p>
-  All bandwidth control parameters must be changed before the SDP negotiation
-  takes place, and can't be changed afterwards.
+  <strong>
+    All bandwidth control parameters must be changed before the SDP negotiation
+    takes place, and can't be changed afterwards.
+  </strong>
 </p>
 <p>
   DataChannels allow other media elements that make use of the DataPad, to send
