@@ -52,6 +52,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define CONFIG_PATH "configPath"
 #define DEFAULT_PATH "/etc/kurento"
 
+#define PARAM_NETWORK_INTERFACES "networkInterfaces"
+
+#define PROP_NETWORK_INTERFACES "network-interfaces"
+
 namespace kurento
 {
 
@@ -504,12 +508,14 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   //set properties
 
-  std::string externalIps;
-  if (getConfigValue <std::string, WebRtcEndpoint> (&externalIps, "externalAddresses")) {
-    GST_INFO ("Predefined external IP: %s", externalIps.c_str());
-    g_object_set (G_OBJECT (element), "external-ips", externalIps.c_str(), NULL);
+  std::string networkInterfaces;
+  if (getConfigValue <std::string, WebRtcEndpoint> (&networkInterfaces,
+      PARAM_NETWORK_INTERFACES)) {
+    GST_INFO ("Predefined network interfaces: %s", networkInterfaces.c_str());
+    g_object_set (G_OBJECT (element), PROP_NETWORK_INTERFACES,
+        networkInterfaces.c_str(), NULL);
   } else {
-    GST_INFO ("No predefined external IP found in config;"
+    GST_INFO ("No predefined network interfaces found in config;"
               " you can set one or default to ICE automatic discovery");
   }
 
@@ -604,28 +610,27 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
 }
 
 std::string
-WebRtcEndpointImpl::getExternalAddresses ()
+WebRtcEndpointImpl::getNetworkInterfaces ()
 {
-  std::string externalAddresses;
+  std::string networkInterfaces;
   gchar *ret;
 
-  g_object_get ( G_OBJECT (element), "external-ips", &ret, NULL);
+  g_object_get (G_OBJECT (element), PROP_NETWORK_INTERFACES, &ret, NULL);
 
   if (ret != nullptr) {
-    externalAddresses = std::string (ret);
+    networkInterfaces = std::string (ret);
     g_free (ret);
   }
 
-  return externalAddresses;
+  return networkInterfaces;
 }
 
 void
-WebRtcEndpointImpl::setExternalAddresses (const std::string &externalAddresses)
+WebRtcEndpointImpl::setNetworkInterfaces (const std::string &networkInterfaces)
 {
-  GST_INFO ("Set external IP address: %s", externalAddresses.c_str());
-  g_object_set ( G_OBJECT (element), "external-ips",
-                 externalAddresses.c_str(),
-                 NULL);
+  GST_INFO ("Set network interfaces: %s", networkInterfaces.c_str());
+  g_object_set (G_OBJECT (element), PROP_NETWORK_INTERFACES,
+      networkInterfaces.c_str(), NULL);
 }
 
 std::string

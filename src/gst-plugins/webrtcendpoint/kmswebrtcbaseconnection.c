@@ -177,79 +177,79 @@ kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection * self)
 }
 
 /**
- * Split comma-separated string containing IP addresses.
- *
- * @param external_ips Comma-separated string with IP addresses.
- * @return List of strings, each one containing one IP address.
+ * Split comma-separated string.
  */
 static GSList *
-kms_webrtc_base_connection_split_ips (const char * ips_str)
+kms_webrtc_base_connection_split_comma (const gchar * str)
 {
-  if (ips_str == NULL) {
+  if (str == NULL) {
     return NULL;
   }
 
-  // ips_str == "192.168.1.2, 127.0.0.1,172.17.0.1"
+  // str == "A, B,C"
 
-  gchar **ips_arr = g_strsplit_set (ips_str, " ,", -1);
+  gchar **arr = g_strsplit_set (str, " ,", -1);
 
-  // ips_arr[0] == "192.168.1.2"
-  // ips_arr[1] == ""
-  // ips_arr[2] == "127.0.0.1"
-  // ips_arr[3] == "172.17.0.1"
-  // ips_arr[4] == NULL
+  // arr[0] == "A"
+  // arr[1] == ""
+  // arr[2] == "B"
+  // arr[3] == "C"
+  // arr[4] == NULL
 
-  GSList *ips_list = NULL;
+  GSList *list = NULL;
 
-  for (int i = 0; ips_arr[i] != NULL; ++i) {
-    if (strlen (ips_arr[i]) == 0) {
-      // ips_arr[i] == ""
-      g_free (ips_arr[i]);
+  for (int i = 0; arr[i] != NULL; ++i) {
+    if (strlen (arr[i]) == 0) {
+      // arr[i] == ""
+      g_free (arr[i]);
       continue;
     }
 
-    ips_list = g_slist_append (ips_list, ips_arr[i]);
+    list = g_slist_append (list, arr[i]);
   }
 
-  g_free (ips_arr);
+  g_free (arr);
 
-  return ips_list;
+  return list;
 }
 
 /**
- * Adds new local IP address to NiceAgent instance.
- *
- * @param addr pointer to the new local IP address.
- * @param agent NiceAgent instance.
+ * Add new local IP address to NiceAgent instance.
  */
 static void
-kms_webrtc_base_connection_agent_add_local_addr (const char * local_ip,
+kms_webrtc_base_connection_agent_add_net_addr (const gchar * net_name,
     NiceAgent * agent)
 {
   NiceAddress *nice_address = nice_address_new ();
+  gchar *ip_address = nice_interfaces_get_ip_for_interface ((gchar *)net_name);
 
-  nice_address_set_from_string (nice_address, local_ip);
+  nice_address_set_from_string (nice_address, ip_address);
   nice_agent_add_local_address (agent, nice_address);
+
+  GST_INFO_OBJECT (agent, "Added local address: %s", ip_address);
+
   nice_address_free (nice_address);
+  g_free (ip_address);
 }
 
 void
-kms_webrtc_base_connection_set_external_ips_info (KmsWebRtcBaseConnection *
-    self, const gchar * external_ips)
+kms_webrtc_base_connection_set_network_ifs_info (KmsWebRtcBaseConnection *
+    self, const gchar * net_names)
 {
   if (KMS_IS_ICE_NICE_AGENT (self->agent)) {
     KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self->agent);
     NiceAgent *agent = kms_ice_nice_agent_get_agent (nice_agent);
 
-    GSList *local_ips = kms_webrtc_base_connection_split_ips (external_ips);
+    GSList *net_list = kms_webrtc_base_connection_split_comma (
+        net_names);
 
-    if (local_ips != NULL) {
-      g_slist_foreach (local_ips,
-          (GFunc) kms_webrtc_base_connection_agent_add_local_addr,
+    if (net_list != NULL) {
+      g_slist_foreach (net_list,
+          (GFunc) kms_webrtc_base_connection_agent_add_net_addr,
           agent);
     }
 
-    g_slist_free_full (local_ips, g_free);
+    g_slist_free_full (net_list, g_free);
   }
 }
 

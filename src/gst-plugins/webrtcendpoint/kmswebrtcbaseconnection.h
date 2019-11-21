@@ -79,8 +79,8 @@ GType kms_webrtc_base_connection_get_type (void);
 
 gchar *kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection *
     self);
-void kms_webrtc_base_connection_set_external_ips_info (KmsWebRtcBaseConnection *
-    self, const gchar * external_ips);
+void kms_webrtc_base_connection_set_network_ifs_info (KmsWebRtcBaseConnection *
+    self, const gchar * net_names);
 void kms_webrtc_base_connection_set_stun_server_info (KmsWebRtcBaseConnection * self,
     const gchar * stun_server_ip, guint stun_server_port);
 void kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
