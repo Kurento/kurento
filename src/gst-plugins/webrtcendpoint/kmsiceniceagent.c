@@ -69,41 +69,26 @@ kms_ice_nice_agent_create_candidate_from_nice (NiceAgent * nice_agent,
 }
 
 static void
-kms_ice_nice_agent_new_candidate (NiceAgent * agent,
-    guint stream_id,
-    guint component_id, gchar * foundation, KmsIceNiceAgent * self)
+kms_ice_nice_agent_new_candidate_full (NiceAgent * agent,
+    NiceCandidate * candidate, KmsIceNiceAgent * self)
 {
   KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
-  GSList *candidates;
-  GSList *walk;
+  const guint stream_id = candidate->stream_id;
+  const guint component_id = candidate->component_id;
 
-  candidates = nice_agent_get_local_candidates (agent, stream_id, component_id);
+  gchar *stream_id_str = g_strdup_printf ("%d", stream_id);
+  KmsIceCandidate *kms_candidate =
+      kms_ice_nice_agent_create_candidate_from_nice (agent, candidate,
+      stream_id_str);
+  g_free (stream_id_str);
 
-  for (walk = candidates; walk; walk = walk->next) {
-    NiceCandidate *cand = walk->data;
+  GST_DEBUG_OBJECT (self,
+      "[IceCandidateFound] local: '%s', stream_id: %d, component_id: %d",
+      kms_ice_candidate_get_candidate (kms_candidate),
+      stream_id, component_id);
 
-    if (cand->stream_id == stream_id &&
-        cand->component_id == component_id &&
-        g_strcmp0 (foundation, cand->foundation) == 0) {
-      gchar *stream_id_str = g_strdup_printf ("%d", stream_id);
-      KmsIceCandidate *candidate =
-          kms_ice_nice_agent_create_candidate_from_nice (agent, cand,
-          stream_id_str);
-
-      g_free (stream_id_str);
-
-      if (candidate) {
-        GST_DEBUG_OBJECT (self,
-            "[IceCandidateFound] local: '%s', stream_id: %d, component_id: %d",
-            kms_ice_candidate_get_candidate (candidate),
-            stream_id, component_id);
-
-        g_signal_emit_by_name (parent, "on-ice-candidate", candidate);
-        g_object_unref (candidate);
-      }
-    }
-  }
-  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
+  g_signal_emit_by_name (parent, "on-ice-candidate", kms_candidate);
+  g_object_unref (kms_candidate);
 }
 
 static void
@@ -241,8 +226,8 @@ kms_ice_nice_agent_new (GMainContext * context)
   GST_DEBUG_OBJECT (self, "Disable UPNP support");
   g_object_set (self->priv->agent, "upnp", FALSE, NULL);
 
-  g_signal_connect (self->priv->agent, "new-candidate",
-      G_CALLBACK (kms_ice_nice_agent_new_candidate), self);
+  g_signal_connect (self->priv->agent, "new-candidate-full",
+      G_CALLBACK (kms_ice_nice_agent_new_candidate_full), self);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (kms_ice_nice_agent_gathering_done), self);
   g_signal_connect (self->priv->agent, "component-state-changed",
