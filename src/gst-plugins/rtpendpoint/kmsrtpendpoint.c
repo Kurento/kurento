@@ -35,6 +35,8 @@
 #include "kmsrtpsdescryptosuite.h"
 #include "kmsrandom.h"
 
+#include <stdlib.h> // atoi()
+
 #define PLUGIN_NAME "rtpendpoint"
 
 GST_DEBUG_CATEGORY_STATIC (kms_rtp_endpoint_debug);
@@ -759,7 +761,11 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
     if (g_strcmp0 (attr->key, "rtcp") == 0) {
       gst_sdp_media_remove_attribute (media, a);
-      /* TODO: complete rtcp attr with addr and rtcp port */
+
+      const guint rtcp_port = kms_rtp_base_connection_get_rtcp_port (conn);
+      gchar *str = g_strdup_printf ("%" G_GUINT32_FORMAT, rtcp_port);
+      gst_sdp_media_add_attribute (media, "rtcp", str);
+      g_free (str);
     }
   }
 
@@ -920,12 +926,10 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
 
   guint len = gst_sdp_message_medias_len (sess->remote_sdp);
   for (guint i = 0; i < len; i++) {
-    //J REVIEW: shouldn't it be negotiated_media instead of remote_media?
     const GstSDPMedia *media = gst_sdp_message_get_media (sess->remote_sdp, i);
     const GstSDPConnection *media_con;
     KmsSdpMediaHandler *handler;
     KmsRtpBaseConnection *conn;
-    guint port;
 
     if (gst_sdp_media_get_port (media) == 0) {
       // RFC 3264 section 5.1:
@@ -978,10 +982,18 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
     else {
       const gchar *media_str = gst_sdp_media_get_media (media);
       GST_INFO_OBJECT (self, "COMEDIA: Media '%s' doesn't use COMEDIA", media_str);
-      port = gst_sdp_media_get_port (media);
+
+      guint rtp_port = gst_sdp_media_get_port (media);
+      guint rtcp_port = rtp_port + 1;
+
+      const gchar *attr_rtcp_port = gst_sdp_media_get_attribute_val(media,
+          "rtcp");
+      if (attr_rtcp_port != NULL) {
+        rtcp_port = (guint)atoi (attr_rtcp_port);
+      }
+
       kms_rtp_base_connection_set_remote_info (conn,
-          media_con->address, port, port + 1);
-      /* TODO: get rtcp port from attr if it exists */
+          media_con->address, (gint)rtp_port, (gint)rtcp_port);
     }
   }
 }
