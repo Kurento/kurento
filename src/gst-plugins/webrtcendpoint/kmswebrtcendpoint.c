@@ -441,7 +441,7 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
   KmsWebrtcSession *webrtc_sess;
   gboolean ret;
 
-  GST_INFO_OBJECT (self, "Add ICE candidate '%s' for session '%s'",
+  GST_INFO_OBJECT (self, "Add remote candidate '%s' for session '%s'",
       kms_ice_candidate_get_candidate (candidate), sess_id);
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
