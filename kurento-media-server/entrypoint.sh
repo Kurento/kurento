@@ -6,16 +6,25 @@ set -o errexit -o errtrace -o pipefail -o nounset
 # Trace all commands
 set -o xtrace
 
-# Prepare the Kurento's WebRTC STUN/TURN settings file
-true >/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-
-if [[ -n "$KMS_TURN_URL" ]]; then
-    echo "turnURL=$KMS_TURN_URL" >>/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
+# Generate BaseRtpEndpoint settings
+CONF_FILE="/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini"
+true >"$CONF_FILE"
+if [[ -n "${KMS_MTU:-}" ]]; then
+    echo "mtu=$KMS_MTU" >>"$CONF_FILE"
 fi
 
-if [[ -n "$KMS_STUN_IP" ]] && [[ -n "$KMS_STUN_PORT" ]]; then
-    echo "stunServerAddress=$KMS_STUN_IP" >>/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-    echo "stunServerPort=$KMS_STUN_PORT"  >>/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
+# Generate WebRtcEndpoint settings
+CONF_FILE="/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini"
+true >"$CONF_FILE"
+if [[ -n "${KMS_NETWORK_INTERFACES:-}" ]]; then
+    echo "networkInterfaces=$KMS_NETWORK_INTERFACES" >>"$CONF_FILE"
+fi
+if [[ -n "${KMS_STUN_IP:-}" ]] && [[ -n "${KMS_STUN_PORT:-}" ]]; then
+    echo "stunServerAddress=$KMS_STUN_IP" >>"$CONF_FILE"
+    echo "stunServerPort=$KMS_STUN_PORT"  >>"$CONF_FILE"
+fi
+if [[ -n "${KMS_TURN_URL:-}" ]]; then
+    echo "turnURL=$KMS_TURN_URL" >>"$CONF_FILE"
 fi
 
 # Remove the IPv6 loopback until IPv6 is well supported
