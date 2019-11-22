@@ -1,13 +1,12 @@
 # Kurento Media Server
 #
 # This Docker image is used to run an instance of Kurento Media Server.
-# JSON-RPC API interface is exposed on port 8888.
 #
 #
 # Build command
 # -------------
 #
-# docker build [Args...] --tag kurento/kurento-media-server .
+# docker build [Args...] --tag kurento/kurento-media-server:latest .
 #
 #
 # Build arguments
@@ -16,7 +15,6 @@
 # --build-arg UBUNTU_VERSION=<UbuntuVersion>
 #
 #   <UbuntuVersion> is like "xenial", "bionic", etc.
-#   Valid values are listed here: https://hub.docker.com/_/buildpack-deps/
 #
 #   Optional. Default: "xenial".
 #
@@ -25,17 +23,17 @@
 #   <KmsVersion> is like "6.7.2", "6.9.0", etc.
 #   Alternatively, "dev" is used to build a nightly version of KMS.
 #
-#   Required. Default: "0.0.0" (invalid version).
+#   Optional. Default: "dev".
 #
 #
 # Run command
 # -----------
 #
-# docker run -d --name kms -p 8888:8888 kurento/kurento-media-server
+# docker run --name kms -p 8888:8888 kurento/kurento-media-server:latest
 
 
 
-ARG UBUNTU_VERSION=xenial
+ARG UBUNTU_VERSION="xenial"
 
 FROM ubuntu:${UBUNTU_VERSION}
 
@@ -43,14 +41,14 @@ MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 MAINTAINER Fede Diaz <nordri@gmail.com>
 MAINTAINER Juan Navarro <juan.navarro@gmx.es>
 
-ARG UBUNTU_VERSION=xenial
-ARG KMS_VERSION=0.0.0
+ARG UBUNTU_VERSION="xenial"
+ARG KMS_VERSION="dev"
 
 # Configure environment:
 # * DEBIAN_FRONTEND: Disable interactive questions and messages in `apt-get`
 # * LANG: Set the default locale for all commands
-ENV DEBIAN_FRONTEND=noninteractive \
-    LANG=C.UTF-8
+ENV DEBIAN_FRONTEND="noninteractive" \
+    LANG="C.UTF-8"
 
 # Install required tools:
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)

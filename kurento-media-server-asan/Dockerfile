@@ -8,7 +8,7 @@
 # Build command
 # -------------
 #
-# docker build <Args...> --tag kurento/kurento-media-server-asan .
+# docker build [Args...] --tag kurento/kurento-media-server:latest-asan .
 #
 #
 # Build arguments
@@ -17,7 +17,6 @@
 # --build-arg UBUNTU_VERSION=<UbuntuVersion>
 #
 #   <UbuntuVersion> is like "xenial", "bionic", etc.
-#   Valid values are listed here: https://hub.docker.com/_/buildpack-deps/
 #
 #   Optional. Default: "xenial".
 #
@@ -26,7 +25,7 @@
 #   <KmsVersion> is like "6.7.2", "6.9.0", etc.
 #   Alternatively, "dev" is used to build a nightly version of KMS.
 #
-#   Required. Default: "0.0.0" (invalid version).
+#   Optional. Default: "dev".
 #
 # --build-arg KMS_IMAGE=<DockerTag>
 #
@@ -40,8 +39,7 @@
 # Run command
 # -----------
 #
-# docker run --detach --name kms-asan --publish 8888:8888 \
-#     kurento/kurento-media-server-asan
+# docker run --name kms-asan -p 8888:8888 kurento/kurento-media-server:latest-asan
 #
 # Then, save the logs to a file:
 #
@@ -55,7 +53,7 @@ ARG KMS_IMAGE="kurento/kurento-media-server-dev:latest"
 FROM ubuntu:${UBUNTU_VERSION} AS builder
 
 ARG UBUNTU_VERSION="xenial"
-ARG KMS_VERSION="0.0.0"
+ARG KMS_VERSION="dev"
 ARG GCC_VERSION="9"
 
 # Configure environment:

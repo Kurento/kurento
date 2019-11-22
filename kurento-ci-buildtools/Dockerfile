@@ -20,7 +20,6 @@
 # --build-arg UBUNTU_VERSION=<UbuntuVersion>
 #
 #   <UbuntuVersion> is like "xenial", "bionic", etc.
-#   Valid values are listed here: https://hub.docker.com/_/buildpack-deps/
 #
 #   Optional. Default: "xenial".
 

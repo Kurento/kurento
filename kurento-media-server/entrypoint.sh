@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#/ Docker script - Run Kurento Media Server.
+
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
 

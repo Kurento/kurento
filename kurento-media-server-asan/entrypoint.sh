@@ -33,11 +33,6 @@ fi
 # Note: `sed -i /etc/hosts` won't work inside a Docker container
 cat /etc/hosts | sed '/::1/d' | tee /etc/hosts >/dev/null
 
-if [[ ! -d /logs ]]; then
-    # Ensure the logs destination dir exists
-    mkdir /logs
-fi
-
 # Use ASAN_OPTIONS recommended for aggressive diagnostics:
 # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
 # NOTE: "detect_stack_use_after_return=1" breaks Kurento execution (more study needed to see why)
