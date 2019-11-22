@@ -108,16 +108,18 @@ export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     # Main tag: "1.2.3-asan"
+    # Moving tag: "latest-asan"
     export TAG="${VERSION}-asan"
-    export EXTRA_TAGS=""
+    export EXTRA_TAGS="latest-asan"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     # Main tag: "experiment-asan"
     export TAG="${JOB_DEPLOY_NAME}-asan"
     export EXTRA_TAGS=""
 else
     # Main tag: "1.2.3-20191231235959"
+    # Moving tag: "latest-asan"
     export TAG="${VERSION}-${JOB_TIMESTAMP}-asan"
-    export EXTRA_TAGS=""
+    export EXTRA_TAGS="latest-asan"
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
