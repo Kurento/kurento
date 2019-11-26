@@ -58,7 +58,5 @@ mkdir /kurento-asan
 find "$KMS_BIN_DIR" -type f -name '*.so*' -exec cp -av {} /kurento-asan/ \;
 cp -av "$KMS_BIN_DIR/kurento-media-server/server/kurento-media-server" \
     /kurento-asan/
-cp -avL "$KMS_BIN_DIR/config" \
-    /kurento-asan/
 cp -avL "/usr/lib/gcc/x86_64-linux-gnu/$(gcc -dumpversion | head -c1)/libasan.so" \
     /kurento-asan/

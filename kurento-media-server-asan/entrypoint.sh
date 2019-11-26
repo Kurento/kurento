@@ -43,7 +43,5 @@ LD_LIBRARY_PATH="$PWD" \
 GST_DEBUG_NO_COLOR=1 \
 GST_DEBUG='3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4' \
 ./kurento-media-server \
-    --modules-path="$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules" \
-    --modules-config-path="$PWD/config" \
-    --conf-file="$PWD/config/kurento.conf.json" \
+    --modules-path="$PWD" \
     --gst-plugin-path="$PWD"
