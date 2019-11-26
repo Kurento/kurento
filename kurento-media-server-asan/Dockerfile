@@ -39,11 +39,11 @@
 # Run command
 # -----------
 #
-# docker run --name kms-asan -p 8888:8888 kurento/kurento-media-server:latest-asan
+# docker run --name kms -p 8888:8888 kurento/kurento-media-server:latest-asan
 #
-# Then, save the logs to a file:
+# Then, you can follow the logs with the `docker logs` command:
 #
-# docker logs kms-asan >"kurento-asan-$(date '+%Y%m%dT%H%M%S').log" 2>&1
+# docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
 
 

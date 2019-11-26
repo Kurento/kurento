@@ -46,4 +46,5 @@ fi
 # Note: `sed -i /etc/hosts` won't work inside a Docker container
 cat /etc/hosts | sed '/::1/d' | tee /etc/hosts >/dev/null
 
+# Run Kurento Media Server
 exec /usr/bin/kurento-media-server "$@"

@@ -30,6 +30,10 @@
 # -----------
 #
 # docker run --name kms -p 8888:8888 kurento/kurento-media-server:latest
+#
+# Then, you can follow the logs with the `docker logs` command:
+#
+# docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
 
 
@@ -84,19 +88,22 @@ RUN apt-get update && apt-get install --yes \
     || true \
  && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8888
-
-# Configure environment for KMS:
+# Configure environment for KMS. All of this can be overriden with `docker run`.
 # * Use suggested logging levels:
 #   https://doc-kurento.readthedocs.io/en/latest/features/logging.html#suggested-levels
-# * Disable colors in debug logs
-# * Provide STUN and TURN server details (can be empty):
-#   https://doc-kurento.readthedocs.io/en/latest/user/installation.html#stun-and-turn-servers
+# * Disable color in debug logs
+# * Provide default empty values for all environment variables supported by
+#   the entrypoint script. This acts more as documentation than really a need.
 ENV GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4" \
     GST_DEBUG_NO_COLOR=1 \
+    KMS_MTU="" \
+    KMS_NETWORK_INTERFACES="" \
     KMS_STUN_IP="" \
     KMS_STUN_PORT="" \
     KMS_TURN_URL=""
+
+# Expose default Kurento RPC control port
+EXPOSE 8888
 
 COPY ./entrypoint.sh /entrypoint.sh
 COPY ./healthchecker.sh /healthchecker.sh
