@@ -2,6 +2,7 @@ Source: kms-filters
 Priority: optional
 Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
+ build-essential,
  cmake,
  gstreamer1.5-plugins-bad,
  gstreamer1.5-plugins-good,
