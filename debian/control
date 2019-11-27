@@ -2,6 +2,7 @@ Source: kms-jsonrpc
 Priority: optional
 Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
+ build-essential,
  cmake,
  kms-cmake-utils (>= 6.7.0),
  kmsjsoncpp-dev,
