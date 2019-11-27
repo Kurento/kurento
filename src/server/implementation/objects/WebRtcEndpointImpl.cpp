@@ -52,8 +52,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define CONFIG_PATH "configPath"
 #define DEFAULT_PATH "/etc/kurento"
 
+#define PARAM_EXTERNAL_ADDRESS "externalAddress"
 #define PARAM_NETWORK_INTERFACES "networkInterfaces"
 
+#define PROP_EXTERNAL_ADDRESS "external-address"
 #define PROP_NETWORK_INTERFACES "network-interfaces"
 
 namespace kurento
@@ -508,6 +510,17 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   //set properties
 
+  std::string externalAddress;
+  if (getConfigValue <std::string, WebRtcEndpoint> (&externalAddress,
+      PARAM_EXTERNAL_ADDRESS)) {
+    GST_INFO ("Predefined external IP address: %s", externalAddress.c_str());
+    g_object_set (G_OBJECT (element), PROP_EXTERNAL_ADDRESS,
+        externalAddress.c_str(), NULL);
+  } else {
+    GST_INFO ("No predefined external IP address found in config;"
+              " you can set one or default to STUN automatic discovery");
+  }
+
   std::string networkInterfaces;
   if (getConfigValue <std::string, WebRtcEndpoint> (&networkInterfaces,
       PARAM_NETWORK_INTERFACES)) {
@@ -607,6 +620,30 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
   if (handlerNewSelectedPairFull > 0) {
     unregister_signal_handler (element, handlerNewSelectedPairFull);
   }
+}
+
+std::string
+WebRtcEndpointImpl::getExternalAddress ()
+{
+  std::string externalAddress;
+  gchar *ret;
+
+  g_object_get (G_OBJECT (element), PROP_EXTERNAL_ADDRESS, &ret, NULL);
+
+  if (ret != nullptr) {
+    externalAddress = std::string (ret);
+    g_free (ret);
+  }
+
+  return externalAddress;
+}
+
+void
+WebRtcEndpointImpl::setExternalAddress (const std::string &externalAddress)
+{
+  GST_INFO ("Set external IP address: %s", externalAddress.c_str());
+  g_object_set (G_OBJECT (element), PROP_EXTERNAL_ADDRESS,
+      externalAddress.c_str(), NULL);
 }
 
 std::string

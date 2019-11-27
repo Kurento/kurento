@@ -272,6 +272,37 @@
       ",
       "properties": [
         {
+          "name": "externalAddress",
+          "doc": "External (public) IP address of the media server.
+<p>
+  If you know what will be the external or public IP address of the media server
+  (e.g. because your deployment has an static IP), you can specify it here.
+  Doing so has the advantage of not needing to configure STUN/TURN for the media
+  server.
+</p>
+<p>
+  STUN/TURN are needed only when the media server sits behind a NAT and needs to
+  find out its own external IP address. However, if you set a static external IP
+  address with this parameter, then there is no need for the STUN/TURN
+  auto-discovery.
+</p>
+<p>
+  The effect of this parameter is that ALL local ICE candidates that are
+  gathered (for WebRTC) will contain the provided external IP address instead of
+  the local one.
+</p>
+<p>
+  <code>externalAddress</code> is an IPv4 or IPv6 address.
+</p>
+<p>Examples:</p>
+<ul>
+  <li><code>externalAddress=10.70.35.2</code></li>
+  <li><code>externalAddress=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
+</ul>
+          ",
+          "type": "String"
+        },
+        {
           "name": "networkInterfaces",
           "doc": "Local network interfaces used for ICE gathering.
 <p>

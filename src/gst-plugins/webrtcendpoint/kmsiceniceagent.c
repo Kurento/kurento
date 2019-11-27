@@ -34,6 +34,10 @@ G_DEFINE_TYPE (KmsIceNiceAgent, kms_ice_nice_agent, KMS_TYPE_ICE_BASE_AGENT);
 
 #define KMS_NICE_N_COMPONENTS 2
 
+static gboolean
+kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
+    KmsIceCandidate * candidate, const char *stream_id);
+
 struct _KmsIceNiceAgentPrivate
 {
   GMainContext *context;
@@ -88,6 +92,29 @@ kms_ice_nice_agent_new_candidate_full (NiceAgent * agent,
       stream_id, component_id);
 
   g_signal_emit_by_name (parent, "on-ice-candidate", kms_candidate);
+  g_object_unref (kms_candidate);
+}
+
+static void
+kms_ice_nice_agent_new_remote_candidate_full (NiceAgent * agent,
+    NiceCandidate * candidate, KmsIceNiceAgent * self)
+{
+  KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
+  const guint stream_id = candidate->stream_id;
+
+  gchar *stream_id_str = g_strdup_printf ("%d", stream_id);
+
+  KmsIceCandidate *kms_candidate =
+      kms_ice_nice_agent_create_candidate_from_nice (agent, candidate,
+      stream_id_str);
+
+  GST_DEBUG_OBJECT (self,
+      "[AddIceCandidate] found peer-reflexive remote: '%s'",
+      kms_ice_candidate_get_candidate (kms_candidate));
+
+  kms_ice_nice_agent_add_ice_candidate (parent, kms_candidate, stream_id_str);
+
+  g_free (stream_id_str);
   g_object_unref (kms_candidate);
 }
 
@@ -193,7 +220,7 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
     goto end;
   }
 
-  GST_DEBUG_OBJECT (self,
+  GST_INFO_OBJECT (self,
       "[NewCandidatePairSelected] local: '%s', remote: '%s'"
       ", stream_id: %d, component_id: %d",
       kms_ice_candidate_get_candidate (local_candidate),
@@ -228,6 +255,8 @@ kms_ice_nice_agent_new (GMainContext * context)
 
   g_signal_connect (self->priv->agent, "new-candidate-full",
       G_CALLBACK (kms_ice_nice_agent_new_candidate_full), self);
+  g_signal_connect (self->priv->agent, "new-remote-candidate-full",
+      G_CALLBACK (kms_ice_nice_agent_new_remote_candidate_full), self);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (kms_ice_nice_agent_gathering_done), self);
   g_signal_connect (self->priv->agent, "component-state-changed",
@@ -418,7 +447,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   NiceCandidate *nice_cand;
-  guint id = atoi (stream_id);
+  guint id = (guint) atoi (stream_id);
   gboolean ret;
   GSList *candidates;
   gchar *candidate_str;
@@ -431,7 +460,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
   g_free (candidate_str);
 
   if (nice_cand == NULL) {
-    GST_WARNING_OBJECT (self, "libnice failed parsing candidate: '%s'",
+    GST_WARNING_OBJECT (self, "[AddIceCandidate] libnice error, remote: '%s'",
         kms_ice_candidate_get_candidate (candidate));
     return FALSE;
   }
@@ -471,7 +500,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
   if (nice_agent_set_remote_candidates (nice_agent->priv->agent,
           nice_cand->stream_id, nice_cand->component_id, candidates) < 0) {
     GST_WARNING_OBJECT (self,
-        "Cannot add remote candidate: '%s', stream_id: %d, component_id: %d",
+        "[AddIceCandidate] libnice error, remote: '%s', stream_id: %d, component_id: %d",
         kms_ice_candidate_get_candidate (candidate),
         nice_cand->stream_id, nice_cand->component_id);
     ret = FALSE;

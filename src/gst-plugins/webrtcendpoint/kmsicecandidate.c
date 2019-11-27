@@ -204,20 +204,13 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
       g_error_free (err);
       err = NULL;
     } else {
-      // Replace the ip and candidate strings with the resolved address
-      gchar **split = g_strsplit(self->priv->candidate, self->priv->ip, 2);
-      g_free(self->priv->candidate);
-
+      // Set the resolved address
       GInetAddress *address = (GInetAddress *) g_list_nth_data (addresses, 0);
-      gchar *mdns_ip = self->priv->ip;
-      self->priv->ip = g_inet_address_to_string (address);
-
-      self->priv->candidate = g_strjoinv (self->priv->ip, split);
-      g_strfreev (split);
-
-      GST_INFO_OBJECT (self, "mDNS address (%s) resolved: %s", mdns_ip,
-          self->priv->ip);
-      g_free (mdns_ip);
+      gchar *resolved_ip = g_inet_address_to_string (address);
+      GST_INFO_OBJECT (self, "mDNS address (%s) resolved: %s", self->priv->ip,
+          resolved_ip);
+      kms_ice_candidate_set_address (self, resolved_ip);
+      g_free (resolved_ip);
     }
 
     if (addresses) {
@@ -467,6 +460,20 @@ gboolean
 kms_ice_candidate_get_valid (KmsIceCandidate * self)
 {
   return self->priv->is_valid;
+}
+
+void
+kms_ice_candidate_set_address (KmsIceCandidate * self, const gchar * ip_str)
+{
+  // Replace the candidate and ip strings with the given ip address
+
+  gchar **split = g_strsplit(self->priv->candidate, self->priv->ip, 2);
+  g_free(self->priv->candidate);
+  self->priv->candidate = g_strjoinv (ip_str, split);
+  g_strfreev (split);
+
+  g_free (self->priv->ip);
+  self->priv->ip = g_strdup (ip_str);
 }
 
 /* Utils end */

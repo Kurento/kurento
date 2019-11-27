@@ -46,6 +46,9 @@ public:
 
   ~WebRtcEndpointImpl () override;
 
+  std::string getExternalAddress () override;
+  void setExternalAddress (const std::string &externalAddress) override;
+
   std::string getNetworkInterfaces () override;
   void setNetworkInterfaces (const std::string &networkInterfaces) override;
 
