@@ -168,7 +168,7 @@
   <strong>
     Check the extended documentation of these parameters in
     :rom:cls:`SdpEndpoint`, :rom:cls:`BaseRtpEndpoint`, and
-    :rom:cls:`RembParams`.
+    :rom:ref:`RembParams`.
   </strong>
 </p>
 <ul>
@@ -178,26 +178,13 @@
     <ul>
       <li>
         <strong>{get,set}MinVideoRecvBandwidth</strong>: Minimum bitrate
-        expected for the received video stream. This is used to set a minimum
-        value of local REMB during bandwidth estimation, if supported by the
-        implementing class. It follows that min values will only have effect in
-        remote peers that support this congestion control mechanism, such as
-        Chrome.
+        requested on the received video stream.
       </li>
       <li>
         <strong>{get,set}Max{Audio,Video}RecvBandwidth</strong>: Maximum bitrate
-        expected for the received stream. This is used to put a limit on the
-        bitrate that the remote peer will send to this endpoint. The net effect
-        of setting this parameter is that
-        <i>when Kurento generates an SDP Offer</i>, an 'Application Specific'
-        (AS) maximum bandwidth attribute will be added to the SDP media section:
-        <code>b=AS:{value}</code>.
+        expected for the received stream.
       </li>
     </ul>
-    Max values are announced in the SDP, while min values are used to set a
-    minimum value of local REMB during bandwidth estimation, if supported by the
-    implementing class. It follows that min values will only have effect in
-    remote peers that support this congestion control mechanism, such as Chrome.
   </li>
   <li>
     Output bandwidth: Configuration values used to control bitrate of the output
