@@ -14,7 +14,7 @@ WEBRTC_FILE="/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini"
 
 # Aux function: set value to a given parameter
 function set_parameter() {
-    # Assignments fail if any argument is missing
+    # Assignments fail if any argument is missing (set -o nounset)
     local FILE="$1"
     local PARAM="$2"
     local VALUE="$3"
@@ -22,8 +22,8 @@ function set_parameter() {
     local COMMENT=";"  # Kurento .ini files use ';' for comment lines
     local REGEX="^${COMMENT}?\s*${PARAM}=.*"
 
-    if grep -q -E "$REGEX" "$FILE"; then
-        sed -i -r "s/${REGEX}/${PARAM}=${VALUE}/" "$FILE"
+    if grep --extended-regexp --quiet "$REGEX" "$FILE"; then
+        sed --regexp-extended --in-place "s/${REGEX}/${PARAM}=${VALUE}/" "$FILE"
     else
         echo "${PARAM}=${VALUE}" >>"$FILE"
     fi
