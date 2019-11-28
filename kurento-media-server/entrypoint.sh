@@ -36,7 +36,14 @@ fi
 
 # WebRtcEndpoint settings
 if [[ -n "${KMS_EXTERNAL_ADDRESS:-}" ]]; then
-    set_parameter "$WEBRTC_FILE" "externalAddress" "$KMS_EXTERNAL_ADDRESS"
+    if [[ "$KMS_EXTERNAL_ADDRESS" == "auto" ]]; then
+        # shellcheck disable=SC2015
+        IP="$(curl ifconfig.co 2>/dev/null)" \
+            && set_parameter "$WEBRTC_FILE" "externalAddress" "$IP" \
+            || true
+    else
+        set_parameter "$WEBRTC_FILE" "externalAddress" "$KMS_EXTERNAL_ADDRESS"
+    fi
 fi
 if [[ -n "${KMS_NETWORK_INTERFACES:-}" ]]; then
     set_parameter "$WEBRTC_FILE" "networkInterfaces" "$KMS_NETWORK_INTERFACES"
@@ -51,6 +58,7 @@ fi
 
 # Remove the IPv6 loopback until IPv6 is well supported
 # Note: `sed -i /etc/hosts` won't work inside a Docker container
+# shellcheck disable=SC2002
 cat /etc/hosts | sed '/::1/d' | tee /etc/hosts >/dev/null
 
 # Run Kurento Media Server

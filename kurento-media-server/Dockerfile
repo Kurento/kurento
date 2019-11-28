@@ -54,7 +54,7 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 
 # Install required tools:
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
-# * curl: For `healthchecker.sh`
+# * curl: For "entrypoint.sh" and "healthchecker.sh"
 RUN apt-get update && apt-get install --yes \
         gnupg \
         curl \
