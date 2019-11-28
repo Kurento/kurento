@@ -97,6 +97,7 @@ RUN apt-get update && apt-get install --yes \
 ENV GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4" \
     GST_DEBUG_NO_COLOR=1 \
     KMS_MTU="" \
+    KMS_EXTERNAL_ADDRESS="" \
     KMS_NETWORK_INTERFACES="" \
     KMS_STUN_IP="" \
     KMS_STUN_PORT="" \

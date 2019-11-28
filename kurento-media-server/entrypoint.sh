@@ -35,6 +35,9 @@ if [[ -n "${KMS_MTU:-}" ]]; then
 fi
 
 # WebRtcEndpoint settings
+if [[ -n "${KMS_EXTERNAL_ADDRESS:-}" ]]; then
+    set_parameter "$WEBRTC_FILE" "externalAddress" "$KMS_EXTERNAL_ADDRESS"
+fi
 if [[ -n "${KMS_NETWORK_INTERFACES:-}" ]]; then
     set_parameter "$WEBRTC_FILE" "networkInterfaces" "$KMS_NETWORK_INTERFACES"
 fi
