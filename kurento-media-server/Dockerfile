@@ -35,8 +35,6 @@
 #
 # docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
-
-
 ARG UBUNTU_VERSION="xenial"
 
 FROM ubuntu:${UBUNTU_VERSION}

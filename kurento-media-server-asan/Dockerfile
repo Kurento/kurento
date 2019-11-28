@@ -45,8 +45,6 @@
 #
 # docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
-
-
 ARG UBUNTU_VERSION="xenial"
 ARG KMS_IMAGE="kurento/kurento-media-server-dev:latest"
 
@@ -105,8 +103,6 @@ RUN add-apt-repository --yes ppa:ubuntu-toolchain-r/test \
 # Download, build, and package KMS
 COPY ./build.sh /
 RUN /build.sh
-
-
 
 # Final Docker stage with only the resulting files
 FROM ${KMS_IMAGE}
