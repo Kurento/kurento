@@ -46,8 +46,6 @@
 #
 # Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
-
-
 ARG UBUNTU_VERSION=xenial
 
 FROM buildpack-deps:${UBUNTU_VERSION}-curl
@@ -104,29 +102,20 @@ RUN PIP_VERSION="$(python3 -c 'import pip; print(pip.__version__)')" \
 RUN git config --system user.name "kurento-buildpackage" \
  && git config --system user.email "kurento@googlegroups.com"
 
-
-
-# ------------ Final configuration ------------
-
-# Configure "apt-get" to keep the cache.
+# APT_KEEP_CACHE
 #
-# Automatically cleaning the apt cache breaks 'd-devlibdeps' (d-shlibs) < 0.83
-# so this workaround is needed:
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916856
+# By default, Docker images based on "ubuntu" automatically clean the apt
+# package cache. However, this breaks 'd-devlibdeps' (d-shlibs) < 0.83 so a
+# workaround is needed: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916856
 #
-# Also, this enables persistently caching downloaded packages. This allows
-# setting up a persistent cache in an external Docker volume. Useful if you're
-# doing lots of (re)builds and want to avoid downloading the same packages
-# over and over again...
+# Also, for this image it makes sense to have a persistent package cache of
+# downloaded packages. The user might want to set up the cache in an external
+# volume or bind mount. Useful if you're doing lots of (re)builds and want to
+# avoid downloading the same packages over and over again...
 #
-# WARNING:
-# If you derive images from this one, you probably want to begin
-# your Dockerfile with re-enabling this config file.
-RUN sed -i 's|^|//|' /etc/apt/apt.conf.d/docker-clean
-
-
-
-# ------------ Runtime command ------------
+# NOTE: If you derive images from this one, you probably want to set this
+# env variable again to "false".
+ENV APT_KEEP_CACHE="true"
 
 COPY entrypoint.sh /
 

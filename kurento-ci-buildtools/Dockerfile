@@ -23,15 +23,13 @@
 #
 #   Optional. Default: "xenial".
 
-
-
 ARG UBUNTU_VERSION=xenial
 
 FROM kurento/kurento-buildpackage:${UBUNTU_VERSION}
 
-# Configure `apt-get`:
-# * Enable automatically cleaning the apt cache
-RUN mv /etc/apt/apt.conf.d/docker-clean.off /etc/apt/apt.conf.d/docker-clean
+# Settings from parent image:
+# * Re-enable automatically cleaning the apt cache
+ENV APT_KEEP_CACHE="false"
 
 # Install Node.js 8.x LTS (includes NPM) and Bower
 # Used by JavaScript-based projects
@@ -54,10 +52,6 @@ RUN apt-get update && apt-get install --yes \
         jshon \
         rsync \
  && rm -rf /var/lib/apt/lists/*
-
-
-
-# ------------ Runtime command ------------
 
 ENTRYPOINT ["/bin/bash"]
 CMD []

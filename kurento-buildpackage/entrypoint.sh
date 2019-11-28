@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 
-
-
-# Shell setup
-# -----------
-
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
 
+# Trace all commands
+set -o xtrace
+
 # Trap functions
-on_error() {
+function on_error() {
     echo "[Docker entrypoint] ERROR ($?)"
     exit 1
 }
 trap on_error ERR
 
-
+# Settings
+if [[ "${APT_KEEP_CACHE:-}" == "true" ]]; then
+    # Disable the cleaning of apt package cache
+    if [[ -w /etc/apt/apt.conf.d/docker-clean ]]; then
+        # Comment out all line(s) that weren't already a comment
+        sed --in-place "s|^[^/]|//|" /etc/apt/apt.conf.d/docker-clean
+    fi
+fi
 
 # Find or clone 'adm-scripts'
-# ---------------------------
-
 ADM_SCRIPTS_PATH="/adm-scripts"
-
 if [[ -d "$ADM_SCRIPTS_PATH/.git" ]]; then
     echo "[Docker entrypoint] Kurento 'adm-scripts' found in $ADM_SCRIPTS_PATH"
 else
@@ -30,34 +32,22 @@ else
     git clone https://github.com/Kurento/adm-scripts.git "$ADM_SCRIPTS_PATH"
 fi
 
-
-
 # Check the environment
-# ---------------------
-
 if [[ -d /hostdir ]]; then
     rm -rf /workdir
     cp -a /hostdir /workdir
     cd /workdir
 fi
 
-
-
 # Build packages for current dir
-# ------------------------------
-
 # Note: "$@" expands to all quoted arguments, as passed to this script
 /adm-scripts/kurento-buildpackage.sh "$@"
 
-
-
-# Finish
-# ------
-
+# Print a list of generated packages
 echo "[Docker entrypoint] Debian packages:"
 find . -maxdepth 1 -type f -name '*.*deb'
 
-# Get results out from the Docker container
+# Get generated packages out from the Docker container
 if [[ -d /hostdir ]]; then
     mv ./*.*deb /hostdir/ 2>/dev/null || true
 else
