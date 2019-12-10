@@ -32,7 +32,7 @@ kpartx -a ${VOL_PREFIX}/${VOL_NAME}-snap
 
 # Getting device name and mounting partition
 sleep 5
-VOL_FILETABLE_NAME=$(ls -1 /dev/mapper/ | grep snap1)
+VOL_FILETABLE_NAME=$(ls -1 /dev/mapper/ | grep "snap1$")
 mount /dev/mapper/${VOL_FILETABLE_NAME} /mnt
 
 # Creating tarball
