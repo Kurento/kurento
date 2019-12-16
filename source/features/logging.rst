@@ -132,7 +132,7 @@ From that baseline, one can add any other values to extend the amount of informa
 
   .. code-block:: text
 
-     export GST_DEBUG="${GST_DEBUG:-3},playerendpoint:5"
+     export GST_DEBUG="${GST_DEBUG:-3},kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
 
 - Recorder
 
