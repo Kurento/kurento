@@ -81,9 +81,9 @@ var wss = new ws.Server({
 /*
  * Management of WebSocket messages
  */
-wss.on('connection', function(ws) {
+wss.on('connection', function(ws, req) {
     var sessionId = null;
-    var request = ws.upgradeReq;
+    var request = req;
     var response = {
         writeHead : {}
     };
