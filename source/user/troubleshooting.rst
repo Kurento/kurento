@@ -503,6 +503,12 @@ See `mDNS and Crossbar.io Fabric (Docker) #21 <https://github.com/crossbario/cro
 
 So if you are running a Docker image, ``.local`` names won't be correctly resolved even if you install the required packages. This happens with Kurento or whatever other software; it seems to be a Docker configuration problem / bug.
 
+**Disabling mDNS in Chrome**
+
+Chrome allows disabling mDNS, which is something that could be useful during development. However when development is finished, don't forget to test your application with default settings, including with this option enabled!
+
+To disable mDNS, open this URL: ``chrome://flags/#enable-webrtc-hide-local-ips-with-mdns`` and change the setting to "Disabled".
+
 
 
 ICE fails with timeouts
