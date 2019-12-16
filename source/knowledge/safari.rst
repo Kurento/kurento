@@ -45,7 +45,7 @@ A video tag that includes all these suggestions would be like this:
 
 .. code-block:: html
 
-   <video id="myVideo" muted autoplay playsinline></video>
+   <video id="myVideo" playsinline autoplay muted></video>
 
 Sources for this section:
 
@@ -55,7 +55,7 @@ Sources for this section:
 
 
 
-muted autoplay
+autoplay muted
 --------------
 
 The *autoplay* attribute is honored by all browsers, and it makes the ``<video>`` tag to automatically start playing as soon as the source stream is available. In other words: the method ``video.play()`` gets implicitly called as soon as a source video stream becomes available and is set with ``video.srcObject = stream``.
@@ -66,7 +66,7 @@ The solution that is most intuitive for the user is that a muted video is presen
 
 .. code-block:: html
 
-   <video id="myVideo" muted autoplay></video>
+   <video id="myVideo" autoplay muted></video>
 
 This will allow the user interface to at least automatically start playing a video, so the user will see some movement and acknowledge that the media playback has started. Then, an optional label might ask the user to press to unmute, an action that would comply with the browser's *autoplay* policies.
 
