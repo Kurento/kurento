@@ -524,26 +524,30 @@ These are some random and unstructured notes that don't have the same level of d
 About 'sync=false'
 ------------------
 
-https://gstreamer.freedesktop.org/documentation/design/latency.html
-
 Pipeline initialization is done with 3 state changes:
-- NULL→READY: Underlying devices are probed to ensure they can be accessed.
-- READY→PAUSED: Preroll is done, which means that an initial frame is brought from the sources and set into the sinks of the pipeline.
-- PAUSED→PLAYING: Sources start generating frames, and sinks start receiving and processing them.
 
-The "sync" property indicates whether the element is Live (sync=true) or Non-Live (sync=false).
+1. NULL -> READY: Underlying devices are probed to ensure they can be accessed.
+2. READY -> PAUSED: Preroll is done, which means that an initial frame is brought from the sources and set into the sinks of the pipeline.
+3. PAUSED -> PLAYING: Sources start generating frames, and sinks start receiving and processing them.
+
+The **sync** property indicates whether the element is Live (``sync=true``) or Non-Live (``sync=false``):
+
 - Live elements are synchronized against the clock, and only process data according to the established rate. The timestamps of the incoming buffers will be used to schedule the exact render time of its contents.
-- Non-Live elements do not synchronize with any clock, and process data as fast as possible. The pipeline will ignore the timestamps of the video frames and it will play them as they arrive, ignoring all timing information. Note that setting "sync=false" is almost never a solution when timing-related problems occur.
-
-The "async" property enables (async=true) or disables (async=false) the Preroll feature.
-- Live sources cannot produce an initial frame until they are set to PLAYING state, so Preroll cannot be done with them on PAUSE state. If Prerolling is enabled in a Live sink, it will be set on hold waiting for that initial frame to arrive, and only then they will be able to complete the Preroll and start playing.
-- Non-Live sources should be able to produce an initial frame before reaching the PLAYING state, allowing their downstream sinks to Preroll as soon as the PAUSED state is set.
+- Non-Live elements do not synchronize with any clock, and process data as fast as possible. The pipeline will ignore the timestamps of the video frames and it will play them as fast as they arrive, ignoring all timing information. Note that setting "sync=false" is almost never a solution when timing-related problems occur.
 
 For example, a video camera or an output window/screen would be Live elements; a local file would be a Non-Live element.
 
+The **async** property enables (``async=true``) or disables (``async=false``) the Preroll feature:
+
+- Live sources cannot produce an initial frame until they are set to PLAYING state, so Preroll cannot be done with them on PAUSE state. If Prerolling is enabled in a Live sink, it will be set on hold waiting for that initial frame to arrive, and only then they will be able to complete the Preroll and start playing.
+- Non-Live sources should be able to produce an initial frame before reaching the PLAYING state, allowing their downstream sinks to Preroll as soon as the PAUSED state is set.
+
 Since RTCP packets from the sender should be sent as soon as possible and do not participate in preroll, ``sync=false`` and ``async=false`` are configured on *udpsink*.
 
-See: https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-rtpbin.html
+See:
+
+* https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good-plugins/html/gst-plugins-good-plugins-rtpbin.html
+* https://gstreamer.freedesktop.org/documentation/design/latency.html
 
 
 
