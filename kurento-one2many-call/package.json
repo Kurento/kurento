@@ -6,10 +6,10 @@
     "postinstall": "cd static && bower install"
   },
   "dependencies": {
-    "express": "~4.12.4",
+    "express": "^4.17.0",
+    "kurento-client": "Kurento/kurento-client-js",
     "minimist": "^1.1.1",
-    "ws": "^7.1.0",
-    "kurento-client": "Kurento/kurento-client-js"
+    "ws": "^7.1.0"
   },
   "devDependencies": {
     "bower": "^1.4.1"
