@@ -16,13 +16,13 @@
  */
 
 module.exports = function (grunt) {
-  var DIST_DIR = 'dist';
+  var DIST_DIR = "dist";
 
-  var pkg = grunt.file.readJSON('package.json');
+  var pkg = grunt.file.readJSON("package.json");
 
   var bower = {
     TOKEN: process.env.TOKEN,
-    repository: 'git://github.com/Kurento/<%= pkg.name %>-bower.git'
+    repository: "git://github.com/Kurento/<%= pkg.name %>-bower.git"
   };
 
   // Project configuration.
@@ -33,21 +33,21 @@ module.exports = function (grunt) {
     // Plugins configuration
     clean: {
       generated_code: DIST_DIR,
-      coverage: 'lib-cov',
+      coverage: "lib-cov",
 
-      generated_doc: '<%= jsdoc.all.dest %>'
+      generated_doc: "<%= jsdoc.all.dest %>"
     },
 
     githooks: {
       all: {
-        'pre-commit': 'jsbeautifier:git-pre-commit'
+        "pre-commit": "jsbeautifier:git-pre-commit"
       }
     },
 
     // Generate documentation
     jsdoc: {
       all: {
-        src: ['package.json', 'README.md', 'lib/**/*.js', 'test/*.js'],
+        src: ["package.json", "README.md", "lib/**/*.js", "test/*.js"],
         dest: "doc/jsdoc",
         options: {
           configure: ".jsdoc.conf.js"
@@ -77,7 +77,7 @@ module.exports = function (grunt) {
           wrapLineLength: 80
         }
       },
-      "default": {
+      default: {
         src: ["lib/**/*.js", "*.js", "test/*.js", "scripts/*.js"]
       },
       "git-pre-commit": {
@@ -92,91 +92,97 @@ module.exports = function (grunt) {
     jscoverage: {
       all: {
         expand: true,
-        cwd: 'lib/',
-        src: ['**/*.js'],
-        dest: 'lib-cov/'
+        cwd: "lib/",
+        src: ["**/*.js"],
+        dest: "lib-cov/"
       }
     },
 
     jshint: {
-      all: ['lib/**/*.js', "test/*.js"],
+      all: ["lib/**/*.js", "test/*.js"],
       options: {
-        "curly": true,
-        "indent": 2,
-        "unused": true,
-        "undef": true,
-        "camelcase": false,
-        "newcap": true,
-        "node": true,
-        "browser": true
+        curly: true,
+        indent: 2,
+        unused: true,
+        undef: true,
+        camelcase: false,
+        newcap: true,
+        node: true,
+        browser: true
       }
     },
 
     // Generate browser versions and mapping debug file
     browserify: {
       options: {
-        transform: ['browserify-optional']
+        transform: ["browserify-optional"]
       },
 
       require: {
-        src: 'lib/browser.js',
-        dest: DIST_DIR + '/<%= pkg.name %>_require.js'
+        src: "lib/browser.js",
+        dest: DIST_DIR + "/<%= pkg.name %>_require.js"
       },
 
       standalone: {
-        src: 'lib/browser.js',
-        dest: DIST_DIR + '/<%= pkg.name %>.js',
+        src: "lib/browser.js",
+        dest: DIST_DIR + "/<%= pkg.name %>.js",
 
         options: {
           browserifyOptions: {
-            standalone: '<%= pkg.name %>'
+            standalone: "<%= pkg.name %>"
           }
         }
       },
 
       coverage: {
-        src: 'lib-cov/browser.js',
-        dest: DIST_DIR + '/<%= pkg.name %>.cov.js',
+        src: "lib-cov/browser.js",
+        dest: DIST_DIR + "/<%= pkg.name %>.cov.js",
 
         options: {
           browserifyOptions: {
-            standalone: '<%= pkg.name %>'
+            standalone: "<%= pkg.name %>"
           }
         }
       },
 
-      'require minified': {
-        src: 'lib/browser.js',
-        dest: DIST_DIR + '/<%= pkg.name %>_require.min.js',
+      "require minified": {
+        src: "lib/browser.js",
+        dest: DIST_DIR + "/<%= pkg.name %>_require.min.js",
 
         options: {
           browserifyOptions: {
             debug: true
           },
           plugin: [
-            ['minifyify', {
-              compressPath: DIST_DIR,
-              map: '<%= pkg.name %>.map'
-            }]
+            [
+              "minifyify",
+              {
+                compressPath: DIST_DIR,
+                map: "<%= pkg.name %>.map"
+              }
+            ]
           ]
         }
       },
 
-      'standalone minified': {
-        src: 'lib/browser.js',
-        dest: DIST_DIR + '/<%= pkg.name %>.min.js',
+      "standalone minified": {
+        src: "lib/browser.js",
+        dest: DIST_DIR + "/<%= pkg.name %>.min.js",
 
         options: {
           browserifyOptions: {
             debug: true,
-            standalone: '<%= pkg.name %>'
+            standalone: "<%= pkg.name %>"
           },
           plugin: [
-            ['minifyify', {
-              compressPath: DIST_DIR,
-              map: '<%= pkg.name %>.map',
-              output: DIST_DIR + '/<%= pkg.name %>.map'
-            }]
+            [
+              "minifyify",
+              {
+                compressPath: DIST_DIR,
+                map: "<%= pkg.name %>.map",
+                output: DIST_DIR + "/<%= pkg.name %>.map"
+              }
+            ]
           ]
         }
       }
@@ -187,12 +193,17 @@ module.exports = function (grunt) {
       bower: {
         options: {
           sync: [
-            'name', 'description', 'license', 'keywords', 'homepage',
-            'repository'
+            "name",
+            "description",
+            "license",
+            "keywords",
+            "homepage",
+            "repository"
           ],
           overrides: {
-            authors: (pkg.author ? [pkg.author] : []).concat(pkg
-              .contributors || [])
+            authors: (pkg.author ? [pkg.author] : []).concat(
+              pkg.contributors || []
+            )
           }
         }
       }
@@ -203,30 +214,35 @@ module.exports = function (grunt) {
       bower: {
         command: [
           'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
-          'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
-          'node_modules/.bin/bower cache clean'
-        ].join('&&')
+          "node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>",
+          "node_modules/.bin/bower cache clean"
+        ].join("&&")
       }
     }
   });
 
   // Load plugins
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-githooks');
-  grunt.loadNpmTasks('grunt-jsbeautifier');
-  grunt.loadNpmTasks('grunt-jscoverage');
-  grunt.loadNpmTasks('grunt-jsdoc');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-npm2bower-sync');
-  grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks("grunt-browserify");
+  grunt.loadNpmTasks("grunt-contrib-clean");
+  grunt.loadNpmTasks("grunt-githooks");
+  grunt.loadNpmTasks("grunt-jsbeautifier");
+  grunt.loadNpmTasks("grunt-jscoverage");
+  grunt.loadNpmTasks("grunt-jsdoc");
+  grunt.loadNpmTasks("grunt-contrib-jshint");
+  grunt.loadNpmTasks("grunt-npm2bower-sync");
+  grunt.loadNpmTasks("grunt-shell");
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify',
-    'jsbeautifier:git-pre-commit'
+  grunt.registerTask("default", [
+    "clean",
+    "jsdoc",
+    "browserify",
+    "jsbeautifier:git-pre-commit"
   ]);
-  grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
-  grunt.registerTask('coverage', ['clean:coverage', 'jscoverage',
-    'browserify:coverage'
+  grunt.registerTask("bower", ["sync:bower", "shell:bower"]);
+  grunt.registerTask("coverage", [
+    "clean:coverage",
+    "jscoverage",
+    "browserify:coverage"
   ]);
 };
