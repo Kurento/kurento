@@ -16,16 +16,16 @@
  */
 
 module.exports = function (grunt) {
-  var DIST_DIR = 'dist';
-  var DIST_TEST_DIR = 'dist_test';
+  var DIST_DIR = "dist";
+  var DIST_TEST_DIR = "dist_test";
 
-  var pkg = grunt.file.readJSON('package.json');
+  var pkg = grunt.file.readJSON("package.json");
 
-  const PKG_BROWSER = 'lib/browser.js';
+  const PKG_BROWSER = "lib/browser.js";
 
   var bower = {
     TOKEN: process.env.TOKEN,
-    repository: 'git://github.com/Kurento/<%= pkg.name %>-bower.git'
+    repository: "git://github.com/Kurento/<%= pkg.name %>-bower.git"
   };
 
   // Project configuration.
@@ -35,22 +35,22 @@ module.exports = function (grunt) {
 
     // Plugins configuration
     clean: {
-      generated_code: DIST_DIR + '*',
-      coverage: 'lib-cov',
+      generated_code: DIST_DIR + "*",
+      coverage: "lib-cov",
 
-      generated_doc: '<%= jsdoc.all.dest %>'
+      generated_doc: "<%= jsdoc.all.dest %>"
     },
 
     // Generate documentation
     jsdoc: {
       all: {
         src: [
-          'README.md',
-          'lib/**/*.js',
-          'node_modules/kurento-client-core/lib/**/*.js',
-          'node_modules/kurento-client-elements/lib/**/*.js',
-          'node_modules/kurento-client-filters/lib/**/*.js',
-          'test/*.js'
+          "README.md",
+          "lib/**/*.js",
+          "node_modules/kurento-client-core/lib/**/*.js",
+          "node_modules/kurento-client-elements/lib/**/*.js",
+          "node_modules/kurento-client-filters/lib/**/*.js",
+          "test/*.js"
         ],
         dest: "doc/jsdoc",
         options: {
@@ -63,88 +63,95 @@ module.exports = function (grunt) {
     jscoverage: {
       all: {
         expand: true,
-        cwd: 'lib/',
-        src: ['**/*.js'],
-        dest: 'lib-cov/'
+        cwd: "lib/",
+        src: ["**/*.js"],
+        dest: "lib-cov/"
       }
     },
 
     // Generate browser versions and mapping debug file
     browserify: {
-      'test': {
+      test: {
         options: {
           alias: [
-            '<%= pkg.main %>:<%= pkg.name %>',
-            'async',
-            'es6-promise',
-            'inherits',
-            'kurento-client-core',
-            'kurento-client-elements',
-            'kurento-client-filters',
-            'promisecallback',
-            'dockerode',
-            'minimist',
-            'child_process'
+            "<%= pkg.main %>:<%= pkg.name %>",
+            "async",
+            "es6-promise",
+            "inherits",
+            "kurento-client-core",
+            "kurento-client-elements",
+            "kurento-client-filters",
+            "promisecallback",
+            "dockerode",
+            "minimist",
+            "child_process"
           ]
         },
         src: PKG_BROWSER,
-        dest: DIST_TEST_DIR + '/<%= pkg.name %>.test.js'
+        dest: DIST_TEST_DIR + "/<%= pkg.name %>.test.js"
       },
 
       options: {
         alias: [
-          '<%= pkg.main %>:<%= pkg.name %>',
-          'async',
-          'es6-promise',
-          'inherits',
-          'kurento-client-core',
-          'kurento-client-elements',
-          'kurento-client-filters',
-          'promisecallback'
+          "<%= pkg.main %>:<%= pkg.name %>",
+          "async",
+          "es6-promise",
+          "inherits",
+          "kurento-client-core",
+          "kurento-client-elements",
+          "kurento-client-filters",
+          "promisecallback"
         ]
       },
 
       coverage: {
         src: PKG_BROWSER,
-        dest: DIST_DIR + '/<%= pkg.name %>.cov.js'
+        dest: DIST_DIR + "/<%= pkg.name %>.cov.js"
       },
 
-      'standard': {
+      standard: {
         src: PKG_BROWSER,
-        dest: DIST_DIR + '/<%= pkg.name %>.js'
+        dest: DIST_DIR + "/<%= pkg.name %>.js"
       },
 
-      'minified': {
+      minified: {
         src: PKG_BROWSER,
-        dest: DIST_DIR + '/<%= pkg.name %>.min.js',
+        dest: DIST_DIR + "/<%= pkg.name %>.min.js",
 
         options: {
           browserifyOptions: {
             debug: true
           },
           plugin: [
-            ['minifyify', {
-              compressPath: DIST_DIR,
-              map: '<%= pkg.name %>.map',
-              output: DIST_DIR + '/<%= pkg.name %>.map'
-            }]
+            [
+              "minifyify",
+              {
+                compressPath: DIST_DIR,
+                map: "<%= pkg.name %>.map",
+                output: DIST_DIR + "/<%= pkg.name %>.map"
+              }
+            ]
           ]
         }
       }
-
     },
     // Generate bower.json file from package.json data
     sync: {
       bower: {
         options: {
           sync: [
-            'name', 'description', 'license', 'keywords', 'homepage',
-            'repository'
+            "name",
+            "description",
+            "license",
+            "keywords",
+            "homepage",
+            "repository"
           ],
           overrides: {
-            authors: (pkg.author ? [pkg.author] : []).concat(pkg
-              .contributors || []),
-            main: 'js/<%= pkg.name %>.js'
+            authors: (pkg.author ? [pkg.author] : []).concat(
+              pkg.contributors || []
+            ),
+            main: "js/<%= pkg.name %>.js"
           }
         }
       }
@@ -155,30 +162,26 @@ module.exports = function (grunt) {
       bower: {
         command: [
           'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
-          'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
-          'node_modules/.bin/bower cache clean'
-        ].join('&&')
+          "node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>",
+          "node_modules/.bin/bower cache clean"
+        ].join("&&")
       },
 
-      'pre-coverage': {
-        command: [
-          'rm -rf lib_orig',
-          'mv lib lib_orig',
-          'mv lib-cov lib'
-        ].join('&&')
+      "pre-coverage": {
+        command: ["rm -rf lib_orig", "mv lib lib_orig", "mv lib-cov lib"]
+          .join(
+            "&&"
+          )
       },
-      'post-coverage': {
-        command: [
-          'rm -rf lib',
-          'mv lib_orig lib'
-        ].join('&&')
+      "post-coverage": {
+        command: ["rm -rf lib", "mv lib_orig lib"].join("&&")
       }
     },
 
     // githooks configuration
     githooks: {
       all: {
-        'pre-commit': 'jsbeautifier:git-pre-commit'
+        "pre-commit": "jsbeautifier:git-pre-commit"
       }
     },
 
@@ -205,13 +208,21 @@ module.exports = function (grunt) {
         }
       },
 
-      "default": {
-        src: ["lib/**/*.js", "*.js", "test/*.js", "test_reconnect/*.js",
+      default: {
+        src: [
+          "lib/**/*.js",
+          "*.js",
+          "test/*.js",
+          "test_reconnect/*.js",
           "scripts/*.js"
         ]
       },
       "git-pre-commit": {
-        src: ["lib/**/*.js", "*.js", "test/*.js", "test_reconnect/*.js",
+        src: [
+          "lib/**/*.js",
+          "*.js",
+          "test/*.js",
+          "test_reconnect/*.js",
           "scripts/*.js"
         ],
         options: {
@@ -221,39 +232,44 @@ module.exports = function (grunt) {
     },
 
     jshint: {
-      all: ['lib/**/*.js', "test/*.js"],
+      all: ["lib/**/*.js", "test/*.js"],
       options: {
-        "curly": true,
-        "indent": 2,
-        "unused": true,
-        "undef": true,
-        "camelcase": false,
-        "newcap": true,
-        "node": true,
-        "browser": true
+        curly: true,
+        indent: 2,
+        unused: true,
+        undef: true,
+        camelcase: false,
+        newcap: true,
+        node: true,
+        browser: true
       }
     }
   });
 
   // Load plugins
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-jscoverage');
-  grunt.loadNpmTasks('grunt-jsdoc');
-  grunt.loadNpmTasks('grunt-npm2bower-sync');
-  grunt.loadNpmTasks('grunt-shell');
-  grunt.loadNpmTasks('grunt-githooks');
-  grunt.loadNpmTasks('grunt-jsbeautifier');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks("grunt-browserify");
+  grunt.loadNpmTasks("grunt-contrib-clean");
+  grunt.loadNpmTasks("grunt-jscoverage");
+  grunt.loadNpmTasks("grunt-jsdoc");
+  grunt.loadNpmTasks("grunt-npm2bower-sync");
+  grunt.loadNpmTasks("grunt-shell");
+  grunt.loadNpmTasks("grunt-githooks");
+  grunt.loadNpmTasks("grunt-jsbeautifier");
+  grunt.loadNpmTasks("grunt-contrib-jshint");
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify',
-    'jsbeautifier:git-pre-commit'
+  grunt.registerTask("default", [
+    "clean",
+    "jsdoc",
+    "browserify",
+    "jsbeautifier:git-pre-commit"
   ]);
-  grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
-  grunt.registerTask('coverage', [
-    'jscoverage',
-    'shell:pre-coverage', 'browserify:coverage', 'browserify:test',
-    'shell:post-coverage'
+  grunt.registerTask("bower", ["sync:bower", "shell:bower"]);
+  grunt.registerTask("coverage", [
+    "jscoverage",
+    "shell:pre-coverage",
+    "browserify:coverage",
+    "browserify:test",
+    "shell:post-coverage"
   ]);
 };
