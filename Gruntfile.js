@@ -15,153 +15,183 @@
  *
  */
 
+module.exports = function (grunt) {
+  var DIST_DIR = "dist";
 
-module.exports = function(grunt)
-{
-  var DIST_DIR = 'dist';
+  var pkg = grunt.file.readJSON("package.json");
 
-  var pkg = grunt.file.readJSON('package.json');
-
-  var bower =
-  {
-    TOKEN:      process.env.TOKEN,
-    repository: 'git://github.com/Kurento/<%= pkg.name %>-bower.git'
+  var bower = {
+    TOKEN: process.env.TOKEN,
+    repository: "git://github.com/Kurento/<%= pkg.name %>-bower.git"
   };
 
   // Project configuration.
-  grunt.initConfig(
-  {
-    pkg:   pkg,
+  grunt.initConfig({
+    pkg: pkg,
     bower: bower,
 
     // Plugins configuration
-    clean:
-    {
-      generated_code: [DIST_DIR, 'src'],
+    clean: {
+      generated_code: [DIST_DIR, "src"],
 
-      generated_doc: '<%= jsdoc.all.dest %>'
+      generated_doc: "<%= jsdoc.all.dest %>"
     },
 
     // Generate documentation
-    jsdoc:
-    {
-      all:
-      {
-        src: ['README.md', 'lib/**/*.js', 'test/*.js'], 
-        dest: 'doc/jsdoc'
+    jsdoc: {
+      all: {
+        src: ["README.md", "lib/**/*.js", "test/*.js"],
+        dest: "doc/jsdoc"
+      }
+    },
+
+    jsbeautifier: {
+      options: {
+        js: {
+          braceStyle: "collapse",
+          breakChainedMethods: false,
+          e4x: false,
+          evalCode: false,
+          indentChar: " ",
+          indentLevel: 0,
+          indentSize: 2,
+          indentWithTabs: false,
+          jslintHappy: true,
+          keepArrayIndentation: false,
+          keepFunctionIndentation: false,
+          maxPreserveNewlines: 2,
+          preserveNewlines: true,
+          spaceBeforeConditional: true,
+          spaceInParen: false,
+          unescapeStrings: false,
+          wrapLineLength: 80
+        }
+      },
+      default: {
+        src: ["lib/**/*.js", "*.js", "test/*.js", "testBrowser/*.js"]
+      },
+      "git-pre-commit": {
+        src: ["lib/**/*.js", "*.js", "test/*.js", "testBrowser/*.js"],
+        options: {
+          mode: "VERIFY_ONLY"
+        }
       }
     },
 
     // Generate browser versions and mapping debug file
-    browserify:
-    {
-      require:
-      {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.js'
+    browserify: {
+      require: {
+        src: "<%= pkg.main %>",
+        dest: DIST_DIR + "/<%= pkg.name %>_require.js"
       },
-      standalone:
-      {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>.js',
+      standalone: {
+        src: "<%= pkg.main %>",
+        dest: DIST_DIR + "/<%= pkg.name %>.js",
 
-        options:
-        {
-          exclude: ['ws', 'bufferutil' ],
+        options: {
+          exclude: ["ws", "bufferutil"],
           browserifyOptions: {
             debug: true,
-            standalone: 'RpcBuilder'
+            standalone: "RpcBuilder"
           }
         }
       },
 
-      'require minified':
-      {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.min.js',
+      "require minified": {
+        src: "<%= pkg.main %>",
+        dest: DIST_DIR + "/<%= pkg.name %>_require.min.js",
 
-        options:
-        {
-          exclude: ['ws', 'bufferutil' ],
+        options: {
+          exclude: ["ws", "bufferutil"],
           debug: true,
           browserifyOptions: {
             debug: true,
-            standalone: 'RpcBuilder'
+            standalone: "RpcBuilder"
           },
           plugin: [
-            ['minifyify',
-             {
-               compressPath: DIST_DIR,
-               map: '<%= pkg.name %>.map'
-             }]
+            [
+              "minifyify",
+              {
+                compressPath: DIST_DIR,
+                map: "<%= pkg.name %>.map"
+              }
+            ]
           ]
         }
       },
 
-      'standalone minified':
-      {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>.min.js',
+      "standalone minified": {
+        src: "<%= pkg.main %>",
+        dest: DIST_DIR + "/<%= pkg.name %>.min.js",
 
-        options:
-        {
-          exclude: ['ws', 'bufferutil' ],
+        options: {
+          exclude: ["ws", "bufferutil"],
           debug: true,
           browserifyOptions: {
             debug: true,
-            standalone: 'RpcBuilder'
+            standalone: "RpcBuilder"
           },
           plugin: [
-            ['minifyify',
-             {
-               compressPath: DIST_DIR,
-               map: '<%= pkg.name %>.map',
-               output: DIST_DIR+'/<%= pkg.name %>.map'
-             }]
+            [
+              "minifyify",
+              {
+                compressPath: DIST_DIR,
+                map: "<%= pkg.name %>.map",
+                output: DIST_DIR + "/<%= pkg.name %>.map"
+              }
+            ]
           ]
         }
       }
     },
 
     // Generate bower.json file from package.json data
-    sync:
-    {
-      bower:
-      {
-        options:
-        {
+    sync: {
+      bower: {
+        options: {
           sync: [
-            'name', 'description', 'license', 'keywords', 'homepage',
-            'repository'
+            "name",
+            "description",
+            "license",
+            "keywords",
+            "homepage",
+            "repository"
           ],
           overrides: {
-            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || [])
+            authors: (pkg.author ? [pkg.author] : []).concat(
+              pkg.contributors || []
+            )
           }
         }
       }
     },
 
     // Publish / update package info in Bower
-    shell:
-    {
+    shell: {
       bower: {
         command: [
           'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
-          'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
-          'node_modules/.bin/bower cache clean'
-        ].join('&&')
+          "node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>",
+          "node_modules/.bin/bower cache clean"
+        ].join("&&")
       }
     }
   });
 
   // Load plugins
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-jsdoc');
-  grunt.loadNpmTasks('grunt-npm2bower-sync');
-  grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks("grunt-browserify");
+  grunt.loadNpmTasks("grunt-contrib-clean");
+  grunt.loadNpmTasks("grunt-jsbeautifier");
+  grunt.loadNpmTasks("grunt-jsdoc");
+  grunt.loadNpmTasks("grunt-npm2bower-sync");
+  grunt.loadNpmTasks("grunt-shell");
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
-  grunt.registerTask('bower',   ['sync:bower', 'shell:bower']);
+  grunt.registerTask("default", [
+    "clean",
+    "jsdoc",
+    "browserify",
+    "jsbeautifier:git-pre-commit"
+  ]);
+  grunt.registerTask("bower", ["sync:bower", "shell:bower"]);
 };

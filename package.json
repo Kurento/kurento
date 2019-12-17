@@ -66,18 +66,19 @@
   },
   "devDependencies": {
     "bower": "~1.8.8",
+    "browserify": "~13.1.0",
     "coveralls": "~2.11.1",
     "eventtarget": "0.1.0",
     "grunt": "~1.0.1",
-    "grunt-browserify": "~5.0.0",
+    "grunt-browserify": "^5.3.0",
     "grunt-cli": "~1.2.0",
     "grunt-contrib-clean": "~1.0.0",
-    "grunt-jsdoc": "~2.2.1",
+    "grunt-jsbeautifier": "^0.2.10",
+    "grunt-jsdoc": "^2.4.0",
     "grunt-npm2bower-sync": "^0.9.0",
     "grunt-shell": "^2.0.0",
     "jscoverage": "~0.6.0",
-    "browserify": "~13.1.0",
     "minifyify": "~7.3.3",
-    "nodeunit": "~0.10.2"
+    "nodeunit": "^0.11.3"
   }
 }
