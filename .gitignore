@@ -4,6 +4,7 @@
 .jshintrc
 node_modules/
 bower_components/
+package-lock.json
 *~
 .DS_Store
 npm-debug.log
