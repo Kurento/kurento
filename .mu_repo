@@ -5,4 +5,4 @@ repo=kms-core
 repo=kms-elements
 repo=kms-filters
 repo=kurento-media-server
-serial=True
+serial=False

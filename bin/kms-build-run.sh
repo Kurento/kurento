@@ -373,7 +373,7 @@ elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     )
 fi
 
-# Set debug log settings
+# Set default debug log settings, if none given
 if [[ -n "${GST_DEBUG:-}" ]]; then
     RUN_VARS+=(
         "GST_DEBUG='$GST_DEBUG'"
@@ -421,9 +421,9 @@ fi
     COMMAND="$COMMAND $RUN_WRAPPER"
 
     COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
-        --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
-        --modules-config-path='$PWD/config' \
         --conf-file='$PWD/config/kurento.conf.json' \
+        --modules-config-path='$PWD/config' \
+        --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
         --gst-plugin-path='$PWD'"
 
     log "Run command: $COMMAND"
