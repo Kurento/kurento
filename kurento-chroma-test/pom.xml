@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.kurento.tutorial</groupId>
 		<artifactId>kurento-tutorial-test</artifactId>
-		<version>6.11.1-SNAPSHOT</version>
+		<version>6.13.0</version>
 	</parent>
 
 	<artifactId>kurento-chroma-test</artifactId>
