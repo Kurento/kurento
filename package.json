@@ -1,6 +1,6 @@
 {
   "name": "kurento-client",
-  "version": "6.13.0",
+  "version": "6.13.1-dev",
   "description": "JavaScript Client API for Kurento Media Server",
   "keywords": [
     "kurento",
@@ -70,10 +70,10 @@
     "promise": "7.1.1",
     "extend": "^3.0.0",
     "inherits": "^2.0.0",
-    "kurento-client-core": "6.13.0",
-    "kurento-client-elements": "6.13.0",
-    "kurento-client-filters": "6.13.0",
-    "kurento-jsonrpc": "6.13.0",
+    "kurento-client-core": "6.13.1-dev",
+    "kurento-client-elements": "6.13.1-dev",
+    "kurento-client-filters": "6.13.1-dev",
+    "kurento-jsonrpc": "6.13.1-dev",
     "promisecallback": "0.0.4",
     "reconnect-ws": "KurentoForks/reconnect-ws#master",
     "minimist": "^1.2.0"
