@@ -6,7 +6,7 @@
 	<!-- Maven coordinates -->
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-qa-pom</artifactId>
-	<version>6.13.0</version>
+	<version>6.13.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
