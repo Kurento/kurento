@@ -1,6 +1,6 @@
 {
   "name": "kurento-chroma",
-  "version": "6.13.0",
+  "version": "6.13.1-dev",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"

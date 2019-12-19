@@ -1,6 +1,6 @@
 {
   "name": "kurento-module-tests-api",
-  "version": "6.13.0",
+  "version": "6.13.1-dev",
   "description": "Kurento Module Tests API",
   "homepage": "http://www.kurento.org",
   "license": "ALv2",
