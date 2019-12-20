@@ -6,25 +6,33 @@
 
 To install Kurento Media Server: :doc:`/user/installation`.
 
+
+
 Added
 =====
 
-- Description.
+* Description.
+
+
 
 Changed
 =======
 
-- Description.
+* Description.
+
+
 
 Deprecated
 ==========
 
-- Description.
+* Description.
+
+
 
 Fixed
 =====
 
-- Description.
+* Description.
 
 
 
