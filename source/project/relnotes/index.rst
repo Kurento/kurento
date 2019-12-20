@@ -5,6 +5,7 @@ Release Notes
 .. toctree::
    :maxdepth: 1
 
+   v6_13_1
    v6_13_0
    v6_12_0
    v6_11_0

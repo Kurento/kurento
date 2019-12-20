@@ -1209,7 +1209,7 @@ For this reason, the documentation must be built only after all the other module
           local RELNOTES_NAME="v${NEW_VERSION//./_}"
           cp source/project/relnotes/v0_TEMPLATE.rst \
               "source/project/relnotes/${RELNOTES_NAME}.rst" \
-          && sed -i 's/1.2.3/${NEW_VERSION}/' \
+          && sed -i "s/1.2.3/${NEW_VERSION}/" \
               "source/project/relnotes/${RELNOTES_NAME}.rst" \
           && sed -i "8i\   $RELNOTES_NAME" \
               source/project/relnotes/index.rst \
@@ -1217,6 +1217,7 @@ For this reason, the documentation must be built only after all the other module
 
           git add VERSIONS.conf.sh \
           && git add source/project/relnotes/v*.rst \
+          && git add source/project/relnotes/index.rst \
           && git commit -m "$COMMIT_MSG" \
           && git push \
           || { echo "ERROR: Command failed: git"; return 1; }
