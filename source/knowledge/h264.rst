@@ -69,7 +69,7 @@ GStreamer ``codec_data``
 
 GStreamer passes a *codec_data* field in its *caps* when the H.264 video is using the *avc* stream format. This field is printed in debug logs as a long hexadecimal sequence, but in reality it is an instance of an ``AVCDecoderConfigurationRecord``, defined in the standard `ISO/IEC 14496-15`_ (aka. *MPEG-4*) as follows:
 
-.. code-block:: c
+.. code-block:: text
 
    aligned(8) class AVCDecoderConfigurationRecord {
        unsigned int(8) configurationVersion = 1;
