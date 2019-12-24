@@ -75,19 +75,11 @@ Local Installation
 
 With this method, you will install Kurento Media Server from the native Ubuntu package repositories made available by the Kurento project. KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
 
-To install KMS, start from a clean machine (**no KMS already installed**).
-
 .. note::
 
-   To uninstall Kurento, you can issue this command:
+   This section applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
 
-   .. code-block:: bash
-
-      sudo aptitude remove kurento-media-server
-
-   We recommend using *aptitude* to uninstall packages, because it has a better removal algorithm and it does actually remove all dependencies that were installed with Kurento. *apt-get* does not.
-
-Open a terminal, and follow these steps:
+To install KMS, start from a clean machine (**with no KMS or any of its dependencies already installed**). Open a terminal, and follow these steps:
 
 1. Make sure that GnuPG is installed.
 
@@ -137,6 +129,49 @@ The server includes service files which integrate with the Ubuntu init system, s
    sudo service kurento-media-server stop
 
 Log messages from KMS will be available in ``/var/log/kurento-media-server/``. For more details about KMS logs, check :doc:`/features/logging`.
+
+
+
+.. _installation-local-upgrade:
+
+Local Upgrade
+=============
+
+To upgrade a previous installation of Kurento Media Server, you'll need to edit the file ``/etc/apt/sources.list.d/kurento.list``, setting the new version number. After this file has been changed, there are 2 options to actually apply the upgrade:
+
+A. Completely uninstall the old version, and install the new one.
+
+   Note however that **apt-get doesn't remove all dependencies** that were installed with Kurento. You will need to use *aptitude* for this, which works better than *apt-get*:
+
+   .. code-block:: bash
+
+      sudo aptitude remove kurento-media-server
+      sudo apt-get update && sudo apt-get install kurento-media-server
+
+B. Upgrade all system packages. This makes sure that all packages in the system get to their latest versions after changing any of the files in */etc/apt/sources.list*:
+
+   .. code-block:: bash
+
+      sudo apt-get update && sudo apt-get dist-upgrade
+
+Be careful! If you don't follow one of these methods, then you'll probably end up with a **mixed installation of old and new packages**. You don't want that to happen: it is a surefire way to get wrong behaviors and crashes.
+
+.. note::
+
+   A Kurento installation is composed of **several packages**:
+
+   - ``kurento-media-server``
+   - ``kurento-module-creator``
+   - ``kms-core``
+   - ``kms-elements``
+   - ``kms-filters``
+   - ``libnice10``
+   - ``libusrsctp``
+   - ``openh264``
+   - ``openwebrtc-gst-plugins``
+   - And more
+
+   When installing a new version, **you have to upgrade all of them**, not only the first one.
 
 
 

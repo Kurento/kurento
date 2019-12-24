@@ -33,19 +33,11 @@ Local Installation
 
 The steps to install a nightly version of Kurento Media Server are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
 
-To install KMS, start from a clean machine (**no KMS already installed**).
-
 .. note::
 
-   To uninstall Kurento, you can issue this command:
+   This section applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
 
-   .. code-block:: bash
-
-      sudo aptitude remove kurento-media-server
-
-   We recommend using *aptitude* to uninstall packages, because it has a better removal algorithm and it does actually remove all dependencies that were installed with Kurento. *apt-get* does not.
-
-Open a terminal, and follow these steps:
+To install KMS, start from a clean machine (**with no KMS or any of its dependencies already installed**). Open a terminal, and follow these steps:
 
 1. Make sure that GnuPG is installed.
 
