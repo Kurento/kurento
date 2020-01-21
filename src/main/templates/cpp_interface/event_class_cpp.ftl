@@ -56,11 +56,11 @@ ${event.name}::${event.name} (<#rt>
       </#if><#rt>
     </#if><#rt>
   <#lt></#list>
-  this->setTimestamp (getCurrentTime());
-  this->setTimestampMillis (getCurrentTimeMillis ());
+  ${event.name}::setTimestamp (getCurrentTime ());
+  ${event.name}::setTimestampMillis (getCurrentTimeMillis ());
   if (source != nullptr) {
     if (source->getSendTagsInEvents ()) {
-      this->setTags (source->getTags ());
+      ${event.name}::setTags (source->getTags ());
     }
   }
 }

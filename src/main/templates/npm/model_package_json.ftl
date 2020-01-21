@@ -26,17 +26,16 @@ package.json
     "promisecallback": "^0.0.3"
   },
   "devDependencies": {
-    "bower": "~1.4.1",
-    "grunt": "~0.4.5",
-    "grunt-browserify": "^3.6.0",
-    "grunt-cli": "~0.1.13",
-    "grunt-contrib-clean": "~0.6.0",
-    "grunt-jsdoc": "^0.6.3",
+    "bower": "^1.0.0",
+    "grunt": "^1.0.0",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-clean": "^2.0.0",
+    "grunt-jsdoc": "^2.0.0",
     "grunt-npm2bower-sync": "^0.9.1",
   <#if bowerGit??>
-    "grunt-shell": "^1.1.2",
+    "grunt-shell": "^3.0.0",
   </#if>
-    "minifyify": "^6.4.0"
+    "minifyify": "^7.0.0"
   },
 </#if>
   "keywords": [
