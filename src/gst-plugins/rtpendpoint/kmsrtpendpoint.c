@@ -35,6 +35,8 @@
 #include "kmsrtpsdescryptosuite.h"
 #include "kmsrandom.h"
 
+#include <stdlib.h> // atoi()
+
 #define PLUGIN_NAME "rtpendpoint"
 
 GST_DEBUG_CATEGORY_STATIC (kms_rtp_endpoint_debug);
@@ -758,10 +760,9 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     const GstSDPAttribute *attr = gst_sdp_media_get_attribute (media, a);
 
     if (g_strcmp0 (attr->key, "rtcp") == 0) {
-      gst_sdp_media_remove_attribute (media, a);
-      /* TODO: complete rtcp attr with addr and rtcp port */
-      attr_len--;
-      a--;
+      const guint rtcp_port = kms_rtp_base_connection_get_rtcp_port (conn);
+      g_free (attr->value);
+      attr->value = g_strdup_printf ("%" G_GUINT32_FORMAT, rtcp_port);
     }
   }
 
@@ -899,10 +900,12 @@ kms_rtp_endpoint_comedia_manager_create(KmsRtpEndpoint *self,
   gulong signal_id = g_signal_connect (rtpsession, "on-ssrc-active",
       G_CALLBACK (kms_rtp_endpoint_comedia_on_ssrc_active), self);
 
-  g_hash_table_insert(self->priv->comedia.rtp_conns,
-      rtpsession, conn);
-  g_hash_table_insert(self->priv->comedia.signal_ids,
-      rtpsession, GUINT_TO_POINTER(signal_id));
+  g_hash_table_insert (self->priv->comedia.rtp_conns, g_object_ref (rtpsession),
+      conn);
+  g_hash_table_insert (self->priv->comedia.signal_ids,
+      g_object_ref (rtpsession), GUINT_TO_POINTER(signal_id));
+
+  g_object_unref (rtpsession);
 }
 
 static void
@@ -920,12 +923,10 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
 
   guint len = gst_sdp_message_medias_len (sess->remote_sdp);
   for (guint i = 0; i < len; i++) {
-    //J REVIEW: shouldn't it be negotiated_media instead of remote_media?
     const GstSDPMedia *media = gst_sdp_message_get_media (sess->remote_sdp, i);
     const GstSDPConnection *media_con;
     KmsSdpMediaHandler *handler;
     KmsRtpBaseConnection *conn;
-    guint port;
 
     if (gst_sdp_media_get_port (media) == 0) {
       // RFC 3264 section 5.1:
@@ -978,10 +979,18 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
     else {
       const gchar *media_str = gst_sdp_media_get_media (media);
       GST_INFO_OBJECT (self, "COMEDIA: Media '%s' doesn't use COMEDIA", media_str);
-      port = gst_sdp_media_get_port (media);
+
+      guint rtp_port = gst_sdp_media_get_port (media);
+      guint rtcp_port = rtp_port + 1;
+
+      const gchar *attr_rtcp_port = gst_sdp_media_get_attribute_val(media,
+          "rtcp");
+      if (attr_rtcp_port != NULL) {
+        rtcp_port = (guint)atoi (attr_rtcp_port);
+      }
+
       kms_rtp_base_connection_set_remote_info (conn,
-          media_con->address, port, port + 1);
-      /* TODO: get rtcp port from attr if it exists */
+          media_con->address, (gint)rtp_port, (gint)rtcp_port);
     }
   }
 }
@@ -1151,8 +1160,10 @@ kms_rtp_endpoint_init (KmsRtpEndpoint * self)
   self->priv->sdes_keys = g_hash_table_new_full (g_str_hash, g_str_equal,
       g_free, (GDestroyNotify) kms_ref_struct_unref);
 
-  self->priv->comedia.rtp_conns = g_hash_table_new (g_direct_hash, NULL);
-  self->priv->comedia.signal_ids = g_hash_table_new (g_direct_hash, NULL);
+  self->priv->comedia.rtp_conns = g_hash_table_new_full (NULL, NULL,
+      g_object_unref, NULL);
+  self->priv->comedia.signal_ids = g_hash_table_new_full (NULL, NULL,
+      g_object_unref, NULL);
 
   g_object_set (G_OBJECT (self), "bundle",
       FALSE, "rtcp-mux", FALSE, "rtcp-nack", TRUE, "rtcp-remb", TRUE,

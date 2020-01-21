@@ -149,9 +149,13 @@ RtpEndpointImpl::onKeySoftLimit (gchar *media)
   }
 
   try {
-    OnKeySoftLimit event (shared_from_this(), OnKeySoftLimit::getName(), type);
-    signalOnKeySoftLimit (event);
-  } catch (std::bad_weak_ptr &e) {
+    OnKeySoftLimit event (shared_from_this (), OnKeySoftLimit::getName (),
+        type);
+    sigcSignalEmit(signalOnKeySoftLimit, event);
+  } catch (const std::bad_weak_ptr &e) {
+    // shared_from_this()
+    GST_ERROR ("BUG creating %s: %s", OnKeySoftLimit::getName ().c_str (),
+        e.what ());
   }
 }
 

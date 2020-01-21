@@ -325,7 +325,6 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-  gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->set_property = kms_webrtc_data_session_bin_set_property;
   gobject_class->get_property = kms_webrtc_data_session_bin_get_property;
   gobject_class->finalize = kms_webrtc_data_session_bin_finalize;

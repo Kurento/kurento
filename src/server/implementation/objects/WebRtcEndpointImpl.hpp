@@ -44,10 +44,17 @@ public:
                       bool recvonly, bool sendonly, bool useDataChannels,
                       std::shared_ptr<CertificateKeyType> certificateKeyType);
 
-  virtual ~WebRtcEndpointImpl ();
+  ~WebRtcEndpointImpl () override;
+
+  std::string getExternalAddress () override;
+  void setExternalAddress (const std::string &externalAddress) override;
+
+  std::string getNetworkInterfaces () override;
+  void setNetworkInterfaces (const std::string &networkInterfaces) override;
 
   std::string getStunServerAddress () override;
   void setStunServerAddress (const std::string &stunServerAddress) override;
+
   int getStunServerPort () override;
   void setStunServerPort (int stunServerPort) override;
 

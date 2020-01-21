@@ -19,6 +19,8 @@
 #include <commons/kmsstats.h>
 #include "kmsiceniceagent.h"
 
+#include <string.h> // strlen()
+
 #define GST_CAT_DEFAULT kmswebrtcbaseconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "kmswebrtcbaseconnection"
@@ -172,6 +174,83 @@ kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection * self)
       KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
 
   return klass->get_certificate_pem (self);
+}
+
+/**
+ * Split comma-separated string.
+ */
+static GSList *
+kms_webrtc_base_connection_split_comma (const gchar * str)
+{
+  if (str == NULL) {
+    return NULL;
+  }
+
+  // str == "A, B,C"
+
+  gchar **arr = g_strsplit_set (str, " ,", -1);
+
+  // arr[0] == "A"
+  // arr[1] == ""
+  // arr[2] == "B"
+  // arr[3] == "C"
+  // arr[4] == NULL
+
+  GSList *list = NULL;
+
+  for (int i = 0; arr[i] != NULL; ++i) {
+    if (strlen (arr[i]) == 0) {
+      // arr[i] == ""
+      g_free (arr[i]);
+      continue;
+    }
+
+    list = g_slist_append (list, arr[i]);
+  }
+
+  g_free (arr);
+
+  return list;
+}
+
+/**
+ * Add new local IP address to NiceAgent instance.
+ */
+static void
+kms_webrtc_base_connection_agent_add_net_addr (const gchar * net_name,
+    NiceAgent * agent)
+{
+  NiceAddress *nice_address = nice_address_new ();
+  gchar *ip_address = nice_interfaces_get_ip_for_interface ((gchar *)net_name);
+
+  nice_address_set_from_string (nice_address, ip_address);
+  nice_agent_add_local_address (agent, nice_address);
+
+  GST_INFO_OBJECT (agent, "Added local address: %s", ip_address);
+
+  nice_address_free (nice_address);
+  g_free (ip_address);
+}
+
+void
+kms_webrtc_base_connection_set_network_ifs_info (KmsWebRtcBaseConnection *
+    self, const gchar * net_names)
+{
+  if (KMS_IS_ICE_NICE_AGENT (self->agent)) {
+    KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self->agent);
+    NiceAgent *agent = kms_ice_nice_agent_get_agent (nice_agent);
+
+    GSList *net_list = kms_webrtc_base_connection_split_comma (
+        net_names);
+
+    if (net_list != NULL) {
+      g_slist_foreach (net_list,
+          (GFunc) kms_webrtc_base_connection_agent_add_net_addr,
+          agent);
+    }
+
+    g_slist_free_full (net_list, g_free);
+  }
 }
 
 void

@@ -2,6 +2,7 @@ Source: kms-elements
 Priority: optional
 Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
+ build-essential,
  cmake,
  ffmpeg | libav-tools,
  gstreamer1.0-nice,
@@ -54,7 +55,8 @@ Depends: kms-elements (= ${binary:Version}),
  libnice-dev,
  libsigc++-2.0-dev,
  libsoup2.4-dev,
- libssl-dev
+ libssl-dev,
+ openwebrtc-gst-plugins-dev
 Description: Kurento Elements module
  Kurento Elements module - Development files.
 

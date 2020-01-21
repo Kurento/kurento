@@ -30,10 +30,10 @@
 #define PLUGIN_NAME "compositemixer"
 
 #define KMS_COMPOSITE_MIXER_LOCK(mixer) \
-  (g_rec_mutex_lock (&( (KmsCompositeMixer *) mixer)->priv->mutex))
+  (g_rec_mutex_lock (&( (KmsCompositeMixer *) (mixer))->priv->mutex))
 
 #define KMS_COMPOSITE_MIXER_UNLOCK(mixer) \
-  (g_rec_mutex_unlock (&( (KmsCompositeMixer *) mixer)->priv->mutex))
+  (g_rec_mutex_unlock (&( (KmsCompositeMixer *) (mixer))->priv->mutex))
 
 GST_DEBUG_CATEGORY_STATIC (kms_composite_mixer_debug_category);
 #define GST_CAT_DEFAULT kms_composite_mixer_debug_category

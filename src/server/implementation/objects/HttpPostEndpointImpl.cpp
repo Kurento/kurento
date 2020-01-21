@@ -37,10 +37,12 @@ namespace kurento
 void HttpPostEndpointImpl::eosLambda ()
 {
   try {
-    EndOfStream event (shared_from_this(), EndOfStream::getName() );
-
-    signalEndOfStream (event);
-  } catch (std::bad_weak_ptr &e) {
+    EndOfStream event (shared_from_this (), EndOfStream::getName ());
+    sigcSignalEmit(signalEndOfStream, event);
+  } catch (const std::bad_weak_ptr &e) {
+    // shared_from_this()
+    GST_ERROR ("BUG creating %s: %s", EndOfStream::getName ().c_str (),
+        e.what ());
   }
 }
 

@@ -16,6 +16,7 @@
  */
 
 #include "kmsicecandidate.h"
+#include <gio/gio.h>
 #include <gst/gst.h>
 #include <stdlib.h>
 
@@ -55,10 +56,10 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
   " (?<componentid>(" DIGIT_ATTR_EXPR "){1,5})" \
   " (?<transport>(udp|UDP|tcp|TCP))" \
   " (?<priority>(" DIGIT_ATTR_EXPR "){1,10})" \
-  " (?<addr>[0-9.:a-zA-Z]+)" \
+  " (?<addr>[A-Za-z0-9.:-]+)" \
   " (?<port>[0-9]+)" \
   " typ (?<type>(host|srflx|prflx|relay))" \
-  "( raddr (?<raddr>[0-9.:a-zA-Z]+))?" \
+  "( raddr (?<raddr>[A-Za-z0-9.:]+))?" \
   "( rport (?<rport>[0-9]+))?" \
   EXTENSION_ATTR_EXP
 
@@ -111,8 +112,6 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
   g_free (self->priv->foundation);
   g_free (self->priv->ip);
   g_free (self->priv->related_addr);
-
-  self->priv->ip = g_match_info_fetch_named (match_info, "addr");
 
   tmp = g_match_info_fetch_named (match_info, "port");
   self->priv->port = atoi (tmp);
@@ -186,6 +185,38 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
     self->priv->related_port = atoi (tmp);
   } else {
     self->priv->related_port = -1;
+  }
+
+  self->priv->ip = g_match_info_fetch_named (match_info, "addr");
+
+  if (g_str_has_suffix (self->priv->ip, ".local")) {
+    // The IP is actually an mDNS address, try to resolve it.
+    // https://datatracker.ietf.org/doc/draft-ietf-rtcweb-mdns-ice-candidates/
+
+    GResolver *resolver = g_resolver_get_default ();
+    GError *err = NULL;
+    GList *addresses = g_resolver_lookup_by_name (resolver, self->priv->ip,
+        NULL, &err);
+
+    if (err) {
+      GST_DEBUG_OBJECT (self, "Ignore foreign mDNS candidate: %s",
+          (err->message ? err->message : "(None)"));
+      g_error_free (err);
+      err = NULL;
+    } else {
+      // Set the resolved address
+      GInetAddress *address = (GInetAddress *) g_list_nth_data (addresses, 0);
+      gchar *resolved_ip = g_inet_address_to_string (address);
+      GST_INFO_OBJECT (self, "mDNS address (%s) resolved: %s", self->priv->ip,
+          resolved_ip);
+      kms_ice_candidate_set_address (self, resolved_ip);
+      g_free (resolved_ip);
+    }
+
+    if (addresses) {
+      g_resolver_free_addresses (addresses);
+    }
+    g_object_unref (resolver);
   }
 
   ret = TRUE;
@@ -429,6 +460,20 @@ gboolean
 kms_ice_candidate_get_valid (KmsIceCandidate * self)
 {
   return self->priv->is_valid;
+}
+
+void
+kms_ice_candidate_set_address (KmsIceCandidate * self, const gchar * ip_str)
+{
+  // Replace the candidate and ip strings with the given ip address
+
+  gchar **split = g_strsplit(self->priv->candidate, self->priv->ip, 2);
+  g_free(self->priv->candidate);
+  self->priv->candidate = g_strjoinv (ip_str, split);
+  g_strfreev (split);
+
+  g_free (self->priv->ip);
+  self->priv->ip = g_strdup (ip_str);
 }
 
 /* Utils end */
