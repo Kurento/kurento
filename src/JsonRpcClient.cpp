@@ -131,7 +131,7 @@ Client::onMessageReceived (const std::string &msg)
       }
 
       responseHandlers.erase (id);
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range &) {
 
     }
   } else {

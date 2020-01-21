@@ -199,7 +199,7 @@ public:
     vec.reserve (vec.size() + JsonValue.size() );
 
     for (unsigned int i = 0; i < JsonValue.size(); ++i) {
-      TValue val;
+      TValue val{};
       Serialize (i, val);
       vec.push_back (val);
     }
@@ -231,7 +231,7 @@ public:
     list.clear();
 
     for (unsigned int i = 0; i < JsonValue.size(); ++i) {
-      TValue val;
+      TValue val{};
       Serialize (i, val);
       list.push_back (val);
     }
