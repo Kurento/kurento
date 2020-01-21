@@ -20,6 +20,12 @@
 #/ Arguments
 #/ ---------
 #/
+#/ --build-only
+#/
+#/   Only build the source code, without actually running KMS.
+#/
+#/   Optional. Default: Disabled.
+#/
 #/ --release
 #/
 #/   Build in Release mode with debugging symbols.
@@ -34,29 +40,90 @@
 #/
 #/   Optional. Default: Disabled.
 #/
+#/ --clang
+#/
+#/   Build (and run, in case of using a Sanitizer) with Clang C/C++ compiler.
+#/
+#/   Note: You are still in charge of providing the desired version of Clang in
+#/   `/usr/bin/clang` for C; `/usr/bin/clang++` for C++.
+#/   For this, either create symlinks manually, or have a look into the
+#/   Debian/Ubuntu alternatives system (`update-alternatives`).
+#/
+#/   Optional. Default: Disabled. When disabled, the compiler will be GCC.
+#/
 #/ --verbose
 #/
-#/   Tells CMake to generate verbose Makefiles, that will print every build
+#/   Tell CMake to generate verbose Makefiles, that will print every build
 #/   command as they get executed by `make`.
 #/
 #/   Optional. Default: Disabled.
 #/
+#/ --valgrind-memcheck
+#/
+#/   Build and run with Valgrind's Memcheck memory error detector.
+#/   Valgrind should be available in the PATH.
+#/
+#/   See:
+#/   * Memcheck manual: http://valgrind.org/docs/manual/mc-manual.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
+#/
+#/ --valgrind-massif
+#/
+#/   Build and run with Valgrind's Massif heap profiler.
+#/   Valgrind should be available in the PATH.
+#/
+#/   Massif gathers profiling information, which then can be loaded with
+#/   the `ms_print` tool to present it in a readable way.
+#/
+#/   For example:
+#/
+#/       ms_print valgrind-massif-13522.out >valgrind-massif-13522.out.txt
+#/
+#/   See:
+#/   * Massif manual: http://valgrind.org/docs/manual/ms-manual.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
+#/
 #/ --address-sanitizer
 #/
-#/   Build and runs with the instrumentation provided by the compiler's
-#/   AddressSanitizer (available in GCC and Clang).
+#/   Build and run with the instrumentation provided by the compiler's
+#/   AddressSanitizer and LeakSanitizer (available in GCC and Clang).
 #/
-#/   See: https://clang.llvm.org/docs/AddressSanitizer.html
+#/   See:
+#/   * https://clang.llvm.org/docs/AddressSanitizer.html
+#/   * https://clang.llvm.org/docs/LeakSanitizer.html
 #/
 #/   Optional. Default: Disabled.
 #/   Implies '--release'.
 #/
 #/ --thread-sanitizer
 #/
-#/   Build and runs with the instrumentation provided by the compiler's
+#/   Build and run with the instrumentation provided by the compiler's
 #/   ThreadSanitizer (available in GCC and Clang).
 #/
 #/   See: https://clang.llvm.org/docs/ThreadSanitizer.html
+#/
+#/   NOTE: A recent version of GCC is required for ThreadSanitizer to work;
+#/   GCC 5, 6 and 7 have been tested and don't work; GCC 8 and 9 do.
+#/   On top of that, there's the issue of having some false positives due
+#/   to the custom thread-synchronization routines from GLib (like GMutex),
+#/   which TSAN doesn't understand and ends up considering as race conditions.
+#/
+#/   The official solution is to recompile GLib with TSAN instrumentation.
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
+#/
+#/ --undefined-sanitizer
+#/
+#/   Build and run with the compiler's UndefinedBehaviorSanitizer, an
+#/   undefined behavior detector (available in GCC and Clang).
+#/
+#/   See:
+#/   * https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 #/
 #/   Optional. Default: Disabled.
 #/   Implies '--release'.
@@ -75,29 +142,29 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 # Parse call arguments
 # --------------------
 
+CFG_BUILD_ONLY="false"
 CFG_RELEASE="false"
 CFG_GDB="false"
+CFG_CLANG="false"
 CFG_VERBOSE="false"
+CFG_VALGRIND_MEMCHECK="false"
+CFG_VALGRIND_MASSIF="false"
 CFG_ADDRESS_SANITIZER="false"
 CFG_THREAD_SANITIZER="false"
+CFG_UNDEFINED_SANITIZER="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --release)
-            CFG_RELEASE="true"
-            ;;
-        --gdb)
-            CFG_GDB="true"
-            ;;
-        --verbose)
-            CFG_VERBOSE="true"
-            ;;
-        --address-sanitizer)
-            CFG_ADDRESS_SANITIZER="true"
-            ;;
-        --thread-sanitizer)
-            CFG_THREAD_SANITIZER="true"
-            ;;
+        --build-only) CFG_BUILD_ONLY="true" ;;
+        --release) CFG_RELEASE="true" ;;
+        --gdb) CFG_GDB="true" ;;
+        --clang) CFG_CLANG="true" ;;
+        --verbose) CFG_VERBOSE="true" ;;
+        --valgrind-memcheck) CFG_VALGRIND_MEMCHECK="true" ;;
+        --valgrind-massif) CFG_VALGRIND_MASSIF="true" ;;
+        --address-sanitizer) CFG_ADDRESS_SANITIZER="true" ;;
+        --thread-sanitizer) CFG_THREAD_SANITIZER="true" ;;
+        --undefined-sanitizer) CFG_UNDEFINED_SANITIZER="true" ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
             log "Run with '--help' to read usage details"
@@ -109,8 +176,16 @@ done
 
 
 
-# Apply config restrictions
-# -------------------------
+# Apply config logic
+# ------------------
+
+if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
+    CFG_RELEASE="true"
+fi
+
+if [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
+    CFG_RELEASE="true"
+fi
 
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
@@ -120,17 +195,23 @@ if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
 fi
 
+log "CFG_BUILD_ONLY=$CFG_BUILD_ONLY"
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GDB=$CFG_GDB"
+log "CFG_CLANG=$CFG_CLANG"
 log "CFG_VERBOSE=$CFG_VERBOSE"
+log "CFG_VALGRIND_MEMCHECK=$CFG_VALGRIND_MEMCHECK"
+log "CFG_VALGRIND_MASSIF=$CFG_VALGRIND_MASSIF"
 log "CFG_ADDRESS_SANITIZER=$CFG_ADDRESS_SANITIZER"
 log "CFG_THREAD_SANITIZER=$CFG_THREAD_SANITIZER"
+log "CFG_UNDEFINED_SANITIZER=$CFG_UNDEFINED_SANITIZER"
 
 
 
 # Run CMake if not done yet
 # -------------------------
 
+BUILD_VARS=()
 BUILD_TYPE="Debug"
 BUILD_DIR_SUFFIX=""
 CMAKE_ARGS=""
@@ -143,14 +224,63 @@ if [[ "$CFG_VERBOSE" == "true" ]]; then
     CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_VERBOSE_MAKEFILE=ON"
 fi
 
+if [[ "$CFG_CLANG" == "true" ]]; then
+    BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-clang"
+    BUILD_VARS+=(
+        "CC='clang'"
+        "CXX='clang++'"
+    )
+else
+    # Default dirs are assumed to be GCC, no need for a suffix
+    BUILD_VARS+=(
+        "CC='gcc'"
+        "CXX='g++'"
+    )
+fi
+
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-asan"
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_ADDRESS=ON"
+
+    if [[ "$CFG_CLANG" == "true" ]]; then
+        BUILD_VARS+=(
+            "CFLAGS='${CFLAGS:-} -shared-libasan'"
+            "CXXFLAGS='${CXXFLAGS:-} -shared-libasan'"
+        )
+    else
+        BUILD_VARS+=(
+            # Use flag recommended for aggressive diagnostics:
+            # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
+            "CFLAGS='${CFLAGS:-} -fsanitize-address-use-after-scope'"
+            "CXXFLAGS='${CXXFLAGS:-} -fsanitize-address-use-after-scope'"
+        )
+    fi
 fi
 
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-tsan"
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_THREAD=ON"
+fi
+
+if [[ "$CFG_UNDEFINED_SANITIZER" == "true" ]]; then
+    BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-ubsan"
+    CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_UNDEFINED=ON"
+
+    # FIXME
+    # A bug in the `ld` linker (package "binutils") in Ubuntu 16.04 "Xenial"
+    # makes the CMake test for UBSan compatibility to fail.
+    # A simple workaround is to use `gold` instead of `ld`.
+    # Clang doesn't need this, because it uses `lld`, the LLVM linker.
+    # See: https://stackoverflow.com/questions/50024731/ld-unrecognized-option-push-state-no-as-needed
+    #
+    # The bug is fixed in Ubuntu 18.04 "Bionic". So this workaround can be
+    # removed when Kurento drops support for Xenial.
+    if [[ "$CFG_CLANG" != "true" ]]; then
+        BUILD_VARS+=(
+            "CFLAGS='${CFLAGS:-} -fuse-ld=gold'"
+            "CXXFLAGS='${CXXFLAGS:-} -fuse-ld=gold'"
+        )
+    fi
 fi
 
 if [[ -f /.dockerenv ]]; then
@@ -159,10 +289,24 @@ fi
 
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
-if ! ls -f "./${BUILD_DIR}/CMakeCache.txt"; then
+if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; then
+    # If only a partial build exists (or none at all), delete it
+    rm -rf "$BUILD_DIR"
+
     mkdir -p "$BUILD_DIR"
     pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
-    cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" $CMAKE_ARGS ..
+
+    # Prepare the final command
+    COMMAND=""
+    for BUILD_VAR in "${BUILD_VARS[@]:-}"; do
+        [[ -n "$BUILD_VAR" ]] && COMMAND="$COMMAND $BUILD_VAR"
+    done
+
+    COMMAND="$COMMAND cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON $CMAKE_ARGS .."
+
+    log "Run command: $COMMAND"
+    eval $COMMAND
+
     popd || exit 1  # Exit $BUILD_DIR
 fi
 
@@ -181,30 +325,64 @@ RUN_VARS=()
 RUN_WRAPPER=""
 
 if [[ "$CFG_GDB" == "true" ]]; then
-    #RUN_WRAPPER="gdb -ex run --args"
     RUN_WRAPPER="gdb --args"
-    RUN_VARS+=("G_DEBUG=fatal-warnings")
+    RUN_VARS+=("G_DEBUG='fatal-warnings'")
 fi
 
-if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
-    LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libasan.so.?' | head -n1)"
+if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
+    # shellcheck source=valgrind.conf.sh
+    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    RUN_WRAPPER="valgrind --tool=memcheck --log-file=valgrind-memcheck-%p.log $VALGRIND_ARGS"
     RUN_VARS+=(
-        "LD_PRELOAD=""$LIBSAN"
-        "ASAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/asan.supp new_delete_type_mismatch=0"
+        "G_DEBUG='gc-friendly'"
+        #"G_SLICE='always-malloc'"
+        #"G_SLICE='debug-blocks'"
+        "G_SLICE='all'"
+    )
+
+elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
+    # shellcheck source=valgrind.conf.sh
+    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    RUN_WRAPPER="valgrind --tool=massif --log-file=valgrind-massif-%p.log --massif-out-file=valgrind-massif-%p.out $VALGRIND_ARGS"
+
+elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
+    if [[ "$CFG_CLANG" == "true" ]]; then
+        CLANG_VERSION="$(clang --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
+        CLANG_VERSION_MAJ="$(echo "$CLANG_VERSION" | head -c1)"
+        LIBSAN="/usr/lib/llvm-${CLANG_VERSION_MAJ}/lib/clang/${CLANG_VERSION}/lib/linux/libclang_rt.asan-x86_64.so"
+    else
+        GCC_VERSION="$(gcc -dumpversion | head -c1)"
+        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION}/libasan.so"
+    fi
+
+    RUN_VARS+=(
+        "LD_PRELOAD='$LIBSAN'"
+        # Use ASAN_OPTIONS recommended for aggressive diagnostics:
+        # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
+        # NOTE: "detect_stack_use_after_return=1" breaks Kurento execution (more study needed to see why)
+        # NOTE: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled
+        "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_odr_violation=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1'"
+    )
+
+elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
+    GCC_VERSION="$(gcc -dumpversion | head -c1)"
+    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/libtsan.so"
+    RUN_VARS+=(
+        "LD_PRELOAD='$LIBSAN'"
+        "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
     )
 fi
 
-if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    LIBSAN="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libtsan.so.?' | head -n1)"
+# Set default debug log settings, if none given
+if [[ -n "${GST_DEBUG:-}" ]]; then
     RUN_VARS+=(
-        "LD_PRELOAD=""$LIBSAN"
-        "TSAN_OPTIONS=""suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1"
+        "GST_DEBUG='$GST_DEBUG'"
+    )
+else
+    RUN_VARS+=(
+        "GST_DEBUG='3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
     )
 fi
-
-# Set debug log settings
-unset GST_DEBUG
-export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
 # (Optional) Extra GST_DEBUG categories
 # export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
@@ -221,17 +399,35 @@ pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 # changed since last time, it is a "no-op" anyway
 make -j"$(nproc)"
 
+if [[ "$CFG_BUILD_ONLY" == "true" ]]; then
+    exit 0
+fi
+
 # Run in a subshell so the exported variables don't pollute parent environment
 (
-    for RUN_VAR in "${RUN_VARS[@]}"; do
-        export "$RUN_VAR"
+    # Enable kernel core dump
+    ulimit -c unlimited
+
+    #KERNEL_CORE_PATH="${PWD}/core_%e_%p_%u_%t"
+    #log "Set kernel core dump path: $KERNEL_CORE_PATH"
+    #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
+
+    # Prepare the final command
+    COMMAND=""
+    for RUN_VAR in "${RUN_VARS[@]:-}"; do
+        [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
     done
 
-    $RUN_WRAPPER ./kurento-media-server/server/kurento-media-server \
-        --modules-path=. \
-        --modules-config-path=./config \
-        --conf-file=./config/kurento.conf.json \
-        --gst-plugin-path=.
+    COMMAND="$COMMAND $RUN_WRAPPER"
+
+    COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
+        --conf-file='$PWD/config/kurento.conf.json' \
+        --modules-config-path='$PWD/config' \
+        --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
+        --gst-plugin-path='$PWD'"
+
+    log "Run command: $COMMAND"
+    eval $COMMAND
 )
 
 popd || exit 1  # Exit $BUILD_DIR

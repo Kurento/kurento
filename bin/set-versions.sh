@@ -153,6 +153,12 @@ if [[ "$CFG_VERSION" == "$CFG_VERSION_DEFAULT" ]]; then
     exit 1
 fi
 
+REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
+[[ "$CFG_VERSION" =~ $REGEX ]] || {
+    log "ERROR: '$CFG_VERSION' must be compatible with Semantic Versioning: <Major>.<Minor>.<Patch>"
+    exit 1
+}
+
 log "CFG_VERSION=$CFG_VERSION"
 log "CFG_DEBIAN=$CFG_DEBIAN"
 log "CFG_RELEASE=$CFG_RELEASE"
@@ -198,16 +204,16 @@ update_changelog() {
             --new-version="$PACKAGE_VERSION" \
             \
             --release \
-            --distribution='testing' \
+            --distribution="testing" \
             --force-distribution \
             \
-            ./debian/
+            ./debian
 
-        # First appearance of 'UNRELEASED': Put our commit message
+        # First appearance of "UNRELEASED": Put our commit message
         sed --in-place --expression="0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
             ./debian/changelog
 
-        # Remaining appearances of 'UNRELEASED' (if any): Delete line
+        # Remaining appearances of "UNRELEASED" (if any): Delete line
         sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
             ./debian/changelog
     else
@@ -216,7 +222,7 @@ update_changelog() {
             --git-author \
             --spawn-editor=never \
             --new-version="$PACKAGE_VERSION" \
-            ./debian/
+            ./debian
     fi
 }
 
@@ -224,8 +230,8 @@ commit_and_tag() {
     [[ $# -eq 0 ]] && return 1
 
     if [[ "$CFG_COMMIT" == "true" ]]; then
-        git add "$1"
         git add debian/changelog
+        git add "$1"
         git commit -m "$COMMIT_MSG"
 
         if [[ "$CFG_TAG" == "true" ]]; then
