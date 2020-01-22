@@ -757,7 +757,8 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
   attr_len = gst_sdp_media_attributes_len (media);
   for (a = 0; a < attr_len; a++) {
-    const GstSDPAttribute *attr = gst_sdp_media_get_attribute (media, a);
+    GstSDPAttribute *attr =
+        (GstSDPAttribute *) gst_sdp_media_get_attribute (media, a);
 
     if (g_strcmp0 (attr->key, "rtcp") == 0) {
       const guint rtcp_port = kms_rtp_base_connection_get_rtcp_port (conn);
