@@ -371,14 +371,43 @@ Whenever working with KMS source code itself, of during any analysis of crash in
 
 **Installing the debug symbols does not impose any extra load to the system**. So, it doesn't really hurt at all to have them installed even in production setups, where they will prove useful whenever an unexpected crash happens to bring the system down and a postmortem stack trace is automatically generated.
 
-To install all debug symbols relevant to KMS, run:
+First thing to do is to enable the Ubuntu's official **Debug Symbol Packages** repository:
+
+.. code-block:: bash
+
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+       gnupg
+
+   apt-key adv \
+       --keyserver keyserver.ubuntu.com \
+       --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+
+   if [[ -f /etc/upstream-release/lsb-release ]]; then
+       source /etc/upstream-release/lsb-release
+   else
+       source /etc/lsb-release
+   fi
+
+   tee /etc/apt/sources.list.d/ddebs.list >/dev/null <<EOF
+   # Packages with debug symbols
+   deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
+   deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
+   deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-proposed main restricted universe multiverse
+   EOF
+
+Now, install all debug symbols relevant to KMS:
 
 .. code-block:: bash
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        kurento-dbg
 
-For example, see the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't send a stack trace that looks like the first one in this example**:
+
+
+Why are debug symbols useful?
+-----------------------------
+
+Let's see a couple examples that show the difference between the same stack trace, as generated *before* installing the debug symbols, and *after* installing them. **Don't report a stack trace that looks like the first one in this example**:
 
 .. code-block:: text
 
@@ -414,7 +443,7 @@ For example, see the difference between the same stack trace, as generated *befo
 
 The second stack trace is much more helpful, because it indicates the exact file names and line numbers where the crash happened. With these, a developer will at least have a starting point where to start looking for any potential bug.
 
-It's important to note that stack traces, while helpful, are not a replacement for actually running the software under a debugger (**GDB**) or memory analyzer (**Valgrind**). Most crashes will need further investigation before they can be fixed.
+It's important to note that stack traces, while helpful, are not a 100% replacement of actually running the software under a debugger (**GDB**) or memory analyzer (**Valgrind**). Most crashes will need further investigation before they can be fixed.
 
 
 
