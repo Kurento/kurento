@@ -55,7 +55,7 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 # Install required tools:
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
 # * curl: For "entrypoint.sh" and "healthchecker.sh"
-RUN apt-get update && apt-get install --yes \
+RUN apt-get update && apt-get install --no-install-recommends --yes \
         gnupg \
         curl \
  && rm -rf /var/lib/apt/lists/*
@@ -67,9 +67,10 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
  && echo "UBUNTU_VERSION=${UBUNTU_VERSION}" \
  && echo "KMS_VERSION=${KMS_VERSION}" \
- && echo "Apt source line: deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" \
- && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" >/etc/apt/sources.list.d/kurento.list \
- && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+ && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
+ && APT_LIST="deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" \
+ && echo "Apt source line: $APT_LIST" \
+ && echo "$APT_LIST" >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server
 RUN apt-get update && apt-get install --yes \
@@ -78,12 +79,43 @@ RUN apt-get update && apt-get install --yes \
 
 # Install additional modules
 # These might not be available in Ubuntu 18.04 (Bionic)
-RUN apt-get update && apt-get install --yes \
+RUN apt-get update && apt-get install --no-install-recommends --yes \
         kms-chroma \
         kms-crowddetector \
         kms-platedetector \
         kms-pointerdetector \
     || true \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install debug symbols
+# FIXME: Leave only "kurento-dbg" when this package is finally working on Bionic
+#        https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#dev-dbg
+RUN apt-key adv \
+        --keyserver keyserver.ubuntu.com \
+        --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
+ && echo "deb http://ddebs.ubuntu.com ${UBUNTU_VERSION} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
+ && echo "deb http://ddebs.ubuntu.com ${UBUNTU_VERSION}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
+ && apt-get update \
+ && apt-get install --no-install-recommends --yes \
+        kurento-dbg \
+ || apt-get install --no-install-recommends --yes \
+        libc6-dbg \
+        libglib2.0-0-dbgsym \
+        kmsjsoncpp-dbg \
+        libnice10-dbgsym \
+        openwebrtc-gst-plugins-dbg \
+        libgstreamer1.5-0-dbg \
+        gstreamer1.5-libav-dbg \
+        gstreamer1.5-nice-dbgsym \
+        gstreamer1.5-plugins-bad-dbg \
+        gstreamer1.5-plugins-base-dbg \
+        gstreamer1.5-plugins-good-dbg \
+        gstreamer1.5-plugins-ugly-dbg \
+        kms-jsonrpc-dbg \
+        kms-core-dbg \
+        kms-elements-dbg \
+        kms-filters-dbg \
+        kurento-media-server-dbg \
  && rm -rf /var/lib/apt/lists/*
 
 # Configure environment for KMS. All of this can be overriden with `docker run`.
