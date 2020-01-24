@@ -378,7 +378,7 @@ First thing to do is to enable the Ubuntu's official **Debug Symbol Packages** r
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        gnupg
 
-   apt-key adv \
+   sudo apt-key adv \
        --keyserver keyserver.ubuntu.com \
        --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
@@ -388,11 +388,10 @@ First thing to do is to enable the Ubuntu's official **Debug Symbol Packages** r
        source /etc/lsb-release
    fi
 
-   tee /etc/apt/sources.list.d/ddebs.list >/dev/null <<EOF
+   sudo tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
    # Packages with debug symbols
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
-   deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-proposed main restricted universe multiverse
    EOF
 
 Now, install all debug symbols relevant to KMS:
