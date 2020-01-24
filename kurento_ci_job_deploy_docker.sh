@@ -123,6 +123,6 @@ else
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
-log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}'"
+log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}:${TAG}'"
 
 popd  # Exit kurento-media-server/

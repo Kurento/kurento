@@ -89,21 +89,25 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy release image"
     DOCKER_KMS_VERSION="$VERSION"
     DOCKER_NAME_SUFFIX=""
+    DOCKER_SOURCE_TAG="${VERSION}"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy experimental feature image"
     DOCKER_KMS_VERSION="$JOB_DEPLOY_NAME"
     DOCKER_NAME_SUFFIX="-exp"
+    DOCKER_SOURCE_TAG="${JOB_DEPLOY_NAME}"
 else
     log "Deploy nightly development image"
     DOCKER_KMS_VERSION="dev"
     DOCKER_NAME_SUFFIX="-dev"
+    DOCKER_SOURCE_TAG="${VERSION}-${JOB_TIMESTAMP}"
 fi
 
 pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
-export BUILD_ARGS="UBUNTU_VERSION=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION KMS_IMAGE=kurento/kurento-media-server${DOCKER_NAME_SUFFIX}"
+export BUILD_ARGS="UBUNTU_VERSION=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION"
+export BUILD_ARGS="$BUILD_ARGS KMS_IMAGE=kurento/kurento-media-server${DOCKER_NAME_SUFFIX}:${DOCKER_SOURCE_TAG}"
 export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
@@ -123,6 +127,6 @@ else
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
-log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}'"
+log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}:${TAG}'"
 
 popd  # Exit kurento-media-server-asan/
