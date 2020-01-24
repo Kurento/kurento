@@ -71,15 +71,8 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
  && echo "deb http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_VERSION kms6" >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
  && apt-get update && apt-get install --no-install-recommends --yes \
-        kurento-media-server-dev \
-        openwebrtc-gst-plugins-dev \
-        libboost-log-dev \
-        libboost-program-options-dev \
-        libboost-thread-dev \
-        libevent-dev \
         build-essential \
-        default-jdk-headless \
-        maven \
+        kurento-media-server-dev \
         maven-debian-helper \
  && rm -rf /var/lib/apt/lists/*
 
@@ -100,11 +93,11 @@ RUN add-apt-repository --yes ppa:ubuntu-toolchain-r/test \
         --slave /usr/bin/cpp cpp "/usr/bin/cpp-${GCC_VERSION}" \
  && update-alternatives --set gcc "/usr/bin/gcc-${GCC_VERSION}"
 
-# Download, build, and package KMS
+# Download, build, and dist KMS
 COPY ./build.sh /
 RUN /build.sh
 
-# Final Docker stage with only the resulting files
+# Final Docker stage with only the final files
 FROM ${KMS_IMAGE}
 
 # Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial")

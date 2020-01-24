@@ -53,7 +53,7 @@ popd  # Exit kms-omni-build/
 
 
 
-# Package
+# Dist
 mkdir /kurento-asan
 find "$KMS_BIN_DIR" -type f -name '*.so*' -exec cp -av {} /kurento-asan/ \;
 cp -av "$KMS_BIN_DIR/kurento-media-server/server/kurento-media-server" \
