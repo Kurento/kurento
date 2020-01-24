@@ -371,7 +371,7 @@ Whenever working with KMS source code itself, of during any analysis of crash in
 
 **Installing the debug symbols does not impose any extra load to the system**. So, it doesn't really hurt at all to have them installed even in production setups, where they will prove useful whenever an unexpected crash happens to bring the system down and a postmortem stack trace is automatically generated.
 
-First thing to do is to enable the Ubuntu's official **Debug Symbol Packages** repository:
+After having :doc:`installed Kurento </user/installation>`, first thing to do is to enable the Ubuntu's official **Debug Symbol Packages** repository:
 
 .. code-block:: bash
 
@@ -400,6 +400,31 @@ Now, install all debug symbols relevant to KMS:
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        kurento-dbg
+
+.. warning::
+
+   [FIXME] As of this writing, the package ``kurento-dbg`` works on Ubuntu 16.04 (Xenial), but it fails on Ubuntu 18.04 (Bionic). **If you are using Ubuntu 18.04**, then install these packages instead:
+
+   .. code-block:: bash
+
+      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+          libc6-dbg \
+          libglib2.0-0-dbgsym \
+          kmsjsoncpp-dbg \
+          libnice10-dbgsym \
+          openwebrtc-gst-plugins-dbg \
+          libgstreamer1.5-0-dbg \
+          gstreamer1.5-libav-dbg \
+          gstreamer1.5-nice-dbgsym \
+          gstreamer1.5-plugins-bad-dbg \
+          gstreamer1.5-plugins-base-dbg \
+          gstreamer1.5-plugins-good-dbg \
+          gstreamer1.5-plugins-ugly-dbg \
+          kms-jsonrpc-dbg \
+          kms-core-dbg \
+          kms-elements-dbg \
+          kms-filters-dbg \
+          kurento-media-server-dbg
 
 
 
