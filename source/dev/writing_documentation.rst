@@ -107,7 +107,7 @@ Inline markup
   .. code-block:: text
 
      Use ``apt-get install`` to set up all required packages.
-     Set ``CMAKE_BUILD_TYPE=Debug`` to build with debugging symbols.
+     Set ``CMAKE_BUILD_TYPE=Debug`` to build with debug symbols.
      The argument ``--gst-debug`` can be used to control the logging level.
 
 - There is no difference between using *single asterisks* (``*word*``), and `single back quotes` (```word```); they get rendered as *italic text*. So, always use asterisks when wanting to emphasize some text.

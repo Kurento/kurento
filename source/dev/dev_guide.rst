@@ -364,10 +364,10 @@ Run:
 
 .. _dev-dbg:
 
-Install debugging symbols
-=========================
+Install debug symbols
+=====================
 
-Whenever working with KMS source code itself, of during any analysis of crash in either the server or any 3rd-party library, you'll want to have debugging symbols installed. These provide for full information about the source file name and line where problems are happening; this information is paramount for a successful debug session, and you'll also need to provide these details when requesting support or :ref:`filing a bug report <support-community>`.
+Whenever working with KMS source code itself, of during any analysis of crash in either the server or any 3rd-party library, you'll want to have debug symbols installed. These provide for full information about the source file name and line where problems are happening; this information is paramount for a successful debug session, and you'll also need to provide these details when requesting support or :ref:`filing a bug report <support-community>`.
 
 **Installing the debug symbols does not impose any extra load to the system**. So, it doesn't really hurt at all to have them installed even in production setups, where they will prove useful whenever an unexpected crash happens to bring the system down and a postmortem stack trace is automatically generated.
 
@@ -411,7 +411,7 @@ Let's see a couple examples that show the difference between the same stack trac
 
 .. code-block:: text
 
-   # ==== NOT USEFUL: WITHOUT debugging symbols ====
+   # ==== NOT USEFUL: WITHOUT debug symbols ====
 
    $ cat /var/log/kurento-media-server/errors.log
    Segmentation fault (thread 139667051341568, pid 14132)
@@ -427,7 +427,7 @@ Let's see a couple examples that show the difference between the same stack trac
 
 .. code-block:: text
 
-   # ==== USEFUL: WITH debugging symbols ====
+   # ==== USEFUL: WITH debug symbols ====
 
    $ cat /var/log/kurento-media-server/errors.log
    Segmentation fault (thread 140672899761920, pid 15217)

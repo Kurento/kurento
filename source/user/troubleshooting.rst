@@ -35,7 +35,7 @@ We want Kurento to be as stable as possible! When you notice a server crash, it'
 
      2019-09-19T13:44:48+02:00 -- New execution
 
-  Then, see if you can find the stack trace that matches with the time when the crash occured. Attach that stack trace to your bug report.
+  Then, see if you can find the stack trace that matches with the time when the crash occurred. Attach that stack trace to your bug report.
 
 * If you installed Kurento with ``apt-get install``, then the Ubuntu system generates a **crash report** that you will find in ``/var/crash/_usr_bin_kurento-media-server.<PID>.crash``. This contains information that can be used to inspect KMS with a debugger, so it tends to be very useful. Attach it to your bug report (or upload it to any hosting provider).
 
@@ -71,7 +71,7 @@ However, these messages don't cause a crash in the server; instead, it will keep
 
 Finding the spot where the ``assert()`` fails is a bit hard, though; you need to:
 
-1) Install debugging symbols: :ref:`dev-dbg`.
+1) Install debug symbols: :ref:`dev-dbg`.
 
 2) Enable debug breaks in the asserts:
 
@@ -334,12 +334,12 @@ This is how this process would look like. In this example, KMS was restarted so 
    DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  Closing client
    INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Initiating new Netty channel. Will create new handler too!
    WARN o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Trying to close a JsonRpcClientNettyWebSocket with channel == null
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : TryReconnectingForever=true
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : TryReconnectingMaxTime=0
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : maxTimeReconnecting=9223372036854775807
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : currentTime=1510773733903
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : Parar de reconectar=false
-   WARN o.k.j.c.AbstractJsonRpcClientWebSocket  : [KurentoClient]  Exception trying to reconnect to server ws://localhost:8888/kurento. Retrying in 5000 millis
+   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : tryReconnectingForever = true
+   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : tryReconnectingMaxTime = 0
+   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : maxTimeReconnecting = 9223372036854775807
+   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : currentTime = 1510773733903
+   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : Stop connection retries: false
+   WARN o.k.j.c.AbstractJsonRpcClientWebSocket  : [KurentoClient]  Exception trying to reconnect to server ws://localhost:8888/kurento. Retrying in 5000 ms
 
    org.kurento.jsonrpc.JsonRpcException: [KurentoClient]  Exception connecting to WebSocket server ws://localhost:8888/kurento
       at (...)
@@ -467,7 +467,7 @@ mDNS ICE candidate fails: Name or service not known
 
 **Problem**:
 
-When the browser conceals the local IP address behing an mDNS candidate, these errors appear in Kurento logs:
+When the browser conceals the local IP address behind an mDNS candidate, these errors appear in Kurento logs:
 
 .. code-block:: text
 
