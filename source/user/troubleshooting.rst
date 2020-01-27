@@ -4,13 +4,15 @@ Troubleshooting Issues
 
 If you are facing an issue with Kurento Media Server, follow this basic check list:
 
-* Step 1. Test with the **latest version** of Kurento Media Server: **|VERSION_KMS|**. Follow the installation instructions here: :doc:`/user/installation`.
+* **Step 1**: Test with the **latest version** of Kurento Media Server: **|VERSION_KMS|**. Follow the installation instructions here: :doc:`/user/installation`.
 
-* Step 2: If the problem still happens in the latest version, and the Kurento developers have started working on a solution, they might instruct you to test with the latest (unreleased) changes by installing a nightly version of KMS: :doc:`/user/installation_dev`.
+* **Step 2**: Test with the latest (unreleased) changes by installing a nightly version: :doc:`/user/installation_dev`.
 
-* Step 3: When your issue exists in both the latest and nightly versions, try resorting to the :ref:`Open-Source Community <support-community>`. Kurento users might be having the same issue and maybe you can find help in there.
+* **Step 3**: Search for your issue in our `GitHub bugtracker <https://github.com/Kurento/bugtracker/issues>`__ and the `Kurento Public Mailing List <https://groups.google.com/forum/#!forum/kurento>`__.
 
-* Step 4: If you want full attention from the Kurento team, get in contact with us to request :ref:`Commercial Support <support-commercial>`.
+* **Step 4**: If you want full attention from the Kurento team, get in contact with us to request :ref:`Commercial Support <support-commercial>`.
+
+For more information about how to request support, and how to submit bug reports and commercial enquiries, have a look at the :doc:`/user/support` page.
 
 
 
@@ -45,7 +47,7 @@ We want Kurento to be as stable as possible! When you notice a server crash, it'
 
 * We might ask you to run with a special build of Kurento that comes with support for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, a memory access error detector.
 
-  For this, you would need to make several high-impact changes in your system, so instead of breaking everybody's setup we decided it's better to just publish a Docker image that contains everything you need: `Kurento Docker images with AddressSanitizer <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags?name=asan>`__. If we ask for it, you would have to provide the `Docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ from running this.
+  To do this, you would need to make several high-impact changes in your system, so instead of breaking everybody's setup we decided it's better to just publish a Docker image that contains everything you need: `Kurento Docker images with AddressSanitizer <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags?name=asan>`__. If we ask for it, you would have to provide the `Docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ from running this.
 
   For this reason (and also for better test repeatability), it's a very good idea that you have your services thought out in a way that it's possible to **run Kurento Media Server from Docker**, at any time, regardless of what is your normal / usual method of deploying Kurento.
 
