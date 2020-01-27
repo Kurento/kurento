@@ -300,16 +300,29 @@ GDB is a debugger that can help understanding why and how a program is crashing.
 
 3. Run with GDB and get a backtrace:
 
-   For this, you'll have to run our launch script with the appropriate flag, which builds Kurento and starts up the debugger. Once you see the ``(gdb)`` command prompt, you're already inside a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are ``info stack`` and ``backtrace``:
+   For this, you'll have to run our launch script with the appropriate flag, which builds Kurento and starts up the debugger. Once you see the ``(gdb)`` command prompt, you're already inside a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are ``backtrace`` and ``info`` variants (`Examining the Stack <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>`__). When you want to finish, stop execution with *Ctrl+C*, then type the ``quit`` command:
 
    .. code-block:: bash
 
       ./bin/kms-build-run.sh --gdb
+      # Start running the KMS process
       (gdb) run
-      # KMS starts running.
-      # Wait until the crash happens and GDB breaks.
-      (gdb) info stack
+
+      # Wait until the crash happens and GDB breaks
+
+      # Obtain a full execution backtrace
       (gdb) backtrace
+
+      # Change to an interesting frame and get all details
+      (gdb) frame 3
+      (gdb) info frame
+      (gdb) info args
+      (gdb) info locals
+
+      # Quit GDB and return to the shell
+      (gdb) quit
+
+Explaining GDB usage is out of scope for this documentation, but just note one thing: in the above text, ``frame 3`` is just an example; depending on the case, the backtrace needs to be examined first to decide which frame number is the most interesting.
 
 
 
