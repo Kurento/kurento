@@ -287,6 +287,32 @@ https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-run
 
 
 
+.. _dev-gdb:
+
+Run and debug with GDB
+----------------------
+
+GDB is a debugger that can help understanding why and how a program is crashing. Sometimes you might need to get a *GDB backtrace*, which is a detailed listing of all functions that were running when the Kurento process failed. To do so, follow these instructions:
+
+1. Complete the previous instructions on how to build and run from sources: :ref:`dev-sources`.
+
+2. Install debug symbols: :ref:`dev-dbg`.
+
+3. Run with GDB and get a backtrace:
+
+   For this, you'll have to run our launch script with the appropriate flag, which builds Kurento and starts up the debugger. Once you see the ``(gdb)`` command prompt, you're already inside a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are ``info stack`` and ``backtrace``:
+
+   .. code-block:: bash
+
+      ./bin/kms-build-run.sh --gdb
+      (gdb) run
+      # KMS starts running.
+      # Wait until the crash happens and GDB breaks.
+      (gdb) info stack
+      (gdb) backtrace
+
+
+
 KMS Unit Tests
 --------------
 

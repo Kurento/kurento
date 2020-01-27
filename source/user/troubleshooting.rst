@@ -69,31 +69,15 @@ GLib and GStreamer use a lot of ``assert()`` functions to check for valid condit
 
 However, these messages don't cause a crash in the server; instead, it will keep working, although there will be some session that is wrongly affected by this issue.
 
-Finding the spot where the ``assert()`` fails is a bit hard, though; you need to:
+Finding the spot where the ``assert()`` fails requires running in debug mode, though. You need to:
 
-1) Install debug symbols: :ref:`dev-dbg`.
-
-2) Enable debug breaks in the asserts:
+1. Enable GDB breaks in the asserts (for example, by adding to ``/etc/default/kurento-media-server``):
 
    .. code-block:: bash
 
       export G_DEBUG=fatal-warnings
 
-3) Enable kernel core dumps:
-
-   .. code-block:: bash
-
-      ulimit -c unlimited
-
-4) Run with GDB and get a backtrace:
-
-   .. code-block:: bash
-
-      gdb /usr/bin/kurento-media-server
-      (gdb) run
-      # Wait until the assert happens and GDB breaks
-      (gdb) info stack
-      (gdb) backtrace
+2. Run with GDB and get a backtrace, as explained in :ref:`dev-gdb`.
 
 
 
