@@ -101,7 +101,7 @@ RUN /build.sh
 FROM ${KMS_IMAGE}
 
 # Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial")
-COPY --from=builder /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-xenial.list /etc/apt/sources.list.d/
+COPY --from=builder /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-*.list /etc/apt/sources.list.d/
 COPY --from=builder /etc/apt/trusted.gpg.d/ubuntu-toolchain-r_ubuntu_test.gpg /etc/apt/trusted.gpg.d/
 RUN apt-get update && apt-get install --no-install-recommends --yes \
         libgcc1 \
