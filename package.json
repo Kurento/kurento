@@ -1,6 +1,6 @@
 {
   "name": "kurento-utils",
-  "version": "6.13.1-dev",
+  "version": "6.13.1",
   "description": "Kurento JavaScript Utilities",
   "keywords": [
     "kurento",
