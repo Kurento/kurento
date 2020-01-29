@@ -59,7 +59,7 @@ Other Media Server issues
 ``GStreamer-CRITICAL **`` messages in the log
 ---------------------------------------------
 
-GLib and GStreamer use a lot of ``assert()`` functions to check for valid conditions whenever a function is called. If these conditions fail, messages such as these ones will appear in the log:
+GLib and GStreamer use a lot of ``assert()`` functions to check for valid conditions whenever a function is called. If these conditions fail, messages similar to these ones will appear in the error log:
 
 .. code-block:: text
 
@@ -69,17 +69,28 @@ GLib and GStreamer use a lot of ``assert()`` functions to check for valid condit
 
    (kurento-media-server:15636): GLib-CRITICAL **: g_error_free: assertion 'error != NULL' failed
 
-However, these messages don't cause a crash in the server; instead, it will keep working, although there will be some session that is wrongly affected by this issue.
+To fix this issue, we'll need you to run KMS under a debug session, with `GDB <https://www.gnu.org/software/gdb/>`__. You need to:
 
-Finding the spot where the ``assert()`` fails requires running in debug mode, though. You need to:
+1. Install debug symbols: :ref:`dev-dbg`.
 
-1. Enable GDB breaks in the asserts (for example, by adding to ``/etc/default/kurento-media-server``):
+2. Run KMS with the ``G_DEBUG`` environment variable. For example, by adding this line to the end of */etc/default/kurento-media-server* (but remember to remove it when you are finished!):
 
    .. code-block:: bash
 
       export G_DEBUG=fatal-warnings
 
-2. Run with GDB and get a backtrace, as explained in :ref:`dev-gdb`.
+3. Run with GDB and get a **backtrace**, as explained in :ref:`dev-gdb`.
+
+   Note that if you have a system-installed Kurento, you don't need to build KMS from sources; instead, you can simply do as follows:
+
+   .. code-block:: bash
+
+      sudo service kurento-media-server stop
+      source /etc/default/kurento-media-server
+      export G_DEBUG=fatal-warnings
+      gdb /usr/bin/kurento-media-server
+
+   Then follow the instructions from :ref:`dev-gdb`, to run the GDB commands and get a backtrace of the ``GStreamer-CRITICAL`` error.
 
 
 
