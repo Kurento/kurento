@@ -638,11 +638,11 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
         } catch (Exception e) {
 
-          log.debug("TryReconnectingForever={}", tryReconnectingForever);
-          log.debug("TryReconnectingMaxTime={}", tryReconnectingMaxTime);
-          log.debug("maxTimeReconnecting={}", maxTimeReconnecting);
-          log.debug("currentTime={}", System.currentTimeMillis());
-          log.debug("Parar de reconectar={}", System.currentTimeMillis() > maxTimeReconnecting);
+          log.debug("tryReconnectingForever = {}", tryReconnectingForever);
+          log.debug("tryReconnectingMaxTime = {}", tryReconnectingMaxTime);
+          log.debug("maxTimeReconnecting = {}", maxTimeReconnecting);
+          log.debug("currentTime = {}", System.currentTimeMillis());
+          log.debug("Stop connection retries: {}", System.currentTimeMillis() > maxTimeReconnecting);
 
           if (!tryReconnectingForever && (tryReconnectingMaxTime == 0
               || System.currentTimeMillis() > maxTimeReconnecting)) {
@@ -654,7 +654,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
           } else {
 
-            log.warn("{} Exception trying to reconnect to server {}. Retrying in {} millis", label,
+            log.warn("{} Exception trying to reconnect to server {}. Retrying in {} ms", label,
                 uri, RECONNECT_DELAY_TIME_MILLIS, e);
 
             reconnect(closeReason, RECONNECT_DELAY_TIME_MILLIS, false);
