@@ -75,7 +75,7 @@
 		<version.kms-api-elements>6.13.1-SNAPSHOT</version.kms-api-elements>
 		<version.kms-api-filters>6.13.1-SNAPSHOT</version.kms-api-filters>
 
-		<version.kurento-utils-js>6.13.0</version.kurento-utils-js>
+		<version.kurento-utils-js>6.13.1</version.kurento-utils-js>
 		<version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
 
 		<!-- Kurento extra modules -->
