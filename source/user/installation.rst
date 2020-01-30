@@ -66,6 +66,17 @@ Docker image
 
 Kurento's Docker Hub contains images built from each KMS release. Just head to the `kurento-media-server Docker Hub page <https://hub.docker.com/r/kurento/kurento-media-server>`__, and follow the instructions you'll find there.
 
+.. note::
+
+   You shouldn't expose a large port range in your Docker containers; instead, prefer using ``--network host``.
+
+   To elaborate a bit more, as `Yorgos Saslis <https://github.com/gsaslis>`__ mentioned `here <https://github.com/kubernetes/kubernetes/issues/23864#issuecomment-387070644>`__:
+
+       the problem is that - given the current state of Docker - it seems you should NOT even be trying to expose large numbers of ports. You are advised to use the host network anyway, due to the overhead involved with large port ranges. (it adds both latency, as well as consumes significant resources - e.g. see https://www.percona.com/blog/2016/02/05/measuring-docker-cpu-network-overhead/ )
+
+       If you are looking for a more official source, there is still (for years) an open issue in Docker about this:
+       `moby/moby#11185 (comment) <https://github.com/moby/moby/issues/11185#issuecomment-245983651>`__
+
 
 
 .. _installation-local:
