@@ -27,7 +27,7 @@
     "WebRTC"
   ],
   "dependencies": {
-    "kurento-client": "Kurento/kurento-client-js",
+    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
     "kurento-module-chroma": "Kurento/kurento-module-chroma-js",
     "kurento-module-crowddetector": "Kurento/kurento-module-crowddetector-js",
     "kurento-module-pointerdetector": "Kurento/kurento-module-pointerdetector-js",
