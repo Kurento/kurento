@@ -168,7 +168,7 @@ public class Browser implements Closeable {
     this.recordAudio = builder.recordAudio;
     this.audioSampleRate = builder.audioSampleRate;
     this.audioChannel = builder.audioChannel;
-    this.browserVersion = builder.browserVersion;
+    this.browserVersion = getProperty("test.browser.version", builder.browserVersion);
     this.platform = builder.platform;
     this.timeout = builder.timeout;
     this.colorDistance = builder.colorDistance;
@@ -261,7 +261,7 @@ public class Browser implements Closeable {
 
         String hostName;
         log.debug("BrowserScope is {}", scope);
-        if (scope == BrowserScope.DOCKER) {
+        if (scope == BrowserScope.DOCKER || scope == BrowserScope.ELASTEST) {
           if (docker.isRunningInContainer()) {
             hostName = docker.getContainerIpAddress();
           } else {
@@ -352,7 +352,7 @@ public class Browser implements Closeable {
       // cam
       options.addArguments("--use-fake-device-for-media-stream=fps=30");
 
-      if (video != null && (isLocal() || isDocker())) {
+      if (video != null && (isLocal() || isDocker() || isElastest())) {
 
         if (!Files.exists(Paths.get(video))) {
           throw new RuntimeException("Trying to create a browser using video file " + video
@@ -421,6 +421,24 @@ public class Browser implements Closeable {
       createRemoteDriver(capabilities);
     } else if (scope == BrowserScope.DOCKER) {
       driver = getDockerManager().createDockerDriver(id, capabilities);
+    } else if (scope == BrowserScope.ELASTEST) {
+      String eusURL = System.getenv("ET_EUS_API");
+      try {
+        String testNameCap = KurentoTest.getTestMethodName()
+            + (id != null && !id.isEmpty() ? "_" + id : "");
+
+        capabilities.setCapability("testName", testNameCap);
+
+        if (browserVersion != null && !"".equals(browserVersion)) {
+          capabilities.setCapability("version", browserVersion);
+        }
+
+        driver = new RemoteWebDriver(new URL(eusURL), capabilities);
+      } catch (MalformedURLException e) {
+        String errMessage = "ElasTest EUS API URL is Null";
+        log.error(errMessage);
+        throw new KurentoException(errMessage);
+      }
     } else {
       driver = newWebDriver(options);
     }
@@ -633,6 +651,10 @@ public class Browser implements Closeable {
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
       }
 
+      if (browserVersion != null && !"".equals(browserVersion)) {
+        capabilities.setCapability("version", browserVersion);
+      }
+
       final int hubPort = GridHandler.getInstance().getHubPort();
       final String hubHost = GridHandler.getInstance().getHubHost();
 
@@ -815,6 +837,10 @@ public class Browser implements Closeable {
     return BrowserScope.DOCKER.equals(this.scope);
   }
 
+  public boolean isElastest() {
+    return BrowserScope.ELASTEST.equals(this.scope);
+  }
+
   public BrowserType getBrowserType() {
     return browserType;
   }
@@ -946,8 +972,7 @@ public class Browser implements Closeable {
     }
 
     // Stop docker containers (if necessary)
-    if (scope == BrowserScope.DOCKER) {
-
+    if (scope == BrowserScope.DOCKER || scope == BrowserScope.ELASTEST) {
       Path logFile = KurentoTest.getDefaultOutputFolder().toPath();
 
       try {
@@ -1054,7 +1079,7 @@ public class Browser implements Closeable {
       String appAutostart = getProperty(TestConfiguration.TEST_APP_AUTOSTART_PROPERTY,
           TestConfiguration.TEST_APP_AUTOSTART_DEFAULT);
 
-      if (BrowserScope.DOCKER.equals(scope)
+      if ((BrowserScope.DOCKER.equals(scope) || scope == BrowserScope.ELASTEST)
           && !appAutostart.equals(TestConfiguration.AUTOSTART_FALSE_VALUE)) {
 
         if (docker.isRunningInContainer()) {

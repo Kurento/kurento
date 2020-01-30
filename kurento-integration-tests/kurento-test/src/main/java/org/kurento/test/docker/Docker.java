@@ -613,14 +613,29 @@ public class Docker implements Closeable {
 
   public String getContainerIpAddress() {
     if (isRunningInContainer()) {
-      String ipAddr = inspectContainer(getContainerName()).getNetworkSettings()
-          .getNetworks().values().iterator().next().getIpAddress();
+      String ipAddr = getContainerNetworks().values().iterator().next().getIpAddress();
       log.trace("Docker container IP address {}", ipAddr);
       return ipAddr;
     } else {
       throw new DockerClientException(
           "Can't obtain container ip address if not running in container");
     }
+  }
+
+  public Map<String, ContainerNetwork> getContainerNetworks() {
+      if (isRunningInContainer()) {
+          Map<String, ContainerNetwork> networks = inspectContainer(getContainerName()).getNetworkSettings()
+              .getNetworks();
+          log.trace("Docker container networks {}", networks);
+          return networks;
+      } else {
+          throw new DockerClientException(
+              "Can't obtain container ip address if not running in container");
+      }
+  }
+
+  public String getContainerFirstNetworkName() {
+     return getContainerNetworks().keySet().iterator().next();
   }
 
   public String getHostIpForContainers() {

@@ -26,7 +26,7 @@ package org.kurento.test.config;
  */
 public enum BrowserScope {
 
-  LOCAL, REMOTE, SAUCELABS, DOCKER;
+  LOCAL, REMOTE, SAUCELABS, DOCKER, ELASTEST;
 
   @Override
   public String toString() {

@@ -131,6 +131,8 @@ public class BrowserConfig {
           browserClient = builder.scope(BrowserScope.REMOTE).build();
         } else if (instance.isDocker()) {
           browserClient = builder.scope(BrowserScope.DOCKER).build();
+        } else if (instance.isElastest()) {
+          browserClient = builder.scope(BrowserScope.ELASTEST).build();
         } else if (instance.isSauceLabs()) {
           if (instance.getVersion() == null || instance.getPlatformType() == null) {
             throw new RuntimeException(

@@ -192,6 +192,7 @@ public class TestConfiguration {
   public static final String KMS_SCOPE_PROP = "test.kms.scope";
   public static final String KMS_SCOPE_LOCAL = "local";
   public static final String KMS_SCOPE_DOCKER = "docker";
+  public static final String KMS_SCOPE_ELASTEST = "elastest";
   public static final String KMS_SCOPE_DEFAULT = KMS_SCOPE_LOCAL;
 
   // Fake KMS

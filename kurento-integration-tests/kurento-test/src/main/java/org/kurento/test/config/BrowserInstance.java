@@ -178,6 +178,10 @@ public class BrowserInstance {
     return BrowserScope.SAUCELABS.toString().equals(this.getScope());
   }
 
+  public boolean isElastest() {
+    return BrowserScope.ELASTEST.toString().equals(this.getScope());
+  }
+
   public BrowserType getBrowserType() {
     return BrowserType.valueOf(getBrowser().toUpperCase());
   }
