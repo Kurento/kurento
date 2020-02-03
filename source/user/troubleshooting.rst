@@ -59,7 +59,9 @@ Other Media Server issues
 ``GStreamer-CRITICAL **`` messages in the log
 ---------------------------------------------
 
-GLib and GStreamer use a lot of ``assert()`` functions to check for valid conditions whenever a function is called. If these conditions fail, messages similar to these ones will appear in the error log:
+GLib and GStreamer are libraries that use a lot of internal ``assert()`` functions to check for valid conditions whenever a function is called. Normally, these are meant to catch programming bugs in their own source code; when (if) any of these checks fail, a warning message is printed to the logs. The media server won't be brought down in this situation, but a bug in any of Kurento's underlying 3rd-party libraries will have an adverse effect on Kurento itself sooner or later. So, it's in our best interest to watch out for these. Report them to us if you see any! ;-)
+
+Here are a couple examples of such messages:
 
 .. code-block:: text
 
@@ -69,28 +71,7 @@ GLib and GStreamer use a lot of ``assert()`` functions to check for valid condit
 
    (kurento-media-server:15636): GLib-CRITICAL **: g_error_free: assertion 'error != NULL' failed
 
-To fix this issue, we'll need you to run KMS under a debug session, with `GDB <https://www.gnu.org/software/gdb/>`__. You need to:
-
-1. Install debug symbols: :ref:`dev-dbg`.
-
-2. Run KMS with the ``G_DEBUG`` environment variable. For example, by adding this line to the end of */etc/default/kurento-media-server* (but remember to remove it when you are finished!):
-
-   .. code-block:: bash
-
-      export G_DEBUG=fatal-warnings
-
-3. Run with GDB and get a **backtrace**, as explained in :ref:`dev-gdb`.
-
-   Note that if you have a system-installed Kurento, you don't need to build KMS from sources; instead, you can simply do as follows:
-
-   .. code-block:: bash
-
-      sudo service kurento-media-server stop
-      source /etc/default/kurento-media-server
-      export G_DEBUG=fatal-warnings
-      gdb /usr/bin/kurento-media-server
-
-   Then follow the instructions from :ref:`dev-gdb`, to run the GDB commands and get a backtrace of the ``GStreamer-CRITICAL`` error.
+The problem of these messages is that they don't really provide much information about *how* the error happens, of *where*. To find out, we'll need you to run KMS under a debug session. Please, follow the instructions here :ref:`dev-gdb`, to get a **backtrace** from the ``GStreamer-CRITICAL`` error.
 
 
 

@@ -287,45 +287,6 @@ https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-run
 
 
 
-.. _dev-gdb:
-
-Run and debug with GDB
-----------------------
-
-GDB is a debugger that can help understanding why and how a program is crashing. Sometimes you might need to get a *GDB backtrace*, which is a detailed listing of all functions that were running when the Kurento process failed. To do so, follow these instructions:
-
-1. Complete the previous instructions on how to build and run from sources: :ref:`dev-sources`.
-
-2. Install debug symbols: :ref:`dev-dbg`.
-
-3. Run with GDB and get a backtrace:
-
-   For this, you'll have to run our launch script with the appropriate flag, which builds Kurento and starts up the debugger. Once you see the ``(gdb)`` command prompt, you're already inside a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are ``backtrace`` and ``info`` variants (`Examining the Stack <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>`__). When you want to finish, stop execution with *Ctrl+C*, then type the ``quit`` command:
-
-   .. code-block:: bash
-
-      ./bin/kms-build-run.sh --gdb
-      # Start running the KMS process
-      (gdb) run
-
-      # Wait until the crash happens and GDB breaks
-
-      # Obtain a full execution backtrace
-      (gdb) backtrace
-
-      # Change to an interesting frame and get all details
-      (gdb) frame 3
-      (gdb) info frame
-      (gdb) info args
-      (gdb) info locals
-
-      # Quit GDB and return to the shell
-      (gdb) quit
-
-Explaining GDB usage is out of scope for this documentation, but just note one thing: in the above text, ``frame 3`` is just an example; depending on the case, the backtrace needs to be examined first to decide which frame number is the most interesting.
-
-
-
 KMS Unit Tests
 --------------
 
@@ -507,6 +468,107 @@ Let's see a couple examples that show the difference between the same stack trac
 The second stack trace is much more helpful, because it indicates the exact file names and line numbers where the crash happened. With these, a developer will at least have a starting point where to start looking for any potential bug.
 
 It's important to note that stack traces, while helpful, are not a 100% replacement of actually running the software under a debugger (**GDB**) or memory analyzer (**Valgrind**). Most crashes will need further investigation before they can be fixed.
+
+
+
+.. _dev-gdb:
+
+Run and debug with GDB
+======================
+
+`GDB <https://www.gnu.org/software/gdb/>`__ is a debugger that helps in understanding why and how a program is crashing. Among several other things, you can use GDB to obtain a **backtrace**, which is a detailed list of all functions that were running when the Kurento process failed.
+
+You can build KMS from sources and then use GDB to execute and debug it. Alternatively, you can also use GDB with an already installed version of KMS.
+
+
+
+From sources
+------------
+
+1. Complete the previous instructions on how to build and run from sources: :ref:`dev-sources`.
+
+2. Install debug symbols: :ref:`dev-dbg`.
+
+3. Build and run KMS with GDB.
+
+   For this step, the easiest method is to use our launch script, *kms-build-run.sh*. It builds all sources, configures the environment, and starts up the debugger:
+
+   .. code-block:: bash
+
+      ./bin/kms-build-run.sh --gdb
+      # [... wait for build ...]
+      (gdb)
+
+4. Run GDB commands to *start KMS* and then get a *backtrace* (see indications in next section).
+
+
+
+From installation
+-----------------
+
+You don't *have* to build KMS from sources in order to run it with the GDB debugger. Using an already existing installation is perfectly fine, too, so it's possible to use GDB in your servers without much addition (apart from installing *gdb* itself, that is):
+
+1. Assuming a machine where KMS is :doc:`installed </user/installation>`, go ahead and also install *gdb*.
+
+2. Install debug symbols: :ref:`dev-dbg`.
+
+3. Define the ``G_DEBUG`` environment variable.
+
+   This helps capturing assertions from 3rd-party libraries used by Kurento, such as *GLib* and *GStreamer*:
+
+   .. code-block:: bash
+
+      export G_DEBUG=fatal-warnings
+
+4. Load your service settings.
+
+   You possibly did some changes in the KMS service settings file, */etc/default/kurento-media-server*. This file contains shell code that can be sourced directly into your current session:
+
+   .. code-block:: bash
+
+      source /etc/default/kurento-media-server
+
+5. Ensure KMS is not already running as a service, and run it with GDB.
+
+   .. code-block:: bash
+
+      sudo service kurento-media-server stop
+
+      gdb /usr/bin/kurento-media-server
+      # [ ... GDB starts up ...]
+      (gdb)
+
+6. Run GDB commands to *start KMS* and then get a *backtrace* (see indications in next section).
+
+
+
+GDB commands
+------------
+
+Once you see the ``(gdb)`` command prompt, you're already running a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are ``backtrace`` and ``info`` variants (`Examining the Stack <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>`__). When you want to finish, stop execution with *Ctrl+C*, then type the ``quit`` command:
+
+.. code-block:: bash
+
+   # Actually start running the KMS process
+   (gdb) run
+
+   # At this point, KMS is running; wait until the crash happens,
+   # which will return you to the "(gdb)" prompt.
+   # Or you can press "Ctrl+C" to force an interruption.
+
+   # Obtain a full execution backtrace
+   (gdb) backtrace
+
+   # Change to an interesting frame and get all details
+   (gdb) frame 3
+   (gdb) info frame
+   (gdb) info args
+   (gdb) info locals
+
+   # Quit GDB and return to the shell
+   (gdb) quit
+
+Explaining GDB usage is out of scope for this documentation, but just note one thing: in the above text, **``frame 3`` is just an example**; depending on the case, the backtrace needs to be examined first to decide which frame number is the most interesting. Typically (but not always), the interesting frame is the first one that involves Kurento's own code instead of 3rd-party code.
 
 
 
