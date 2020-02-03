@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- Maven coordinates -->
@@ -61,12 +61,12 @@
 			<artifactId>websocket-client</artifactId>
 		</dependency>
 
-                <!-- WebJars -->
+		<!-- WebJars -->
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>webjars-locator</artifactId>
 		</dependency>
-                <dependency>
+		<dependency>
 			<groupId>org.webjars.bower</groupId>
 			<artifactId>webrtc-adapter</artifactId>
 		</dependency>
@@ -106,6 +106,7 @@
 		<dependency>
 			<groupId>xml-apis</groupId>
 			<artifactId>xml-apis</artifactId>
+			<version>1.0.b2</version>
 		</dependency>
 
 		<!-- JMeter -->
