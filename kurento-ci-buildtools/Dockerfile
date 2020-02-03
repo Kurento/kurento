@@ -40,17 +40,22 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && npm -g install bower \
  && npm cache clean --force
 
-# Install a basic set of packages
+# Install packages
 # * default-jdk (Java JDK): For Java projects
 # * maven: For Java projects
 # * jq, jshon: For some JavaScript tools and jobs
 # * rsync: For remote copies
+#
+# Tools used by kurento-java/kurento-integration-tests/kurento-test:
+# * libmediainfo-dev: MediaInfoLibrary class
+# * netcat: KmsService class, to check if KMS port is already in use
 RUN apt-get update && apt-get install --yes \
         default-jdk \
         maven \
-        jq \
-        jshon \
+        jq jshon \
         rsync \
+        libmediainfo-dev \
+        netcat-openbsd \
  && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/bin/bash"]
