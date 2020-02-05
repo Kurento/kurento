@@ -1,4 +1,22 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
+
+# This script is run every night by the Ansible job in Jenkins,
+# and its purpose is to check that all mentioned Docker images do actually
+# exist and are available for being pulled from the Hub.
+
+
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+# Trace all commands
+set -o xtrace
+
+
 
 # Internal (private) images
 [ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.53.0"
