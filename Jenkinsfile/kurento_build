@@ -4,12 +4,6 @@ pipeline {
   }
     
   stages {
-    stage('Clean containers on all docker slaves') {
-     	steps {
-        build job: 'Development/container_clean_build', propagate: false
-      }
-    }
-    
     stage('Build & deploy') {
       steps {
         parallel (
@@ -26,12 +20,6 @@ pipeline {
         }
       }
       
-      stage('Update ci environments') {
-        steps {
-          build job: 'Development/run_ansible', propagate: false
-          build job: 'Development/kurento_ci_build', propagate: false, parameters: [string(name: 'GERRIT_REFSPEC', value: 'master')]
-        }
-      }
       stage('Testing new environment') {
         steps {
           parallel (
