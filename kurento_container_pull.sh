@@ -22,7 +22,8 @@ set -o xtrace
 [ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.53.0"
 
 #  Remove dangling docker images
-docker rmi $(docker images --quiet --filter "dangling=true")
+RMI_IMAGES="$(docker images --quiet --filter "dangling=true")"
+[[ -n "$RMI_IMAGES" ]] && docker rmi $RMI_IMAGES
 
 # dev-integration images (for Java & JS)
 NODE_VERSIONS="0.12 4.x 5.x"
