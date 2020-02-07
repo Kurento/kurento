@@ -47,6 +47,7 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
 # * rsync: For remote copies
 #
 # Tools used by kurento-java/kurento-integration-tests/kurento-test:
+# * ffmpeg: For different integration testst that generate an RTP stream
 # * libmediainfo-dev: MediaInfoLibrary class
 # * netcat: KmsService class, to check if KMS port is already in use
 RUN apt-get update && apt-get install --yes \
@@ -54,6 +55,7 @@ RUN apt-get update && apt-get install --yes \
         maven \
         jq jshon \
         rsync \
+        ffmpeg \
         libmediainfo-dev \
         netcat-openbsd \
  && rm -rf /var/lib/apt/lists/*
