@@ -17,9 +17,6 @@ log "##################### EXECUTE: kurento_merge_js_project ###################
 # KURENTO_PROJECT string
 #   Name of the project to be merged
 #
-# KURENTO_GIT_REPOSITORY_SERVER string
-#   URL of Kurento code repository
-#
 # MAVEN_KURENTO_SNAPSHOTS url
 #   URL of Kurento repository for maven snapshots
 #

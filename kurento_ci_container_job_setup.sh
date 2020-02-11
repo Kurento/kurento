@@ -24,15 +24,12 @@ set -o xtrace
 # KURENTO_PROJECT
 #   Optional
 #   Kurento project to build
-#   Default: GERRIT_PROJECT
+#   DEFAULT: current directory name
 #
 # KURENTO_PUBLIC_PROJECT
 #   Optional
 #   "Yes" if KURENTO_PROJECT is public, "no" otherwise
 #   Default: "no"
-#
-# KURENTO_GIT_REPOSITORY_SERVER string
-#   URL of Kurento code repository
 #
 # CHECKOUT
 #   Optional
@@ -53,44 +50,32 @@ set -o xtrace
 # GIT_KEY
 #   SSH key required by git repository
 #
-# KURENTO_GIT_REPOSITORY_SERVER
-#    Mandatory
-#    GIT repository from where code is cloned
-#
 # PROJECT_DIR path
 #    Optional
 #    Directory within workspace where test code is located.
 #    DEFAULT: none
 #
-# START_MONGO_CONTAINER [ true | false ]
-#    Optional
-#    Specifies if a MongoDB container must be started and linked to the
-#    maven container. Hostname mongo will be used
-#    DEFAULT false
-#
 # START_KMS_CONTAINER [ true | false ]
 #    Optional
 #    Specifies if a KMS container must be started and linked to the
-#    maven container. Hostname kms will be used
-#    DEFAULT false
+#    maven container. Hostname "kms" will be used.
+#    DEFAULT: false
 #
 
 cleanup () {
-  echo "[kurento_ci_container_job_setup] Clean up on exit"
+    echo "[kurento_ci_container_job_setup] Clean up on exit"
 
-  # Stop detached containers if started
-  # MONGO
-  [ -n "$MONGO_CONTAINER_ID" ] && \
-      mkdir -p $WORKSPACE/report-files && \
-      docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-mongodb.log && \
-      zip $WORKSPACE/report-files/external-mongodb.log.zip $WORKSPACE/report-files/external-mongodb.log && \
-      docker stop $MONGO_CONTAINER_ID && docker rm -v $MONGO_CONTAINER_ID
-  # KMS
-  [ -n "$KMS_CONTAINER_ID" ] && \
-    mkdir -p $WORKSPACE/report-files && \
-    docker logs $KMS_CONTAINER_ID > $WORKSPACE/report-files/external-kms.log && \
-    zip $WORKSPACE/report-files/external-kms.log.zip $WORKSPACE/report-files/external-kms.log && \
-    docker stop $KMS_CONTAINER_ID && docker rm -v $KMS_CONTAINER_ID
+    # Stop detached containers, if any
+
+    # KMS
+    if [[ -n "$KMS_CONTAINER_ID" ]]; then
+        mkdir -p "$WORKSPACE/report-files"
+        local REPORT_FILE="$WORKSPACE/report-files/external-kms.log"
+        docker logs "$KMS_CONTAINER_ID" >"$REPORT_FILE"
+        zip "${REPORT_FILE}.zip" "$REPORT_FILE"
+        docker stop "$KMS_CONTAINER_ID"
+        docker rm -v "$KMS_CONTAINER_ID"
+    fi
 }
 
 # Constants
@@ -122,10 +107,8 @@ RUN_COMMANDS=("$@")
 
 # Verify mandatory parameters
 [ -z "$CONTAINER_IMAGE" ] && CONTAINER_IMAGE="kurento/dev-integration:jdk-8-node-0.12"
-#[ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
 [ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$(echo $GIT_URL | cut -d"/" -f2 | cut -d"." -f 1)
 [ -z "$KURENTO_PUBLIC_PROJECT" ] && KURENTO_PUBLIC_PROJECT="no"
-#[ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && { echo "[kurento_ci_container_job_setup] ERROR: Undefined variable KURENTO_GIT_REPOSITORY_SERVER"; exit 1; }
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
 
 # Set default Parameters
@@ -172,33 +155,16 @@ docker run \
   }
 #     kurento/svn-client:1.0.0 svn checkout http://files.kurento.org/svn/kurento . || exit
 
-# Verify if Mongo container must be started
-if [ "$START_MONGO_CONTAINER" == 'true' ]; then
-    MONGO_CONTAINER_ID=$(docker run -d \
-      --name $BUILD_TAG-MONGO-$(date +"%s") \
-      mongo:2.6.11) || {
-        echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run mongo"
+# Start a KMS container if the job requires it
+if [[ "$START_KMS_CONTAINER" == "true" ]]; then
+    KMS_CONTAINER_ID="$(docker run -d --name "$BUILD_TAG-KMS-$(date +"%s")" \
+        kurento/kurento-media-server-dev:latest)" \
+    || {
+        echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run"
         exit $?
-      }
-    # Guard time for mongo startup
-    sleep 10
-fi
-
-# Verify if KMS container must be started
-if [ "$START_KMS_CONTAINER" == 'true' ]; then
-    KMS_CONTAINER_ID=$(docker run -d \
-      --name $BUILD_TAG-KMS-$(date +"%s") \
-      kurento/kurento-media-server-dev:latest) || {
-        echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run kurento-media-server-dev"
-        exit $?
-      }
+    }
     KMS_AUTOSTART=false
 fi
-
-# Checkout projects if requested (DEPRECATED: Delete some day)
-[ -z "$GERRIT_HOST" ] && GERRIT_HOST=${KURENTO_GIT_REPOSITORY_SERVER%:*}
-[ -z "$GERRIT_PORT" ] && GERRIT_PORT=12345
-[ -z "$GERRIT_USER" ] && GERRIT_USER="jenkinskurento"
 
 # Set maven options
 MAVEN_OPTIONS+=" -Dtest.kms.docker.image.forcepulling=false"
@@ -209,29 +175,16 @@ MAVEN_OPTIONS+=" -Dproject.path=$CONTAINER_WORKSPACE$([ -n "$MAVEN_MODULE" ] && 
 MAVEN_OPTIONS+=" -Dtest.workspace=$CONTAINER_WORKSPACE/tmp"
 MAVEN_OPTIONS+=" -Dtest.workspace.host=$WORKSPACE/tmp"
 MAVEN_OPTIONS+=" -Dtest.files=$CONTAINER_TEST_FILES"
-
-# Seems unused by any Kurento repo
-[ -n "$DOCKER_HUB_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.hub.image=$DOCKER_HUB_IMAGE"
-
-# Default: "kurento/kurento-media-server-dev:latest", set in kurento-java/kurento-integration-tests/.../TestConfiguration.java
-[ -n "$DOCKER_NODE_KMS_IMAGE" ] && MAVEN_OPTIONS+=" -Dtest.kms.docker.image.name=$DOCKER_NODE_KMS_IMAGE"
-
-# Default: "elastestbrowsers/chrome:latest", set in kurento-java/kurento-integration-tests/.../TestConfiguration.java
-[ -n "$DOCKER_NODE_CHROME_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.node.chrome.image=$DOCKER_NODE_CHROME_IMAGE"
-
-# Default: "elastestbrowsers/firefox:latest", set in kurento-java/kurento-integration-tests/.../TestConfiguration.java
-[ -n "$DOCKER_NODE_FIREFOX_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.node.firefox.image=$DOCKER_NODE_FIREFOX_IMAGE"
-
 MAVEN_OPTIONS+=" -Dtest.selenium.scope=$SELENIUM_SCOPE"
 MAVEN_OPTIONS+=" -Dtest.selenium.record=$RECORD_TEST"
+
 [ -n "$TEST_GROUP" ] && MAVEN_OPTIONS+=" -Dgroups=$TEST_GROUP"
 [ -n "$TEST_NAME" ] && MAVEN_OPTIONS+=" -Dtest=$TEST_NAME"
 [ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS+=" -Dbower.release.url=$BOWER_RELEASE_URL"
-[ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Drepository.mongodb.urlConn=mongodb://mongo"
 [ -n "$KMS_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=ws://kms:8888/kurento"
 [ -z "$KMS_CONTAINER_ID" -a -n "$KMS_WS_URI" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=$KMS_WS_URI"
 [ -n "$KMS_KEY" ] && MAVEN_OPTIONS+=" -Dtest.kms.key=$CONTAINER_KMS_KEY"
-[ -n "$SCENARIO_TEST_CONFIG_JSON" ] && MAVEN_OPTIONS+=" -Dtest.config.json=$CONTAINER_TEST_CONFIG_JSON -Dtest.config.file=$CONTAINER_TEST_CONFIG_JSON"
+[ -n "$SCENARIO_TEST_CONFIG_JSON" ] && MAVEN_OPTIONS+=" -Dtest.config.file=$CONTAINER_TEST_CONFIG_JSON"
 
 if [[ -z "$TEST_CONTAINER_NAME" ]]; then
   TEST_CONTAINER_NAME="${BUILD_TAG}-JOB_SETUP-$(date '+%s')"
@@ -269,14 +222,7 @@ docker run \
   -e "EXTRA_PACKAGES=$EXTRA_PACKAGES" \
   -e "FILES=$FILES" \
   -e "FORCE_RELEASE=$FORCE_RELEASE" \
-  -e "GERRIT_CLONE_LIST=$GERRIT_CLONE_LIST" \
-  -e "GERRIT_HOST=$GERRIT_HOST" \
-  -e "GERRIT_NEWREV=$GERRIT_NEWREV" \
   -e "GERRIT_REFSPEC=$GERRIT_REFSPEC" \
-  -e "GERRIT_REFNAME=$GERRIT_REFNAME" \
-  -e "GERRIT_PORT=$GERRIT_PORT" \
-  -e "GERRIT_PROJECT=$GERRIT_PROJECT" \
-  -e "GERRIT_USER=$GERRIT_USER" \
   -e "GIT_KEY=$CONTAINER_GIT_KEY" \
   -e "GNUPG_KEY=$CONTAINER_GNUPG_KEY" \
   -e "GNUPG_KEY_ID=$GNUPG_KEY_ID" \
@@ -285,7 +231,6 @@ docker run \
   $([ "${JENKINS_URL}x" != "x" ] && echo "-e JENKINS_URL=$JENKINS_URL") \
   $([ "${JOB_NAME}x" != "x" ] && echo "-e JOB_NAME=$JOB_NAME") \
   $([ "${JOB_URL}x" != "x" ] && echo "-e JOB_URL=$JOB_URL") \
-  -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
   -e "KURENTO_GIT_REPOSITORY=$KURENTO_GIT_REPOSITORY" \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "KURENTO_PUBLIC_PROJECT=$KURENTO_PUBLIC_PROJECT" \
@@ -297,7 +242,6 @@ docker run \
   -e "MAVEN_S3_KURENTO_RELEASES=$MAVEN_S3_KURENTO_RELEASES" \
   -e "MAVEN_MODULE=$MAVEN_MODULE" \
   -e "MAVEN_OPTIONS=$MAVEN_OPTIONS" \
-  -e "MAVEN_OPTS=$MAVEN_OPTS" \
   -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS" \
   -e "MAVEN_SHELL_SCRIPT=$MAVEN_SHELL_SCRIPT" \
   -e "MAVEN_SONATYPE_NEXUS_STAGING=$MAVEN_SONATYPE_NEXUS_STAGING" \
@@ -317,15 +261,16 @@ docker run \
   -e "UBUNTU_PRIV_S3_ACCESS_KEY_ID=$UBUNTU_PRIV_S3_ACCESS_KEY_ID" \
   -e "UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID=$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" \
   -e "WORKSPACE=$CONTAINER_WORKSPACE" \
-  $([ -n "$MONGO_CONTAINER_ID" ] && echo "--link $MONGO_CONTAINER_ID:mongo") \
   $([ -n "$KMS_CONTAINER_ID" ] && echo "--link $KMS_CONTAINER_ID:kms") \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
   --entrypoint /bin/bash \
   $CONTAINER_IMAGE \
   "${CONTAINER_ADM_SCRIPTS}/kurento_ci_container_entrypoint.sh" "${RUN_COMMANDS[@]}"
+
 status=$?
 
 # Change worspace ownership to avoid permission errors caused by docker usage of root
 [ -n "$WORKSPACE" ] && sudo chown -R $(whoami) $WORKSPACE
-exit $status
+
+exit ${status:-0}

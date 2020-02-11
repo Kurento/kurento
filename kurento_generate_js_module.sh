@@ -41,8 +41,8 @@ done
 JS_PROJECT="$(cat js_project_name)-js"
 log "Generated sources: $JS_PROJECT"
 
-kurento_clone_repo.sh "$JS_PROJECT" "$GERRIT_NEWREV" || {
-  log "ERROR: Command failed: kurento_clone_repo $JS_PROJECT $GERRIT_NEWREV"
+kurento_clone_repo.sh "$JS_PROJECT" "$JOB_GIT_NAME" || {
+  log "ERROR: Command failed: kurento_clone_repo $JS_PROJECT $JOB_GIT_NAME"
   exit 1
 }
 
