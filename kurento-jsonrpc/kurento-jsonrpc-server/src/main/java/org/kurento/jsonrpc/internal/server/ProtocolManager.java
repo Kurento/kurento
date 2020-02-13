@@ -349,16 +349,16 @@ public class ProtocolManager {
         // reconnect method has arrived
         cancelCloseTimer(session);
 
-        responseSender
-            .sendResponse(new Response<>(sessionId, request.getId(), RECONNECTION_SUCCESSFUL));
+        responseSender.sendResponse(new Response<>(sessionId, request.getId(), RECONNECTION_SUCCESSFUL));
+        handlerManager.afterReconnection(session);
 
       } else {
 
         session = createSessionAsOldIfKnowByHandler(factory, sessionId);
 
         if (session != null) {
-          responseSender
-              .sendResponse(new Response<>(sessionId, request.getId(), RECONNECTION_SUCCESSFUL));
+          responseSender.sendResponse(new Response<>(sessionId, request.getId(), RECONNECTION_SUCCESSFUL));
+          handlerManager.afterReconnection(session);
         } else {
           responseSender.sendResponse(
               new Response<>(request.getId(), new ResponseError(40007, RECONNECTION_ERROR)));

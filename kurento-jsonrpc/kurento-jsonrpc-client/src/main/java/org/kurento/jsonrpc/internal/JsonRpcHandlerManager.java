@@ -88,6 +88,20 @@ public class JsonRpcHandlerManager {
     }
   }
 
+	public void afterReconnection(Session session) {
+		if (handler != null) {
+			try {
+				handler.afterReconnection(session);
+			} catch (Exception e) {
+				try {
+					handler.handleUncaughtException(session, e);
+				} catch (Exception e2) {
+					log.error("Exception while executing handleUncaughtException", e2);
+				}
+			}
+		}
+	}
+
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public void handleRequest(Session session, Request<JsonElement> request, ResponseSender rs) {
 

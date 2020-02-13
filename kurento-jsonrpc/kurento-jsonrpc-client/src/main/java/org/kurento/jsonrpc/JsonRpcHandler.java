@@ -43,6 +43,8 @@ public interface JsonRpcHandler<P> {
 
   void afterConnectionClosed(Session session, String status) throws Exception;
 
+  void afterReconnection(Session session) throws Exception;
+
   void handleTransportError(Session session, Throwable exception) throws Exception;
 
   void handleUncaughtException(Session session, Exception exception);

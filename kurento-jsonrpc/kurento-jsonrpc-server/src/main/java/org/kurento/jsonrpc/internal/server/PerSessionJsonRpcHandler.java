@@ -134,6 +134,17 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>, BeanFacto
     }
   }
 
+  	@Override
+	public void afterReconnection(Session session) throws Exception {
+		JsonRpcHandler<T> handler = null;
+		try {
+			handler = getHandler(session);
+			handler.afterReconnection(session);
+		} catch (Exception e) {
+			handler.handleUncaughtException(session, e);
+		}
+	}
+
   private void destroy(Session session) {
     JsonRpcHandler<T> handler = this.handlers.remove(session);
     try {
