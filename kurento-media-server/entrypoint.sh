@@ -30,6 +30,12 @@ function set_parameter() {
 }
 
 # BaseRtpEndpoint settings
+if [[ -n "${KMS_MIN_PORT:-}" ]]; then
+    set_parameter "$BASE_RTP_FILE" "minPort" "$KMS_MIN_PORT"
+fi
+if [[ -n "${KMS_MAX_PORT:-}" ]]; then
+    set_parameter "$BASE_RTP_FILE" "maxPort" "$KMS_MAX_PORT"
+fi
 if [[ -n "${KMS_MTU:-}" ]]; then
     set_parameter "$BASE_RTP_FILE" "mtu" "$KMS_MTU"
 fi
