@@ -33,7 +33,8 @@ set -o xtrace
 if [ -f CMakeLists.txt ]
 then
   echo "Getting version from CMakeLists.txt" >&2
-  { mkdir check_version && cd check_version; } || exit 1
+  TEMPDIR="$(mktemp --tmpdir="$PWD")"
+  cd "$TEMPDIR" || exit 1
   echo "@PROJECT_VERSION@" >version.txt.in
   echo 'configure_file(${CMAKE_BINARY_DIR}/version.txt.in version.txt)' >>../CMakeLists.txt
   cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE >/dev/null || {
@@ -42,7 +43,7 @@ then
   }
   PROJECT_VERSION="$(cat version.txt)"
   cd ..
-  rm -rf check_version
+  rm -rf "$TEMPDIR"
   sed -i '$ d' CMakeLists.txt
 elif [ -f pom.xml ]
 then
