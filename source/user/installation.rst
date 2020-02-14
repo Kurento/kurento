@@ -150,7 +150,15 @@ Local Upgrade
 
 To upgrade a previous installation of Kurento Media Server, you'll need to edit the file ``/etc/apt/sources.list.d/kurento.list``, setting the new version number. After this file has been changed, there are 2 options to actually apply the upgrade:
 
-A. Completely uninstall the old version, and install the new one.
+A. Simply upgrade all system packages. This is the standard procedure expected by Debian & Ubuntu maintainer methodology. Upgrading all system packages is a way to ensure that everything is set to the latest version, and all bug fixes & security updates are applied too, so this is the most recommended method:
+
+   .. code-block:: bash
+
+      sudo apt-get update && sudo apt-get dist-upgrade
+
+  Keep in mind that this is the recommended method only for server installations of Debian/Ubuntu, not for Docker containers. The `Best practices for writing Dockerfiles <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get>`__ recommends against running ``upgrade`` or ``dist-upgrade`` inside Docker containers.
+
+B. Completely uninstall the old Kurento version, and install the new one.
 
    Note however that **apt-get doesn't remove all dependencies** that were installed with Kurento. You will need to use *aptitude* for this, which works better than *apt-get*:
 
@@ -158,12 +166,6 @@ A. Completely uninstall the old version, and install the new one.
 
       sudo aptitude remove kurento-media-server
       sudo apt-get update && sudo apt-get install kurento-media-server
-
-B. Upgrade all system packages. This makes sure that all packages in the system get to their latest versions after changing any of the files in */etc/apt/sources.list*:
-
-   .. code-block:: bash
-
-      sudo apt-get update && sudo apt-get dist-upgrade
 
 Be careful! If you don't follow one of these methods, then you'll probably end up with a **mixed installation of old and new packages**. You don't want that to happen: it is a surefire way to get wrong behaviors and crashes.
 
