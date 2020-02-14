@@ -62,10 +62,10 @@ docker run \
     -v "$HOME/.gitconfig":/root/.gitconfig \
     -v "$PWD/.root-config":/root/.ssh/config \
     -v "$MAVEN_SETTINGS":/opt/kurento-settings.xml \
-    -e "MAVEN_KURENTO_RELEASES=$MAVEN_KURENTO_RELEASES" \
-    -e "MAVEN_KURENTO_SNAPSHOTS=$MAVEN_KURENTO_SNAPSHOTS" \
-    -e "MAVEN_SONATYPE_NEXUS_STAGING=$MAVEN_SONATYPE_NEXUS_STAGING" \
-    -e "KURENTO_GIT_REPOSITORY=$KURENTO_GIT_REPOSITORY" \
+    -e "MAVEN_KURENTO_RELEASES=${MAVEN_KURENTO_RELEASES:-}" \
+    -e "MAVEN_KURENTO_SNAPSHOTS=${MAVEN_KURENTO_SNAPSHOTS:-}" \
+    -e "MAVEN_SONATYPE_NEXUS_STAGING=${MAVEN_SONATYPE_NEXUS_STAGING:-}" \
+    -e "KURENTO_GIT_REPOSITORY=${KURENTO_GIT_REPOSITORY:-}" \
     -e "MAVEN_SETTINGS=/opt/kurento-settings.xml" \
     -w /opt/kurento \
     "$DOCKER_IMAGE" \
