@@ -68,5 +68,6 @@ docker run \
     -e "KURENTO_GIT_REPOSITORY=${KURENTO_GIT_REPOSITORY:-}" \
     -e "MAVEN_SETTINGS=/opt/kurento-settings.xml" \
     -w /opt/kurento \
+    --entrypoint /bin/bash \
     "$DOCKER_IMAGE" \
-    /bin/bash -x -c "$COMMAND"
+    -x -c "$COMMAND"
