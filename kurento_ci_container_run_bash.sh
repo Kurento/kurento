@@ -35,12 +35,16 @@
 #    Optional
 #
 
-# Shell setup
-# -----------
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+
+# NOTE: Other scripts expect that this script only prints the command output.
+# Don't print any debug messages, and if you do, make sure they are redirected
+# to stderr.
+#
+# For this reason, we don't load our shell setup script here: bash.conf.sh
+
+# Bash options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
 
 # Trace all commands
 set -o xtrace
