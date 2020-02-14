@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 
 # This script gets project version from CMakeList.txt, pom.xml, and more.
 # Call it like this:
@@ -8,7 +8,19 @@
 #         exit 1
 #     }
 
-echo "##################### EXECUTE: kurento_get_version.sh #####################" >&2
+
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+# Trace all commands
+set -o xtrace
+
+
 
 # WARNING: Several scripts have implicit dependency on the ORDER of these checks.
 # For example: kurento_mavenize_js_project assumes that pom.xml will be checked
