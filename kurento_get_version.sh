@@ -31,7 +31,7 @@ set -o xtrace
 if [ -f CMakeLists.txt ]
 then
   echo "Getting version from CMakeLists.txt" >&2
-  TEMPDIR="$(mktemp --tmpdir="$PWD")"
+  TEMPDIR="$(mktemp --directory --tmpdir="$PWD")"
   cd "$TEMPDIR" || exit 1
   echo "@PROJECT_VERSION@" >version.txt.in
   echo 'configure_file(${CMAKE_BINARY_DIR}/version.txt.in version.txt)' >>../CMakeLists.txt
