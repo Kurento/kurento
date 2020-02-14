@@ -229,6 +229,7 @@ docker run \
   -e "HTTP_CERT=$CONTAINER_HTTP_CERT" \
   -e "HTTP_KEY=$CONTAINER_HTTP_KEY" \
   $([ "${JENKINS_URL}x" != "x" ] && echo "-e JENKINS_URL=$JENKINS_URL") \
+  $([[ -n "${JOB_GIT_NAME:-}" ]] && echo "-e JOB_GIT_NAME=$JOB_GIT_NAME") \
   $([ "${JOB_NAME}x" != "x" ] && echo "-e JOB_NAME=$JOB_NAME") \
   $([ "${JOB_URL}x" != "x" ] && echo "-e JOB_URL=$JOB_URL") \
   -e "KURENTO_GIT_REPOSITORY=$KURENTO_GIT_REPOSITORY" \
