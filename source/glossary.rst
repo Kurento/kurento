@@ -13,6 +13,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Audio Video Interleaved, known by its initials AVI, is a multimedia container format introduced by Microsoft in November 1992 as part of its Video for Windows technology. AVI files can contain both audio and video data in a file container that allows synchronous audio-with-video playback. AVI is a derivative of the Resource Interchange File Format (RIFF).
 
        .. seealso::
+
           :wikipedia:`Audio Video Interleave`
 
           :wikipedia:`Resource Interchange File Format`
@@ -24,12 +25,14 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        The builder pattern is an object creation software design pattern whose intention is to find a solution to the telescoping constructor anti-pattern. The telescoping constructor anti-pattern occurs when the increase of object constructor parameter combination leads to an exponential list of constructors. Instead of using numerous constructors, the builder pattern uses another object, a builder, that receives each initialization parameter step by step and then returns the resulting constructed object at once.
 
        .. seealso::
+
           :wikipedia:`Builder pattern`
 
    CORS
        Cross-origin resource sharing is a mechanism that allows JavaScript code on a web page to make XMLHttpRequests to different domains than the one the JavaScript originated from. It works by adding new HTTP headers that allow servers to serve resources to permitted origin domains. Browsers support these headers and enforce the restrictions they establish.
 
        .. seealso::
+
           :wikipedia:`Cross-origin resource sharing`
 
           `enable-cors.org <https://enable-cors.org/>`__
@@ -48,17 +51,17 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        A Video Compression Format. The H.264 standard can be viewed as a "family of standards" composed of a number of profiles. Each specific decoder deals with at least one such profiles, but not necessarily all.
 
        .. seealso::
+
           :wikipedia:`H.264/MPEG-4 AVC`
 
           :rfc:`6184`
-              RTP Payload Format for H.264 Video
-              (This RFC obsoletes :rfc:`3984`)
-
+              RTP Payload Format for H.264 Video (This RFC obsoletes :rfc:`3984`).
 
    HTTP
        The Hypertext Transfer Protocol (HTTP) is an application protocol for distributed, collaborative, hypermedia information systems. HTTP is the foundation of data communication for the World Wide Web.
 
        .. seealso::
+
           :wikipedia:`Hypertext Transfer Protocol`
 
           :rfc:`2616`
@@ -68,21 +71,23 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Interactive Connectivity Establishment (ICE) is a technique used to achieve :term:`NAT Traversal`. ICE makes use of the :term:`STUN` protocol and its extension, :term:`TURN`. ICE can be used by any aplication that makes use of the SDP Offer/Answer model..
 
        .. seealso::
+
           :wikipedia:`Interactive Connectivity Establishment`
 
           :rfc:`5245`
-              Interactive Connectivity Establishment (ICE): A Protocol for Network Address Translator (NAT) Traversal for Offer/Answer Protocols
+              Interactive Connectivity Establishment (ICE): A Protocol for Network Address Translator (NAT) Traversal for Offer/Answer Protocols.
 
    IMS
        IP Multimedia Subsystem (IMS) is the 3GPP's Mobile Architectural Framework for delivering IP Multimedia Services in 3G (and beyond) Mobile Networks.
 
        .. seealso::
+
           :wikipedia:`IP Multimedia Subsystem`
 
           :wikipedia:`3GPP`
 
           :rfc:`3574`
-              Transition Scenarios for 3GPP Networks
+              Transition Scenarios for 3GPP Networks.
 
    jQuery
        `jQuery <https://jquery.com/>`__ is a cross-platform JavaScript library designed to simplify the client-side scripting of HTML.
@@ -122,6 +127,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        In a traditional IP Multimedia Subsystem, the handling of media is conceptually splitted in two layers. The layer that handles the media itself -with functionalities such as media transport, encoding/decoding, and processing- is called :index:`Media Plane <single: Plane; Media>`.
 
        .. seealso::
+
           :wikipedia:`IP Multimedia Subsystem`
 
           :term:`Signaling Plane`
@@ -130,6 +136,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        MPEG-4 Part 14 or MP4 is a digital multimedia format most commonly used to store video and audio, but can also be used to store other data such as subtitles and still images.
 
        .. seealso::
+
           :wikipedia:`MPEG-4 Part 14`
 
    Multimedia
@@ -140,6 +147,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
            * Synchronization, i.e. inter-media scheduling. For example, keeping video and audio synchronized or displaying captions or subtitles in the required intervals.
 
        .. seealso::
+
           :wikipedia:`Multimedia`
 
    Multimedia container format
@@ -148,6 +156,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        In most cases, the file header, most of the  metadata and the synchro chunks are specified by the container format.
 
        .. seealso::
+
           :wikipedia:`Multimedia container format <en,Digital_container_format#Multimedia_container_formats>`
 
    NAT
@@ -155,13 +164,21 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Network address translation (NAT) is the technique of modifying network address information in Internet Protocol (IP) datagram packet headers while they are in transit across a traffic routing device for the purpose of remapping one IP address space into another.
 
        .. seealso::
+
           :wikipedia:`Network address translation`
+
+          :doc:`/knowledge/nat`
+              Entry in our Knowledge Base.
+
+          `How Network Address Translation Works <https://computer.howstuffworks.com/nat.htm>`__ (`archive <https://web.archive.org/web/20200213082726/https://computer.howstuffworks.com/nat.htm>`__)
+              A comprehensive description of NAT and its mechanics.
 
    NAT-T
    NAT Traversal
        NAT traversal (sometimes abbreviated as NAT-T) is a general term for techniques that establish and maintain Internet protocol connections traversing network address translation (NAT) gateways, which break end-to-end connectivity. Intercepting and modifying traffic can only be performed transparently in the absence of secure encryption and authentication.
 
        .. seealso::
+
           :doc:`/knowledge/nat`
               Entry in our Knowledge Base.
 
@@ -178,13 +195,15 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        A :index:`Media Pad <single: Media; Pad>` is is an element's interface with the outside world. Data streams from the MediaSource pad to another element's MediaSink pad.
 
        .. seealso::
+
           `GStreamer Pad <https://gstreamer.freedesktop.org/documentation/application-development/basics/pads.html>`__
-              Definition of the Pad structure in GStreamer
+              Definition of the Pad structure in GStreamer.
 
    QR
        QR code (Quick Response Code) is a type of two-dimensional barcode. that became popular in the mobile phone industry due to its fast readability and greater storage capacity compared to standard UPC barcodes.
 
        .. seealso::
+
           :wikipedia:`QR code`
 
    REMB
@@ -193,44 +212,49 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        The *GCC* algorithm is one of several proposed algorithms that have been proposed by an IETF Working Group named *RTP Media Congestion Avoidance Techniques* (RMCAT).
 
        .. seealso::
-          `What is RMCAT congestion control, and how will it affect WebRTC? <https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/>`__
+
+          `What is RMCAT congestion control, and how will it affect WebRTC? <https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/>`__ (`archive <https://web.archive.org/web/20200219134737/https://blog.mozilla.org/webrtc/what-is-rmcat-congestion-control/>`__)
 
           `draft-alvestrand-rmcat-remb <https://tools.ietf.org/html/draft-alvestrand-rmcat-remb-03>`__
-              RTCP message for Receiver Estimated Maximum Bitrate
+              RTCP message for Receiver Estimated Maximum Bitrate.
 
           `draft-ietf-rmcat-gcc <https://tools.ietf.org/html/draft-ietf-rmcat-gcc-02>`__
-              A Google Congestion Control Algorithm for Real-Time Communication
+              A Google Congestion Control Algorithm for Real-Time Communication.
 
    REST
        Representational state transfer (REST) is an architectural style consisting of a coordinated set of constraints applied to components, connectors, and data elements, within a distributed hypermedia system. The term representational state transfer was introduced and defined in 2000 by Roy Fielding in his `doctoral dissertation <https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm>`__.
 
        .. seealso::
+
           :wikipedia:`Representational state transfer`
 
    RTCP
        The RTP Control Protocol (RTCP) is a sister protocol of the :term:`RTP`, that provides out-of-band statistics and control information for an RTP flow.
 
        .. seealso::
+
           :wikipedia:`RTP Control Protocol`
 
           :rfc:`3605`
-              Real Time Control Protocol (RTCP) attribute in Session Description Protocol (SDP)
+              Real Time Control Protocol (RTCP) attribute in Session Description Protocol (SDP).
 
    RTP
        Real-time Transport Protocol (RTP) is a standard packet format designed for transmitting audio and video streams on IP networks. It is used in conjunction with the :term:`RTP Control Protocol <RTCP>`. Transmissions using the RTP audio/video profile (RTP/AVP) typically use :term:`SDP` to describe the technical parameters of the media streams.
 
        .. seealso::
+
           :wikipedia:`Real-time Transport Protocol`
 
           :wikipedia:`RTP audio video profile`
 
           :rfc:`3550`
-              RTP: A Transport Protocol for Real-Time Applications
+              RTP: A Transport Protocol for Real-Time Applications.
 
    Same-origin policy
        The "same-origin policy" is a web application security model. The policy permits scripts running on pages originating from the same domain to access each other's :term:`DOM` with no specific restrictions, but prevents access to :term:`DOM` on different domains.
 
        .. seealso::
+
           :wikipedia:`Same-origin policy`
 
    SDP
@@ -277,15 +301,16 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        In this example, ``audio 0`` means that the *answerer* rejects the audio stream that the *offerer* intended to send; also, it accepts the video stream, and the ``a=recvonly`` acknowledges that the *answerer* will exclusively act as a receiver, and won't send any stream back to the other peer.
 
        .. seealso::
+
           :wikipedia:`Session Description Protocol`
 
           `Anatomy of a WebRTC SDP <https://webrtchacks.com/anatomy-webrtc-sdp/>`__
 
           :rfc:`4566`
-              SDP: Session Description Protocol
+              SDP: Session Description Protocol.
 
           :rfc:`4568`
-              Session Description Protocol (SDP) Security Descriptions for Media Streams
+              Session Description Protocol (SDP) Security Descriptions for Media Streams.
 
    Semantic Versioning
       `Semantic Versioning <https://semver.org/>`__ is a formal convention for specifying compatibility using a three-part version number: major version; minor version; and patch.
@@ -295,7 +320,10 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Functions such as media negotiation, QoS parametrization, call establishment, user registration, user presence, etc. as managed in this plane.
 
        .. seealso::
+
           :term:`Media Plane`
+
+          `WebRTC in the real world: STUN, TURN and signaling <https://www.html5rocks.com/en/tutorials/webrtc/infrastructure/>`__ (`archive <https://web.archive.org/web/20191210072708/https://www.html5rocks.com/en/tutorials/webrtc/infrastructure/>`__)
 
    Sink, Media
        A :index:`Media Sink <single: Media; Sink>` is a MediaPad that outputs a Media Stream.
@@ -309,6 +337,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        * A :term:`TLS` layer may be used for secure transmission of SIP messages.
 
        .. seealso::
+
           :wikipedia:`Session Initiation Protocol`
 
    Source, Media
@@ -323,7 +352,8 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        This is the documentation tool of choice for the Kurento project.
 
        .. seealso::
-          `Easy and beautiful documentation with Sphinx <https://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html>`__
+
+          `Easy and beautiful documentation with Sphinx <https://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html>`__ (`archive <https://web.archive.org/web/20160825195643/https://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html>`__)
 
    Spring Boot
        `Spring Boot <http://spring.io/projects/spring-boot>`__ is Spring's convention-over-configuration solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
@@ -333,16 +363,18 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        SRTCP provides the same security-related features to RTCP, as the ones provided by SRTP to RTP. Encryption, message authentication and integrity, and replay protection are the features added by SRTCP to :term:`RTCP`.
 
        .. seealso::
+
           :term:`SRTP`
 
    SRTP
        Secure RTP is a profile of RTP (:term:`Real-time Transport Protocol <RTP>`), intended to provide encryption, message authentication and integrity, and replay protection to the RTP data in both unicast and multicast applications. Similarly to how RTP has a sister RTCP protocol, SRTP also has a sister protocol, called Secure RTCP (or :term:`SRTCP`).
 
        .. seealso::
+
           :wikipedia:`Secure Real-time Transport Protocol`
 
           :rfc:`3711`
-              The Secure Real-time Transport Protocol (SRTP)
+              The Secure Real-time Transport Protocol (SRTP).
 
    SSL
        Secure Socket Layer. See :term:`TLS`.
@@ -355,17 +387,19 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Extension to the :term:`ICE` protocol that allows ICE agents to send and receive candidates incrementally rather than exchanging complete lists. With such incremental provisioning, ICE agents can begin connectivity checks while they are still gathering candidates and considerably shorten the time necessary for ICE processing to complete.
 
        .. seealso::
+
           `draft-ietf-ice-trickle <https://tools.ietf.org/html/draft-ietf-ice-trickle-15>`__
-              Trickle ICE: Incremental Provisioning of Candidates for the Interactive Connectivity Establishment (ICE) Protocol
+              Trickle ICE: Incremental Provisioning of Candidates for the Interactive Connectivity Establishment (ICE) Protocol.
 
    TLS
        Transport Layer Security (TLS) and its predecessor Secure Socket Layer (SSL).
 
        .. seealso::
+
           :wikipedia:`Transport Layer Security`
 
           :rfc:`5246`
-              The Transport Layer Security (TLS) Protocol Version 1.2
+              The Transport Layer Security (TLS) Protocol Version 1.2.
 
    TURN
        TURN stands for **Traversal Using Relays around NAT**. Like :term:`STUN`, it is a network protocol (`IETF RFC 5766 <https://tools.ietf.org/html/rfc5766>`__) used to assist in the discovery of paths between peers on the Internet.
@@ -376,10 +410,11 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        VP8 is a video compression format created by On2 Technologies as a successor to VP7. Its  patents rights are owned by Google, who made an irrevocable patent promise on its patents for implementing it and released a specification under the `Creative Commons Attribution 3.0 license <https://creativecommons.org/licenses/by/3.0/>`__.
 
        .. seealso::
+
           :wikipedia:`VP8`
 
           :rfc:`6386`
-              VP8 Data Format and Decoding Guide
+              VP8 Data Format and Decoding Guide.
 
    WebM
        `WebM <https://www.webmproject.org/>`__ is an open media file format designed for the web. WebM files consist of video streams compressed with the VP8 video codec and audio streams compressed with the Vorbis audio codec. The WebM file structure is based on the Matroska media container.
@@ -388,6 +423,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        `WebRTC <https://webrtc.org/>`__ is a set of protocols, mechanisms and APIs that provide browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections.
 
        .. seealso::
+
           `WebRTC Working Draft <https://www.w3.org/TR/webrtc/>`__
 
    WebSocket

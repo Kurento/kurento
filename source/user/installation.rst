@@ -4,11 +4,11 @@ Installation Guide
 
 **Kurento Media Server (KMS)** can be installed in multiple ways
 
-- Using an EC2 instance in the `Amazon Web Services`_ (AWS) cloud service. Using AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
+* :ref:`Using an EC2 instance <installation-aws>` in the `Amazon Web Services`_ (AWS) cloud service. Using AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
 
-- Using the Docker images provided by the Kurento team. Docker images allow to run Kurento in any host machine, so for example it's possible to run KMS on top of a Fedora or CentOS system. In theory it could even be possible to run under Windows, but so far that possibility hasn't been explored, so you would be at your own risk.
+* :ref:`Using the Kurento Docker images <installation-docker>`. Docker allows to run Kurento in any host machine, so for example it's possible to run KMS on top of a Fedora or CentOS system. In theory it could even be possible to run under Windows, but so far that possibility hasn't been explored by the Kurento team, so you would be at your own risk.
 
-- A local installation with ``apt-get install``, in any Ubuntu machine. This method allows to have total control of the installation process. Besides installing KMS, a common need is to also install a :term:`STUN` or :term:`TURN` server, especially if KMS or any of its clients are located behind a :term:`NAT` firewall.
+* :ref:`Setting up a local installation <installation-local>` with ``apt-get install``. This method allows to have total control of the installation process. Besides installing KMS, a common need is also :ref:`installing a STUN/TURN server <installation-stun-turn>`, especially if KMS or any of its clients are located behind a :ref:`Symmetric NAT <nat-symmetric>` or firewall.
 
 If you want to try nightly builds of KMS, then head to the section :doc:`/user/installation_dev`.
 
@@ -19,7 +19,7 @@ If you want to try nightly builds of KMS, then head to the section :doc:`/user/i
 Amazon Web Services
 ===================
 
-The Kurento project provides an *AWS CloudFormation* template file. It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server.
+The Kurento project provides an *AWS CloudFormation* template file for `Amazon Web Services`_ (AWS). It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server.
 
 Note that this template is specifically tailored to be deployed on the default *Amazon Virtual Private Cloud* (`Amazon VPC <https://aws.amazon.com/documentation/vpc/>`__) network. **You need an Amazon VPC to deploy this template**.
 
@@ -148,7 +148,7 @@ Log messages from KMS will be available in ``/var/log/kurento-media-server/``. F
 Local Upgrade
 =============
 
-To upgrade a previous installation of Kurento Media Server, you'll need to edit the file ``/etc/apt/sources.list.d/kurento.list``, setting the new version number. After this file has been changed, there are 2 options to actually apply the upgrade:
+To upgrade a previous installation of Kurento Media Server, you'll need to edit the file */etc/apt/sources.list.d/kurento.list*, setting the new version number. After this file has been changed, there are 2 options to actually apply the upgrade:
 
 A. Simply upgrade all system packages. This is the standard procedure expected by Debian & Ubuntu maintainer methodology. Upgrading all system packages is a way to ensure that everything is set to the latest version, and all bug fixes & security updates are applied too, so this is the most recommended method:
 
@@ -193,104 +193,74 @@ Be careful! If you don't follow one of these methods, then you'll probably end u
 STUN and TURN servers
 =====================
 
-If Kurento Media Server, its Application Server, or any of the clients are located behind a :term:`NAT`, you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
+If Kurento Media Server, its Application Server, or any of the clients are located behind a :term:`NAT`, you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. You can read more about this topic here: :doc:`/knowledge/nat`.
 
-Apart from that, you need to open all UDP ports in your system configuration, as STUN will use any random port from the whole [0-65535] range.
+In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
 
 .. note::
 
-   The features provided by TURN are a superset of those provided by STUN. This means that *you don't need to configure a STUN server if you are already using a TURN server*.
+   **Every TURN server supports STUN**, because a TURN server is just really a STUN server with added relaying functionality built in. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
 
-For more information about why and when STUN/TURN is needed, check out the FAQ: :ref:`faq-stun`
+The STUN/TURN server is configured to use a range of UDP & TCP ports. All those ports should also be opened to all traffic, in the server's network configuration or security group.
+
+For more information about why and when STUN/TURN is needed, check out the FAQ: :ref:`faq-stun`.
 
 
 
 STUN server
 -----------
 
-To configure a STUN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
+To configure a STUN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*:
 
 .. code-block:: bash
 
-   stunServerAddress=<serverIp>
-   stunServerPort=<serverPort>
+   stunServerAddress=<StunServerIp>
+   stunServerPort=<StunServerPort>
+
+The parameter ``StunServerIp`` should be the public IP address of the STUN server. It must be an IP address, **not a domain name**. For example:
+
+.. code-block:: bash
+
+   stunServerAddress=198.51.100.1
+   stunServerPort=3478
 
 .. note::
 
-   Be careful since comments inline (with ``;``) are not allowed for parameters in the configuration files. Thus, the following line **is not correct**:
+   Be careful since inline comments (with ``;``) are not allowed for parameters in the configuration files. Thus, the following line **is not correct**:
 
-   .. code-block:: bash
+   .. code-block:: text
 
-      stunServerAddress=<serverIp> ; Only IP addresses are supported
+      stunServerAddress=198.51.100.1  ; My STUN server
 
    ... and must be changed to something like this:
 
-   .. code-block:: bash
+   .. code-block:: text
 
-      ; Only IP addresses are supported
-      stunServerAddress=<serverIp>
+      ; My STUN server
+      stunServerAddress=198.51.100.1
 
-The parameter ``serverIp`` should be the public IP address of the STUN server. It must be an IP address, **not a domain name**.
-
-It should be easy to find some public STUN servers that are made available for free. For example:
-
-.. code-block:: text
-
-   173.194.66.127:19302
-   173.194.71.127:19302
-   74.125.200.127:19302
-   74.125.204.127:19302
-   173.194.72.127:19302
-   74.125.23.127:3478
-   77.72.174.163:3478
-   77.72.174.165:3478
-   77.72.174.167:3478
-   77.72.174.161:3478
-   208.97.25.20:3478
-   62.71.2.168:3478
-   212.227.67.194:3478
-   212.227.67.195:3478
-   107.23.150.92:3478
-   77.72.169.155:3478
-   77.72.169.156:3478
-   77.72.169.164:3478
-   77.72.169.166:3478
-   77.72.174.162:3478
-   77.72.174.164:3478
-   77.72.174.166:3478
-   77.72.174.160:3478
-   54.172.47.69:3478
+STUN is a very lightweight protocol and maintaining a STUN server is very cheap. For this reason, it should be easy to find some public STUN servers that are made available free of charge, if you don't want to maintain your own.
 
 
 
 TURN server
 -----------
 
-To configure a TURN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
+To configure a TURN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*:
 
 .. code-block:: bash
 
-   turnURL=<user>:<password>@<serverIp>:<serverPort>
+   turnURL=<TurnUser>:<TurnPassword>@<TurnServerIp>:<TurnServerPort>
 
-The parameter ``serverIp`` should be the public IP address of the TURN server. It must be an IP address, **not a domain name**.
-
-See some examples of TURN configuration below:
+The parameter ``TurnServerIp`` should be the public IP address of the TURN server. It must be an IP address, **not a domain name**. For example:
 
 .. code-block:: bash
 
-   turnURL=kurento:kurento@WWW.XXX.YYY.ZZZ:3478
+   turnURL=myuser:mypassword@198.51.100.1:3478
 
-... or using a free access `Numb`_ TURN/STUN server:
+TURN servers are used to relay audio/video traffic between peers, and for this reason they are expensive to run. It is rare to find public ones that work free of charge while offering good performance, so we recommend that you deploy and maintain your own private TURN server.
 
-.. code-block:: bash
-
-   turnURL=user:password@66.228.45.110:3478
-
-Note that it is somewhat easy to find free STUN servers available on the net, because their functionality is pretty limited and it is not costly to keep them working for free. However, this doesn't happen with TURN servers, which act as a media proxy between peers and thus the cost of maintaining one is much higher.
-
-It is rare to find a TURN server which works for free while offering good performance. Usually, each user opts to maintain their own private TURN server instances.
-
-`Coturn`_ is an open source implementation of a TURN/STUN server. In the :doc:`FAQ </user/faq>` section there is a description about how to install and configure it.
+`Coturn`_ is an open source implementation of a STUN+TURN server. In the :ref:`STUN FAQ <faq-stun>` section you'll find instructions to install and configure it.
 
 
 
@@ -337,6 +307,5 @@ Ignore the error line: it is an expected error, because ``curl`` does not talk t
 
 
 .. _Amazon Web Services: https://aws.amazon.com
-.. _Coturn: http://coturn.net
-.. _Numb: http://numb.viagenie.ca/
+.. _Coturn: https://github.com/coturn/coturn
 .. _healthchecker.sh: https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh

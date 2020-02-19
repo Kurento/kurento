@@ -152,6 +152,8 @@ Visualization:
 
 
 
+.. _nat-symmetric:
+
 Symmetric NAT
 -------------
 

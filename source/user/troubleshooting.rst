@@ -16,7 +16,7 @@ For more information about how to request support, and how to submit bug reports
 
 
 
-**My Kurento doesn't work, what should I do?**
+**My Kurento Media Server doesn't work, what should I do?**
 
 This document outlines several bits of knowledge that can prove very useful when studying a failure or error in KMS:
 
@@ -203,17 +203,7 @@ If the machine is disconnected during the actual installation of this package, t
 Missing audio or video streams
 ------------------------------
 
-If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a STUN or TURN server, to traverse through the NAT firewall of intermediate routers. Check :ref:`installation-stun-turn`.
-
-There are some KMS log messages that could indicate a bad configuration of STUN or TURN; these are useful to look for:
-
-.. code-block:: text
-
-   STUN server Port not found in config; using default value: 3478
-   STUN server IP address not found in config; NAT traversal requires either STUN or TURN server
-   TURN server IP address not found in config; NAT traversal requires either STUN or TURN server
-
-If you see these messages, it's a clear indication that STUN or TURN are not properly configured in KMS.
+If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a STUN or TURN server, to traverse through the NAT firewall of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <installation-stun-turn>`.
 
 
 
@@ -240,11 +230,11 @@ Video has green artifacts
 
 This is typically caused by missing information in the video decoder, most probably due to a high packet loss rate in the network.
 
-The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video codecs use a color encoding system called `YCbCr <https://en.wikipedia.org/wiki/YCbCr>`__ (sometimes also written as *YCrCb*), which the decoder has to convert into the well known `RGB <https://en.wikipedia.org/wiki/RGB_color_model>`__ ("*Red-Green-Blue*") model that is used by computer screens. When there is data loss, the decoder will assume that all missing values are 0 (zero). It just turns out that a YCbCr value of **(0,0,0)** is equivalent to the **green** color in RGB.
+The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video codecs use a color encoding system called `YCbCr <https://en.wikipedia.org/wiki/YCbCr>`__ (sometimes also written as *YCrCb*), which the decoder has to convert into the well known `RGB <https://en.wikipedia.org/wiki/RGB_color_model>`__ ("*Red-Green-Blue*") model that is used by computer screens. When there is data loss, the decoder will assume that all missing values are ``0`` (zero). It just turns out that a YCbCr value of ``(0,0,0)`` is equivalent to the **green** color in RGB.
 
 When this problem happens, Kurento sends retransmission requests to the source of the RTP stream. However, in cases of heavy packet loss, there isn't much else that can be done and enough losses will build up until the video decoding gets negatively affected. In situations like this, the most effective change you can do is to reduce the video resolution and/or quality at the sender.
 
-Cisco has too a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__
+Cisco has too a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__ (`archive <https://web.archive.org/web/20170506091043/http://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__)
 
     **Why do I see pink or green patches in my video stream [...]?**
 
@@ -399,63 +389,73 @@ The solution is to ensure that both peers are able to find a match in their supp
 Networking issues
 =================
 
+Have a look at these articles about troubleshooting WebRTC:
+
+* `Troubleshooting WebRTC Connection Issues <https://blog.addpipe.com/troubleshooting-webrtc-connection-issues/>`__ (`archive <https://web.archive.org/web/20200219144706/https://blog.addpipe.com/troubleshooting-webrtc-connection-issues/>`__).
+* `Common (beginner) mistakes in WebRTC <https://bloggeek.me/common-beginner-mistakes-in-webrtc/>`__ (`archive <https://web.archive.org/web/20200219144856/https://bloggeek.me/common-beginner-mistakes-in-webrtc/>`__).
+
+
+
+.. _troubleshooting-webrtc-connection:
+
 WebRTC connection is not established
 ------------------------------------
 
 There is a multitude of possible reasons for a failed WebRTC connection, so you can start by following this checklist:
 
-- Deploy a properly configured STUN or TURN server. Coturn tends to work fine for this, and Kurento has some documentation about how to install and configure it: https://doc-kurento.readthedocs.io/en/latest/user/faq.html#install-coturn-turn-stun-server
+* You probably need to deploy an external STUN/TURN server such as Coturn, to make WebRTC connections possible. Read more about all this in the FAQ: :ref:`faq-stun`.
 
-- Use this WebRTC sample page to test that your STUN/TURN server is working properly: https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+* Check that your STUN/TURN server is working, by using the `Trickle ICE test page <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__:
 
-- Configure your STUN/TURN server in Kurento, as explained here: https://doc-kurento.readthedocs.io/en/latest/user/installation.html#stun-and-turn-servers
+  - If you just have a STUN server, use an URI with this format: ``stun:<StunServerIp>:<StunServerPort>``.
+  - If you have a full-featured TURN server, use an URI like this: ``turn:<TurnServerIp>:<TurnServerPort>``, and also write the ``<TurnUser>`` and ``<TurnPassword>``.
+  - Finally, click on "*Gather candidates*" and check that you get candidates of type "**srflx**" (STUN) and "**relay**" (TURN).
 
-  .. note::
+* Configure your STUN/TURN server in Kurento Media Server, as explained here: :ref:`installation-stun-turn`.
 
-     The features provided by TURN are a superset of those provided by STUN. This means that *you don’t need to configure a STUN server if you are already using a TURN server*.
+* Check the debug logs of your STUN/TURN server. Maybe the server is failing and some useful error messages are being printed in there.
 
-- Make sure your Kurento settings syntax is correct. For STUN servers, this would be:
-
-  .. code-block:: text
-
-     stunServerAddress=<serverAddress>
-     stunServerPort=<serverPort>
-
-  For TURN servers, the correct line is like this:
-
-  .. code-block:: text
-
-     turnURL=username:password@address:port
-
-- Check the debug logs of the STUN/TURN server. Maybe the server is failing and some useful error messages are being printed there.
-
-- Check the debug logs of KMS. In case of an incorrect configuration, you'll find these messages:
-
-  .. code-block:: text
-
-     INFO  STUN server Port not found in config; using default value: 3478
-     INFO  STUN server IP address not found in config; NAT traversal requires either STUN or TURN server
-     INFO  TURN server IP address not found in config; NAT traversal requires either STUN or TURN server
-
-  In case of having correctly configured a STUN server in KMS, the log messages will read like this:
+* Check the debug logs of Kurento Media Server. Look for messages that confirm a correct configuration:
 
   .. code-block:: text
 
      INFO  Using STUN reflexive server IP: <IpAddress>
      INFO  Using STUN reflexive server Port: <Port>
 
-  And in case of a TURN server:
-
-  .. code-block:: text
-
      INFO  Using TURN relay server: <user:password>@<IpAddress>:<Port>
      INFO  TURN server info set: <user:password>@<IpAddress>:<Port>
 
-- Check that any SDP mangling you (or any of your third-party libraries) might be doing in your Application Server is being done correctly.
+* Check that any SDP mangling you (or any of your third-party libraries) might be doing in your Application Server is being done correctly.
 
   This is one of the most hard to catch examples we've seen in our `mailing list <https://groups.google.com/d/topic/kurento/t25_QQSc_Bo/discussion>`__:
 
       > The problem was that our Socket.IO client did not correctly *URL-Encode* its JSON payload when *xhr-polling*, which resulted in all "plus" signs ('+') being changed into spaces (' ') on the server. This meant that the ``ufrag`` in the client's SDP was invalid if it contained a plus sign! Only some of the connections failed because not all ``ufrag`` contain plus signs.
+
+* If WebRTC seems to disconnect exactly after some amount of time, every single time, **watch out for proxy timeouts**. Sometimes you have to extend the timeout for the site that is being hit with the problem.
+
+
+
+ICE connection problems
+-----------------------
+
+If your application receives an :ref:`events-icecomponentstatechange` event with state ``FAILED`` from Kurento Media Server, it means that the WebRTC ICE connectivity has been abruptly interrupted. In general terms, this implies that **there is some network connectivity issue** between KMS and the remote peer (typically, a web browser), but the exact reason can fall into a myriad possible causes. You will need to investigate what happened on the user's and the server's network when the failure happened.
+
+Here are some tips to keep in mind:
+
+* Check that you have correctly configured a :term:`STUN` and/or :term:`TURN` server both in Kurento Media Server (file *WebRtcEndpoint.conf.ini*), and in the client browsers (through the `RTCPeerConnection's iceServers setting <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__).
+
+* Check that the TURN credentials are correct, by using the `Trickle ICE test page <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__ and configuring there your STUNTURN server. For more details, see the section above: :ref:`troubleshooting-webrtc-connection`.
+
+* It is always a good idea to work out the **correlation between ICE failures on KMS with ICE failures on the client browser**. The combined logs of both sides might shed some light into what caused the disconnection.
+
+* Inspect all :ref:`events-newcandidatepairselected` events emitted by Kurento. A lot of ICE candidates are tested for connectivity during the WebRTC session establishment, but only the actual working ones are reported with the *NewCandidatePairSelected* event. A **careful examination of all selected local and remote candidates** might reveal useful information about the kind of connectivity issues that clients might be having.
+
+  For example, maybe you see that most or all of the selected local or remote candidates are of ``typ relay``, i.e. using a TURN server as a proxy for the audio/video streams. This would mean two things:
+
+  1. That the TURN server will be under high server load, possibly saturating the machine's resources.
+  2. That **direct peer-to-peer WebRTC connections are not being established**, giving you a good starting point to investigate why this is happening. Usually, when you see usage of the TURN relay, this is caused by overzealous hardware or software firewalls, or the presence of Symmetric NAT modem/routers somewhere in the network path.
+
+* If you see messages about ICE connection tests failing due to **timeout on trying pairs**, make sure that all required UDP ports for media content are open on the sever; otherwise, not only the ICE process will fail, but also the video or audio streams themselves won't be able to reach each WebRTC peer.
 
 
 
@@ -505,20 +505,6 @@ So if you are running a Docker image, ``.local`` names won't be correctly resolv
 Chrome allows disabling mDNS, which is something that could be useful during development. However when development is finished, don't forget to test your application with default settings, including with this option enabled!
 
 To disable mDNS, open this URL: ``chrome://flags/#enable-webrtc-hide-local-ips-with-mdns`` and change the setting to "Disabled".
-
-
-
-ICE fails with timeouts
------------------------
-
-**Problem**:
-
-- You have configured a STUN/TURN server in a different machine than Kurento Media Server.
-- The ICE connection tests fail due to timeout on trying pairs.
-
-**Solution**:
-
-Make sure that all required UDP ports for media content are open on the sever; otherwise, not only the ICE process will fail, but also the video or audio streams themselves won't be able to reach either server.
 
 
 
