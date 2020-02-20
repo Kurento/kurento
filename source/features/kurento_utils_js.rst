@@ -234,8 +234,6 @@ The constructor for WebRtcPeer is WebRtcPeer(**mode, options, callback**) where:
    * *audioStreams*: Provides an already available audio stream that will
      be used instead of using the media stream from the local microphone.
    * *mediaConstraints*: Defined the quality for the video and audio
-   * *connectionConstraints*: Defined the connection constraint according
-     with browser like googIPv6, DtlsSrtpKeyAgreement...
    * *peerConnection*: Use a peerConnection which was created before
    * *sendSource*: Which source will be used
 
