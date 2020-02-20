@@ -71,7 +71,7 @@ Information about development of *Kurento itself* is also available:
    :caption: Project Documentation
 
    /project/team
-   /project/contribute
+   /project/contributing
    /project/conduct
    /project/relnotes/index
 

@@ -54,7 +54,7 @@ Usage:
 
 * [Installation Guide](https://doc-kurento.readthedocs.io/en/stable/user/installation.html)
 * [Compilation Guide](https://doc-kurento.readthedocs.io/en/stable/dev/dev_guide.html#developing-kms)
-* [Contribution Guide](https://doc-kurento.readthedocs.io/en/stable/project/contribute.html)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/stable/project/contributing.html)
 
 Issues:
 
