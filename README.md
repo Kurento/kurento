@@ -78,10 +78,6 @@ Build:
 https://ci.openvidu.io/jenkins/job/Development/view/5%20-%20Build/view/Docker/job/Kurento_media_server_docker_trusty_nightly/
 https://ci.openvidu.io/jenkins/job/Development/view/5%20-%20Build/view/Docker/job/Kurento_media_server_docker_xenial_nightly/
 
-* kurento-test-files
-
-Docker image to download test files from SVN repository. Deprecated.
-
 * release-media-server
 
 Docker image for relase Kurento Media Server.
