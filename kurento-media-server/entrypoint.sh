@@ -56,10 +56,14 @@ if [[ -n "${KMS_TURN_URL:-}" ]]; then
     set_parameter "$WEBRTC_FILE" "turnURL" "$KMS_TURN_URL"
 fi
 
-# Remove the IPv6 loopback until IPv6 is well supported
-# Note: `sed -i /etc/hosts` won't work inside a Docker container
+# Remove the IPv6 loopback until IPv6 is well supported.
+# Notes:
+# - `cat /etc/hosts | sed | tee` because `sed -i /etc/hosts` won't work inside a
+#   Docker container.
+# - `|| true` to avoid errors if the container is not run with the root user.
+#   E.g. `docker run --user=1234`.
 # shellcheck disable=SC2002
-cat /etc/hosts | sed '/::1/d' | tee /etc/hosts >/dev/null
+cat /etc/hosts | sed '/::1/d' | tee /etc/hosts >/dev/null || true
 
 # Run Kurento Media Server
 exec /usr/bin/kurento-media-server "$@"
