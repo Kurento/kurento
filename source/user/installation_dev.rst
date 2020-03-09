@@ -57,32 +57,25 @@ To install KMS, start from a clean machine (**with no KMS or any of its dependen
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           gnupg
 
-2. Define what version of Ubuntu is installed in your system.
+2. Add the Kurento repository to your system configuration.
 
-   Run **only one** of these lines:
-
-   .. code-block:: bash
-
-      # Run ONLY ONE of these lines:
-      DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
-      DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
-
-3. Add the Kurento repository to your system configuration.
-
-   Run these two commands in the same terminal you used in the previous step:
+   Run these commands:
 
    .. code-block:: text
 
+      # Import the Kurento repository signing key
       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-   .. code-block:: text
+      # Get Ubuntu version definitions
+      source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
+      # Add the repository URL to apt
       sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
       # Kurento Media Server - Nightly packages
-      deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
+      deb [arch=amd64] http://ubuntu.openvidu.io/dev ${DISTRIB_CODENAME} kms6
       EOF
 
-4. Install KMS:
+3. Install KMS:
 
    .. code-block:: text
 
