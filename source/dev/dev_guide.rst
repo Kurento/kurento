@@ -397,31 +397,6 @@ Now, install all debug symbols that are relevant to KMS:
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        kurento-dbg
 
-.. warning::
-
-   [FIXME] As of this writing, the package ``kurento-dbg`` works on Ubuntu 16.04 (Xenial), but it fails on Ubuntu 18.04 (Bionic). **If you are using Ubuntu 18.04**, then install these packages instead:
-
-   .. code-block:: bash
-
-      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
-          libc6-dbg \
-          libglib2.0-0-dbgsym \
-          kmsjsoncpp-dbg \
-          libnice10-dbgsym \
-          openwebrtc-gst-plugins-dbg \
-          libgstreamer1.5-0-dbg \
-          gstreamer1.5-libav-dbg \
-          gstreamer1.5-nice-dbgsym \
-          gstreamer1.5-plugins-bad-dbg \
-          gstreamer1.5-plugins-base-dbg \
-          gstreamer1.5-plugins-good-dbg \
-          gstreamer1.5-plugins-ugly-dbg \
-          kms-jsonrpc-dbg \
-          kms-core-dbg \
-          kms-elements-dbg \
-          kms-filters-dbg \
-          kurento-media-server-dbg
-
 
 
 Why are debug symbols useful?
