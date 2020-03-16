@@ -38,7 +38,7 @@ declare -A PROJECT_VERSIONS=(
 
 # If the build is not a release build, then some versions can be set to more
 # adequate values for each case:
-if [[ "${PROJECT_VERSIONS[VERSION_RELEASE]}" == "true" ]]; then
+if [[ "${PROJECT_VERSIONS[VERSION_RELEASE]}" == "false" ]]; then
     # VERSION_TUTORIAL_{JAVA,JS,NODE} are used in tutorial texts to instruct the
     # user about running `git checkout <Version>`, so making it "master" will
     # keep them at the development versions on non-release builds of the docs.
