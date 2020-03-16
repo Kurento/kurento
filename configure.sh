@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# File checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Initialization script for Kurento documentation.
 #/
@@ -27,7 +28,7 @@ fi
 
 # Log function
 BASENAME="$(basename "$0")"  # Complete file name
-log() { echo "[${BASENAME}] $*"; }
+log() { echo "[$BASENAME] $*"; }
 
 
 
@@ -59,13 +60,13 @@ for NAME in "${!PROJECT_VERSIONS[@]}"; do
         --binary-files=without-match \
         --recursive \
         --null \
-        "|${NAME}|" "$BASEPATH" \
+        "|$NAME|" "$BASEPATH" \
         | xargs \
             --null \
             --max-lines=1 \
             --no-run-if-empty \
             sed \
-                --in-place --expression="s/|${NAME}|/$VALUE/g"
+                --in-place --expression="s/|$NAME|/$VALUE/g"
 done
 
 log "Done!"
