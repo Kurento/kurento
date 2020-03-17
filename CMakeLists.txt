@@ -45,7 +45,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(GST_REQUIRED ^1.5.0)
 set(GLIB_REQUIRED ^2.42)
-set(OPENCV_REQUIRED ^2.0.0)
+set(OPENCV_REQUIRED <4.0.0)
 
 include(GenericFind)
 generic_find(LIBNAME gstreamer-1.5 VERSION ${GST_REQUIRED} REQUIRED)
