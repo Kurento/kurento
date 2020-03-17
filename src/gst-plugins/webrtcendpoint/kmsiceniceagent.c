@@ -108,8 +108,8 @@ kms_ice_nice_agent_new_remote_candidate_full (NiceAgent * agent,
       kms_ice_nice_agent_create_candidate_from_nice (agent, candidate,
       stream_id_str);
 
-  GST_DEBUG_OBJECT (self,
-      "[AddIceCandidate] found peer-reflexive remote: '%s'",
+  GST_INFO_OBJECT (self,
+      "[AddIceCandidate] Found peer-reflexive remote: '%s'",
       kms_ice_candidate_get_candidate (kms_candidate));
 
   kms_ice_nice_agent_add_ice_candidate (parent, kms_candidate, stream_id_str);
@@ -220,7 +220,7 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
     goto end;
   }
 
-  GST_INFO_OBJECT (self,
+  GST_DEBUG_OBJECT (self,
       "[NewCandidatePairSelected] local: '%s', remote: '%s'"
       ", stream_id: %u, component_id: %u",
       kms_ice_candidate_get_candidate (local_candidate),
@@ -501,9 +501,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
   if (nice_agent_set_remote_candidates (nice_agent->priv->agent,
           nice_cand->stream_id, nice_cand->component_id, candidates) < 0) {
     GST_WARNING_OBJECT (self,
-        "[AddIceCandidate] libnice error, remote: '%s', stream_id: %d, component_id: %d",
-        kms_ice_candidate_get_candidate (candidate),
-        nice_cand->stream_id, nice_cand->component_id);
+        "[AddIceCandidate] Error in libnice, remote candidate NOT added");
     ret = FALSE;
   } else {
     ret = TRUE;

@@ -109,6 +109,12 @@ on_ice_candidate (KmsWebrtcSession * sess, KmsIceCandidate * candidate,
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
+  GST_INFO_OBJECT (self,
+      "[IceCandidateFound] local: '%s', stream_id: %s, component_id: %d",
+      kms_ice_candidate_get_candidate (candidate),
+      kms_ice_candidate_get_stream_id (candidate),
+      kms_ice_candidate_get_component (candidate));
+
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_CANDIDATE], 0,
       sdp_sess->id_str, candidate);
@@ -118,6 +124,8 @@ static void
 on_ice_gathering_done (KmsWebrtcSession * sess, KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  GST_INFO_OBJECT (self, "[IceGatheringDone] session: '%s'", sdp_sess->id_str);
 
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0,
@@ -129,6 +137,10 @@ on_ice_component_state_change (KmsWebrtcSession * sess, const gchar * stream_id,
     guint component_id, IceState state, KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  GST_DEBUG_OBJECT (self,
+      "[IceComponentStateChanged] state: %s, stream_id: %s, component_id: %u",
+      kms_ice_base_agent_state_to_string (state), stream_id, component_id);
 
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
@@ -277,8 +289,8 @@ new_selected_pair_full (KmsWebrtcSession * sess,
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
   GST_INFO_OBJECT (self,
-      "New candidate pair selected, local: '%s', remote: '%s'"
-      ", stream_id: '%s', component_id: %d",
+      "[NewCandidatePairSelected] local: '%s', remote: '%s'"
+      ", stream_id: %s, component_id: %u",
       kms_ice_candidate_get_candidate (lcandidate),
       kms_ice_candidate_get_candidate (rcandidate),
       stream_id, component_id);
@@ -424,13 +436,13 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
   KmsWebrtcSession *webrtc_sess;
   gboolean ret = TRUE;
 
-  GST_INFO_OBJECT (self, "Gather candidates for session '%s'", sess_id);
-
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "[IceGatheringStarted] No session: '%s'", sess_id);
     return FALSE;
   }
+
+  GST_INFO_OBJECT (self, "[IceGatheringStarted] session: '%s'", sess_id);
 
   webrtc_sess = KMS_WEBRTC_SESSION (sess);
   g_signal_emit_by_name (webrtc_sess, "gather-candidates", &ret);
@@ -447,14 +459,17 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
   KmsWebrtcSession *webrtc_sess;
   gboolean ret;
 
-  GST_INFO_OBJECT (self, "Add remote candidate '%s' for session '%s'",
-      kms_ice_candidate_get_candidate (candidate), sess_id);
-
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "[AddIceCandidate] No session: '%s'", sess_id);
     return FALSE;
   }
+
+  // Remote candidates haven't been assigned a stream_id yet, so don't print it
+  GST_INFO_OBJECT (self,
+      "[AddIceCandidate] remote: '%s', component_id: %d",
+      kms_ice_candidate_get_candidate (candidate),
+      kms_ice_candidate_get_component (candidate));
 
   webrtc_sess = KMS_WEBRTC_SESSION (sess);
   g_signal_emit_by_name (webrtc_sess, "add-ice-candidate", candidate, &ret);
@@ -587,7 +602,7 @@ kms_webrtc_endpoint_create_data_channel (KmsWebrtcEndpoint * self,
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "No session: '%s'", sess_id);
     return -1;
   }
 
@@ -608,7 +623,7 @@ kms_webrtc_endpoint_destroy_data_channel (KmsWebrtcEndpoint * self,
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "No session: '%s'", sess_id);
     return;
   }
 
@@ -627,7 +642,7 @@ kms_webrtc_endpoint_get_data_channel_supported (KmsWebrtcEndpoint * self,
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "No session: '%s'", sess_id);
     return FALSE;
   }
 
