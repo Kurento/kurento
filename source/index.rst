@@ -19,6 +19,7 @@ The main documentation for the project is organized into different sections:
 
 Information about development of *Kurento itself* is also available:
 
+- :doc:`/project/relnotes/index`
 - :ref:`dev-docs`
 
 

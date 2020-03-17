@@ -6,6 +6,8 @@ Kurento Media Server **6.13.0** has been released! It comes with some new API me
 
 To install Kurento Media Server: :doc:`/user/installation`.
 
+These Release Notes were also posted on the `Kurento blog <https://www.kurento.org/blog/kurento-613-felices-fiestas>`__.
+
 
 
 Added
@@ -19,6 +21,8 @@ Added
 
   Use this parameter if you know beforehand what will be the external or public IP address of the media server (e.g. because your deployment has an static IP), although keep in mind that some types of networks will still need you to install a TURN server. Best thing to do is to try with this option enabled, and if WebRTC fails, then default to the standard method of installing and configuring Coturn.
 
+  Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalAddress-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalAddress>`__.
+
 * **WebRTC**: Add ``networkInterfaces`` to WebRtcEndpoint config & client API.
 
   If you know which network interfaces should be used to perform ICE (for WebRTC connectivity), you can define them here. Doing so has several advantages:
@@ -29,11 +33,15 @@ Added
 
   There is the long-running issue of how libnice gathers all possible local IP addresses for its ICE candidates, which introduces latency or connectivity problems for some many-networks deployments (like Amazon EC2, or Docker/Kubernetes): Kurento generates too many ICE candidates, and that results in the situation that sometimes (quite often, in practice) it fails to choose correct pair of ICE candidates and uses those ones from private networks, leading to non-obvious bugs and video stability problems.
 
-  More rationale for this feature can be found here: https://github.com/Kurento/bugtracker/issues/278
+  More rationale for this feature can be found here: `Kurento/bugtracker#278 <https://github.com/Kurento/bugtracker/issues/278>`__ (*RFC: Add WebRtcEndpoint.externalIPs configuration parameter*).
+
+  Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__.
 
 * **WebRTC** / **RTP**: Add ``mtu`` to BaseRtpEndpoint config & client API.
 
   Allows configuring the network MTU that Kurento will use for RTP transmissions, in both RtpEndpoint and WebRtcEndpoint. This parameter ends up configured in the GStreamer RTP payloader (``rtpvp8pay``, ``rtph264pay``).
+
+  Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.
 
 * **RTP**: Add support for ``a=rtcp:{Port}`` in SDP messages.
 
@@ -73,14 +81,14 @@ Added
      log.info("CPU USAGE: {}", sm.getUsedCpu(1000)); // Average CPU usage over 1 second
      log.info("RAM USAGE: {}", sm.getUsedMemory()); // Resident memory used by the Kurento process
 
-  Documentation available in the Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedCpu-int->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedCpu>`__.
+  Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedCpu-int->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedCpu>`__.
 
 
 
 Changed
 =======
 
-* **kurento-utils.js**: Dropped use of legacy ``offerToReceiveAudio`` / ``offerToReceiveVideo`` in ``RTCPeerConnection.createOffer(options)``, in favor of the **Transceiver** API.
+* **kurento-utils.js**: Dropped use of legacy ``offerToReceiveAudio`` / ``offerToReceiveVideo`` in `RTCPeerConnection.createOffer() <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createOffer>`__, in favor of the **Transceiver API**.
 
   This was needed because Safari does not implement the legacy attributes. As of this writing, all of Firefox, Chrome and Safari have good working support for RTCPeerConnection transceivers, with `RTCPeerConnection.addTransceiver() <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTransceiver>`__.
 
@@ -92,19 +100,27 @@ Changed
 
 * **WebRTC** / **RTP**: Change default ``maxVideoRecvBandwidth`` to 0 ("unlimited").
 
-  It doesn't make much sense that Kurento purposedly limits the incoming bitrate to such a low value. Better leave it to negotiate the best bitrate by using congestion control (REMB).
+  It doesn't make much sense that Kurento purposely limits the incoming bitrate to such a low value. Better leave it to negotiate the best bitrate by using congestion control (REMB).
 
-* **ServerManager**: The client API method ``getUsedMemory()`` now returns **resident** (RSS) instead of virtual (VSZ) memory.
+  Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/SdpEndpoint.html#setMaxVideoRecvBandwidth-int->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-jsdoc/module-core_abstracts.SdpEndpoint.html#setMaxVideoRecvBandwidth>`__.
+
+* **ServerManager**: The client API method ``getUsedMemory()`` now returns **resident (RSS)** instead of **virtual (VSZ)** memory.
 
   Resident memory is a more useful measurement because it tells the physical used memory, which is usually what users want to know about their server. Giving virtual size here wouldn't be of much use, as the server (or any of its libraries) could map a huge area, then not use it, and the reported VSZ would be huge for no real benefit.
 
-  However RSS does give a good view about how many MB are being used by KMS at any given time. This is also what users check on ``htop`` or ``top`` so see how much memory is used by KMS.
+  RSS gives a good view about how many MB are being used by KMS at any given time. This is also what users check on ``htop`` or ``top`` so see how much memory is used by KMS. However, keep in mind that if you are trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; `Valgrind <https://valgrind.org/>`__ is.
 
-* **Documentation**: Rewritten all the {Min,Max} bandwidth / bitrate texts for `BaseRtpEndpoint <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__ and `WebRtcEndpoint <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__.
+  Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedMemory-->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedMemory>`__.
+
+* **Documentation**: Rewritten all the ``{Min,Max}`` bandwidth / bitrate texts for `BaseRtpEndpoint <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__ and `WebRtcEndpoint <https://doc-kurento.readthedocs.io/en/6.13.0/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__.
+
+  Kurento defaults to a very conservative maximum bitrate for outgoing streams; most applications will want to raise this value, but API documentation was not very clear so these sections needed a good review.
 
 
 
 Fixed
 =====
 
-* **Node.js tutorials**: The dependency package ``ws`` had introduced since version 3.0.0 a breaking change in the 'connection' event handler. We are now using latest versions of this package, so the tutorial code needed to be updated for this change.
+* **Node.js tutorials**: Fix broken usage of the WebSocket module.
+
+  The dependency package **ws** had introduced since version 3.0.0 a breaking change in the ``connection`` event handler. We are now using latest versions of this package, so the tutorial code needed to be updated for this change.
