@@ -187,26 +187,21 @@ This command will install the basic set of tools that are needed for the next st
 Add Kurento repository
 ----------------------
 
-These commands will add the Kurento repository to be accessed by ``apt-get``. Run all inside the same terminal:
+Run these commands to add the Kurento repository to your system configuration:
 
 .. code-block:: text
 
+   # Import the Kurento repository signing key
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-.. code-block:: bash
+   # Get Ubuntu version definitions
+   source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
-   # Run *ONLY ONE* of these lines:
-   DISTRO="xenial"  # KMS for Ubuntu 16.04 (Xenial)
-   DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
-
-.. code-block:: text
-
+   # Add the repository to Apt
    sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
    # Kurento Media Server - Nightly packages
-   deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRO kms6
+   deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6
    EOF
-
-.. code-block:: bash
 
    sudo apt-get update
 
@@ -379,7 +374,7 @@ After having :doc:`installed Kurento </user/installation>`, first thing to do is
    # Get Ubuntu version definitions
    source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
-   # Add the repository URLs to apt
+   # Add the repository to Apt
    sudo tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
    # Official Ubuntu repos with debug packages
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse

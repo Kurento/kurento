@@ -69,17 +69,18 @@ To install KMS, start from a clean machine (**with no KMS or any of its dependen
       # Get Ubuntu version definitions
       source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
-      # Add the repository URL to apt
+      # Add the repository to Apt
       sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
       # Kurento Media Server - Nightly packages
-      deb [arch=amd64] http://ubuntu.openvidu.io/dev ${DISTRIB_CODENAME} kms6
+      deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6
       EOF
 
 3. Install KMS:
 
    .. code-block:: text
 
-      sudo apt-get update && sudo apt-get install --yes kurento-media-server
+      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+          kurento-media-server
 
 This will install the latest KMS nightly version.
 
