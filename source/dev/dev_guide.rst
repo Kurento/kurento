@@ -153,8 +153,8 @@ To specify a dependency it is necessary to know how to configure this library in
 
 .. _dev-sources:
 
-Building from sources
-=====================
+Build from sources
+==================
 
 To work directly with KMS source code, or to just build KMS from sources, the easiest way is using the module **kms-omni-build**. Just follow these steps:
 
@@ -539,8 +539,8 @@ Explaining GDB usage is out of scope for this documentation, but just note one t
 
 
 
-Working on a forked library
-===========================
+Work on a forked library
+========================
 
 These are the two typical workflows used to work with fork libraries:
 
