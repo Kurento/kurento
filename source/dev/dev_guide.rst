@@ -516,9 +516,13 @@ Once you see the ``(gdb)`` command prompt, you're already running a `GDB session
 
    # At this point, KMS is running; wait until the crash happens,
    # which will return you to the "(gdb)" prompt.
+   #
    # Or you can press "Ctrl+C" to force an interruption.
+   #
+   # You can also send the SIGSEGV signal to simulate a segmentation fault:
+   # sudo kill -SIGSEGV "$(pgrep -f kurento-media-server)"
 
-   # Obtain a full execution backtrace
+   # Obtain an execution backtrace
    (gdb) backtrace
 
    # Change to an interesting frame and get all details
@@ -530,7 +534,7 @@ Once you see the ``(gdb)`` command prompt, you're already running a `GDB session
    # Quit GDB and return to the shell
    (gdb) quit
 
-Explaining GDB usage is out of scope for this documentation, but just note one thing: in the above text, **``frame 3`` is just an example**; depending on the case, the backtrace needs to be examined first to decide which frame number is the most interesting. Typically (but not always), the interesting frame is the first one that involves Kurento's own code instead of 3rd-party code.
+Explaining GDB usage is out of scope for this documentation, but just note one thing: in the above text, ``frame 3`` is **just an example**; depending on the case, the backtrace needs to be examined first to decide which frame number is the most interesting. Typically (but not always), the interesting frame is the first one that involves Kurento's own code instead of 3rd-party code.
 
 
 
@@ -564,20 +568,20 @@ This allows for the fastest development cycle, however the specific instructions
 Create Deb packages
 ===================
 
-You can easily create Debian packages (``.deb`` files) for KMS itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/bionic/en/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/bionic/en/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based out tooling on `gbp <https://manpages.ubuntu.com/manpages/bionic/en/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
+You can easily create Debian packages (``.deb`` files) for KMS itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/bionic/en/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/bionic/en/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/bionic/en/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
 
 
 
 kurento-buildpackage script
 ---------------------------
 
-All Kurento packages are normally built on our CI servers, using a script conveniently called `kurento-buildpackage <https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh>`__. When running this tool inside any project's directory, it will configure Kurento repositories, install dependencies, and finally use *git-buildpackage* to update the *debian/changelog* file, before actually building new Deb packages.
+All Kurento packages are normally built in our CI servers, using a script aptly named `kurento-buildpackage <https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh>`__. When running this tool inside any project's directory, it will configure Kurento repositories, install dependencies, and finally use *git-buildpackage* to update the *debian/changelog* file, before actually building new Deb packages.
 
 You can also use *kurento-buildpackage* locally, to build test packages while working on any of the Kurento projects; default options will generally be good enough. However, note that the script assumes all dependencies to either be installable from current Apt repositories, or be already installed in your system. If you want to allow the script to install any Kurento dependencies that you might be missing, run it with ``--install-kurento <KurentoVersion>``, where *<KurentoVersion>* is the version of Kurento against which the project should be built.
 
 For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0. Run these commands:
 
-.. code-block:: bash
+.. code-block:: text
 
    git clone https://github.com/Kurento/adm-scripts.git
    git clone https://github.com/Kurento/kms-core.git
@@ -593,11 +597,11 @@ kurento-buildpackage Docker image
 
 In an attempt to make it easier than ever to create Deb packages from Kurento repositories, we offer a Docker image that already contains everything needed to run the *kurento-buildpackage* tool. You can use this Docker image as if you were running the script itself, with the advantage that your system won't have to be modified to install any dependencies, your builds will be completely repeatable, and you will be able to create packages for different versions of Ubuntu.
 
-To use the `kurento-buildpackage Docker image <https://hub.docker.com/r/kurento/kurento-buildpackage>`__, you'll need to mount the project directory onto the ``/hostdir`` path inside the container. All other options to *kurento-buildpackage* remain the same.
+To use the `kurento-buildpackage Docker image <https://hub.docker.com/r/kurento/kurento-buildpackage>`__, you'll need to bind-mount the project directory onto the ``/hostdir`` path inside the container. All other options to *kurento-buildpackage* remain the same.
 
 For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0, for *Ubuntu 16.04 (Xenial)* systems. Run these commands:
 
-.. code-block:: bash
+.. code-block:: text
 
    git clone https://github.com/Kurento/kms-core.git
    cd kms-core/
