@@ -259,24 +259,7 @@ Make sure your current directory is already *kms-omni-build*, then run this comm
 
 By default, the script `kms-build-run.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/kms-build-run.sh>`__ will set up the environment and settings to make a Debug build of KMS. You can inspect that script to learn about all the other options it offers, including builds for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, selection between GCC and Clang compilers, and other modes.
 
-.. note::
-
-   If your ``cmake`` command fails, make sure you don't have multiple ``build`` directories below **kms-omni-build** or any of its subdirectories. We have seen that having multiple build dirs can cause issues, so it's better to only have one.
-
-   If you want to work with multiple build dirs at the same time, it's better to just work on a separate Git clone, outside the **kms-omni-build** directory.
-
-You can set the logging level of specific categories by exporting the environment variable ``GST_DEBUG`` (see :doc:`/features/logging`).
-
-You also have the option to launch KMS manually, basing your command on the launch line present in the script. In that case, other launch options that could be useful are:
-
-.. code-block:: text
-
-   --logs-path, -d <Path> : Path where rotating log files will be stored
-   --log-file-size, -s <Number> : Maximum file size for log files, in MB
-   --number-log-files, -n <Number> : Maximum number of log files to keep
-
-More launch options, handled by GStreamer:
-https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-running.html
+You can set the logging level of specific categories by exporting the environment variable ``GST_DEBUG`` before running this script (see :doc:`/features/logging`).
 
 
 
