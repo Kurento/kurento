@@ -28,14 +28,14 @@ function getopts(args, opts) {
 
 var args = getopts(location.search, {
   default: {
-    ws_uri: 'wss://' + location.hostname + ':8433/kurento',
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
     ice_servers: undefined
   }
 });
 
 function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror) {
   webRtcPeer.on('icecandidate', function(candidate) {
-    console.log("Local candidate:", candidate);
+    console.log("Local candidate:", candidate.candidate);
 
     candidate = kurentoClient.getComplexType('IceCandidate')(candidate);
 
@@ -45,7 +45,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror) {
   webRtcEp.on('OnIceCandidate', function(event) {
     var candidate = event.candidate;
 
-    console.log("Remote candidate:", candidate);
+    console.log("Remote candidate:", candidate.candidate);
 
     webRtcPeer.addIceCandidate(candidate, onerror);
   });
@@ -152,19 +152,22 @@ function printStats() {
     if (error) return console.log("Warning: could not gather browser outgoing stats: " + error);
 
     document.getElementById('browserOutgoingSsrc').innerHTML = stats.ssrc;
-    document.getElementById('browserBytesSent').innerHTML = stats.bytesSent;
     document.getElementById('browserPacketsSent').innerHTML = stats.packetsSent;
-    document.getElementById('browserPliReceived').innerHTML = stats.pliCount;
-    document.getElementById('browserFirReceived').innerHTML = stats.firCount;
+    document.getElementById('browserBytesSent').innerHTML = stats.bytesSent;
+    // packetsLost
+    // jitter
     document.getElementById('browserNackReceived').innerHTML = stats.nackCount;
-    document.getElementById('browserRtt').innerHTML = stats.roundTripTime;
-    document.getElementById('browserOutboundPacketsLost').innerHTML = stats.packetsLost;
+    document.getElementById('browserFirReceived').innerHTML = stats.firCount;
+    document.getElementById('browserPliReceived').innerHTML = stats.pliCount;
+    document.getElementById('browserOutgoingIceRtt').innerHTML = stats.iceRoundTripTime;
+    document.getElementById('browserOutgoingAvailableBitrate').innerHTML = stats.availableBitrate;
   });
 
   getMediaElementStats(webRtcEndpoint, 'inboundrtp', 'VIDEO', function(error, stats) {
-    if (error) return console.log("Warning: could not gather webRtcEndpoing input stats: " + error);
+    if (error) return console.log("Warning: could not gather WebRtcEndpoint input stats: " + error);
 
     document.getElementById('kmsIncomingSsrc').innerHTML = stats.ssrc;
+
     document.getElementById('kmsBytesReceived').innerHTML = stats.bytesReceived;
     document.getElementById('kmsPacketsReceived').innerHTML = stats.packetsReceived;
     document.getElementById('kmsPliSent').innerHTML = stats.pliCount;
@@ -178,18 +181,21 @@ function printStats() {
 
   getBrowserIncomingVideoStats(webRtcPeer, function(error, stats) {
     if (error) return console.log("Warning: could not gather stats: " + error);
+
     document.getElementById('browserIncomingSsrc').innerHTML = stats.ssrc;
-    document.getElementById('browserBytesReceived').innerHTML = stats.bytesReceived;
     document.getElementById('browserPacketsReceived').innerHTML = stats.packetsReceived;
-    document.getElementById('browserPliSent').innerHTML = stats.pliCount;
-    document.getElementById('browserFirSent').innerHTML = stats.firCount;
+    document.getElementById('browserBytesReceived').innerHTML = stats.bytesReceived;
+    document.getElementById('browserIncomingPacketsLost').innerHTML = stats.packetsLost;
+    document.getElementById('browserIncomingJitter').innerHTML = stats.jitter;
     document.getElementById('browserNackSent').innerHTML = stats.nackCount;
-    document.getElementById('browserJitter').innerHTML = stats.jitter;
-    document.getElementById('browserIncomingPacketLost').innerHTML = stats.packetLost;
+    document.getElementById('browserFirSent').innerHTML = stats.firCount;
+    document.getElementById('browserPliSent').innerHTML = stats.pliCount;
+    document.getElementById('browserIncomingIceRtt').innerHTML = stats.iceRoundTripTime;
+    document.getElementById('browserIncomingAvailableBitrate').innerHTML = stats.availableBitrate;
   });
 
   getMediaElementStats(webRtcEndpoint, 'outboundrtp', 'VIDEO', function(error, stats){
-    if (error) return console.log("Warning: could not gather webRtcEndpoing input stats: " + error);
+    if (error) return console.log("Warning: could not gather WebRtcEndpoint input stats: " + error);
 
     document.getElementById('kmsOutogingSsrc').innerHTML = stats.ssrc;
     document.getElementById('kmsBytesSent').innerHTML = stats.bytesSent;
@@ -207,48 +213,81 @@ function printStats() {
   });
 }
 
-
 function getBrowserOutgoingVideoStats(webRtcPeer, callback) {
   if (!webRtcPeer) return callback("Cannot get stats from null webRtcPeer");
-  var peerConnection = webRtcPeer.peerConnection;
+  let peerConnection = webRtcPeer.peerConnection;
   if (!peerConnection) return callback("Cannot get stats from null peerConnection");
-  var localVideoStream = peerConnection.getLocalStreams()[0];
-  if (!localVideoStream) return callback("Non existent local stream: cannot read stats")
-  var localVideoTrack = localVideoStream.getVideoTracks()[0];
+  let localVideoStream = peerConnection.getLocalStreams()[0];
+  if (!localVideoStream) return callback("Non existent local stream: cannot read stats");
+  let localVideoTrack = localVideoStream.getVideoTracks()[0];
   if (!localVideoTrack) return callback("Non existent local video track: cannot read stats");
 
-  peerConnection.getStats(function(stats) {
-    var results = stats.result();
-    for (var i = 0; i < results.length; i++) {
-      var res = results[i];
-      if (res.type != 'ssrc') continue;
+  peerConnection
+    .getStats(localVideoTrack)
+    .then(function(stats) {
+      let retVal = { isRemote: false };
 
-      //Publish it to be compliant with W3C stats draft
-      var retVal = {
-        timeStamp: res.timestamp,
-        //StreamStats below
-        associateStatsId: res.id,
-        codecId: "--",
-        firCount: res.stat('googFirsReceived'),
-        isRemote: false,
-        mediaTrackId: res.stat('googTrackId'),
-        nackCount: res.stat('googNacksReceived'),
-        pliCount: res.stat('googPlisReceived'),
-        sliCount: 0,
-        ssrc: res.stat('ssrc'),
-        transportId: res.stat('transportId'),
-        //Specific outbound below
-        bytesSent: res.stat('bytesSent'),
-        packetsSent: res.stat('packetsSent'),
-        roundTripTime: res.stat('googRtt'),
-        packetsLost: res.stat('packetsLost'),
-        targetBitrate: "??",
-        remb: "??"
+      // "stats" is of type RTCStatsReport
+      // https://www.w3.org/TR/webrtc/#rtcstatsreport-object
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport
+      // which behaves like a Map
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+      const statsArr = Array.from(stats.values());
+
+      // "report.type" is of type RTCStatsType
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsType
+      const reportsRtp = statsArr.filter(report => {
+        return report.type === "outbound-rtp";
+      });
+      const reportsCandidatePair = statsArr.filter(report => {
+        return report.type === "candidate-pair";
+      });
+      const reportsCodec = statsArr.filter(report => {
+        return report.type === "codec";
+      });
+
+      // Get the first RTP report to import its stats
+      if (reportsRtp.length < 1) {
+        console.warn("No RTP reports found in RTCStats");
+        return;
       }
+      const reportRtp = reportsRtp[0];
+
+      // RTCStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcstats
+      retVal["timestamp"] = reportRtp.timestamp;
+
+      // RTCRtpStreamStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcrtpstreamstats
+      retVal["ssrc"] = reportRtp.ssrc;
+
+      // RTCSentRtpStreamStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcsentrtpstreamstats
+      retVal["packetsSent"] = reportRtp.packetsSent;
+      retVal["bytesSent"] = reportRtp.bytesSent;
+
+      // RTCOutboundRtpStreamStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats
+      retVal["nackCount"] = reportRtp.nackCount;
+      retVal["firCount"] = "firCount" in reportRtp ? reportRtp.firCount : 0;
+      retVal["pliCount"] = "pliCount" in reportRtp ? reportRtp.pliCount : 0;
+      retVal["sliCount"] = "sliCount" in reportRtp ? reportRtp.sliCount : 0;
+
+      //  RTCIceCandidatePairStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatepairstats
+      const matchCandidatePairs = reportsCandidatePair.filter(pair => {
+        return pair.transportId === reportRtp.transportId;
+      });
+      if (matchCandidatePairs.length > 0) {
+        retVal["iceRoundTripTime"] = matchCandidatePairs[0].currentRoundTripTime;
+        retVal["availableBitrate"] = matchCandidatePairs[0].availableOutgoingBitrate;
+      }
+
       return callback(null, retVal);
-    }
-    return callback("Error: could not find ssrc type on track stats", null);
-  }, localVideoTrack);
+    })
+    .catch(function(err) {
+      return callback(err, null);
+    });
 }
 
 function getBrowserIncomingVideoStats(webRtcPeer, callback) {
@@ -260,37 +299,74 @@ function getBrowserIncomingVideoStats(webRtcPeer, callback) {
   var remoteVideoTrack = remoteVideoStream.getVideoTracks()[0];
   if (!remoteVideoTrack) return callback("Non existent remote video track: cannot read stats");
 
-  peerConnection.getStats(function(stats) {
-    var results = stats.result();
-    for (var i = 0; i < results.length; i++) {
-      var res = results[i];
-      if (res.type != 'ssrc') continue;
+  peerConnection
+    .getStats(remoteVideoTrack)
+    .then(function(stats) {
+      let retVal = { isRemote: true };
 
-      //Publish it to be compliant with W3C stats draft
-      var retVal = {
-        timeStamp: res.timestamp,
-        //StreamStats below
-        associateStatsId: res.id,
-        codecId: "--",
-        firCount: res.stat('googFirsSent'),
-        isRemote: true,
-        mediaTrackId: res.stat('googTrackId'),
-        nackCount: res.stat('googNacksSent'),
-        pliCount: res.stat('googPlisSent'),
-        sliCount: 0,
-        ssrc: res.stat('ssrc'),
-        transportId: res.stat('transportId'),
-        //Specific outbound below
-        bytesReceived: res.stat('bytesReceived'),
-        packetsReceived: res.stat('packetsReceived'),
-        jitter: res.stat('googJitterBufferMs'),
-        packetLost: res.stat('packetsLost'),
-        remb: "??"
+      // "stats" is of type RTCStatsReport
+      // https://www.w3.org/TR/webrtc/#rtcstatsreport-object
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport
+      // which behaves like a Map
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+      const statsArr = Array.from(stats.values());
+
+      // "report.type" is of type RTCStatsType
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsType
+      const reportsRtp = statsArr.filter(report => {
+        return report.type === "inbound-rtp";
+      });
+      const reportsCandidatePair = statsArr.filter(report => {
+        return report.type === "candidate-pair";
+      });
+      const reportsCodec = statsArr.filter(report => {
+        return report.type === "codec";
+      });
+
+      // Get the first RTP report to import its stats
+      if (reportsRtp.length < 1) {
+        console.warn("No RTP reports found in RTCStats");
+        return;
       }
+      const reportRtp = reportsRtp[0];
+
+      // RTCStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcstats
+      retVal["timestamp"] = reportRtp.timestamp;
+
+      // RTCRtpStreamStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcrtpstreamstats
+      retVal["ssrc"] = reportRtp.ssrc;
+
+      // RTCReceivedRtpStreamStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats
+      retVal["packetsReceived"] = reportRtp.packetsReceived;
+      retVal["packetsLost"] = reportRtp.packetsLost;
+      retVal["jitter"] = reportRtp.jitter;
+
+      // RTCInboundRtpStreamStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats
+      retVal["bytesReceived"] = reportRtp.bytesReceived;
+      retVal["nackCount"] = reportRtp.nackCount;
+      retVal["firCount"] = "firCount" in reportRtp ? reportRtp.firCount : 0;
+      retVal["pliCount"] = "pliCount" in reportRtp ? reportRtp.pliCount : 0;
+      retVal["sliCount"] = "sliCount" in reportRtp ? reportRtp.sliCount : 0;
+
+      //  RTCIceCandidatePairStats
+      // https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatepairstats
+      const matchCandidatePairs = reportsCandidatePair.filter(pair => {
+        return pair.transportId === reportRtp.transportId;
+      });
+      if (matchCandidatePairs.length > 0) {
+        retVal["iceRoundTripTime"] = matchCandidatePairs[0].currentRoundTripTime;
+        retVal["availableBitrate"] = matchCandidatePairs[0].availableIncomingBitrate;
+      }
+
       return callback(null, retVal);
-    }
-    return callback("Error: could not find ssrc type on track stats", null);
-  }, remoteVideoTrack);
+    })
+    .catch(function(err) {
+      return callback(err, null);
+    });
 }
 
 /*
@@ -323,7 +399,7 @@ function getMediaElementStats(mediaElement, statsType, mediaType, callback){
 
       return callback(null, stats)
     }
-    return callback('Cound not find ' +
+    return callback('Could not find ' +
                       statsType + ':' + mediaType +
                       ' stats in element ' + mediaElement.id);
   });
