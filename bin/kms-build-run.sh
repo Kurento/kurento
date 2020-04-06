@@ -325,7 +325,7 @@ RUN_VARS=()
 RUN_WRAPPER=""
 
 if [[ "$CFG_GDB" == "true" ]]; then
-    RUN_WRAPPER="gdb --args"
+    RUN_WRAPPER="gdb -ex 'run' --args"
     RUN_VARS+=("G_DEBUG='fatal-warnings'")
 fi
 
