@@ -399,6 +399,22 @@ from_turn_protocol_to_nice_relay (TurnProtocol transport)
   }
 }
 
+static gchar *
+from_turn_protocol_to_string (TurnProtocol transport)
+{
+  switch (transport) {
+    default:
+      GST_WARNING ("Wrong type of relay transport. Using TCP");
+    case TURN_PROTOCOL_TCP:
+      return "tcp";
+    case TURN_PROTOCOL_UDP:
+      return "udp";
+    case TURN_PROTOCOL_TLS:
+    case TURN_PROTOCOL_SSLTCP:
+      return "tls";
+  }
+}
+
 static void
 kms_ice_nice_agent_add_relay_server (KmsIceBaseAgent * self,
     KmsIceRelayServerInfo server_info)
@@ -408,8 +424,9 @@ kms_ice_nice_agent_add_relay_server (KmsIceBaseAgent * self,
   NiceRelayType type = from_turn_protocol_to_nice_relay (server_info.type);
 
   GST_DEBUG_OBJECT (self, "Add relay server,"
-      " IP: %s, port: %u, stream_id: %u",
-      server_info.server_ip, server_info.server_port, id);
+      " IP: %s, port: %u, type: %s, stream_id: %u",
+      server_info.server_ip, server_info.server_port,
+      from_turn_protocol_to_string (server_info.type), id);
 
   nice_agent_set_relay_info (nice_agent->priv->agent,
       id,
