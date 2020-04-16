@@ -119,13 +119,11 @@ RUN apt-key adv \
  && rm -rf /var/lib/apt/lists/*
 
 # Configure environment for KMS. All of this can be overriden with `docker run`.
-# * Use suggested logging levels:
-#   https://doc-kurento.readthedocs.io/en/latest/features/logging.html#suggested-levels
 # * Disable color in debug logs
 # * Provide default empty values for all environment variables supported by
 #   the entrypoint script. This acts more as documentation than really a need.
-ENV GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4" \
-    GST_DEBUG_NO_COLOR=1 \
+ENV GST_DEBUG_NO_COLOR=1 \
+    GST_DEBUG="" \
     KMS_MTU="" \
     KMS_EXTERNAL_ADDRESS="" \
     KMS_NETWORK_INTERFACES="" \

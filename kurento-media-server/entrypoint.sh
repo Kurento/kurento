@@ -71,5 +71,11 @@ fi
 # shellcheck disable=SC2002
 cat /etc/hosts | sed '/::1/d' | tee /etc/hosts >/dev/null || true
 
+# Debug logging -- If empty or unset, use suggested levels
+# https://doc-kurento.readthedocs.io/en/latest/features/logging.html#suggested-levels
+if [[ -z "${GST_DEBUG:-}" ]]; then
+    export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
+fi
+
 # Run Kurento Media Server
 exec /usr/bin/kurento-media-server "$@"
