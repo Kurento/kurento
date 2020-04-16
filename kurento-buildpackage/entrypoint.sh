@@ -34,9 +34,9 @@ fi
 
 # Check the environment
 if [[ -d /hostdir ]]; then
-    rm -rf /workdir
-    cp -a /hostdir /workdir
-    cd /workdir
+    rm -rf /build
+    cp -a /hostdir /build
+    cd /build
 fi
 
 # Build packages for current dir
