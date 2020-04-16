@@ -47,7 +47,7 @@ ARG UBUNTU_VERSION="xenial"
 ARG KMS_VERSION="dev"
 
 # Configure environment:
-# * DEBIAN_FRONTEND: Disable interactive questions and messages in `apt-get`
+# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages
 # * LANG: Set the default locale for all commands
 ENV DEBIAN_FRONTEND="noninteractive" \
     LANG="C.UTF-8"
@@ -55,12 +55,12 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 # Install required tools:
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
 # * curl: For "entrypoint.sh" and "healthchecker.sh"
-RUN apt-get update && apt-get install --no-install-recommends --yes \
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         gnupg \
         curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Configure `apt-get`:
+# Configure Apt:
 # * Disable installation of recommended and suggested packages
 # * Add Kurento package repository
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
@@ -73,13 +73,13 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo "$APT_LIST" >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server
-RUN apt-get update && apt-get install --yes \
+RUN apt-get -q update && apt-get -q install --yes \
         kurento-media-server \
  && rm -rf /var/lib/apt/lists/*
 
 # Install additional modules
 # These might not be available in Ubuntu 18.04 (Bionic)
-RUN apt-get update && apt-get install --no-install-recommends --yes \
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         kms-chroma \
         kms-crowddetector \
         kms-platedetector \
@@ -95,10 +95,10 @@ RUN apt-key adv \
         --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_VERSION} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_VERSION}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
- && apt-get update \
- && apt-get install --no-install-recommends --yes \
+ && apt-get -q update \
+ && apt-get -q install --no-install-recommends --yes \
         kurento-dbg \
- || apt-get install --no-install-recommends --yes \
+ || apt-get -q install --no-install-recommends --yes \
         libc6-dbg \
         libglib2.0-0-dbgsym \
         kmsjsoncpp-dbg \

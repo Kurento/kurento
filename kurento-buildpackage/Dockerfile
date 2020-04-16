@@ -51,16 +51,16 @@ ARG UBUNTU_VERSION=xenial
 FROM buildpack-deps:${UBUNTU_VERSION}-curl
 
 # Configure environment:
-# * DEBIAN_FRONTEND: Disable interactive questions and messages
+# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages
+# * PYTHONUNBUFFERED: Disable Python stdin/stdout/stderr buffering
 # * LANG: Set the default locale for all commands
 # * PATH: Add the auxiliary scripts to the current PATH
-# * PYTHONUNBUFFERED: Disable stdin/stdout/stderr buffering in Python
 ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
     LANG=C.UTF-8 \
-    PATH="/adm-scripts:${PATH}" \
-    PYTHONUNBUFFERED=1
+    PATH="/adm-scripts:${PATH}"
 
-# Configure `apt-get`:
+# Configure Apt:
 # * Disable installation of recommended and suggested packages
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends
@@ -68,7 +68,7 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
 # Install a basic set of packages
 # * build-essential, cmake, pkg-config: For C/C++ based projects
 # * Miscellaneous tools that are used by CI scripts
-RUN apt-get update && apt-get install --yes \
+RUN apt-get -q update && apt-get -q install --yes \
         build-essential \
         cmake \
         pkg-config \
@@ -80,14 +80,13 @@ RUN apt-get update && apt-get install --yes \
 
 # Install dependencies of 'kurento-buildpackage'
 # (listed in the tool's help/header)
-RUN apt-get update && apt-get install --yes \
+RUN apt-get -q update && apt-get -q install --yes \
         python3 python3-pip python3-setuptools python3-wheel \
         devscripts \
         dpkg-dev \
         lintian \
         git \
         openssh-client \
-        lsb-release \
         equivs \
         coreutils \
  && rm -rf /var/lib/apt/lists/*
@@ -104,12 +103,12 @@ RUN git config --system user.name "kurento-buildpackage" \
 
 # APT_KEEP_CACHE
 #
-# By default, Docker images based on "ubuntu" automatically clean the apt
+# By default, Docker images based on "ubuntu" automatically clean the Apt
 # package cache. However, this breaks 'd-devlibdeps' (d-shlibs) < 0.83 so a
 # workaround is needed: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916856
 #
-# Also, for this image it makes sense to have a persistent package cache of
-# downloaded packages. The user might want to set up the cache in an external
+# Also, for this image it makes sense to have a persistent cache of downloaded
+# packages between runs. The user might want to set up the cache in an external
 # volume or bind mount. Useful if you're doing lots of (re)builds and want to
 # avoid downloading the same packages over and over again...
 #

@@ -28,13 +28,14 @@ ARG UBUNTU_VERSION=xenial
 FROM kurento/kurento-buildpackage:${UBUNTU_VERSION}
 
 # Settings from parent image:
-# * Re-enable automatically cleaning the apt cache
+# Re-enable the cleaning of Apt package cache
+# (in case you end up using the parent's entrypoint.sh)
 ENV APT_KEEP_CACHE="false"
 
 # Install Node.js 8.x LTS (includes NPM) and Bower
 # Used by JavaScript-based projects
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
- && apt-get update && apt-get install --yes \
+ && apt-get -q update && apt-get -q install --yes \
         nodejs \
  && rm -rf /var/lib/apt/lists/* \
  && npm -g install bower \
@@ -50,7 +51,7 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
 # * ffmpeg: For different integration testst that generate an RTP stream
 # * libmediainfo-dev: MediaInfoLibrary class
 # * netcat: KmsService class, to check if KMS port is already in use
-RUN apt-get update && apt-get install --yes \
+RUN apt-get -q update && apt-get -q install --yes \
         default-jdk \
         maven \
         jq jshon \

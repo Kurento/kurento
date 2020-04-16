@@ -15,7 +15,7 @@ trap on_error ERR
 
 # Settings
 if [[ "${APT_KEEP_CACHE:-}" == "true" ]]; then
-    # Disable the cleaning of apt package cache
+    # Disable the cleaning of Apt package cache
     if [[ -w /etc/apt/apt.conf.d/docker-clean ]]; then
         # Comment out all line(s) that weren't already a comment
         sed --in-place "s|^[^/]|//|" /etc/apt/apt.conf.d/docker-clean
