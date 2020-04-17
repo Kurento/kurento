@@ -2,11 +2,11 @@
 
 #/ Kurento packaging script for Debian/Ubuntu.
 #/
-#/ This shell script is used to build all Kurento Media Server modules, and
-#/ generate Debian/Ubuntu package files from them. It will automatically
-#/ install all required dependencies with `apt-get`, then build the project.
+#/ This script is used to build all Kurento Media Server modules, and generate
+#/ Debian/Ubuntu package files (.deb) from them. It will automatically install
+#/ all required dependencies with `apt-get`, then build the project.
 #/
-#/ The script must be called from within a Git repository.
+#/ This script must be called from within a Git repository.
 #/
 #/
 #/ Arguments
@@ -18,17 +18,16 @@
 #/   Kurento package repository for those packages that need it.
 #/
 #/   <KurentoVersion> indicates which Kurento repo must be used to download
-#/   packages from. E.g.: "6.8.0". If "dev" or "nightly" is given, the
-#/   Kurento nightly packages will be used instead.
+#/   packages from. E.g.: "6.8.0". If "dev" is given, then Kurento nightly
+#/   packages will be used instead.
 #/
-#/   Typically, you will provide an actual version number when also using
-#/   the '--release' flag, and just use "nightly" otherwise. In this mode,
-#/   `apt-get` will download and install all required packages from the
-#/   Kurento repository for Ubuntu.
+#/   Typically, you will provide an actual version number when also using the
+#/   '--release' flag, and just use "dev" otherwise. With this, `apt-get` will
+#/   download and install all required packages from the Kurento repository.
 #/
 #/   This argument is useful for end users, or external developers which may
-#/   want to build a specific component of Kurento without having to build
-#/   all the dependencies.
+#/   want to build a specific component of Kurento without having to build all
+#/   the dependencies.
 #/
 #/   Optional. Default: Disabled.
 #/   See also: '--install-files'.
@@ -37,16 +36,16 @@
 #/
 #/   Install specific dependency files that are required to build the package.
 #/
-#/   [FilesDir] is optional, it sets a directory where all '.deb' files
-#/   are located with required dependencies.
+#/   [FilesDir] is optional, and defaults to the current working directory. It
+#/   tells this tool where all '.deb' files are located, to be installed.
 #/
 #/   This argument is useful during incremental builds where dependencies have
 #/   been built previously but are still not available to download with
 #/   `apt-get`, maybe as a product of previous jobs in a CI pipeline.
 #/
-#/   '--install-files' can be used together with '--install-kurento'. If none
-#/   of the '--install-*' arguments are provided, all non-system dependencies
-#/   are expected to be already installed.
+#/   '--install-files' can be used together with '--install-kurento'. If none of
+#/   the '--install-*' arguments are provided, all non-system dependencies are
+#/   expected to be already installed.
 #/
 #/   Optional. Default: Disabled.
 #/   See also: '--install-kurento'.
@@ -62,8 +61,8 @@
 #/
 #/   This argument is useful for Git projects that contain submodules. Running
 #/   directly from a submodule directory might cause some problems if the
-#/   command `git-buildpackage` is not able to identify the submodule as a
-#/   proper Git repository.
+#/   command git-buildpackage is not able to identify the submodule as a proper
+#/   Git repository.
 #/
 #/   Optional. Default: Current working directory.
 #/
@@ -76,15 +75,15 @@
 #/
 #/ --allow-dirty
 #/
-#/   Allows building packages from a working directory where there are
-#/   unstaged and/or uncommited source code changes. If this option is not
-#/   given, the working directory must be clean.
+#/   Allows building packages from a working directory where there are unstaged
+#/   and/or uncommited source code changes. If this option is not given, the
+#/   working directory must be clean.
 #/
 #/   NOTE: This tells `dpkg-buildpackage` to skip calling `dpkg-source` and
 #/   build a Binary-only package. It makes easier creating a test package, but
 #/   in the long run the objective is to create oficially valid packages which
-#/   comply with Debian/Ubuntu's policies, so this option should not be used
-#/   for final release builds.
+#/   comply with Debian/Ubuntu's policies, so this option should not be used for
+#/   final release builds.
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -97,11 +96,11 @@
 #/
 #/ --timestamp <Timestamp>
 #/
-#/   Apply the provided timestamp instead of using the date and time this
-#/   script is being run.
+#/   Apply the provided timestamp instead of using the date and time this script
+#/   is being run.
 #/
-#/   <Timestamp> must be a decimal number. Ideally, it represents some date
-#/   and time when the build was done. It can also be any arbitrary number.
+#/   <Timestamp> must be a decimal number. Ideally, it represents some date and
+#/   time when the build was done. It can also be any arbitrary number.
 #/
 #/   Optional. Default: Current date and time, as given by the command
 #/   `date --utc +%Y%m%d%H%M%S`.
@@ -117,7 +116,6 @@
 #/     - lintian
 #/   - git
 #/     - openssh-client (for Git SSH access)
-#/ * lsb-release
 #/ * mk-build-deps (package 'devscripts')
 #/   - equivs
 #/ * nproc (package 'coreutils')
@@ -134,7 +132,6 @@
 #/   lintian \
 #/   git \
 #/   openssh-client \
-#/   lsb-release \
 #/   equivs \
 #/   coreutils
 #/ pip3 install --upgrade gbp
@@ -278,6 +275,15 @@ log "CFG_TIMESTAMP=$CFG_TIMESTAMP"
 
 APT_UPDATE_NEEDED="true"
 
+# Get Ubuntu version definitions. This brings variables such as:
+#
+#     DISTRIB_CODENAME="bionic"
+#     DISTRIB_RELEASE="18.04"
+#
+# The file is "/etc/lsb-release" in vanilla Ubuntu installations, but
+# "/etc/upstream-release/lsb-release" in Ubuntu-derived distributions
+source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+
 
 
 # Apt configuration
@@ -295,17 +301,16 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
     log "Add the Kurento Apt repository key"
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-    if [[ "$CFG_INSTALL_KURENTO_VERSION" == "nightly" ]]; then
-        # Set correct repo name for nightly versions
-        REPO="dev"
-    else
-        REPO="$CFG_INSTALL_KURENTO_VERSION"
-    fi
+    REPO="$CFG_INSTALL_KURENTO_VERSION"
 
-    log "Add the Kurento Apt repository line"
-    DISTRO="$(lsb_release --codename --short)"
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRO kms6" \
-        >/etc/apt/sources.list.d/kurento.list
+    if grep -qs "ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" /etc/apt/sources.list.d/kurento.list; then
+        log "Kurento Apt repository line already exists"
+    else
+        log "Kurento Apt repository line has to be added"
+
+        echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" \
+            >>/etc/apt/sources.list.d/kurento.list
+    fi
 
     # Adding a new repo requires updating the Apt cache
     apt_update_maybe
@@ -370,8 +375,7 @@ mk-build-deps --install --remove \
 #
 # REVIEW 2019-02-05 - Disable automatic generation of debug packages
 # For now, we'll keep on defining '-dbg' packages in 'debian/control'.
-# DISTRO_YEAR="$(lsb_release -s -r | cut -d. -f1)"
-# if [[ $DISTRO_YEAR -lt 18 ]]; then
+# if [[ ${DISTRIB_RELEASE%%.*} -lt 18 ]]; then
 #     apt-get install --yes pkg-create-dbgsym
 # fi
 
@@ -388,7 +392,7 @@ mk-build-deps --install --remove \
 #     git add debian/changelog
 #     git commit -m "Update debian/changelog with new release version"
 #
-# For nightly (pre-release) builds, the 'debian/changelog' file is
+# For nightly (in development) builds, the 'debian/changelog' file is
 # auto-generated by the build script with a snapshot version number. This
 # snapshot information is never committed.
 #
@@ -430,7 +434,6 @@ mk-build-deps --install --remove \
 # In which "16.04" or "18.04" is appended to the usual package version.
 
 PACKAGE_VERSION="$(dpkg-parsechangelog --show-field Version)"
-DISTRO_VERSION="$(lsb_release --release --short)"
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
     log "Update debian/changelog for a RELEASE version build"
@@ -438,7 +441,7 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
         --ignore-branch \
         --git-author \
         --spawn-editor=never \
-        --new-version="${PACKAGE_VERSION}.${DISTRO_VERSION}" \
+        --new-version="${PACKAGE_VERSION}.${DISTRIB_RELEASE}" \
         --release \
         ./debian/
 else
@@ -447,7 +450,7 @@ else
         --ignore-branch \
         --git-author \
         --spawn-editor=never \
-        --new-version="${PACKAGE_VERSION}.${DISTRO_VERSION}" \
+        --new-version="${PACKAGE_VERSION}.${DISTRIB_RELEASE}" \
         --snapshot --snapshot-number="$CFG_TIMESTAMP" \
         ./debian/
 fi
