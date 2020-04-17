@@ -60,16 +60,16 @@ Some useful syntax examples:
 Thanks for the change
 ---------------------
 
-* `@Username <https://github.com/Username>`__ for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (Issue title).
-* `@Username <https://github.com/Username>`__ (Full Name) for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (Issue title).
-* `@Username <https://github.com/Username>`__ for `Kurento/kurento-jsonrpc-js#PrNum <https://github.com/Kurento/kurento-jsonrpc-js/pull/PrNum>`__ (PR title).
+* `@Username <https://github.com/Username>`__ (Full Name) for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (*Issue title*).
+* `@Username <https://github.com/Username>`__ for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (*Issue title*).
+* `@Username <https://github.com/Username>`__ for `Kurento/kms-core#PrNum <https://github.com/Kurento/kms-core/pull/PrNum>`__ (*Pull Request title*).
 
 
 
 More thanks
 ===========
 
-There were many other changes and fixes contributed by users; these maybe didn't have an impact big enough to be featured in these Release Notes, but nevertheless their authors merit our sincere appreciation and thanks for sharing their work with the greater community:
+There were other changes and fixes contributed by users, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
 
 **RepoName**
 

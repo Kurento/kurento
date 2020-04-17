@@ -158,9 +158,9 @@ From a the Media Pipeline point of view, this demo application consists in a
 ``WebRtcEndpoint`` in loopback. Once the demo is up and running, WebRTC are
 enabled and gathered with a rate of 1 second.
 
-In addition to the KMS WebRTC statistics, the client-side (i.e. browser WebRtc
-peer) are also gathered by the application. This is done using the standard
-method provided by the ``peerConnection`` object, i.e using its method
+In addition to the KMS WebRTC statistics, client-side (i.e. browser WebRTC peer)
+stats are also gathered by the application. This is done using the standard
+method provided by the ``RTCPeerConnection`` object, i.e using its method
 ``getStats``. Please check out the JavaScript logic located in the
 `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-loopback-stats/js/index.js>`__
 file for implementation details.

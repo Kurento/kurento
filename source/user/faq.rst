@@ -32,7 +32,7 @@ What are STUN and TURN?
 
 .. note::
 
-   **Every TURN server supports STUN**, because a TURN server is just really a STUN server with added relaying functionality built in. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
+   **Every TURN server supports STUN**, because TURN is just an extension of STUN, to provide for a network relay. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
 
 
 
@@ -163,7 +163,7 @@ Then, follow these steps:
 
    .. note::
 
-      **Every TURN server supports STUN**, because a TURN server is just really a STUN server with added relaying functionality built in. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
+      **Every TURN server supports STUN**, because TURN is just an extension of STUN, to provide for a network relay. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
 
    The following ports should be open in the firewall or your cloud machine's *Security Groups*:
 

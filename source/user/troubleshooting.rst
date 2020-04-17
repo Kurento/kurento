@@ -61,7 +61,7 @@ Then, please provide us with information about the crash:
 Other Media Server issues
 =========================
 
-``GStreamer-CRITICAL **`` messages in the log
+``GStreamer-CRITICAL`` messages in the log
 ---------------------------------------------
 
 GLib and GStreamer are libraries that use a lot of internal ``assert()`` functions to check for valid conditions whenever a function is called. Normally, these are meant to catch programming bugs in their own source code; when (if) any of these checks fail, a warning message is printed to the logs. The media server won't be brought down in this situation, but a bug in any of Kurento's underlying 3rd-party libraries will have an adverse effect on Kurento itself sooner or later. So, it's in our best interest to watch out for these. Report them to us if you see any! ;-)

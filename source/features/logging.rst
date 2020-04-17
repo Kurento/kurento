@@ -119,14 +119,14 @@ From that baseline, one can add any other values to extend the amount of informa
 
   .. code-block:: text
 
-     export GST_DEBUG="${GST_DEBUG:-3},kmsiceniceagent:5,kmswebrtcsession:5,webrtcendpoint:4"
+     export GST_DEBUG="${GST_DEBUG:-3},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
 
   .. note::
 
      - See also :ref:`logging-libnice` to enable advanced logging.
-     - *kmsiceniceagent* shows messages from the Nice Agent (low-level handling of candidates).
-     - *kmswebrtcsession* shows messages from the KMS WebRtcSession class (broarder decision logic).
-     - *webrtcendpoint* shows messages from the WebRtcEndpoint (very basic logging).
+     - *webrtcendpoint* shows detailed messages from the WebRtcEndpoint (good enough for most cases).
+     - *kmswebrtcsession* shows messages from the internal WebRtcSession class (broarder decision logic).
+     - *kmsiceniceagent* shows messages from the *libnice* Agent (very low-level, probably too verbose for day to day troubleshooting).
 
 - Player
 

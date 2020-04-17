@@ -150,16 +150,17 @@ A. Simply upgrade all system packages. This is the standard procedure expected b
 
       sudo apt-get update && sudo apt-get dist-upgrade
 
-  Keep in mind that this is the recommended method only for server installations of Debian/Ubuntu, not for Docker containers. The `Best practices for writing Dockerfiles <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get>`__ recommends against running ``upgrade`` or ``dist-upgrade`` inside Docker containers.
+  However, don't do this inside a Docker container. Running ``upgrade`` or ``dist-upgrade`` is frowned upon by the `Docker best practices <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get>`__; instead, you should just move to a newer version of the Kurento Docker image.
 
 B. Completely uninstall the old Kurento version, and install the new one.
 
-   Note however that **apt-get doesn't remove all dependencies** that were installed with Kurento. You will need to use *aptitude* for this, which works better than *apt-get*:
+   Note however that **apt-get doesn't remove all dependencies** that were installed with Kurento. We recommend that you use *aptitude* for this, which works much better:
 
    .. code-block:: bash
 
-      sudo aptitude remove kurento-media-server
-      sudo apt-get update && sudo apt-get install kurento-media-server
+      sudo aptitude remove '?installed?version(kurento)'
+      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+          kurento-media-server
 
 Be careful! If you don't follow one of these methods, then you'll probably end up with a **mixed installation of old and new packages**. You don't want that to happen: it is a surefire way to get wrong behaviors and crashes.
 
@@ -178,7 +179,7 @@ Be careful! If you don't follow one of these methods, then you'll probably end u
    - ``openwebrtc-gst-plugins``
    - And more
 
-   When installing a new version, **you have to upgrade all of them**, not only the first one.
+   When upgrading to a new version, **you have to upgrade all Kurento packages**, not only the first one.
 
 
 
@@ -193,7 +194,7 @@ In most cases, STUN is effective in addressing the NAT issue with most consumer 
 
 .. note::
 
-   **Every TURN server supports STUN**, because a TURN server is just really a STUN server with added relaying functionality built in. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
+   **Every TURN server supports STUN**, because TURN is just an extension of STUN, to provide for a network relay. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
 
 The STUN/TURN server is configured to use a range of UDP & TCP ports. All those ports should also be opened to all traffic, in the server's network configuration or security group.
 
