@@ -17,8 +17,10 @@ Vcs-Git: https://github.com/Kurento/kms-datachannelexample.git
 Package: kms-datachannelexample
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends},
- ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ gstreamer1.5-plugins-bad,
+ gstreamer1.5-plugins-base,
+ gstreamer1.5-x
 Description: Kurento WebRTC DataChannel example
 
 Package: kms-datachannelexample-dev
