@@ -110,7 +110,13 @@ kms_show_data_init (KmsShowData *self)
   self->priv = KMS_SHOW_DATA_GET_PRIVATE (self);
 
   self->priv->text_overlay = gst_element_factory_make ("textoverlay", NULL);
-  g_object_set (self->priv->text_overlay, "font-desc", "Sans 26", NULL);
+
+  if (self->priv->text_overlay == NULL) {
+    GST_ERROR_OBJECT (self, "Cannot create element: textoverlay");
+    return;
+  }
+
+  g_object_set (self->priv->text_overlay, "font-desc", "sans-serif, 26", NULL);
   gst_bin_add (GST_BIN (self), self->priv->text_overlay);
 
   kms_show_data_connect_video (self, kms_element_get_video_agnosticbin (KMS_ELEMENT (self)));
