@@ -1,6 +1,6 @@
 Source: kms-datachannelexample
-Maintainer: Kurento <kurento@googlegroups.com>
 Priority: optional
+Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
  cmake,
  kms-core-dev,
@@ -10,9 +10,9 @@ Build-Depends: debhelper (>= 9),
  libopencv-dev,
  pkg-config
 Standards-Version: 4.0.0
-Homepage: www.kurento.org
-Vcs-Browser: https://github.com/Kurento/kms-datachannelexample
 Vcs-Git: https://github.com/Kurento/kms-datachannelexample.git
+Vcs-Browser: https://github.com/Kurento/kms-datachannelexample
+Homepage: https://www.kurento.org
 
 Package: kms-datachannelexample
 Architecture: any
@@ -32,3 +32,9 @@ Depends: kms-datachannelexample (= ${binary:Version}),
  kms-filters-dev,
  libopencv-dev
 Description: Kurento WebRTC DataChannel example - Development files
+
+Package: kms-datachannelexample-dbg
+Architecture: any
+Section: debug
+Depends: kms-datachannelexample (= ${binary:Version})
+Description: Kurento WebRTC DataChannel example - Debugging symbols
