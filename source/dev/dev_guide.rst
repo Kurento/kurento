@@ -263,43 +263,6 @@ You can set the logging level of specific categories by exporting the environmen
 
 
 
-KMS Unit Tests
---------------
-
-KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). To build and run all tests, change the last one of the build commands from ``make`` to ``make check``. All available tests will run, and a summary report will be shown at the end.
-
-.. note::
-
-   It is recommended to first disable GStreamer log colors, that way the resulting log files won't contain extraneous escape sequences such as ``^[[31;01m ^[[00m``. Also, it could be useful to specify a higher logging level than the default; set the environment variable *GST_DEBUG*, as explained in :ref:`logging-levels`.
-
-   The complete command would look like this:
-
-   .. code-block:: bash
-
-      export GST_DEBUG_NO_COLOR=1
-      export GST_DEBUG="3,check:5"
-      make check
-
-The log output of the whole test suite will get saved into the file *./Testing/Temporary/LastTest.log*. To find the starting point of each individual test inside this log file, search for the words "*test start*". For the start of a specific test, search for "*{TestName}: test start*". For example:
-
-.. code-block:: text
-
-   webrtcendpoint.c:1848:test_vp8_sendrecv: test start
-
-To build and run one specific test, use ``make {TestName}.check``. For example:
-
-.. code-block:: text
-
-   make test_agnosticbin.check
-
-If you want to analyze memory usage with Valgrind, use ``make {TestName}.valgrind``. For example:
-
-.. code-block:: text
-
-   make test_agnosticbin.valgrind
-
-
-
 Clean up your system
 --------------------
 
@@ -548,6 +511,8 @@ This allows for the fastest development cycle, however the specific instructions
 
 
 
+.. _dev-packages:
+
 Create Deb packages
 ===================
 
@@ -592,6 +557,52 @@ For example, say you want to build the current *kms-core* development branch aga
        --mount type=bind,src="$PWD",dst=/hostdir \
        kurento/kurento-buildpackage:xenial \
        --install-kurento 6.12.0
+
+
+
+Unit Tests
+==========
+
+KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). If you are developing KMS and :ref:`building from sources <dev-sources>`, you can build and run unit tests manually: just change the last one of the build commands from ``make`` to ``make check``. All available tests will run, and a summary report will be shown at the end.
+
+.. note::
+
+   It is recommended to first disable GStreamer log colors, that way the resulting log files won't contain extraneous escape sequences such as ``^[[31;01m ^[[00m``. Also, it could be useful to specify a higher logging level than the default; set the environment variable *GST_DEBUG*, as explained in :ref:`logging-levels`.
+
+   The complete command would look like this:
+
+   .. code-block:: bash
+
+      export GST_DEBUG_NO_COLOR=1
+      export GST_DEBUG="3,check:5"
+      make check
+
+The log output of the whole test suite will get saved into the file *./Testing/Temporary/LastTest.log*. To find the starting point of each individual test inside this log file, search for the words "**test start**". For the start of a specific test, search for "**{TestName}: test start**". For example:
+
+.. code-block:: text
+
+   webrtcendpoint.c:1848:test_vp8_sendrecv: test start
+
+To build and run one specific test, use ``make {TestName}.check``. For example:
+
+.. code-block:: text
+
+   make test_agnosticbin.check
+
+If you want to analyze memory usage with Valgrind, use ``make {TestName}.valgrind``. For example:
+
+.. code-block:: text
+
+   make test_agnosticbin.valgrind
+
+
+
+How to disable tests
+--------------------
+
+Debian tools will automatically run unit tests as part of the :ref:`package creation <dev-packages>` process. However, for special situations during development, we might want to temporarily disable testing before creating an experimental package. For example, say you are investigating an issue, and want to see what happens if you force a crash in some point of the code; or maybe you want to temporarily change a module's behavior but it breaks some unit test.
+
+It is possible to skip building and running unit tests automatically, by editing the file *debian/rules* and changing the *auto_configure* rule from ``-DGENERATE_TESTS=TRUE`` to ``-DGENERATE_TESTS=FALSE -DDISABLE_TESTS=TRUE``.
 
 
 
