@@ -203,52 +203,9 @@ this media elements is connected itself:
       });
    });
 
-In the following snippet, we can see ``getStats`` method. This method returns several
-statistic values of **WebRtcEndpoint**.
-
-.. sourcecode:: javascript
-
-   function getBrowserOutgoingVideoStats(webRtcPeer, callback) {
-     var peerConnection = webRtcPeer.peerConnection;
-
-     peerConnection.getStats(function(stats) {
-       var results = stats.result();
-
-       for (var i = 0; i < results.length; i++) {
-         var res = results[i];
-         if (res.type != 'ssrc') continue;
-
-         //Publish it to be compliant with W3C stats draft
-         var retVal = {
-           timeStamp: res.timestamp,
-           //StreamStats below
-           associateStatsId: res.id,
-           codecId: "--",
-           firCount: res.stat('googFirsReceived'),
-           isRemote: false,
-           mediaTrackId: res.stat('googTrackId'),
-           nackCount: res.stat('googNacksReceived'),
-           pliCount: res.stat('googPlisReceived'),
-           sliCount: 0,
-           ssrc: res.stat('ssrc'),
-           transportId: res.stat('transportId'),
-           //Specific outbound below
-           bytesSent: res.stat('bytesSent'),
-           packetsSent: res.stat('packetsSent'),
-           roundTripTime: res.stat('googRtt'),
-           packetsLost: res.stat('packetsLost'),
-           targetBitrate: "??",
-           remb: "??"
-         }
-         return callback(null, retVal);
-       }
-       return callback("Error: could not find ssrc type on track stats", null);
-     }, localVideoTrack);
-   }
-
 .. note::
 
-   The :term:`TURN` and :term:`STUN` servers to be used can be configured simple adding
+   The :term:`TURN` and :term:`STUN` servers to be used can be configured simply adding
    the parameter ``ice_servers`` to the application URL, as follows:
 
    .. sourcecode:: bash
