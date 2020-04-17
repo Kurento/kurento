@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
 # Uninstall every packge related to KMS and its development.
-#
-# Sources:
-# - Installation scripts.
-# - Installing KMS and running `aptitude search '~mkurento'`.
 
 
 
@@ -33,43 +29,7 @@ source "$BASEPATH/../bash.conf.sh" || {
 # Uninstall everything
 # --------------------
 
-PACKAGES=(
-    # Main+Extra packages
-    '^(kms|kurento).*'
-
-    # Fork packages
-    '^kmsjsoncpp.*'
-    '^libsrtp.*'
-    '^openh264(-gst-plugins-bad-1.5)?'
-    '^libusrsctp.*'
-    '^(lib)?gstreamer.*1.5.*'
-    '^gir1.2-gst.*1.5'
-    '^openwebrtc-gst-plugins.*'
-    gir1.2-nice-0.1
-    '^lib(nice|s3-2).*'
-
-    # System libraries
-    '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
-    '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
-    '^srtp-.*'
-    uuid-dev
-
-    # Packages installed by kurento-module-creator
-    #libmaven-assembly-plugin-java
-    #libmaven-compiler-plugin-java
-    #libfreemarker-java
-    #libgoogle-gson-java
-    #libslf4j-java
-    #junit4
-    #libcommons-cli-java
-    #libwagon-java
-)
-
-# Run a loop over all names and uninstall them.
-# apt-get won't allow unexisting names, so we cannot do it the fancy way
-# and uninstall everything on a single command. Blame's on you, apt-get.
-for PACKAGE in "${PACKAGES[@]}"; do
-    apt-get purge --auto-remove --yes "$PACKAGE" || { echo "Skip unexisting"; }
-done
+service kurento-media-server stop || true
+aptitude purge '?installed?version(kurento)'
 
 echo "All packages uninstalled successfully"
