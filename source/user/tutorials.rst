@@ -2,7 +2,15 @@
 Tutorials
 =========
 
-This section contains tutorials showing how to use Kurento framework to build different types of :term:`WebRTC` and multimedia applications. These tutorials come in three flavors:
+This section contains tutorials showing how to use the Kurento framework to build different types of :term:`WebRTC` and multimedia applications.
+
+.. note::
+
+   These tutorials have been created with **learning purposes**. They don't have comprehensive error handling, or any kind of sophisticated session management. As such, *these tutorials should not be used in production environments*; they only show example code for you to study, in order to achieve what you want with your own code.
+
+   **Use at your own risk!**
+
+These tutorials come in three flavors:
 
 - **Java**: Showing applications where clients interact with *Spring Boot*-based
   applications, that host the logic orchestrating the communication among clients and control Kurento Media Server capabilities.
@@ -23,11 +31,6 @@ This section contains tutorials showing how to use Kurento framework to build di
 - **Browser JavaScript**: These show applications executing at the browser and communicating directly with the Kurento Media Server. In these tutorials all logic is directly hosted by the browser. Hence, no application server is necessary.
 
 - **Node.js**: In which clients interact with an application server made with Node.js technology. The application server holds the logic orchestrating the communication among the clients and controlling Kurento Media Server capabilities for them.
-
-.. note::
-
-   The tutorials have been created with learning objectives. They are not intended to be used in production environments where different unmanaged error conditions may emerge.
-   **Use at your own risk!**
 
 .. note::
 
