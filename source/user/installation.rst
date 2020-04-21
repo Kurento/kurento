@@ -142,21 +142,21 @@ Log messages from KMS will be available in ``/var/log/kurento-media-server/``. F
 Local Upgrade
 =============
 
-To upgrade a previous local installation of Kurento Media Server, you will edit the file */etc/apt/sources.list.d/kurento.list* and set a new version number, just like described in :ref:`installation-local`.
+To upgrade a local installation of Kurento Media Server, you have to edit the file ``/etc/apt/sources.list.d/kurento.list`` that was created on :ref:`installation-local`, to write the new version number. After changing that file, you can choose between 2 options to actually apply the upgrade:
 
-After the *kurento.list* file has been changed, there are 2 options to actually apply the upgrade:
+A. **Upgrade all system packages**.
 
-A. **Upgrade all system packages**. This is the standard procedure expected by Debian & Ubuntu maintainer methodology. Upgrading all system packages is a way to ensure that everything is set to the latest version, and all bug fixes & security updates are applied too, so this is the most recommended method:
+   This is the standard procedure expected by Debian & Ubuntu maintainer methodology. Upgrading all system packages is a way to ensure that everything is set to the latest version, and all bug fixes & security updates are applied too, so this is the most recommended method:
 
    .. code-block:: bash
 
       sudo apt-get update && sudo apt-get dist-upgrade
 
-  However, don't do this inside a Docker container. Running ``apt-get upgrade`` or ``apt-get dist-upgrade`` is frowned upon by the `Docker best practices <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get>`__; instead, you should just move to a newer version of the Kurento Docker image.
+   However, don't do this inside a Docker container. Running *apt-get upgrade* or *apt-get dist-upgrade* is frowned upon by the `Docker best practices <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get>`__; instead, you should just move to a newer version of the Kurento Docker image.
 
-B. **Uninstall the old Kurento version**, and then install the new one.
+B. **Uninstall the old Kurento version**, before installing the new one.
 
-   Note however that **apt-get is not good enough** to remove all of Kurento packages. We recommend that you use **aptitude** for this, which works much better than *apt-get*:
+   Note however that **apt-get is not good enough** to remove all of Kurento packages. We recommend that you use *aptitude* for this, which works much better than *apt-get*:
 
    .. code-block:: bash
 
@@ -167,9 +167,7 @@ B. **Uninstall the old Kurento version**, and then install the new one.
 
 .. note::
 
-   Be careful! If you fail to upgrade **all** Kurento packages, you will get wrong behaviors and **crashes**.
-
-   Kurento is composed of several packages:
+   Be careful! If you fail to upgrade **all** Kurento packages, you will get wrong behaviors and **crashes**. Kurento is composed of several packages:
 
    - ``kurento-media-server``
    - ``kurento-module-creator``
@@ -182,7 +180,7 @@ B. **Uninstall the old Kurento version**, and then install the new one.
    - ``openwebrtc-gst-plugins``
    - And more
 
-   When upgrading to a new version, **you have to upgrade all Kurento packages**, not only the first one.
+   To use a newer version **you have to upgrade all Kurento packages**, not only the first one.
 
 
 
