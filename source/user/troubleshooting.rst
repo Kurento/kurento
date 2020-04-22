@@ -391,8 +391,8 @@ The solution is to ensure that both peers are able to find a match in their supp
 
 
 
-Networking issues
-=================
+Network issues
+==============
 
 Have a look at these articles about troubleshooting WebRTC:
 

@@ -2,6 +2,8 @@
 Frequently Asked Questions
 ==========================
 
+.. _faq-nat-ice-stun-turn:
+
 About NAT, ICE, STUN, TURN
 ==========================
 
@@ -186,6 +188,19 @@ Then, follow these steps:
    - If you configured Coturn to act just as a STUN server, use an URI with this format: ``stun:<CoturnIp>:<CoturnPort>``.
    - If you left the default settings, then Coturn will act as both STUN and TURN server. Use an URI like this: ``turn:<CoturnIp>:<CoturnPort>``, and also write the ``<TurnUser>`` and ``<TurnPassword>``.
    - Finally, click on "*Gather candidates*" and check that you get candidates of type "**srflx**" (STUN) and "**relay**" (TURN).
+
+
+
+Readings
+--------
+
+Here is a collection of all Kurento material talking about NAT, ICE, STUN, TURN:
+
+* Frequently Asked Questions: :ref:`faq-nat-ice-stun-turn`
+* Glossary: :term:`ICE`; :term:`STUN`; :term:`TURN`; :term:`NAT traversal`
+* Installing and configuring Kurento: :ref:`installation-stun-turn`
+* Troubleshooting network issues: :ref:`troubleshooting-webrtc-connection`
+* Advanced knowledge: :doc:`/knowledge/nat`
 
 
 
