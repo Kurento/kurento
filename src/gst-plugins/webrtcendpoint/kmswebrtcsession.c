@@ -304,6 +304,8 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
   const GstSDPMedia *media;
   const GstDebugLevel dbg = (allow_error ? GST_LEVEL_DEBUG : GST_LEVEL_ERROR);
 
+  const gchar *candidate_str = kms_ice_candidate_get_candidate (candidate);
+
   if (sdp_sess->remote_sdp == NULL) {
     GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
         "Adding remote candidate to remote SDP:"
@@ -323,8 +325,8 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
 
   if (index >= gst_sdp_message_medias_len (sdp_sess->remote_sdp)) {
     GST_ERROR_OBJECT (self,
-        "Adding remote candidate to remote SDP:"
-        " Invalid media index: %u", index);
+        "Adding candidate to remote SDP:"
+        " Invalid media index: %u, remote: '%s'", index, candidate_str);
     return;
   }
 
@@ -332,18 +334,18 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
 
   if (media == NULL) {
     GST_ERROR_OBJECT (self,
-        "Adding remote candidate to remote SDP:"
-        " No media with index: %u", index);
+        "Adding candidate to remote SDP:"
+        " No media with index: %u, remote: '%s'", index, candidate_str);
   } else {
     /* TODO: Candidates should be added using extensions */
     sdp_media_add_ice_candidate ((GstSDPMedia *) media, self->agent, candidate);
-    GST_DEBUG_OBJECT (self, "Added remote candidate to remote SDP");
+    GST_DEBUG_OBJECT (self, "Added candidate to remote SDP, remote: '%s'",
+        candidate_str);
   }
 }
 
 static void
-kms_webrtc_session_remote_sdp_add_stored_ice_candidates (KmsWebrtcSession *self,
-    gboolean allow_error)
+kms_webrtc_session_remote_sdp_add_stored_ice_candidates (KmsWebrtcSession *self)
 {
   guint i;
   guint len = g_slist_length (self->remote_candidates);
@@ -351,7 +353,9 @@ kms_webrtc_session_remote_sdp_add_stored_ice_candidates (KmsWebrtcSession *self,
   for (i = 0; i < len; i++) {
     KmsIceCandidate *candidate = g_slist_nth_data (self->remote_candidates, i);
 
-    kms_webrtc_session_remote_sdp_add_ice_candidate (self, candidate, allow_error);
+    // allow_error: FALSE, because at this point the remote SDP should
+    // have been received already
+    kms_webrtc_session_remote_sdp_add_ice_candidate (self, candidate, FALSE);
   }
 }
 
@@ -366,6 +370,8 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   KmsSdpMediaHandler *handler;
   gchar *stream_id;
+
+  const gchar *candidate_str = kms_ice_candidate_get_candidate (candidate);
 
   if (!self->gather_started) {
     GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
@@ -399,7 +405,8 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (index >= gst_sdp_message_medias_len (sdp_sess->local_sdp)) {
     GST_ERROR_OBJECT (self,
-        "[AddIceCandidate] Invalid media index: %u", index);
+        "[AddIceCandidate] Invalid media index: %u, remote: '%s'", index,
+        candidate_str);
     return FALSE;
   }
 
@@ -407,14 +414,15 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (media == NULL) {
     GST_ERROR_OBJECT (self,
-        "[AddIceCandidate] No media with index: %u", index);
+        "[AddIceCandidate] No media with index: %u, remote: '%s'", index,
+        candidate_str);
     return FALSE;
   }
 
   if (gst_sdp_media_get_port (media) == 0) {
     GST_DEBUG_OBJECT (self,
-        "[AddIceCandidate] Unwanted media (port = 0): %s, index: %u",
-        gst_sdp_media_get_media (media), index);
+        "[AddIceCandidate] Unwanted media (port = 0): %s, index: %u, remote: '%s'",
+        gst_sdp_media_get_media (media), index, candidate_str);
     return TRUE;
   }
 
@@ -423,8 +431,8 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (handler == NULL) {
     GST_ERROR_OBJECT (self,
-        "[AddIceCandidate] No handler for media: %s, index: %u",
-        gst_sdp_media_get_media (media), index);
+        "[AddIceCandidate] No handler for media: %s, index: %u, remote: '%s'",
+        gst_sdp_media_get_media (media), index, candidate_str);
     return FALSE;
   }
 
@@ -433,26 +441,28 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
 
   if (stream_id == NULL) {
     GST_ERROR_OBJECT (self,
-        "[AddIceCandidate] No stream_id, index: %u", index);
+        "[AddIceCandidate] No stream_id, index: %u, remote: '%s'", index,
+        candidate_str);
     return FALSE;
   }
 
   if (!kms_ice_base_agent_add_ice_candidate (self->agent, candidate,
       stream_id)) {
     GST_ERROR_OBJECT (self,
-        "[AddIceCandidate] Parsing failed, stream_id: '%s'", stream_id);
+        "[AddIceCandidate] Parsing failed, stream_id: '%s', remote: '%s'",
+        stream_id, candidate_str);
     return FALSE;
   }
 
   GST_DEBUG_OBJECT (self,
-      "[AddIceCandidate] Added successfully, stream_id: '%s'", stream_id);
+      "[AddIceCandidate] Added successfully, stream_id: '%s', remote: '%s'",
+      stream_id, candidate_str);
 
   return TRUE;
 }
 
 static void
-kms_webrtc_session_agent_add_stored_ice_candidates (KmsWebrtcSession * self,
-    gboolean allow_error)
+kms_webrtc_session_agent_add_stored_ice_candidates (KmsWebrtcSession * self)
 {
   guint i;
   guint len = g_slist_length (self->remote_candidates);
@@ -460,8 +470,9 @@ kms_webrtc_session_agent_add_stored_ice_candidates (KmsWebrtcSession * self,
   for (i = 0; i < len; i++) {
     KmsIceCandidate *candidate = g_slist_nth_data (self->remote_candidates, i);
 
-    if (!kms_webrtc_session_agent_add_ice_candidate (self, candidate,
-        allow_error)) {
+    // allow_error: FALSE, because at this point the local SDP should
+    // have been generated, and the gathering process started already
+    if (!kms_webrtc_session_agent_add_ice_candidate (self, candidate, FALSE)) {
       return;
     }
   }
@@ -836,9 +847,7 @@ kms_webrtc_session_gather_candidates (KmsWebrtcSession * self)
     self->gather_started = TRUE;
 
     GST_DEBUG_OBJECT (self, "[IceGatheringStarted] Add stored remote candidates");
-    // Allow errors: FALSE, because at this point the remote SDP should have been
-    // received already, and the gathering process is started already
-    kms_webrtc_session_agent_add_stored_ice_candidates (self, FALSE);
+    kms_webrtc_session_agent_add_stored_ice_candidates (self);
   }
 
   KMS_SDP_SESSION_UNLOCK (self);
@@ -1574,16 +1583,11 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
         gst_sdp_media_get_media (neg_media), index);
   }
 
-  // Allow errors: FALSE, because at this point the remote SDP should have been
-  // received already
-  kms_webrtc_session_remote_sdp_add_stored_ice_candidates (self, FALSE);
+  kms_webrtc_session_remote_sdp_add_stored_ice_candidates (self);
 
   if (self->gather_started) {
     GST_DEBUG_OBJECT (self, "Start transport: Add stored remote candidates");
-
-    // Allow errors: FALSE, because at this point the remote SDP should have been
-    // received already, and the gathering process is started already
-    kms_webrtc_session_agent_add_stored_ice_candidates (self, FALSE);
+    kms_webrtc_session_agent_add_stored_ice_candidates (self);
   }
   else {
     GST_DEBUG_OBJECT (self, "Start transport:"
