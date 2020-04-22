@@ -191,10 +191,10 @@ Then, follow these steps:
 
 
 
-Readings
---------
+Readings about NAT, ICE, STUN, TURN
+-----------------------------------
 
-Here is a collection of all Kurento material talking about NAT, ICE, STUN, TURN:
+Here is a collection of all Kurento material talking about these topics:
 
 * Frequently Asked Questions: :ref:`faq-nat-ice-stun-turn`
 * Glossary: :term:`ICE`; :term:`STUN`; :term:`TURN`; :term:`NAT traversal`
