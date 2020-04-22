@@ -518,7 +518,8 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
   if (nice_agent_set_remote_candidates (nice_agent->priv->agent,
           nice_cand->stream_id, nice_cand->component_id, candidates) < 0) {
     GST_WARNING_OBJECT (self,
-        "[AddIceCandidate] Error in libnice, remote candidate NOT added");
+        "[AddIceCandidate] Error in libnice, adding remote: '%s'",
+        kms_ice_candidate_get_candidate (candidate));
     ret = FALSE;
   } else {
     ret = TRUE;
