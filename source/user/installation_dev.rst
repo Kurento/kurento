@@ -42,13 +42,9 @@ Kurento's Docker Hub contains images built from each KMS nightly version. Just h
 Local Installation
 ------------------
 
-The steps to install a nightly version of Kurento Media Server are pretty much the same as those explained in :ref:`installation-local`, with the only change of using a different package repository.
+The steps to install a nightly version of Kurento Media Server are pretty much the same as those explained in :ref:`installation-local` -- with the only change of using ``dev`` instead of a version number, in the file ``/etc/apt/sources.list.d/kurento.list``.
 
-.. note::
-
-   This section applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
-
-To install KMS, start from a clean machine (**with no KMS or any of its dependencies already installed**). Open a terminal, and follow these steps:
+Open a terminal and run these commands:
 
 1. Make sure that GnuPG is installed.
 
@@ -77,12 +73,16 @@ To install KMS, start from a clean machine (**with no KMS or any of its dependen
 
 3. Install KMS:
 
+   .. note::
+
+      This step applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
+
    .. code-block:: text
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           kurento-media-server
 
-This will install the latest KMS nightly version.
+   This will install the nightly version of Kurento Media Server.
 
 
 

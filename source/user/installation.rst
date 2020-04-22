@@ -86,11 +86,7 @@ Local Installation
 
 With this method, you will install Kurento Media Server from the native Ubuntu package repositories made available by the Kurento project. KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
 
-.. note::
-
-   This section applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
-
-To install KMS, start from a clean machine (**with no KMS or any of its dependencies already installed**). Open a terminal, and follow these steps:
+Open a terminal and run these commands:
 
 1. Make sure that GnuPG is installed.
 
@@ -119,12 +115,16 @@ To install KMS, start from a clean machine (**with no KMS or any of its dependen
 
 3. Install KMS:
 
+   .. note::
+
+      This step applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
+
    .. code-block:: text
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           kurento-media-server
 
-This will install the release KMS version.
+   This will install the release version of Kurento Media Server.
 
 The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 
@@ -142,7 +142,7 @@ Log messages from KMS will be available in ``/var/log/kurento-media-server/``. F
 Local Upgrade
 =============
 
-To upgrade a local installation of Kurento Media Server, you have to edit the file ``/etc/apt/sources.list.d/kurento.list`` that was created on :ref:`installation-local`, to write the new version number. After changing that file, you can choose between 2 options to actually apply the upgrade:
+To upgrade a local installation of Kurento Media Server, you have to write the new version number into the file ``/etc/apt/sources.list.d/kurento.list``, which was created during :ref:`installation-local`. After editing that file, you can choose between 2 options to actually apply the upgrade:
 
 A. **Upgrade all system packages**.
 
@@ -152,7 +152,7 @@ A. **Upgrade all system packages**.
 
       sudo apt-get update && sudo apt-get dist-upgrade
 
-   However, don't do this inside a Docker container. Running *apt-get upgrade* or *apt-get dist-upgrade* is frowned upon by the `Docker best practices <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get>`__; instead, you should just move to a newer version of the Kurento Docker image.
+   However, don't do this inside a Docker container. Running *apt-get upgrade* or *apt-get dist-upgrade* is frowned upon by the `Docker best practices`_; instead, you should just move to a newer version of the `Kurento Docker images`_.
 
 B. **Uninstall the old Kurento version**, before installing the new one.
 
@@ -298,10 +298,14 @@ You should get a response similar to this one:
    HTTP/1.1 500 Internal Server Error
    Server: WebSocket++/0.7.0
 
-Ignore the error line: it is an expected error, because ``curl`` does not talk the Kurento protocol. We just checked that the ``WebSocket++`` server is actually up, and listening for connections. If you wanted, you could automate this check with a script similar to `healthchecker.sh`_, the one we use in Kurento Docker images.
+Ignore the error line: it is an expected error, because ``curl`` does not talk the Kurento protocol. We just checked that the ``WebSocket++`` server is actually up, and listening for connections. If you wanted, you could automate this check with a script similar to `healthchecker.sh`_, the one we use in `Kurento Docker images`_.
 
 
+
+.. Links
 
 .. _Amazon Web Services: https://aws.amazon.com
 .. _Coturn: https://github.com/coturn/coturn
 .. _healthchecker.sh: https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh
+.. _Docker best practices: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get
+.. _Kurento Docker images: https://hub.docker.com/r/kurento/kurento-media-server
