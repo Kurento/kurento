@@ -1,8 +1,9 @@
-kms-filters (6.13.1-0kurento1) UNRELEASED; urgency=medium
+kms-filters (6.13.2-0kurento1) UNRELEASED; urgency=medium
 
   * UNRELEASED
+  * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Thu, 19 Dec 2019 19:17:38 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 22 Apr 2020 19:44:11 +0200
 
 kms-filters (6.13.0-0kurento1) testing; urgency=medium
 
