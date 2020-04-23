@@ -35,7 +35,19 @@ var args = getopts(location.search,
 {
   default:
   {
+    // Non-secure WebSocket (only for localhost tests)
+    //ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+
+    // Secure WebSocket (for localhost and remote tests)
+    // To use this, you have to enable the "mediaServer.net.websocket.secure"
+    // KMS setting in "kurento.conf.json".
+    //
+    // Also, note that most browsers will reject self-signed certificates for
+    // Secure WebSockets connections. You have to either use a proper
+    // certificate, or install your self-signed Root CA in the browser. For this
+    // last option, we recommend using the tool "mkcert".
     ws_uri: 'wss://' + location.hostname + ':8433/kurento',
+
     ice_servers: undefined
   }
 });
