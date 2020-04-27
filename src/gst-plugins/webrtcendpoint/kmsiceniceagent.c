@@ -274,6 +274,12 @@ kms_ice_nice_agent_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
+  // nice_agent_remove_stream(), called from kms_ice_nice_agent_remove_stream(),
+  // is an asynchronous function. Run a last iteration of its GMainLoop context
+  // in order to allow it run and release all resources and object references.
+  g_main_context_wakeup (self->priv->context);
+  g_main_context_iteration (self->priv->context, FALSE);
+
   g_clear_object (&self->priv->agent);
   g_slist_free_full (self->priv->remote_candidates, g_object_unref);
 
