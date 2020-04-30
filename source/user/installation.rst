@@ -8,7 +8,9 @@ Installation Guide
 
 * :ref:`Using the Kurento Docker images <installation-docker>`. Docker allows to run Kurento in any host machine, so for example it's possible to run KMS on top of a Fedora or CentOS system. In theory it could even be possible to run under Windows, but so far that possibility hasn't been explored by the Kurento team, so you would be at your own risk.
 
-* :ref:`Setting up a local installation <installation-local>` with ``apt-get install``. This method allows to have total control of the installation process. Besides installing KMS, a common need is also :ref:`installing a STUN/TURN server <installation-stun-turn>`, especially if KMS or any of its clients are located behind a :ref:`Symmetric NAT <nat-symmetric>` or firewall.
+* :ref:`Setting up a local installation <installation-local>` with ``apt-get install``. This method allows to have total control of the installation process.
+
+Besides installing KMS, a common need is also :ref:`installing a STUN/TURN server <installation-stun-turn>`, especially if KMS or any of its clients are located behind a :term:`NAT` router or firewall.
 
 If you want to try nightly builds of KMS, then head to the section :doc:`/user/installation_dev`.
 
@@ -45,13 +47,13 @@ Follow these steps to use it:
 
    4.4. **SSHLocation**: For security reasons you may need to restrict SSH traffic to allow connections only from specific locations. For example, from your home or office.
 
-   4.5. **TurnUser**: User name for the TURN server.
+   4.5. **TurnUser**: User name for the TURN relay.
 
-   4.6. **TurnPassword**: Password required to use the TURN server.
+   4.6. **TurnPassword**: Password required to use the TURN relay.
 
         .. note::
 
-           The template file includes *Coturn* as a :term:`TURN` server. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
+           The template file includes *Coturn* as a :term:`STUN` server and :term:`TURN` relay. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
 
 5. Finish the Stack creation process. Wait until the status of the newly created Stack reads *CREATE_COMPLETE*.
 
@@ -186,77 +188,20 @@ B. **Uninstall the old Kurento version**, before installing the new one.
 
 .. _installation-stun-turn:
 
-STUN and TURN servers
-=====================
+STUN/TURN server install
+========================
 
-If Kurento Media Server, its Application Server, or any of the clients are located behind a :term:`NAT`, you need to use a :term:`STUN` or a :term:`TURN` server in order to achieve :term:`NAT traversal`. You can read more about this topic here: :doc:`/knowledge/nat`.
+Working with WebRTC *requires* developers to know and have a good understanding about everything related to NAT, ICE, STUN, and TURN. If you don't know about these, you should start reading here: :ref:`faq-nat-ice-stun-turn`.
 
-In most cases, STUN is effective in addressing the NAT issue with most consumer network devices (routers). However, it doesn't work for many corporate networks, so a TURN server becomes necessary.
+Kurento Media Server, just like any WebRTC endpoint, will work fine on its own, for *localhost* connections. You only need to install KMS if all you need are local network connections.
 
-.. note::
+However, sooner or later you will want to make your application work in a cloud environment, and allow KMS to connect with remote clients. The problem is, remote clients will probably want to connect from behind a :term:`NAT` router, so your application needs to perform :term:`NAT Traversal` in the client's router. This can be done by setting up a :term:`STUN` server or a :term:`TURN` relay, and configuring it **in both KMS and the client browser**.
 
-   **Every TURN server supports STUN**, because TURN is just an extension of STUN, to provide for a network relay. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
+These links contain the information needed to finish configuring your Kurento Media Server with a STUN/TURN server:
 
-The STUN/TURN server is configured to use a range of UDP & TCP ports. All those ports should also be opened to all traffic, in the server's network configuration or security group.
-
-For more information about why and when STUN/TURN is needed, check out the FAQ: :ref:`faq-stun`.
-
-
-
-STUN server
------------
-
-To configure a STUN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*:
-
-.. code-block:: bash
-
-   stunServerAddress=<StunServerIp>
-   stunServerPort=<StunServerPort>
-
-The parameter ``StunServerIp`` should be the public IP address of the STUN server. It must be an IP address, **not a domain name**. For example:
-
-.. code-block:: bash
-
-   stunServerAddress=198.51.100.1
-   stunServerPort=3478
-
-.. note::
-
-   Be careful since inline comments (with ``;``) are not allowed for parameters in the configuration files. Thus, the following line **is not correct**:
-
-   .. code-block:: text
-
-      stunServerAddress=198.51.100.1  ; My STUN server
-
-   ... and must be changed to something like this:
-
-   .. code-block:: text
-
-      ; My STUN server
-      stunServerAddress=198.51.100.1
-
-STUN is a very lightweight protocol and maintaining a STUN server is very cheap. For this reason, it should be easy to find some public STUN servers that are made available free of charge, if you don't want to maintain your own.
-
-
-
-TURN server
------------
-
-To configure a TURN server in KMS, uncomment the following lines in the WebRtcEndpoint configuration file, located at */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*:
-
-.. code-block:: bash
-
-   turnURL=<TurnUser>:<TurnPassword>@<TurnServerIp>:<TurnServerPort>
-
-The parameter ``TurnServerIp`` should be the public IP address of the TURN server. It must be an IP address, **not a domain name**. For example:
-
-.. code-block:: bash
-
-   turnURL=myuser:mypassword@198.51.100.1:3478
-
-TURN servers are used to relay audio/video traffic between peers, and for this reason they are expensive to run. It is rare to find public ones that work free of charge while offering good performance, so we recommend that you deploy and maintain your own private TURN server.
-
-`Coturn`_ is an open source implementation of a STUN+TURN server. In the :ref:`STUN FAQ <faq-stun>` section you'll find instructions to install and configure it.
+- :ref:`faq-coturn-install`
+- :ref:`faq-stun-test`
+- :ref:`faq-stun-configure`
 
 
 
@@ -298,7 +243,7 @@ You should get a response similar to this one:
    HTTP/1.1 500 Internal Server Error
    Server: WebSocket++/0.7.0
 
-Ignore the error line: it is an expected error, because ``curl`` does not talk the Kurento protocol. We just checked that the ``WebSocket++`` server is actually up, and listening for connections. If you wanted, you could automate this check with a script similar to `healthchecker.sh`_, the one we use in `Kurento Docker images`_.
+Ignore the error line: it is an expected error, because *curl* does not talk the Kurento protocol. We just checked that the *WebSocket* server is actually up, and listening for connections. If you wanted, you could automate this check with a script similar to `healthchecker.sh`_, the one we use in `Kurento Docker images`_.
 
 
 

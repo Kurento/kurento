@@ -208,7 +208,7 @@ If the machine is disconnected during the actual installation of this package, t
 Missing audio or video streams
 ------------------------------
 
-If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a STUN or TURN server, to traverse through the NAT firewall of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <installation-stun-turn>`.
+If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a :term:`STUN` server or a :term:`TURN` relay, to traverse through the :term:`NAT` firewall of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <faq-coturn-install>`.
 
 
 
@@ -391,34 +391,20 @@ The solution is to ensure that both peers are able to find a match in their supp
 
 
 
-Network issues
-==============
+.. _troubleshooting-webrtc:
 
-Have a look at these articles about troubleshooting WebRTC:
-
-* `Troubleshooting WebRTC Connection Issues <https://blog.addpipe.com/troubleshooting-webrtc-connection-issues/>`__ (`archive <https://web.archive.org/web/20200219144706/https://blog.addpipe.com/troubleshooting-webrtc-connection-issues/>`__).
-* `Common (beginner) mistakes in WebRTC <https://bloggeek.me/common-beginner-mistakes-in-webrtc/>`__ (`archive <https://web.archive.org/web/20200219144856/https://bloggeek.me/common-beginner-mistakes-in-webrtc/>`__).
-
-
-
-.. _troubleshooting-webrtc-connection:
-
-WebRTC connection is not established
-------------------------------------
+WebRTC failures
+===============
 
 There is a multitude of possible reasons for a failed WebRTC connection, so you can start by following this checklist:
 
-* You probably need to deploy an external STUN/TURN server such as Coturn, to make WebRTC connections possible. Read more about all this in the FAQ: :ref:`faq-stun`.
+* Deploy a :term:`STUN`/:term:`TURN` server (such as Coturn), to make remote WebRTC connections possible: :ref:`faq-coturn-install`.
 
-* Check that your STUN/TURN server is working, by using the `Trickle ICE test page <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__:
+* Test if your :term:`STUN`/:term:`TURN` server is working correctly: :ref:`faq-stun-test`.
 
-  - If you just have a STUN server, use an URI with this format: ``stun:<StunServerIp>:<StunServerPort>``.
-  - If you have a full-featured TURN server, use an URI like this: ``turn:<TurnServerIp>:<TurnServerPort>``, and also write the ``<TurnUser>`` and ``<TurnPassword>``.
-  - Finally, click on "*Gather candidates*" and check that you get candidates of type "**srflx**" (STUN) and "**relay**" (TURN).
+* Configure your :term:`STUN`/:term:`TURN` server in Kurento Media Server: :ref:`faq-stun-configure`.
 
-* Configure your STUN/TURN server in Kurento Media Server, as explained here: :ref:`installation-stun-turn`.
-
-* Check the debug logs of your STUN/TURN server. Maybe the server is failing and some useful error messages are being printed in there.
+* Check the debug logs of your :term:`STUN`/:term:`TURN` server. Maybe the server is failing and some useful error messages are being printed in there.
 
 * Check the debug logs of Kurento Media Server. Look for messages that confirm a correct configuration:
 
@@ -438,6 +424,12 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 
 * If WebRTC seems to disconnect exactly after some amount of time, every single time, **watch out for proxy timeouts**. Sometimes you have to extend the timeout for the site that is being hit with the problem.
 
+* Have a look at these articles about troubleshooting WebRTC:
+
+  - `Troubleshooting WebRTC Connection Issues <https://blog.addpipe.com/troubleshooting-webrtc-connection-issues/>`__ (`archive <https://web.archive.org/web/20200219144706/https://blog.addpipe.com/troubleshooting-webrtc-connection-issues/>`__).
+
+  - `Common (beginner) mistakes in WebRTC <https://bloggeek.me/common-beginner-mistakes-in-webrtc/>`__ (`archive <https://web.archive.org/web/20200219144856/https://bloggeek.me/common-beginner-mistakes-in-webrtc/>`__).
+
 
 
 ICE connection problems
@@ -447,18 +439,18 @@ If your application receives an :ref:`events-icecomponentstatechange` event with
 
 Here are some tips to keep in mind:
 
-* Check that you have correctly configured a :term:`STUN` and/or :term:`TURN` server both in Kurento Media Server (file *WebRtcEndpoint.conf.ini*), and in the client browsers (through the `RTCPeerConnection's iceServers setting <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__).
+* Check that you have correctly configured a :term:`STUN` server or :term:`TURN` relay, both in Kurento Media Server (file *WebRtcEndpoint.conf.ini*), and in the client browsers (through the `RTCPeerConnection's iceServers setting <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__).
 
-* Check that the TURN credentials are correct, by using the `Trickle ICE test page <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__ and configuring there your STUNTURN server. For more details, see the section above: :ref:`troubleshooting-webrtc-connection`.
+* Check that the :term:`TURN` credentials are correct, by using the `Trickle ICE test page <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__ to test your STUN/TURN server, as explained here: :ref:`faq-stun-test`.
 
 * It is always a good idea to work out the **correlation between ICE failures on KMS with ICE failures on the client browser**. The combined logs of both sides might shed some light into what caused the disconnection.
 
-* Inspect all :ref:`events-newcandidatepairselected` events emitted by Kurento. A lot of ICE candidates are tested for connectivity during the WebRTC session establishment, but only the actual working ones are reported with the *NewCandidatePairSelected* event. A **careful examination of all selected local and remote candidates** might reveal useful information about the kind of connectivity issues that clients might be having.
+* Analyze all :ref:`events-newcandidatepairselected` events emitted by Kurento. A lot of ICE candidates are tested for connectivity during the WebRTC session establishment, but only the actual working ones are reported with the *NewCandidatePairSelected* event. A **careful examination of all selected local and remote candidates** might reveal useful information about the kind of connectivity issues that clients might be having.
 
-  For example, maybe you see that most or all of the selected local or remote candidates are of ``typ relay``, i.e. using a TURN server as a proxy for the audio/video streams. This would mean two things:
+  For example, maybe you see that most or all of the selected local or remote candidates are of ``typ relay``, i.e. using a :term:`TURN` relay as a proxy for the audio/video streams. This would mean two things:
 
-  1. That the TURN server will be under high server load, possibly saturating the machine's resources.
-  2. That **direct peer-to-peer WebRTC connections are not being established**, giving you a good starting point to investigate why this is happening. Usually, when you see usage of the TURN relay, this is caused by overzealous hardware or software firewalls, or the presence of Symmetric NAT modem/routers somewhere in the network path.
+  1. That the :term:`TURN` relay will be under high server load, possibly saturating the machine's resources.
+  2. That **direct peer-to-peer WebRTC connections are not being established**, giving you a good starting point to investigate why this is happening. Usually, when you see usage of the :term:`TURN` relay, this is caused by overzealous hardware or software firewalls, or the presence of Symmetric :term:`NAT` modem/routers somewhere in the network path.
 
 * If you see messages about ICE connection tests failing due to **timeout on trying pairs**, make sure that all required UDP ports for media content are open on the sever; otherwise, not only the ICE process will fail, but also the video or audio streams themselves won't be able to reach each WebRTC peer.
 
@@ -512,6 +504,9 @@ Chrome allows disabling mDNS, which is something that could be useful during dev
 To disable mDNS, open this URL: ``chrome://flags/#enable-webrtc-hide-local-ips-with-mdns`` and change the setting to "Disabled".
 
 
+
+Other network issues
+====================
 
 Multicast fails in Docker
 -------------------------

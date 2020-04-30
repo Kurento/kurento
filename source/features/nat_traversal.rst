@@ -2,7 +2,7 @@
 NAT Traversal
 =============
 
-:term:`NAT Traversal`, also known as *Hole Punching*, is the procedure of opening an inbound port in the NAT tables of the routers which implement this technology (which are the vast majority of home and corporate routers).
+:term:`NAT Traversal`, also known as *Hole Punching*, is the procedure of opening an inbound port in the :term:`NAT` tables of the routers which implement this technology (which are the vast majority of home and corporate routers).
 
 There are different types of NAT, depending on how they behave: **Full Cone**, **Address-Restricted Cone**, **Port-Restricted Cone**, and **Symmetric**. For a comprehensive explanation of NAT and the different types that exist, please read our Knowledge Base document: :doc:`/knowledge/nat`.
 
@@ -11,7 +11,7 @@ There are different types of NAT, depending on how they behave: **Full Cone**, *
 WebRTC with ICE
 ===============
 
-:term:`ICE` is the standard method used by :term:`WebRTC` to solve the issue of NAT Traversal. Kurento supports ICE by means of a 3rd-party library: `libnice, The GLib ICE implementation <https://nice.freedesktop.org>`__.
+:term:`ICE` is the standard method used by :term:`WebRTC` to solve the issue of :term:`NAT Traversal`. Kurento supports ICE by means of a 3rd-party library: `libnice, The GLib ICE implementation <https://nice.freedesktop.org>`__.
 
 Refer to the :ref:`logging documentation <logging-libnice>` if you need to enable the debug logging for this library.
 
@@ -26,11 +26,11 @@ KMS is able to automatically infer what is the public IP and port of any remote 
 
 **TCP-Based Media Transport in the Session Description Protocol** (SDP) (`IETF RFC 4145 <https://tools.ietf.org/html/rfc4145>`__) defines an SDP extension which adds TCP connections and procedures, such as how a passive machine would wait for connections from a remote active machine and be able to obtain connection information from the active one, upon reception of an initial connection.
 
-Early Drafts of RFC 4145 (up to `Draft 05 <https://tools.ietf.org/html/draft-ietf-mmusic-sdp-comedia-05>`__) also contemplated the usage of this same concept of "Connection-Oriented Media Transport in SDP" with UDP connections, as a way of aiding NAT traversal. This is what has been used as a basis for the implementation of automatic port discovery in KMS.
+Early Drafts of RFC 4145 (up to `Draft 05 <https://tools.ietf.org/html/draft-ietf-mmusic-sdp-comedia-05>`__) also contemplated the usage of this same concept of "Connection-Oriented Media Transport in SDP" with UDP connections, as a way of aiding :term:`NAT Traversal`. This is what has been used as a basis for the implementation of automatic port discovery in KMS.
 
 It works as follows:
 
-1. The machine behind a NAT router acts as the active peer. It sends an SDP Offer to the other machine, the passive peer.
+1. The machine behind a :term:`NAT` router acts as the active peer. It sends an SDP Offer to the other machine, the passive peer.
 
    A. Sending an SDP Offer from behind a NAT means that the IP and port specified in the SDP message are actually just the private IP and port of that machine, instead of the public ones. The passive peer won't be able to use these to communicate back to the active peer. Due to this, the SDP Offer states the port ``9`` (*Discard port*) instead of whatever port the active machine will be using.
    B. The SDP Offer includes the media-level attribute ``a=direction:active``, so the passive peer is able to acknowledge that the Connection-Oriented Media Transport is being used for that media, and it writes ``a=direction:passive`` in its SDP Answer.
@@ -60,7 +60,7 @@ This is how to enable the Connection-Oriented Media Transport mode:
 Example
 -------
 
-This is a minimal example of an :term:`SDP Offer/Answer` negotiation that a machine would perform with KMS from behind a NAT router. The highlighted lines are those relevant to NAT Traversal:
+This is a minimal example of an :term:`SDP Offer/Answer` negotiation that a machine would perform with KMS from behind a :term:`NAT` router. The highlighted lines are those relevant to NAT Traversal:
 
 .. code-block:: text
    :caption: SDP Offer

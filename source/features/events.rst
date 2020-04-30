@@ -209,7 +209,7 @@ This graph shows the possible state changes (`source <https://cgit.freedesktop.o
 
 .. note::
 
-   The states *Ready* and *Failed* indicate that the ICE transport has completed gathering and is currently idle. However, since events such as adding a new interface or a new TURN server will cause the state to go back, *Ready* and *Failed* are **not** terminal states.
+   The states *Ready* and *Failed* indicate that the ICE transport has completed gathering and is currently idle. However, since events such as adding a new interface or a new :term:`STUN`/:term:`TURN` server will cause the state to go back, *Ready* and *Failed* are **not** terminal states.
 
 
 
@@ -300,7 +300,7 @@ When a *WebRtcEndpoint* instance has been created, and all event handlers have b
 
 5. ``AddIceCandidate``
 
-   Repeated multiple times; the remote peer will continue sending its own gathered candidates, of any type: ``host``, ``srflx`` (*STUN*), ``relay`` (*TURN*).
+   Repeated multiple times; the remote peer will continue sending its own gathered candidates, of any type: ``host``, ``srflx`` (:term:`STUN`), ``relay`` (:term:`TURN`).
 
 6. ``IceCandidateFound``
 

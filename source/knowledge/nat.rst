@@ -44,7 +44,7 @@ Visualization:
 Inbound NAT connection
 ----------------------
 
-A NAT maintains **inbound** rules which are used to translate IP tuples between the NAT's *external* and *internal* sides. Usually, the *external* side of the NAT is facing the public internet (*WAN*), while the *internal* side of the NAT is facing the local network (*LAN*). These inbound rules have the form of a *hash table* (or *map*); for each given key, there is a resulting value:
+A :term:`NAT` maintains **inbound** rules which are used to translate IP tuples between the NAT's *external* and *internal* sides. Usually, the *external* side of the NAT is facing the public internet (*WAN*), while the *internal* side of the NAT is facing the local network (*LAN*). These inbound rules have the form of a *hash table* (or *map*); for each given key, there is a resulting value:
 
 - The key of the table is an IP quadruplet, formed by a NAT's external IP tuple and a remote machine's IP tuple.
 - The value of the table is a NAT's internal IP tuple.
@@ -159,7 +159,7 @@ Symmetric NAT
 
 This type of NAT behaves in the same way of a Port-Restricted Cone NAT, with an important difference: for each outbound connection to a different remote IP tuple (i.e. to a different remote machine), the NAT assigns a **new random source port** on the external side. This means that two consecutive connections from the same local port to two different remote machines will have two different external source ports, even if the internal source IP tuple is the same for both of them.
 
-This is also the only case where the ICE connectivity protocol will find `Peer Reflexive candidates <https://tools.ietf.org/html/rfc5245#section-7.1.3.2.1>`__ which differ from the Server Reflexive ones, due to the differing ports between the connection to the STUN server and the direct connection between peers.
+This is also the only case where the ICE connectivity protocol will find `Peer Reflexive candidates <https://tools.ietf.org/html/rfc5245#section-7.1.3.2.1>`__ which differ from the Server Reflexive ones, due to the differing ports between the connection to the :term:`STUN` server and the direct connection between peers.
 
 Visualization:
 
@@ -198,9 +198,9 @@ The NAT mechanism is implemented in a vast majority of home and corporate router
 
 To connect with a local machine which is behind any type of NAT, it's first required that the local machine performs an outbound connection to the remote one. This way, a dynamic rule will be created for the destination IP tuple, allowing the remote machine to connect back.
 
-In order to tell one machine when it has to perform an outbound connection to another one, and the destination IP tuple it must use, the typical solution is to use a helper service such as STUN. This is usually managed by a third machine, a server sitting on a public internet address. It retrieves the external IP and port of each peer, and gives that information to the other peers that want to communicate.
+In order to tell one machine when it has to perform an outbound connection to another one, and the destination IP tuple it must use, the typical solution is to use a helper service such as :term:`STUN`. This is usually managed by a third machine, a server sitting on a public internet address. It retrieves the external IP and port of each peer, and gives that information to the other peers that want to communicate.
 
-STUN/TURN requirement:
+:term:`STUN` / :term:`TURN` requirements:
 
 - Symmetric to Symmetric: *TURN*.
 - Symmetric to Port-Restricted Cone: *TURN*.

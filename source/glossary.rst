@@ -68,7 +68,9 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               Hypertext Transfer Protocol -- HTTP/1.1
 
    ICE
-       Interactive Connectivity Establishment (ICE) is a technique used to achieve :term:`NAT Traversal`. ICE makes use of the :term:`STUN` protocol and its extension, :term:`TURN`. ICE can be used by any aplication that makes use of the SDP Offer/Answer model..
+       *Interactive Connectivity Establishment* (ICE) is a protocol used for :term:`NAT Traversal`. It defines a technique that allows communication between two endpoints when one is inside a NAT and the other is outside of it. The net effect of the ICE process is that the NAT will be left with all needed ports open for communication, and both endpoints will have complete information about the IP address and ports where the other endpoint can be contacted.
+
+       ICE doesn't work standalone: it uses a couple of helper protocols called :term:`STUN` and :term:`TURN`.
 
        .. seealso::
 
@@ -161,7 +163,9 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 
    NAT
    Network Address Translation
-       Network address translation (NAT) is the technique of modifying network address information in Internet Protocol (IP) datagram packet headers while they are in transit across a traffic routing device for the purpose of remapping one IP address space into another.
+       *Network Address Translation* (NAT) is a mechanism that hides from the public access the private IP addresses of machines inside a network. The NAT mechanism is typically found in all types of network devices, ranging from home routers to full-fledged corporate firewalls. In all cases the effect is the same: machines inside the NAT cannot be freely accessed from outside.
+
+       NAT introduces a lot of problems for WebRTC communications: machines inside the network will be able to send data to the outside, but they won't be able to receive data from remote participants that are outside the network. In order to allow for this, NAT devices typically allow to configure **NAT bindings** to let data come in from the outside part of the network; creating these NAT bindings is what is called :term:`NAT Traversal`, also commonly referred as "opening ports".
 
        .. seealso::
 
@@ -173,9 +177,8 @@ This is a glossary of terms that often appear in discussion about multimedia tra
           `How Network Address Translation Works <https://computer.howstuffworks.com/nat.htm>`__ (`archive <https://web.archive.org/web/20200213082726/https://computer.howstuffworks.com/nat.htm>`__)
               A comprehensive description of NAT and its mechanics.
 
-   NAT-T
    NAT Traversal
-       NAT traversal (sometimes abbreviated as NAT-T) is a general term for techniques that establish and maintain Internet protocol connections traversing network address translation (NAT) gateways, which break end-to-end connectivity. Intercepting and modifying traffic can only be performed transparently in the absence of secure encryption and authentication.
+       NAT Traversal is a general term for techniques that establish and maintain Internet protocol connections traversing network address translation (:term:`NAT`) gateways, which break end-to-end connectivity. Intercepting and modifying traffic can only be performed transparently in the absence of secure encryption and authentication.
 
        .. seealso::
 
@@ -380,8 +383,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Secure Socket Layer. See :term:`TLS`.
 
    STUN
-       STUN stands for **Session Traversal Utilities for NAT**. It is a standard protocol (`IETF RFC 5389 <https://tools.ietf.org/html/rfc5389>`__) used by :term:`NAT` traversal algorithms to assist hosts in the discovery of their public network information.
-       If the routers between peers use full cone, address-restricted, or port-restricted NAT, then a direct link can be discovered with STUN alone. If either one of the routers use symmetric NAT, then a link can be discovered with STUN packets only if the other router does not use symmetric or port-restricted NAT. In this later case, the only alternative left is to discover a relayed path through the use of :term:`TURN`.
+       *Session Traversal Utilities for NAT* (STUN) is a protocol that complements :term:`ICE` in the task of solving the :term:`NAT Traversal` issue. It can be used by any endpoints to determine the IP address and port allocated to it by a :term:`NAT`. It can also be used to check connectivity between two endpoints, and as a keep-alive protocol to maintain NAT bindings. STUN works with many existing types of NAT, and does not require any special behavior from them.
 
    Trickle ICE
        Extension to the :term:`ICE` protocol that allows ICE agents to send and receive candidates incrementally rather than exchanging complete lists. With such incremental provisioning, ICE agents can begin connectivity checks while they are still gathering candidates and considerably shorten the time necessary for ICE processing to complete.
@@ -402,9 +404,11 @@ This is a glossary of terms that often appear in discussion about multimedia tra
               The Transport Layer Security (TLS) Protocol Version 1.2.
 
    TURN
-       TURN stands for **Traversal Using Relays around NAT**. Like :term:`STUN`, it is a network protocol (`IETF RFC 5766 <https://tools.ietf.org/html/rfc5766>`__) used to assist in the discovery of paths between peers on the Internet.
-       It differs from STUN in that it uses a public intermediary relay to act as a proxy for packets between peers. It is used when no other option is available since it consumes server resources and has an increased latency.
-       The only time when TURN is necessary is when one of the peers is behind a symmetric NAT and the other peer is behind either a symmetric NAT or a port-restricted NAT.
+       *Traversal Using Relays around NAT* (TURN) is an extension of :term:`STUN`, used where the :term:`NAT` security policies are too strict and the needed NAT bindings cannot be successfully created to achieve :term:`NAT Traversal`. In these situations, it is necessary for the host to use the services of a TURN server that acts as a communication relay.
+
+       .. note::
+
+          **You don't need to set a STUN server up if you have already configured a TURN relay**, because TURN is just an extension of STUN.
 
    VP8
        VP8 is a video compression format created by On2 Technologies as a successor to VP7. Its  patents rights are owned by Google, who made an irrevocable patent promise on its patents for implementing it and released a specification under the `Creative Commons Attribution 3.0 license <https://creativecommons.org/licenses/by/3.0/>`__.

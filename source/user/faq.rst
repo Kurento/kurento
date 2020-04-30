@@ -7,57 +7,49 @@ Frequently Asked Questions
 About NAT, ICE, STUN, TURN
 ==========================
 
-What is NAT?
-------------
+These are very important concepts that developers must understand well to work with WebRTC. Here is a collection of all Kurento material talking about these acronyms:
 
-*Network Address Translation* (:term:`NAT`) is a mechanism that hides from the public access the private IP addresses of machines inside a network. This NAT mechanism is typically found in all types of network devices, ranging from home routers to full-fledged corporate firewalls. In all cases the effect is the same: machines inside the NAT cannot be freely accessed from outside.
+* Glossary:
 
-The effects of a NAT is very negative for WebRTC communications: machines inside the network will be able to send data to the outside, but they won't be able to receive data from remote endpoints that are sitting outside the network. In order to allow for this need, NAT devices typically allow to configure **NAT bindings** to let data come in from the outside part of the network; creating these NAT bindings is what is called :term:`NAT traversal`, also commonly referred as "opening ports".
+  - :term:`What is NAT <NAT>`?
+  - :term:`What is NAT Traversal <NAT Traversal>`?
+  - :term:`What is ICE <ICE>`?
+  - :term:`What is STUN <STUN>`?
+  - :term:`What is TURN <TURN>`?
 
+* Installing and configuring a STUN/TURN server:
 
+  - :ref:`faq-coturn-install`
+  - :ref:`faq-stun-test`
+  - :ref:`faq-stun-configure`
 
-What is ICE?
-------------
-
-*Interactive Connectivity Establishment* (:term:`ICE`) is a protocol used for :term:`NAT traversal`. It defines a technique that allows communication between two endpoints when one is inside a NAT and the other is outside of it. The net effect of the ICE process is that the NAT will be left with all needed ports open for communication, and both endpoints will have complete information about the IP address and ports where the other endpoint can be contacted.
-
-ICE doesn't work standalone: it needs to use a helper protocol called STUN.
-
-
-
-What are STUN and TURN?
------------------------
-
-*Session Traversal Utilities for NAT* (:term:`STUN`) is a protocol that complements :term:`ICE` in the task of solving the :term:`NAT traversal` issue. It can be used by any endpoints to determine the IP address and port allocated to it by a NAT. It can also be used to check connectivity between two endpoints, and as a keep-alive protocol to maintain NAT bindings. STUN works with many existing NATs, and does not require any special behavior from them.
-
-*Traversal Using Relays around NAT* (:term:`TURN`) is an extension of STUN, used where the NAT security policies are too strict and the needed NAT bindings cannot be successfully created. In these situations, it is necessary for the host to use the services of an intermediate node that acts as a communication relay.
-
-.. note::
-
-   **Every TURN server supports STUN**, because TURN is just an extension of STUN, to provide for a network relay. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
+* Troubleshooting :ref:`troubleshooting-webrtc`
+* Advanced knowledge: :doc:`/knowledge/nat`
 
 
 
-.. _faq-stun:
+.. _faq-stun-needed:
 
-When is STUN needed?
---------------------
+When are STUN and TURN needed?
+------------------------------
 
-:term:`STUN` (and possibly :term:`TURN`) is needed **for every endpoint behind a NAT**. All peers that try to connect from behind a :term:`NAT` will need to "*open*" their own NAT ports, a process that is known as :term:`NAT traversal`. This is achieved by using a STUN/TURN server that is deployed *outside of the NAT*.
+:term:`STUN` (and possibly :term:`TURN`) is needed **for every WebRTC participant behind a NAT**. All peers that try to connect from behind a :term:`NAT` will need to "*open*" their own ports, a process that is known as :term:`NAT Traversal`. This is achieved by using a STUN server that is deployed **outside of the NAT**.
 
-The STUN/TURN server is configured to use a range of UDP & TCP ports. All those ports should also be opened to all traffic, in the server's network configuration or security group.
+The STUN server is configured to use a range of UDP & TCP ports. All those ports should also be opened to all traffic, in the server's network configuration or security group.
 
-If you are installing Kurento in a NAT environment (e.g. if your server is behind a NAT firewall), you also need to configure an external STUN or TURN server in */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*. Similarly, all browser clients that are behind a NAT need to configure the STUN and/or TURN server details with the ``iceServers`` field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
+If you are installing Kurento in a NAT environment (e.g. if your server is behind a NAT firewall), you also need to configure an external STUN server, in */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*. Similarly, all browser clients that are behind a NAT need to configure the STUN server details with the ``iceServers`` field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
 
 **Example:**
 
-The typical installation scenario for Kurento Media Server is to have a strict separation between Application Server and client. KMS and Application Server are running in a cloud machine **without any NAT** or port restriction on incoming connections, while a browser client runs from any (possibly restricted) network that forbids incoming connections on any port that hasn't been "opened" in advance (i.e., a NAT). The client may communicate with the Application Server for signaling purposes, but at the end of the day the bulk of the audio/video communication is done between the WebRTC engines of the browser and KMS.
+Kurento Media Server and its Application Server are running in a cloud machine **without any NAT** or port restriction on incoming connections, while a browser client runs from a possibly restricted :term:`NAT` network that forbids incoming connections on any port that hasn't been "opened" in advance
+
+The browser client may communicate with the Application Server for signaling purposes, but at the end of the day the bulk of the audio/video communication is done between the WebRTC engines of the browser and KMS.
 
 .. figure:: /images/faq-stun-1.png
    :align:  center
    :alt:    NAT client without STUN
 
-In scenarios such as this one, the client is able to send data to KMS because its NAT will allow outgoing packets. However, KMS will *not* be able to send data to the client, because the client's NAT is closed for incoming packets. This is solved by configuring the client to use a STUN server; this server will be used by the client's browser to open the appropriate ports in the NAT. After this operation, the client is now able to receive audio/video streams from KMS:
+In scenarios like this, the client is able to send data to KMS because its NAT will allow outgoing packets. However, KMS will *not* be able to send data to the client, because the client's NAT is closed for incoming packets. This is solved by configuring the client to use a STUN server; this server will be used by the client's browser to open the appropriate ports in the NAT. After this operation, the client is now able to receive audio/video streams from KMS:
 
 .. figure:: /images/faq-stun-2.png
    :align:  center
@@ -65,7 +57,7 @@ In scenarios such as this one, the client is able to send data to KMS because it
 
 This procedure is done by the :term:`ICE` implementation of the client's browser.
 
-Note that you *can* also deploy KMS behind a NAT firewall, as long as KMS itself is also configured to use a STUN/TURN server.
+Note that you *can* also deploy KMS behind a NAT firewall, as long as KMS itself is also configured to use a STUN server.
 
 Further reading:
 
@@ -74,10 +66,12 @@ Further reading:
 
 
 
+.. _faq-coturn-install:
+
 How to install Coturn?
 ----------------------
 
-Coturn is a :term:`STUN` server and (optionally) a :term:`TURN` relay, supporting all features required for the :term:`ICE` protocol and allowing to establish WebRTC connections from behind a :term:`NAT`.
+Coturn is a :term:`STUN` server and :term:`TURN` relay, supporting all features required for the :term:`ICE` protocol and allowing to establish WebRTC connections from behind a :term:`NAT`.
 
 Coturn can be installed directly from the Ubuntu package repositories:
 
@@ -86,9 +80,9 @@ Coturn can be installed directly from the Ubuntu package repositories:
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        coturn
 
-Then, follow these steps:
+To configure it for WebRTC, follow these steps:
 
-1. Edit */etc/turnserver.conf* and configure the server according to your needs.
+1. Edit */etc/turnserver.conf*.
 
    This example configuration is a good first step; it will work for using Coturn with Kurento Media Server for WebRTC streams. However, you may want to change it according to your needs:
 
@@ -130,11 +124,13 @@ Then, follow these steps:
       # Disable log file rollover and use log file name as-is.
       simple-log
 
-   - The *external-ip* is necessary in cloud providers which use internal NATs, such as **Amazon EC2** (**AWS**). Write in ``<CoturnIp>`` your server's **public** IP address, like ``198.51.100.1``. It must be an IP address, **not a domain name**.
+   Notes:
+
+   - The *external-ip* is necessary in cloud providers which use internal NATs, such as **Amazon EC2** (AWS). Write your server's **public** IP address, like ``198.51.100.1``, in the ``<CoturnIp>`` parameter. **It must be an IP address, not a domain name**.
 
    - The options *fingerprint*, *lt-cred-mech*, and *realm* are needed for WebRTC.
 
-   - The *user* parameter is the most basic form of authorization to use the TURN relay capabilities. Write your desired user name and password in the fields ``<TurnUser>`` and ``<TurnPassword>``.
+   - The *user* parameter is the most basic form of authorization to use the :term:`TURN` relay capabilities. Write your desired user name and password in the fields ``<TurnUser>`` and ``<TurnPassword>``.
 
    - Other parameters can be tuned as needed. For more information, check the Coturn help pages:
 
@@ -150,80 +146,138 @@ Then, follow these steps:
 
    so the server starts automatically as a system service daemon.
 
-3. Configure Kurento Media Server and point it to where the STUN/TURN server is listening for connections. Edit the file */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini* and set either the STUN or the TURN parameters:
+3. Follow with the next sections to test that Coturn is working, and then set it up as your STUN/TURN server in Kurento Media Server.
+
+
+
+.. _faq-stun-test:
+
+How to test my STUN/TURN server?
+--------------------------------
+
+To test if your :term:`STUN`/:term:`TURN` server is functioning properly, open the `Trickle ICE test page <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__. In that page, follow these steps:
+
+1. Remove any server that might be filled in already by default.
+
+2. Fill in your STUN/TURN server details.
+
+   - To only test STUN server (TURN relay will not be tested):
+
+     .. code-block:: text
+
+        stun:<StunServerIp>:<StunServerPort>
+
+   - To test both STUN server and TURN relay:
+
+     .. code-block:: text
+
+        turn:<TurnServerIp>:<TurnServerPort>
+
+     ... and also fill in the *TURN username* and *TURN password*.
+
+3. Click on *Add Server*. You should have only **one entry** in the list, with your server details.
+
+4. Click on *Gather candidates*. **Verify** that you get candidates of type ``srflx`` if you are testing STUN. Likewise, you should get candidates of type ``srflx`` *and* type ``relay`` if you are testing TURN.
+
+   If you are missing any of the expected candidate types, *your STUN/TURN server is not working well* and WebRTC will fail. Check your server configuration, and your cloud provider's network settings.
+
+
+
+.. _faq-stun-configure:
+
+How to configure STUN/TURN?
+---------------------------
+
+To configure a :term:`STUN` server or :term:`TURN` relay with Kurento Media Server, you may use either of two methods:
+
+A. Write the parameters into the file */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*. Do this if your settings are static and you know them beforehand.
+
+   To only use STUN server (TURN relay will not be used):
 
    .. code-block:: text
 
-      stunServerAddress=<CoturnIp>
-      stunServerPort=<CoturnPort>
+      stunServerAddress=<StunServerIp>
+      stunServerPort=<StunServerPort>
+
+   ``<StunServerIp>`` should be the public IP address of the STUN server. **It must be an IP address, not a domain name**. For example:
 
    .. code-block:: text
 
-      turnURL=<TurnUser>:<TurnPassword>@<CoturnIp>:<CoturnPort>
+      stunServerAddress=198.51.100.1
+      stunServerPort=3478
 
-   If you only configure the STUN parameters in KMS, then the TURN relay capability of Coturn won't be used. Of course, if you instead configure the whole TURN URL, then KMS will be able to use the Coturn server as a TURN relay when it needs to.
+   To use both STUN server and TURN relay:
 
-   .. note::
+   .. code-block:: text
 
-      **Every TURN server supports STUN**, because TURN is just an extension of STUN, to provide for a network relay. This means that *you don't need to set a STUN server up if you have already configured a TURN server*.
+      turnURL=<TurnUser>:<TurnPassword>@<TurnServerIp>:<TurnServerPort>
 
-   The following ports should be open in the firewall or your cloud machine's *Security Groups*:
+   ``<TurnServerIp>`` should be the public IP address of the TURN relay. **It must be an IP address, not a domain name**. For example:
 
-   - **<CoturnPort>** (Default: 3478) UDP & TCP.
-   - **49152-65535** UDP & TCP: As per :rfc:`5766`, these are the ports that the TURN server will use to exchange media. These ports can be changed using Coturn's ``min-port`` and ``max-port`` parameters.
+   .. code-block:: text
 
-   .. note::
+      turnURL=myuser:mypassword@198.51.100.1:3478
 
-      The STUN/TURN ports that are configured in Coturn **must match those configured in Kurento Media Server**. This can be done in the file */etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini*, so it is possible to restrict the port range used by KMS to have a reduced set of open ports in your server.
+B. Use the API methods to set the parameters dynamically. Do this if your STUN server details are not known beforehand, or if your TURN credentials are generated on runtime:
 
-4. (Re)Start both Coturn and Kurento servers:
+   To only use STUN server (TURN relay will not be used):
 
-   .. code-block:: bash
+   .. code-block:: text
 
-      sudo service coturn restart
-      sudo service kurento-media-server restart
+      setStunServerAddress("<StunServerIp>");
+      setStunServerPort(<StunServerPort>);
 
-5. Check that your STUN/TURN server is working, by using the `Trickle ICE test page <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__:
+   Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerAddress>`__.
 
-   - If you configured Coturn to act just as a STUN server, use an URI with this format: ``stun:<CoturnIp>:<CoturnPort>``.
-   - If you left the default settings, then Coturn will act as both STUN and TURN server. Use an URI like this: ``turn:<CoturnIp>:<CoturnPort>``, and also write the ``<TurnUser>`` and ``<TurnPassword>``.
-   - Finally, click on "*Gather candidates*" and check that you get candidates of type "**srflx**" (STUN) and "**relay**" (TURN).
+   To use both STUN server and TURN relay:
 
+   .. code-block:: text
 
+      setTurnUrl("<TurnUser>:<TurnPassword>@<TurnServerIp>:<TurnServerPort>");
 
-Readings about NAT, ICE, STUN, TURN
------------------------------------
+   Kurento Client API docs: `Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__.
 
-Here is a collection of all Kurento material talking about these topics:
+.. note::
 
-* Frequently Asked Questions: :ref:`faq-nat-ice-stun-turn`
-* Glossary: :term:`ICE`; :term:`STUN`; :term:`TURN`; :term:`NAT traversal`
-* Installing and configuring Kurento: :ref:`installation-stun-turn`
-* Troubleshooting network issues: :ref:`troubleshooting-webrtc-connection`
-* Advanced knowledge: :doc:`/knowledge/nat`
+   **You don't need to set a STUN server up if you have already configured a TURN relay**, because TURN is just an extension of STUN.
 
+The following ports should be open in the firewall or your cloud machine's *Security Groups*:
 
+- **<CoturnPort>** (Default: 3478) UDP & TCP.
+- **49152-65535** UDP & TCP: As per :rfc:`5766`, these are the ports that the TURN relay will use to exchange media. These ports can be changed using Coturn's ``min-port`` and ``max-port`` parameters.
 
-How To ...
-==========
+.. note::
 
-Know how many Media Pipelines do I need for my Application?
------------------------------------------------------------
+   **Port ranges must match between Coturn and Kurento Media Server**. Check the files */etc/turnserver.conf* and */etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini*, to verify that both will be using the same set of ports.
 
-Media Elements can only communicate with each other when they are part of the same pipeline. Different MediaPipelines in the server are independent do not share audio, video, data or events.
+When you are done, (re)start both Coturn and Kurento servers:
 
-A good heuristic is that you will need one pipeline per each set of communicating partners in a channel, and one Endpoint in this pipeline per audio/video streams reaching a partner.
+.. code-block:: bash
 
-
-
-Know how many Endpoints do I need?
-----------------------------------
-
-Your application will need to create an Endpoint for each media stream flowing to (or from) the pipeline. As we said in the previous answer, each set of communicating partners in a channel will be in the same Media Pipeline, and each of them will use one or more Endpoints. They could use more than one if they are recording or reproducing several streams.
+   sudo service coturn restart
+   sudo service kurento-media-server restart
 
 
 
-Know to what client a given WebRtcEndPoint belongs or where is it coming from?
-------------------------------------------------------------------------------
+How many Media Pipelines do I need for my Application?
+======================================================
 
-Kurento API currently offers no way to get application attributes stored in a Media Element. However, the application developer can maintain a hashmap or equivalent data structure mapping the ``WebRtcEndpoint`` internal Id (which is a string) to whatever application information is desired.
+A Pipeline is a top-level container that handles every resource that should be able to achieve any kind of interaction with each other. Media Elements can only communicate when they are part of the same Pipeline. Different Pipelines in the server are independent, so they do not share audio, video, data or events.
+
+99% times, this translates to using 1 Pipeline object for each "room"-like videoconference. It doesn't matter if there is 1 single presenter and N viewers ("one-to-many"), or if there are N participants Skype-style ("many-to-many"), all of them are managed by the same Pipeline. So, most actual real-world applications would only ever create 1 Pipeline, because that's good enough for most needs.
+
+A good heuristic is that you will need one Pipeline per each set of communicating partners in a channel, and one Endpoint in this Pipeline per audio/video streams exchanged with a participant.
+
+
+
+How many Endpoints do I need?
+=============================
+
+Your application will need to create at least one Endpoint for each media stream flowing to (or from) each participant. You might actually need more, if the streams are to be recorded or if streams are being duplicated for other purposes.
+
+
+
+Which participant corresponds to which Endpoint?
+================================================
+
+The Kurento API offers no way to get application-level semantic attributes stored in a Media Element. However, the application developer can maintain a HashMap or equivalent data structure, storing the Endpoint identifiers (which are plain strings) to whatever application information is desired, such as the names of the participants.

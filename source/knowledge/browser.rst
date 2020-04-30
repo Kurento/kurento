@@ -89,7 +89,7 @@ With command line arguments:
        -MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5 \
        -MOZ_LOG_FILE=/tmp/firefox.log
 
-Log ICE candidates / STUN / TURN:
+Log :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
 
 .. code-block:: bash
 

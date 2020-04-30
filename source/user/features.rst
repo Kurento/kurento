@@ -64,7 +64,7 @@ RTP Streaming
 
 Besides WebRTC connections, Kurento Media Server is able to manage standard RTP streams, allowing to connect an instance of KMS to a wide variety of devices.
 
-There are two topics to note when dealing with RTP connections: the automatic congestion control algorithms that KMS implements (see :ref:`features-remb`), and the NAT traversal capabilities (see :doc:`/features/nat_traversal`).
+There are two topics to note when dealing with RTP connections: the automatic congestion control algorithms that KMS implements (see :ref:`features-remb`), and the :term:`NAT Traversal` capabilities (see :doc:`/features/nat_traversal`).
 
 
 
