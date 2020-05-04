@@ -23,39 +23,15 @@
 #/   Defined in Jenkins
 
 
-# ------------ Shell setup ------------
+# Shell setup
+# -----------
 
-# Shell options for strict error checking
-set -o errexit -o errtrace -o pipefail -o nounset
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
 
-# Logging functions
-# These disable and re-enable debug mode (only if it was already set)
-# Source: https://superuser.com/a/1338887/922762
-shopt -s expand_aliases  # This trick requires enabling aliases in Bash
-BASENAME="$(basename "$0")"  # Complete file name
-echo_and_restore() {
-    echo "[${BASENAME}] $(cat -)"
-    case "$flags" in (*x*) set -x ; esac
-}
-alias log='({ flags="$-"; set +x; } 2>/dev/null; echo_and_restore) <<<'
-
-# Trap functions
-on_error() { ERROR=1; }
-trap on_error ERR
-on_exit() {
-    (( ${ERROR-${?}} )) && log "ERROR" || log "SUCCESS"
-    log "==================== END ===================="
-}
-trap on_exit EXIT
-
-# Print help message
-usage() { grep '^#/' "$0" | cut -c 4-; exit 0; }
-expr match "${1-}" '^\(-h\|--help\)$' >/dev/null && usage
-
-# Enable debug mode
+# Trace all commands
 set -o xtrace
-
-log "#################### BEGIN ####################"
 
 
 
@@ -88,7 +64,7 @@ fi
     || { log "ERROR Command failed: git fetch"; exit 1; }
 
     git checkout "$CLONE_REF" \
-    || { log "ERROR Command failed: git checkout"; exit 1; }
+    || { log "ERROR Command failed: git checkout $CLONE_REF"; exit 1; }
 
     if [ -f .gitmodules ]; then
         if [ -z "${GIT_KEY}" ]; then
