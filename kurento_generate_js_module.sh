@@ -14,7 +14,17 @@ set -o xtrace
 
 
 
-log "##################### EXECUTE: kurento_generate_js_module #####################"
+# Don't build from experimental branches. Otherwise we'd need to have some
+# mechanism to publish experimental module builds, which we don't have for
+# Java and JavaScript modules.
+#
+# Maybe in the future we might have something like experimental Maven or NPM
+# repositories, then we'd want to build experimental branches for them. But
+# for now, just skip and avoid polluting the "master" builds repositories.
+if [[ "$JOB_GIT_NAME" != "master" ]]; then
+  log "Skip building from experimental branch '$JOB_GIT_NAME'"
+  exit 0
+}
 
 rm -rf build
 mkdir build && cd build
