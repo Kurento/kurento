@@ -43,7 +43,7 @@ kurento_check_version.sh false || {
 if [[ "$JOB_GIT_NAME" != "master" ]]; then
   log "Skip building from experimental branch '$JOB_GIT_NAME'"
   exit 0
-}
+fi
 
 rm -rf build
 mkdir build && cd build
