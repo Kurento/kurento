@@ -101,6 +101,18 @@ log "CFG_JS=$CFG_JS"
 # Job setup
 # ---------
 
+# Don't build from experimental branches. Otherwise we'd need to have some
+# mechanism to publish experimental module builds, which we don't have for
+# Java and JavaScript modules.
+#
+# Maybe in the future we might have something like experimental Maven or NPM
+# repositories, then we'd want to build experimental branches for them. But
+# for now, just skip and avoid polluting the "master" builds repositories.
+if [[ "$JOB_GIT_NAME" != "master" ]]; then
+    log "Skip building from experimental branch '$JOB_GIT_NAME'"
+    exit 0
+fi
+
 # Check out the requested branch
 "${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
     --name "$JOB_GIT_NAME" --fallback "$JOB_DISTRO"
@@ -118,7 +130,7 @@ fi
 
 RUN_COMMANDS=(
     "dpkg --install ./*.*deb || { apt-get update && apt-get install --yes --fix-broken --no-remove; }"
-    $GEN_SCRIPT
+    "$GEN_SCRIPT"
 )
 
 export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:xenial"
