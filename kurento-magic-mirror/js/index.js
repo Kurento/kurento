@@ -29,18 +29,17 @@ var args = getopts(location.search,
 {
   default:
   {
-    // Non-secure WebSocket (only for localhost tests)
-    //ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    // Non-secure WebSocket
+    // Only valid for localhost access! Browsers won't allow using this for
+    // URLs that are not localhost. Also, this matches the default KMS config:
+    ws_uri: "ws://" + location.hostname + ":8888/kurento",
 
-    // Secure WebSocket (for localhost and remote tests)
-    // To use this, you have to enable the "mediaServer.net.websocket.secure"
-    // KMS setting in "kurento.conf.json".
-    //
-    // Also, note that most browsers will reject self-signed certificates for
-    // Secure WebSockets connections. You have to either use a proper
-    // certificate, or install your self-signed Root CA in the browser. For this
-    // last option, we recommend using the tool "mkcert".
-    ws_uri: 'wss://' + location.hostname + ':8433/kurento',
+    // Secure WebSocket
+    // Valid for localhost and remote access. To use this, you have to edit the
+    // KMS settings file "kurento.conf.json", and configure the section
+    // "mediaServer.net.websocket.secure". Check the docs:
+    // https://doc-kurento.readthedocs.io/en/latest/features/security.html#features-security-kms-wss
+    //ws_uri: "wss://" + location.hostname + ":8433/kurento",
 
     hat_uri: 'https://' + location.host + '/img/mario-wings.png',
     ice_servers: undefined
