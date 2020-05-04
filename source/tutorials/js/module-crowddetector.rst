@@ -13,12 +13,6 @@ Running this example
 
 First of all, install Kurento Media Server: :doc:`/user/installation`. Start the media server and leave it running in the background.
 
-.. note::
-
-   If you will run this tutorial from a remote machine (i.e. not from ``localhost``), then **you need to configure Secure WebSocket (wss://) in Kurento Media Server**. For instructions, check :ref:`features-security-kms-wss`.
-
-   This is not an issue if you will run both KMS and the tutorial demo locally, because browsers (at least Chrome at the time of this writing) allow connecting to insecure WebSockets from HTTPS pages, as long as everything happens in ``localhost``.
-
 Install :term:`Node.js`, :term:`Bower`, and a web server in your system:
 
 .. code-block:: bash
@@ -30,21 +24,19 @@ Install :term:`Node.js`, :term:`Bower`, and a web server in your system:
 
 Here, we suggest using the simple Node.js ``http-server``, but you could use any other web server.
 
-.. note::
+You also need the source code of this tutorial. Clone it from GitHub, then start the web server:
 
-   You need to configure the web server with HTTPS. For more information, check :ref:`features-security-js-https`.
-
-You also need the source code of this demo; clone it from GitHub, then start the web server:
-
-.. sourcecode:: bash
+.. code-block:: bash
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-tutorial-js/kurento-crowddetector
+    cd kurento-tutorial-js/kurento-crowddetector/
     git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
 
-Finally, access the web application by using a WebRTC-capable browser (Firefox, Chrome) to open the appropriate URL:
+Note that HTTPS is required by browsers to enable WebRTC, so the web server must use SSL and a certificate file. For instructions, check :ref:`features-security-js-https`. For convenience, this tutorial already provides dummy self-signed certificates (which will cause a security warning in the browser).
+
+When your web server is up and running, use a WebRTC compatible browser (Firefox, Chrome) to open the tutorial page:
 
 * If KMS is running in your local machine:
 
@@ -52,11 +44,23 @@ Finally, access the web application by using a WebRTC-capable browser (Firefox, 
 
      https://localhost:8443/
 
-* If KMS is running in a remote server:
+* If KMS is running in a remote machine:
 
   .. code-block:: text
 
-     https://localhost:8443/index.html?ws_uri=wss://<KmsIp>:<KmsPort>/kurento
+     https://localhost:8443/index.html?ws_uri=ws://KMS_HOST:8888/kurento
+
+.. note::
+
+   By default, this tutorial works out of the box by using non-secure WebSocket (``ws://``) to establish a client connection between the browser and KMS. This only works for ``localhost``. *It will fail if the web server is remote*.
+
+If you want to run this tutorial from a **remote web server**, then you have to do 3 things:
+
+1. Configure **Secure WebSocket** in KMS. For instructions, check :ref:`features-security-kms-wss`.
+
+2. In *index.js*, change the ``ws_uri`` to use Secure WebSocket (``wss://`` instead of ``ws://``) and the correct KMS port (8433 instead of 8888).
+
+3. As explained in the link from step 1, if you configured KMS to use a self-signed certificate, depending on the browser you now have to browse to ``https://KMS_HOST:8433/kurento`` and click to accept the unsafe certificate. As of this writing, Firefox 75.0 requires doing this, while Chrome 81.0 doesn't require it.
 
 
 
