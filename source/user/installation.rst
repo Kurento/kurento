@@ -225,16 +225,17 @@ Unless configured otherwise, KMS will listen on the IPv6 port ``8888`` to receiv
 
 You can change these parameters in the file */etc/kurento/kurento.conf.json*.
 
-Lastly, you can check whether the RPC WebSocket of Kurento is healthy and able to receive and process messages. For this, send a dummy request and check that the response is as expected:
+To check whether KMS is up and listening for connections, use the following command:
 
 .. code-block:: text
 
-   $ curl -i -N \
-       -H "Connection: Upgrade" \
-       -H "Upgrade: websocket" \
-       -H "Host: 127.0.0.1:8888" \
-       -H "Origin: 127.0.0.1" \
-       http://127.0.0.1:8888/kurento
+   curl \
+     --include \
+     --header "Connection: Upgrade" \
+     --header "Upgrade: websocket" \
+     --header "Host: 127.0.0.1:8888" \
+     --header "Origin: 127.0.0.1" \
+     http://127.0.0.1:8888/kurento
 
 You should get a response similar to this one:
 
@@ -243,7 +244,9 @@ You should get a response similar to this one:
    HTTP/1.1 500 Internal Server Error
    Server: WebSocket++/0.7.0
 
-Ignore the error line: it is an expected error, because *curl* does not talk the Kurento protocol. We just checked that the *WebSocket* server is actually up, and listening for connections. If you wanted, you could automate this check with a script similar to `healthchecker.sh`_, the one we use in `Kurento Docker images`_.
+Ignore the "*Server Error*" message: this is expected, and it actually proves that KMS is up and listening for connections.
+
+If you need to automate this, you could write a script similar to `healthchecker.sh`_, the one we use in `Kurento Docker images`_.
 
 
 
@@ -251,6 +254,6 @@ Ignore the error line: it is an expected error, because *curl* does not talk the
 
 .. _Amazon Web Services: https://aws.amazon.com
 .. _Coturn: https://github.com/coturn/coturn
-.. _healthchecker.sh: https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh
 .. _Docker best practices: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get
+.. _healthchecker.sh: https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh
 .. _Kurento Docker images: https://hub.docker.com/r/kurento/kurento-media-server
