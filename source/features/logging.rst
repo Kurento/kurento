@@ -197,13 +197,12 @@ This library uses the standard *GLib* logging functions, which comes disabled by
 
 To enable debug logging on *libnice*, set the environment variable ``G_MESSAGES_DEBUG`` with one or more of these values (separated by commas):
 
-- libnice
-- libnice-stun
-- libnice-tests
-- libnice-socket
-- libnice-pseudotcp
-- libnice-pseudotcp-verbose
-- all
+- ``libnice``: Required in order to enable logging in libnice.
+- ``libnice-verbose``: Enable extra verbose messages.
+- ``libnice-stun``: Log messages related to the :term:`STUN` protocol.
+- ``libnice-pseudotcp``: Log messages from the ICE-TCP module.
+- ``libnice-pseudotcp-verbose``: Enable extra verbose messages from ICE-TCP.
+- ``all``: Equivalent to using all previous flags.
 
 After doing this, GLib messages themselves must be enabled in the Kurento logging system, by setting an appropriate level for the ``glib`` component.
 
