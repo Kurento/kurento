@@ -163,7 +163,7 @@ To enable WSS, edit the main KMS configuration file, **/etc/kurento/kurento.conf
 
 If you will be using a signed certificate issued by a trusted Certificate Authority such as Verisign or Let's Encrypt, then you are done. Just skip to the next section: :ref:`features-security-kms-wss-connect`.
 
-However, if you are going to use an untrusted self-signed certificate (typically done during for development), then there is still more work to do.
+However, if you are going to use an untrusted self-signed certificate (typically during development), there is still more work to do.
 
 You can generate a self signed certificate by doing this:
 
@@ -178,7 +178,7 @@ You can generate a self signed certificate by doing this:
 
    sudo chown kurento defaultCertificate.pem
 
-Alternatively, it can be much easier and convenient using a self-signed certificate generation tool, such as `mkcert <https://github.com/FiloSottile/mkcert>`__.
+Alternatively, it is much easier and convenient using a self-signed certificate generation tool, such as `mkcert <https://github.com/FiloSottile/mkcert>`__.
 
 Because self-signed certificates are untrusted by nature, client browsers and server applications will reject it by default. You'll need to force them to accept it:
 
@@ -195,9 +195,7 @@ Because self-signed certificates are untrusted by nature, client browsers and se
 
 * **Node applications**: Take a look at this page: `Painless Self Signed Certificates in node.js <https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__.
 
-* **Browser JavaScript applications**: Some browsers require the user to accept a security warning before Secure WebSocket connections can be established. This is done by directly opening the KMS WebSocket URL: https://KMS_HOST:8433/kurento
-
-  As of this writing, Firefox 75.0 requires doing this, while Chrome 81.0 doesn't require it.
+* **Browser JavaScript applications**: Similar to what happens with self-signed certificates used for HTTPS, browsers also require the user to accept a security warning before Secure WebSocket connections can be established. This is done by directly opening the KMS WebSocket URL: https://KMS_HOST:8433/kurento
 
 
 
