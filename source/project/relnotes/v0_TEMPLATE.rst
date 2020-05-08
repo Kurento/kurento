@@ -66,8 +66,8 @@ Thanks for the change
 
 
 
-More thanks
-===========
+Thank You
+=========
 
 There were other changes and fixes contributed by users, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
 

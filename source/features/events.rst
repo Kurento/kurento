@@ -76,6 +76,8 @@ For example: If a *WebRtcEndpoint* receives a *VP8* video stream from a Chrome b
 
 
 
+.. _events-basertpendpoint:
+
 BaseRtpEndpoint events
 ======================
 

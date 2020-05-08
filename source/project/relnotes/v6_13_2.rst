@@ -1,0 +1,90 @@
+=================
+6.13.2 (May 2020)
+=================
+
+To install Kurento Media Server: :doc:`/user/installation`.
+
+
+
+Added
+=====
+
+* The ``kms-datachannelexample`` plugin package has been restored and is now again available in the Apt package repository. This plugin is needed to run the WebRTC DataChannel :doc:`/user/tutorials`.
+
+
+
+Changed
+=======
+
+* All `Kurento Media Server Docker images <https://hub.docker.com/r/kurento/kurento-media-server>`__ now come with :ref:`Debug Symbols <dev-dbg>` already installed. This means that in case of a server crash, the process output will contain a useful stack trace that includes file names and line numbers of the exact point in source code where the error happened.
+
+  This is very helpful for writing useful bug reports.
+
+* ``BaseRtpEndpoint``'s event `MediaStateChangedEvent <https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__ documentation has been rewritten, so now it contains a better explanation of what exactly is reported by this event.
+
+* Media server's Secure WebSocket connections (``wss://`` as opposed to ``ws://``) is now using TLS 1.2 instead of the old TLS 1.0, which has been deprecated by most web browsers.
+
+  This should help make the browser-JavaScript tutorials to work again (:doc:`/user/tutorials`); before this, some browsers (such as Firefox) would reject to establish a connection between the browser and KMS, due to the old version of TLS in use by the server.
+
+
+
+Fixed
+=====
+
+* ``BaseRtpEndpoint``'s method `getMediaState <https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#getMediaState-->`__ has been changed to really return the current value of ``MediaState`` (see :ref:`events-basertpendpoint`).
+
+  Previously, this method was wrongly returning the current value of a different property: ``MediaFlowIn``.
+
+* The server's **WebSocket** connection now seamlessly falls back to IPv4 when IPv6 was enabled in the config but the system didn't support it (commit `Kurento/kurento-media-server@4e543d0 <https://github.com/Kurento/kurento-media-server/commit/4e543d070771407e199897048f91cd06985b8b30>`__).
+
+  Before this fix, having enabled IPv6 in the config (*/etc/kurento/kurento.conf.json*) would mean that the WebSocket connection *had* to be done through IPv6. Otherwise, an unhelpful message "``Underlying Transport Error``" would show up and the server wouldn't start.
+
+* Properly reject multiple ``m=`` lines in SDP messages (commit `Kurento/kms-core@6a47630 <https://github.com/Kurento/kms-core/commit/6a47630cba2aba4c74527f9757b705c342da5106>`__).
+
+  With the current state of affairs regarding the official browser JavaScript API for WebRTC, developers face a confusing mix of *stream*-based, *track*-based, and *transceiver*-based API methods. The way these APIs work together is not always clear cut, and some users have been mistakenly sending to Kurento SDP messages with multiple media-level video sections, which is not supported by the media server. This was poorly handled before, and now the server will correctly reject the second and further video (or audio) media lines in an SDP message.
+
+* Ignore invalid mDNS ICE candidates. This will prevent trying to handle unresolved mDNS candidates from Chrome or any other browser that might generate such kind of candidates (commit `Kurento/kms-elements@44ca3de <https://github.com/Kurento/kms-elements/commit/44ca3de04256422636638bbfd48953dbba087673>`__).
+
+  With this change, any mDNS candidates that don't belong to the local network, or otherwise cannot be resolved to an IP address for whatever reason, will be silently ignored instead of causing warning messages in the log.
+
+
+
+libnice 0.1.16
+==============
+
+The `libnice <https://gitlab.freedesktop.org/libnice/libnice>`__ library is a core part of our WebRTC implementation, because it handless all of the ICE process (candidate gathering and connectivity checking). It has now been updated to the latest version **0.1.16**, which brings lots of improvements and fixes.
+
+Some of the most relevant changes are:
+
+* `Bug 95 <https://gitlab.freedesktop.org/libnice/libnice/issues/95>`__ (*ERROR:conncheck.c:1899:priv_mark_pair_nominated: assertion failed: (pair->state == NICE_CHECK_DISCOVERED) crash*) has been fixed with `commit 6afcb580 <https://gitlab.freedesktop.org/libnice/libnice/-/commit/6afcb580ae8118e189b24c74f0832c8cfff39f4e>`__.
+
+  This bug was affecting some users of Kurento, and caused that the whole process was aborted when libnice encountered an unexpected change of internal states. This now should be fixed, making the server more robust and reliable.
+
+* `Commit 099ff65c <https://gitlab.freedesktop.org/libnice/libnice/-/commit/099ff65c0371483ded4a3a7e905adfeea0faf6f6>`__ introduced the feature of ignoring by default network interfaces from virtual machines and containers. So, from now on Kurento will ignore interface names that start with "*docker*", "*veth*", "*virbr*", and "*vnet*".
+
+  This change reduces the amount of work that the ICE protocol needs to do when trying to establish WebRTC connections with remote peers, thus having the connectivity tests be much quicker. It also prevents some edge cases where libnice selected a virtual network interface as the best possible candidate, which would have Kurento sending and/or receiving streams in convoluted loopbacks through the local virtual devices.
+
+  You can complement this with the ``networkInterfaces`` parameter of WebRtcEndpoint (either with */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*, `Java <https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__, or `JavaScript <https://doc-kurento.readthedocs.io/en/stable/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__), which allows to select the exact network interface(s) that Kurento Media Server should use for WebRTC connections.
+
+* Miscellaneous improvements, such as `connectivity keepalives <https://gitlab.freedesktop.org/libnice/libnice/-/commit/36d7f8141bcab3d4583573a59cdd2b01d7598648>`__, `peer-reflexive candidates <https://gitlab.freedesktop.org/libnice/libnice/-/commit/061c627ea9a772faa9b2ea110a21d9fac58c698a>`__, `memory leaks <https://gitlab.freedesktop.org/libnice/libnice/-/merge_requests/59>`__, and lots of other small fixes.
+
+* Version **0.1.16** of libnice also introduced a backwards-breaking change that might negatively affect applications that use this library: `nice_agent_remove_stream() was silently made asynchronous <https://gitlab.freedesktop.org/libnice/libnice/issues/110>`__.
+
+  This change broke the usage inside Kurento, which assumed the previous behavior of assuming a synchronous method. For sample code that shows how we worked around this issue, have a look at commit `Kurento/kms-elements@a4c9f35 <https://github.com/Kurento/kms-elements/commit/a4c9f35b53e2af3ff5b06edb8c1ce338907e9503>`__.
+
+  This point is noted here to warn other application owners about this issue. If you want to track progress on this change, see the previous link for the bug report we opened.
+
+
+
+Thank You
+=========
+
+There were other changes and fixes contributed by users, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
+
+**kurento-docker**
+
+* `@tuttieee <https://github.com/tuttieee>`__ for `Kurento/kurento-docker#14 <https://github.com/Kurento/kurento-docker/pull/14>`__ (*Add KMS_MIN_PORT and KMS_MAX_PORT env vars*).
+
+**kms-elements**
+
+* `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for `Kurento/kms-elements#23 <https://github.com/Kurento/kms-elements/pull/23>`__ (*Fix STUN server usage when stunServerPort isn't set and the default value is to be used*).
