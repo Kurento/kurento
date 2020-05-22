@@ -109,7 +109,7 @@ on_ice_candidate (KmsWebrtcSession * sess, KmsIceCandidate * candidate,
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
-  GST_INFO_OBJECT (self,
+  GST_DEBUG_OBJECT (self,
       "[IceCandidateFound] local: '%s', stream_id: %s, component_id: %d",
       kms_ice_candidate_get_candidate (candidate),
       kms_ice_candidate_get_stream_id (candidate),
@@ -125,7 +125,7 @@ on_ice_gathering_done (KmsWebrtcSession * sess, KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
-  GST_INFO_OBJECT (self, "[IceGatheringDone] session: '%s'", sdp_sess->id_str);
+  GST_DEBUG_OBJECT (self, "[IceGatheringDone] session: '%s'", sdp_sess->id_str);
 
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0,
@@ -138,7 +138,7 @@ on_ice_component_state_change (KmsWebrtcSession * sess, const gchar * stream_id,
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
-  GST_DEBUG_OBJECT (self,
+  GST_LOG_OBJECT (self,
       "[IceComponentStateChanged] state: %s, stream_id: %s, component_id: %u",
       kms_ice_base_agent_state_to_string (state), stream_id, component_id);
 
@@ -201,7 +201,7 @@ kms_webrtc_endpoint_add_data_sink_pad (KmsWebrtcEndpoint * self,
     return FALSE;
   }
 
-  GST_DEBUG_OBJECT (self, "Added pad %" GST_PTR_FORMAT, pad);
+  GST_TRACE_OBJECT (self, "Added pad %" GST_PTR_FORMAT, pad);
 
   return TRUE;
 }
@@ -272,7 +272,7 @@ kms_webrtc_endpoint_remove_pad (KmsWebrtcSession * session, GstPad * pad,
     return FALSE;
   }
 
-  GST_DEBUG_OBJECT (self, "Remove sink pad %" GST_PTR_FORMAT, pad);
+  GST_TRACE_OBJECT (self, "Remove sink pad %" GST_PTR_FORMAT, pad);
 
   kms_element_remove_sink_by_type_full (KMS_ELEMENT (self), type, description);
 
@@ -288,7 +288,7 @@ new_selected_pair_full (KmsWebrtcSession * sess,
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
-  GST_INFO_OBJECT (self,
+  GST_DEBUG_OBJECT (self,
       "[NewCandidatePairSelected] local: '%s', remote: '%s'"
       ", stream_id: %s, component_id: %u",
       kms_ice_candidate_get_candidate (lcandidate),
@@ -442,7 +442,7 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
     return FALSE;
   }
 
-  GST_INFO_OBJECT (self, "[IceGatheringStarted] session: '%s'", sess_id);
+  GST_DEBUG_OBJECT (self, "[IceGatheringStarted] session: '%s'", sess_id);
 
   webrtc_sess = KMS_WEBRTC_SESSION (sess);
   g_signal_emit_by_name (webrtc_sess, "gather-candidates", &ret);
@@ -466,7 +466,7 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
   }
 
   // Remote candidates haven't been assigned a stream_id yet, so don't print it
-  GST_INFO_OBJECT (self,
+  GST_DEBUG_OBJECT (self,
       "[AddIceCandidate] remote: '%s', component_id: %d",
       kms_ice_candidate_get_candidate (candidate),
       kms_ice_candidate_get_component (candidate));
@@ -559,7 +559,7 @@ kms_webrtc_endpoint_dispose (GObject * object)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
 
-  GST_DEBUG_OBJECT (self, "dispose");
+  GST_LOG_OBJECT (self, "dispose");
 
   KMS_ELEMENT_LOCK (self);
 
@@ -576,7 +576,7 @@ kms_webrtc_endpoint_finalize (GObject * object)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
 
-  GST_DEBUG_OBJECT (self, "finalize");
+  GST_LOG_OBJECT (self, "finalize");
 
   g_free (self->priv->stun_server_ip);
   g_free (self->priv->turn_url);
