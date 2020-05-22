@@ -25,7 +25,7 @@ This Docker image contains a default local installation, as described in the off
 
 * A local `apt-get` installation of KMS.
 * All default settings, as found in `/etc/kurento/`.
-* Debug symbols installed, to allow getting useful stack traces in case the process crashes. If this happens, please [report a bug](https://github.com/Kurento/bugtracker/issues/new/choose).
+* Debug symbols installed, to allow getting useful stack traces in case the process crashes. If this happens, please [report a bug](https://github.com/Kurento/bugtracker/issues).
 
 
 
