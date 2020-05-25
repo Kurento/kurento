@@ -1638,7 +1638,10 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
     ret = gst_pad_peer_query_accept_caps (srcpad, accept);
     gst_object_unref (srcpad);
   } else {
-    GST_ERROR_OBJECT (self, "Incompatbile caps %" GST_PTR_FORMAT, caps);
+    GST_ERROR_OBJECT (self,
+        "Input caps (%" GST_PTR_FORMAT
+        ") doesn't match profile caps (%" GST_PTR_FORMAT ")",
+        accept, caps);
   }
 
 end:
