@@ -109,73 +109,75 @@ The **default suggested level** is what KMS sets automatically when it is starte
 
 From that baseline, one can add any other values to extend the amount of information that gets logged:
 
-- Event MediaFlow{In,Out} state changes
+* **MediaFlowIn**, **MediaFlowOut** state changes, important to know if media is actually flowing between endpoints (see :ref:`events-mediaelement`):
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoMediaElementImpl:5"
 
-- ICE candidate gathering
+* **WebRTC** related logging:
 
-  .. code-block:: text
+  - SDP Offer/Answer messages:
 
-     export GST_DEBUG="${GST_DEBUG:-3},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
+    .. code-block:: text
 
-  .. note::
+       export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:5"
 
-     - See also :ref:`logging-libnice` to enable advanced logging.
-     - *webrtcendpoint* shows detailed messages from the WebRtcEndpoint (good enough for most cases).
-     - *kmswebrtcsession* shows messages from the internal WebRtcSession class (broarder decision logic).
-     - *kmsiceniceagent* shows messages from the *libnice* Agent (very low-level, probably too verbose for day to day troubleshooting).
+  - ICE candidate gathering:
 
-- Player
+    .. code-block:: text
+
+       export GST_DEBUG="${GST_DEBUG:-3},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
+
+    .. note::
+
+       - See also :ref:`logging-libnice` to enable advanced logging.
+       - *webrtcendpoint* shows detailed messages from the WebRtcEndpoint (good enough for most cases).
+       - *kmswebrtcsession* shows messages from the internal WebRtcSession class (broarder decision logic).
+       - *kmsiceniceagent* shows messages from the *libnice* Agent (very low-level, probably too verbose for day to day troubleshooting).
+
+  - REMB congestion control:
+
+    .. code-block:: text
+
+       export GST_DEBUG="${GST_DEBUG:-3},kmsremb:5"
+
+    .. note::
+
+       - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
+       - *kmsremb:6* (debug level 6) shows full (very verbose) handling of all source SSRCs.
+
+* **PlayerEndpoint**:
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
 
-- Recorder
+* **RecorderEndpoint**:
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5"
 
-- REMB congestion control
-
-  .. code-block:: text
-
-     export GST_DEBUG="${GST_DEBUG:-3},kmsremb:5"
-
-  .. note::
-
-     - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
-     - *kmsremb:6* (debug level 6) shows full (very verbose) handling of all source SSRCs.
-
-- RPC calls
+* **JSON-RPC** API server calls:
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoWebSocket*:5"
 
-- RTP Sync
+* **RTP Synchronization**:
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
-- SDP processing
-
-  .. code-block:: text
-
-     export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:5"
-
-- Transcoding of media
+* **Transcoding of media**:
 
   .. code-block:: text
 
      export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
 
-- Unit tests
+* **Unit tests**:
 
   .. code-block:: text
 

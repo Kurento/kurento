@@ -22,6 +22,8 @@ Some error has occurred. Check the event parameters (such as *description*, *err
 
 
 
+.. _events-mediaelement:
+
 MediaElement events
 ===================
 
