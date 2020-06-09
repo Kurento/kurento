@@ -76,7 +76,7 @@ public class Room implements Closeable {
       pipeline = kurento.createMediaPipeline();
     }
 
-    log.debug("ROOM {}: adding participant {}", userName, userName);
+    log.debug("ROOM {}: adding participant {}", this.name, userName);
     final RoomParticipant participant = new RoomParticipant(userName, this, session, this.pipeline);
 
     sendParticipantNames(participant);
