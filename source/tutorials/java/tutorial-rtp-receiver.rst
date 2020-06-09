@@ -34,7 +34,7 @@ Follow these steps to run this demo application:
       git clone https://github.com/Kurento/kurento-tutorial-java.git
       cd kurento-tutorial-java/kurento-rtp-receiver/
       git checkout |VERSION_TUTORIAL_JAVA|
-      mvn -U clean spring-boot:run -Dkms.url=ws://localhost:8888/kurento
+      mvn -U clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dkms.url=ws://kms_host:kms_port/kurento"
 
 4. Open the demo page with a WebRTC-compliant browser (Chrome, Firefox): https://localhost:8443/
 5. Click on *Start* to begin the demo.

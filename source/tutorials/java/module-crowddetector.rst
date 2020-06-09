@@ -46,7 +46,7 @@ Firefox).
 
    .. sourcecode:: bash
 
-      mvn -U clean spring-boot:run -Dkms.url=ws://kms_host:kms_port/kurento
+      mvn -U clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dkms.url=ws://kms_host:kms_port/kurento"
 
 Understanding this example
 ==========================

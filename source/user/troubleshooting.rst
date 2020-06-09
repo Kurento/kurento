@@ -265,7 +265,7 @@ This is a sample of what the console output will look like, with the logging lev
 
 .. code-block:: text
 
-   $ mvn -U clean spring-boot:run -Dkms.url=ws://localhost:8888/kurento
+   $ mvn -U clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dkms.url=ws://localhost:8888/kurento"
    INFO org.kurento.tutorial.player.Application  : Starting Application on TEST with PID 16448
    DEBUG o.kurento.client.internal.KmsUrlLoader  : Executing getKmsUrlLoad(b843d6f6-02dd-49b4-96b6-f2fd2e8b1c8d) in KmsUrlLoader
    DEBUG o.kurento.client.internal.KmsUrlLoader  : Obtaining kmsUrl=ws://localhost:8888/kurento from config file or system property
@@ -285,7 +285,7 @@ As opposed to that, the console output for when a connection is successfully don
 
 .. code-block:: text
 
-   $ mvn -U clean spring-boot:run -Dkms.url=ws://localhost:8888/kurento
+   $ mvn -U clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dkms.url=ws://localhost:8888/kurento"
    INFO org.kurento.tutorial.player.Application : Starting Application on TEST with PID 21617
    DEBUG o.kurento.client.internal.KmsUrlLoader : Executing getKmsUrlLoad(af479feb-dc49-4a45-8b1c-eedf8325c482) in KmsUrlLoader
    DEBUG o.kurento.client.internal.KmsUrlLoader : Obtaining kmsUrl=ws://localhost:8888/kurento from config file or system property
