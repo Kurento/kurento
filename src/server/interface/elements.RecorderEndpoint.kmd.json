@@ -5,9 +5,9 @@
       "extends": "UriEndpoint",
       "doc": "Provides the functionality to store contents.
 <p>
-  The recorder can store in local files or in a network resource. It receives a
-  media stream from another :rom:cls:`MediaElement` (i.e. the source), and
-  stores it in the designated location.
+  The Recorder can store media in local files or in a network resource. It
+  receives a media stream from another :rom:cls:`MediaElement` (i.e. the
+  source), and stores it in the designated location.
 </p>
 <p>
   The following information has to be provided in order to create a
@@ -15,54 +15,66 @@
 </p>
 <ul>
   <li>
-    URI of the resource where media will be stored. Following schemas are
-    supported:
+    <strong>Destination URI</strong>, where media will be stored. These formats
+    are supported:
     <ul>
       <li>
-        Files: mounted in the local file system.
+        File: A file path that exists in the local file system.
         <ul>
           <li><code>file:///path/to/file</code></li>
         </ul>
       </li>
       <li>
-        HTTP: Requires the server to support method PUT
+        HTTP: Method PUT used against a remote server.
         <ul>
           <li><code>http(s)://{server-ip}/path/to/file</code></li>
           <li>
-            <code>http(s)://username:password@{server-ip}/path/to/file</code>
+            <code>
+              http(s)://{username}:{password}@{server-ip}/path/to/file
+            </code>
           </li>
         </ul>
       </li>
     </ul>
   </li>
   <li>
-    Relative URIs (with no schema) are supported. They are completed prepending
-    a default URI defined by property <i>defaultPath</i>. This property is
-    defined in the configuration file
+    Relative URIs (with no schema) are supported. They are completed by
+    prepending a default URI defined by property <i>defaultPath</i>. This
+    property is defined in the configuration file
     <i>/etc/kurento/modules/kurento/UriEndpoint.conf.ini</i>, and the default
     value is <code>file:///var/lib/kurento/</code>
   </li>
   <li>
-    The media profile (:rom:attr:`MediaProfileSpecType`) used to store the file.
-    This will determine the encoding. See below for more details about media
-    profile.
+    The <stron>Media Profile</stron> (:rom:attr:`MediaProfileSpecType`) used for
+    storage. This will determine the video and audio encoding. See below for
+    more details about Media Profile.
   </li>
   <li>
     Optionally, the user can select if the endpoint will stop processing once
-    the EndOfStream event is detected.
+    the <strong>EndOfStream</strong> event is detected.
   </li>
 </ul>
 <p>
-  RecorderEndpoint requires access to the resource where stream is going to be
-  recorded. If it's a local file (<code>file://</code>), the system user running
-  the media server daemon (kurento by default), needs to have write permissions
-  for that URI. If it's an HTTP server, it must be accessible from the machine
-  where media server is running, and also have the correct access rights.
-  Otherwise, the media server won't be able to store any information, and an
+  <strong>
+    RecorderEndpoint requires access to the resource where stream is going to be
+    recorded
+  </strong>
+  . Otherwise, the media server won't be able to store any information, and an
   :rom:evt:`Error` will be fired. Please note that if you haven't subscribed to
   that type of event, you can be left wondering why your media is not being
   saved, while the error message was ignored.
 </p>
+<ul>
+  <li>
+    To write local files (if you use <code>file://</code>), the user running the
+    media server (by default, user <code>kurento</code>) needs to have write
+    permissions for the requested path.
+  </li>
+  <li>
+    To save into an HTTP server, the server must be accessible through the
+    network, and also have the correct access rights.
+  </li>
+</ul>
 <p>
   The media profile is quite an important parameter, as it will determine
   whether the server needs to perform on-the-fly transcoding of the media. If
@@ -94,11 +106,18 @@
   a very important decision.
 </p>
 <p>
-  Recording will start as soon as the user invokes the record method. The
-  recorder will then store, in the location indicated, the media that the source
-  is sending to the endpoint's sink. If no media is being received, or no
-  endpoint has been connected, then the destination will be empty. The recorder
-  starts storing information into the file as soon as it gets it.
+  Recording will start as soon as the user invokes the
+  <code>record</code> method. The recorder will then store, in the location
+  indicated, the media that the source is sending to the endpoint. If no media
+  is being received, or no endpoint has been connected, then the destination
+  will be empty. The recorder starts storing information into the file as soon
+  as it gets it.
+</p>
+<p>
+  Stopping the recording process is done through the
+  <code>stopAndWait</code> method, which will return only after all the
+  information was stored correctly. If the file is empty, this means that no
+  media arrived at the recorder.
 </p>
 <p>
   When another endpoint is connected to the recorder, by default both AUDIO and
@@ -117,17 +136,32 @@
   recording is stopped.
 </p>
 <p>
-  It is recommended to start recording only after media arrives, either to the
-  endpoint that is the source of the media connected to the recorder, to the
-  recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut
-  events, and synchronize the recording with the moment media comes in. In any
-  case, nothing will be stored in the file until the first media packets arrive.
+  <strong>
+    It is recommended to start recording only after media arrives
+  </strong>
+  . For this, you may use the <code>MediaFlowInStateChange</code> and
+  <code>MediaFlowOutStateChange</code>
+  events of your endpoints, and synchronize the recording with the moment media
+  comes into the Recorder. For example:
 </p>
-<p>
-  Stopping the recording process is done through the stopAndWait method, which
-  will return only after all the information was stored correctly. If the file
-  is empty, this means that no media arrived at the recorder.
-</p>
+<ol>
+  <li>
+    When the remote video arrives to KMS, your WebRtcEndpoint will start
+    generating packets into the Kurento Pipeline, and it will trigger a
+    <code>MediaFlowOutStateChange</code> event.
+  </li>
+  <li>
+    When video packets arrive from the WebRtcEndpoint to the RecorderEndpoint,
+    the RecorderEndpoint will raise a <code>MediaFlowInStateChange</code> event.
+  </li>
+  <li>
+    You should only start recording when RecorderEndpoint has notified a
+    <code>MediaFlowInStateChange</code> for ALL streams (so, if you record
+    AUDIO+VIDEO, your application must receive a
+    <code>MediaFlowInStateChange</code> event for audio, and another
+    <code>MediaFlowInStateChange</code> event for video).
+  </li>
+</ol>
       ",
       "constructor":
         {
