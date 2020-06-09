@@ -7,7 +7,7 @@ This web application consists of a `WebRTC`:term: video communication in mirror
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_
    for securing your application.
 
 For the impatient: running this example
@@ -60,7 +60,7 @@ through a WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      npm start -- --ws_uri=ws://kms_host:kms_port/kurento
+      npm start -- --ws_uri=ws://{KMS_HOST}:8888/kurento
 
    In this case you need to use npm version 2. To update it you can use this command:
 
@@ -116,11 +116,11 @@ corner of the following screenshot:
    :alt:     Chroma filter in action
 
    *Chroma filter in action*
-   
+
 .. note::
 
    Modules can have options. For configuring these options, you'll need to get the constructor for them.
-   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is
    an example in the code.
 
 The media pipeline of this demo is is implemented in the JavaScript logic as
@@ -131,7 +131,7 @@ follows:
    ...
    kurento.register('kurento-module-chroma');
    ...
-   
+
    function start(sessionId, ws, sdpOffer, callback) {
        if (!sessionId) {
            return callback('Cannot use undefined sessionId');

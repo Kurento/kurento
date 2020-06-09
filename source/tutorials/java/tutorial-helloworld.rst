@@ -25,7 +25,8 @@ Follow these steps to run this demo application:
       git clone https://github.com/Kurento/kurento-tutorial-java.git
       cd kurento-tutorial-java/kurento-hello-world
       git checkout |VERSION_TUTORIAL_JAVA|
-      mvn -U clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dkms.url=ws://kms_host:kms_port/kurento"
+      mvn -U clean spring-boot:run \
+          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
 
 3. Open the demo page with a WebRTC-compliant browser (Chrome, Firefox): https://localhost:8443/
 4. Click on *Start* to begin the demo.

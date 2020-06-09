@@ -7,7 +7,7 @@ technology. In other words, this application provides a simple video softphone.
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_
    for securing your application.
 
 For the impatient: running this example
@@ -56,7 +56,7 @@ WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      npm start -- --ws_uri=ws://kms_host:kms_port/kurento
+      npm start -- --ws_uri=ws://{KMS_HOST}:8888/kurento
 
    In this case you need to use npm version 2. To update it you can use this command:
 
@@ -243,15 +243,15 @@ message fires the execution of the following function:
        function onError(error) {
            ws.send(JSON.stringify({id:'registerResponse', response : 'rejected ', message: error}));
        }
-   
+
        if (!name) {
            return onError("empty user name");
        }
-   
+
        if (userRegistry.getByName(name)) {
            return onError("User " + name + " is already registered");
        }
-   
+
        userRegistry.register(new UserSession(id, name, ws));
        try {
            ws.send(JSON.stringify({id: 'registerResponse', response: 'accepted'}));
@@ -311,7 +311,7 @@ in the callee peer, after the caller executes the function ``call``:
 
    function call(callerId, to, from, sdpOffer) {
        clearCandidatesQueue(callerId);
-   
+
        var caller = userRegistry.getById(callerId);
        var rejectCause = 'User ' + to + ' is not registered';
        if (userRegistry.getByName(to)) {
@@ -339,7 +339,7 @@ in the callee peer, after the caller executes the function ``call``:
 
    function incomingCallResponse(calleeId, from, callResponse, calleeSdp, ws) {
        clearCandidatesQueue(calleeId);
-   
+
        function onError(callerReason, calleeReason) {
            if (pipeline) pipeline.release();
            if (caller) {
@@ -350,46 +350,46 @@ in the callee peer, after the caller executes the function ``call``:
                if (callerReason) callerMessage.message = callerReason;
                caller.sendMessage(callerMessage);
            }
-   
+
            var calleeMessage = {
                id: 'stopCommunication'
            };
            if (calleeReason) calleeMessage.message = calleeReason;
            callee.sendMessage(calleeMessage);
        }
-   
+
        var callee = userRegistry.getById(calleeId);
        if (!from || !userRegistry.getByName(from)) {
            return onError(null, 'unknown from = ' + from);
        }
        var caller = userRegistry.getByName(from);
-   
+
        if (callResponse === 'accept') {
            var pipeline = new CallMediaPipeline();
            pipelines[caller.id] = pipeline;
            pipelines[callee.id] = pipeline;
-   
+
            pipeline.createPipeline(caller.id, callee.id, ws, function(error) {
                if (error) {
                    return onError(error, error);
                }
-   
+
                pipeline.generateSdpAnswer(caller.id, caller.sdpOffer, function(error, callerSdpAnswer) {
                    if (error) {
                        return onError(error, error);
                    }
-   
+
                    pipeline.generateSdpAnswer(callee.id, calleeSdp, function(error, calleeSdpAnswer) {
                        if (error) {
                            return onError(error, error);
                        }
-   
+
                        var message = {
                            id: 'startCommunication',
                            sdpAnswer: calleeSdpAnswer
                        };
                        callee.sendMessage(message);
-   
+
                        message = {
                            id: 'callResponse',
                            response : 'accepted',
@@ -425,7 +425,7 @@ media element by calling to the ``addIceCandidate`` method.
    function onIceCandidate(sessionId, _candidate) {
        var candidate = kurento.getComplexType('IceCandidate')(_candidate);
        var user = userRegistry.getById(sessionId);
-   
+
        if (pipelines[user.id] && pipelines[user.id].webRtcEndpoint && pipelines[user.id].webRtcEndpoint[user.id]) {
            var webRtcEndpoint = pipelines[user.id].webRtcEndpoint[user.id];
            webRtcEndpoint.addIceCandidate(candidate);
@@ -477,7 +477,7 @@ WebRTC communication.
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'registerResponse':
          resgisterResponse(parsedMessage);
@@ -559,7 +559,7 @@ call.
             from : message.from,
             callResponse : 'reject',
             message : 'bussy'
-   
+
          };
          return sendMessage(response);
       }
@@ -642,4 +642,3 @@ file and pay attention to the following section:
    We are in active development. You can find the latest version of
    Kurento JavaScript Client at `npm <https://npmsearch.com/?q=kurento-client>`_
    and `Bower <https://bower.io/search/?q=kurento-client>`_.
-

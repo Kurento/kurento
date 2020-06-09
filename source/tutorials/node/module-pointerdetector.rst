@@ -7,7 +7,7 @@ This web application consists of a `WebRTC`:term: video communication in mirror
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_
    for securing your application.
 
 For the impatient: running this example
@@ -60,7 +60,7 @@ through a WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      npm start -- --ws_uri=ws://kms_host:kms_port/kurento
+      npm start -- --ws_uri=ws://{KMS_HOST}:8888/kurento
 
    In this case you need to use npm version 2. To update it you can use this command:
 
@@ -104,11 +104,11 @@ video, as follows:
    :alt:     Pointer calibration stage
 
    *Pointer calibration stage*
-   
+
 .. note::
 
    Modules can have options. For configuring these options, you'll need to get the constructor for them.
-   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is
    an example in the code.
 
 In that precise moment, a calibration operation should be carried out. This is

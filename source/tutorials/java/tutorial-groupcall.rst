@@ -40,7 +40,8 @@ capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      mvn -U clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dkms.url=ws://kms_host:kms_port/kurento"
+      mvn -U clean spring-boot:run \
+          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
 
 
 Understanding this example

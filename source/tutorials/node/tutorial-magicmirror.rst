@@ -7,7 +7,7 @@ media processing to the basic `WebRTC`:term: loopback.
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_ 
+   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_
    for securing your application.
 
 For the impatient: running this example
@@ -56,7 +56,7 @@ WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      npm start -- --ws_uri=ws://kms_host:kms_port/kurento
+      npm start -- --ws_uri=ws://{KMS_HOST}:8888/kurento
 
    In this case you need to use npm version 2. To update it you can use this command:
 

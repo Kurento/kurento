@@ -51,7 +51,8 @@ Configure a Java server to use HTTPS
 
 .. sourcecode:: bash
 
-   mvn -U clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dkms.url=ws://kms_host:kms_port/kurento"
+   mvn -U clean spring-boot:run \
+       -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
 
 .. note::
 
@@ -195,7 +196,7 @@ Because self-signed certificates are untrusted by nature, client browsers and se
 
 * **Node applications**: Take a look at this page: `Painless Self Signed Certificates in node.js <https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__.
 
-* **Browser JavaScript applications**: Similar to what happens with self-signed certificates used for HTTPS, browsers also require the user to accept a security warning before Secure WebSocket connections can be established. This is done by directly opening the KMS WebSocket URL: https://KMS_HOST:8433/kurento
+* **Browser JavaScript applications**: Similar to what happens with self-signed certificates used for HTTPS, browsers also require the user to accept a security warning before Secure WebSocket connections can be established. This is done by directly opening the KMS WebSocket URL: https://{KMS_HOST}:8433/kurento
 
 
 
@@ -212,13 +213,14 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
 
   .. code-block:: java
 
-     mvn clean spring-boot:run -Dkms.url="wss://KMS_HOST:8433/kurento"
+     mvn -U clean spring-boot:run \
+         -Dkms.url="wss://{KMS_HOST}:8433/kurento"
 
 * **Node.js**: Launch with the ``ws_uri`` command-line argument. For example:
 
   .. code-block:: js
 
-     npm start -- --ws_uri="wss://KMS_HOST:8433/kurento"
+     npm start -- --ws_uri="wss://{KMS_HOST}:8433/kurento"
 
 * **Browser JavaScript**: Application-specific method. For example, using hardcoded values:
 
