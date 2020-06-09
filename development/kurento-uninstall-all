@@ -5,8 +5,6 @@
 
 
 # Shell setup
-# -----------
-
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/../bash.conf.sh" || {
@@ -17,8 +15,6 @@ source "$BASEPATH/../bash.conf.sh" || {
 
 
 # Check permissions
-# -----------------
-
 [[ "$(id -u)" -eq 0 ]] || {
     echo "ERROR: Please run as root user (or with 'sudo')"
     exit 1
@@ -27,9 +23,5 @@ source "$BASEPATH/../bash.conf.sh" || {
 
 
 # Uninstall everything
-# --------------------
-
-service kurento-media-server stop || true
-aptitude purge '?installed?version(kurento)'
-
-echo "All packages uninstalled successfully"
+service kurento-media-server stop 2>/dev/null || true
+aptitude purge --assume-yes '?installed?version(kurento)'
