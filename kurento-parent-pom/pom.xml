@@ -574,8 +574,12 @@
 				<version>${version.websocket-api}</version>
 			</dependency>
 
-			<!-- Spring -->
-			<!-- POM files to fix compatible dependencies -->
+			<!--
+			Import dependency management from Spring Boot.
+			Individual dependencies can be overriden by specifying them *before*
+			this entry. See:
+			https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/html/#using-import
+			-->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
