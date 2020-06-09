@@ -24,9 +24,14 @@ Functional tests are aimed to evaluate a given capability provided by Kurento. T
 
 .. code-block:: bash
 
-   git clone https://github.com/Kurento/kurento-java
+   git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
-   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemFunctionalTests
+   mvn \
+       --projects kurento-integration-tests/kurento-test --also-make \
+       -Pintegration \
+       -Dgroups=org.kurento.commons.testing.SystemFunctionalTests \
+       clean verify
+
 
 By default, these tests required a local Kurento Media Server installed in the machine running the tests. In addition, Chrome and Firefox browsers are also required. For further information about running these tests, please read next section.
 
@@ -35,8 +40,7 @@ The main types of functional tests for Kurento are the following:
 - WebRTC. Real-time media in the web is one of the core Kurento capabilities, and therefore, a rich test suite to assess the use of WebRTC in Kurento has been implemented. Moreover, two special WebRTC features are also tested:
 
    - Datachannels. A WebRTC data channel allows to send custom data over an active connection to a peer. Tests using Chrome and Firefox has been implemented to check WebRTC datachannels.
-
-   - ICE. In order to create media communication between peers avoiding NAT traversal problems, ICE (Interactive Connectivity Establishment) negotiation is used in WebRTC. Kurento ICE tests check this connectivity using different network setups (NATs, reflexive, bridge).
+   - ICE. In order to create media communication between peers avoiding :term:`NAT Traversal` problems, ICE (Interactive Connectivity Establishment) negotiation is used in WebRTC. Kurento ICE tests check this connectivity using different network setups (NATs, reflexive, bridge).
 
 - Recorder. Another important capability provided by Kurento is the media archiving. Recorder tests use ``RecorderEndpoint`` media element by ensuring that the recorded media is as expected.
 
@@ -57,9 +61,13 @@ Stability tests have been also created using Java, and they are contained in the
 
 .. code-block:: bash
 
-   git clone https://github.com/Kurento/kurento-java
+   git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
-   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemStabilityTests
+   mvn \
+       --projects kurento-integration-tests/kurento-test --also-make \
+       -Pintegration \
+       -Dgroups=org.kurento.commons.testing.SystemStabilityTests \
+       clean verify
 
 Tutorials
 ---------
@@ -70,7 +78,7 @@ The documentation of Kurento includes a number of tutorials `tutorials <https://
 
    git clone https://github.com/Kurento/kurento-tutorial-test
    cd kurento-tutorial-test
-   mvn verify
+   mvn clean verify
 
 API
 ---
@@ -79,9 +87,13 @@ The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_
 
 .. code-block:: bash
 
-   git clone https://github.com/Kurento/kurento-java
+   git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
-   mvn verify -pl kurento-integration-tests/kurento-client-test -Pintegration -Dgroups=org.kurento.commons.testing.KurentoClientTests
+   mvn \
+       --projects kurento-integration-tests/kurento-client-test --also-make \
+       -Pintegration \
+       -Dgroups=org.kurento.commons.testing.KurentoClientTests \
+       clean verify
 
 In order to run JavaScript API tests against a running instance of local KMS, the command to be used is the following:
 
@@ -102,37 +114,53 @@ Maven is the the way which E2E Kurento are executed. Therefore, in order to run 
 
 .. code-block:: bash
 
-   git clone https://github.com/Kurento/kurento-java
+   git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
-   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.IntegrationTests -Dtest=WebRtcOneLoopbackTest
+   mvn \
+       --projects kurento-integration-tests/kurento-test --also-make \
+       -Pintegration \
+       -Dgroups=org.kurento.commons.testing.IntegrationTests \
+       -Dtest=WebRtcOneLoopbackTest \
+       clean verify
 
 Let's take a closer look to the Maven command:
 
-- ``mvn verify``: Command to execute the ``verify`` goal in Maven, which involves the execution of the unit and integration tests of a Maven project.
+- ``mvn [...] clean verify``: Command to execute the `clean` and ``verify`` goals in Maven. ``clean`` will ensure that old build artifacts are deleted, and ``verify`` involves the execution of the unit and integration tests of a Maven project.
 
-- ``-pl kurento-integration-tests/kurento-test``: Maven option to select a single project for the goal, in this case ``kurento-test``.
+- ``--projects kurento-integration-tests/kurento-test --also-make``: Maven options that select a single project for the goal, in this case ``kurento-test``, and builds it together with any other dependency it might have.
+
+- ``-Pintegration``: Enables the "*integration*" profile ID, as defined in the file *kurento-integration-tests/pom.xml*.
 
 - ``-Dgroups=org.kurento.commons.testing.IntegrationTests``: The Kurento E2E test suite is divided into different `JUnit 4's categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select different types of `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_. The most used values for this group are:
 
    - ``IntegrationTests``: Parent category for all Kurento E2E tests.
-
    - ``SystemFunctionalTests``: To run functional tests (as defined in section before).
-
    - ``SystemStabilityTests``: To run stability tests (as defined in section before).
+   - ``KurentoClientTests``: To run Java API tests (as defined in section before). If this option is used, the project should be also changed using ``--projects kurento-integration-tests/kurento-client-test``.
 
-   - ``KurentoClientTests``: To run Java API tests (as defined in section before). If this option is used, the project should be also changed using ``-pl kurento-integration-tests/kurento-client-test``
+- ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended, to select a test or group of test using Maven's ``-Dtest`` parameter. Using this command we can select a test using the Java class name.
 
-- ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended to select a test or group of test using the parameter ``-Dtest`` of Maven. Using this command we can select a test using the Java class name. Moreover, the wildcard ``*`` can be used. Kurento tests follow a fixed notation for test naming, and so, this can be used to select a group of tests, as follows:
+  The wildcard ``*`` can be used, and Kurento tests follow a fixed notation for their naming, so this can be used to select a group of tests. Note that it's a good idea to quote the string, to prevent unexpected shell expansions. For example:
 
-   - ``-Dtest=WebRtc*``: Used to execute all the functional Kurento tests for WebRTC.
+  - ``-Dtest='WebRtc*'``: Used to execute all the functional Kurento tests for WebRTC.
+  - ``-Dtest='Player*'``: Used to execute all the functional Kurento tests for player.
+  - ``-Dtest='Recorder*'``: Used to execute all the functional Kurento tests for recorder.
+  - ``-Dtest='Composite*'``: Used to execute all the functional Kurento tests for composite.
+  - ``-Dtest='Dispatcher*'``: Used to execute all the functional Kurento tests for dispatcher.
 
-   - ``-Dtest=Player*``: Used to execute all the functional Kurento tests for player.
+  It's also possible to select multiple test classes with a comma (``,``), such as in ``-Dtest=TestClass1,TestClass2``.
 
-   - ``-Dtest=Recorder*``: Used to execute all the functional Kurento tests for recorder.
+  Finally, it is possible to select individual methods *inside* the test classes, separating them with the ``#`` symbol:
 
-   - ``-Dtest=Composite*``: Used to execute all the functional Kurento tests for composite.
+  - ``-Dtest='PlayerOnlyAudioTrackTest#testPlayerOnlyAudioTrackFileOgg*'``: Run the *PlayerOnlyAudioTrackTest.testPlayerOnlyAudioTrackFileOgg* in all its browser configurations (first Chrome, then Firefox).
 
-   - ``-Dtest=Dispatcher*``: Used to execute all the functional Kurento tests for dispatcher.
+  Note that the method name is given with a wildcard; this is because for most tests, the actual method name includes information about the browser which is used. Using a wildcard would run this test with both Chrome and Firefox; to choose specifically between those, specify it in the method name:
+
+  - ``-Dtest='PlayerOnlyAudioTrackTest#testPlayerOnlyAudioTrackFileOgg[0: chrome]'``: Run *PlayerOnlyAudioTrackTest.testPlayerOnlyAudioTrackFileOgg* exclusively with the Chrome browser. Normally, Chrome is "*[0: chrome]*" and Firefox is "*[1: firefox]*".
+
+  Other combinations are possible:
+
+  - ``-Dtest='TestClass#testMethod1*+testMethod2*'``: Run *testMethod1* and *testMethod2* from the given test class.
 
 An HTML report summarizing the results of a test suite executed with KTF is automatically created for Kurento tests. This report is called ``report.html`` and it is located by default on the ``target`` folder when tests are executed with Maven. The following picture shows an example of the content of this report.
 
@@ -149,56 +177,58 @@ Kurento Media Server
 
 Kurento Media Server (KMS) is the heart of Kurento and therefore it must be properly configured in E2E tests. The following table summarizes the main options to setup KMS in these tests:
 
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| **Parameter**                          | **Description**                                                                                                                                                                                                                                                                                                                                                              | **Default value**                                                     |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``test.kms.scope``                     | Specifies how to start KMS when is internally managed by test:                                                                                                                                                                                                                                                                                                               | ``local``                                                             |
-|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                       |
-|                                        | - ``local``: Try to use local KMS installation. Test will fail is no local KMS is found.                                                                                                                                                                                                                                                                                     |                                                                       |
-|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                       |
-|                                        | - ``remote``: KMS is a remote host (use ``kms.login`` and ``kms.key`` to access using SSH to the remote machine).                                                                                                                                                                                                                                                            |                                                                       |
-|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                       |
-|                                        | - ``docker``: Request the docker daemon to start a KMS container based in the image specified by ``test.kms.docker.image.name``. Test will fail if daemon is unable to start KMS container. In order to use this scope, a Docker server should be installed in the machine running tests. In addition, the Docker REST should be available for Docker client (used in test). |                                                                       |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``test.kms.autostart``                 | Specifies if tests must start KMS (for all possible values of ``test.kms.scope``) or an external KMS service is used:                                                                                                                                                                                                                                                        | ``test``                                                              |
-|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                       |
-|                                        | - ``false``: Test must use an external KMS service whose URL is provided by property  ``kms.ws.uri``                                                                                                                                                                                                                                                                         |                                                                       |
-|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                       |
-|                                        | - ``test``: KMS instance is started for before each test execution. KMS is destroyed after test execution.                                                                                                                                                                                                                                                                   |                                                                       |
-|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                       |
-|                                        | - ``testsuite``: KMS service is started at the beginning of test suite execution. A test suite is the group of tests to be executed (e.g. all functional tests). KMS service is stopped after test suite execution.                                                                                                                                                          |                                                                       |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``kms.ws.uri``                         | URL of a KMS service. This property is mandatory when service is externally managed (``-Dtest.kms.autostart=false``) and ignored otherwise. Notice this URL must be reachable from Selenium nodes as well as from tests.                                                                                                                                                     | ``ws://localhost:8888/kurento``                                       |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``test.kms.docker.image.name``         | KMS docker image used to start a new docker container when KMS service is internally managed by test (``-Dtest.kms.autostart=test`` or ``testsuite``) with docker scope (``-Dtest.kms.scope=docker``). Ignored if ``test.kms.autostart=false``. See available Docker images for KMS in `Docker Hub <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags/>`_.      | ``kurento/kurento-media-server-dev:latest``                           |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``test.kms.docker.image.forcepulling`` | Force pulling for Docker image for KMS                                                                                                                                                                                                                                                                                                                                       | ``true``                                                              |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``test.kms.debug``                     | Debug options used to start KMS service when is internally managed by test  (``-Dtest.kms.autostart=test`` or ``testsuite``). Ignored if ``test.kms.autostart=false``.                                                                                                                                                                                                       | ``2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7`` |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``kms.log.folder``                     | Path of KMS log folder                                                                                                                                                                                                                                                                                                                                                       | ``/var/log/kurento-media-server``                                     |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``kms.command``                        | Shell command to start KMS                                                                                                                                                                                                                                                                                                                                                   | ``/usr/bin/kurento-media-server``                                     |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``kms.login``                          | Username to login by SSH in the machine hosting KMS                                                                                                                                                                                                                                                                                                                          | none                                                                  |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``kms.key``                            | Certificate path to login by SSH in the machine hosting KMS                                                                                                                                                                                                                                                                                                                  | none                                                                  |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``kms.gst.plugins``                    | GST plugins to be used in KMS                                                                                                                                                                                                                                                                                                                                                | none                                                                  |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
-| ``test.print.log``                     | Print KMS logs at the end of a failed test                                                                                                                                                                                                                                                                                                                                   | ``true``                                                              |
-+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| **Parameter**                          | **Description**                                                                                                                                                                                                                                                                                                                                                              | **Default value**                                                                                     |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``test.kms.autostart``                 | Specifies if tests must start Kurento Media Server by themselves (with the method set by ``test.kms.scope``), or if an external KMS service should be used instead:                                                                                                                                                                                                          | ``test``                                                                                              |
+|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                                                       |
+|                                        | - ``false``: Test must use an external KMS service, located at the URL provided by property  ``kms.ws.uri``                                                                                                                                                                                                                                                                  |                                                                                                       |
+|                                        | - ``test``: A KMS instance is automatically started before each test execution, and stopped afterwards.                                                                                                                                                                                                                                                                      |                                                                                                       |
+|                                        | - ``testsuite``: A KMS instance is started at the beginning of the test suite execution. A "test suite" is the whole group of tests to be executed (e.g. all functional tests). KMS service is stopped after test suite execution.                                                                                                                                           |                                                                                                       |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``test.kms.scope``                     | Specifies how to start KMS when it is internally managed by the test itself (``-Dtest.kms.autostart != false``):                                                                                                                                                                                                                                                             | ``local``                                                                                             |
+|                                        |                                                                                                                                                                                                                                                                                                                                                                              |                                                                                                       |
+|                                        | - ``local``: Try to use local KMS installation. Test will fail is no local KMS is found.                                                                                                                                                                                                                                                                                     |                                                                                                       |
+|                                        | - ``remote``: KMS is a remote host (use ``kms.login`` and ``kms.passwd``, or ``kms.pem``, to access using SSH to the remote machine).                                                                                                                                                                                                                                        |                                                                                                       |
+|                                        | - ``docker``: Request the docker daemon to start a KMS container based in the image specified by ``test.kms.docker.image.name``. Test will fail if daemon is unable to start KMS container. In order to use this scope, a Docker server should be installed in the machine running tests. In addition, the Docker REST should be available for Docker client (used in test). |                                                                                                       |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``test.kms.docker.image.name``         | KMS docker image used to start a new docker container when KMS service is internally managed by test (``-Dtest.kms.autostart=test`` or ``testsuite``) with docker scope (``-Dtest.kms.scope=docker``). Ignored if ``test.kms.autostart=false``. See available Docker images for KMS in `Docker Hub <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags/>`__.     | ``kurento/kurento-media-server-dev:latest``                                                           |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.ws.uri``                         | URL of a KMS service. This property is mandatory when service is externally managed (``-Dtest.kms.autostart=false``) and ignored otherwise. Notice this URL must be reachable from Selenium nodes as well as from tests.                                                                                                                                                     | ``ws://localhost:8888/kurento``                                                                       |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.log.level``                      | Debug options used to start KMS service when is internally managed by test  (``-Dtest.kms.autostart=test`` or ``testsuite``). Ignored if ``test.kms.autostart=false``.                                                                                                                                                                                                       | ``3,Kurento*:5,kms*:5,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4`` |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.log.path``                       | Path where logs from KMS will be stored. It MUST be terminated with a trailing slash (``/``).                                                                                                                                                                                                                                                                                | ``/var/log/kurento-media-server/``                                                                    |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.command``                        | Shell command to start KMS.                                                                                                                                                                                                                                                                                                                                                  | ``/usr/bin/kurento-media-server``                                                                     |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.login``                          | Username to login with SSH into the machine hosting KMS.                                                                                                                                                                                                                                                                                                                     | none                                                                                                  |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.passwd``                         | Password to login with SSH into the machine hosting KMS.                                                                                                                                                                                                                                                                                                                     | none                                                                                                  |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.pem``                            | Certificate path to login with SSH into the machine hosting KMS.                                                                                                                                                                                                                                                                                                             | none                                                                                                  |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``kms.gst.plugins``                    | GST plugins to be used in KMS.                                                                                                                                                                                                                                                                                                                                               | none                                                                                                  |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
+| ``test.print.log``                     | Print KMS logs at the end of a failed test.                                                                                                                                                                                                                                                                                                                                  | ``true``                                                                                              |
++----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
 
 ..
    This table has been generated using http://www.tablesgenerator.com/text_tables
 
-For example, in order to run the complete WebRTC functional test suite against a local instance KMS, the Maven would be as follows:
+For example, in order to run the complete WebRTC functional test suite against a local instance KMS, the Maven command would be as follows:
 
 .. code-block:: bash
 
-   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemFunctionalTests -Dtest.kms.autostart=false -Dtest=WebRtc*
+   mvn \
+       --projects kurento-integration-tests/kurento-test --also-make \
+       -Pintegration \
+       -Dgroups=org.kurento.commons.testing.SystemFunctionalTests \
+       -Dtest=WebRtc* \
+       -Dtest.kms.autostart=false \
+       clean verify
 
-In this case, an instance of KMS should be available in the machine running the tests. Concretely, KMS should be accessible in the URL ``ws://localhost:8888/kurento`` (which is the default value for ``kms.ws.uri``).
+In this case, an instance of KMS should be available in the machine running the tests, on the URL ``ws://localhost:8888/kurento`` (which is the default value for ``kms.ws.uri``).
 
 Browsers
 --------
@@ -211,9 +241,7 @@ In order to test automatically the web application under test using Kurento, web
 | ``test.selenium.scope``       | Specifies the scope used for browsers in Selenium test scenarios:                                                                                                                                                               | ``local``                           |
 |                               |                                                                                                                                                                                                                                 |                                     |
 |                               | - ``local``: browser installed in the local machine.                                                                                                                                                                            |                                     |
-|                               |                                                                                                                                                                                                                                 |                                     |
 |                               | - ``docker``: browser in Docker container (Chrome or Firefox).                                                                                                                                                                  |                                     |
-|                               |                                                                                                                                                                                                                                 |                                     |
 |                               | - ``saucelabs``: browser in SauceLabs cloud.                                                                                                                                                                                    |                                     |
 +-------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
 | ``docker.node.chrome.image``  | Docker image identifier for Chrome when browser scope is ``docker``.                                                                                                                                                            | ``elastestbrowsers/chrome:latest``  |
@@ -222,7 +250,7 @@ In order to test automatically the web application under test using Kurento, web
 +-------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
 | ``test.selenium.record``      | Allow recording the browser while executing a test, and generate a video with the completely test. This feature can be activated (``true``) only if the scope for browsers is ``docker``.                                       | ``false``                           |
 +-------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
-| ``test.config.file``          | Path of a JSON based file with configuration keys (test scenario, see "KTF explained" section for further details). Its content is transparently managed by test infrastructure and passed to tests for configuration purposes. | ``test.conf.json``                  |
+| ``test.config.file``          | Path to a JSON-based file with configuration keys (test scenario, see "KTF explained" section for further details). Its content is transparently managed by test infrastructure and passed to tests for configuration purposes. | ``test.conf.json``                  |
 +-------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
 | ``test.timezone``             | Time zone for dates in browser log traces. This feature is interesting when using Saucelabs browsers, in order to match dates from browsers with KMS. Accepted values are ``GMT``, ``CET``, etc.                                | none                                |
 +-------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------+
@@ -241,9 +269,16 @@ For example, in order to run the complete WebRTC functional test suite using *do
 
 .. code-block:: bash
 
-   mvn verify -pl kurento-integration-tests/kurento-test -Pintegration -Dgroups=org.kurento.commons.testing.SystemFunctionalTests -Dtest.selenium.scope=docker -Dtest.selenium.record=true -Dtest=WebRtc*
+   mvn \
+       --projects kurento-integration-tests/kurento-test --also-make \
+       -Pintegration \
+       -Dgroups=org.kurento.commons.testing.SystemFunctionalTests \
+       -Dtest=WebRtc* \
+       -Dtest.selenium.scope=docker \
+       -Dtest.selenium.record=true \
+       clean verify
 
-In order to avoid wasting to much space disks, recording are deleted at the end of the test if the test is succeeded. For failed tests, recordings will be available by the default on the path ``target/surefire-reports/`` (this can be change using the property ``-Dtest.project.path``).
+In order to avoid wasting too much disk space, recordings of successful tests are deleted at the end of the test. For failed tests, however, recordings will be available by default on the path ``target/surefire-reports/`` (which can be changed using the property ``-Dtest.project.path``).
 
 Web server
 ----------
@@ -256,9 +291,7 @@ Kurento is typically consumed using a web application. E2E tests follow this arc
 | ``test.app.autostart`` | Specifies whether test application where Selenium browsers connect must be started by test or if it is externally managed:                                                                                                                                                                                   | ``testsuite``     |
 |                        |                                                                                                                                                                                                                                                                                                              |                   |
 |                        | - ``false`` : Test application is externally managed and not started by test. This is required when the web under test is already online. In this case, the URL where Selenium browsers connects is specified by the properties: ``test.host``, ``test.port``, ``test.path`` and ``test.protocol``.          |                   |
-|                        |                                                                                                                                                                                                                                                                                                              |                   |
 |                        | - ``test`` : test application is started before each test execution.                                                                                                                                                                                                                                         |                   |
-|                        |                                                                                                                                                                                                                                                                                                              |                   |
 |                        | - ``testsuite``: Test application is started at the beginning of test execution.                                                                                                                                                                                                                             |                   |
 +------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+
 | ``test.host``          | IP address or host name of the URL where Selenium browsers will connect when test application is externally managed (``-Dtest.app.autostart=false``). Notice this address must be reachable by Selenium browsers and hence network topology between browser and test application must be taken into account. | ``127.0.0.1``     |
@@ -307,17 +340,19 @@ Kurento tests can be configured in many different ways. The following table summ
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
 | ``test.report``                | Path for HTML report                                                                                                                                                                                                                                 | ``target/report.html``             |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
-| ``test.project.path``          | Path for test file output (e.g. recordings).                                                                                                                                                                                                         | ``target/surefire-reports/``       |
+| ``test.project.path``          | Path for test file output (e.g. log files, screen captures, and video recordings).                                                                                                                                                                   | ``target/surefire-reports/``       |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
 | ``test.workspace``             | Absolute path of working directory used by tests as temporary storage. Make sure test user has full access to this folder.                                                                                                                           | ``/tmp``                           |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
 | ``test.workspace.host``        | Absolute path, seen by docker agent, where directory ``test.workspace`` is mounted. Mandatory when scope is set to docker, as it is used by test infrastructure to share config files. This property is ignored when scope is different from docker. | ``none``                           |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
-| ``test.files.url``             | Path where the files will be for playing                                                                                                                                                                                                             | ``http://files.openvidu.io``       |
+| ``test.docker.forcepulling``   | Force running ``docker pull`` to always get the latest Docker images.                                                                                                                                                                                | ``true``                           |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
 | ``test.files.disk``            | Absolute path where test files (videos) are located.                                                                                                                                                                                                 | ``/var/lib/jenkins/test-files``    |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
-| ``test.files.http``            | Web server where test files (videos) are located.                                                                                                                                                                                                    | ``files.openvidu.io``              |
+| ``test.files.http``            | Hostname (without "http://") of a web server where test files (videos) are located.                                                                                                                                                                  | ``files.openvidu.io``              |
++--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| ``test.player.url``            | URL used for playback tests. It can be anything supported by PlayerEndpoint: ``file://...``, ``http://...``, ``rtsp://...``, etc.                                                                                                                    | ``http://{test.files.http}``       |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
 | ``project.path``               | In Maven reactor projects this is the absolute path of the module where tests are located. This parameter is used by test infrastructure to place test attachments. Notice this parameter must not include a trailing ``/``.                         | ``.``                              |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+
@@ -363,7 +398,7 @@ The most important classes of this diagram are the following:
 
    - Local KMS. To use this option, it is a pre-requisite to have KMS installed in the machine running this type of tests.
 
-   - Remote KMS. To use this option, it is a pre-requisite that KMS is installed in a remote host. If this KMS is going to be started by tests, then it is also required to have SSH access to the remote host in which KMS is installed (using parameters ``kms.login`` and ``kms.key``).
+   - Remote KMS. To use this option, it is a pre-requisite that KMS is installed in a remote host. If this KMS is going to be started by tests, then it is also required to have SSH access to the remote host in which KMS is installed (using parameters ``kms.login`` and ``kms.passwd``, or providing a certificate with ``kms.pem``).
 
    - KMS in a **Docker** container. To use this option, it is a pre-requisite to have `Docker <https://www.docker.com/>`_ installed in the machine running this type of tests.
 
@@ -392,7 +427,7 @@ The most important classes of this diagram are the following:
          return Arrays.asList(new Object[][] { { test } });
       }
 
-   - Using a JSON file. KTF allows to setup tests scenarios based on a custom customizable JSON notation. In these JSON files, several test executions can be setup. For each execution, the browser scope can be chosen. For example, the following example shows a test scenario in which two executions are defined. First execution defines two local browsers (identified as peer1 and peer2), Chrome and Firefox respectively. The second execution defines also two browsers, but this time browsers are located in the cloud infrastructure provided by Saucelabs.
+   - Using a JSON file. KTF allows to describe tests scenarios based on JSON notation. For each execution defined in these JSON files, the browser scope can be chosen. For example, the following example shows a test scenario in which two executions are defined. First execution defines two local browsers (identified as peer1 and peer2), Chrome and Firefox respectively. The second execution defines also two browsers, but this time browsers are located in the cloud infrastructure provided by Saucelabs.
 
    .. code-block:: json
 
@@ -434,9 +469,7 @@ Test scenario consist of a list of executions, where each execution describes ho
 -  ``scope``: Specifies what type of  browser infrastructure has to be used by the test execution. This value can be overridden by command line property ``-Dtest.selenium.scope``.
 
    - ``local``:  Start the browser as a local process in the same CPU where test is executed.
-
    - ``docker``: Start browser as a docker container.
-
    - ``saucelabs``: Start browser in SauceLabs.
 
 - ``host``: IP address or host name of URL used by the browser to execute tests. This value can be overridden by command line property ``-Dtest.host``
@@ -454,3 +487,14 @@ Test scenario consist of a list of executions, where each execution describes ho
 - ``saucelabsKey``: SauceLabs key. This property is mandatory for SauceLabs scope and ignored otherwise. Its value can be overridden by command line property ``-Dsaucelab.key``
 
 - ``version``: Version of browser to be used when test is executed in SauceLabs infrastructure. Test will fail if requested version is not found.
+
+
+
+TO-DO
+-----
+
+Rename:
+
+- test.kms.docker.image.name -> test.docker.image.kms
+- docker.node.chrome.image -> test.docker.image.chrome
+- docker.node.firefox.image -> test.docker.image.firefox
