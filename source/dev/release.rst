@@ -17,31 +17,34 @@ Kurento as a project spans across a multitude of different technologies and lang
 General considerations
 ======================
 
-- Lists of projects in this document are sorted according to the repository lists given in :ref:`dev-code-repos`.
+* Lists of projects in this document are sorted according to the repository lists given in :ref:`dev-code-repos`.
 
-- Kurento projects to be released have supposedly been under development, and will have development version numbers:
+* Kurento projects to be released have supposedly been under development, and will have development version numbers:
 
   - In Java (Maven) projects, development versions are indicated by the suffix ``-SNAPSHOT`` after the version number. Example: ``6.9.1-SNAPSHOT``.
   - In C/C++ (CMake) projects, development versions are indicated by the suffix ``-dev`` after the version number. Example: ``6.9.1-dev``.
 
   These suffixes must be removed for release, and then recovered again to resume development.
 
-- All dependencies to development versions will be changed to a release version during the release procedure. Concerning people will be asked to choose an appropriate release version for each development dependency.
+* All dependencies to development versions will be changed to a release version during the release procedure. Concerning people will be asked to choose an appropriate release version for each development dependency.
 
-- Tags are named with the version number of the release. Example: ``6.9.0``.
+* Tags are named with the version number of the release. Example: ``6.9.0``.
 
-- Contrary to the project version, the Debian package versions don't contain development suffixes, and should always be of the form ``1.2.3-0kurento1``:
+* Contrary to the project version, the Debian package versions don't contain development suffixes, and should always be of the form ``1.2.3-0kurento1``:
 
   - The first part (*1.2.3*) is the project's **base version number**.
-  - The second part (*0kurento1*) is the **Debian package revision**. The first number (*0*) means that the package only exists in Kurento (not in Debian or Ubuntu); this is typically the case for the projects owned or forked by Kurento. The rest (*kurento1*) means that this is the *first* package released by Kurento for the corresponding base version.
+
+  - The second part (*0kurento1*) is the **Debian package revision**:
+
+    - The number prefix (in this example: *0*) indicates the version relative to other same-name packages provided by the base system. When this number is *0*, it means that the package is original and only exists in Kurento, not in Debian or Ubuntu itself. This is typically the case for the projects owned or forked for the Kurento project.
+
+    - The number suffix (in this example: *1*) means the number of times the same package has been re-packaged and re-published. *1* means that this is the *first* time a given project version was packaged.
+
+    **Example**: Imagine that version *1.2.3* of your code is released for the first time. The full Debian package version will be: *1.2.3-0kurento1*. Then you realize the package doesn't install correctly in some machines, because of a bug in the package's post-install script. You fix it, and now it's time to re-publish the fixed package! But the project's source code itself has not changed at all, so it is not correct to increase the base version number: its version should still be *1.2.3*. The only changes have occurred in the packaging code itself (in ``/debian/`` dir). For this reason, the new package's full version will be *1.2.3-0kurento2*.
 
   Please check the `Debian Policy Manual`_ and `this Ask Ubuntu answer`_ for more information about the package versions.
 
-  .. note::
-
-     Most Kurento fork packages have a *Debian package revision* that starts with *1* instead of *0*. This was due to a mistake, but changing it back to 0 would cause more problems than solutions so we're maintaining those until the projects get updated to a newer base version.
-
-- Kurento uses `Semantic Versioning`_. Whenever you need to decide what is going to be the *final release version* for a new release, try to follow the SemVer guidelines:
+* Kurento uses `Semantic Versioning`_. Whenever you need to decide what is going to be the *final release version* for a new release, try to follow the SemVer guidelines:
 
   .. code-block:: text
 
@@ -55,11 +58,11 @@ General considerations
 
   **Example**
 
-  If the last Kurento release was **6.8.2** (with e.g. Debian package version *6.8.2-0kurento3*, because it had been repackaged 3 times) then after release the project versions should have been left as **6.8.3-dev** (or *6.8.3-SNAPSHOT* for Java components).
+  If the last Kurento release was **6.8.2** (with for example Debian package version *6.8.2-0kurento3*, because maybe the package itself had bugs, so it has been published 3 times) then after release the project versions should have been left as **6.8.3-dev** (or *6.8.3-SNAPSHOT* for Java components).
 
-  If the **next release** of Kurento only includes patches, then the next version number *6.8.3* is already good. However, maybe our release includes new functionality, which according to Semantic Versioning should be accompanied with a bump in the *minor* version number, so the next release version number should be *6.9.0*. The Debian package version is reset accordignly, so the full version is **6.9.0-0kurento1**.
+  If the **next release** of Kurento only includes patches, then the next version number *6.8.3* is already good. However, maybe our release includes new functionality, which according to Semantic Versioning should be accompanied with a bump in the *minor* version number, so the next release version number should be *6.9.0*. The Debian package version is reset accordignly, so the full Debian version is **6.9.0-0kurento1**.
 
-  If you are repackaging an already released version (for example, because maybe after release you found out that the packages fail to install) then just increment the Debian package version: *0kurento2*.
+  If you are re-packaging an already published version, without changes in the project's code itself, then just increment the Debian package revision: *0kurento1* becomes *0kurento2*, and so on.
 
 
 
@@ -121,18 +124,19 @@ This graph shows the dependencies between forked projects used by Kurento:
 
 Release order:
 
-- jsoncpp
-- libsrtp
-- openh264
-- usrsctp
-- gstreamer
-- gst-plugins-base
-- gst-plugins-good
-- gst-plugins-bad
-- gst-plugins-ugly
-- gst-libav
-- openwebrtc-gst-plugins
-- libnice
+* `jsoncpp`_
+* `libsrtp`_
+* `openh264`_
+* `openh264-gst-plugin`_
+* `libusrsctp`_
+* `gstreamer`_
+* `gst-plugins-base`_
+* `gst-plugins-good`_
+* `gst-plugins-bad`_
+* `gst-plugins-ugly`_
+* `gst-libav`_
+* `openwebrtc-gst-plugins`_
+* `libnice`_
 
 For each project above:
 
@@ -239,18 +243,18 @@ All KMS projects:
 
 Release order:
 
-- kurento-module-creator
-- kms-cmake-utils
-- kms-jsonrpc
-- kms-core
-- kms-elements
-- kms-filters
-- kurento-media-server
-
-- kms-chroma
-- kms-crowddetector
-- kms-platedetector
-- kms-pointerdetector
+* `kurento-module-creator`_
+* `kms-cmake-utils`_
+* `kms-jsonrpc`_
+* `kms-core`_
+* `kms-elements`_
+* `kms-filters`_
+* `kurento-media-server`_
+* `kms-chroma`_
+* `kms-crowddetector`_
+* `kms-datachannelexample`_
+* `kms-platedetector`_
+* `kms-pointerdetector`_
 
 For each project above:
 
@@ -376,15 +380,16 @@ Release steps
 
    The KMS CI job is a *Jenkins MultiJob Project*. If it fails at any stage, after fixing the cause of the error it's not needed to start the job again from the beginning; instead, it is possible to resume the build from the point it was before the failure. For this, just open the latest build number that failed (with a red marker in the *Build History* panel at the left of the job page); in the description of the build, the action *Resume build* is available on the left side.
 
-#. Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain API Definition files (``.KMD``).
+#. Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain API Definition files, ``*.KMD``):
 
-   - kms-core -> kurento-client-core-js
-   - kms-elements -> kurento-client-elements-js
-   - kms-filters -> kurento-client-filters-js
-   - kms-chroma -> kurento-module-chroma-js
-   - kms-crowddetector -> kurento-module-crowddetector-js
-   - kms-platedetector -> kurento-module-platedetector-js
-   - kms-pointerdetector -> kurento-module-pointerdetector-js
+   - `kms-core`_ -> `kurento-client-core-js`_
+   - `kms-elements`_ -> `kurento-client-elements-js`_
+   - `kms-filters`_ -> `kurento-client-filters-js`_
+   - `kms-chroma`_ -> `kurento-module-chroma-js`_
+   - `kms-crowddetector`_ -> `kurento-module-crowddetector-js`_
+   - `kms-datachannelexample`_ -> `kurento-module-datachannelexample-js`_
+   - `kms-platedetector`_ -> `kurento-module-platedetector-js`_
+   - `kms-pointerdetector`_ -> `kurento-module-pointerdetector-js`_
 
 #. When all repos have been released, and CI jobs have finished successfully, publish the Java artifacts:
 
@@ -418,7 +423,7 @@ Release steps
      - CI: `kurento_client_elements_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_elements_js_merged/>`__
      - CI: `kurento_client_filters_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_filters_js_merged/>`__
 
-#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, increment the **patch** number. Use the helper script *kms-omni-build/bin/set-versions.sh* to set version numbers and commit.
+#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, reset the **Debian revision** number to *1*, and increment the **patch** number. Use the helper script *kms-omni-build/bin/set-versions.sh* to set version numbers and commit.
 
    .. code-block:: bash
 
@@ -445,11 +450,11 @@ Kurento JavaScript client
 
 Release order:
 
-- kurento-jsonrpc-js
-- kurento-utils-js
-- kurento-client-js
-- kurento-tutorial-js
-- kurento-tutorial-node
+* `kurento-jsonrpc-js`_
+* `kurento-utils-js`_
+* `kurento-client-js`_
+* `kurento-tutorial-js`_
+* `kurento-tutorial-node`_
 
 For each project above:
 
@@ -516,7 +521,7 @@ Release steps
 
    Some times it happens that Grunt needs to be run a couple of times until it ends without errors.
 
-#. **All-In-One** script.
+#. **All-In-One** script:
 
    .. note::
 
@@ -632,7 +637,7 @@ Release steps
 
 #. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-dev*".
 
-   **All-In-One** script.
+   **All-In-One** script:
 
    .. code-block:: bash
 
@@ -779,10 +784,10 @@ Kurento Java client
 
 Release order:
 
-- kurento-qa-pom
-- kurento-java
-- kurento-tutorial-java
-- kurento-tutorial-test
+* `kurento-qa-pom`_
+* `kurento-java`_
+* `kurento-tutorial-java`_
+* `kurento-tutorial-test`_
 
 For each project above:
 
@@ -874,7 +879,8 @@ Release steps
    .. code-block:: bash
 
       # Change this
-      NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
+      NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
+      KMS_VERSION="<KmsApiVersion>"         # Eg.: 1.0.0
 
       function do_release {
           local COMMIT_MSG="Prepare release $NEW_VERSION"
@@ -915,17 +921,17 @@ Release steps
                       versions:set-property \
                       -DgenerateBackupPoms=false \
                       -Dproperty=version.kms-api-core \
-                      -DnewVersion="$NEW_VERSION"
+                      -DnewVersion="$KMS_VERSION"
                   mvn --file kurento-parent-pom/pom.xml \
                       versions:set-property \
                       -DgenerateBackupPoms=false \
                       -Dproperty=version.kms-api-elements \
-                      -DnewVersion="$NEW_VERSION"
+                      -DnewVersion="$KMS_VERSION"
                   mvn --file kurento-parent-pom/pom.xml \
                       versions:set-property \
                       -DgenerateBackupPoms=false \
-                      -Dproperty=kms-api-filters \
-                      -DnewVersion="$NEW_VERSION"
+                      -Dproperty=version.kms-api-filters \
+                      -DnewVersion="$KMS_VERSION"
               else # kurento-tutorial-java, kurento-tutorial-test
                   mvn \
                       versions:update-parent \
@@ -991,7 +997,7 @@ Release steps
      - kurento-jsonrpc-client-jetty
      - kurento-jsonrpc-server
      - kurento-parent-pom
-     - kurento-repository (ABANDONED PROJECT)
+     - kurento-repository (ABANDONED)
      - kurento-repository-client (ABANDONED)
      - kurento-repository-internal (ABANDONED)
      - kurento-test
@@ -1052,18 +1058,18 @@ Release steps
                   mvn --file kurento-parent-pom/pom.xml \
                       versions:update-property \
                       -DgenerateBackupPoms=false \
-                      -DallowSnapshots=true \
-                      -Dproperty=version.kms-api-core
+                      -Dproperty=version.kms-api-core \
+                      -DallowSnapshots=true
                   mvn --file kurento-parent-pom/pom.xml \
                       versions:update-property \
                       -DgenerateBackupPoms=false \
-                      -DallowSnapshots=true \
-                      -Dproperty=version.kms-api-elements
+                      -Dproperty=version.kms-api-elements \
+                      -DallowSnapshots=true
                   mvn --file kurento-parent-pom/pom.xml \
                       versions:update-property \
                       -DgenerateBackupPoms=false \
-                      -DallowSnapshots=true \
-                      -Dproperty=version.kms-api-filters
+                      -Dproperty=version.kms-api-filters \
+                      -DallowSnapshots=true
               else # kurento-tutorial-java, kurento-tutorial-test
                   mvn \
                       versions:update-parent \
@@ -1108,7 +1114,7 @@ Docker images
 
 A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `KMS CI job`_ is triggered.
 
-The repository ``kurento-docker`` contains *Dockerfile*s for all the Kurento Docker images, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (because *which one of the sub-dirs would the tag apply to?*).
+The repository `kurento-docker`_ contains *Dockerfile*s for all the `Kurento Docker images`_, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (because *which one of the sub-dirs would the tag apply to?*).
 
 
 
@@ -1129,13 +1135,13 @@ For this reason, the documentation must be built only after all the other module
 
    These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency. Check each one of the Kurento repositories to verify what is the latest version of each one, and put it in the corresponding variable:
 
-   - ``[VERSION_KMS]``: Repo `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__.
-   - ``[VERSION_CLIENT_JAVA]``: Repo `kurento-java <https://github.com/Kurento/kurento-java>`__.
-   - ``[VERSION_CLIENT_JS]``: Repo `kurento-client-js <https://github.com/Kurento/kurento-client-js>`__.
-   - ``[VERSION_UTILS_JS]``: Repo `kurento-utils-js <https://github.com/Kurento/kurento-utils-js>`__.
-   - ``[VERSION_TUTORIAL_JAVA]``: Repo `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__.
-   - ``[VERSION_TUTORIAL_JS]``: Repo `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__.
-   - ``[VERSION_TUTORIAL_NODE]``: Repo `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__.
+   - ``[VERSION_KMS]``: Repo `kurento-media-server`_.
+   - ``[VERSION_CLIENT_JAVA]``: Repo `kurento-java`_.
+   - ``[VERSION_CLIENT_JS]``: Repo `kurento-client-js`_.
+   - ``[VERSION_UTILS_JS]``: Repo `kurento-utils-js`_.
+   - ``[VERSION_TUTORIAL_JAVA]``: Repo `kurento-tutorial-java`_.
+   - ``[VERSION_TUTORIAL_JS]``: Repo `kurento-tutorial-js`_.
+   - ``[VERSION_TUTORIAL_NODE]``: Repo `kurento-tutorial-node`_.
 
 #. In *VERSIONS.conf.sh*, set ``VERSION_RELEASE`` to ``true``. Remember to set it again to ``false`` after the release, when starting a new development iteration.
 
@@ -1149,7 +1155,9 @@ For this reason, the documentation must be built only after all the other module
 
    In any case, **always check the final result** of the intermediate documentation builds at https://doc-kurento.readthedocs.io/en/latest/, to have an idea of how the final release build will end up looking like.
 
-#. Git add, commit, tag, and push:
+#. Git add, commit, tag, and push.
+
+#. **All-In-One** script:
 
    .. code-block:: bash
 
@@ -1191,7 +1199,9 @@ For this reason, the documentation must be built only after all the other module
 
       We don't set the *Default Version* field to "*stable*", because we want that the actual version number gets shown in the upper part of the side panel (below the Kurento logo, above the search box) when users open the documentation. If "*stable*" was selected here, then users would just see the word "*stable*" in the mentioned panel.
 
-#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set ``VERSION_RELEASE`` to ``false``. Create Release Notes document for the next release:
+#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set ``VERSION_RELEASE`` to ``false``. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
+
+   **All-In-One** script:
 
    .. code-block:: bash
 
@@ -1231,10 +1241,62 @@ For this reason, the documentation must be built only after all the other module
 
 .. _kurento-media-server/CHANGELOG.md: https://github.com/Kurento/kurento-media-server/blob/master/CHANGELOG.md
 .. _kms-omni-build/bin/set-versions.sh: https://github.com/Kurento/kms-omni-build/blob/master/bin/set-versions.sh
-.. _Kurento Docker Hub: https://hub.docker.com/u/kurento/
+.. _Kurento Docker Hub: https://hub.docker.com/u/kurento
+.. _Kurento Docker images: https://hub.docker.com/r/kurento/kurento-media-server
+.. _kurento-docker: https://github.com/Kurento/kurento-docker
 .. _KMS CI job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
 .. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
 .. _VERSIONS.conf.sh: https://github.com/Kurento/doc-kurento/blob/e021a6c98bcea4db351faf423e90b64b8aa977f6/VERSIONS.conf.sh
+
+
+
+.. GitHub links
+.. _jsoncpp: https://github.com/Kurento/jsoncpp
+.. _libsrtp: https://github.com/Kurento/libsrtp
+.. _openh264: https://github.com/Kurento/openh264
+.. _openh264-gst-plugin: https://github.com/Kurento/openh264-gst-plugin
+.. _libusrsctp: https://github.com/Kurento/libusrsctp
+.. _gstreamer: https://github.com/Kurento/gstreamer
+.. _gst-plugins-base: https://github.com/Kurento/gst-plugins-base
+.. _gst-plugins-good: https://github.com/Kurento/gst-plugins-good
+.. _gst-plugins-bad: https://github.com/Kurento/gst-plugins-bad
+.. _gst-plugins-ugly: https://github.com/Kurento/gst-plugins-ugly
+.. _gst-libav: https://github.com/Kurento/gst-libav
+.. _openwebrtc-gst-plugins: https://github.com/Kurento/openwebrtc-gst-plugins
+.. _libnice: https://github.com/Kurento/libnice
+
+.. _kurento-module-creator: https://github.com/Kurento/kurento-module-creator
+.. _kms-cmake-utils: https://github.com/Kurento/kms-cmake-utils
+.. _kms-jsonrpc: https://github.com/Kurento/kms-jsonrpc
+.. _kms-core: https://github.com/Kurento/kms-core
+.. _kms-elements: https://github.com/Kurento/kms-elements
+.. _kms-filters: https://github.com/Kurento/kms-filters
+.. _kurento-media-server: https://github.com/Kurento/kurento-media-server
+.. _kms-chroma: https://github.com/Kurento/kms-chroma
+.. _kms-crowddetector: https://github.com/Kurento/kms-crowddetector
+.. _kms-datachannelexample: https://github.com/Kurento/kms-datachannelexample
+.. _kms-platedetector: https://github.com/Kurento/kms-platedetector
+.. _kms-pointerdetector: https://github.com/Kurento/kms-pointerdetector
+
+.. _kurento-client-core-js: https://github.com/Kurento/kurento-client-core-js
+.. _kurento-client-elements-js: https://github.com/Kurento/kurento-client-elements-js
+.. _kurento-client-filters-js: https://github.com/Kurento/kurento-client-filters-js
+.. _kurento-module-chroma-js: https://github.com/Kurento/kurento-module-chroma-js
+.. _kurento-module-crowddetector-js: https://github.com/Kurento/kurento-module-crowddetector-js
+.. _kurento-module-datachannelexample-js: https://github.com/Kurento/kurento-module-datachannelexample-js
+.. _kurento-module-platedetector-js: https://github.com/Kurento/kurento-module-platedetector-js
+.. _kurento-module-pointerdetector-js: https://github.com/Kurento/kurento-module-pointerdetector-js
+
+.. _kurento-jsonrpc-js: https://github.com/Kurento/kurento-jsonrpc-js
+.. _kurento-utils-js: https://github.com/Kurento/kurento-utils-js
+.. _kurento-client-js: https://github.com/Kurento/kurento-client-js
+.. _kurento-tutorial-js: https://github.com/Kurento/kurento-tutorial-js
+.. _kurento-tutorial-node: https://github.com/Kurento/kurento-tutorial-node
+
+.. _kurento-qa-pom: https://github.com/Kurento/kurento-qa-pom
+.. _kurento-java: https://github.com/Kurento/kurento-java
+.. _kurento-tutorial-java: https://github.com/Kurento/kurento-tutorial-java
+.. _kurento-tutorial-test: https://github.com/Kurento/kurento-tutorial-test
 
 
 
