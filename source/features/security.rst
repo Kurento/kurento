@@ -206,6 +206,12 @@ Now, because self-signed certificates are untrusted by nature, client browsers a
 
 * **Node applications**. Take a look at this page: `Painless Self Signed Certificates in node.js <https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__ (`archive <https://web.archive.org/web/20200610093038/https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__).
 
+  For a faster but *INSECURE* alternative, configure Node to accept (instead of reject) invalid TLS certificates by default, setting the environment variable flag `NODE_TLS_REJECT_UNAUTHORIZED <https://nodejs.org/api/cli.html#cli_node_tls_reject_unauthorized_value>`__ to ``0``; this will disable the TLS validation for your whole Node app. You can set this environment variable before executing your app, or directly in your app code by adding the following line before performing the connection:
+
+  .. code-block:: js
+
+     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
 * **Browser JavaScript**. Similar to what happens with self-signed certificates used for HTTPS, browsers also require the user to accept a security warning before Secure WebSocket connections can be established. This is done by *directly opening* the KMS WebSocket URL: ``https://{KMS_HOST}:8433/kurento``.
 
 
@@ -226,7 +232,7 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
      mvn -U clean spring-boot:run \
          -Dkms.url="wss://{KMS_HOST}:8433/kurento"
 
-* **Node.js**: Launch with the ``ws_uri`` command-line argument. For example:
+* **Node**: Launch with the ``ws_uri`` command-line argument. For example:
 
   .. code-block:: js
 
