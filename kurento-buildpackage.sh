@@ -488,7 +488,10 @@ fi
 # `debuild`: don't check that the source tarball (".orig.tar.gz") exists;
 # this check isn't needed because `git-buildpackage` is just going to create
 # the source tarball when it doesn't find it in the working directory.
-GBP_BUILDER="debuild --no-tgz-check -i -I"
+GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
+
+# CMake: Print logs from failed tests
+export CTEST_OUTPUT_ON_FAILURE=1
 
 gbp buildpackage \
     --git-ignore-new \
