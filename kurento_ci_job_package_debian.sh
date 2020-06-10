@@ -75,6 +75,10 @@ docker pull "$CONTAINER_IMAGE"
 docker run --rm \
     --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
+    --env BOOST_TEST_LOG_LEVEL \
+    --env GST_DEBUG \
+    --env G_DEBUG \
+    --env G_MESSAGES_DEBUG \
     "$CONTAINER_IMAGE" \
     --install-files . \
     $ARGS
