@@ -2304,6 +2304,9 @@ not_enough_ports_on_ice_candidate (GstElement * self, gchar * sess_id,
   const KmsIceTcpCandidateType tcp_type =
       kms_ice_candidate_get_candidate_tcp_type (candidate);
 
+  GST_DEBUG ("SessionId: '%s', candidate: '%s'", sess_id,
+      kms_ice_candidate_get_candidate (candidate));
+
   if (offerer_num == 2 && component == KMS_ICE_COMPONENT_RTCP) {
     fail_if (proto != KMS_ICE_PROTOCOL_TCP);
     fail_if (tcp_type != KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE);
