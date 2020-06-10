@@ -62,8 +62,8 @@ set -o xtrace
     --name "$JOB_GIT_NAME" --fallback "$JOB_DISTRO"
 
 # Set build arguments
-ARGS="--timestamp $JOB_TIMESTAMP"
-[[ "$JOB_RELEASE" == "true" ]] && ARGS="$ARGS --release"
+KURENTO_BUILDPACKAGE_ARGS="--timestamp $JOB_TIMESTAMP"
+[[ "$JOB_RELEASE" == "true" ]] && KURENTO_BUILDPACKAGE_ARGS+=" --release"
 
 
 
@@ -72,13 +72,24 @@ ARGS="--timestamp $JOB_TIMESTAMP"
 
 CONTAINER_IMAGE="kurento/kurento-buildpackage:${JOB_DISTRO}"
 docker pull "$CONTAINER_IMAGE"
+
+# Environment variables passed to the container:
+# * ARGS: A CMake variable used to pass arguments to CTest (C).
+#   Typically used to pass "--verbose", to print logs from all tests.
+# * BOOST_TEST_LOG_LEVEL: Print logs from Boost test framework (C++).
+# * GST_DEBUG: To set the default logging level of Kurento (GStreamer).
+# * G_DEBUG: Debug configuration for GLib and GStreamer. Typically used to pass
+#   G_DEBUG="fatal-warnings", to enable breaking on code assertions.
+# * G_MESSAGES_DEBUG: To set GLib logging categories. Used for libnice logs.
+
 docker run --rm \
     --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
+    --env ARGS \
     --env BOOST_TEST_LOG_LEVEL \
     --env GST_DEBUG \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \
     "$CONTAINER_IMAGE" \
     --install-files . \
-    $ARGS
+    $KURENTO_BUILDPACKAGE_ARGS
