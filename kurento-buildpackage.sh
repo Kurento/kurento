@@ -493,6 +493,9 @@ GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
 # CMake: Print logs from failed tests
 export CTEST_OUTPUT_ON_FAILURE=1
 
+# GStreamer: Don't log with colors (avoid ANSI escape codes in test output)
+export GST_DEBUG_NO_COLOR=1
+
 gbp buildpackage \
     --git-ignore-new \
     --git-ignore-branch \
