@@ -475,15 +475,15 @@ fi
 if [[ "$CFG_ALLOW_DIRTY" == "true" ]]; then
     # `dpkg-buildpackage`: build a Binary-only package,
     # skipping `dpkg-source` source tarball altogether
-    #GBP_ARGS="$GBP_ARGS -b"
+    #GBP_ARGS+=" -b"
 
     # `dpkg-source`: generate the source tarball by ignoring
     # ALL changed files in the working directory
-    GBP_ARGS="$GBP_ARGS --source-option=--extend-diff-ignore=.*"
+    GBP_ARGS+=" --source-option=--extend-diff-ignore=.*"
 elif [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     # `dpkg-source`: generate the source tarball by ignoring
     # '*.deb' and '*.ddeb' files inside $CFG_INSTALL_FILES_DIR
-    GBP_ARGS="$GBP_ARGS --source-option=--extend-diff-ignore=.*\.d?deb$"
+    GBP_ARGS+=" --source-option=--extend-diff-ignore=.*\.d?deb$"
 fi
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
