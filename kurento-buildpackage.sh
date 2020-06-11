@@ -462,8 +462,15 @@ fi
 
 GBP_ARGS=""
 
-# `dpkg-buildpackage`: skip signing, use multiple cores
-GBP_ARGS="$GBP_ARGS -uc -us -j$(nproc)"
+# `dpkg-buildpackage`: don't sign packages
+GBP_ARGS+=" -uc -us"
+
+# Debhelper and all dpkg-related tools: Parallelize build jobs
+# This can be overriden with DEB_BUILD_OPTIONS. For example:
+#     $ DEB_BUILD_OPTIONS="parallel=2" ./kurento-buildpackage.sh
+if [[ ! "${DEB_BUILD_OPTIONS:-}" =~ "parallel" ]]; then
+    GBP_ARGS+=" -j$(nproc)"
+fi
 
 if [[ "$CFG_ALLOW_DIRTY" == "true" ]]; then
     # `dpkg-buildpackage`: build a Binary-only package,
@@ -488,6 +495,9 @@ fi
 # `debuild`: don't check that the source tarball (".orig.tar.gz") exists;
 # this check isn't needed because `git-buildpackage` is just going to create
 # the source tarball when it doesn't find it in the working directory.
+#
+# Also, use `--preserve-env` to pass variables such as DEB_BUILD_OPTIONS to
+# debian/rules, and ultimately, debhelper and dh_auto_* tools.
 GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
 
 # CMake: Print logs from failed tests

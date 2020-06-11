@@ -77,6 +77,8 @@ docker pull "$CONTAINER_IMAGE"
 # * ARGS: A CMake variable used to pass arguments to CTest (C).
 #   Typically used to pass "--verbose", to print logs from all tests.
 # * BOOST_TEST_LOG_LEVEL: Print logs from Boost test framework (C++).
+# * DEB_BUILD_OPTIONS: Options passed to debian/rules (debhelper and dh_auto_*).
+#   Can be used to limit parallelization: DEB_BUILD_OPTIONS="parallel=1".
 # * GST_DEBUG: To set the default logging level of Kurento (GStreamer).
 # * G_DEBUG: Debug configuration for GLib and GStreamer. Typically used to pass
 #   G_DEBUG="fatal-warnings", to enable breaking on code assertions.
@@ -87,6 +89,7 @@ docker run --rm \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
     --env ARGS \
     --env BOOST_TEST_LOG_LEVEL \
+    --env DEB_BUILD_OPTIONS \
     --env GST_DEBUG \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \
