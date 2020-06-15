@@ -489,29 +489,9 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
     return FALSE;
   }
 
-  /* FIXME Upstream libnice has a bug which keeps the NiceAgent state as
-   * 'DISCONNECTED', even when the ICE Gathering has been started.
-   * This test relies on that state being correctly updated,
-   * so for now, only our custom version of libnice does the job.
-   * See: https://lists.freedesktop.org/archives/nice/2017-September/001394.html
-   */
-/* FIXME it turns out it also fails with libnice 0.1.13!
-#ifndef HAVE_LIBNICE_0_1_14
-  NiceComponentState state =
-      nice_agent_get_component_state (nice_agent->priv->agent,
-          nice_cand->stream_id, nice_cand->component_id);
-
-  // Docs: "You must first call nice_agent_gather_candidates()
-  // before calling nice_agent_set_remote_candidates()"
-  if (state == NICE_COMPONENT_STATE_DISCONNECTED
-      || state == NICE_COMPONENT_STATE_FAILED) {
-    GST_ERROR_OBJECT (self,
-        "Cannot add candidates if ICE Gathering isn't started,"
-        " NiceAgent state: %s", nice_component_state_to_string (state));
-    return FALSE;
-  }
-#endif // HAVE_LIBNICE_0_1_14
-*/
+  // libnice docs say: "You must first call nice_agent_gather_candidates()
+  // before calling nice_agent_set_remote_candidates()".
+  // This is enforced one level up, by KmsWebrtcSession.
 
   nice_cand->stream_id = id;
   candidates = g_slist_append (NULL, nice_cand);

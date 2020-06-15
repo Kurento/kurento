@@ -1298,193 +1298,6 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_free (answerer_sess_id);
 }
 
-#ifdef HAVE_LIBNICE_0_1_14
-/*
-// This function is reduced to the minimum required to test the
-// state change bug in libnice. Use it to test whenever a new
-// libnice release fixes the issue.
-static void
-test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps audio_expected_caps, gchar * audio_codec,
-    const gchar * video_enc_name, GstStaticCaps video_expected_caps,
-    gchar * video_codec, gboolean bundle)
-{
-  // TODO These lines are commented out to minimize the test case,
-  // once libnice bug gets fixed, remove this function
-
-  GArray *audio_codecs_array, *video_codecs_array;
-  gchar *audio_codecs[] = { audio_codec, NULL };
-  gchar *video_codecs[] = { video_codec, NULL };
-//  HandOffData *hod;
-  GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  gchar *offerer_sess_id, *answerer_sess_id;
-  OnIceCandidateData offerer_cand_data, answerer_cand_data;
-  GstSDPMessage *offer, *answer;
-  GstElement *pipeline = gst_pipeline_new (NULL);
-
-//  GstElement *videotestsrc_offerer =
-//      gst_element_factory_make ("videotestsrc", NULL);
-//  GstElement *videotestsrc_answerer =
-//      gst_element_factory_make ("videotestsrc", NULL);
-//  GstElement *video_enc_offerer =
-//      gst_element_factory_make (video_enc_name, NULL);
-//  GstElement *video_enc_answerer =
-//      gst_element_factory_make (video_enc_name, NULL);
-
-  GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
-  GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
-
-//  GstElement *video_fakesink_offerer =
-//      gst_element_factory_make ("fakesink", NULL);
-//  GstElement *video_fakesink_answerer =
-//      gst_element_factory_make ("fakesink", NULL);
-
-  gchar *sdp_str = NULL;
-  gboolean ret;
-  gboolean answer_ok;
-
-//  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-
-//  gst_bus_add_signal_watch (bus);
-//  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-
-  audio_codecs_array = create_codecs_array (audio_codecs);
-  video_codecs_array = create_codecs_array (video_codecs);
-
-  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
-      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
-      g_array_ref (video_codecs_array), "bundle", bundle,
-      "min-port", 50000, "max-port", 55000, NULL);
-
-  // Answerer only supports video
-  g_object_set (answerer, "num-audio-medias", 0, "num-video-medias", 1,
-      "video-codecs", g_array_ref (video_codecs_array), "bundle", bundle,
-      "min-port", 50000, "max-port", 55000, NULL);
-
-  g_array_unref (audio_codecs_array);
-  g_array_unref (video_codecs_array);
-
-  // Session creation
-  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
-  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
-  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
-  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
-
-  // Trickle ICE management
-  offerer_cand_data.peer = answerer;
-  offerer_cand_data.peer_sess_id = answerer_sess_id;
-  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), &offerer_cand_data);
-
-  answerer_cand_data.peer = offerer;
-  answerer_cand_data.peer_sess_id = offerer_sess_id;
-  g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), &answerer_cand_data);
-
-//  hod = g_slice_new0 (HandOffData);
-//  hod->expected_caps = video_expected_caps;
-//  hod->loop = loop;
-
-//  g_object_set (G_OBJECT (video_fakesink_offerer), "signal-handoffs", TRUE,
-//      NULL);
-//  g_signal_connect (G_OBJECT (video_fakesink_offerer), "handoff",
-//      G_CALLBACK (receiver_1_fakesink_hand_off), hod);
-//  g_object_set (G_OBJECT (video_fakesink_answerer), "signal-handoffs", TRUE,
-//      NULL);
-//  g_signal_connect (G_OBJECT (video_fakesink_answerer), "handoff",
-//      G_CALLBACK (receiver_2_fakesink_hand_off), hod);
-
-  // Add elements
-  gst_bin_add (GST_BIN (pipeline), offerer);
-//  connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
-//      pipeline, SINK_VIDEO_STREAM);
-
-  gst_bin_add (GST_BIN (pipeline), answerer);
-//  connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
-//      pipeline, SINK_VIDEO_STREAM);
-
-  gst_element_set_state (pipeline, GST_STATE_PLAYING);
-
-  // SDP negotiation
-  mark_point ();
-  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
-  fail_unless (offer != NULL);
-  GST_DEBUG_OBJECT (offerer, "Offer:\n%s", (sdp_str =
-          gst_sdp_message_as_text (offer)));
-  g_free (sdp_str);
-  sdp_str = NULL;
-
-  mark_point ();
-  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
-      &answer);
-  fail_unless (answer != NULL);
-  GST_DEBUG_OBJECT (answerer, "Answer:\n%s", (sdp_str =
-          gst_sdp_message_as_text (answer)));
-  g_free (sdp_str);
-  sdp_str = NULL;
-
-  mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
-      &answer_ok);
-  fail_unless (answer_ok);
-  gst_sdp_message_free (offer);
-  gst_sdp_message_free (answer);
-
-  GST_DEBUG_OBJECT (offerer, "============ Offerer gather candidates BEGIN");
-  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
-  GST_DEBUG_OBJECT (offerer, "============ Offerer gather candidates END");
-  fail_unless (ret);
-
-  GST_DEBUG_OBJECT (answerer, "============ Answerer gather candidates BEGIN");
-  g_signal_emit_by_name (answerer, "gather-candidates", answerer_sess_id, &ret);
-  GST_DEBUG_OBJECT (answerer, "============ Answerer gather candidates END");
-  fail_unless (ret);
-
-//  g_signal_connect (offerer, "pad-added",
-//      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-//  g_signal_connect (answerer, "pad-added",
-//      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-
-//  fail_unless (kms_element_request_srcpad (offerer,
-//          KMS_ELEMENT_PAD_TYPE_AUDIO));
-//  fail_unless (kms_element_request_srcpad (answerer,
-//          KMS_ELEMENT_PAD_TYPE_AUDIO));
-
-//  gst_bin_add_many (GST_BIN (pipeline), video_fakesink_offerer,
-//      video_fakesink_answerer, NULL);
-
-//  g_object_set_qdata (G_OBJECT (offerer), video_sink_quark (),
-//      video_fakesink_offerer);
-//  fail_unless (kms_element_request_srcpad (offerer,
-//          KMS_ELEMENT_PAD_TYPE_VIDEO));
-//  g_object_set_qdata (G_OBJECT (answerer), video_sink_quark (),
-//      video_fakesink_answerer);
-//  fail_unless (kms_element_request_srcpad (answerer,
-//          KMS_ELEMENT_PAD_TYPE_VIDEO));
-
-//  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-//      GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_before_entering_loop");
-
-  mark_point ();
-  GST_INFO ("============ Main loop BEGIN");
-  g_main_loop_run (loop);
-  GST_INFO ("============ Main loop END");
-  mark_point ();
-
-//  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-//      GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_end");
-
-  gst_element_set_state (pipeline, GST_STATE_NULL);
-//  gst_bus_remove_signal_watch (bus);
-//  g_object_unref (bus);
-  g_object_unref (pipeline);
-  g_main_loop_unref (loop);
-//  g_slice_free (HandOffData, hod);
-  g_free (offerer_sess_id);
-  g_free (answerer_sess_id);
-}
-*/
-#else // HAVE_LIBNICE_0_1_14
 static void
 test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
     GstStaticCaps audio_expected_caps, gchar * audio_codec,
@@ -1535,7 +1348,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
       g_array_ref (video_codecs_array), "bundle", bundle,
       "min-port", 50000, "max-port", 55000, NULL);
 
-  /* Answerer only supports video */
+  // Answerer only supports video
   g_object_set (answerer, "num-audio-medias", 0, "num-video-medias", 1,
       "video-codecs", g_array_ref (video_codecs_array), "bundle", bundle,
       "min-port", 50000, "max-port", 55000, NULL);
@@ -1543,13 +1356,13 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
-  /* Session creation */
+  // Session creation
   g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
   GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
   g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
   GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
 
-  /* Trickle ICE management */
+  // Trickle ICE management
   offerer_cand_data.peer = answerer;
   offerer_cand_data.peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
@@ -1573,7 +1386,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (video_fakesink_answerer), "handoff",
       G_CALLBACK (receiver_2_fakesink_hand_off), hod);
 
-  /* Add elements */
+  // Add elements
   gst_bin_add (GST_BIN (pipeline), offerer);
   connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
       pipeline, SINK_VIDEO_STREAM);
@@ -1584,7 +1397,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  /* SDP negotiation */
+  // SDP negotiation
   mark_point ();
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
@@ -1662,7 +1475,6 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_free (offerer_sess_id);
   g_free (answerer_sess_id);
 }
-#endif // HAVE_LIBNICE_0_1_14
 
 #define TEST_MESSAGE "Hello world!"
 
@@ -2090,7 +1902,6 @@ GST_START_TEST (test_pcmu_vp8_sendrecv)
 }
 GST_END_TEST
 
-#ifndef HAVE_LIBNICE_0_1_14
 GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
 {
   test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
@@ -2101,7 +1912,6 @@ GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
       TRUE);
 }
 GST_END_TEST
-#endif // HAVE_LIBNICE_0_1_14
 
 GST_START_TEST (test_remb_params)
 {
@@ -2423,11 +2233,7 @@ GST_START_TEST (test_not_enough_ports)
 
   g_signal_emit_by_name (
       second_offerer, "gather-candidates", second_offerer_sess_id, &ret);
-#ifdef HAVE_LIBNICE_0_1_14
   fail_unless (ret);
-#else
-  fail_if (ret);
-#endif
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (second_offer);
@@ -2673,36 +2479,22 @@ webrtcendpoint_test_suite (void)
 
   suite_add_tcase (s, tc_chain);
 
-  // FIXME fails with libnice 0.1.15 on trusty-dev (segmentation fault)
-  //tcase_add_test (tc_chain, test_pcmu_sendrecv);
-  //tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
-  //tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
-  //tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_rsa);
-  //tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_ecdsa);
-  //tcase_add_test (tc_chain, test_vp8_sendrecv);
-
-  /* FIXME Upstream libnice has a bug which keeps the NiceAgent state as
-   * 'DISCONNECTED', even when the ICE Gathering has been started.
-   * This test relies on that state being correctly updated,
-   * so for now, only our custom version of libnice does the job.
-   * See: https://lists.freedesktop.org/archives/nice/2017-September/001394.html
-   */
-#ifndef HAVE_LIBNICE_0_1_14
+  tcase_add_test (tc_chain, test_pcmu_sendrecv);
+  tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_rsa);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_ecdsa);
+  tcase_add_test (tc_chain, test_vp8_sendrecv);
   tcase_add_test (tc_chain, test_offerer_pcmu_vp8_answerer_vp8_sendrecv);
-#endif // HAVE_LIBNICE_0_1_14
-
-  // FIXME fails with libnice 0.1.15 on trusty-dev (segmentation fault)
-  //tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
-  //tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
+  tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
 
   tcase_add_test (tc_chain, test_remb_params);
-
   tcase_add_test (tc_chain, test_session_creation);
   tcase_add_test (tc_chain, test_port_range);
   tcase_add_test (tc_chain, test_not_enough_ports);
 
-  // FIXME fails with libnice 0.1.13 on trusty (timeout)
-  //tcase_add_test (tc_chain, test_webrtc_data_channel);
+  tcase_add_test (tc_chain, test_webrtc_data_channel);
 
   tcase_add_test (tc_chain, process_mid_no_bundle_offer);
   tcase_add_test (tc_chain, set_network_interfaces_test);
