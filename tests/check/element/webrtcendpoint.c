@@ -21,6 +21,7 @@
 
 #include <commons/kmselementpadtype.h>
 
+#include <nice/address.h>
 #include <nice/interfaces.h>
 
 #define KMS_VIDEO_PREFIX "video_src_"
@@ -2294,29 +2295,51 @@ GST_START_TEST (test_port_range)
 }
 GST_END_TEST
 
+// ----------------------------------------------------------------------------
+
+// not_enough_ports
+// ----------------
+
+typedef struct {
+  GHashTable *tcp;
+  GHashTable *udp;
+} GatheringData;
+
 static void
-not_enough_ports_on_ice_candidate (GstElement * self, gchar * sess_id,
-    KmsIceCandidate * candidate, gpointer offerer_num_pt)
+not_enough_ports_on_ice_candidate (GstElement *self, gchar *sess_id,
+    KmsIceCandidate *candidate, GatheringData *gatheringData)
 {
-  const guint offerer_num = GPOINTER_TO_UINT (offerer_num_pt);
-  const KmsIceComponent component = kms_ice_candidate_get_component (candidate);
-  const KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
   const KmsIceTcpCandidateType tcp_type =
       kms_ice_candidate_get_candidate_tcp_type (candidate);
+  const KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
 
   GST_DEBUG ("SessionId: '%s', candidate: '%s'", sess_id,
       kms_ice_candidate_get_candidate (candidate));
 
-  if (offerer_num == 2 && component == KMS_ICE_COMPONENT_RTCP) {
-    fail_if (proto != KMS_ICE_PROTOCOL_TCP);
-    fail_if (tcp_type != KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE);
+  if (tcp_type == KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE) {
+    return;
+  }
+
+  // Check that this candidate doesn't contain a repeated address
+  NiceAddress *address = nice_address_new ();
+  gboolean ok = nice_address_set_from_string (
+      address, kms_ice_candidate_get_address (candidate));
+  fail_unless (ok);
+  nice_address_set_port (address, kms_ice_candidate_get_port (candidate));
+
+  if (proto == KMS_ICE_PROTOCOL_TCP) {
+    fail_if (g_hash_table_contains (gatheringData->tcp, address));
+    g_hash_table_add (gatheringData->tcp, address);
+  } else {
+    fail_if (g_hash_table_contains (gatheringData->udp, address));
+    g_hash_table_add (gatheringData->udp, address);
   }
 }
 
 GST_START_TEST (test_not_enough_ports)
 {
   GArray *codecs_array;
-  gchar *codecs[] = { "VP8/90000", NULL };
+  gchar *codecs[] = {"VP8/90000", NULL};
   gchar *offerer_sess_id, *second_offerer_sess_id;
   GstSDPMessage *offer, *second_offer;
   gchar *sdp_str = NULL;
@@ -2324,10 +2347,17 @@ GST_START_TEST (test_not_enough_ports)
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *second_offerer =
       gst_element_factory_make ("webrtcendpoint", NULL);
-  CandidateRangeData offerer_cand_data;
 
+  CandidateRangeData offerer_cand_data;
   offerer_cand_data.min_port = 55000;
   offerer_cand_data.max_port = 55002;
+
+  GatheringData gatheringData = {
+      .tcp = g_hash_table_new_full (NULL, (GEqualFunc) &nice_address_equal,
+          (GDestroyNotify) &nice_address_free, NULL),
+      .udp = g_hash_table_new_full (NULL, (GEqualFunc) &nice_address_equal,
+          (GDestroyNotify) &nice_address_free, NULL),
+  };
 
   codecs_array = create_codecs_array (codecs);
   g_object_set (offerer, "num-video-medias", 1, "video-codecs",
@@ -2342,16 +2372,16 @@ GST_START_TEST (test_not_enough_ports)
   g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
   GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
 
-  g_signal_emit_by_name (second_offerer, "create-session",
-      &second_offerer_sess_id);
-  GST_DEBUG_OBJECT (second_offerer, "Created session with id '%s'",
-      second_offerer_sess_id);
+  g_signal_emit_by_name (
+      second_offerer, "create-session", &second_offerer_sess_id);
+  GST_DEBUG_OBJECT (
+      second_offerer, "Created session with id '%s'", second_offerer_sess_id);
 
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), GUINT_TO_POINTER (1));
+      G_CALLBACK (not_enough_ports_on_ice_candidate), &gatheringData);
 
   g_signal_connect (G_OBJECT (second_offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), GUINT_TO_POINTER (2));
+      G_CALLBACK (not_enough_ports_on_ice_candidate), &gatheringData);
 
   /* SDP negotiation */
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
@@ -2360,11 +2390,11 @@ GST_START_TEST (test_not_enough_ports)
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (second_offerer, "generate-offer",
-      second_offerer_sess_id, &second_offer);
+  g_signal_emit_by_name (
+      second_offerer, "generate-offer", second_offerer_sess_id, &second_offer);
   fail_unless (second_offer != NULL);
-  GST_DEBUG ("Second offer:\n%s", (sdp_str =
-          gst_sdp_message_as_text (second_offer)));
+  GST_DEBUG (
+      "Second offer:\n%s", (sdp_str = gst_sdp_message_as_text (second_offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
@@ -2391,8 +2421,8 @@ GST_START_TEST (test_not_enough_ports)
    * TCP-ACT local candidate : [192.168.1.2]:0 for s1/c2
    */
 
-  g_signal_emit_by_name (second_offerer, "gather-candidates",
-      second_offerer_sess_id, &ret);
+  g_signal_emit_by_name (
+      second_offerer, "gather-candidates", second_offerer_sess_id, &ret);
 #ifdef HAVE_LIBNICE_0_1_14
   fail_unless (ret);
 #else
@@ -2406,8 +2436,13 @@ GST_START_TEST (test_not_enough_ports)
   g_object_unref (second_offerer);
   g_free (offerer_sess_id);
   g_free (second_offerer_sess_id);
+
+  g_hash_table_unref (gatheringData.tcp);
+  g_hash_table_unref (gatheringData.udp);
 }
 GST_END_TEST
+
+// ----------------------------------------------------------------------------
 
 static void
 on_ice_candidate_check_mid (GstElement * self, gchar * sess_id,
