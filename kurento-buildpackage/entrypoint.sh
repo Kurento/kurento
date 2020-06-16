@@ -24,7 +24,7 @@ fi
 
 # Find or clone 'adm-scripts'
 ADM_SCRIPTS_PATH="/adm-scripts"
-if [[ -d "$ADM_SCRIPTS_PATH/.git" ]]; then
+if [[ -e "$ADM_SCRIPTS_PATH/kurento-buildpackage.sh" ]]; then
     echo "[Docker entrypoint] Kurento 'adm-scripts' found in $ADM_SCRIPTS_PATH"
 else
     echo "[Docker entrypoint] Kurento 'adm-scripts' not found in $ADM_SCRIPTS_PATH"
@@ -41,7 +41,7 @@ fi
 
 # Build packages for current dir
 # Note: "$@" expands to all quoted arguments, as passed to this script
-/adm-scripts/kurento-buildpackage.sh "$@"
+"$ADM_SCRIPTS_PATH/kurento-buildpackage.sh" "$@"
 
 # Print a list of generated packages
 echo "[Docker entrypoint] Debian packages:"
