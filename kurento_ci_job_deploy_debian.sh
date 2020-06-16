@@ -111,12 +111,16 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     ARGS="$ARGS --release"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy to experimental feature repo"
-    ARGS="$ARGS --repo-name kurento-labs-${JOB_DISTRO}-${JOB_DEPLOY_NAME}"
-    ARGS="$ARGS --publish-name ${JOB_DEPLOY_NAME}"
+
+    KMS_VERSION="$JOB_DEPLOY_NAME"
+    ARGS="$ARGS --repo-name kurento-labs-${JOB_DISTRO}-${KMS_VERSION}"
+    ARGS="$ARGS --publish-name ${KMS_VERSION}"
 else
     log "Deploy to nightly packages repo"
-    ARGS="$ARGS --repo-name kurento-openvidu-${JOB_DISTRO}-dev"
-    ARGS="$ARGS --publish-name dev"
+
+    KMS_VERSION="dev"
+    ARGS="$ARGS --repo-name kurento-openvidu-${JOB_DISTRO}-${KMS_VERSION}"
+    ARGS="$ARGS --publish-name ${KMS_VERSION}"
 fi
 
 
@@ -131,7 +135,7 @@ chmod 0400 secret.pem
 docker run --rm -i \
     --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
-    buildpack-deps:xenial-scm /bin/bash <<EOF
+    buildpack-deps:xenial-scm /bin/bash <<DOCKERCOMMANDS
 
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
@@ -164,9 +168,57 @@ ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
            ./kurento_ci_aptly_repo_publish.sh $ARGS'
-EOF
+
+DOCKERCOMMANDS
 
 
 
 # Delete SSH key
 rm secret.pem
+
+
+
+# Test Local Installation
+# -----------------------
+
+# This follows the "Local Installation" instructions from the documentation:
+# https://doc-kurento.readthedocs.io/en/latest/user/installation.html#local-installation
+
+# And the "Install debug symbols" instructions:
+# https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#install-debug-symbols
+
+docker run --rm -i "ubuntu:$JOB_DISTRO" /bin/bash <<DOCKERCOMMANDS
+
+# Bash options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
+
+# Trace all commands
+set -o xtrace
+
+# Disable Apt interactive mode
+export DEBIAN_FRONTEND=noninteractive
+
+# Local Installation
+apt-get update && apt-get install --no-install-recommends --yes \
+    gnupg
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+deb [arch=amd64] http://ubuntu.openvidu.io/$KMS_VERSION $JOB_DISTRO kms6
+EOF
+apt-get update && apt-get install --no-install-recommends --yes \
+    kurento-media-server
+
+# Install debug symbols
+apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
+deb http://ddebs.ubuntu.com ${JOB_DISTRO} main restricted universe multiverse
+deb http://ddebs.ubuntu.com ${JOB_DISTRO}-updates main restricted universe multiverse
+EOF
+apt-get update && apt-get install --no-install-recommends --yes \
+    kurento-dbg
+
+echo "KMS packages were installed successfully!"
+
+DOCKERCOMMANDS
