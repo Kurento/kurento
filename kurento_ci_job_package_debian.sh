@@ -74,21 +74,44 @@ CONTAINER_IMAGE="kurento/kurento-buildpackage:${JOB_DISTRO}"
 docker pull "$CONTAINER_IMAGE"
 
 # Environment variables passed to the container:
-# * ARGS: A CMake variable used to pass arguments to CTest (C).
-#   Typically used to pass "--verbose", to print logs from all tests.
-# * BOOST_TEST_LOG_LEVEL: Print logs from Boost test framework (C++).
-# * DEB_BUILD_OPTIONS: Options passed to debian/rules (debhelper and dh_auto_*).
-#   Can be used to limit parallelization: DEB_BUILD_OPTIONS="parallel=1".
-# * GST_DEBUG: To set the default logging level of Kurento (GStreamer).
-# * G_DEBUG: Debug configuration for GLib and GStreamer. Typically used to pass
-#   G_DEBUG="fatal-warnings", to enable breaking on code assertions.
-# * G_MESSAGES_DEBUG: To set GLib logging categories. Used for libnice logs.
+# * CMake:
+#   - ARGS: Used to pass arguments to CTest (controls running of all tests).
+#     Eg: ARGS="--verbose"
+#     - `--verbose` enables printing logs from all tests.
+#     - `--tests-regex <regex>` can be used to select test targets to run.
+#       Targets are implemented with either Check (C code) or Boost (C++ code),
+#       so test selection can then be fine tuned with those tools.
+#
+# * Boost test framework (C++ code):
+#   - BOOST_TEST_LOG_LEVEL: Log level (disabled by default).
+#     Eg: BOOST_TEST_LOG_LEVEL="test_suite"
+#   - BOOST_TEST_RUN_FILTERS: Select tests with a filter (check docs for syntax).
+#     Eg: BOOST_TEST_RUN_FILTERS="WebRtcEndpoint"
+#
+# * Check test framework (C code):
+#   - CK_RUN_CASE: Select a Check TCase, as created with `tcase_create("name")`.
+#     Eg: CK_RUN_CASE="element"
+#   - CK_RUN_SUITE: Select a Check Suite, as created with `suite_create("name")`.
+#     Eg: CK_RUN_SUITE="webrtcendpoint"
+#
+# * Debhelper (debian/rules file, dh_auto_* tools):
+#   - DEB_BUILD_OPTIONS: Options passed to dpkg tools. Can be used to limit
+#     parallelization: DEB_BUILD_OPTIONS="parallel=1".
+#
+# * GLib / GStreamer:
+#   - GST_DEBUG: To set the default logging level of Kurento (GStreamer).
+#   - G_DEBUG: Debug configuration for GLib and GStreamer. Typically used to
+#     pass G_DEBUG="fatal-warnings", to enable breaking on code assertions.
+#   - G_MESSAGES_DEBUG: To set GLib logging categories. Used for libnice logs.
 
 docker run --rm \
     --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
     --env ARGS \
     --env BOOST_TEST_LOG_LEVEL \
+    --env BOOST_TEST_RUN_FILTERS \
+    --env CK_RUN_CASE \
+    --env CK_RUN_SUITE \
     --env DEB_BUILD_OPTIONS \
     --env GST_DEBUG \
     --env G_DEBUG \
