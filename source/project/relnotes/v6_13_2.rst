@@ -24,7 +24,7 @@ Changed
 
 * Media server's Secure WebSocket connections (``wss://`` as opposed to ``ws://``) is now using TLS 1.2 instead of the old TLS 1.0, which has been deprecated by most web browsers.
 
-  This should help make the browser-JavaScript tutorials to work again (:doc:`/user/tutorials`); before this, some browsers (such as Firefox) would reject to establish a connection between the browser and KMS, due to the old version of TLS in use by the server.
+  This should help make the browser-JavaScript tutorials to work again (:doc:`/user/tutorials`); before this, some browsers (such as Safari since version 13.1) would reject to establish a connection between the browser and KMS, due to the old version of TLS in use by the server.
 
 
 
