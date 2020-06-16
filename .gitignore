@@ -1,4 +1,6 @@
-\.*
+# Build directories
 build/
 build-*/
+
+# IDE files -- QtCreator
 CMakeLists.txt.user
