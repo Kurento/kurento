@@ -101,7 +101,7 @@ General considerations
         # <Remove Tag>
         # <Amend>
         # <Create Tag>
-        git push --force --follow-tags
+        git push --force origin <TagName>
 
 
 
@@ -192,7 +192,7 @@ Release steps
           git add debian/changelog \
           && git commit -m "$COMMIT_MSG" \
           && git tag -a -m "$COMMIT_MSG" "$PACKAGE_VERSION" \
-          && git push --follow-tags \
+          && git push origin "$PACKAGE_VERSION" \
           || { echo "ERROR: Command failed: git"; return 4; }
       }
 
@@ -372,7 +372,7 @@ Release steps
       git add . \
       && git commit -m "$COMMIT_MSG" \
       && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-      && git push --follow-tags
+      && git push origin "$NEW_VERSION"
 
 #. Start the `KMS CI job`_ with the parameters ``JOB_RELEASE`` **ENABLED** and ``JOB_ONLY_KMS`` **DISABLED**.
 
@@ -609,7 +609,7 @@ Release steps
 
               git commit -m "$COMMIT_MSG" \
               && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-              && git push --follow-tags \
+              && git push origin "$NEW_VERSION" \
               || { echo "ERROR: Command failed: git"; return 8; }
 
               popd
@@ -750,7 +750,7 @@ Kurento Maven plugin
       git add pom.xml changelog \
       && git commit -m "$COMMIT_MSG" \
       && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-      && git push --follow-tags  \
+      && git push origin "$NEW_VERSION" \
       || echo "ERROR: Command failed: git"
 
 #. The CI jobs should start automatically; some tests are run as a result of this commit, so you should wait for their completion.
@@ -964,7 +964,7 @@ Release steps
               ( git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add ) \
               && git commit -m "$COMMIT_MSG" \
               && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-              && git push --follow-tags \
+              && git push origin "$NEW_VERSION" \
               || { echo "ERROR: Command failed: git"; return 10; }
 
               popd
@@ -1175,7 +1175,7 @@ For this reason, the documentation must be built only after all the other module
           && git add source/project/relnotes/v*.rst \
           && git commit -m "$COMMIT_MSG" \
           && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-          && git push --follow-tags \
+          && git push origin "$NEW_VERSION" \
           || { echo "ERROR: Command failed: git"; return 1; }
       }
 
