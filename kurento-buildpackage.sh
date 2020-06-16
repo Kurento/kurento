@@ -357,7 +357,7 @@ apt_update_maybe
 # so make sure interactive prompts from it are disabled
 DEBIAN_FRONTEND=noninteractive \
 mk-build-deps --install --remove \
-    --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+    --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --no-remove --yes' \
     ./debian/control
 
 # HACK
