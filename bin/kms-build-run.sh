@@ -87,6 +87,20 @@
 #/   Optional. Default: Disabled.
 #/   Implies '--release'.
 #/
+#/ --valgrind-callgrind
+#/
+#/   Build and run with Valgrind's Callgrind performance profiler.
+#/   Valgrind should be available in the PATH.
+#/
+#/   Callgrind gathers profiling information, which then can be loaded with
+#/   the `KCachegrind` tool to visualize and interpret it.
+#/
+#/   See:
+#/   * Callgrind manual: http://valgrind.org/docs/manual/cl-manual.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
+#/
 #/ --address-sanitizer
 #/
 #/   Build and run with the instrumentation provided by the compiler's
@@ -149,6 +163,7 @@ CFG_CLANG="false"
 CFG_VERBOSE="false"
 CFG_VALGRIND_MEMCHECK="false"
 CFG_VALGRIND_MASSIF="false"
+CFG_VALGRIND_CALLGRIND="false"
 CFG_ADDRESS_SANITIZER="false"
 CFG_THREAD_SANITIZER="false"
 CFG_UNDEFINED_SANITIZER="false"
@@ -162,6 +177,7 @@ while [[ $# -gt 0 ]]; do
         --verbose) CFG_VERBOSE="true" ;;
         --valgrind-memcheck) CFG_VALGRIND_MEMCHECK="true" ;;
         --valgrind-massif) CFG_VALGRIND_MASSIF="true" ;;
+        --valgrind-callgrind) CFG_VALGRIND_CALLGRIND="true" ;;
         --address-sanitizer) CFG_ADDRESS_SANITIZER="true" ;;
         --thread-sanitizer) CFG_THREAD_SANITIZER="true" ;;
         --undefined-sanitizer) CFG_UNDEFINED_SANITIZER="true" ;;
@@ -187,6 +203,10 @@ if [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     CFG_RELEASE="true"
 fi
 
+if [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
+    CFG_RELEASE="true"
+fi
+
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
 fi
@@ -202,6 +222,7 @@ log "CFG_CLANG=$CFG_CLANG"
 log "CFG_VERBOSE=$CFG_VERBOSE"
 log "CFG_VALGRIND_MEMCHECK=$CFG_VALGRIND_MEMCHECK"
 log "CFG_VALGRIND_MASSIF=$CFG_VALGRIND_MASSIF"
+log "CFG_VALGRIND_CALLGRIND=$CFG_VALGRIND_CALLGRIND"
 log "CFG_ADDRESS_SANITIZER=$CFG_ADDRESS_SANITIZER"
 log "CFG_THREAD_SANITIZER=$CFG_THREAD_SANITIZER"
 log "CFG_UNDEFINED_SANITIZER=$CFG_UNDEFINED_SANITIZER"
@@ -305,7 +326,7 @@ if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; the
     COMMAND="$COMMAND cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON $CMAKE_ARGS .."
 
     log "Run command: $COMMAND"
-    eval $COMMAND
+    eval "$COMMAND"
 
     popd || exit 1  # Exit $BUILD_DIR
 fi
@@ -325,25 +346,34 @@ RUN_VARS=()
 RUN_WRAPPER=""
 
 if [[ "$CFG_GDB" == "true" ]]; then
-    RUN_WRAPPER="gdb -ex 'run' --args"
+    # RUN_WRAPPER="gdb -ex 'run' --args"
+    RUN_WRAPPER="gdb --args"
     RUN_VARS+=("G_DEBUG='fatal-warnings'")
 fi
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
     source "$BASEPATH/valgrind.conf.sh" || exit 1
-    RUN_WRAPPER="valgrind --tool=memcheck --log-file=valgrind-memcheck-%p.log $VALGRIND_ARGS"
+    RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
         "G_DEBUG='gc-friendly'"
         #"G_SLICE='always-malloc'"
         #"G_SLICE='debug-blocks'"
         "G_SLICE='all'"
+
+        # Enable deletion of MediaSet objects in KMS, to avoid leak reports
+        "DEBUG_MEDIASET='1'"
     )
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
     source "$BASEPATH/valgrind.conf.sh" || exit 1
-    RUN_WRAPPER="valgrind --tool=massif --log-file=valgrind-massif-%p.log --massif-out-file=valgrind-massif-%p.out $VALGRIND_ARGS"
+    RUN_WRAPPER="valgrind --tool=massif --log-file='valgrind-massif-%p.log' --massif-out-file='valgrind-massif-%p.out' ${VALGRIND_ARGS[*]}"
+
+elif [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
+    # shellcheck source=valgrind.conf.sh
+    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    RUN_WRAPPER="valgrind --tool=callgrind --log-file='valgrind-callgrind-%p.log' --callgrind-out-file='valgrind-callgrind-%p.out' ${VALGRIND_ARGS[*]}"
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     if [[ "$CFG_CLANG" == "true" ]]; then
@@ -362,6 +392,9 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
         # NOTE: "detect_stack_use_after_return=1" breaks Kurento execution (more study needed to see why)
         # NOTE: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled
         "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_odr_violation=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1'"
+
+        # Enable deletion of MediaSet objects in KMS, to avoid leak reports
+        "DEBUG_MEDIASET='1'"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
@@ -387,6 +420,8 @@ fi
 # (Optional) Extra GST_DEBUG categories
 # export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
 # export GST_DEBUG="${GST_DEBUG:-3},baseparse:6,h264parse:6"
+# export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
+export GST_DEBUG="${GST_DEBUG:-3},kmswebrtcsession:6"
 
 
 
@@ -403,31 +438,40 @@ if [[ "$CFG_BUILD_ONLY" == "true" ]]; then
     exit 0
 fi
 
-# Run in a subshell so the exported variables don't pollute parent environment
-(
-    # Enable kernel core dump
-    ulimit -c unlimited
+# System limits: Set maximum open file descriptors
+# Maximum limit value allowed by Ubuntu: 2^20 = 1048576
+ulimit -n 1048576
 
-    #KERNEL_CORE_PATH="${PWD}/core_%e_%p_%u_%t"
-    #log "Set kernel core dump path: $KERNEL_CORE_PATH"
-    #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
+# System limits: Enable kernel core dump
+ulimit -c unlimited
 
-    # Prepare the final command
-    COMMAND=""
-    for RUN_VAR in "${RUN_VARS[@]:-}"; do
-        [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
-    done
+# System config: Set path for Kernel core dump files
+# NOTE: Requires root (runs with `sudo`)
+#KERNEL_CORE_PATH="${PWD}/core_%e_%p_%u_%t"
+#log "Set kernel core dump path: $KERNEL_CORE_PATH"
+#echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
 
-    COMMAND="$COMMAND $RUN_WRAPPER"
+# Prepare the final command
+COMMAND=""
+for RUN_VAR in "${RUN_VARS[@]:-}"; do
+    [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
+done
 
-    COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
-        --conf-file='$PWD/config/kurento.conf.json' \
-        --modules-config-path='$PWD/config' \
-        --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
-        --gst-plugin-path='$PWD'"
+COMMAND="$COMMAND $RUN_WRAPPER"
 
-    log "Run command: $COMMAND"
-    eval $COMMAND
-)
+# NOTE: "--gst-disable-registry-fork" is used to prevent GStreamer from
+# spawning a helper process that loads plugins, which can cause confusing
+# results from analysis tools such as Valgrind.
+
+COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
+    --conf-file='$PWD/config/kurento.conf.json' \
+    --modules-config-path='$PWD/config' \
+    --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
+    --gst-plugin-path='$PWD' \
+    --gst-disable-registry-fork \
+    --gst-disable-registry-update"
+
+log "Run command: $COMMAND"
+eval "$COMMAND" "$@"
 
 popd || exit 1  # Exit $BUILD_DIR
