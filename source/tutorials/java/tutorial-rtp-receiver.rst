@@ -48,7 +48,7 @@ Follow these steps to run this demo application:
 Understanding this example
 ==========================
 
-To implement this behavior we have to create a :term:`Media Pipeline`, composed of an **RtpEndpoint** and a **WebRtcEndpoint**. The former acts as an RTP receiver, and the later is used to show the video in the demo page.
+To implement this behavior we have to create a :term:`Media Pipeline`, composed of an **RtpEndpoint** and a **WebRtcEndpoint**. The former acts as an RTP receiver, and the latter is used to show the video in the demo page.
 
 This is a web application, and therefore it follows a client-server architecture. At the client-side, the logic is implemented in **JavaScript**. At the server-side, we use a Spring-Boot based application server consuming the **Kurento Java Client** API, to control **Kurento Media Server** capabilities. All in all, the high level architecture of this demo is three-tier.
 

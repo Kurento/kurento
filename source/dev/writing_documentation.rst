@@ -196,6 +196,6 @@ In order to overcome this limitation, we opted for the simple solution of handli
 1. Read The Docs has been configured to watch for changes in the `doc-kurento-readthedocs`_ repo, instead of *doc-kurento*.
 2. The *init-workdir* and *langdoc* targets run locally from our *doc-kurento* repo.
 3. The resulting files from those targets are copied as-is to the *doc-kurento-readthedocs* repository.
-4. Everything is then committed and pushed to this later repo, thus triggering a new RTD build.
+4. Everything is then committed and pushed to this latter repo, thus triggering a new RTD build.
 
 .. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs
