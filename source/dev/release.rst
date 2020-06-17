@@ -191,6 +191,7 @@ Release steps
 
           git add debian/changelog \
           && git commit -m "$COMMIT_MSG" \
+          && git push \
           && git tag -a -m "$COMMIT_MSG" "$PACKAGE_VERSION" \
           && git push origin "$PACKAGE_VERSION" \
           || { echo "ERROR: Command failed: git"; return 4; }
@@ -232,6 +233,89 @@ Release steps
 
 
 
+Kurento Module Creator
+======================
+
+If **kurento-maven-plugin** is going to get also a new release, then edit the file *kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl* to update the plugin version in the auto-generation template:
+
+.. code-block:: xml
+
+      <groupId>org.kurento</groupId>
+      <artifactId>kurento-maven-plugin</artifactId>
+   -  <version>6.8.2</version>
+   +  <version>6.9.0</version>
+
+[TODO release instructions, including Sonatype]
+
+
+
+Kurento Maven Plugin
+====================
+
+#. Decide what is going to be the *final release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
+
+#. Set the final release version in *pom.xml*. Remove "*-SNAPSHOT*".
+
+   .. code-block:: xml
+
+         <groupId>org.kurento</groupId>
+         <artifactId>kurento-maven-plugin</artifactId>
+      -  <version>6.9.0-SNAPSHOT</version>
+      +  <version>6.9.0</version>
+
+#. Set the correct kurento-module-creator version in *pom.xml*.
+
+   .. code-block:: xml
+
+         <groupId>org.kurento</groupId>
+         <artifactId>kurento-module-creator</artifactId>
+      -  <version>6.8.2</version>
+      +  <version>6.9.0</version>
+
+#. Git add, commit, tag, and push.
+
+   .. code-block:: bash
+
+      # Change this
+      NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
+
+      COMMIT_MSG="Prepare release $NEW_VERSION"
+
+      cd kurento-maven-plugin
+      git add pom.xml changelog \
+      && git commit -m "$COMMIT_MSG" \
+      && git push \
+      && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
+      && git push origin "$NEW_VERSION" \
+      || echo "ERROR: Command failed: git"
+
+#. The CI jobs should start automatically; some tests are run as a result of this commit, so you should wait for their completion.
+
+#. [TODO: Sonatype]
+
+#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-SNAPSHOT*".
+
+   .. code-block:: xml
+
+         <groupId>org.kurento</groupId>
+         <artifactId>kurento-maven-plugin</artifactId>
+      -  <version>6.9.0</version>
+      +  <version>6.9.1-SNAPSHOT</version>
+
+6. Git add, commit, and push.
+
+   .. code-block:: bash
+
+      COMMIT_MSG="Prepare for next development iteration"
+
+      cd kurento-maven-plugin
+      git add pom.xml \
+      && git commit -m "$COMMIT_MSG" \
+      && git push \
+      || echo "ERROR: Command failed: git"
+
+
+
 Kurento Media Server
 ====================
 
@@ -243,7 +327,7 @@ All KMS projects:
 
 Release order:
 
-* `kurento-module-creator`_
+[TODO: kurento-module-creator too]
 * `kms-cmake-utils`_
 * `kms-jsonrpc`_
 * `kms-core`_
@@ -261,21 +345,6 @@ For each project above:
 1. Prepare release.
 2. Push a new tag to Git.
 3. Move to next development version.
-
-
-
-Preparation: kurento-module-creator
------------------------------------
-
-If **kurento-maven-plugin** is going to get also a new release, then edit the file *kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl* to update the plugin version in the auto-generation template:
-
-.. code-block:: xml
-
-      <groupId>org.kurento</groupId>
-      <artifactId>kurento-maven-plugin</artifactId>
-   -  <version>6.8.2</version>
-   +  <version>6.9.0</version>
-      <executions>
 
 
 
@@ -371,6 +440,7 @@ Release steps
       cd kms-omni-build
       git add . \
       && git commit -m "$COMMIT_MSG" \
+      && git push \
       && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
       && git push origin "$NEW_VERSION"
 
@@ -558,7 +628,8 @@ Release steps
               JQ_PROGRAM="$(mktemp)"
               tee "$JQ_PROGRAM" >/dev/null <<EOF
       # This is a program for the "jq" command-line JSON processor
-      # The last 4 rules are specifically for kurento-client-js
+      # Rules 2, 3, 4, 5 are for kurento-client-js
+      # Rule 6 is for kurento-tutorial-node
       if .version? then
           .version = "$NEW_VERSION"
       else . end
@@ -574,10 +645,12 @@ Release steps
       | if .dependencies."kurento-jsonrpc"? then
           .dependencies."kurento-jsonrpc" = "$NEW_VERSION"
       else . end
+      | if .dependencies."kurento-client"? then
+          .dependencies."kurento-client" = "$NEW_VERSION"
+      else . end
       EOF
               find . -path '*node_modules' -prune , -name '*.json' | while read FILE; do
                   echo "Process file: $(realpath "$FILE")"
-
                   TEMP="$(mktemp)"
                   jq --from-file "$JQ_PROGRAM" "$FILE" >"$TEMP" \
                   && mv --update "$TEMP" "$FILE" \
@@ -591,12 +664,18 @@ Release steps
               && { echo "ERROR: Development versions not allowed!"; return 5; }
 
               # Test the build
-              npm install
+              if [[ "$PROJECT" == "kurento-client-js" ]]; then
+                  # kurento-client-js depends on kurento-jsonrpc-js, so we'll use
+                  # `npm link` here to solve the dependency.
+                  # Use a custom Node prefix so `npm link` doesn't require root permissions.
+                  NPM_CONFIG_PREFIX=.npm npm link ../kurento-jsonrpc-js
+              fi
+              npm install || { echo "ERROR: Command failed: npm install"; return 6; }
               if [[ -x node_modules/.bin/grunt ]]; then
                   node_modules/.bin/grunt jsbeautifier \
                   && node_modules/.bin/grunt \
                   && node_modules/.bin/grunt sync:bower \
-                  || { echo "ERROR: Command failed: npm"; return 6; }
+                  || { echo "ERROR: Command failed: grunt"; return 7; }
               fi
 
               git stash pop
@@ -605,12 +684,15 @@ Release steps
 
           # Everything seems OK so proceed to commit and push
           for PROJECT in "${PROJECTS[@]}"; do
-              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 7; }
+              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 8; }
 
               git commit -m "$COMMIT_MSG" \
-              && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-              && git push origin "$NEW_VERSION" \
-              || { echo "ERROR: Command failed: git"; return 8; }
+              && git push \
+              || { echo "ERROR: Command failed: git"; return 9; }
+
+              # && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
+              # && git push origin "$NEW_VERSION" \
+              # NOTE: the CI jobs automatically tag the repos upon releases
 
               popd
           done
@@ -714,71 +796,6 @@ Release steps
 
 
 
-Kurento Maven plugin
-====================
-
-#. Review changes in all KMS sub-projects, and edit *changelog* to add them.
-
-   You can use this command to get a list of commit messages since last release:
-
-   .. code-block:: bash
-
-      git log "$(git describe --tags --abbrev=0)"..HEAD --oneline
-
-#. Decide what is going to be the *final release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
-
-#. Set the final release version in *pom.xml*. Remove "*-SNAPSHOT*".
-
-   .. code-block:: xml
-
-         <groupId>org.kurento</groupId>
-         <artifactId>kurento-maven-plugin</artifactId>
-      -  <version>1.2.3-SNAPSHOT</version>
-      +  <version>1.2.3</version>
-         <packaging>maven-plugin</packaging>
-
-#. Git add, commit, tag, and push.
-
-   .. code-block:: bash
-
-      # Change this
-      NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
-
-      COMMIT_MSG="Prepare release $NEW_VERSION"
-
-      cd kurento-maven-plugin
-      git add pom.xml changelog \
-      && git commit -m "$COMMIT_MSG" \
-      && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-      && git push origin "$NEW_VERSION" \
-      || echo "ERROR: Command failed: git"
-
-#. The CI jobs should start automatically; some tests are run as a result of this commit, so you should wait for their completion.
-
-#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add "*-SNAPSHOT*".
-
-   .. code-block:: xml
-
-         <groupId>org.kurento</groupId>
-         <artifactId>kurento-maven-plugin</artifactId>
-      -  <version>1.2.3</version>
-      +  <version>1.2.4-SNAPSHOT</version>
-         <packaging>maven-plugin</packaging>
-
-6. Git add, commit, and push.
-
-   .. code-block:: bash
-
-      COMMIT_MSG="Prepare for next development iteration"
-
-      cd kurento-maven-plugin
-      git add pom.xml \
-      && git commit -m "$COMMIT_MSG" \
-      && git push \
-      || echo "ERROR: Command failed: git"
-
-
-
 Kurento Java client
 ===================
 
@@ -818,13 +835,13 @@ Similarly, update the version numbers of any other Kurento project that has been
 
 .. code-block:: xml
 
-   <version.kurento-utils-js>6.7.0</version.kurento-utils-js>
-   <version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
+   <version.kurento-utils-js>6.9.0</version.kurento-utils-js>
+   <version.kurento-maven-plugin>6.9.0</version.kurento-maven-plugin>
 
-   <version.kurento-chroma>6.6.0</version.kurento-chroma>
-   <version.kurento-crowddetector>6.6.0</version.kurento-crowddetector>
-   <version.kurento-platedetector>6.6.0</version.kurento-platedetector>
-   <version.kurento-pointerdetector>6.6.0</version.kurento-pointerdetector>
+   <version.kurento-chroma>6.9.0</version.kurento-chroma>
+   <version.kurento-crowddetector>6.9.0</version.kurento-crowddetector>
+   <version.kurento-platedetector>6.9.0</version.kurento-platedetector>
+   <version.kurento-pointerdetector>6.9.0</version.kurento-pointerdetector>
 
 
 
@@ -878,100 +895,103 @@ Release steps
 
    .. code-block:: bash
 
-      # Change this
-      NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
-      KMS_VERSION="<KmsApiVersion>"         # Eg.: 1.0.0
+# Change this
+NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
+KMS_VERSION="<KmsApiVersion>"         # Eg.: 1.0.0
 
-      function do_release {
-          local COMMIT_MSG="Prepare release $NEW_VERSION"
+function do_release {
+    local COMMIT_MSG="Prepare release $NEW_VERSION"
 
-          local PROJECTS=(
-              kurento-qa-pom
-              kurento-java
-              kurento-tutorial-java
-              kurento-tutorial-test
-          )
+    local PROJECTS=(
+        kurento-qa-pom
+        kurento-java
+        kurento-tutorial-java
 
-          for PROJECT in "${PROJECTS[@]}"; do
-              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-              git stash
+        # FIXME tests fail because Kurento Test Framework needs improvements
+        # kurento-tutorial-test
+    )
 
-              git pull --rebase \
-              || { echo "ERROR: Command failed: git pull"; return 2; }
+    for PROJECT in "${PROJECTS[@]}"; do
+        pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
+        git stash
 
-              # Ensure there are no uncommited files
-              git diff-index --quiet HEAD \
-              || { echo "ERROR: Uncommited files not allowed!"; return 3; }
+        git pull --rebase \
+        || { echo "ERROR: Command failed: git pull"; return 2; }
 
-              # Set the final release version in project and dependencies
-              if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
-                  mvn \
-                      versions:set \
-                      -DgenerateBackupPoms=false \
-                      -DnewVersion="$NEW_VERSION" \
-                  || { echo "ERROR: Command failed: mvn versions:set"; return 4; }
-              elif [[ "$PROJECT" == "kurento-java" ]]; then
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set \
-                      -DgenerateBackupPoms=false \
-                      -DnewVersion="$NEW_VERSION" \
-                  || { echo "ERROR: Command failed: mvn versions:set"; return 5; }
+        # Ensure there are no uncommited files
+        git diff-index --quiet HEAD \
+        || { echo "ERROR: Uncommited files not allowed!"; return 3; }
 
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set-property \
-                      -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-core \
-                      -DnewVersion="$KMS_VERSION"
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set-property \
-                      -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-elements \
-                      -DnewVersion="$KMS_VERSION"
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set-property \
-                      -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-filters \
-                      -DnewVersion="$KMS_VERSION"
-              else # kurento-tutorial-java, kurento-tutorial-test
-                  mvn \
-                      versions:update-parent \
-                      -DgenerateBackupPoms=false \
-                      -DparentVersion="[${NEW_VERSION}]" \
-                  || { echo "ERROR: Command failed: mvn versions:update-parent"; return 6; }
+        # Set the final release version in project and dependencies
+        if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
+            mvn \
+                versions:set \
+                -DgenerateBackupPoms=false \
+                -DnewVersion="$NEW_VERSION" \
+            || { echo "ERROR: Command failed: mvn versions:set"; return 4; }
+        elif [[ "$PROJECT" == "kurento-java" ]]; then
+            mvn --file kurento-parent-pom/pom.xml \
+                versions:set \
+                -DgenerateBackupPoms=false \
+                -DnewVersion="$NEW_VERSION" \
+            || { echo "ERROR: Command failed: mvn versions:set"; return 5; }
 
-                  mvn -N \
-                      versions:update-child-modules \
-                      -DgenerateBackupPoms=false \
-                  || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 7; }
-              fi
+            mvn --file kurento-parent-pom/pom.xml \
+                versions:set-property \
+                -DgenerateBackupPoms=false \
+                -Dproperty=version.kms-api-core \
+                -DnewVersion="$KMS_VERSION"
+            mvn --file kurento-parent-pom/pom.xml \
+                versions:set-property \
+                -DgenerateBackupPoms=false \
+                -Dproperty=version.kms-api-elements \
+                -DnewVersion="$KMS_VERSION"
+            mvn --file kurento-parent-pom/pom.xml \
+                versions:set-property \
+                -DgenerateBackupPoms=false \
+                -Dproperty=version.kms-api-filters \
+                -DnewVersion="$KMS_VERSION"
+        else # kurento-tutorial-java, kurento-tutorial-test
+            mvn \
+                versions:update-parent \
+                -DgenerateBackupPoms=false \
+                -DparentVersion="[${NEW_VERSION}]" \
+            || { echo "ERROR: Command failed: mvn versions:update-parent"; return 6; }
 
-              # Review all dependencies to remove development versions
-              grep . --include='pom.xml' -Fr -e '-SNAPSHOT' \
-              && echo "ERROR: Development versions not allowed!"
+            mvn -N \
+                versions:update-child-modules \
+                -DgenerateBackupPoms=false \
+            || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 7; }
+        fi
 
-              # Test the build
-              mvn -U clean install -Dmaven.test.skip=false -Pkurento-release \
-              || { echo "ERROR: Command failed: mvn clean install"; return 8; }
+        # Review all dependencies to remove development versions
+        grep . --include='pom.xml' -Fr -e '-SNAPSHOT' \
+        && echo "ERROR: Development versions not allowed!"
 
-              git stash pop
-              popd
-          done
+        # Test the build
+        mvn -U clean install -Dmaven.test.skip=false -Pkurento-release \
+        || { echo "ERROR: Command failed: mvn clean install"; return 8; }
 
-          # Everything seems OK so proceed to commit and push
-          for PROJECT in "${PROJECTS[@]}"; do
-              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 9; }
+        git stash pop
+        popd
+    done
 
-              ( git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add ) \
-              && git commit -m "$COMMIT_MSG" \
-              && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-              && git push origin "$NEW_VERSION" \
-              || { echo "ERROR: Command failed: git"; return 10; }
+    # Everything seems OK so proceed to commit and push
+    for PROJECT in "${PROJECTS[@]}"; do
+        pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 9; }
 
-              popd
-          done
-      }
+        ( git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add ) \
+        && git commit -m "$COMMIT_MSG" \
+        && git push \
+        && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
+        && git push origin "$NEW_VERSION" \
+        || { echo "ERROR: Command failed: git"; return 10; }
 
-      do_release
+        popd
+    done
+}
+
+do_release
 
 #. When all repos have been released, and CI jobs have finished successfully:
 
@@ -1171,9 +1191,11 @@ For this reason, the documentation must be built only after all the other module
           sed -r -i 's/(VERSION_RELEASE.*)false/\1true/' VERSIONS.conf.sh \
           || { echo "ERROR: Command failed: sed"; return 1; }
 
-          git add VERSIONS.conf.sh \
-          && git add source/project/relnotes/v*.rst \
+          git add \
+              VERSIONS.conf.sh \
+              source/project/relnotes/* \
           && git commit -m "$COMMIT_MSG" \
+          && git push \
           && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
           && git push origin "$NEW_VERSION" \
           || { echo "ERROR: Command failed: git"; return 1; }
@@ -1183,7 +1205,7 @@ For this reason, the documentation must be built only after all the other module
 
    .. note::
 
-      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. ReadTheDocs CI servers will read the later one to obtain the documentation sources and release tags.
+      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. ReadTheDocs CI servers will read the latter one to obtain the documentation sources and release tags.
 
 #. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
 
