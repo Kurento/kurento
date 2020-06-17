@@ -1,0 +1,63 @@
+==================
+6.14.0 (June 2020)
+==================
+
+This new release of Kurento is following the previously set path of focusing in stability and fixing bugs. Some critical issues have been solved, related to high CPU usage on real-world deployments that were supporting lots of users, so don't hesitate to update your media servers!
+
+To install Kurento Media Server: :doc:`/user/installation`.
+
+
+
+Changed
+=======
+
+* **Deleted inline WebSocket++ sources**.
+
+  `WebSocket++ <https://www.zaphoyd.com/websocketpp>`__ (*websocketpp*) is the library that provides WebSocket support for Kurento Media Server. Up until now, the whole source code of this library was included in the Kurento Media Server source tree, but it wasn't being updated accordingly to the new developments of other dependent libraries, such as newer versions of OpenSSL. This was causing build issues for some users, so starting from Kurento 6.14.0, we've deleted all websocketpp source code from our tree, and instead will be depending on the websocketpp packages that are provided by the Operating System itself (Ubuntu package *libwebsocketpp-dev*).
+
+  The change doesn't affect client applications of Kurento, but it will be good news for people who were building KMS from sources.
+
+* **Reduced default log levels for WebRTC-related modules**.
+
+  Some basic operations, such as SDP Offer/Answer negotiations, ended up logging thousands of lines that don't really convey anything useful in a typical deployment, and can make it harder to find other more interesting messages. For this reason, the bulk of general messages that are part of WebRTC have been modified from ``INFO`` to ``DEBUG`` log level (see :doc:`/features/logging`).
+
+
+
+Fixed
+=====
+
+* **Locked 100% CPU when releasing multiple Endpoints**.
+
+  This issue was affecting a good number of installations. There was a severe performance penalty in the disconnection process between Endpoints, so in scenarios with a lot of connections, there was a good probability that the CPU got locked in a permanent 100% CPU usage loop.
+
+  An example of this would be one-to-many scenarios (1:N), were a single presenter would be sending video to some hundredth consumers. When the producer disconnected their WebRtcEndpoint, trying to disconnect so many consumers would almost always trigger the issue.
+
+  More info can be found in the related Pull Request: `Workerpool rewrite <https://github.com/Kurento/kms-core/pull/22>`__.
+
+* **Fix recording of AAC audio with MKV**.
+
+  The MKV profile uses AAC audio, but due to wrong settings it was actually not working. The Agnosticbin component in Kurento would get confused and fail to find an acceptable encoder to perform the audio transcoding, and the recording would end up not working with an infinite stream of ERROR messages.
+
+
+
+Thank You
+=========
+
+There were other changes and fixes contributed by users, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
+
+**doc-kurento**
+
+* `@alexnum <https://github.com/alexnum>`__ (Alessandro) for `Kurento/doc-kurento#4 <https://github.com/Kurento/doc-kurento/pull/4>`__ (*Handling self-signed certificates in nodeJs*).
+* `@piyushwadhwani <https://github.com/piyushwadhwani>`__ for `Kurento/doc-kurento#5 <https://github.com/Kurento/doc-kurento/pull/5>`__ (*adapting to newer version of spring boot*).
+
+**kurento-jsonrpc-js**
+
+* `@JoseGoncalves <https://github.com/JoseGoncalves>`__ (José Miguel Gonçalves) for `Kurento/kurento-jsonrpc-js#6 <https://github.com/Kurento/kurento-jsonrpc-js/pull/6>`__ (*Fix transportMessage*).
+
+**kurento-tutorial-java**
+
+* `@hgcummings <https://github.com/hgcummings>`__ (Harry Cummings) for `Kurento/kurento-tutorial-java#14 <https://github.com/Kurento/kurento-tutorial-java/pull/14>`__ (*Increase max text message buffer size for websocket connections*).
+
+**kurento-utils-js**
+
+* `@simoebenhida <https://github.com/simoebenhida>`__ (Mohamed Benhida) for `Kurento/kurento-utils-js#30 <https://github.com/Kurento/kurento-utils-js/pull/30>`__ (*Refactor deprecated syntax*), and `@oscar-mnfuentes <https://github.com/oscar-mnfuentes>`__ for `Kurento/kurento-utils-js#32 <https://github.com/Kurento/kurento-utils-js/pull/32>`__ (*Fix promise call in setDescription to make compatible with safari*).

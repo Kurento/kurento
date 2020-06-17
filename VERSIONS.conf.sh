@@ -13,32 +13,32 @@
 # shellcheck disable=SC2034
 declare -A PROJECT_VERSIONS=(
     # Version of the documentation itself; it appears in the main menu
-    [VERSION_DOC]="6.13.2"
+    [VERSION_DOC]="6.14.0"
 
     # Version of Kurento Media Server
-    [VERSION_KMS]="6.13.2"
+    [VERSION_KMS]="6.14.0"
 
     # Version of each Client API SDK
-    [VERSION_CLIENT_JAVA]="6.13.1"
-    [VERSION_CLIENT_JS]="6.13.0"
+    [VERSION_CLIENT_JAVA]="6.14.0"
+    [VERSION_CLIENT_JS]="6.14.0"
 
     # Version of the JavaScript utils module (kurento-utils-js)
-    [VERSION_UTILS_JS]="6.13.1"
+    [VERSION_UTILS_JS]="6.14.0"
 
     # Version of each platform's tutorials
-    [VERSION_TUTORIAL_JAVA]="6.13.0"
-    [VERSION_TUTORIAL_JS]="6.13.0"
-    [VERSION_TUTORIAL_NODE]="6.13.0"
+    [VERSION_TUTORIAL_JAVA]="6.14.0"
+    [VERSION_TUTORIAL_JS]="6.14.0"
+    [VERSION_TUTORIAL_NODE]="6.14.0"
 
     # Indicates if the current state of this code is Release or Nightly.
     # If "true", all mentioned repos will be checked out to the corresponding
     # versions; otherwise, they will be kept at the default branch (master).
-    [VERSION_RELEASE]="false"
+    [VERSION_RELEASE]="true"
 )
 
 # If the build is not a release build, then some versions can be set to more
 # adequate values for each case:
-if [[ "${PROJECT_VERSIONS[VERSION_RELEASE]}" == "false" ]]; then
+if [[ "${PROJECT_VERSIONS[VERSION_RELEASE]}" == "true" ]]; then
     # VERSION_TUTORIAL_{JAVA,JS,NODE} are used in tutorial texts to instruct the
     # user about running `git checkout <Version>`, so making it "master" will
     # keep them at the development versions on non-release builds of the docs.
