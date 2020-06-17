@@ -86,5 +86,6 @@ if [[ "${CREATE_TAG}" = "true" ]]; then
     git push --tags
   else
     echo "[kurento_check_version] WARNING: Command failed: git tag ${tag_name}"
+    exit 1
   fi
 fi
