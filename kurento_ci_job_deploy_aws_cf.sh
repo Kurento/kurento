@@ -82,7 +82,7 @@ aws s3 cp "$AWS_CF_TEMPLATE_FILE" "s3://aws.kurento.org" --acl public-read
 EOF
 chmod +x run.sh
 
-export CONTAINER_IMAGE="openvidu/openvidu-dev-generic:0.1"
+export CONTAINER_IMAGE="openvidu/openvidu-dev-generic:latest"
 export BUILD_COMMAND="./run.sh"
 "${OPENVIDU_ADM_SCRIPTS_HOME}/openvidu_ci_container_job_setup.sh"
 
