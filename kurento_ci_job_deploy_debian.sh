@@ -90,7 +90,7 @@ ARGS="--distro-name $JOB_DISTRO"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy to release repo"
 
-    # Get version number for the deployment
+    # Get version number from the package file itself
     # shellcheck disable=SC2012
     KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
     if [[ -z "$KMS_DEB_FILE" ]]; then

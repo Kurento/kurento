@@ -63,7 +63,7 @@ else
     DEPLOY_SPECIAL="true"
 fi
 
-# Get version number for the deployment
+# Get version number from the package file itself
 # shellcheck disable=SC2012
 KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
 if [[ -z "$KMS_DEB_FILE" ]]; then
@@ -79,27 +79,22 @@ if [[ -z "$KMS_VERSION" ]]; then
     exit 1
 fi
 
-# Extract version number components
-VERSION="$KMS_VERSION"
-VERSION_MAJ_MIN="$(echo "$VERSION" | cut -d. -f1,2)"
-VERSION_MAJ="$(echo "$VERSION" | cut -d. -f1)"
-
-# Define parameters for the Docker image creation
+# Define parameters for the Docker container
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    log "Deploy release image"
-    DOCKER_KMS_VERSION="$VERSION"
+    log "Release version"
+    DOCKER_KMS_VERSION="$KMS_VERSION"
     DOCKER_NAME_SUFFIX=""
-    DOCKER_SOURCE_TAG="${VERSION}"
+    DOCKER_SOURCE_TAG="${KMS_VERSION}"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    log "Deploy experimental feature image"
+    log "Experimental feature version"
     DOCKER_KMS_VERSION="$JOB_DEPLOY_NAME"
     DOCKER_NAME_SUFFIX="-exp"
     DOCKER_SOURCE_TAG="${JOB_DEPLOY_NAME}"
 else
-    log "Deploy nightly development image"
+    log "Nightly development version"
     DOCKER_KMS_VERSION="dev"
     DOCKER_NAME_SUFFIX="-dev"
-    DOCKER_SOURCE_TAG="${VERSION}-${JOB_TIMESTAMP}"
+    DOCKER_SOURCE_TAG="${KMS_VERSION}-${JOB_TIMESTAMP}"
 fi
 
 pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
@@ -113,7 +108,7 @@ export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     # Main tag: "1.2.3-asan"
     # Moving tag: "latest-asan"
-    export TAG="${VERSION}-asan"
+    export TAG="${KMS_VERSION}-asan"
     export EXTRA_TAGS="latest-asan"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     # Main tag: "experiment-asan"
@@ -122,7 +117,7 @@ elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
 else
     # Main tag: "1.2.3-20191231235959"
     # Moving tag: "latest-asan"
-    export TAG="${VERSION}-${JOB_TIMESTAMP}-asan"
+    export TAG="${KMS_VERSION}-${JOB_TIMESTAMP}-asan"
     export EXTRA_TAGS="latest-asan"
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"

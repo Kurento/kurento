@@ -63,7 +63,7 @@ else
     DEPLOY_SPECIAL="true"
 fi
 
-# Get version number for the deployment
+# Get version number from the package file itself
 # shellcheck disable=SC2012
 KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
 if [[ -z "$KMS_DEB_FILE" ]]; then
@@ -80,21 +80,20 @@ if [[ -z "$KMS_VERSION" ]]; then
 fi
 
 # Extract version number components
-VERSION="$KMS_VERSION"
-VERSION_MAJ_MIN="$(echo "$VERSION" | cut -d. -f1,2)"
-VERSION_MAJ="$(echo "$VERSION" | cut -d. -f1)"
+KMS_VERSION_MAJ_MIN="$(echo "$KMS_VERSION" | cut -d. -f1,2)"
+KMS_VERSION_MAJ="$(echo "$KMS_VERSION" | cut -d. -f1)"
 
-# Define parameters for the Docker image creation
+# Define parameters for the Docker container
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    log "Deploy release image"
-    DOCKER_KMS_VERSION="$VERSION"
+    log "Release version"
+    DOCKER_KMS_VERSION="$KMS_VERSION"
     DOCKER_NAME_SUFFIX=""
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    log "Deploy experimental feature image"
+    log "Experimental feature version"
     DOCKER_KMS_VERSION="$JOB_DEPLOY_NAME"
     DOCKER_NAME_SUFFIX="-exp"
 else
-    log "Deploy nightly development image"
+    log "Nightly development version"
     DOCKER_KMS_VERSION="dev"
     DOCKER_NAME_SUFFIX="-dev"
 fi
@@ -109,8 +108,8 @@ export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     # Main tag: "1.2.3"
     # Moving tags: "1.2", "1", "latest"
-    export TAG="${VERSION}"
-    export EXTRA_TAGS="$VERSION_MAJ_MIN $VERSION_MAJ latest"
+    export TAG="${KMS_VERSION}"
+    export EXTRA_TAGS="$KMS_VERSION_MAJ_MIN $KMS_VERSION_MAJ latest"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     # Main tag: "experiment"
     export TAG="${JOB_DEPLOY_NAME}"
@@ -118,8 +117,8 @@ elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
 else
     # Main tag: "1.2.3-20191231235959"
     # Moving tags: "1.2.3", "1.2", "1", "latest"
-    export TAG="${VERSION}-${JOB_TIMESTAMP}"
-    export EXTRA_TAGS="$VERSION $VERSION_MAJ_MIN $VERSION_MAJ latest"
+    export TAG="${KMS_VERSION}-${JOB_TIMESTAMP}"
+    export EXTRA_TAGS="$KMS_VERSION $KMS_VERSION_MAJ_MIN $KMS_VERSION_MAJ latest"
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
