@@ -1,6 +1,6 @@
 {
   "name": "kurento-hello-world",
-  "version": "6.14.0",
+  "version": "6.14.1-dev",
   "description": "Kurento Browser JavaScript Tutorial: Hello World (WebRTC in loopback with DataChannels)",
   "keywords": [
     "kurento",
@@ -65,7 +65,7 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.2.3",
     "webrtc-adapter": "v6.4.0",
-    "kurento-client": "6.14.0",
+    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
     "kurento-utils": "master"
   }
 }
