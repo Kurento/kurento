@@ -77,15 +77,15 @@ kurento_check_semver.sh "${PROJECT_VERSION}" || {
   exit 1
 }
 
-if [[ "${CREATE_TAG}" = "true" ]]; then
-  #Create a new tag
-  echo "[kurento_check_version] Create tag"
-  tag_name="${PROJECT_VERSION}"
-  if git tag "${tag_name}"; then
+if [[ "$CREATE_TAG" == "true" ]]; then
+  TAG_MSG="Tag version $PROJECT_VERSION"
+  TAG_NAME="$PROJECT_VERSION"
+  echo "[kurento_check_version] Create git tag: '$TAG_NAME'"
+  if git tag -a -m "$TAG_MSG" "$TAG_NAME"; then
     echo "[kurento_check_version] Tag created, push to remote"
-    git push --tags
+    git push origin "$TAG_NAME"
   else
-    echo "[kurento_check_version] WARNING: Command failed: git tag ${tag_name}"
+    echo "[kurento_check_version] ERROR: Command failed: git tag $TAG_NAME"
     exit 1
   fi
 fi
