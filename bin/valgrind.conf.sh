@@ -231,7 +231,7 @@ VALGRIND_ARGS=(
     # Start simulation and profiling from the beginning of the program.
     # Use the command `callgrind_control -i on` to manually start profiling.
     # =<yes|no> [default: yes]
-    "--callgrind:instr-atstart=no"
+    # "--callgrind:instr-atstart=no"
 
     # Start event collection from the beginning of the profile run.
     # =<yes|no> [default: yes]
