@@ -207,8 +207,20 @@ Run these commands to add the Kurento repository to your system configuration:
 
 
 
-Download KMS
-------------
+Install build dependencies
+--------------------------
+
+Run:
+
+.. code-block:: bash
+
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+       kurento-media-server-dev
+
+
+
+Download KMS source code
+------------------------
 
 Run:
 
@@ -228,22 +240,10 @@ Run:
 .. code-block:: text
 
    REF=master
-   git checkout "$REF"
+   git checkout "$REF" || true
    git submodule foreach "git checkout $REF || true"
 
 You can also set ``REF`` to any other branch or tag, such as ``REF=6.12.0``. This will bring the code to the state it had in that version release.
-
-
-
-Install build dependencies
---------------------------
-
-Run:
-
-.. code-block:: bash
-
-   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
-       kurento-media-server-dev
 
 
 
