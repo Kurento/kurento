@@ -14,9 +14,9 @@
 # Build arguments
 # ---------------
 #
-# --build-arg UBUNTU_VERSION=<UbuntuVersion>
+# --build-arg UBUNTU_CODENAME=<UbuntuCodename>
 #
-#   <UbuntuVersion> is like "xenial", "bionic", etc.
+#   <UbuntuCodename> is like "xenial", "bionic", etc.
 #
 #   Optional. Default: "xenial".
 #
@@ -45,12 +45,12 @@
 #
 # docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
-ARG UBUNTU_VERSION="xenial"
+ARG UBUNTU_CODENAME="xenial"
 ARG KMS_IMAGE="kurento/kurento-media-server-dev:latest"
 
-FROM ubuntu:${UBUNTU_VERSION} AS builder
+FROM ubuntu:${UBUNTU_CODENAME} AS builder
 
-ARG UBUNTU_VERSION="xenial"
+ARG UBUNTU_CODENAME="xenial"
 ARG KMS_VERSION="dev"
 ARG GCC_VERSION="9"
 
@@ -68,7 +68,7 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         git \
         gnupg \
         software-properties-common \
- && echo "deb http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_VERSION kms6" >/etc/apt/sources.list.d/kurento.list \
+ && echo "deb http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME kms6" >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
  && apt-get -q update && apt-get -q install --no-install-recommends --yes \
         build-essential \

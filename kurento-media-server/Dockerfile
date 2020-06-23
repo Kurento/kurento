@@ -12,9 +12,9 @@
 # Build arguments
 # ---------------
 #
-# --build-arg UBUNTU_VERSION=<UbuntuVersion>
+# --build-arg UBUNTU_CODENAME=<UbuntuCodename>
 #
-#   <UbuntuVersion> is like "xenial", "bionic", etc.
+#   <UbuntuCodename> is like "xenial", "bionic", etc.
 #
 #   Optional. Default: "xenial".
 #
@@ -35,15 +35,15 @@
 #
 # docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
-ARG UBUNTU_VERSION="xenial"
+ARG UBUNTU_CODENAME="xenial"
 
-FROM ubuntu:${UBUNTU_VERSION}
+FROM ubuntu:${UBUNTU_CODENAME}
 
 MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 MAINTAINER Fede Diaz <nordri@gmail.com>
 MAINTAINER Juan Navarro <juan.navarro@gmx.es>
 
-ARG UBUNTU_VERSION="xenial"
+ARG UBUNTU_CODENAME="xenial"
 ARG KMS_VERSION="dev"
 
 # Configure environment:
@@ -65,15 +65,15 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 # * Add Kurento package repository
 RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
- && echo "UBUNTU_VERSION=${UBUNTU_VERSION}" \
+ && echo "UBUNTU_CODENAME=${UBUNTU_CODENAME}" \
  && echo "KMS_VERSION=${KMS_VERSION}" \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
- && APT_LIST="deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_VERSION} kms6" \
+ && APT_LIST="deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" \
  && echo "Apt source line: $APT_LIST" \
  && echo "$APT_LIST" >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server
-RUN apt-get -q update && apt-get -q install --yes \
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         kurento-media-server \
  && rm -rf /var/lib/apt/lists/*
 
@@ -93,8 +93,8 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 RUN apt-key adv \
         --keyserver keyserver.ubuntu.com \
         --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
- && echo "deb http://ddebs.ubuntu.com ${UBUNTU_VERSION} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
- && echo "deb http://ddebs.ubuntu.com ${UBUNTU_VERSION}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
+ && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
+ && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
  && apt-get -q update \
  && apt-get -q install --no-install-recommends --yes \
         kurento-dbg \

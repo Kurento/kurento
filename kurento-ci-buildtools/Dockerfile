@@ -11,21 +11,21 @@
 # Build command
 # -------------
 #
-# docker build [Args...] --tag kurento/kurento-ci-buildtools:<UbuntuVersion> .
+# docker build [Args...] --tag kurento/kurento-ci-buildtools:<UbuntuCodename> .
 #
 #
 # Build arguments
 # ---------------
 #
-# --build-arg UBUNTU_VERSION=<UbuntuVersion>
+# --build-arg UBUNTU_CODENAME=<UbuntuCodename>
 #
-#   <UbuntuVersion> is like "xenial", "bionic", etc.
+#   <UbuntuCodename> is like "xenial", "bionic", etc.
 #
 #   Optional. Default: "xenial".
 
-ARG UBUNTU_VERSION=xenial
+ARG UBUNTU_CODENAME=xenial
 
-FROM kurento/kurento-buildpackage:${UBUNTU_VERSION}
+FROM kurento/kurento-buildpackage:${UBUNTU_CODENAME}
 
 # Settings from parent image:
 # Re-enable the cleaning of Apt package cache

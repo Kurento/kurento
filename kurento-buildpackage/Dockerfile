@@ -9,16 +9,15 @@
 # Build command
 # -------------
 #
-# docker build [Args...] --tag kurento/kurento-buildpackage:<UbuntuVersion> .
+# docker build [Args...] --tag kurento/kurento-buildpackage:<UbuntuCodename> .
 #
 #
 # Build arguments
 # ---------------
 #
-# --build-arg UBUNTU_VERSION=<UbuntuVersion>
+# --build-arg UBUNTU_CODENAME=<UbuntuCodename>
 #
-#   <UbuntuVersion> is like "xenial", "bionic", etc.
-#   Valid values are listed here: https://hub.docker.com/_/buildpack-deps/
+#   <UbuntuCodename> is like "xenial", "bionic", etc.
 #
 #   Optional. Default: "xenial".
 #
@@ -46,9 +45,9 @@
 #
 # Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
-ARG UBUNTU_VERSION=xenial
+ARG UBUNTU_CODENAME=xenial
 
-FROM buildpack-deps:${UBUNTU_VERSION}-curl
+FROM buildpack-deps:${UBUNTU_CODENAME}-curl
 
 # Configure environment:
 # * DEBIAN_FRONTEND: Disable Apt interactive questions and messages
