@@ -748,7 +748,8 @@ Release steps
               JQ_PROGRAM="$(mktemp)"
               tee "$JQ_PROGRAM" >/dev/null <<EOF
       # This is a program for the "jq" command-line JSON processor
-      # The last 4 rules are specifically for kurento-client-js
+      # Rules 2, 3, 4, 5 are for kurento-client-js
+      # Rule 6 is for kurento-tutorial-node
       if .version? then
           .version = "$NEW_VERSION"
       else . end
@@ -764,10 +765,12 @@ Release steps
       | if .dependencies."kurento-jsonrpc"? then
           .dependencies."kurento-jsonrpc" = "git+https://github.com/Kurento/kurento-jsonrpc-js.git"
       else . end
+      | if .dependencies."kurento-client"? then
+          .dependencies."kurento-client" = "git+https://github.com/Kurento/kurento-client-js.git"
+      else . end
       EOF
               find . -path '*node_modules' -prune , -name '*.json' | while read FILE; do
                   echo "Process file: $(realpath "$FILE")"
-
                   TEMP="$(mktemp)"
                   jq --from-file "$JQ_PROGRAM" "$FILE" >"$TEMP" \
                   && mv --update "$TEMP" "$FILE" \
@@ -895,103 +898,103 @@ Release steps
 
    .. code-block:: bash
 
-# Change this
-NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
-KMS_VERSION="<KmsApiVersion>"         # Eg.: 1.0.0
+      # Change this
+      NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
+      KMS_VERSION="<KmsApiVersion>"         # Eg.: 1.0.0
 
-function do_release {
-    local COMMIT_MSG="Prepare release $NEW_VERSION"
+      function do_release {
+          local COMMIT_MSG="Prepare release $NEW_VERSION"
 
-    local PROJECTS=(
-        kurento-qa-pom
-        kurento-java
-        kurento-tutorial-java
+          local PROJECTS=(
+              kurento-qa-pom
+              kurento-java
+              kurento-tutorial-java
 
-        # FIXME tests fail because Kurento Test Framework needs improvements
-        # kurento-tutorial-test
-    )
+              # FIXME tests fail because Kurento Test Framework needs improvements
+              # kurento-tutorial-test
+          )
 
-    for PROJECT in "${PROJECTS[@]}"; do
-        pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-        git stash
+          for PROJECT in "${PROJECTS[@]}"; do
+              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
+              git stash
 
-        git pull --rebase \
-        || { echo "ERROR: Command failed: git pull"; return 2; }
+              git pull --rebase \
+              || { echo "ERROR: Command failed: git pull"; return 2; }
 
-        # Ensure there are no uncommited files
-        git diff-index --quiet HEAD \
-        || { echo "ERROR: Uncommited files not allowed!"; return 3; }
+              # Ensure there are no uncommited files
+              git diff-index --quiet HEAD \
+              || { echo "ERROR: Uncommited files not allowed!"; return 3; }
 
-        # Set the final release version in project and dependencies
-        if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
-            mvn \
-                versions:set \
-                -DgenerateBackupPoms=false \
-                -DnewVersion="$NEW_VERSION" \
-            || { echo "ERROR: Command failed: mvn versions:set"; return 4; }
-        elif [[ "$PROJECT" == "kurento-java" ]]; then
-            mvn --file kurento-parent-pom/pom.xml \
-                versions:set \
-                -DgenerateBackupPoms=false \
-                -DnewVersion="$NEW_VERSION" \
-            || { echo "ERROR: Command failed: mvn versions:set"; return 5; }
+              # Set the final release version in project and dependencies
+              if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
+                  mvn \
+                      versions:set \
+                      -DgenerateBackupPoms=false \
+                      -DnewVersion="$NEW_VERSION" \
+                  || { echo "ERROR: Command failed: mvn versions:set"; return 4; }
+              elif [[ "$PROJECT" == "kurento-java" ]]; then
+                  mvn --file kurento-parent-pom/pom.xml \
+                      versions:set \
+                      -DgenerateBackupPoms=false \
+                      -DnewVersion="$NEW_VERSION" \
+                  || { echo "ERROR: Command failed: mvn versions:set"; return 5; }
 
-            mvn --file kurento-parent-pom/pom.xml \
-                versions:set-property \
-                -DgenerateBackupPoms=false \
-                -Dproperty=version.kms-api-core \
-                -DnewVersion="$KMS_VERSION"
-            mvn --file kurento-parent-pom/pom.xml \
-                versions:set-property \
-                -DgenerateBackupPoms=false \
-                -Dproperty=version.kms-api-elements \
-                -DnewVersion="$KMS_VERSION"
-            mvn --file kurento-parent-pom/pom.xml \
-                versions:set-property \
-                -DgenerateBackupPoms=false \
-                -Dproperty=version.kms-api-filters \
-                -DnewVersion="$KMS_VERSION"
-        else # kurento-tutorial-java, kurento-tutorial-test
-            mvn \
-                versions:update-parent \
-                -DgenerateBackupPoms=false \
-                -DparentVersion="[${NEW_VERSION}]" \
-            || { echo "ERROR: Command failed: mvn versions:update-parent"; return 6; }
+                  mvn --file kurento-parent-pom/pom.xml \
+                      versions:set-property \
+                      -DgenerateBackupPoms=false \
+                      -Dproperty=version.kms-api-core \
+                      -DnewVersion="$KMS_VERSION"
+                  mvn --file kurento-parent-pom/pom.xml \
+                      versions:set-property \
+                      -DgenerateBackupPoms=false \
+                      -Dproperty=version.kms-api-elements \
+                      -DnewVersion="$KMS_VERSION"
+                  mvn --file kurento-parent-pom/pom.xml \
+                      versions:set-property \
+                      -DgenerateBackupPoms=false \
+                      -Dproperty=version.kms-api-filters \
+                      -DnewVersion="$KMS_VERSION"
+              else # kurento-tutorial-java, kurento-tutorial-test
+                  mvn \
+                      versions:update-parent \
+                      -DgenerateBackupPoms=false \
+                      -DparentVersion="[${NEW_VERSION}]" \
+                  || { echo "ERROR: Command failed: mvn versions:update-parent"; return 6; }
 
-            mvn -N \
-                versions:update-child-modules \
-                -DgenerateBackupPoms=false \
-            || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 7; }
-        fi
+                  mvn -N \
+                      versions:update-child-modules \
+                      -DgenerateBackupPoms=false \
+                  || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 7; }
+              fi
 
-        # Review all dependencies to remove development versions
-        grep . --include='pom.xml' -Fr -e '-SNAPSHOT' \
-        && echo "ERROR: Development versions not allowed!"
+              # Review all dependencies to remove development versions
+              grep . --include='pom.xml' -Fr -e '-SNAPSHOT' \
+              && echo "ERROR: Development versions not allowed!"
 
-        # Test the build
-        mvn -U clean install -Dmaven.test.skip=false -Pkurento-release \
-        || { echo "ERROR: Command failed: mvn clean install"; return 8; }
+              # Test the build
+              mvn -U clean install -Dmaven.test.skip=false -Pkurento-release \
+              || { echo "ERROR: Command failed: mvn clean install"; return 8; }
 
-        git stash pop
-        popd
-    done
+              git stash pop
+              popd
+          done
 
-    # Everything seems OK so proceed to commit and push
-    for PROJECT in "${PROJECTS[@]}"; do
-        pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 9; }
+          # Everything seems OK so proceed to commit and push
+          for PROJECT in "${PROJECTS[@]}"; do
+              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 9; }
 
-        ( git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add ) \
-        && git commit -m "$COMMIT_MSG" \
-        && git push \
-        && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-        && git push origin "$NEW_VERSION" \
-        || { echo "ERROR: Command failed: git"; return 10; }
+              ( git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add ) \
+              && git commit -m "$COMMIT_MSG" \
+              && git push \
+              && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
+              && git push origin "$NEW_VERSION" \
+              || { echo "ERROR: Command failed: git"; return 10; }
 
-        popd
-    done
-}
+              popd
+          done
+      }
 
-do_release
+      do_release
 
 #. When all repos have been released, and CI jobs have finished successfully:
 
@@ -1173,9 +1176,7 @@ For this reason, the documentation must be built only after all the other module
 
    Note that the JavaDoc and JsDoc pages won't be generated locally if you don't have your system prepared to do so; also there are some Sphinx constructs or plugins that might fail if you don't have them ready to use, but the ReadTheDocs servers have them so they should end up working fine.
 
-   In any case, **always check the final result** of the intermediate documentation builds at https://doc-kurento.readthedocs.io/en/latest/, to have an idea of how the final release build will end up looking like.
-
-#. Git add, commit, tag, and push.
+#. Git add, commit, and push. This will trigger a nightly build, where you can **check the result** of the documentation builds to have an idea of how the final release build will end up looking like, at https://doc-kurento.readthedocs.io/en/latest/.
 
 #. **All-In-One** script:
 
@@ -1188,7 +1189,7 @@ For this reason, the documentation must be built only after all the other module
           local COMMIT_MSG="Prepare release $NEW_VERSION"
 
           # Set [VERSION_RELEASE]="true"
-          sed -r -i 's/(VERSION_RELEASE.*)false/\1true/' VERSIONS.conf.sh \
+          sed -r -i 's/[VERSION_RELEASE]=.*/[VERSION_RELEASE]="true"/' VERSIONS.conf.sh \
           || { echo "ERROR: Command failed: sed"; return 1; }
 
           git add \
@@ -1196,20 +1197,18 @@ For this reason, the documentation must be built only after all the other module
               source/project/relnotes/* \
           && git commit -m "$COMMIT_MSG" \
           && git push \
-          && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-          && git push origin "$NEW_VERSION" \
           || { echo "ERROR: Command failed: git"; return 1; }
       }
 
       do_release
 
+#. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
+
+#. CI automatically tags Release versions in both ReadTheDocs source repos `doc-kurento`_ and `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
+
    .. note::
 
       If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. ReadTheDocs CI servers will read the latter one to obtain the documentation sources and release tags.
-
-#. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
-
-#. CI automatically tags Release versions in the ReadTheDocs source repo, `doc-kurento-readthedocs`_, so the release will show up as "*stable*" in ReadTheDocs.
 
 #. Open `ReadTheDocs Builds`_. If the new version hasn't been detected and built, do it manually: use the *Build Version* button to force a build of the *latest* version.
 
@@ -1234,7 +1233,7 @@ For this reason, the documentation must be built only after all the other module
           local COMMIT_MSG="Prepare for next development iteration"
 
           # Set [VERSION_RELEASE]="false"
-          sed -r -i 's/(VERSION_RELEASE.*)true/\1false/' VERSIONS.conf.sh \
+          sed -r -i 's/[VERSION_RELEASE]=.*/[VERSION_RELEASE]="false"/' VERSIONS.conf.sh \
           || { echo "ERROR: Command failed: sed"; return 1; }
 
           # Add a new Release Notes document
@@ -1247,9 +1246,9 @@ For this reason, the documentation must be built only after all the other module
               source/project/relnotes/index.rst \
           || { echo "ERROR: Command failed: sed"; return 1; }
 
-          git add VERSIONS.conf.sh \
-          && git add source/project/relnotes/v*.rst \
-          && git add source/project/relnotes/index.rst \
+          git add \
+              VERSIONS.conf.sh \
+              source/project/relnotes/* \
           && git commit -m "$COMMIT_MSG" \
           && git push \
           || { echo "ERROR: Command failed: git"; return 1; }
@@ -1268,6 +1267,8 @@ For this reason, the documentation must be built only after all the other module
 .. _kurento-docker: https://github.com/Kurento/kurento-docker
 .. _KMS CI job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
 .. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
+.. _doc-kurento: https://github.com/Kurento/doc-kurento
+.. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs
 .. _VERSIONS.conf.sh: https://github.com/Kurento/doc-kurento/blob/e021a6c98bcea4db351faf423e90b64b8aa977f6/VERSIONS.conf.sh
 
 
@@ -1329,7 +1330,6 @@ For this reason, the documentation must be built only after all the other module
 .. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
 .. _this Ask Ubuntu answer: https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names/620539#620539
-.. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs/releases
 .. _ReadTheDocs Builds: https://readthedocs.org/projects/doc-kurento/builds/
 .. _New build at ReadTheDocs: https://readthedocs.org/projects/doc-kurento/builds/
 .. _ReadTheDocs Advanced Settings: https://readthedocs.org/dashboard/doc-kurento/advanced/
