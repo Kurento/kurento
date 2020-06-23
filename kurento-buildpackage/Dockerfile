@@ -75,7 +75,7 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 
 # Install dependencies of 'kurento-buildpackage'
 # (listed in the tool's help/header)
-RUN apt-get -q update && apt-get -q install --yes \
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         python3 python3-pip python3-setuptools python3-wheel \
         devscripts \
         dpkg-dev \
@@ -87,9 +87,8 @@ RUN apt-get -q update && apt-get -q install --yes \
  && rm -rf /var/lib/apt/lists/*
 
 # Install 'git-buildpackage'
-RUN PIP_VERSION="$(python3 -c 'import pip; print(pip.__version__)')" \
-    dpkg --compare-versions "$PIP_VERSION" ge "1.6.0" && ARGS="--no-cache-dir"; \
-    pip3 $ARGS install --upgrade gbp==0.9.10
+RUN pip3 --no-cache-dir install --upgrade gbp==0.9.10 \
+ || pip3                install --upgrade gbp==0.9.10
 
 # Configure Git user, which will appear in the Debian Changelog files
 # (this is needed by git-buildpackage)
