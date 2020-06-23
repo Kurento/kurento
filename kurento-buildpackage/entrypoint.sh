@@ -43,10 +43,6 @@ fi
 # Note: "$@" expands to all quoted arguments, as passed to this script
 "$ADM_SCRIPTS_PATH/kurento-buildpackage.sh" "$@"
 
-# Print a list of generated packages
-echo "[Docker entrypoint] Debian packages:"
-find . -maxdepth 1 -type f -name '*.*deb'
-
 # Get generated packages out from the Docker container
 if [[ -d /hostdir ]]; then
     mv ./*.*deb /hostdir/ 2>/dev/null || true
