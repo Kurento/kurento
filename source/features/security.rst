@@ -20,39 +20,36 @@ Securing Application Servers
 Configure a Java server to use HTTPS
 ------------------------------------
 
-* The application needs a certificate in order to enable HTTPS:
+* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :ref:`features-security-selfsigned`.
 
-   * Request a certificate from a local certification authority.
+* Convert your PEM certificate to either `Java KeyStore <https://en.wikipedia.org/wiki/Java_KeyStore>`__ (*JKS*) or `PKCS#12 <https://en.wikipedia.org/wiki/PKCS_12>`__. The former is a proprietary format limited to the Java ecosystem, while the latter is an industry-wide used format. To make a PKCS#12 file from an already existing PEM certificate, run these commands:
 
-   * Create an self-signed certificate.
+  .. code-block:: bash
 
-     .. sourcecode:: bash
+     openssl pkcs12 \
+         -export \
+         -in cert.pem -inkey key.pem \
+         -out cert.p12 -passout pass:123456
 
-        keytool -genkey -keyalg RSA -alias selfsigned -keystore \
-        keystore.jks -storepass password -validity 360 -keysize 2048
+     chmod 440 *.p12
 
-* Use the certificate in your application:
+* Use the certificate in your application.
 
-  * Include a valid keystore in the *jar* file:
+  Place your PKCS#12 file *cert.p12* in ``src/main/resources/``, and add this to the *application.properties* file::
 
-    A file *keystore.jks* must be in the project's root path, and a file named *application.properties* must exist in *src/main/resources/*, with the following content:
+  .. code-block:: text
 
-    .. sourcecode:: text
+     server.port=8443
+     server.ssl.key-store=classpath:cert.p12
+     server.ssl.key-store-password=123456
+     server.ssl.key-store-type=PKCS12
 
-       server.port: 8443
-       server.ssl.key-store: keystore.jks
-       server.ssl.key-store-password: yourPassword
-       server.ssl.keyStoreType: JKS
-       server.ssl.keyAlias: yourKeyAlias
+* Start the Spring Boot application:
 
-    * You can also specify the location of the properties file. When launching your Spring-Boot based app, issue the flag ``-Dspring.config.location=<path-to-properties>`` .
+  .. code-block:: bash
 
-* Start application
-
-.. sourcecode:: bash
-
-   mvn -U clean spring-boot:run \
-       -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
+     mvn -U clean spring-boot:run \
+         -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
 
 .. note::
 
@@ -65,44 +62,40 @@ Configure a Java server to use HTTPS
 Configure a Node server to use HTTPS
 ------------------------------------
 
-* You will need to provide a valid SSL certificate in order to enable HTTPS. Here, there are two alternatives:
+* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :ref:`features-security-selfsigned`.
 
-  1. Request a certificate from a local Certification Authority (*CA*).
+* Add the following changes to your *server.js*, in order to enable HTTPS:
 
-  2. Create your own self-signed certificate as explained `here <https://www.akadia.com/services/ssh_test_certificate.html>`__. This link will teach you how to create the required files: *server.crt*, *server.key*, and *server.csr*.
+  .. sourcecode:: javascript
 
-* Add the following changes to *server.js* in order to enable HTTPS:
+     ...
+     var express = require('express');
+     var ws      = require('ws');
+     var fs      = require('fs');
+     var https   = require('https');
+     ...
 
-.. sourcecode:: javascript
+     var options =
+     {
+       cert: fs.readFileSync('cert.pem'),
+       key:  fs.readFileSync('key.pem'),
+     };
 
-   ...
-   var express = require('express');
-   var ws = require('ws');
-   var fs    = require('fs');
-   var https = require('https');
-   ...
+     var app = express();
 
-   var options =
-   {
-     key:  fs.readFileSync('key/server.key'),
-     cert: fs.readFileSync('keys/server.crt')
-   };
+     var server = https.createServer(options, app).listen(port, function() {
+     ...
+     });
+     ...
 
-   var app = express();
+     var wss = new ws.Server({
+      server : server,
+      path : '/'
+     });
 
-   var server = https.createServer(options, app).listen(port, function() {
-   ...
-   });
-   ...
+     wss.on('connection', function(ws) {
 
-   var wss = new ws.Server({
-    server : server,
-    path : '/'
-   });
-
-   wss.on('connection', function(ws) {
-
-   ....
+     ....
 
 * Start application
 
@@ -125,21 +118,13 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
    sudo apt-get install --yes nodejs
    sudo npm install -g http-server
 
-* You will need to provide a valid SSL certificate in order to enable HTTPS. There are two alternatives:
-
-  1. Obtain a certificate from a trusted Certification Authority (*CA*).
-
-  2. Create your own untrusted self-signed certificate. You can search articles online that explain how to do this, for example `this one <https://www.akadia.com/services/ssh_test_certificate.html>`__.
-
-     Alternatively, it can be much easier and convenient using a self-signed certificate generation tool, such as `mkcert <https://github.com/FiloSottile/mkcert>`__.
-
-     Note that while a self-signed certificate can be used, browsers will show a big security warning. Users will see this warning, and must click to accept the unsafe certificate before proceeding to the page.
+* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :ref:`features-security-selfsigned`.
 
 * Start the HTTPS web server, using the SSL certificate:
 
   .. code-block:: bash
 
-     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
+     http-server -p 8443 --ssl --cert cert.pem --key key.pem
 
 
 
@@ -162,47 +147,24 @@ To enable Secure WebSocket, edit the main KMS configuration file (*/etc/kurento/
      "password": "KEY_PASSWORD"
    }
 
-If you use a signed certificate issued by a trusted Certificate Authority such as Verisign or Let's Encrypt, then you are done. Just skip to the next section: :ref:`features-security-kms-wss-connect`.
+If you use a signed certificate issued by a trusted Certification Authority (*CA*) such as Verisign or Let's Encrypt, then you are done. Just skip to the next section: :ref:`features-security-kms-wss-connect`.
 
 However, if you are going to use an untrusted self-signed certificate (typically during development), there is still more work to do.
 
-You can generate your own self-signed certificate, with these commands:
+Generate your own certificate as explained here: :ref:`features-security-selfsigned`. Now, because self-signed certificates are untrusted by nature, client browsers and server applications will reject it by default. You'll need to force all consumers of the certificate to accept it:
 
-.. code-block:: shell
+* **Java applications**. Follow the instructions of this link: `SunCertPathBuilderException: unable to find valid certification path to requested target <https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__ (`archive <https://web.archive.org/web/20200101052022/https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__).
 
-   certtool --generate-privkey --outfile defaultCertificate.pem
-
-   echo 'organization = your organization name' >certtool.tmpl
-
-   certtool --generate-self-signed --load-privkey defaultCertificate.pem \
-      --template certtool.tmpl >>defaultCertificate.pem
-
-   sudo chown kurento defaultCertificate.pem
-
-Alternatively, it is much easier and convenient using a self-signed certificate generation tool, such as `mkcert <https://github.com/FiloSottile/mkcert>`__:
-
-.. code-block:: shell
-
-   CAROOT="$PWD" mkcert -cert-file ./cert.pem -key-file ./key.pem \
-       "127.0.0.1" \
-       "::1"       \
-       "localhost" \
-       "a.test"    \
-       "b.test"    \
-       "c.test"
-
-Now, because self-signed certificates are untrusted by nature, client browsers and server applications will reject it by default. You'll need to force all consumers of the certificate to accept it:
-
-* **Java applications**. Follow the instructions of this link: `SunCertPathBuilderException: unable to find valid certification path to requested target <https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__ (`archive <https://web.archive.org/web/20200101052022/https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__). Get ``InstallCert.java`` from here: https://github.com/escline/InstallCert.
+  Get ``InstallCert.java`` from here: https://github.com/escline/InstallCert.
 
   You'll need to instruct the *KurentoClient* to allow using certificates. For this purpose, create an ``JsonRpcClient``:
 
-.. code-block:: java
+  .. code-block:: java
 
-   SslContextFactory sec = new SslContextFactory(true);
-   sec.setValidateCerts(false);
-   JsonRpcClientWebSocket rpcClient = new JsonRpcClientWebSocket(uri, sec);
-   KurentoClient kurentoClient = KurentoClient.createFromJsonRpcClient(rpcClient);
+     SslContextFactory sec = new SslContextFactory(true);
+     sec.setValidateCerts(false);
+     JsonRpcClientWebSocket rpcClient = new JsonRpcClientWebSocket(uri, sec);
+     KurentoClient kurentoClient = KurentoClient.createFromJsonRpcClient(rpcClient);
 
 * **Node applications**. Take a look at this page: `Painless Self Signed Certificates in node.js <https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__ (`archive <https://web.archive.org/web/20200610093038/https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__).
 
@@ -230,7 +192,7 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
   .. code-block:: java
 
      mvn -U clean spring-boot:run \
-         -Dkms.url="wss://{KMS_HOST}:8433/kurento"
+         -Dspring-boot.run.jvmArguments="-Dkms.url=wss://{KMS_HOST}:8433/kurento"
 
 * **Node**: Launch with the ``ws_uri`` command-line argument. For example:
 
@@ -243,3 +205,34 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
   .. code-block:: js
 
      const ws_uri: "wss://" + location.hostname + ":8433/kurento";
+
+
+
+.. _features-security-selfsigned:
+
+Generating a self-signed certificate
+====================================
+
+You need to provide a valid SSL certificate in order to enable all sorts of security features, ranging from HTTPS to Secure WebSocket (``wss://``). For this, there are two alternatives:
+
+* Obtain a certificate from a trusted Certification Authority (*CA*). This should be your primary choice, and will be necessary for production-grade deployments.
+
+* Create your own untrusted self-signed certificate. This can ease operations during the phase of software development. You can search articles online that explain how to do this, for example `this one <https://www.akadia.com/services/ssh_test_certificate.html>`__.
+
+  Alternatively, it is much easier and convenient to use a self-signed certificate generation tool, such as `mkcert <https://github.com/FiloSottile/mkcert>`__. This kind of tools already take into account the requisites and limitations of most popular applications and browsers, so that you don't need to.
+
+  Note that while a self-signed certificate can be used for web development, browsers will show a big security warning. Users will see this warning, and must click to accept the unsafe certificate before proceeding to the page.
+
+  To generate certificates with *mkcert*, run these commands:
+
+  .. code-block:: shell
+
+     CAROOT="$PWD" mkcert -cert-file ./cert.pem -key-file ./key.pem \
+         "127.0.0.1" \
+         "::1"       \
+         "localhost" \
+         "a.test"    \
+         "b.test"    \
+         "c.test"
+
+     chmod 440 *.pem
