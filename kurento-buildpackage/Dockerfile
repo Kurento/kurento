@@ -47,7 +47,7 @@
 
 ARG UBUNTU_CODENAME=xenial
 
-FROM buildpack-deps:${UBUNTU_CODENAME}-curl
+FROM ubuntu:${UBUNTU_CODENAME}
 
 # Configure environment:
 # * DEBIAN_FRONTEND: Disable Apt interactive questions and messages
@@ -67,11 +67,7 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
 # Install a basic set of packages
 # * build-essential, cmake, pkg-config: For C/C++ based projects
 # * Miscellaneous tools that are used by CI scripts
-RUN apt-get -q update && apt-get -q install --yes \
-        build-essential \
-        cmake \
-        pkg-config \
-        \
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         gnupg \
         iproute2 \
         zip unzip \
