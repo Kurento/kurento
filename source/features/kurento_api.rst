@@ -6,7 +6,7 @@ Kurento API
 
 **Kurento Media Server** can be controlled through the API it exposes, so application developers can use high level languages to interact with it. The Kurento project already provides :doc:`Kurento Client </features/kurento_client>` implementations of this API for several platforms.
 
-If you prefer a programming language different from the supported ones, you can implement your own Kurento Client by using the :doc:`Kurento Protocol</features/kurento_protocol>`, which is based on :term:`WebSocket` and :term:`JSON-RPC`.
+If you prefer a programming language different from the supported ones, you can implement your own Kurento Client by using the :doc:`Kurento Protocol </features/kurento_protocol>`, which is based on :term:`WebSocket` and :term:`JSON-RPC`.
 
 In the following sections we will describe the Kurento API from a high-level point of view, showing the media capabilities exposed by Kurento Media Server to clients. If you want to see working demos using Kurento, please refer to the :doc:`Tutorials section </user/tutorials>`.
 

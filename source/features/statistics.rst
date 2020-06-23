@@ -137,7 +137,7 @@ All in all, the process for gathering WebRTC statistics in the KMS can be
 summarized in two steps: 1) Enable WebRTC statistics; 2) Read WebRTC. This
 process is illustrated in the following picture. This diagram also describes
 the :term:`JSON-RPC` messages exchanged between Kurento client and KMS
-following the :doc:`Kurento Protocol<kurento_protocol>`:
+following the :doc:`Kurento Protocol </features/kurento_protocol>`:
 
 .. figure:: ../images/kurento-stats.png
    :align: center
