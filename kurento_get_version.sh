@@ -73,6 +73,10 @@ then
   # shellcheck source=VERSIONS.conf.sh
   source VERSIONS.conf.sh
   PROJECT_VERSION="${PROJECT_VERSIONS[VERSION_DOC]}"
+elif [ -f VERSION ]
+then
+  echo "Getting version from VERSION" >&2
+  PROJECT_VERSION="$(cat VERSION)"
 elif [ "$(find . -regex '.*/package.json' | sed -n 1p)" ]
 then
   echo "Getting version from package.json recursing into folders" >&2
