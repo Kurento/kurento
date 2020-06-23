@@ -14,7 +14,7 @@ To run these examples, follow these initial steps:
 
 1. Install required packages:
 
-   .. code-block:: text
+   .. code-block:: console
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           gstreamer1.0-{tools,libav} \
@@ -22,7 +22,7 @@ To run these examples, follow these initial steps:
 
 2. [Optional] Enable debug logging:
 
-   .. code-block:: text
+   .. code-block:: console
 
       export GST_DEBUG=3
 
@@ -51,7 +51,7 @@ Features:
 
 - Video RTP sender
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
     SELF_PATH="$PWD/video.mp4" \
@@ -72,7 +72,7 @@ Features:
 - Video RTP sender
 - Video RTCP receiver
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
     SELF_PATH="$PWD/video.mp4" \
@@ -99,7 +99,7 @@ Features:
 - Video RTP sender
 - Video RTCP receiver console dump
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
     SELF_PATH="$PWD/video.mp4" \
@@ -128,7 +128,7 @@ Features:
 - Video RTP & RTCP sender
 - Video RTCP receiver console dump
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
     SELF_PATH="$PWD/video.mp4" \
@@ -160,7 +160,7 @@ Features:
 - Video RTCP receiver console dump
 - Symmetrical ports (for autodiscovery)
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
     SELF_PATH="$PWD/video.mp4" \
@@ -192,7 +192,7 @@ Features:
 - Video RTCP receiver console dump
 - Symmetrical ports (for autodiscovery)
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_A=9006 PEER_IP=127.0.0.1 \
     SELF_A=5006 SELF_ASSRC=445566 \
@@ -224,7 +224,7 @@ Features:
 - Video RTCP receiver console dump
 - Symmetrical ports (for autodiscovery)
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_A=9006 PEER_V=9004 PEER_IP=127.0.0.1 \
     SELF_PATH="$PWD/video.mp4" \
@@ -271,7 +271,7 @@ Features:
 - Video RTP & RTCP receiver
 - RTCP sender
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=5004 PEER_IP=127.0.0.1 \
     SELF_V=9004 \
@@ -306,7 +306,7 @@ Features:
 - Audio & Video RTCP sender
 - Symmetrical ports (for autodiscovery)
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_A=5006 PEER_ASSRC=445566 PEER_V=5004 PEER_VSSRC=112233 PEER_IP=127.0.0.1 \
     SELF_A=9006 SELF_V=9004 \
@@ -346,7 +346,7 @@ SRTP examples
 
 For the SRTP examples, you need to install the Kurento's fork of GStreamer:
 
-.. code-block:: text
+.. code-block:: console
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        gstreamer1.5-{tools,libav} \
@@ -361,7 +361,7 @@ Features:
 
 - Video SRTP sender
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=9004 PEER_IP=127.0.0.1 \
     SELF_PATH="$PWD/video.mp4" \
@@ -387,7 +387,7 @@ Features:
 
 - Video SRTP receiver
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_VSSRC=112233 \
     PEER_KEY="4142434445464748494A4B4C4D4E4F505152535455565758595A31323334" \
@@ -418,7 +418,7 @@ Features:
 - Video SRTP & SRTCP sender
 - SRTCP receiver console dump
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=9004 PEER_VSSRC=332211 PEER_IP=127.0.0.1 \
     PEER_KEY="343332315A595857565554535251504F4E4D4C4B4A494847464544434241" \
@@ -466,7 +466,7 @@ Features:
 - Video SRTP & SRTCP receiver
 - SRTCP sender
 
-.. code-block:: text
+.. code-block:: console
 
     PEER_V=5004 PEER_VSSRC=112233 PEER_IP=127.0.0.1 \
     PEER_KEY="4142434445464748494A4B4C4D4E4F505152535455565758595A31323334" \
@@ -585,10 +585,10 @@ It should be possible to use FFmpeg to send or receive RTP streams; just make su
 
 This command is a good starting point to send RTP:
 
-.. code-block:: text
+.. code-block:: console
 
    ffmpeg -re -i "video.mp4" -c:v libx264 -tune zerolatency -payload_type 103 \
-     -an -f rtp rtp://IP:PORT
+       -an -f rtp rtp://IP:PORT
 
 Note that Payload Type is **103** in these and all other examples, because that's the number used in the SDP Offer sent to the *RtpEndpoint* in Kurento. You could use any other number, just make sure that it gets used consistently in both SDP Offer and RTP sender program.
 

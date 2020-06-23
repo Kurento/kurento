@@ -75,7 +75,7 @@ Coturn is a :term:`STUN` server and :term:`TURN` relay, supporting all features 
 
 Coturn can be installed directly from the Ubuntu package repositories:
 
-.. code-block:: bash
+.. code-block:: console
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        coturn
@@ -140,7 +140,7 @@ To configure it for WebRTC, follow these steps:
 
 2. Edit the file */etc/default/coturn* and set
 
-   .. code-block:: text
+   .. code-block:: console
 
       TURNSERVER_ENABLED=1
 
@@ -252,7 +252,7 @@ The following ports should be open in the firewall or your cloud machine's *Secu
 
 When you are done, (re)start both Coturn and Kurento servers:
 
-.. code-block:: bash
+.. code-block:: console
 
    sudo service coturn restart
    sudo service kurento-media-server restart

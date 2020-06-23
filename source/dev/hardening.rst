@@ -31,7 +31,7 @@ Hardening validation
 
 Debian-based distributions provide the *hardening-check* tool (package *hardening-includes*), which can be used to check if a binary file (either an executable or a shared library) was properly hardened:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ hardening-check /usr/sbin/sshd
    /usr/sbin/sshd:
@@ -111,7 +111,7 @@ However, CMake is lacking that it *does not* add the flag ``-pie`` to the linker
 
 Kurento Media Server works around this limitation of CMake by doing this in the CMake configuration:
 
-.. code-block:: text
+.. code-block:: cmake
 
    # Use "-fPIC" / "-fPIE" for all targets by default, including static libs
    set(CMAKE_POSITION_INDEPENDENT_CODE ON)

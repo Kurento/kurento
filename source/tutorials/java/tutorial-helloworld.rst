@@ -20,7 +20,7 @@ Follow these steps to run this demo application:
 
 2. Run these commands:
 
-   .. code-block:: text
+   .. code-block:: console
 
       git clone https://github.com/Kurento/kurento-tutorial-java.git
       cd kurento-tutorial-java/kurento-hello-world

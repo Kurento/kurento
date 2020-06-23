@@ -14,7 +14,7 @@ First of all, install Kurento Media Server: :doc:`/user/installation`. Start the
 
 Install :term:`Node.js`, :term:`Bower`, and a web server in your system:
 
-.. code-block:: bash
+.. code-block:: console
 
    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
    sudo apt-get install -y nodejs
@@ -25,7 +25,7 @@ Here, we suggest using the simple Node.js ``http-server``, but you could use any
 
 You also need the source code of this tutorial. Clone it from GitHub, then start the web server:
 
-.. code-block:: bash
+.. code-block:: console
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-platedetector/
@@ -67,7 +67,7 @@ If you want to run this tutorial from a **remote web server**, then you have to 
 
    This demo uses the **kms-platedetector** module, which must be installed in the media server. That module is available in the Kurento Apt repositories, so it is possible to install it with this command:
 
-   .. code-block:: text
+   .. code-block:: console
 
       sudo apt-get update && sudo apt-get install --yes kms-platedetector
 

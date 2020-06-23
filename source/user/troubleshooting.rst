@@ -100,7 +100,7 @@ Of these, video transcoding is the main user of CPU cycles, because encoding vid
 
 If you see that transcoding is active at some point, you may get a bit more information about why, by enabling this line:
 
-.. code-block:: bash
+.. code-block:: console
 
    export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
 
@@ -163,13 +163,13 @@ In Ubuntu, log messages from init scripts are managed by *systemd*, and can be c
 - */var/log/syslog* contains a copy of all init service messages.
   You can open it to see past messages, or follow it in real time with this command:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      tail -f /var/log/syslog
 
 - You can query the status of the *kurento-media-server* service with this command:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      systemctl status kurento-media-server.service
 
@@ -199,7 +199,7 @@ If the machine is disconnected during the actual installation of this package, t
 
 **Solution**: Ensure that the machine has access to the required URL, and try reinstalling the package:
 
-.. code-block:: bash
+.. code-block:: console
 
    sudo apt-get update && sudo apt-get install --reinstall openh264
 
@@ -481,7 +481,7 @@ mDNS name resolution must be enabled in the system. Check out the contents of */
 
 If not, try fully reinstalling the package *libnss-mdns*:
 
-.. code-block:: sh
+.. code-block:: console
 
    sudo apt-get purge --yes libnss-mdns
    sudo apt-get update
@@ -579,7 +579,7 @@ This jitter buffer gets full when network packets arrive faster than what Kurent
 
 You can check if this problem is affecting you by running with DEBUG :ref:`logging level <logging-levels>` enabled for the *rtpjitterbuffer* component, and searching for a specific message:
 
-.. code-block:: bash
+.. code-block:: console
 
    export GST_DEBUG="${GST_DEBUG:-3},rtpjitterbuffer:5"
    /usr/bin/kurento-media-server 2>&1 | grep -P 'rtpjitterbuffer.*(Received packet|Queue full)'

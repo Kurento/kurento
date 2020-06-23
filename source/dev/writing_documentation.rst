@@ -39,14 +39,14 @@ If you are writing documentation for Kurento, there is no need to commit every c
 
   To install *VS Code* and the two mentioned functions, use `their installer <https://code.visualstudio.com/Download>`__, then run these commands:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      code --install-extension streetsidesoftware.code-spell-checker
      code --install-extension lextudio.restructuredtext
 
 - Secondly, you can build the documentation locally. Just install the required dependencies:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      # Ensure that old versions of Sphinx are not installed
      sudo apt-get purge --auto-remove \
@@ -55,14 +55,14 @@ If you are writing documentation for Kurento, there is no need to commit every c
          python-sphinx-rtd-theme \
          sphinx-rtd-theme-common
 
-  .. code-block:: bash
+  .. code-block:: console
 
      # Ensure that Sphinx is not installed with Python 3
      sudo pip3 uninstall sphinx
      sudo pip3 uninstall sphinx_rtd_theme
      sudo pip3 uninstall sphinxcontrib_websupport
 
-  .. code-block:: bash
+  .. code-block:: console
 
      # Install Sphinx with Python 2
      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
@@ -73,7 +73,7 @@ If you are writing documentation for Kurento, there is no need to commit every c
 
   And then just run ``make html`` to build and open your new shiny files:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      cd doc-kurento/
      make html

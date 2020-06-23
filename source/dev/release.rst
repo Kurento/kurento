@@ -76,19 +76,19 @@ General considerations
 
      - Remove the local tag:
 
-       .. code-block:: bash
+       .. code-block:: console
 
           git tag --delete <TagName>
 
      - Remove the remote tag:
 
-       .. code-block:: bash
+       .. code-block:: console
 
           git push --delete origin <TagName>
 
    - How to push just a local tag?
 
-     .. code-block:: bash
+     .. code-block:: console
 
         git push origin <TagName>
 
@@ -96,7 +96,7 @@ General considerations
 
      See: https://www.atlassian.com/git/tutorials/rewriting-history#git-commit--amend
 
-     .. code-block:: bash
+     .. code-block:: console
 
         # <Remove Tag>
         # <Amend>
@@ -153,7 +153,7 @@ Release steps
 
 #. Set the final release version, commit the results, and create a tag.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change these
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -205,7 +205,7 @@ Release steps
 
    The version number will only be changed when the fork gets updated from upstream code. When doing that, then change our version number so it matched the version number used in upstream.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change these
       NEW_VERSION="<NextVersion>"           # Eg.: 1.0.0
@@ -274,7 +274,7 @@ Kurento Maven Plugin
 
 #. Git add, commit, tag, and push.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -304,7 +304,7 @@ Kurento Maven Plugin
 
 6. Git add, commit, and push.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       COMMIT_MSG="Prepare for next development iteration"
 
@@ -353,7 +353,7 @@ Preparation: KMS API Java modules
 
 Test the KMS API Java module generation (local check).
 
-.. code-block:: bash
+.. code-block:: console
 
    apt-get update && apt-get install --no-install-recommends --yes \
        kurento-module-creator \
@@ -397,13 +397,13 @@ Release steps
 
    You can use this command to get a list of commit messages since last release:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       git log "$(git describe --tags --abbrev=0)"..HEAD --oneline
 
    Then add the new *CHANGELOG.md* for the upcoming release commit:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       cd kurento-media-server
       git add CHANGELOG.md
@@ -412,7 +412,7 @@ Release steps
 
 #. Set the final release version in all projects. Use the helper script `kms-omni-build/bin/set-versions.sh`_ to set version numbers, commit the results, and create a tag.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change these
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -424,13 +424,13 @@ Release steps
 
    Now push changes:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       git submodule foreach 'git push --follow-tags'
 
 #. It's also nice to update the git-submodule references of the all-in-one repo ``kms-omni-build``, and create a tag just like in all the other repos.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
@@ -495,7 +495,7 @@ Release steps
 
 #. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, reset the **Debian revision** number to *1*, and increment the **patch** number. Use the helper script *kms-omni-build/bin/set-versions.sh* to set version numbers and commit.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change these
       NEW_VERSION="<NextVersion>"           # Eg.: 1.0.1
@@ -507,7 +507,7 @@ Release steps
 
    Now push changes:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       git submodule foreach 'git push'
 
@@ -541,7 +541,7 @@ Release steps
 
 #. Ensure there are no uncommited files.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       git diff-index --quiet HEAD \
       || echo "ERROR: Uncommited files not allowed!"
@@ -558,7 +558,7 @@ Release steps
 
    This command can be used to search for all development versions:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       grep . --exclude-dir='*node_modules' -Fr -e '-dev"' -e '"git+' \
       && echo "ERROR: Development versions not allowed!"
@@ -567,7 +567,7 @@ Release steps
 
 #. Test the build, to make sure the code is in a working state.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       npm install
       if [[ -x node_modules/.bin/grunt ]]; then
@@ -579,7 +579,7 @@ Release steps
 
    To manually run the beautifier, do this:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       npm install
 
@@ -597,7 +597,7 @@ Release steps
 
       You'll need to install the **jq** command-line JSON processor.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -721,7 +721,7 @@ Release steps
 
    **All-In-One** script:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change this
       NEW_VERSION="<NextVersion>-dev"           # Eg.: 1.0.1-dev
@@ -855,7 +855,7 @@ Release steps
 
 #. Ensure there are no uncommited files.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       git diff-index --quiet HEAD \
       || echo "ERROR: Uncommited files not allowed!"
@@ -874,7 +874,7 @@ Release steps
 
    This command can be used to search for all development versions:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       grep . --include='pom.xml' -Fr -e '-SNAPSHOT' \
       && echo "ERROR: Development versions not allowed!"
@@ -885,7 +885,7 @@ Release steps
 
       The profile '*kurento-release*' is used to enforce no development versions are present.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       mvn -U clean install -Dmaven.test.skip=false -Pkurento-release \
       || echo "ERROR: Command failed: mvn clean install"
@@ -896,7 +896,7 @@ Release steps
 
       Use ``mvn --batch-mode`` if you copy this to an actual script.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
@@ -1048,7 +1048,7 @@ Release steps
 
       Use ``mvn --batch-mode`` if you copy this to an actual script.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       function do_release {
           local COMMIT_MSG="Prepare for next development iteration"
@@ -1170,7 +1170,7 @@ For this reason, the documentation must be built only after all the other module
 
 #. Test the build locally, check everything works.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       make html
 
@@ -1180,7 +1180,7 @@ For this reason, the documentation must be built only after all the other module
 
 #. **All-In-One** script:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -1224,7 +1224,7 @@ For this reason, the documentation must be built only after all the other module
 
    **All-In-One** script:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change this
       NEW_VERSION="<NextVersion>"           # Eg.: 1.0.1

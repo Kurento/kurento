@@ -18,7 +18,7 @@ First of all, install Kurento Media Server: :doc:`/user/installation`. Start the
 
 Install :term:`Node.js`, :term:`Bower`, and a web server in your system:
 
-.. code-block:: bash
+.. code-block:: console
 
    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
    sudo apt-get install -y nodejs
@@ -29,7 +29,7 @@ Here, we suggest using the simple Node.js ``http-server``, but you could use any
 
 You also need the source code of this tutorial. Clone it from GitHub, then start the web server:
 
-.. code-block:: bash
+.. code-block:: console
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-hello-world/

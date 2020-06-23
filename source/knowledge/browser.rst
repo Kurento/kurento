@@ -16,7 +16,7 @@ Test instance
 
 To run a new Firefox instance with a clean profile:
 
-.. code-block:: bash
+.. code-block:: console
 
    /usr/bin/firefox -no-remote -profile "$(mktemp --directory)"
 
@@ -59,7 +59,7 @@ Some examples:
 
 Linux:
 
-.. code-block:: bash
+.. code-block:: console
 
    export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    export MOZ_LOG_FILE=/tmp/firefox.log
@@ -67,7 +67,7 @@ Linux:
 
 Mac:
 
-.. code-block:: bash
+.. code-block:: console
 
    export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    export MOZ_LOG_FILE=~/Desktop/firefox.log
@@ -75,7 +75,7 @@ Mac:
 
 Windows:
 
-.. code-block:: bash
+.. code-block:: console
 
    set MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    set MOZ_LOG_FILE=%TEMP%\firefox.log
@@ -83,7 +83,7 @@ Windows:
 
 With command line arguments:
 
-.. code-block:: bash
+.. code-block:: console
 
    /usr/bin/firefox \
        -MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5 \
@@ -91,7 +91,7 @@ With command line arguments:
 
 Log :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
 
-.. code-block:: bash
+.. code-block:: console
 
    export R_LOG_DESTINATION=stderr
    export R_LOG_LEVEL=7
@@ -102,7 +102,7 @@ Log :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
 
 WebRTC dump example:
 
-.. code-block:: bash
+.. code-block:: console
 
    export MOZ_LOG=timestamp,signaling:5,jsep:5,RtpLogger:5
    export MOZ_LOG_FILE="$PWD/firefox"
@@ -124,7 +124,7 @@ Safari
 
 To enable the Debug menu in Safari, run this command in a terminal:
 
-.. code-block:: bash
+.. code-block:: console
 
    defaults write com.apple.Safari IncludeInternalDebugMenu 1
 
@@ -138,7 +138,7 @@ Test instance
 
 To run a new Chrome instance with a clean profile:
 
-.. code-block:: bash
+.. code-block:: console
 
    /usr/bin/google-chrome --user-data-dir="$(mktemp --directory)"
 
@@ -153,7 +153,7 @@ Sources:
 * https://www.chromium.org/for-testers/enable-logging
 
 
-.. code-block:: bash
+.. code-block:: console
 
    /usr/bin/google-chrome --user-data-dir="$(mktemp --directory)" \
        --enable-logging=stderr \

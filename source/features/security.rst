@@ -24,7 +24,7 @@ Configure a Java server to use HTTPS
 
 * Convert your PEM certificate to either `Java KeyStore <https://en.wikipedia.org/wiki/Java_KeyStore>`__ (*JKS*) or `PKCS#12 <https://en.wikipedia.org/wiki/PKCS_12>`__. The former is a proprietary format limited to the Java ecosystem, while the latter is an industry-wide used format. To make a PKCS#12 file from an already existing PEM certificate, run these commands:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      openssl pkcs12 \
          -export \
@@ -35,9 +35,9 @@ Configure a Java server to use HTTPS
 
 * Use the certificate in your application.
 
-  Place your PKCS#12 file *cert.p12* in ``src/main/resources/``, and add this to the *application.properties* file::
+  Place your PKCS#12 file *cert.p12* in ``src/main/resources/``, and add this to the *application.properties* file:
 
-  .. code-block:: text
+  .. code-block:: properties
 
      server.port=8443
      server.ssl.key-store=classpath:cert.p12
@@ -46,7 +46,7 @@ Configure a Java server to use HTTPS
 
 * Start the Spring Boot application:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      mvn -U clean spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
@@ -112,7 +112,7 @@ Configure JavaScript applications to use HTTPS
 
 WebRTC requires HTTPS, so your JavaScript application must be served by a secure web server. You can use whichever one you prefer, such as Nginx or Apache. For quick tests, a very straightforward option is to use the simple, zero-configuration `http-server <https://www.npmjs.com/package/http-server>`__ based on Node.js:
 
-.. code-block:: bash
+.. code-block:: console
 
    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
    sudo apt-get install --yes nodejs
@@ -122,7 +122,7 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
 
 * Start the HTTPS web server, using the SSL certificate:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      http-server -p 8443 --ssl --cert cert.pem --key key.pem
 
@@ -139,7 +139,7 @@ This is fine for initial stages of application development, but before deploying
 
 To enable Secure WebSocket, edit the main KMS configuration file (*/etc/kurento/kurento.conf.json*), and un-comment the following lines:
 
-.. code-block:: text
+.. code-block:: json-object
 
    "secure": {
      "port": 8433,
@@ -225,7 +225,7 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
 
   To generate certificates with *mkcert*, run these commands:
 
-  .. code-block:: shell
+  .. code-block:: console
 
      CAROOT="$PWD" mkcert -cert-file ./cert.pem -key-file ./key.pem \
          "127.0.0.1" \

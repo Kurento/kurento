@@ -72,7 +72,7 @@ Logging categories and levels can be filtered by two methods:
 
 - Use a command-line argument if you are manually running KMS. For example, run:
 
-  .. code-block:: text
+  .. code-block:: console
 
      /usr/bin/kurento-media-server \
        --gst-debug-level=3 \
@@ -80,14 +80,14 @@ Logging categories and levels can be filtered by two methods:
 
 - You can also replace the command-line arguments with the environment variable *GST_DEBUG*. For example, run:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      export GST_DEBUG="3,Kurento*:4,kms*:4"
      /usr/bin/kurento-media-server
 
 If you are using the native packages (installing KMS with *apt-get*) and running KMS as a system service, then you can also configure the *GST_DEBUG* variable in the KMS service settings file, */etc/default/kurento-media-server*:
 
-  .. code-block:: bash
+  .. code-block:: console
 
      # Logging level.
      export GST_DEBUG="3,Kurento*:4,kms*:4"
@@ -103,7 +103,7 @@ Here are some tips on what logging components and levels could be most useful de
 
 The **default suggested level** is what KMS sets automatically when it is started as a system service from the init scripts:
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
@@ -111,7 +111,7 @@ From that baseline, one can add any other values to extend the amount of informa
 
 * **MediaFlowIn**, **MediaFlowOut** state changes, important to know if media is actually flowing between endpoints (see :ref:`events-mediaelement`):
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoMediaElementImpl:5"
 
@@ -119,13 +119,13 @@ From that baseline, one can add any other values to extend the amount of informa
 
   - SDP Offer/Answer messages:
 
-    .. code-block:: text
+    .. code-block:: console
 
        export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:5"
 
   - ICE candidate gathering:
 
-    .. code-block:: text
+    .. code-block:: console
 
        export GST_DEBUG="${GST_DEBUG:-3},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
 
@@ -138,7 +138,7 @@ From that baseline, one can add any other values to extend the amount of informa
 
   - REMB congestion control:
 
-    .. code-block:: text
+    .. code-block:: console
 
        export GST_DEBUG="${GST_DEBUG:-3},kmsremb:5"
 
@@ -149,37 +149,37 @@ From that baseline, one can add any other values to extend the amount of informa
 
 * **PlayerEndpoint**:
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="${GST_DEBUG:-3},kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
 
 * **RecorderEndpoint**:
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5"
 
 * **JSON-RPC** API server calls:
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="${GST_DEBUG:-3},KurentoWebSocket*:5"
 
 * **RTP Synchronization**:
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="${GST_DEBUG:-3},kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
 * **Transcoding of media**:
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
 
 * **Unit tests**:
 
-  .. code-block:: text
+  .. code-block:: console
 
      export GST_DEBUG="${GST_DEBUG:-3},check:5,test_base:5"
 
@@ -210,7 +210,7 @@ After doing this, GLib messages themselves must be enabled in the Kurento loggin
 
 Example:
 
-.. code-block:: bash
+.. code-block:: console
 
    export G_MESSAGES_DEBUG="libnice,libnice-stun"
    export GST_DEBUG="${GST_DEBUG:-3},glib:5"
@@ -227,7 +227,7 @@ libsoup
 
 It is possible to enable detailed debug logging of the HTTP request/response headers, by defining the environment variable ``SOUP_DEBUG=1`` before running KMS:
 
-.. code-block:: bash
+.. code-block:: console
 
    export SOUP_DEBUG=1
    /usr/bin/kurento-media-server

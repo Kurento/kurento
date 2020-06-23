@@ -92,7 +92,7 @@ Open a terminal and run these commands:
 
 1. Make sure that GnuPG is installed.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           gnupg
@@ -101,7 +101,7 @@ Open a terminal and run these commands:
 
    Run these commands:
 
-   .. code-block:: text
+   .. code-block:: console
 
       # Import the Kurento repository signing key
       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
@@ -121,7 +121,7 @@ Open a terminal and run these commands:
 
       This step applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
 
-   .. code-block:: text
+   .. code-block:: console
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           kurento-media-server
@@ -130,7 +130,7 @@ Open a terminal and run these commands:
 
 The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 
-.. code-block:: text
+.. code-block:: console
 
    sudo service kurento-media-server start
    sudo service kurento-media-server stop
@@ -150,7 +150,7 @@ A. **Upgrade all system packages**.
 
    This is the standard procedure expected by Debian & Ubuntu maintainer methodology. Upgrading all system packages is a way to ensure that everything is set to the latest version, and all bug fixes & security updates are applied too, so this is the most recommended method:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       sudo apt-get update && sudo apt-get dist-upgrade
 
@@ -160,7 +160,7 @@ B. **Uninstall the old Kurento version**, before installing the new one.
 
    Note however that **apt-get is not good enough** to remove all of Kurento packages. We recommend that you use *aptitude* for this, which works much better than *apt-get*:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       sudo aptitude remove '?installed?version(kurento)'
 
@@ -210,7 +210,7 @@ Check your installation
 
 To verify that the Kurento process is up and running, use this command and look for the ``kurento-media-server`` process:
 
-.. code-block:: text
+.. code-block:: console
 
    $ ps -fC kurento-media-server
    UID        PID  PPID  C STIME TTY          TIME CMD
@@ -218,7 +218,7 @@ To verify that the Kurento process is up and running, use this command and look 
 
 Unless configured otherwise, KMS will listen on the IPv6 port ``8888`` to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
 
-.. code-block:: text
+.. code-block:: console
 
    $ sudo netstat -tupln | grep -e kurento -e 8888
    tcp6  0  0  :::8888  :::*  LISTEN  7688/kurento-media-
@@ -227,7 +227,7 @@ You can change these parameters in the file */etc/kurento/kurento.conf.json*.
 
 To check whether KMS is up and listening for connections, use the following command:
 
-.. code-block:: text
+.. code-block:: console
 
    curl \
      --include \

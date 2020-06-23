@@ -119,7 +119,7 @@ It is not a trivial task to configure the compiler to use a set of libraries bec
 
 For example, if you want to compile a C program which depends on GLib 2.0, you can run:
 
-.. code-block:: bash
+.. code-block:: console
 
    gcc -o program program.c $(pkg-config --libs --cflags glib-2.0)
 
@@ -173,7 +173,7 @@ Install required tools
 
 This command will install the basic set of tools that are needed for the next steps:
 
-.. code-block:: bash
+.. code-block:: console
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        build-essential \
@@ -189,7 +189,7 @@ Add Kurento repository
 
 Run these commands to add the Kurento repository to your system configuration:
 
-.. code-block:: text
+.. code-block:: console
 
    # Import the Kurento repository signing key
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
@@ -212,7 +212,7 @@ Install build dependencies
 
 Run:
 
-.. code-block:: bash
+.. code-block:: console
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        kurento-media-server-dev
@@ -224,7 +224,7 @@ Download KMS source code
 
 Run:
 
-.. code-block:: bash
+.. code-block:: console
 
    git clone https://github.com/Kurento/kms-omni-build.git
    cd kms-omni-build
@@ -237,7 +237,7 @@ Run:
 
 *OPTIONAL*: Change to the *master* branch of each submodule, if you will be working with the latest version of the code:
 
-.. code-block:: text
+.. code-block:: console
 
    REF=master
    git checkout "$REF" || true
@@ -252,7 +252,7 @@ Build and run KMS
 
 Make sure your current directory is already *kms-omni-build*, then run this command:
 
-.. code-block:: text
+.. code-block:: console
 
    export MAKEFLAGS="-j$(nproc)"
    ./bin/kms-build-run.sh
@@ -270,7 +270,7 @@ To leave the system in a clean state, remove all KMS packages and related develo
 
 Run:
 
-.. code-block:: text
+.. code-block:: console
 
     PACKAGES=(
         # KMS main components + extra modules
@@ -310,7 +310,7 @@ Whenever working with KMS source code itself, of during any analysis of crash in
 
 After having :doc:`installed Kurento </user/installation>`, first thing to do is to enable the Ubuntu's official **Debug Symbol Packages** repository:
 
-.. code-block:: text
+.. code-block:: console
 
    # Import the Ubuntu debug repository signing key
    sudo apt-key adv \
@@ -329,7 +329,7 @@ After having :doc:`installed Kurento </user/installation>`, first thing to do is
 
 Now, install all debug symbols that are relevant to KMS:
 
-.. code-block:: text
+.. code-block:: console
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        kurento-dbg
@@ -401,7 +401,7 @@ From sources
 
    For this step, the easiest method is to use our launch script, *kms-build-run.sh*. It builds all sources, configures the environment, and starts up the debugger:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       ./bin/kms-build-run.sh --gdb
       # [... wait for build ...]
@@ -424,7 +424,7 @@ You don't *have* to build KMS from sources in order to run it with the GDB debug
 
    This helps capturing assertions from 3rd-party libraries used by Kurento, such as *GLib* and *GStreamer*:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       export G_DEBUG=fatal-warnings
 
@@ -432,13 +432,13 @@ You don't *have* to build KMS from sources in order to run it with the GDB debug
 
    You possibly did some changes in the KMS service settings file, */etc/default/kurento-media-server*. This file contains shell code that can be sourced directly into your current session:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       source /etc/default/kurento-media-server
 
 5. Ensure KMS is not already running as a service, and run it with GDB.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       sudo service kurento-media-server stop
 
@@ -455,7 +455,7 @@ GDB commands
 
 Once you see the ``(gdb)`` command prompt, you're already running a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are ``backtrace`` and ``info`` variants (`Examining the Stack <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>`__). When you want to finish, stop execution with *Ctrl+C*, then type the ``quit`` command:
 
-.. code-block:: bash
+.. code-block:: console
 
    # Actually start running the KMS process
    (gdb) run
@@ -529,7 +529,7 @@ You can also use *kurento-buildpackage* locally, to build test packages while wo
 
 For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0. Run these commands:
 
-.. code-block:: text
+.. code-block:: console
 
    git clone https://github.com/Kurento/adm-scripts.git
    git clone https://github.com/Kurento/kms-core.git
@@ -549,7 +549,7 @@ To use the `kurento-buildpackage Docker image <https://hub.docker.com/r/kurento/
 
 For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0, for *Ubuntu 16.04 (Xenial)* systems. Run these commands:
 
-.. code-block:: text
+.. code-block:: console
 
    git clone https://github.com/Kurento/kms-core.git
    cd kms-core/
@@ -571,7 +571,7 @@ KMS uses the Check unit testing framework for C (https://libcheck.github.io/chec
 
    The complete command would look like this:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       export GST_DEBUG_NO_COLOR=1
       export GST_DEBUG="3,check:5"
@@ -585,13 +585,13 @@ The log output of the whole test suite will get saved into the file *./Testing/T
 
 To build and run one specific test, use ``make {TestName}.check``. For example:
 
-.. code-block:: text
+.. code-block:: console
 
    make test_agnosticbin.check
 
 If you want to analyze memory usage with Valgrind, use ``make {TestName}.valgrind``. For example:
 
-.. code-block:: text
+.. code-block:: console
 
    make test_agnosticbin.valgrind
 
@@ -638,7 +638,7 @@ What to do when you are developing a new feature that spans across KMS and the p
 
 2. Generate client SDK dependencies:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       cd <module>  # E.g. kms-filters
       rm -rf build
@@ -649,7 +649,7 @@ What to do when you are developing a new feature that spans across KMS and the p
 
 3. Generate client SDK:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       cd kurento-java
       mvn clean install

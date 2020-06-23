@@ -48,7 +48,7 @@ Open a terminal and run these commands:
 
 1. Make sure that GnuPG is installed.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           gnupg
@@ -57,7 +57,7 @@ Open a terminal and run these commands:
 
    Run these commands:
 
-   .. code-block:: text
+   .. code-block:: console
 
       # Import the Kurento repository signing key
       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
@@ -77,7 +77,7 @@ Open a terminal and run these commands:
 
       This step applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
 
-   .. code-block:: text
+   .. code-block:: console
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           kurento-media-server
