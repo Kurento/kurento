@@ -4,6 +4,9 @@ Priority: optional
 Build-Depends: debhelper (>= 9),
  cmake,
  pkg-config,
+ gstreamer1.5-plugins-bad,
+ gstreamer1.5-plugins-base,
+ gstreamer1.5-plugins-good,
  kms-core-dev (>= 6.7.0),
  kms-elements-dev (>= 6.7.0),
  kms-filters-dev (>= 6.7.0),
@@ -17,7 +20,11 @@ Vcs-Git: https://github.com/Kurento/kms-platedetector.git
 Package: kms-platedetector
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends},
+Depends: ${shlibs:Depends},
+ ${misc:Depends},
+ gstreamer1.5-plugins-bad,
+ gstreamer1.5-plugins-base,
+ gstreamer1.5-plugins-good,
  kms-core (>= 6.7.0),
  kms-elements (>= 6.7.0),
  kms-filters (>= 6.7.0)
