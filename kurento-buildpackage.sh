@@ -286,9 +286,37 @@ source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
 
 
-# Apt configuration
-# -----------------
+# Initial package installation
+# ----------------------------
 
+# HACK - UBUNTU 18.04 BIONIC - Install both libcurl3 and libcurl4
+# Our projects depend on OpenSSL 1.0, but Bionic comes with 1.1. This manifests
+# in the "libcurl4" package, which depends on OpenSSL 1.1. Other tools, such as
+# CMake, depend on libcurl4, while the OpenSSL-1.0 version of the libraries
+# we need end up depending on libcurl3. But libcurl3 and libcurl4 conflict and
+# cannot be installed at the same time...
+# In order to build the Kurento projects on Ubuntu Bionic, we depend on libcurl3
+# and install a custom dummy libcurl4 package to satisfy CMake's dependency.
+if [[ ${DISTRIB_RELEASE%%.*} -ge 18 ]]; then
+    apt-get update
+    pushd /tmp
+
+    # Remove conflict from libcurl4
+    apt-get download libcurl4
+    dpkg-deb -R libcurl4_*.deb libcurl4/
+    sed -i '/^Conflicts: libcurl3/d' libcurl4/DEBIAN/control
+    dpkg-deb -b libcurl4 libcurl4-custom.deb
+    dpkg -i libcurl4-custom.deb
+
+    # Remove conflict from libcurl3 and leave this as the installed version
+    apt-get download libcurl3
+    dpkg-deb -R libcurl3_*.deb libcurl3/
+    sed -i '/^Conflicts: libcurl4/d' libcurl3/DEBIAN/control
+    dpkg-deb -b libcurl3 libcurl3-custom.deb
+    dpkg -i libcurl3-custom.deb
+
+    popd # /tmp
+fi
 
 # If requested, add the repository
 if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
