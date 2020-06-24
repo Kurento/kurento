@@ -289,12 +289,6 @@ source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 # Apt configuration
 # -----------------
 
-function apt_update_maybe {
-    if [[ "$APT_UPDATE_NEEDED" == "true" ]]; then
-        apt-get update
-        APT_UPDATE_NEEDED="false"
-    fi
-}
 
 # If requested, add the repository
 if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
@@ -311,9 +305,6 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
         echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" \
             >>/etc/apt/sources.list.d/kurento.list
     fi
-
-    # Adding a new repo requires updating the Apt cache
-    apt_update_maybe
 fi
 
 # If requested, install local package files
@@ -323,8 +314,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
         dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
             log "Try to install remaining dependencies"
-            apt_update_maybe
-            apt-get install --yes --fix-broken --no-remove
+            apt-get update && apt-get install --yes --fix-broken --no-remove
         }
     else
         log "No '.deb' package files are present!"
@@ -351,12 +341,11 @@ pushd "$CFG_SRCDIR" || {
 
 log "Install build dependencies"
 
-apt_update_maybe
-
 # In clean Ubuntu systems 'tzdata' might not be installed yet, but it may be now,
 # so make sure interactive prompts from it are disabled
 DEBIAN_FRONTEND=noninteractive \
-mk-build-deps --install --remove \
+apt-get update \
+&& mk-build-deps --install --remove \
     --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --no-remove --yes' \
     ./debian/control
 
