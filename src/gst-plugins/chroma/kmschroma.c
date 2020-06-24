@@ -35,6 +35,18 @@
 #include <gst/video/gstvideofilter.h>
 #include <libsoup/soup.h>
 
+// FIXME: Compatibility between OpenCV 2.x and 3.x
+#include <opencv2/core/version.hpp>
+#if CV_MAJOR_VERSION > 2
+#include <opencv2/imgcodecs/imgcodecs_c.h>
+#include <math.h>
+int
+cvRound (double value)
+{
+  return (ceil (value));
+}
+#endif
+
 #define TEMP_PATH "/tmp/XXXXXX"
 #define LIMIT_FRAMES 60
 #define HISTOGRAM_THRESHOLD (10*LIMIT_FRAMES)
