@@ -88,8 +88,6 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
  && rm -rf /var/lib/apt/lists/*
 
 # Install debug symbols
-# FIXME: Leave only "kurento-dbg" when this package is finally working on Bionic
-#        https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#dev-dbg
 RUN apt-key adv \
         --keyserver keyserver.ubuntu.com \
         --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
@@ -98,24 +96,6 @@ RUN apt-key adv \
  && apt-get -q update \
  && apt-get -q install --no-install-recommends --yes \
         kurento-dbg \
- || apt-get -q install --no-install-recommends --yes \
-        libc6-dbg \
-        libglib2.0-0-dbgsym \
-        kmsjsoncpp-dbg \
-        libnice10-dbgsym \
-        openwebrtc-gst-plugins-dbg \
-        libgstreamer1.5-0-dbg \
-        gstreamer1.5-libav-dbg \
-        gstreamer1.5-nice-dbgsym \
-        gstreamer1.5-plugins-bad-dbg \
-        gstreamer1.5-plugins-base-dbg \
-        gstreamer1.5-plugins-good-dbg \
-        gstreamer1.5-plugins-ugly-dbg \
-        kms-jsonrpc-dbg \
-        kms-core-dbg \
-        kms-elements-dbg \
-        kms-filters-dbg \
-        kurento-media-server-dbg \
  && rm -rf /var/lib/apt/lists/*
 
 # Configure environment for KMS. All of this can be overriden with `docker run`.
