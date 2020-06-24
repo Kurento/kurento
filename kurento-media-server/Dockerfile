@@ -78,13 +78,18 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
  && rm -rf /var/lib/apt/lists/*
 
 # Install additional modules
-# These might not be available in Ubuntu 18.04 (Bionic)
+# These might not be available, so allow errors
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
-        kms-chroma \
-        kms-crowddetector \
-        kms-platedetector \
-        kms-pointerdetector \
-    || true \
+        kms-chroma || true \
+ && rm -rf /var/lib/apt/lists/*
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        kms-crowddetector || true \
+ && rm -rf /var/lib/apt/lists/*
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        kms-platedetector || true \
+ && rm -rf /var/lib/apt/lists/*
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        kms-pointerdetector || true \
  && rm -rf /var/lib/apt/lists/*
 
 # Install debug symbols
