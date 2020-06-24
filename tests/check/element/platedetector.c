@@ -171,14 +171,7 @@ platedetector_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
-
-  /* FIXME: Test disabled during the migration to Ubuntu 18.04 (Bionic),
-   * because the CURL plugin is not built for gstreamer-plugins-bad, and that
-   * means the PlayerEndpoint doesn't have support for "http" URIs, which is
-   * needed to load the sample file used in this test.
-   * The test will fail and that prevents building packages for this module.
   tcase_add_test (tc_chain, player_with_filter);
-   */
 
   return s;
 }
