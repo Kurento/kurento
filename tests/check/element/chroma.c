@@ -28,7 +28,7 @@
 #define SET_BACKGROUND_URI "image-background"
 #define SET_CALIBRATION_AREA "calibration-area"
 
-#define IMG_PATH BINARY_LOCATION "/imgs/mario.jpg"
+#define IMG_PATH BINARY_LOCATION "/img/mario.jpg"
 #define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
 
 #define KMS_VIDEO_PREFIX "video_src_"
