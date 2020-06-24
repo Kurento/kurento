@@ -223,8 +223,9 @@ kms_plate_detector_init (KmsPlateDetector * platedetector)
       "plateLanguage");
 
   if (ret_value == -1) {
-    GST_ELEMENT_ERROR (platedetector, RESOURCE, NOT_FOUND,
-        ("Tesseract dictionary not found"), (NULL));
+    GST_ERROR_OBJECT (platedetector,
+        "Tesseract OCR training data not found in prefix: '%s'",
+        getenv (TESSDATA_PREFIX));
     TessBaseAPIDelete (platedetector->priv->handle);
     platedetector->priv->handle = NULL;
 
