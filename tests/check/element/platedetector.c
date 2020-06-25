@@ -156,6 +156,9 @@ GST_START_TEST (player_with_filter)
 
   g_main_loop_run (loop);
 
+  // TODO: Wait for a "plate-detected" bus message, to verify that the
+  // license plate has actually been detected and read correctly
+
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
   g_source_remove (bus_watch_id);
