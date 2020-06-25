@@ -31,7 +31,7 @@ void ArMarkerdetectorImpl::setShowDebugLevel (int showDebugLevel)
 
 int ArMarkerdetectorImpl::getShowDebugLevel ()
 {
-  ArMarkerdetectorOpenCVImpl::getShowDebugLevel ();
+  return ArMarkerdetectorOpenCVImpl::getShowDebugLevel ();
 }
 
 void ArMarkerdetectorImpl::setOverlayImage (const std::string &overlayImage)
@@ -41,7 +41,7 @@ void ArMarkerdetectorImpl::setOverlayImage (const std::string &overlayImage)
 
 std::string ArMarkerdetectorImpl::getOverlayImage ()
 {
-  ArMarkerdetectorOpenCVImpl::getOverlayImage ();
+  return ArMarkerdetectorOpenCVImpl::getOverlayImage ();
 }
 
 void ArMarkerdetectorImpl::setOverlayText (const std::string &overlayText)
@@ -51,7 +51,7 @@ void ArMarkerdetectorImpl::setOverlayText (const std::string &overlayText)
 
 std::string ArMarkerdetectorImpl::getOverlayText ()
 {
-  ArMarkerdetectorOpenCVImpl::getOverlayText ();
+  return ArMarkerdetectorOpenCVImpl::getOverlayText ();
 }
 
 void ArMarkerdetectorImpl::setOverlayScale (float overlayScale)
@@ -61,7 +61,7 @@ void ArMarkerdetectorImpl::setOverlayScale (float overlayScale)
 
 float ArMarkerdetectorImpl::getOverlayScale ()
 {
-  ArMarkerdetectorOpenCVImpl::getOverlayScale ();
+  return ArMarkerdetectorOpenCVImpl::getOverlayScale ();
 }
 
 MediaObjectImpl *

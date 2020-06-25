@@ -1,8 +1,10 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
 
-# Uncomment this to turn on verbose mode.
+# Uncomment this to enable verbose mode.
 #export DH_VERBOSE=1
 
 %:
-	dh $@
+	dh $@ --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DALVAR_PACKAGE=src -DALVAR_NOGLUT=1

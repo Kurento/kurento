@@ -1,0 +1,7 @@
+set(CTEST_PROJECT_NAME "alvar")
+set(CTEST_NIGHTLY_START_TIME "00:00:00 EET")
+
+set(CTEST_DROP_METHOD "http")
+set(CTEST_DROP_SITE "tk1066.ad.vtt.fi")
+set(CTEST_DROP_LOCATION "/cdash/submit.php?project=${CTEST_PROJECT_NAME}")
+set(CTEST_DROP_SITE_CDASH TRUE)

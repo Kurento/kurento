@@ -4,6 +4,7 @@
 #include <glib.h>
 #include "pthread.h"
 #include <opencv/cv.h>
+#include <map>
 
 G_BEGIN_DECLS
 

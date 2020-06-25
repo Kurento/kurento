@@ -4,11 +4,12 @@ Priority: optional
 Build-Depends: debhelper (>= 9),
  cmake,
  pkg-config,
- libopencv-dev,
- libsoup2.4-dev,
  kms-core-dev (>= 6.7.0),
  kms-elements-dev (>= 6.7.0),
- kms-filters-dev (>= 6.7.0)
+ kms-filters-dev (>= 6.7.0),
+ libopencv-dev,
+ libsoup2.4-dev,
+ libtinyxml-dev
 Standards-Version: 4.0.0
 Homepage: www.kurento.org
 Vcs-Browser: https://github.com/Kurento/kms-markerdetector
@@ -28,10 +29,12 @@ Package: kms-markerdetector-dev
 Architecture: any
 Section: libdevel
 Depends: kms-markerdetector (= ${binary:Version}),
- libopencv-dev,
  kms-core-dev,
  kms-elements-dev,
- kms-filters-dev
+ kms-filters-dev,
+ libopencv-dev,
+ libsoup2.4-dev,
+ libtinyxml-dev
 Breaks: kms-markerdetector-6.0-dev
 Replaces: kms-markerdetector-6.0-dev
 Description: Kurento Augmented Reality marker detector - Development files

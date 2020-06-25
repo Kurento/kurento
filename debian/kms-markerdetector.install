@@ -1,3 +1,2 @@
-usr/lib/*/lib*.so.*
-usr/lib/*/libalvar200.so
+usr/lib/*/lib*.so*
 usr/lib/*/kurento/*/*.so

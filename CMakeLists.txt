@@ -25,16 +25,28 @@ include(CommonBuildFlags)
 common_buildflags_set()
 #common_buildflags_print()
 
+# Development: Add here exceptions to the "Warnings are Errors" rule.
+# Also, DOCUMENT WHY and always remove them as soon as the problem is fixed.
+# For example:
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+
+# FIXME Disable error from deprecated "soup_session_sync_new" in libsoup
+# Introduced for Ubuntu 18.04
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
+
+# FIXME Disable miscellaneous errors from ALVAR library
+# These all happen because the ALVAR library was written for GCC 4.4
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=return-type -Wno-error=reorder -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=sign-compare -Wno-error=comment -Wno-error=unused-value -Wno-error=delete-non-virtual-dtor")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=misleading-indentation")
+endif()
+
 # FIXME Disable error when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-Wno-error=date-time" HAS_WARNING_DATE_TIME)
 if(HAS_WARNING_DATE_TIME)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=date-time")
 endif()
-
-# FIXME Disable errors: [return-type, reorder, unused-variable]
-# (libalvar has these errors)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=return-type -Wno-error=reorder -Wno-error=unused-variable")
 
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
@@ -62,5 +74,17 @@ pkg_check_modules(OPENCV REQUIRED opencv>=${OPENCV_REQUIRED})
 pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.5)
+
+# Patch and build the ALVAR library
+message("Patch ALVAR library sources for OpenCV compatibility:")
+execute_process(
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND git apply --verbose --directory=alvar-2.0.0-src-opencv3 alvar-compat-opencv-2-3.patch
+  RESULT_VARIABLE GIT_RESULT
+)
+if(NOT GIT_RESULT EQUAL "0")
+  message(FATAL_ERROR "git apply failed on ALVAR library")
+endif()
+add_subdirectory(alvar-2.0.0-src-opencv3)
 
 add_subdirectory(src)

@@ -14,6 +14,9 @@
 #include <libsoup/soup.h>
 #endif
 
+// FIXME: Compatibility between OpenCV 2.x and 3.x
+#include <opencv2/core/version.hpp>
+
 void addFgWithAlpha(cv::Mat &bg, cv::Mat &fg) {
   if (fg.channels() < 4) {
     fg.copyTo(bg);  
@@ -39,7 +42,7 @@ bool is_valid_uri(std::string uri) {
   return true;
 }
 
-bool load_from_url(const char *file_name, const char *url) {
+void load_from_url(const char *file_name, const char *url) {
   SoupSession *session;
   SoupMessage *msg;
   FILE *dst;
@@ -110,7 +113,9 @@ cv::Mat ArProcess::readImage(std::string uri) {
   return bg;
 }
 
-ArProcess::ArProcess() : overlayScale(1.f), owndata(0), mShowDebugLevel(0) {
+ArProcess::ArProcess ()
+    : mShowDebugLevel (0), overlayScale (1.0f), owndata (NULL)
+{
   pthread_mutex_init(&mMutex, NULL);
   owndata = new alvar::MarkerDetector<alvar::MarkerData>();
   alvar::MarkerDetector<alvar::MarkerData> &marker_detector = 
@@ -240,7 +245,14 @@ int ArProcess::detect_marker(IplImage *image) {
       //std::cout<<transform<<std::endl;
       //cv::warpPerspective(overlay, warped_overlay, transform, cv::Size(warped_overlay.cols, warped_overlay.rows), 0, cv::BORDER_TRANSPARENT); 
     }
-    cv::Mat frame(image);
+
+    // FIXME: Compatibility between OpenCV 2.x and 3.x
+#if CV_MAJOR_VERSION > 2
+    cv::Mat frame = cv::cvarrToMat (image);
+#else
+    cv::Mat frame (image);
+#endif
+
     addFgWithAlpha(frame, warped_overlay);
   }
 

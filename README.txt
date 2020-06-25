@@ -4,16 +4,9 @@ AR MarkerDetector Kurento module
 Here is a very short explanation of needed steps to
 use the AR MarkerDetector Kurento module. 
 
-To try out the module, you need to have libalvar200.so
-somewhere on the lib path.
+To try out the module, you need to and restart kurento
 
-> tar xvfz alvar-2.0.0-sdk-linux64-gcc44
-> cd alvar-2.0.0-sdk-linux64-gcc44/bin
-> sudo cp libalvar200.so /usr/lib
-
-Then you need to install the module and restart kurento
-
-> dpkg -i ar-markerdetector-dev_0.0.1~rc1_amd64.deb 
+> dpkg -i kms-markerdetector_*.deb
 > sudo /etc/init.d/kurento restart
 
 To download the latest binaries you can get them here:
@@ -121,11 +114,11 @@ src/server/CMakeLists.txt
 
 	generate_code (
   	    MODELS ${CMAKE_CURRENT_SOURCE_DIR}/interface
-  	    INTERFACE_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INC}
+  	    INTERFACE_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INCLUDE_DIRS}
   	    SERVER_IMPL_LIB_EXTRA_SOURCES implementation/objects/Process.cpp
   	    SERVER_IMPL_LIB_EXTRA_HEADERS implementation/objects/Process.h
-  	    SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INC} ${SOUP_INCLUDE_DIRS}
-  	    SERVER_IMPL_LIB_EXTRA_LIBRARIES ${ALVAR_LIB} ${SOUP_LIBRARIES}
+  	    SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INCLUDE_DIRS} ${SOUP_INCLUDE_DIRS}
+  	    SERVER_IMPL_LIB_EXTRA_LIBRARIES ${ALVAR_LIBRARIES} ${SOUP_LIBRARIES}
   	    SERVER_STUB_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/implementation/objects
 	)
 
@@ -193,4 +186,3 @@ somewhere. For example if you have compiled some packages yourself
 and they are installed e.g. on somewhere in /usr/local/? However,
 if you have the kurento-media-server path settings as described above
 it should not be a problem.
-

@@ -1,0 +1,147 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bf7615b..e3af316 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -144,7 +144,7 @@ if(UNIX AND PKG_CONFIG_FOUND)
+     if(NOT TinyXML_FOUND)
+         find_file(TINYXML_H tinyxml.h)
+         find_library(TINYXML_SO tinyxml)
+-        if((${TINYXML_H} EQUAL "TINYXML_H-NOTFOUND") OR (${TINYXML_SO} EQUAL "TINYXML_SO-NOTFOUND"))
++        if((${TINYXML_H} STREQUAL "TINYXML_H-NOTFOUND") OR (${TINYXML_SO} STREQUAL "TINYXML_SO-NOTFOUND"))
+             message(STATUS "Could not find TinyXML, using bundled version")
+             add_subdirectory(3rdparty)
+         else()
+diff --git a/sample/GlutViewer.cpp b/sample/GlutViewer.cpp
+index 3465efc..b196dfe 100644
+--- a/sample/GlutViewer.cpp
++++ b/sample/GlutViewer.cpp
+@@ -2,7 +2,14 @@
+ 
+ #include "Rotation.h"
+ #include "Platform.h"
+-#include <opencv2/calib3d/calib3d_c.h>
++
++// Compatibility between OpenCV 2.x and 3.x
++#include <opencv2/core/version.hpp>
++#if CV_MAJOR_VERSION > 2
++	#include <opencv2/calib3d/calib3d_c.h>
++#else
++	#include <opencv2/calib3d/calib3d.hpp>
++#endif
+ 
+ using namespace std;
+ using namespace alvar;
+diff --git a/src/Camera.cpp b/src/Camera.cpp
+index d1dc738..5769b6b 100644
+--- a/src/Camera.cpp
++++ b/src/Camera.cpp
+@@ -26,7 +26,13 @@
+ #include "FileFormatUtils.h"
+ #include <memory>
+ 
+-#include <opencv2/calib3d/calib3d_c.h>
++// Compatibility between OpenCV 2.x and 3.x
++#include <opencv2/core/version.hpp>
++#if CV_MAJOR_VERSION > 2
++	#include <opencv2/calib3d/calib3d_c.h>
++#else
++	#include <opencv2/calib3d/calib3d.hpp>
++#endif
+ 
+ using namespace std;
+ 
+diff --git a/src/EC.cpp b/src/EC.cpp
+index 1b61d8d..1ab6311 100644
+--- a/src/EC.cpp
++++ b/src/EC.cpp
+@@ -24,7 +24,13 @@
+ #include "EC.h"
+ #include "Optimization.h"
+ 
+-#include <opencv2/calib3d/calib3d_c.h>
++// Compatibility between OpenCV 2.x and 3.x
++#include <opencv2/core/version.hpp>
++#if CV_MAJOR_VERSION > 2
++	#include <opencv2/calib3d/calib3d_c.h>
++#else
++	#include <opencv2/calib3d/calib3d.hpp>
++#endif
+ 
+ namespace alvar {
+ 
+diff --git a/src/MultiMarkerBundle.cpp b/src/MultiMarkerBundle.cpp
+index c93f8f8..1575d71 100644
+--- a/src/MultiMarkerBundle.cpp
++++ b/src/MultiMarkerBundle.cpp
+@@ -23,7 +23,13 @@
+ 
+ #include "MultiMarkerBundle.h"
+ 
+-#include <opencv2/calib3d/calib3d_c.h>
++// Compatibility between OpenCV 2.x and 3.x
++#include <opencv2/core/version.hpp>
++#if CV_MAJOR_VERSION > 2
++	#include <opencv2/calib3d/calib3d_c.h>
++#else
++	#include <opencv2/calib3d/calib3d.hpp>
++#endif
+ 
+ using namespace std;
+ 
+diff --git a/src/Rotation.cpp b/src/Rotation.cpp
+index f5b6ef6..33b3836 100644
+--- a/src/Rotation.cpp
++++ b/src/Rotation.cpp
+@@ -24,7 +24,13 @@
+ #include "Alvar.h"
+ #include "Rotation.h"
+ 
+-#include <opencv2/calib3d/calib3d_c.h>
++// Compatibility between OpenCV 2.x and 3.x
++#include <opencv2/core/version.hpp>
++#if CV_MAJOR_VERSION > 2
++	#include <opencv2/calib3d/calib3d_c.h>
++#else
++	#include <opencv2/calib3d/calib3d.hpp>
++#endif
+ 
+ using namespace std;
+ 
+diff --git a/src/platform/capture_plugin_file/CapturePluginFile.h b/src/platform/capture_plugin_file/CapturePluginFile.h
+index fa5b9b1..eb818f7 100644
+--- a/src/platform/capture_plugin_file/CapturePluginFile.h
++++ b/src/platform/capture_plugin_file/CapturePluginFile.h
+@@ -21,7 +21,13 @@
+  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
+  */
+ 
+-#include <opencv2/videoio.hpp>
++// Compatibility between OpenCV 2.x and 3.x
++#include <opencv2/core/version.hpp>
++#if CV_MAJOR_VERSION > 2
++    #include <opencv2/videoio.hpp>
++#else
++    #include <opencv2/highgui/highgui_c.h>
++#endif
+ 
+ #ifndef CAPTUREPLUGINFILE_H
+ #define CAPTUREPLUGINFILE_H
+diff --git a/src/platform/capture_plugin_highgui/CapturePluginHighgui.h b/src/platform/capture_plugin_highgui/CapturePluginHighgui.h
+index cd524d0..8f98bf5 100644
+--- a/src/platform/capture_plugin_highgui/CapturePluginHighgui.h
++++ b/src/platform/capture_plugin_highgui/CapturePluginHighgui.h
+@@ -21,7 +21,13 @@
+  * <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>.
+  */
+ 
+-#include <opencv2/videoio.hpp>
++// Compatibility between OpenCV 2.x and 3.x
++#include <opencv2/core/version.hpp>
++#if CV_MAJOR_VERSION > 2
++    #include <opencv2/videoio.hpp>
++#else
++    #include <opencv2/highgui/highgui_c.h>
++#endif
+ 
+ #ifndef CAPTUREPLUGINHIGHGUI_H
+ #define CAPTUREPLUGINHIGHGUI_H
