@@ -28,9 +28,21 @@
 #include <string.h>
 #include <errno.h>
 #include <libsoup/soup.h>
+#include <math.h>
 
 #include "kmspointerdetector.h"
 #include <commons/kms-core-marshal.h>
+
+// FIXME: Compatibility between OpenCV 2.x and 3.x
+#include <opencv2/core/version.hpp>
+#if CV_MAJOR_VERSION > 2
+#include <opencv2/imgcodecs/imgcodecs_c.h>
+int
+cvRound (double value)
+{
+  return (ceil (value));
+}
+#endif
 
 #define PLUGIN_NAME "pointerdetector"
 
