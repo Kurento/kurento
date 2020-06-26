@@ -357,8 +357,8 @@ This is how this process would look like. In this example, KMS was restarted so 
 
 
 
-Node.js / NPM failures
-----------------------
+Node / NPM failures
+-------------------
 
 Kurento Client does not currently support Node v10 (LTS), you will have to use Node v8 or below.
 
@@ -390,6 +390,39 @@ The solution is to ensure that both peers are able to find a match in their supp
        { "name": "VP8/90000" },
        { "name": "H264/90000" }
      ]
+
+
+
+"Error: 'operationParams' is required"
+--------------------------------------
+
+This issue is commonly caused by setting an invalid ID to any of the client method calls. The usual solution is to provide a null identifier, forcing the server to generate a new one for the object.
+
+For example, a Node application wanting to use the *ImageOverlayFilter* (`Java API <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/ImageOverlayFilter.html>`__, `JavaScript API <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html>`__) might mistakenly try to provide an invalid ID in the `addImage() <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html#.addImage>`__ call:
+
+.. code-block:: js
+
+   const filter = await pipeline.create("ImageOverlayFilter");
+   await filter.addImage("IMAGE_ID", "https://IMAGE_URL", 0.5, 0.5, 0.5, 0.5, true, true);
+   await webRtcEndpoint.connect(filter);
+   await filter.connect(webRtcEndpoint);
+
+This will fail, causing a *MARSHALL_ERROR* in the media server, and showing the following stack trace in the client side:
+
+.. code-block:: text
+
+   Trace: { Error: 'operationParams' is required
+       at node_modules/kurento-client/lib/KurentoClient.js:373:24
+       at Object.dispatchCallback [as callback] (node_modules/kurento-jsonrpc/lib/index.js:546:9)
+       at processResponse (node_modules/kurento-jsonrpc/lib/index.js:667:15)
+       [...]
+       at WebsocketStream.onMessage (node_modules/websocket-stream/index.js:45:15) code: 40001, data: { type: 'MARSHALL_ERROR' } }
+
+The solution is to simply use ``null`` for the first argument of the method:
+
+.. code-block:: js
+
+   await filter.addImage(null, "https://IMAGE_URL", 0.5, 0.5, 0.5, 0.5, true, true);
 
 
 
