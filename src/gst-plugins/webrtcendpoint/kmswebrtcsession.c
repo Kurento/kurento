@@ -1656,13 +1656,28 @@ kms_webrtc_session_parse_turn_url (KmsWebrtcSession * self)
     self->turn_user = g_match_info_fetch_named (match_info, "user");
     self->turn_password = g_match_info_fetch_named (match_info, "password");
     self->turn_address = g_match_info_fetch_named (match_info, "address");
-
     port_str = g_match_info_fetch_named (match_info, "port");
+    turn_transport = g_match_info_fetch_named (match_info, "transport");
+
+    // Build a safe string that can be printed out in the log
+    GString *safe_log = g_string_new ("<user:password>");
+    if (self->turn_address) {
+      g_string_append_c (safe_log, '@');
+      g_string_append (safe_log, self->turn_address);
+    }
+    if (port_str) {
+      g_string_append_c (safe_log, ':');
+      g_string_append (safe_log, port_str);
+    }
+    if (turn_transport) {
+      g_string_append_c (safe_log, '?');
+      g_string_append (safe_log, turn_transport);
+    }
+
     self->turn_port = g_ascii_strtoll (port_str, NULL, 10);
     g_free (port_str);
 
-    self->turn_transport = TURN_PROTOCOL_UDP;   /* default */
-    turn_transport = g_match_info_fetch_named (match_info, "transport");
+    self->turn_transport = TURN_PROTOCOL_UDP;  /* default */
     if (turn_transport != NULL) {
       if (g_strcmp0 ("tcp", turn_transport) == 0) {
         self->turn_transport = TURN_PROTOCOL_TCP;
@@ -1672,16 +1687,8 @@ kms_webrtc_session_parse_turn_url (KmsWebrtcSession * self)
       g_free (turn_transport);
     }
 
-    GString *safe_url = g_string_new ("<user:password>");
-    gchar *separated_url = g_strrstr (self->turn_url, "@");
-    if (separated_url == NULL) {
-      g_string_append_c (safe_url, '@');
-      g_string_append (safe_url, self->turn_url);
-    } else {
-      g_string_append (safe_url, separated_url);
-    }
-    GST_DEBUG_OBJECT (self, "TURN server info set: %s", safe_url->str);
-    g_string_free (safe_url, TRUE);
+    GST_DEBUG_OBJECT (self, "TURN server info set: %s", safe_log->str);
+    g_string_free (safe_log, TRUE);
   } else {
     GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
         ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
