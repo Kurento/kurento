@@ -1,3 +1,9 @@
+kms-chroma (6.14.1-0kurento1) UNRELEASED; urgency=medium
+
+  * Fix build for both Ubuntu 16.04 Xenial and 18.04 Bionic
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 03 Jul 2020 19:25:32 +0200
+
 kms-chroma (6.7.0) testing; urgency=medium
 
   [ Juan Navarro Moreno ]
