@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>6.9.0</version>
+		<version>6.14.0</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
@@ -75,8 +75,8 @@
 		<version.kms-api-elements>6.14.1-SNAPSHOT</version.kms-api-elements>
 		<version.kms-api-filters>6.14.1-SNAPSHOT</version.kms-api-filters>
 
-		<version.kurento-utils-js>6.13.1</version.kurento-utils-js>
-		<version.kurento-maven-plugin>6.7.0</version.kurento-maven-plugin>
+		<version.kurento-utils-js>6.14.1-SNAPSHOT</version.kurento-utils-js>
+		<version.kurento-maven-plugin>6.14.1-SNAPSHOT</version.kurento-maven-plugin>
 
 		<!-- Kurento extra modules -->
 		<version.kurento-chroma>6.6.0</version.kurento-chroma>
@@ -233,11 +233,6 @@
 		<dependencies>
 
 			<!-- Kurento dependencies -->
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>plumberendpoint</artifactId>
-				<version>${version.plumber-endpoint}</version>
-			</dependency>
 			<dependency>
 				<groupId>org.kurento.module</groupId>
 				<artifactId>chroma</artifactId>
