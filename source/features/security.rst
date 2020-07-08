@@ -2,16 +2,6 @@
 Securing Kurento Applications
 =============================
 
-[TODO full review]
-
-Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or localhost). Check their `release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`__ for further information about this issue.
-
-.. note::
-
-   Keep in mind that serving your application through HTTPS, forces you to use WebSockets Secure (WSS) if you are using websockets to control your application server.
-
-
-
 Securing Application Servers
 ============================
 
@@ -128,10 +118,13 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
 
 
 
-.. _features-security-kms-wss:
-
 Securing Kurento Media Server
 =============================
+
+.. _features-security-kms-wss:
+
+Securing the Signaling Plane (WebSocket)
+----------------------------------------
 
 With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port ``8888``. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_api`.
 
@@ -205,6 +198,17 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
   .. code-block:: js
 
      const ws_uri: "wss://" + location.hostname + ":8433/kurento";
+
+
+
+Securing the Media Plane (WebRTC DTLS)
+--------------------------------------
+
+WebRTC uses DTLS for media data authentication. By default, if no certificate is provided for this, Kurento Media Server will auto-generate its own self-signed certificate for every WebRtcEndpoint instance, but it is also possible to provide an already existing certificate to be used for all endpoints.
+
+To do so, edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set either *pemCertificateRSA* or *pemCertificateECDSA* with a file containing the concatenation of your certificate (chain) file(s) and the private key.
+
+Setting a custom certificate for DTLS is needed, for example, for situations where you have to manage multiple media servers and want to make sure that all of them use the same certificate for their connections. Some browsers, such as Firefox, require this in order to allow multiple WebRTC connections from the same tab to different KMS instances.
 
 
 
