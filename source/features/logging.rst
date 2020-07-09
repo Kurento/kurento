@@ -109,79 +109,67 @@ The **default suggested level** is what KMS sets automatically when it is starte
 
 From that baseline, one can add any other values to extend the amount of information that gets logged:
 
-* **MediaFlowIn**, **MediaFlowOut** state changes, important to know if media is actually flowing between endpoints (see :ref:`events-mediaelement`):
+* **Transcoding of media**:
 
   .. code-block:: console
 
-     export GST_DEBUG="${GST_DEBUG:-3},KurentoMediaElementImpl:5"
+     export GST_DEBUG="$GST_DEBUG,Kurento*:5,agnosticbin*:5"
 
-* **WebRTC** related logging:
+* **WebRtcEndpoint** and **RtpEndpoint**:
 
-  - SDP Offer/Answer messages:
+  .. code-block:: console
 
-    .. code-block:: console
+     export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5"
+     export GST_DEBUG="$GST_DEBUG,kmssdpsession:5,sdp*:5"
+     export GST_DEBUG="$GST_DEBUG,webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
 
-       export GST_DEBUG="${GST_DEBUG:-3},kmssdpsession:5"
+  A bit of explanation about what is achieved by each logging category:
 
-  - ICE candidate gathering:
-
-    .. code-block:: console
-
-       export GST_DEBUG="${GST_DEBUG:-3},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
-
-    .. note::
-
-       - See also :ref:`logging-libnice` to enable advanced logging.
-       - *webrtcendpoint* shows detailed messages from the WebRtcEndpoint (good enough for most cases).
-       - *kmswebrtcsession* shows messages from the internal WebRtcSession class (broarder decision logic).
-       - *kmsiceniceagent* shows messages from the *libnice* Agent (very low-level, probably too verbose for day to day troubleshooting).
-
-  - REMB congestion control:
-
-    .. code-block:: console
-
-       export GST_DEBUG="${GST_DEBUG:-3},kmsremb:5"
+  - *KurentoMediaElementImpl* shows *MediaFlowIn* and *MediaFlowOut* state changes, important to know if media is actually flowing between endpoints (see :ref:`events-mediaelement`).
+  - *kmssdpsession* and *sdp** shows messages related to the SDP Offer/Answer negotiations and all of the media handlers.
+  - *webrtcendpoint*, *kmswebrtcsession*, and *kmsiceniceagent* all contain the logic that governs ICE gathering and ICE candidate selection for WebRTC.
 
     .. note::
 
-       - *kmsremb:5* (debug level 5) shows only effective REMB send/recv values.
-       - *kmsremb:6* (debug level 6) shows full (very verbose) handling of all source SSRCs.
+       - See also :ref:`logging-libnice` to enable advanced ICE logging for WebRTC.
+
+  You can also see messages about the REMB congestion control algorithm for WebRTC. However these will constantly be filling the log, so you shouldn't enable them unless explicitly working out an issue with REMB:
+
+  .. code-block:: console
+
+     export GST_DEBUG="$GST_DEBUG,kmsremb:5"
 
 * **PlayerEndpoint**:
 
   .. code-block:: console
 
-     export GST_DEBUG="${GST_DEBUG:-3},kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
+     export GST_DEBUG="$GST_DEBUG,kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
 
 * **RecorderEndpoint**:
 
   .. code-block:: console
 
-     export GST_DEBUG="${GST_DEBUG:-3},KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5"
+     export GST_DEBUG="$GST_DEBUG,basemediamuxer:5,KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5,curl*:5"
 
-* **JSON-RPC** API server calls:
-
-  .. code-block:: console
-
-     export GST_DEBUG="${GST_DEBUG:-3},KurentoWebSocket*:5"
+Other less commonly used logging levels are:
 
 * **RTP Synchronization**:
 
   .. code-block:: console
 
-     export GST_DEBUG="${GST_DEBUG:-3},kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
+     export GST_DEBUG="$GST_DEBUG,kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
-* **Transcoding of media**:
+* **JSON-RPC** API server calls:
 
   .. code-block:: console
 
-     export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
+     export GST_DEBUG="$GST_DEBUG,KurentoWebSocket*:5"
 
 * **Unit tests**:
 
   .. code-block:: console
 
-     export GST_DEBUG="${GST_DEBUG:-3},check:5,test_base:5"
+     export GST_DEBUG="$GST_DEBUG,check:5,test_base:5"
 
 
 
@@ -213,7 +201,7 @@ Example:
 .. code-block:: console
 
    export G_MESSAGES_DEBUG="libnice,libnice-stun"
-   export GST_DEBUG="${GST_DEBUG:-3},glib:5"
+   export GST_DEBUG="$GST_DEBUG,glib:5"
    /usr/bin/kurento-media-server
 
 You can also set this configuration in the Kurento service settings file, which gets installed at ``/etc/default/kurento-media-server``.
