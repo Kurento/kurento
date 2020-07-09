@@ -2,17 +2,22 @@
 Debug Logging
 =============
 
-When running Kurento Media Server manually with ``/usr/bin/kurento-media-server``, all logging messages are by default printed to standard out (*stdout*).
+Logs Location
+=============
 
-The KMS native packages modify this behavior to ensure logging information is placed in a more conventional location for the platform. By default logs should be made available in */var/log/kurento-media-server/*, unless customized in the service settings file, */etc/default/kurento-media-server* (for Debian/Ubuntu packages). Log files are named as follows:
+When running Kurento Media Server manually with */usr/bin/kurento-media-server*, all logging messages are by default printed to standard out (*stdout*).
+
+The KMS native packages modify this behavior, placing logs in a more conventional location for the platform: ``/var/log/kurento-media-server/``. This path can be customized in the service settings file, */etc/default/kurento-media-server* (for Debian/Ubuntu packages).
+
+Log files are named as follows:
 
 .. code-block:: text
 
    {DateTime}.{LogNumber}.pid{PID}.log
 
-- ``{DateTime}``: Logging file creation date and time, in :wikipedia:`ISO 8601` Extended Notation for the date, and Basic Notation for the time. For example: *2018-12-31T235959*.
-- ``{LogNumber}``: Log file number. A new one will be created whenever the maximum size limit is reached (100 MB by default).
-- ``{PID}``: Process Identifier of *kurento-media-sever*.
+- *{DateTime}*: Logging file creation date and time, in :wikipedia:`ISO 8601` Extended Notation for the date, and Basic Notation for the time. For example: *2018-12-31T235959*.
+- *{LogNumber}*: Log file number. A new one will be created whenever the maximum size limit is reached (100 MB by default).
+- *{PID}*: Process Identifier of *kurento-media-sever*.
 
 When the KMS service starts correctly, a log file such as this one will be created:
 
@@ -26,21 +31,26 @@ Besides normal log files, an ``errors.log`` file stores error messages and stack
 
    Log files in this folder are rotated, and old files will get eventually deleted when new ones are created. This helps with preventing that all available disk space ends up filled with logs.
 
+
+
+Logs Format
+===========
+
 Each line in a log file has a fixed structure:
 
 .. code-block:: text
 
    {DateTime} {PID} {ThreadID} {Level} {Component} {FileLine} {Function} {Object}? {Message}
 
-- ``{DateTime}``: Date and time of the logging message, in :wikipedia:`ISO 8601` Extended Notation, with six decimal places for the seconds fraction. For example: *2018-12-31T23:59:59,123456*.
-- ``{PID}``: Process Identifier of *kurento-media-sever*.
-- ``{ThreadID}``: Thread ID from which the message was issued. For example: *0x0000111122223333*.
-- ``{Level}``: Logging level. This value will typically be *INFO* or *DEBUG*. If unexpected error situations happen, the *WARNING* and *ERROR* levels will contain information about the problem.
-- ``{Component}``: Name of the component that generated the log line. For example: *KurentoModuleManager*, *webrtcendpoint*, *qtmux*, etc.
-- ``{FileLine}``: File name and line number, separated by a colon. For example: *main.cpp:255*.
-- ``{Function}``: Name of the function in which the log message was generated. For example: *main()*, *loadModule()*, *kms_webrtc_endpoint_gather_candidates()*, etc.
-- ``{Object}``: [Optional] Name of the object that issued the message, if one was specified for the log message. For example: *<kmswebrtcendpoint0>*, *<fakesink1>*, *<audiotestsrc0:src>*, etc.
-- ``{Message}``: The actual log message.
+- *{DateTime}*: Date and time of the logging message, in :wikipedia:`ISO 8601` Extended Notation, with six decimal places for the seconds fraction. For example: *2018-12-31T23:59:59,123456*.
+- *{PID}*: Process Identifier of *kurento-media-sever*.
+- *{ThreadID}*: Thread ID from which the message was issued. For example: *0x0000111122223333*.
+- *{Level}*: Logging level. This value will typically be *INFO* or *DEBUG*. If unexpected error situations happen, the *WARNING* and *ERROR* levels will contain information about the problem.
+- *{Component}*: Name of the component that generated the log line. For example: *KurentoModuleManager*, *webrtcendpoint*, *qtmux*, etc.
+- *{FileLine}*: File name and line number, separated by a colon. For example: *main.cpp:255*.
+- *{Function}*: Name of the function in which the log message was generated. For example: *main()*, *loadModule()*, *kms_webrtc_endpoint_gather_candidates()*, etc.
+- *{Object}*: [Optional] Name of the object that issued the message, if one was specified for the log message. For example: *<kmswebrtcendpoint0>*, *<fakesink1>*, *<audiotestsrc0:src>*, etc.
+- *{Message}*: The actual log message.
 
 For example, when KMS starts correctly, a message like this will be printed:
 
@@ -55,7 +65,7 @@ For example, when KMS starts correctly, a message like this will be printed:
 Logging levels and components
 =============================
 
-Each different ``{Component}`` of KMS is able to generate its own logging messages. Besides that, each individual logging message has a severity ``{Level}``, which defines how critical (or superfluous) the message is.
+Each different *{Component}* of KMS is able to generate its own logging messages. Besides that, each individual logging message has a severity *{Level}*, which defines how critical (or superfluous) the message is.
 
 These are the different message levels, as defined by the `GStreamer logging library <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gst-running.html>`__:
 
@@ -99,15 +109,15 @@ Logs will be colored by default, but colors can be explicitly disabled in the sa
 Suggested levels
 ================
 
-Here are some tips on what logging components and levels could be most useful depending on what is the issue to be analyzed. They are given in the environment variable form, so they can be copied directly into the KMS KMS service settings file, */etc/default/kurento-media-server*:
+Here is a list of some logging levels that could be the most useful for typical troubleshooting of KMS. These are set as *environment variables*, so it is possible to copy them directly into the KMS service settings file, ``/etc/default/kurento-media-server``, or use them in a console session.
 
-The **default suggested level** is what KMS sets automatically when it is started as a system service from the init scripts:
+First, **start from the default levels**:
 
   .. code-block:: console
 
      export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
-From that baseline, one can add any other values to extend the amount of information that gets logged:
+Then **add new levels** according to your needs:
 
 * **Transcoding of media**:
 
@@ -187,14 +197,14 @@ This library uses the standard *GLib* logging functions, which comes disabled by
 
 To enable debug logging on *libnice*, set the environment variable ``G_MESSAGES_DEBUG`` with one or more of these values (separated by commas):
 
-- ``libnice``: Required in order to enable logging in libnice.
-- ``libnice-verbose``: Enable extra verbose messages.
-- ``libnice-stun``: Log messages related to the :term:`STUN` protocol.
-- ``libnice-pseudotcp``: Log messages from the ICE-TCP module.
-- ``libnice-pseudotcp-verbose``: Enable extra verbose messages from ICE-TCP.
-- ``all``: Equivalent to using all previous flags.
+- *libnice*: Required in order to enable logging in libnice.
+- *libnice-verbose*: Enable extra verbose messages.
+- *libnice-stun*: Log messages related to the :term:`STUN` protocol.
+- *libnice-pseudotcp*: Log messages from the ICE-TCP module.
+- *libnice-pseudotcp-verbose*: Enable extra verbose messages from ICE-TCP.
+- *all*: Equivalent to using all previous flags.
 
-After doing this, GLib messages themselves must be enabled in the Kurento logging system, by setting an appropriate level for the ``glib`` component.
+After doing this, GLib messages themselves must be enabled in the Kurento logging system, by setting an appropriate level for the *glib* component.
 
 Example:
 
