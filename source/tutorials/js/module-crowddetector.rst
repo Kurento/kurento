@@ -6,6 +6,12 @@ This web application consists of a `WebRTC`:term: video communication in mirror
 (*loopback*) with a crowd detector filter. This filter detects people
 agglomeration in video streams.
 
+.. note::
+
+   Web browsers require using *HTTPS* to enable WebRTC, so the web server must use SSL and a certificate file. For instructions, check :ref:`features-security-js-https`.
+
+   For convenience, this tutorial already provides dummy self-signed certificates (which will cause a security warning in the browser).
+
 
 
 Running this example
@@ -33,8 +39,6 @@ You also need the source code of this tutorial. Clone it from GitHub, then start
     git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
-
-Note that HTTPS is required by browsers to enable WebRTC, so the web server must use SSL and a certificate file. For instructions, check :ref:`features-security-js-https`. For convenience, this tutorial already provides dummy self-signed certificates (which will cause a security warning in the browser).
 
 When your web server is up and running, use a WebRTC compatible browser (Firefox, Chrome) to open the tutorial page:
 

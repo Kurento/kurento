@@ -7,8 +7,9 @@ recording capabilities.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions </features/security.html#configure-java-applications-to-use-https>`_
-   to secure your application.
+   Web browsers require using *HTTPS* to enable WebRTC, so the web server must use SSL and a certificate file. For instructions, check :ref:`features-security-java-https`.
+
+   For convenience, this tutorial already provides dummy self-signed certificates (which will cause a security warning in the browser).
 
 For the impatient: running this example
 =======================================

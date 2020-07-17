@@ -7,8 +7,11 @@ This web application consists of a `WebRTC`:term: video communication in mirror
 
 .. note::
 
-   This tutorial has been configurated for using https. Follow these `instructions </features/security.html#configure-node-applications-to-use-https>`_
-   for securing your application.
+   Web browsers require using *HTTPS* to enable WebRTC, so the web server must use SSL and a certificate file. For instructions, check :ref:`features-security-node-https`.
+
+   For convenience, this tutorial already provides dummy self-signed certificates (which will cause a security warning in the browser).
+
+
 
 For the impatient: running this example
 =======================================

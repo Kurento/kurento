@@ -8,8 +8,9 @@ The Java Application Server **connects to all events** emitted from KMS and prin
 
 .. note::
 
-   This application uses ``HTTPS``. It will work fine is you run it in ``localhost`` and accept a security exception in the browser, but you should secure your application if running remotely.
-   For more info, check :ref:`features-security-java-https`.
+   Web browsers require using *HTTPS* to enable WebRTC, so the web server must use SSL and a certificate file. For instructions, check :ref:`features-security-java-https`.
+
+   For convenience, this tutorial already provides dummy self-signed certificates (which will cause a security warning in the browser).
 
 
 
