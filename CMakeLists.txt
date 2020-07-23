@@ -75,15 +75,12 @@ pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.5)
 
-# Patch and build the ALVAR library
-message("Patch ALVAR library sources for OpenCV compatibility:")
-execute_process(
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMAND git apply --verbose --directory=alvar-2.0.0-src-opencv3 alvar-compat-opencv-2-3.patch
-  RESULT_VARIABLE GIT_RESULT
-)
-if(NOT GIT_RESULT EQUAL "0")
-  message(FATAL_ERROR "git apply failed on ALVAR library")
+# Set some definitions before adding the ALVAR library
+if(NOT DEFINED ALVAR_PACKAGE)
+    set(ALVAR_PACKAGE src)
+endif()
+if(NOT DEFINED ALVAR_NOGLUT)
+    set(ALVAR_NOGLUT 1)
 endif()
 add_subdirectory(alvar-2.0.0-src-opencv3)
 

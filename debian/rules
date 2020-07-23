@@ -7,4 +7,4 @@
 	dh $@ --parallel
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DALVAR_PACKAGE=src -DALVAR_NOGLUT=1
+	./alvar-patch.sh && dh_auto_configure
