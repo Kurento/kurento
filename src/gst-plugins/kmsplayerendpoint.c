@@ -900,12 +900,12 @@ kms_player_endpoint_uridecodebin_pad_removed (GstElement * element,
   appsink = g_object_steal_qdata (G_OBJECT (pad), appsink_quark ());
   appsrc = g_object_steal_qdata (G_OBJECT (pad), appsrc_quark ());
 
-  // remove appsrc before appsink to avoid segment fault 
+  // remove appsrc before appsink to avoid segment fault
   // caused by invalid appsink in appsrc_query_probe
   if (appsrc != NULL) {
     kms_utils_bin_remove (GST_BIN (self), appsrc);
   }
-  
+
   if (appsink != NULL) {
     kms_utils_bin_remove (GST_BIN (self->priv->pipeline), appsink);
   }

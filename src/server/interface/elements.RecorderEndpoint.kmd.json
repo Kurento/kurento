@@ -3,10 +3,10 @@
     {
       "name": "RecorderEndpoint",
       "extends": "UriEndpoint",
-      "doc": "Provides the functionality to store contents.
+      "doc": "Provides functionality to store media contents.
 <p>
-  The Recorder can store media in local files or in a network resource. It
-  receives a media stream from another :rom:cls:`MediaElement` (i.e. the
+  The RecorderEndpoint can store media in local files or in a network resource.
+  It receives a media stream from another :rom:cls:`MediaElement` (i.e. the
   source), and stores it in the designated location.
 </p>
 <p>
@@ -25,7 +25,9 @@
         </ul>
       </li>
       <li>
-        HTTP: Method PUT used against a remote server.
+        HTTP: A POST request will be used against a remote server. The server
+        must support using the <i>chunked</i> encoding mode (HTTP header
+        <code>Transfer-Encoding: chunked</code>).
         <ul>
           <li><code>http(s)://{server-ip}/path/to/file</code></li>
           <li>
@@ -72,7 +74,7 @@
   </li>
   <li>
     To save into an HTTP server, the server must be accessible through the
-    network, and also have the correct access rights.
+    network, and also have the correct access rights to the destination path.
   </li>
 </ul>
 <p>

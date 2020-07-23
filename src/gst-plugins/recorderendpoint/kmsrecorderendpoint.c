@@ -1958,52 +1958,59 @@ kms_recorder_endpoint_on_eos_message (gpointer data)
 }
 
 static GstBusSyncReply
-bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
+bus_sync_signal_handler (GstBus *bus, GstMessage *msg, gpointer data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
 
-  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
-    ErrorData *data;
+  switch (GST_MESSAGE_TYPE (msg)) {
+  case GST_MESSAGE_ERROR:
+  case GST_MESSAGE_WARNING: {
+    ErrorData *data = create_error_data (self, msg);
+    gst_task_pool_push (
+        self->priv->pool, kms_recorder_endpoint_post_error, data, NULL);
 
-    GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (self),
-        GST_DEBUG_GRAPH_SHOW_ALL, GST_ELEMENT_NAME (self));
+    // Generate a DOT file from the element's internal pipeline.
+    gchar *dot_name = g_strdup_printf ("%s_bus_msg", GST_OBJECT_NAME (self));
+    GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (
+        GST_BIN (self), GST_DEBUG_GRAPH_SHOW_ALL, dot_name);
+    g_free (dot_name);
     kms_base_media_muxer_dot_file (self->priv->mux);
 
-    GST_ERROR_OBJECT (self, "Message %" GST_PTR_FORMAT, msg);
+    break;
+  }
+  case GST_MESSAGE_EOS:
+    gst_task_pool_push (
+        self->priv->pool, kms_recorder_endpoint_on_eos_message, self, NULL);
+    break;
+  case GST_MESSAGE_STATE_CHANGED:
+    if (GST_OBJECT_CAST (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self->priv->mux))
+        == GST_MESSAGE_SRC (msg)) {
+      GstState new_state, pending;
 
-    data = create_error_data (self, msg);
+      gst_message_parse_state_changed (msg, NULL, &new_state, &pending);
 
-    GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
-
-    gst_task_pool_push (self->priv->pool, kms_recorder_endpoint_post_error,
-        data, NULL);
-  } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
-    gst_task_pool_push (self->priv->pool, kms_recorder_endpoint_on_eos_message,
-        self, NULL);
-  } else if ((GST_MESSAGE_TYPE (msg) == GST_MESSAGE_STATE_CHANGED)
-      && (GST_OBJECT_CAST (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self->
-                  priv->mux)) == GST_MESSAGE_SRC (msg))) {
-    GstState new_state, pending;
-
-    gst_message_parse_state_changed (msg, NULL, &new_state, &pending);
-
-    if (pending == GST_STATE_VOID_PENDING || (pending == GST_STATE_NULL
-            && new_state == GST_STATE_READY)) {
-      switch (new_state) {
+      if (pending == GST_STATE_VOID_PENDING
+          || (pending == GST_STATE_NULL && new_state == GST_STATE_READY)) {
+        switch (new_state) {
         case GST_STATE_PLAYING:
-          kms_recorder_endpoint_async_state_changed (self,
-              KMS_URI_ENDPOINT_STATE_START);
+          kms_recorder_endpoint_async_state_changed (
+              self, KMS_URI_ENDPOINT_STATE_START);
           break;
         case GST_STATE_READY:
-          kms_recorder_endpoint_async_state_changed (self,
-              KMS_URI_ENDPOINT_STATE_STOP);
+          kms_recorder_endpoint_async_state_changed (
+              self, KMS_URI_ENDPOINT_STATE_STOP);
           break;
         default:
           GST_DEBUG_OBJECT (self, "Not raising event");
           break;
+        }
       }
     }
+    break;
+  default:
+    break;
   }
+
   return GST_BUS_PASS;
 }
 
