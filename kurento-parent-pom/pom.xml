@@ -1513,12 +1513,13 @@
 			<id>kurento-snapshots</id>
 			<name>Kurento Snapshots</name>
 			<url>https://maven.openvidu.io/repository/snapshots/</url>
-			<!-- Must be enabled for BOTH releases and snapshots, or else the
-			versions-maven-plugin won't look for latest SNAPSHOTs when wanting
-			to update from a release.
-			See: https://stackoverflow.com/a/48572660 -->
+			<!--
+			FIXME: Setting this to 'false' causes that versions-maven-plugin
+			won't move to latest SNAPSHOT when trying to update from a release.
+			See: https://stackoverflow.com/a/48572660
+			-->
 			<releases>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
@@ -1531,7 +1532,7 @@
 			<name>Kurento Snapshots</name>
 			<url>https://maven.openvidu.io/repository/snapshots/</url>
 			<releases>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
