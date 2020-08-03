@@ -204,28 +204,14 @@ configure_port (KmsAlphaBlendingData * port_data)
       int top = 0;
       int bottom = 0;
 
-      if (_relative_x > 0) {
-        int width_size =
-            (mixer->priv->output_width - (mixer->priv->output_width -
-                _relative_x));
-        if (_relative_width > width_size) {
-          right = (_relative_width - width_size);
-        }
-      } else {
+      if (_relative_x <= 0) {
         left = -1 * _relative_x;
         if ((_relative_width - left) > mixer->priv->output_width) {
           right = (_relative_width - left) - mixer->priv->output_width;
         }
       }
 
-      if (_relative_y > 0) {
-        int height_size =
-            (mixer->priv->output_height - (mixer->priv->output_height -
-                _relative_y));
-        if (_relative_height > height_size) {
-          bottom = (_relative_height - height_size);
-        }
-      } else {
+      if (_relative_y <= 0) {
         top = -1 * _relative_y;
         if ((_relative_height - top) > mixer->priv->output_height) {
           bottom = (_relative_height - top) - mixer->priv->output_height;
