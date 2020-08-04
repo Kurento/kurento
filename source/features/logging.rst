@@ -163,6 +163,12 @@ Then **add new levels** according to your needs:
 
 Other less commonly used logging levels are:
 
+* **imageoverlay**, **logooverlay** (as used, for example, in some :doc:`Kurento Tutorials </user/tutorials>`):
+
+  .. code-block:: console
+
+     export GST_DEBUG="$GST_DEBUG,imageoverlay:5,logooverlay:5"
+
 * **RTP Synchronization**:
 
   .. code-block:: console
