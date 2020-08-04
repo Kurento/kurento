@@ -41,7 +41,14 @@ var args = getopts(location.search,
     // https://doc-kurento.readthedocs.io/en/latest/features/security.html#features-security-kms-wss
     //ws_uri: "wss://" + location.hostname + ":8433/kurento",
 
-    bg_uri: 'https://' + location.host + '/img/mario.jpg',
+    // Local Kurento Media Server
+    // If KMS is running in localhost, use this to let it access the overlay image:
+    bg_uri: location.protocol + '//127.0.0.1:' + location.port + '/img/mario.jpg',
+
+    // Remote Kurento Media Server (including Docker)
+    // If KMS is *not* running in localhost, provide it with the correct IP address:
+    // bg_uri: location.protocol + '//172.17.0.1:' + location.port + '/img/mario.jpg',
+
     ice_servers: undefined
   }
 });
