@@ -186,10 +186,14 @@ window.addEventListener("load", function(event)
               console.log("License plate detected " + data.plate);
             });
 
-            client.connect(webRtc, filter, webRtc, function(error) {
+            client.connect(webRtc, filter, function(error) {
               if (error) return onError(error);
+              console.log("WebRtcEndpoint --> filter");
 
-              console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
+              client.connect(filter, webRtc, function(error) {
+                if (error) return onError(error);
+                console.log("filter --> WebRtcEndpoint");
+              });
             });
           });
         });

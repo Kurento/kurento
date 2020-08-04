@@ -177,10 +177,14 @@ window.addEventListener("load", function(event)
 
             console.log("Connecting...");
 
-            client.connect(webRtcEp, filter, webRtcEp, function(error) {
+            client.connect(webRtcEp, filter, function(error) {
               if (error) return onError(error);
+              console.log("WebRtcEndpoint --> filter");
 
-              console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
+              client.connect(filter, webRtcEp, function(error) {
+                if (error) return onError(error);
+                console.log("filter --> WebRtcEndpoint");
+              });
             });
           });
         });

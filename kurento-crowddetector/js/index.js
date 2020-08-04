@@ -202,10 +202,14 @@ window.addEventListener("load", function(event)
                " and occupancy percentage " + data.occupancyLevel);
             });
 
-            client.connect(webRtc, filter, webRtc, function(error){
+            client.connect(webRtc, filter, function(error){
               if (error) return onError(error);
+              console.log("WebRtcEndpoint --> Filter");
 
-              console.log("WebRtcEndpoint --> Filter --> WebRtcEndpoint");
+              client.connect(filter, webRtc, function(error){
+                if (error) return onError(error);
+                console.log("Filter --> WebRtcEndpoint");
+              });
             });
           });
         });

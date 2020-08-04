@@ -189,10 +189,15 @@ window.addEventListener("load", function(event)
             });
 
             console.log("Connecting ...");
-            client.connect(webRtc, filter, webRtc, function(error) {
-              if (error) return onError(error);
 
-              console.log("WebRtcEndpoint --> Filter --> WebRtcEndpoint");
+            client.connect(webRtc, filter, function(error) {
+              if (error) return onError(error);
+              console.log("WebRtcEndpoint --> Filter");
+
+              client.connect(filter, webRtc, function(error) {
+                if (error) return onError(error);
+                console.log("Filter --> WebRtcEndpoint");
+              });
             });
           });
         });
