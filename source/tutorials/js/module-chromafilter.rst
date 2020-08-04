@@ -65,6 +65,14 @@ If you want to run this tutorial from a **remote web server**, then you have to 
 
 3. As explained in the link from step 1, if you configured KMS to use Secure WebSocket with a self-signed certificate you now have to browse to ``https://{KMS_HOST}:8433/kurento`` and click to accept the untrusted certificate.
 
+.. note::
+
+   By default, this tutorial assumes that Kurento Media Server can download the overlay image from a ``localhost`` web server. *It will fail if the web server is remote* (from the point of view of KMS). This includes the case of running KMS from Docker.
+
+If you want to run this tutorial with a **remote Kurento Media Server** (including running KMS from Docker), then you have to provide it with the correct IP address of the application's web server:
+
+* In *index.js*, change ``bg_uri`` to the correct one where KMS can reach the web server.
+
 
 
 Understanding this example
