@@ -61,7 +61,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
     webRtcEp.addIceCandidate(candidate, onerror)
   });
 
-  webRtcEp.on('OnIceCandidate', function(event) {
+  webRtcEp.on('IceCandidateFound', function(event) {
     var candidate = event.candidate;
 
     console.log("Remote candidate:",candidate);
