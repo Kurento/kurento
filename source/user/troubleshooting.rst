@@ -62,7 +62,7 @@ Other Media Server issues
 =========================
 
 ``GStreamer-CRITICAL`` messages in the log
----------------------------------------------
+------------------------------------------
 
 GLib and GStreamer are libraries that use a lot of internal ``assert()`` functions to check for valid conditions whenever a function is called. Normally, these are meant to catch programming bugs in their own source code; when (if) any of these checks fail, a warning message is printed to the logs. The media server won't be brought down in this situation, but a bug in any of Kurento's underlying 3rd-party libraries will have an adverse effect on Kurento itself sooner or later. So, it's in our best interest to watch out for these. Report them to us if you see any! ;-)
 
@@ -540,8 +540,24 @@ To disable mDNS, open this URL: ``chrome://flags/#enable-webrtc-hide-local-ips-w
 
 
 
-Other network issues
-====================
+Docker issues
+=============
+
+.. _troubleshooting-docker-network-host:
+
+Publishing Docker ports eats memory
+-----------------------------------
+
+Docker will consume a lot of memory when `publishing <https://docs.docker.com/config/containers/container-networking/#published-ports>`__ big enough port ranges. As of this writing, there is no quick and easy solution to this issue.
+
+**You should not expose a large port range** in your Docker containers; instead, prefer using `Host Networking <https://docs.docker.com/network/host/>`__ (``--network host``). To elaborate a bit more, as mentioned `here <https://github.com/kubernetes/kubernetes/issues/23864#issuecomment-387070644>`__:
+
+    the problem is that - given the current state of Docker - it seems you should NOT even be trying to expose large numbers of ports. You are advised to use the host network anyway, due to the overhead involved with large port ranges. (it adds both latency, as well as consumes significant resources - e.g. see https://www.percona.com/blog/2016/02/05/measuring-docker-cpu-network-overhead/)
+
+    If you are looking for a more official source, there is still (for years) an open issue in Docker about this:
+    `moby/moby#11185 (comment) <https://github.com/moby/moby/issues/11185#issuecomment-245983651>`__
+
+
 
 Multicast fails in Docker
 -------------------------
@@ -559,9 +575,9 @@ Multicast fails in Docker
 
 **Solution**:
 
-For Multicast streaming to work properly, you need to disable Docker's network namespacing and use ``--net host``. Note that this gives the container direct access to the host interfaces, and you'll need to connect through published ports to access others containers.
+For Multicast streaming to work properly, you need to disable Docker network isolation and use ``--network host``. Note that this gives the container direct access to the host interfaces, and you'll need to connect through published ports to access others containers.
 
-This is a limitation of Docker; you can follow the current status with this issue: https://github.com/moby/moby/issues/23659
+This is a limitation of Docker; you can follow the current status with this issue: `#23659 Cannot receive external multicast inside container <https://github.com/moby/moby/issues/23659>`__.
 
 If using Docker Compose, use ``network_mode: host`` such as this:
 
