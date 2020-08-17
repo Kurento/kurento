@@ -27,20 +27,34 @@ This Docker image contains a default local installation, as described in the off
 * All default settings, as found in `/etc/kurento/`.
 * Debug symbols installed, to allow getting useful stack traces in case the process crashes. If this happens, please [report a bug](https://github.com/Kurento/bugtracker/issues).
 
+Running a Docker container **won't modify your host system** and **won't create new files** or anything like that. That's the idea of it being containerized! This is important to keep in mind for certain cases, for example if you use the RecorderEndpoint -which is supposed to create video files in the local filesystem-.
+
+If you need to insert or extract files from a Docker container, there is a variety of methods. You could use a [bind mount](https://docs.docker.com/storage/bind-mounts/), a [volume](https://docs.docker.com/storage/volumes/), change your [ENTRYPOINT](https://docs.docker.com/engine/reference/run/#entrypoint-default-command-to-execute-at-runtime) to generate the files at startup, or customize this Docker image to introduce any desired changes.
+
+
+
+### Customizing this image
+
+We provide this Docker image as a nice *all-in-one* package for introductory purposes. It comes with default settings, which is enough to let you try the [Kurento Tutorials](https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html).
+
+However, for real-world application development, developers are encouraged to [base FROM](https://docs.docker.com/engine/reference/builder/#from) this Docker image and build their own, with any customizations that they need or want. That's the nice thing about how Docker containers work! You can build your own images based on the previous work of others.
+
 
 
 ## Running Kurento Media Server
 
-Run these commands:
+Running a Docker container is a very customizable operation, so you'll want to read the [Docker run reference](https://docs.docker.com/engine/reference/run/) and find out the command options that are needed for your project.
+
+This is a good starting point, which runs the latest *Kurento Media Server* (KMS) image with default options:
 
 ```
 $ docker pull kurento/kurento-media-server-dev:latest
 
-$ docker run --name kms -d -p 8888:8888 \
+$ docker run -d --name kms --network host \
     kurento/kurento-media-server-dev:latest
 ```
 
-The *Kurento Media Server* (KMS) process listens by default on the port **8888** for client WebSocket connections, so you should publish that port on your `docker run` command.
+By default, *Kurento Media Server* (KMS) listens on the port **8888**. Clients wanting to control the media server using the [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_protocol.html) should open a WebSocket connection to that port, either directly or by means of one of the provided [Kurento Client](https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html) SDKs.
 
 Once the container is running, you can get its log output with the [docker logs](https://docs.docker.com/engine/reference/commandline/logs/) command:
 
@@ -70,6 +84,12 @@ Server: WebSocket++/0.7.0
 Ignore the "*Server Error*" message: this is expected, and it actually proves that KMS is up and listening for connections.
 
 The [health checker script](https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh) inside this Docker image does something very similar in order to check if the container is healthy.
+
+
+
+### Why host networking?
+
+Notice how our suggested `docker run` command uses `--network host`? Using [Host Networking](https://docs.docker.com/network/host/) is recommended for software like proxies and media servers, because otherwise publishing large ranges of container ports would consume a lot of memory. You can read more about this issue in our [Troubleshooting Guide](https://doc-kurento.readthedocs.io/en/latest/user/troubleshooting.html#troubleshooting-docker-network-host).
 
 
 
