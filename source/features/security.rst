@@ -121,10 +121,28 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
 Securing Kurento Media Server
 =============================
 
+Signaling Plane authorization
+-----------------------------
+
+You should protect the JSON-RPC API control port (WebSocket port ``8888`` by default) of your Kurento Media Server instances from unauthorized access from public networks.
+
+The Kurento WebSocket server supports using SSL certificates in order to guarantee secure communications between clients and server; however, at the time no authentication mechanism is provided. Kurento doesn't reinvent the wheel here including its own mechanism, and instead it relies on layers of security that already exist at the system level. This is something we may add (contributions are welcomed!) but for now here are some tips on how other big players are protecting KMS from unauthorized use.
+
+Think of KMS like you would of a database in a traditional web application; there are two levels:
+
+1. The **application level**. We usually call this the ":doc:`Application Server </user/writing_applications>`" of Kurento Media Server. It usually is a web application that uses :doc:`/features/kurento_client` to access :doc:`/features/kurento_api`.
+2. The **media level** (actual audio/video transmissions to/from KMS).
+
+The idea is that nobody unauthorized should be able to access the exchanged media. At the application level we can use all the available techniques used to protect any web server, for example with a custom user/password mechanism. Regarding KMS, the idea is that only the *Application Server* can access KMS. We can restrict that at the system level, for example using `iptables <https://linux.die.net/man/8/iptables>`__ to restrict all incoming WebSocket connections to KMS only from a given host, or a given subnet, similar to this: `Iptables Essentials: Common Firewall Rules and Commands <https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands>`__ (`archive <http://archive.is/frjCa>`__). It may be a good idea to have the *Application Server* running in the same host than the Media Server, and in that case just restrict incoming connections to the same host.
+
+If you need more flexibility, one idea is to restrict KMS connections to the same host using iptables and then implement a WebSocket proxy in the same machine (e.g. using nginx) that has its resources secured, as in `NGINX as a WebSocket Proxy <https://www.nginx.com/blog/websocket-nginx/>`__ (`archive <http://archive.is/xqbUJ>`__) or `WebSocket proxying <https://nginx.org/en/docs/http/websocket.html>`__ (`archive <http://archive.is/ZvqCG>`__); this way, the *Application Server* connects to the WebSocket proxy that can indeed be secured, and thus only authenticated users from remote hosts can gain access to KMS.
+
+
+
 .. _features-security-kms-wss:
 
-Securing the Signaling Plane (WebSocket)
-----------------------------------------
+Signaling Plane security (WebSocket)
+------------------------------------
 
 With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port ``8888``. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_api`.
 
@@ -173,8 +191,8 @@ Generate your own certificate as explained here: :ref:`features-security-selfsig
 
 .. _features-security-kms-wss-connect:
 
-Connecting to a secured KMS
----------------------------
+Connecting to Secure WebSocket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now that KMS is listening for Secure WebSocket connections, and (if using a self-signed certificate) your Application Server is configured to accept the certificate used in KMS, you have to change the WebSocket URL used in your application logic.
 
@@ -201,12 +219,12 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
 
 
 
-Securing the Media Plane (WebRTC DTLS)
---------------------------------------
+Media Plane security (DTLS)
+---------------------------
 
-WebRTC uses DTLS for media data authentication. By default, if no certificate is provided for this, Kurento Media Server will auto-generate its own self-signed certificate for every WebRtcEndpoint instance, but it is also possible to provide an already existing certificate to be used for all endpoints.
+WebRTC uses :wikipedia:`DTLS <Datagram_Transport_Layer_Security>` for media data authentication. By default, if no certificate is provided for this, Kurento Media Server will auto-generate its own self-signed certificate for every WebRtcEndpoint instance, but it is also possible to provide an already existing certificate to be used for all endpoints.
 
-To do so, edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set either *pemCertificateRSA* or *pemCertificateECDSA* with a file containing the concatenation of your certificate (chain) file(s) and the private key.
+To do so, edit the file */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini* and set either ``pemCertificateRSA`` or ``pemCertificateECDSA`` with a file containing the concatenation of your certificate (chain) file(s) and the private key.
 
 Setting a custom certificate for DTLS is needed, for example, for situations where you have to manage multiple media servers and want to make sure that all of them use the same certificate for their connections. Some browsers, such as Firefox, require this in order to allow multiple WebRTC connections from the same tab to different KMS instances.
 
