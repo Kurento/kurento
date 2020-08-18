@@ -21,23 +21,23 @@
 
 Image source: [kurento-media-server/Dockerfile](https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/Dockerfile).
 
-This Docker image contains a default local installation, as described in the official Kurento [documentation]. These are the exact contents of the image:
+This Docker image can be used to run *Kurento Media Server* (*KMS*) on any **x86** platform. It cannot be used on other architectures, such as ARM. These are the exact contents of the image:
 
-* A local `apt-get` installation of KMS.
-* All default settings, as found in `/etc/kurento/`.
-* Debug symbols installed, to allow getting useful stack traces in case the process crashes. If this happens, please [report a bug](https://github.com/Kurento/bugtracker/issues).
-
-Running a Docker container **won't modify your host system** and **won't create new files** or anything like that. That's the idea of it being containerized! This is important to keep in mind for certain cases, for example if you use the RecorderEndpoint -which is supposed to create video files in the local filesystem-.
-
-If you need to insert or extract files from a Docker container, there is a variety of methods. You could use a [bind mount](https://docs.docker.com/storage/bind-mounts/), a [volume](https://docs.docker.com/storage/volumes/), change your [ENTRYPOINT](https://docs.docker.com/engine/reference/run/#entrypoint-default-command-to-execute-at-runtime) to generate the files at startup, or customize this Docker image to introduce any desired changes.
+* A local `apt-get` installation of KMS, as described in the [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html#installation-local).
+* Debug symbols installed, as described in the [Developer Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#dev-dbg). This allows getting useful stack traces in case the process crashes. If this happens, please [report a bug](https://github.com/Kurento/bugtracker/issues).
+* All **default settings** from the local installation, as found in `/etc/kurento/`.
 
 
 
-### Customizing this image
+## Working with this image
 
-We provide this Docker image as a nice *all-in-one* package for introductory purposes. It comes with default settings, which is enough to let you try the [Kurento Tutorials](https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html).
+The [Kurento Project](https://www.kurento.org/) provides this Docker image as a nice *all-in-one* package for introductory purposes. It comes with default settings, which is enough to let you try the [Kurento Tutorials](https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html).
 
-However, for real-world application development, developers are encouraged to [base FROM](https://docs.docker.com/engine/reference/builder/#from) this Docker image and build their own, with any customizations that they need or want. That's the nice thing about how Docker containers work! You can build your own images based on the previous work of others.
+For *real-world* application development, developers are encouraged to [base FROM](https://docs.docker.com/engine/reference/builder/#from) this Docker image and build their own, with any customizations that they need or want. That's the nice thing about how Docker containers operate! You can build your own images based on the previous work of others.
+
+Running a Docker container **won't modify your host system** and **won't create new files** or anything like that, at least by default. This is part of how Docker containers work, and is important to keep in mind for certain cases. For example, when using the [RecorderEndpoint](https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html) (which creates new files in the local filesystem) some users might be wondering where are the recordings being stored; the answer is *inside the container*.
+
+If you need to insert or extract files from a Docker container, there is a variety of methods: You could use a [bind mount](https://docs.docker.com/storage/bind-mounts/), a [volume](https://docs.docker.com/storage/volumes/), [export](https://docs.docker.com/engine/reference/commandline/container_export/) some files from an already existing container, change your [ENTRYPOINT](https://docs.docker.com/engine/reference/run/#entrypoint-default-command-to-execute-at-runtime) to generate the files at startup, or customize this Docker image to introduce any desired changes.
 
 
 
