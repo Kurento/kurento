@@ -31,7 +31,7 @@ This Docker image can be used to run Kurento Media Server (*KMS*) on any **x86**
 
 ## Working with this image
 
-The [Kurento Project](https://www.kurento.org/) provides this Docker image as a nice *all-in-one* package for introductory purposes. It comes with default settings, which is enough to let you try the [Kurento Tutorials](https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html).
+The [Kurento Project](https://www.kurento.org/) provides this Docker image as a nice *all-in-one* package for introductory purposes. It comes with default settings, which is enough to let you try the [Kurento Tutorials].
 
 For *real-world* application development, developers are encouraged to [base FROM](https://docs.docker.com/engine/reference/builder/#from) this Docker image and build their own, with any customizations that they need or want. That's the nice thing about how Docker containers operate! You can build your own images based on the previous work of others.
 
@@ -54,7 +54,7 @@ $ docker run -d --name kms --network host \
     kurento/kurento-media-server:latest
 ```
 
-By default, KMS listens on the port **8888**. Clients wanting to control the media server using the [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_protocol.html) should open a WebSocket connection to that port, either directly or by means of one of the provided [Kurento Client](https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html) SDKs.
+By default, KMS listens on the port **8888**. Clients wanting to control the media server using the [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_protocol.html) should open a WebSocket connection to that port, either directly or by means of one of the provided [Kurento Client] SDKs.
 
 Once the container is running, you can get its log output with the [docker logs](https://docs.docker.com/engine/reference/commandline/logs/) command:
 
@@ -90,6 +90,19 @@ The [health checker script](https://github.com/Kurento/kurento-docker/blob/maste
 ### Why host networking?
 
 Notice how our suggested `docker run` command uses `--network host`? Using [Host Networking](https://docs.docker.com/network/host/) is recommended for software like proxies and media servers, because otherwise publishing large ranges of container ports would consume a lot of memory. You can read more about this issue in our [Troubleshooting Guide](https://doc-kurento.readthedocs.io/en/latest/user/troubleshooting.html#troubleshooting-docker-network-host).
+
+The Host Networking driver **only works on Linux hosts**, so if you are using Docker for Mac or Windows then you'll need to understand that the Docker network gateway acts as a NAT between your host and your container. To use KMS without STUN (e.g. if you are just testing some of the [Kurento Tutorials]) you'll need to publish all required ports where KMS will listen for incoming data.
+
+For example, to have KMS listening on the UDP port range **[5000, 5050]** (thus allowing incoming data on those ports), plus the TCP port **8888** for the [Kurento Client] connection:
+
+```sh
+$ docker run --rm \
+    -p 8888:8888/tcp \
+    -p 5000-5050:5000-5050/udp \
+    -e KMS_MIN_PORT=5000 \
+    -e KMS_MAX_PORT=5050 \
+    kurento/kurento-media-server:latest
+```
 
 
 
@@ -226,7 +239,7 @@ News:
 
 Training:
 
-* [Kurento tutorials](https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html)
+* [Kurento Tutorials]
 
 
 
@@ -263,3 +276,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
+
+
+
+<!--- Links --->
+
+[Kurento Client]: https://doc-kurento.readthedocs.io/en/stable/features/kurento_client.html
+[Kurento Tutorials]: https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html
