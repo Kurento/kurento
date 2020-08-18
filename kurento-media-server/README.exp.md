@@ -21,7 +21,7 @@
 
 Image source: [kurento-media-server/Dockerfile](https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/Dockerfile).
 
-This Docker image can be used to run *Kurento Media Server* (*KMS*) on any **x86** platform. It cannot be used on other architectures, such as ARM. These are the exact contents of the image:
+This Docker image can be used to run Kurento Media Server (*KMS*) on any **x86** platform. It cannot be used on other architectures, such as ARM. These are the exact contents of the image:
 
 * A local `apt-get` installation of KMS, as described in the [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html#installation-local).
 * Debug symbols installed, as described in the [Developer Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#dev-dbg). This allows getting useful stack traces in case the process crashes. If this happens, please [report a bug](https://github.com/Kurento/bugtracker/issues).
@@ -45,7 +45,7 @@ If you need to insert or extract files from a Docker container, there is a varie
 
 Running a Docker container is a very customizable operation, so you'll want to read the [Docker run reference](https://docs.docker.com/engine/reference/run/) and find out the command options that are needed for your project.
 
-This is a good starting point, which runs the latest *Kurento Media Server* (KMS) image with default options:
+This is a good starting point, which runs the latest Kurento Media Server image with default options:
 
 ```
 $ docker pull kurento/kurento-media-server-exp:<BranchName>
@@ -54,7 +54,7 @@ $ docker run -d --name kms --network host \
     kurento/kurento-media-server-exp:<BranchName>
 ```
 
-By default, *Kurento Media Server* (KMS) listens on the port **8888**. Clients wanting to control the media server using the [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_protocol.html) should open a WebSocket connection to that port, either directly or by means of one of the provided [Kurento Client](https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html) SDKs.
+By default, KMS listens on the port **8888**. Clients wanting to control the media server using the [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_protocol.html) should open a WebSocket connection to that port, either directly or by means of one of the provided [Kurento Client](https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html) SDKs.
 
 Once the container is running, you can get its log output with the [docker logs](https://docs.docker.com/engine/reference/commandline/logs/) command:
 
