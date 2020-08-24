@@ -29,7 +29,6 @@ Configure a Java server to use HTTPS
 
   .. code-block:: properties
 
-     server.port=8443
      server.ssl.key-store=classpath:cert.p12
      server.ssl.key-store-password=123456
      server.ssl.key-store-type=PKCS12
@@ -38,7 +37,7 @@ Configure a Java server to use HTTPS
 
   .. code-block:: console
 
-     mvn -U clean spring-boot:run \
+     mvn spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
 
 .. note::
@@ -202,7 +201,7 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
 
   .. code-block:: java
 
-     mvn -U clean spring-boot:run \
+     mvn spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=wss://{KMS_HOST}:8433/kurento"
 
 * **Node**: Launch with the ``ws_uri`` command-line argument. For example:
@@ -245,7 +244,7 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
 
   Note that while a self-signed certificate can be used for web development, browsers will show a big security warning. Users will see this warning, and must click to accept the unsafe certificate before proceeding to the page.
 
-  To generate certificates with *mkcert*, run these commands:
+  To generate certificates with mkcert, run these commands:
 
   .. code-block:: console
 
@@ -253,8 +252,33 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
          "127.0.0.1" \
          "::1"       \
          "localhost" \
-         "a.test"    \
-         "b.test"    \
-         "c.test"
+         "*.test.local"
 
+     # Protect against writes
      chmod 440 *.pem
+
+  The ``*.test.local`` wildcard domain is meant to allow adding any desired subdomains to the ``/etc/hosts`` file, so these cert files can be used not only for localhost but also for remote tests. Note that we propose using the ``.local`` TLD here, and not simply ``.test``, because MacOS 10.15 (*Catalina*) forbids the use of wildcards for ``.test`` TLDs (see `mkcert bug 206 <https://github.com/FiloSottile/mkcert/issues/206>`__).
+
+  You can also publish a new Zeroconf local domain for any development machine. For example, running this in Ubuntu:
+
+  .. code-block:: console
+
+     # Get and publish the IP address to the default network gateway.
+     IP_ADDRESS="$(ip -4 -oneline route get 1 | grep -Po 'src \K([\d.]+)')"
+     avahi-publish --address --no-reverse -v "dev.test.local" "$IP_ADDRESS"
+
+* (Optional) Convert your untrusted self-signed certificate into a trusted one. This is done by installing the Root CA into the client device.
+
+  On computers, installing the Root CA is easy because mkcert does it for you:
+
+  .. code-block:: console
+
+     CAROOT="$PWD" mkcert -install
+
+  Installing the Root CA on mobile devices is a bit more difficult, because you cannot simply run mkcert:
+
+  - On iOS, you can either use AirDrop, email the CA to yourself, or serve it from an HTTP server. After installing it, you must `enable full trust in it <https://support.apple.com/en-nz/HT204477>`__. **Note**: earlier versions of mkcert ran into `an iOS bug <https://forums.developer.apple.com/thread/89568>`__, if you can't see the root in "Certificate Trust Settings" you might have to update mkcert and `regenerate the root <https://github.com/FiloSottile/mkcert/issues/47#issuecomment-408724149>`__.
+
+    Note that only AirDrop, Apple Mail, or Safari are allowed to download and install certificates on iOS. Other applications will not work for this.
+
+  - For Android, you will have to install the CA and then enable user roots in the development build of your app. See `this StackOverflow answer <https://stackoverflow.com/a/22040887/749014>`__.
