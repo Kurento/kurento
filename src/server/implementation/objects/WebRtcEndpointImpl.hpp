@@ -46,6 +46,12 @@ public:
 
   ~WebRtcEndpointImpl () override;
 
+  std::string getExternalIPv6 () override;
+  void setExternalIPv6 (const std::string &externalIPv6) override;
+
+  std::string getExternalIPv4() override;
+  void setExternalIPv4 (const std::string &externalIPv4) override;
+
   std::string getExternalAddress () override;
   void setExternalAddress (const std::string &externalAddress) override;
 

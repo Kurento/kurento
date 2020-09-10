@@ -358,6 +358,16 @@
           "type": "String"
         },
         {
+          "name": "externalIPv4",
+          "doc": "External IPv4 of the media server",
+          "type": "String"
+        },
+        {
+          "name": "externalIPv6",
+          "doc": "External IPv6 of the media server",
+          "type": "String"
+        },
+        {
           "name": "externalAddress",
           "doc": "External IP address of the media server.
 <p>

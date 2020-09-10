@@ -53,9 +53,13 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define DEFAULT_PATH "/etc/kurento"
 
 #define PARAM_EXTERNAL_ADDRESS "externalAddress"
+#define PARAM_EXTERNAL_IPV4 "externalIPv4"
+#define PARAM_EXTERNAL_IPV6 "externalIPv6"
 #define PARAM_NETWORK_INTERFACES "networkInterfaces"
 
 #define PROP_EXTERNAL_ADDRESS "external-address"
+#define PROP_EXTERNAL_IPV4 "external-ipv4"
+#define PROP_EXTERNAL_IPV6 "external-ipv6"
 #define PROP_NETWORK_INTERFACES "network-interfaces"
 
 namespace kurento
@@ -510,6 +514,28 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   //set properties
 
+  std::string externalIPv4;
+  if (getConfigValue <std::string, WebRtcEndpoint> (&externalIPv4,
+      PARAM_EXTERNAL_IPV4)) {
+    GST_INFO ("Predefined external IPv4 address: %s", externalIPv4.c_str());
+    g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV4,
+        externalIPv4.c_str(), NULL);
+  } else {
+    GST_DEBUG ("No predefined external IPv4 address found in config;"
+               " you can set one or default to STUN automatic discovery");
+  }
+
+  std::string externalIPv6;
+  if (getConfigValue <std::string, WebRtcEndpoint> (&externalIPv6,
+      PARAM_EXTERNAL_IPV6)) {
+    GST_INFO ("Predefined external IPv6 address: %s", externalIPv6.c_str());
+    g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV6,
+        externalIPv6.c_str(), NULL);
+  } else {
+    GST_DEBUG ("No predefined external IPv6 address found in config;"
+               " you can set one or default to STUN automatic discovery");
+  }
+
   std::string externalAddress;
   if (getConfigValue <std::string, WebRtcEndpoint> (&externalAddress,
       PARAM_EXTERNAL_ADDRESS)) {
@@ -622,6 +648,54 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
   if (handlerNewSelectedPairFull > 0) {
     unregister_signal_handler (element, handlerNewSelectedPairFull);
   }
+}
+
+std::string
+WebRtcEndpointImpl::getExternalIPv4 ()
+{
+  std::string externalIPv4;
+  gchar *ret;
+
+  g_object_get (G_OBJECT (element), PROP_EXTERNAL_IPV4, &ret, NULL);
+
+  if (ret != nullptr) {
+    externalIPv4 = std::string (ret);
+    g_free (ret);
+  }
+
+  return externalIPv4;
+}
+
+void
+WebRtcEndpointImpl::setExternalIPv4 (const std::string &externalIPv4)
+{
+  GST_INFO ("Set external IPv4 address: %s", externalIPv4.c_str());
+  g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV4,
+      externalIPv4.c_str(), NULL);
+}
+
+std::string
+WebRtcEndpointImpl::getExternalIPv6 ()
+{
+  std::string externalIPv6;
+  gchar *ret;
+
+  g_object_get (G_OBJECT (element), PROP_EXTERNAL_IPV6, &ret, NULL);
+
+  if (ret != nullptr) {
+    externalIPv6 = std::string (ret);
+    g_free (ret);
+  }
+
+  return externalIPv6;
+}
+
+void
+WebRtcEndpointImpl::setExternalIPv6 (const std::string &externalIPv6)
+{
+  GST_INFO ("Set external IPv6 address: %s", externalIPv6.c_str());
+  g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV6,
+      externalIPv6.c_str(), NULL);
 }
 
 std::string
