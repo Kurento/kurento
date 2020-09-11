@@ -358,32 +358,86 @@
           "type": "String"
         },
         {
-          "name": "externalAddress",
-          "doc": "External IP address of the media server.
+          "name": "externalIPv4",
+          "doc": "External IPv4 address of the media server.
 <p>
-  This setting is normally NOT needed. Only use it if you know what you're
-  doing, and understand 100% WHY you want it. For the majority of cases, you
-  should prefer configuring STUN or TURN servers over using this setting.
-</p>
-<p>
-  This setting implements a hack that will mangle all local ICE candidates so
-  that their candidate address is replaced with the provided external address,
-  even for candidates of type 'host'. In doing so, this KMS will not need a
-  STUN or TURN server, but remote peers will still be able to contact it.
+  Forces all local IPv4 ICE candidates to have the given address. This is really
+  nothing more than a hack, but it's very effective to force a public IP address
+  when one is known in advance for the media server. In doing so, KMS will not
+  need a STUN or TURN server, but remote peers will still be able to contact it.
 </p>
 <p>
   You can try using this setting if KMS is deployed on a publicly accessible
   server, without NAT, and with a static public IP address. But if it doesn't
-  work for you, just go back to using the STUN or TURN settings above.
+  work for you, just go back to configuring a STUN or TURN server for ICE.
 </p>
 <p>
-  <code>externalAddress</code> is an IPv4 or IPv6 address.
+  Only set this parameter if you know what you're doing, and you understand 100%
+  WHY you need it. For the majority of cases, you should just prefer to
+  configure a STUN or TURN server.
 </p>
+<p><code>externalIPv4</code> is a single IPv4 address.</p>
+<p>Example:</p>
+<ul>
+  <li><code>externalIPv4=198.51.100.1</code></li>
+</ul>
+          ",
+          "type": "String"
+        },
+        {
+          "name": "externalIPv6",
+          "doc": "External IPv6 address of the media server.
+<p>
+  Forces all local IPv6 ICE candidates to have the given address. This is really
+  nothing more than a hack, but it's very effective to force a public IP address
+  when one is known in advance for the media server. In doing so, KMS will not
+  need a STUN or TURN server, but remote peers will still be able to contact it.
+</p>
+<p>
+  You can try using this setting if KMS is deployed on a publicly accessible
+  server, without NAT, and with a static public IP address. But if it doesn't
+  work for you, just go back to configuring a STUN or TURN server for ICE.
+</p>
+<p>
+  Only set this parameter if you know what you're doing, and you understand 100%
+  WHY you need it. For the majority of cases, you should just prefer to
+  configure a STUN or TURN server.
+</p>
+<p><code>externalIPv6</code> is a single IPv6 address.</p>
+<p>Example:</p>
+<ul>
+  <li><code>externalIPv6=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
+</ul>
+          ",
+          "type": "String"
+        },
+        {
+          "name": "externalAddress",
+          "doc": "External IP address of the media server.
+<p>
+  Forces all local IPv4 and IPv6 ICE candidates to have the given address. This
+  is really nothing more than a hack, but it's very effective to force a public
+  IP address when one is known in advance for the media server. In doing so, KMS
+  will not need a STUN or TURN server, but remote peers will still be able to
+  contact it.
+</p>
+<p>
+  You can try using this setting if KMS is deployed on a publicly accessible
+  server, without NAT, and with a static public IP address. But if it doesn't
+  work for you, just go back to configuring a STUN or TURN server for ICE.
+</p>
+<p>
+  Only set this parameter if you know what you're doing, and you understand 100%
+  WHY you need it. For the majority of cases, you should just prefer to
+  configure a STUN or TURN server.
+</p>
+<p><code>externalAddress</code> is a single IPv4 or IPv6 address.</p>
 <p>Examples:</p>
 <ul>
-  <li><code>externalAddress=10.70.35.2</code></li>
+  <li><code>externalAddress=198.51.100.1</code></li>
   <li><code>externalAddress=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
 </ul>
+@deprecated Use <code>externalIPv4</code> and/or <code>externalIPv6</code> instead.
           ",
           "type": "String"
         },
