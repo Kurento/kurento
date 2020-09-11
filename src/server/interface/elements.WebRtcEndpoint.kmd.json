@@ -437,6 +437,7 @@
   <li><code>externalAddress=198.51.100.1</code></li>
   <li><code>externalAddress=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
 </ul>
+@deprecated Use <code>externalIPv4</code> and/or <code>externalIPv6</code> instead.
           ",
           "type": "String"
         },
