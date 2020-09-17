@@ -261,7 +261,9 @@ function connectMediaElements(webRtcEndpoint, filter, callback) {
             return callback(error);
         }
 
-        filter.setBackground(url.format(asUrl) + 'img/mario.jpg', function(error) {
+        // const appServerUrl = url.format(asUrl);
+        const appServerUrl = "http://files.openvidu.io";
+        filter.setBackground(appServerUrl + '/img/mario.jpg', function(error) {
             if (error) {
                 return callback(error);
             }
