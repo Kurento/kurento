@@ -44,17 +44,17 @@ Then, please provide us with information about the crash:
 
   Then, see if you can find the stack trace that matches with the time when the crash occurred. Attach that stack trace to your bug report.
 
-* If you installed Kurento with ``apt-get install`` *and* `Apport <https://wiki.ubuntu.com/Apport>`__ is installed, then Ubuntu generates a **crash report** that you will find in ``/var/crash/_usr_bin_kurento-media-server.<PID>.crash``. This contains information that can be used to inspect KMS with a debugger, so it can be very useful. Upload it somewhere or attach it to your bug report.
+* If you installed Kurento with :ref:`apt-get install <installation-local>`, *and* `Apport <https://wiki.ubuntu.com/Apport>`__ is installed, then Ubuntu generates a **crash report** that you will find in ``/var/crash/_usr_bin_kurento-media-server.<PID>.crash``. This contains information that can be used to inspect KMS with a debugger, so it can be very useful to find the cause of the crash. Upload it somewhere, or attach it to your bug report.
 
   .. note::
 
-     The ``.crash`` report file **must be deleted** afterwards. *If an old crash report exists, new ones will not be generated*. So if you are experiencing crashes, make sure that the crash report file is always deleted after having shared it with us, so future crashes will also generate new report files.
+     The *.crash* report file **must be deleted** afterwards. *If an old crash report exists, new ones will not be generated*. So if you are experiencing crashes, make sure that the crash report file is always deleted after having shared it with us, so future crashes will also generate new report files.
 
 * We might ask you to run with a special build of Kurento that comes with support for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, a memory access error detector.
 
   To do this, you'll need to run a `Kurento Docker image with AddressSanitizer <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags?name=asan>`__. If we ask for it, you would have to provide the `Docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ from running this image.
 
-  For this reason (and also for better test repeatability), it's a very good idea that you have your services thought out in a way that it's possible to **run Kurento Media Server from Docker**, at any time, regardless of what is your normal / usual method of deploying Kurento.
+  For this reason (and also for better test repeatability), it's a very good idea that you have your services planned in a way that it's possible to **run Kurento Media Server from Docker**, at any time, regardless of what is your normal / usual method of deploying Kurento.
 
 
 
@@ -76,7 +76,7 @@ Here are a couple examples of such messages:
 
    (kurento-media-server:15636): GLib-CRITICAL **: g_error_free: assertion 'error != NULL' failed
 
-The problem of these messages is that they don't really provide much information about *how* the error happens, of *where*. To find out, we'll need you to run KMS under a debug session. Please, follow the instructions here :ref:`dev-gdb`, to get a **backtrace** from the ``GStreamer-CRITICAL`` error.
+The problem of these messages is that they don't really provide much information about *how* the error happens, of *where*. To find out, we'll need you to run KMS under a debug session. Please, follow the instructions here :ref:`dev-gdb`, to get a **backtrace** from the *GStreamer-CRITICAL* error.
 
 
 
@@ -96,7 +96,7 @@ Check these points in an attempt to find possible causes for the high CPU usage:
 
 * Also check if other processes are running in the same machine and using the CPU. For example, if Coturn is running and using a lot of resources because too many users end up connecting via Relay (TURN).
 
-Of these, video transcoding is the main user of CPU cycles, because encoding video is a computationally expensive operation. As mentioned earlier, keep an eye on the *TRANSCODING* events sent from Kurento to your Application Server, or alternatively look for ``TRANSCODING ACTIVE`` messages in the media server logs.
+Of these, video transcoding is the main user of CPU cycles, because encoding video is a computationally expensive operation. As mentioned earlier, keep an eye on the *TRANSCODING* events sent from Kurento to your Application Server, or alternatively look for *TRANSCODING ACTIVE* messages in the media server logs.
 
 If you see that transcoding is active at some point, you may get a bit more information about why, by enabling this line:
 
@@ -131,9 +131,9 @@ These messages can help understand what codec settings are being received by Kur
 Memory usage grows too high
 ---------------------------
 
-If you are trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; **Valgrind** is.
+If you are trying to establish whether Kurento Media Server has a memory leak, then neither *top* nor *ps* are the right tool for the job; **Valgrind** is.
 
-If you are using *top* or *ps* to evaluate memory usage, keep in mind that these tools show memory usage *as seen by the Operating System*, not by the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the Operating System. Typically, it won't! Memory allocator implementations do not return ``free``'d memory : it is available for use by the same program, but not by others. So *top* or *ps* won't be able to "see" the free'd memory.
+If you are using *top* or *ps* to evaluate memory usage, keep in mind that these tools show memory usage *as seen by the Operating System*, not by the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the Operating System. Typically, it won't! Memory allocator implementations do not return *free*'d memory : it is available for use by the same program, but not by others. So *top* or *ps* won't be able to "see" the free'd memory.
 
 See: `free() in C doesn't reduce memory usage <https://stackoverflow.com/questions/6005333/problem-with-free-on-structs-in-c-it-doesnt-reduce-memory-usage>`__
 
@@ -156,11 +156,11 @@ Also, please have a look at the information shown in :ref:`troubleshooting-crash
 Service init doesn't work
 -------------------------
 
-The package *kurento-media-server* provides a service file that integrates with the Ubuntu init system. This service file loads its user configuration from */etc/default/kurento-media-server*, where the user is able to configure several features as needed.
+The package *kurento-media-server* provides a service file that integrates with the Ubuntu init system. This service file loads its user configuration from ``/etc/default/kurento-media-server``, where the user is able to configure several features as needed.
 
 In Ubuntu, log messages from init scripts are managed by *systemd*, and can be checked in to ways:
 
-- */var/log/syslog* contains a copy of all init service messages.
+- ``/var/log/syslog`` contains a copy of all init service messages.
   You can open it to see past messages, or follow it in real time with this command:
 
   .. code-block:: console
@@ -191,7 +191,7 @@ OpenH264 not found
 Also these conditions apply:
 
 - Packages *openh264-gst-plugins-bad-1.5* and *openh264* are already installed.
-- The file */usr/lib/x86_64-linux-gnu/libopenh264.so* is a broken link to the non-existing file */usr/lib/x86_64-linux-gnu/libopenh264.so.0*.
+- The file ``/usr/lib/x86_64-linux-gnu/libopenh264.so`` is a broken link to the non-existing file ``/usr/lib/x86_64-linux-gnu/libopenh264.so.0``.
 
 **Reason**: The package *openh264* didn't install correctly. This package is just a wrapper that needs Internet connectivity during its installation stage, to download a binary blob file from this URL: http://ciscobinary.openh264.org/libopenh264-1.4.0-linux64.so.bz2
 
@@ -226,7 +226,7 @@ You have several ways to override the default settings for variable bitrate:
 
   - *setMinOutputBitrate()* / *setMaxOutputBitrate()*
 
-    This setting is also configurable in */etc/kurento/modules/kurento/MediaElement.conf.ini*
+    This setting is also configurable in ``/etc/kurento/modules/kurento/MediaElement.conf.ini``.
 
 
 
@@ -235,7 +235,7 @@ Video has green artifacts
 
 This is typically caused by missing information in the video decoder, most probably due to a high packet loss rate in the network.
 
-The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video codecs use a color encoding system called `YCbCr <https://en.wikipedia.org/wiki/YCbCr>`__ (sometimes also written as *YCrCb*), which the decoder has to convert into the well known `RGB <https://en.wikipedia.org/wiki/RGB_color_model>`__ ("*Red-Green-Blue*") model that is used by computer screens. When there is data loss, the decoder will assume that all missing values are ``0`` (zero). It just turns out that a YCbCr value of ``(0,0,0)`` is equivalent to the **green** color in RGB.
+The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video codecs use a color encoding system called `YCbCr <https://en.wikipedia.org/wiki/YCbCr>`__ (sometimes also written as *YCrCb*), which the decoder has to convert into the well known `RGB <https://en.wikipedia.org/wiki/RGB_color_model>`__ ("*Red-Green-Blue*") model that is used by computer screens. When there is data loss, the decoder will assume that all missing values are *0* (zero). It just turns out that a YCbCr value of *(0,0,0)* is equivalent to the **green** color in RGB.
 
 When this problem happens, Kurento sends retransmission requests to the source of the RTP stream. However, in cases of heavy packet loss, there isn't much else that can be done and enough losses will build up until the video decoding gets negatively affected. In situations like this, the most effective change you can do is to reduce the video resolution and/or quality at the sender.
 
@@ -381,7 +381,7 @@ The solution is to ensure that both peers are able to find a match in their supp
 
 - The package *openh264-gst-plugins-bad-1.5* must be installed in the system.
 - The package *openh264* must be **correctly** installed. Specifically, the post-install script of this package requires Internet connectivity, because it downloads a codec binary blob from the Cisco servers. See :ref:`troubleshooting-h264`.
-- The H.264 codec must be enabled in the corresponding Kurento settings file: */etc/kurento/modules/kurento/SdpEndpoint.conf.json*.
+- The H.264 codec must be enabled in the corresponding Kurento settings file: ``/etc/kurento/modules/kurento/SdpEndpoint.conf.json``.
   Ensure that the entry corresponding to this codec does exist and is not commented out. For example:
 
   .. code-block:: js
@@ -418,7 +418,7 @@ This will fail, causing a *MARSHALL_ERROR* in the media server, and showing the 
        [...]
        at WebsocketStream.onMessage (node_modules/websocket-stream/index.js:45:15) code: 40001, data: { type: 'MARSHALL_ERROR' } }
 
-The solution is to simply use ``null`` for the first argument of the method:
+The solution is to simply use *null* for the first argument of the method:
 
 .. code-block:: js
 
@@ -455,7 +455,7 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 
   This is one of the most hard to catch examples we've seen in our `mailing list <https://groups.google.com/d/topic/kurento/t25_QQSc_Bo/discussion>`__:
 
-      > The problem was that our Socket.IO client did not correctly *URL-Encode* its JSON payload when *xhr-polling*, which resulted in all "plus" signs ('+') being changed into spaces (' ') on the server. This meant that the ``ufrag`` in the client's SDP was invalid if it contained a plus sign! Only some of the connections failed because not all ``ufrag`` contain plus signs.
+      > The problem was that our Socket.IO client did not correctly *URL-Encode* its JSON payload when *xhr-polling*, which resulted in all "plus" signs ('+') being changed into spaces (' ') on the server. This meant that the *ufrag* in the client's SDP was invalid if it contained a plus sign! Only some of the connections failed because not all *ufrag* contain plus signs.
 
 * If WebRTC seems to disconnect exactly after some amount of time, every single time, **watch out for proxy timeouts**. Sometimes you have to extend the timeout for the site that is being hit with the problem.
 
@@ -470,7 +470,7 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 ICE connection problems
 -----------------------
 
-If your application receives an :ref:`events-icecomponentstatechange` event with state ``FAILED`` from Kurento Media Server, it means that the WebRTC ICE connectivity has been abruptly interrupted. In general terms, this implies that **there is some network connectivity issue** between KMS and the remote peer (typically, a web browser), but the exact reason can fall into a myriad possible causes. You will need to investigate what happened on the user's and the server's network when the failure happened.
+If your application receives an :ref:`events-icecomponentstatechange` event with state *FAILED* from Kurento Media Server, it means that the WebRTC ICE connectivity has been abruptly interrupted. In general terms, this implies that **there is some network connectivity issue** between KMS and the remote peer (typically, a web browser), but the exact reason can fall into a myriad possible causes. You will need to investigate what happened on the user's and the server's network when the failure happened.
 
 Here are some tips to keep in mind:
 
@@ -506,7 +506,7 @@ When the browser conceals the local IP address behind an mDNS candidate, these e
 
 **Solution**:
 
-mDNS name resolution must be enabled in the system. Check out the contents of */etc/nsswitch.conf*, you should see something similar to this:
+mDNS name resolution must be enabled in the system. Check out the contents of ``/etc/nsswitch.conf``, you should see something similar to this:
 
 .. code-block:: text
 
@@ -517,8 +517,7 @@ If not, try fully reinstalling the package *libnss-mdns*:
 .. code-block:: console
 
    sudo apt-get purge --yes libnss-mdns
-   sudo apt-get update
-   sudo apt-get install --yes libnss-mdns
+   sudo apt-get update && sudo apt-get install --yes libnss-mdns
 
 Installing this package does automatically edit the config file in an appropriate way. Now the *mdns4_minimal* module should appear listed in the hosts line.
 
@@ -526,11 +525,11 @@ Installing this package does automatically edit the config file in an appropriat
 
 See `mDNS and Crossbar.io Fabric (Docker) #21 <https://github.com/crossbario/crossbar-fabric-public/issues/21>`__:
 
-    Docker does not play well with mDNS/zeroconf/Bonjour: resolving ``.local`` hostnames from inside containers does not work (easily).
+    Docker does not play well with mDNS/zeroconf/Bonjour: resolving *.local* hostnames from inside containers does not work (easily).
     [...]
     The reasons run deep into how Docker configures DNS *inside* a container.
 
-So if you are running a Docker image, ``.local`` names won't be correctly resolved even if you install the required packages. This happens with Kurento or whatever other software; it seems to be a Docker configuration problem / bug.
+So if you are running a Docker image, *.local* names won't be correctly resolved even if you install the required packages. This happens with Kurento or whatever other software; it seems to be a Docker configuration problem / bug.
 
 **Disabling mDNS in Chrome**
 
@@ -571,7 +570,7 @@ Multicast fails in Docker
 
      DEBUG rtspsrc gstrtspsrc.c:7553:gst_rtspsrc_handle_message:<source> timeout on UDP port
 
-  Note that in this example, to see this message you would need to enable ``DEBUG`` log level for the ``rtspsrc`` category; see :ref:`logging-levels`.
+  Note that in this example, to see this message you would need to enable *DEBUG* log level for the *rtspsrc* category; see :ref:`logging-levels`.
 
 **Solution**:
 
@@ -666,7 +665,7 @@ Follow this checklist to see if any of these problems is preventing the Recorder
 - User is disconnecting existing hardware, or maybe connecting new hardware (usb webcams, mic, etc).
 - User is clicking "*Deny*" when asked to allow access to microphone/camera by the browser.
 - User is sleeping/hibernating the computer, and then possibly waking it up, while recording.
-- Check the browser information about the required media tracks, e.g. ``track.readyState``.
+- Check the browser information about the required media tracks, e.g. *track.readyState*.
 - Track user agents, ICE candidates, etc.
 
 

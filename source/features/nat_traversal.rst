@@ -32,7 +32,7 @@ It works as follows:
 
 1. The machine behind a :term:`NAT` router acts as the active peer. It sends an SDP Offer to the other machine, the passive peer.
 
-   A. Sending an SDP Offer from behind a NAT means that the IP and port specified in the SDP message are actually just the private IP and port of that machine, instead of the public ones. The passive peer won't be able to use these to communicate back to the active peer. Due to this, the SDP Offer states the port ``9`` (*Discard port*) instead of whatever port the active machine will be using.
+   A. Sending an SDP Offer from behind a NAT means that the IP and port specified in the SDP message are actually just the private IP and port of that machine, instead of the public ones. The passive peer won't be able to use these to communicate back to the active peer. Due to this, the SDP Offer states the port *9* (*Discard port*) instead of whatever port the active machine will be using.
    B. The SDP Offer includes the media-level attribute ``a=direction:active``, so the passive peer is able to acknowledge that the Connection-Oriented Media Transport is being used for that media, and it writes ``a=direction:passive`` in its SDP Answer.
 
 2. The passive peer receives the SDP Offer and answers it as usual, indicating the public IP and port where it will be listening for incoming packets. Besides that, it must ignore the IP and port indicated in the received SDP Offer. Instead, it must enter a wait state, until the active peer starts sending some packets.
@@ -50,8 +50,8 @@ This mechanism has the following requisites and/or limitations:
 This is how to enable the Connection-Oriented Media Transport mode:
 
 - The SDP Offer must be sent from the active peer to the passive peer.
-- The IP stated in the SDP Offer can be anything (as it will be ignored), so ``0.0.0.0`` can be used.
-- The Port stated in the SDP Offer should be ``9`` (*Discard port*).
+- The IP stated in the SDP Offer can be anything (as it will be ignored), so *0.0.0.0* can be used.
+- The Port stated in the SDP Offer should be *9* (*Discard port*).
 - The active peer must include the media-level attribute ``a=direction:active`` in the SDP Offer, for each media that requires automatic port discovery.
 - The passive peer must acknowledge that it supports the automatic port discovery mode, by including the media-level attribute ``a=direction:passive`` in its SDP Answer. As per normal rules of the SDP Offer/Answer Model (`IETF RFC 3264 <https://tools.ietf.org/html/rfc3264>`__), if this attribute is not present in the SDP Answer, then the active peer must assume that the passive peer is not compatible with this functionality and should react to this fact as whatever is deemed appropriate by the application developer.
 
@@ -89,9 +89,9 @@ This is what KMS would answer:
    :emphasize-lines: 6,9,11,14
 
    v=0
-   o=- 3696336115 3696336115 IN IP4 80.28.30.32
+   o=- 3696336115 3696336115 IN IP4 198.51.100.1
    s=Kurento Media Server
-   c=IN IP4 80.28.30.32
+   c=IN IP4 198.51.100.1
    t=0 0
    m=audio 56740 RTP/AVPF 96
    a=rtpmap:96 opus/48000/2
@@ -104,6 +104,6 @@ This is what KMS would answer:
    a=direction:passive
    a=ssrc:1363449382 cname:user885892801@host-b546a6e8
 
-In this particular example, KMS is installed in a server with the public IP *80.28.30.32*; also, it won't be sending media to the active peer, only receiving it (as requested by the application with ``a=sendonly``, and acknowledged by KMS with ``a=recvonly``).
+In this particular example, KMS is installed in a server with the public IP *198.51.100.1*; also, it won't be sending media to the active peer, only receiving it (as requested by the application with ``a=sendonly``, and acknowledged by KMS with ``a=recvonly``).
 
 Note that even in this case, KMS still needs to know on what port the sender is listening for RTCP feedback packets, which are a mandatory part of the RTP protocol. So, in this example, KMS will learn the public IP and port of the active machine, and will use those to send the Receiver Report RTCP packets to the sender.

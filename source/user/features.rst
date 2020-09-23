@@ -73,9 +73,9 @@ There are two topics to note when dealing with RTP connections: the automatic co
 Congestion Control / REMB
 =========================
 
-Kurento implements the *Google Congestion Control* algorithm, so it is able to generate and parse both ``abs-send-time`` RTP headers and :term:`REMB` RTCP messages.
+Kurento implements the *Google Congestion Control* algorithm, so it is able to generate and parse both *abs-send-time* RTP headers and :term:`REMB` RTCP messages.
 
-It is enabled by by passing the media-level attribute ``goog-remb`` in the SDP Offer. For example:
+It is enabled by by passing the media-level attribute *goog-remb* in the SDP Offer. For example:
 
 .. code-block:: text
    :emphasize-lines: 8

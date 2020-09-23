@@ -61,8 +61,8 @@ GitHub, and you can download and run them at any time.
 
 
 In the following lines we will show how to use the library to create an
-``RTCPeerConnection``, and how to negotiate the connection with another peer.
-The library offers a ``WebRtcPeer`` object, which is a wrapper of the browser's
+*RTCPeerConnection*, and how to negotiate the connection with another peer.
+The library offers a *WebRtcPeer* object, which is a wrapper of the browser's
 RTCPeerConnection API. Peer connections can be of different types:
 unidirectional (send or receive only) or bidirectional (send and receive). The
 following code shows how to create the latter, in order to be able to send and
@@ -100,7 +100,7 @@ for the configuration.
       });
 
 With this little code, the library takes care of creating the
-``RTCPeerConnection``, and invoking ``getUserMedia`` in the browser if needed.
+*RTCPeerConnection*, and invoking *getUserMedia* in the browser if needed.
 The constraints in the property are used in the invocation, and in this case
 both microphone and webcam will be used. However, this does not create the
 connection. This is only achieved after completing the SDP negotiation between
@@ -113,7 +113,7 @@ More info can be found in
 In the previous piece of code, when the *webRtcPeer* object gets created, the
 SDP offer is generated with ``this.generateOffer(onOffer)``. The only argument
 passed is a function, that will be invoked one the browser's peer connection
-has generated that offer. The ``onOffer`` callback method is responsible for
+has generated that offer. The *onOffer* callback method is responsible for
 sending this offer to the other peer, by any means devised in your application.
 Since that is part of the signaling plane and business logic of each particular
 application, it won't be covered in this document.
@@ -121,7 +121,7 @@ application, it won't be covered in this document.
 Assuming that the SDP offer has been received by the remote peer, it must have
 generated an SDP answer, that should be received in return. This answer must be
 processed by the *webRtcEndpoint*, in order to fulfill the negotiation. This
-could be the implementation of the ``onOffer`` callback function. We've assumed
+could be the implementation of the *onOffer* callback function. We've assumed
 that there's a function somewhere in the scope, that allows sending the SDP to
 the remote peer.
 
@@ -138,7 +138,7 @@ the remote peer.
 
 As we've commented before, the library assumes the use of :term:`Trickle ICE` to
 complete the connection between both peers. In the configuration of the
-*webRtcPeer*, there is a reference to a ``onIceCandidate`` callback function.
+*webRtcPeer*, there is a reference to a *onIceCandidate* callback function.
 The library will use this function to send ICE candidates to the remote peer.
 Since this is particular to each application, we will just show the signature
 
@@ -150,7 +150,7 @@ Since this is particular to each application, we will just show the signature
 
 In turn, our client application must be able to receive ICE candidates from the
 remote peer. Assuming the signaling takes care of receiving those candidates,
-it is enough to invoke the following method in the ``webRtcPeer`` to consider
+it is enough to invoke the following method in the *webRtcPeer* to consider
 the ICE candidate
 
 .. sourcecode:: javascript
@@ -161,7 +161,7 @@ Following the previous steps, we have:
 
 * Sent an SDP offer to a remote peer
 
-* Received an SDP answer from the remote peer, and have the ``webRtcPeer``
+* Received an SDP answer from the remote peer, and have the *webRtcPeer*
   process that answer.
 
 * Exchanged ICE candidates between both peer, by sending the ones generated in
@@ -174,9 +174,9 @@ bidirectional WebRTC media exchange between both peers.
 Using data channels
 ===================
 
-WebRTC data channels lets you send text or binary data over an active WebRTC connection. The **WebRtcPeer** object can provide access to this functionality by using the `RTCDataChannel <https://developer.mozilla.org/en-US/docs/Games/Techniques/WebRTC_data_channels>`__ form the wrapped **RTCPeerConnection** object. This allows you to inject into and consume data from the pipeline. This data can be treated by each endpoint differently. For instance, a ``WebRtcPeer`` object in the browser, will have the same behavior as the ``RTCDataChannel`` (you can see a description `here <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/WebRTC_basics#DataChannel>`__). Other endpoints could make use of this channel to send information: a filter that detects QR codes in a video stream, could send the detected code to the clients through a data channel. This special behavior should be specified in the filter.
+WebRTC data channels lets you send text or binary data over an active WebRTC connection. The **WebRtcPeer** object can provide access to this functionality by using the `RTCDataChannel <https://developer.mozilla.org/en-US/docs/Games/Techniques/WebRTC_data_channels>`__ form the wrapped **RTCPeerConnection** object. This allows you to inject into and consume data from the pipeline. This data can be treated by each endpoint differently. For instance, a *WebRtcPeer* object in the browser, will have the same behavior as the *RTCDataChannel* (you can see a description `here <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/WebRTC_basics#DataChannel>`__). Other endpoints could make use of this channel to send information: a filter that detects QR codes in a video stream, could send the detected code to the clients through a data channel. This special behavior should be specified in the filter.
 
-The use of data channels in the ``WebRtcPeer`` object is indicated by passing the ``dataChannels`` flag in the options bag, along with the desired options.
+The use of data channels in the *WebRtcPeer* object is indicated by passing the *dataChannels* flag in the options bag, along with the desired options.
 
 .. sourcecode:: javascript
    :emphasize-lines: 4-12
@@ -198,7 +198,7 @@ The use of data channels in the ``WebRtcPeer`` object is indicated by passing th
 
     webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, onWebRtcPeerCreated);
 
-The values in ``dataChannelConfig`` are all optional. Once the ``webRtcPeer`` object is created, and after the connection has been successfully negotiated, users can send data through the data channel
+The values in *dataChannelConfig* are all optional. Once the *webRtcPeer* object is created, and after the connection has been successfully negotiated, users can send data through the data channel
 
 .. sourcecode:: javascript
 
@@ -206,7 +206,7 @@ The values in ``dataChannelConfig`` are all optional. Once the ``webRtcPeer`` ob
 
 The format of the data you are sending, is determined by your application, and the definition of the endpoints that you are using.
 
-The lifecycle of the underlying ``RTCDataChannel``, is tied to that of the ``webRtcPeer``: when the ``webRtcPeer.dispose()`` method is invoked, the data channel will be closed and released too.
+The lifecycle of the underlying *RTCDataChannel*, is tied to that of the *webRtcPeer*: when the ``webRtcPeer.dispose()`` method is invoked, the data channel will be closed and released too.
 
 
 Reference documentation
@@ -254,7 +254,7 @@ The constructor for WebRtcPeer is WebRtcPeer(**mode, options, callback**) where:
       * *onopen*: Function invoked in the *onopen* event of the data channel, fired when the channel is open.
       * *onclose*: Function invoked in the *onclose* event of the data channel, fired when the data channel is closed.
       * *onmessage*: Function invoked in the *onmessage* event of the data channel. This event is fired every time a message is received.
-      * *onbufferedamountlow*: Is the event handler called when the ``bufferedamountlow`` event is received. Such an event is sent when ``RTCDataChannel.bufferedAmount`` drops to less than or equal to the amount specified by the ``RTCDataChannel.bufferedAmountLowThreshold`` property.
+      * *onbufferedamountlow*: Is the event handler called when the *bufferedamountlow* event is received. Such an event is sent when ``RTCDataChannel.bufferedAmount`` drops to less than or equal to the amount specified by the ``RTCDataChannel.bufferedAmountLowThreshold`` property.
       * *onerror*: Callback function onviked when an error in the data channel is produced. If none is provided, an error trace message will be logged in the browser console.
    * *simulcast*: Indicates whether simulcast is going to be used. Value is
      *true|false*
@@ -292,7 +292,7 @@ media constraints and its values, you can check
 `here  <https://www.w3.org/TR/mediacapture-streams/>`__.
 
 By default, if the mediaConstraints is undefined, this constraints are used when
-``getUserMedia`` is called::
+*getUserMedia* is called::
 
    {
      audio: true,
@@ -303,7 +303,7 @@ By default, if the mediaConstraints is undefined, this constraints are used when
    }
 
 If *mediaConstraints* has any value, the library uses this value for the
-invocation of ``getUserMedia``. It is up to the browser whether those
+invocation of *getUserMedia*. It is up to the browser whether those
 constraints are accepted or not.
 
 In the examples section, there is one example about the use of media constraints.

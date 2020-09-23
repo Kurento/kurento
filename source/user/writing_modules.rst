@@ -15,7 +15,7 @@ You can develop your own modules to expand the features of Kurento Media Server.
 
 * Modules based on :term:`GStreamer`. This kind of modules provide a generic entry point for media processing within the GStreamer framework. Such modules are more powerful, but also they are more difficult to develop. It is necessary to have good knowledge of GStreamer development.
 
-The starting point to develop a filter is to create a basic structure for the source code, what we'll call the *scaffolding*. This is done with the ``kurento-module-scaffold`` tool, which comes included with the ``kurento-media-server-dev`` package. To install it, run this command:
+The starting point to develop a filter is to create a basic structure for the source code, what we'll call the *scaffolding*. This is done with the *kurento-module-scaffold* tool, which comes included with the *kurento-media-server-dev* package. To install it, run this command:
 
 .. code-block:: console
 
@@ -38,11 +38,11 @@ Now use the scaffold tool to generate code for your new module. For example:
 
 The scaffolding tool generates a complete folder tree, with all the needed *CMakeLists.txt* files to build with CMake. You'll also find empty Kurento Module Descriptor files (*.kmd*), which must contain a complete description of the module: constructor, methods, properties, events, and the complex types defined by the developer.
 
-Once your *.kmd* files have been filled with a complete description of the module, it is time to generate the corresponding server stub code with ``kurento-module-creator``. Run this from the root directory of your module:
+Once your *.kmd* files have been filled with a complete description of the module, it is time to generate the corresponding server stub code with *kurento-module-creator*. Run this from the root directory of your module:
 
 .. code-block:: console
 
-   mkdir -p build/ && cd build/
+   mkdir build/ && cd build/
    cmake ..
    make
 
@@ -64,7 +64,7 @@ There are several files in ``src/server/implementation/objects/``:
 
 The first two files contain the server-side implementation of the JSON-RPC API, and should not be modified. The last two files will contain the logic of your module.
 
-The file ``<ModuleName>OpenCVImpl.cpp`` contains functions to deal with the methods and the parameters (you must implement the logic). Also, this file contains a function called ``process``. This function will be called with each new frame, thus you must implement the logic of your filter inside it.
+The file *<ModuleName>OpenCVImpl.cpp* contains functions to deal with the methods and the parameters (you must implement the logic). Also, this file contains a function called *process*. This function will be called with each new frame, thus you must implement the logic of your filter inside it.
 
 
 
@@ -95,31 +95,31 @@ In the file ``<ModuleName>Impl.cpp`` you have to invoke the methods of your GStr
 For both kind of modules
 ------------------------
 
-If you need extra compilation dependencies, you can add compilation rules to the *kurento-module-creator* using the function ``generate_code`` in the ``src/server/CMakeLists.txt`` file.
+If you need extra compilation dependencies, you can add compilation rules to the *kurento-module-creator* using the function *generate_code* in the ``src/server/CMakeLists.txt`` file.
 
 The following parameters are available:
 
-* ``SERVER_STUB_DESTINATION`` (required)
+* *SERVER_STUB_DESTINATION* (required)
 
   The generated code that you may need to modify will be generated on the folder indicated by this parameter.
 
-* ``MODELS`` (required)
+* *MODELS* (required)
 
   This parameter receives the folders where the models (*.kmd* files) are located.
 
-* ``INTERFACE_LIB_EXTRA_SOURCES``, ``INTERFACE_LIB_EXTRA_HEADERS``, ``INTERFACE_LIB_EXTRA_INCLUDE_DIRS``, ``INTERFACE_LIB_EXTRA_LIBRARIES``
+* *INTERFACE_LIB_EXTRA_SOURCES*, *INTERFACE_LIB_EXTRA_HEADERS*, *INTERFACE_LIB_EXTRA_INCLUDE_DIRS*, *INTERFACE_LIB_EXTRA_LIBRARIES*
 
   These parameters allow to add additional source code to the static library. Files included in *INTERFACE_LIB_EXTRA_HEADERS* will be installed in the system as headers for this library. All the parameters accept a list as input.
 
-* ``SERVER_IMPL_LIB_EXTRA_SOURCES``, ``SERVER_IMPL_LIB_EXTRA_HEADERS``, ``SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS``, ``SERVER_IMPL_LIB_EXTRA_LIBRARIES``
+* *SERVER_IMPL_LIB_EXTRA_SOURCES*, *SERVER_IMPL_LIB_EXTRA_HEADERS*, *SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS*, *SERVER_IMPL_LIB_EXTRA_LIBRARIES*
 
   These parameters allow to add additional source code to the interface library.  Files included in *SERVER_IMPL_LIB_EXTRA_HEADERS* will be installed in the system as headers for this library. All the parameters accept a list as input.
 
-* ``MODULE_EXTRA_INCLUDE_DIRS``, ``MODULE_EXTRA_LIBRARIES``
+* *MODULE_EXTRA_INCLUDE_DIRS*, *MODULE_EXTRA_LIBRARIES*
 
   These parameters allow to add extra include directories and libraries to the module.
 
-* ``SERVER_IMPL_LIB_FIND_CMAKE_EXTRA_LIBRARIES``
+* *SERVER_IMPL_LIB_FIND_CMAKE_EXTRA_LIBRARIES*
 
   This parameter receives a list of strings. Each string has this format:
 
@@ -127,7 +127,7 @@ The following parameters are available:
 
      libname[<VersionRange>]
 
-  where ``<VersionRange>`` can use these symbols: ``AND``, ``OR``, ``<``, ``<=``, ``>``, ``>=``, ``^``, and ``~``.
+  where *<VersionRange>* can use these symbols: ``AND``, ``OR``, ``<``, ``<=``, ``>``, ``>=``, ``^``, and ``~``.
 
   .. note::
 
@@ -177,9 +177,9 @@ The Debian builder tool ends up generating one or more *.deb* package files **in
 Depending on the contents of the module project, the Debian package builder can generate multiple *.deb* files:
 
 * The file without any suffix contains the shared library code that has been compiled from our source code. This is the file that end users of the module will need to install in their systems.
-* ``-dev`` packages contain header files and are used by *other developers* to build their software upon the module's code. This is not needed by end users.
-* ``-doc`` packages usually contain *manpages* and other documentation, if the module contained any.
-* ``-dbg`` and ``-dbgsym`` packages contain the debug symbols that have been extracted from the compilation process. It can be used by other developers to troubleshoot crashes and provide bug reports.
+* *-dev* packages contain header files and are used by *other developers* to build their software upon the module's code. This is not needed by end users.
+* *-doc* packages usually contain *manpages* and other documentation, if the module contained any.
+* *-dbg* and *-dbgsym* packages contain the debug symbols that have been extracted from the compilation process. It can be used by other developers to troubleshoot crashes and provide bug reports.
 
 Now copy and install the package(s) into any Debian- or Ubuntu-based system where KMS is already installed:
 
@@ -274,10 +274,10 @@ Run this from the root directory of your module:
 
 .. code-block:: console
 
-   mkdir -p build/ && cd build/
+   mkdir build/ && cd build/
    cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
 
-This generates a ``build/java/`` directory, containing all the client code. You can now run ``make java_install`` and your module will be installed in your Maven local repository. To use the module in your Maven project, you have to add the dependency to the ``pom.xml`` file:
+This generates a ``build/java/`` directory, containing all the client code. You can now run ``make java`` (equivalent to *mvn package*) to build the Java code and package it, or ``make java_install`` (equivalent to *mvn install*) to build the package *and* install it into the local Maven repository (typically located at *$HOME/.m2/*). To use the module in your Maven project, you have to add the dependency to the *pom.xml* file:
 
 .. code-block:: xml
 
@@ -296,7 +296,7 @@ Run this from the root directory of your module:
 
 .. code-block:: console
 
-   mkdir -p build/ && cd build/
+   mkdir build/ && cd build/
    cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE
 
 This generates a ``build/js/`` directory, containing all the client code. You can now manually copy this code to your application. Alternatively, you can use :term:`Bower` (for *Browser JavaScript*) or :term:`NPM` (for *Node*). To do that, you should add your JavaScript module as a dependency in your *bower.json* or *package.json* file, respectively:

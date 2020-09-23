@@ -21,8 +21,8 @@ General considerations
 
 * Kurento projects to be released have supposedly been under development, and will have development version numbers:
 
-  - In Java (Maven) projects, development versions are indicated by the suffix ``-SNAPSHOT`` after the version number. Example: ``6.9.1-SNAPSHOT``.
-  - In C/C++ (CMake) projects, development versions are indicated by the suffix ``-dev`` after the version number. Example: ``6.9.1-dev``.
+  - In Java (Maven) projects, development versions are indicated by the suffix *-SNAPSHOT* after the version number. Example: ``6.9.1-SNAPSHOT``.
+  - In C/C++ (CMake) projects, development versions are indicated by the suffix *-dev* after the version number. Example: ``6.9.1-dev``.
 
   These suffixes must be removed for release, and then recovered again to resume development.
 
@@ -107,7 +107,7 @@ General considerations
 
 .. warning::
 
-   As of this writing, there is a mix of methods in the CI scripts (adm-scripts) when it comes to handle the release versions. The instructions in this document favor creating and pushing git tags manually in the developer's computer, however some projects also make use of the script ``kurento_check_version.sh``, which tries to detect when a project's version is *not* a development snapshot, then creates and pushes a git tag automatically. However if the tag alreeady exists (created manually by the developer), then the ``git tag`` command fails, and this script prints a warning message before continuing with its work.
+   As of this writing, there is a mix of methods in the CI scripts (adm-scripts) when it comes to handle the release versions. The instructions in this document favor creating and pushing git tags manually in the developer's computer, however some projects also make use of the script *kurento_check_version.sh*, which tries to detect when a project's version is *not* a development snapshot, then creates and pushes a git tag automatically. However if the tag alreeady exists (created manually by the developer), then the ``git tag`` command fails, and this script prints a warning message before continuing with its work.
 
    We've been toying with different methodologies between handling the tags automatically in CI or handling them manually by the developer before releasing new versions; both of these methods have pros and cons. For example, if tags are handled manually by the developer, solving mistakes in the release process becomes simpler because there are no surprises from CI creating tags inadvertently; on the other hand, leaving them to be created by CI seems to simplify a bit the release process, but not really by a big margin.
 
@@ -195,6 +195,8 @@ Release steps
           && git tag -a -m "$COMMIT_MSG" "$PACKAGE_VERSION" \
           && git push origin "$PACKAGE_VERSION" \
           || { echo "ERROR: Command failed: git"; return 4; }
+
+          echo "Done!"
       }
 
       do_release
@@ -227,6 +229,8 @@ Release steps
           && git commit -m "$COMMIT_MSG" \
           && git push \
           || { echo "ERROR: Command failed: git"; return 2; }
+
+          echo "Done!"
       }
 
       do_release
@@ -384,6 +388,8 @@ Test the KMS API Java module generation (local check).
 
            popd
        done
+
+       echo "Done!"
    }
 
    do_release
@@ -428,7 +434,7 @@ Release steps
 
       git submodule foreach 'git push --follow-tags'
 
-#. It's also nice to update the git-submodule references of the all-in-one repo ``kms-omni-build``, and create a tag just like in all the other repos.
+#. It's also nice to update the git-submodule references of the all-in-one repo *kms-omni-build*, and create a tag just like in all the other repos.
 
    .. code-block:: console
 
@@ -444,13 +450,13 @@ Release steps
       && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
       && git push origin "$NEW_VERSION"
 
-#. Start the `KMS CI job`_ with the parameters ``JOB_RELEASE`` **ENABLED** and ``JOB_ONLY_KMS`` **DISABLED**.
+#. Start the `KMS CI job`_ with the parameters *JOB_RELEASE* **ENABLED** and *JOB_ONLY_KMS* **DISABLED**.
 
 #. Wait until all packages get created and published correctly. Fix any issues that appear.
 
    The KMS CI job is a *Jenkins MultiJob Project*. If it fails at any stage, after fixing the cause of the error it's not needed to start the job again from the beginning; instead, it is possible to resume the build from the point it was before the failure. For this, just open the latest build number that failed (with a red marker in the *Build History* panel at the left of the job page); in the description of the build, the action *Resume build* is available on the left side.
 
-#. Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain API Definition files, ``*.KMD``):
+#. Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain KMD API Definition files, ``*.kmd``):
 
    - `kms-core`_ -> `kurento-client-core-js`_
    - `kms-elements`_ -> `kurento-client-elements-js`_
@@ -511,7 +517,7 @@ Release steps
 
       git submodule foreach 'git push'
 
-#. Start the `KMS CI job`_ with the parameters ``JOB_RELEASE`` **DISABLED** and ``JOB_ONLY_KMS`` **DISABLED**.
+#. Start the `KMS CI job`_ with the parameters *JOB_RELEASE* **DISABLED** and *JOB_ONLY_KMS* **DISABLED**.
 
 
 
@@ -696,6 +702,8 @@ Release steps
 
               popd
           done
+
+          echo "Done!"
       }
 
       do_release
@@ -793,6 +801,8 @@ Release steps
 
               popd
           done
+
+          echo "Done!"
       }
 
       do_release
@@ -820,7 +830,7 @@ For each project above:
 Preparation: kurento-java
 -------------------------
 
-If there have been changes in the API of Kurento Media Server modules (in the ``.KMD`` JSON files), update the corresponding versions in `kurento-parent-pom/pom.xml <https://github.com/Kurento/kurento-java/blob/70f27b8baeaf254ddcded9566171144811ab1a19/kurento-parent-pom/pom.xml#L75>`__:
+If there have been changes in the API of Kurento Media Server modules (in the *.kmd* JSON files), update the corresponding versions in `kurento-parent-pom/pom.xml <https://github.com/Kurento/kurento-java/blob/70f27b8baeaf254ddcded9566171144811ab1a19/kurento-parent-pom/pom.xml#L75>`__:
 
 .. code-block:: xml
 
@@ -992,6 +1002,8 @@ Release steps
 
               popd
           done
+
+          echo "Done!"
       }
 
       do_release
@@ -1126,6 +1138,8 @@ Release steps
 
               popd
           done
+
+          echo "Done!"
       }
 
       do_release
@@ -1166,7 +1180,7 @@ For this reason, the documentation must be built only after all the other module
    - ``[VERSION_TUTORIAL_JS]``: Repo `kurento-tutorial-js`_.
    - ``[VERSION_TUTORIAL_NODE]``: Repo `kurento-tutorial-node`_.
 
-#. In *VERSIONS.conf.sh*, set ``VERSION_RELEASE`` to ``true``. Remember to set it again to ``false`` after the release, when starting a new development iteration.
+#. In *VERSIONS.conf.sh*, set *VERSION_RELEASE* to *true*. Remember to set it again to *false* after the release, when starting a new development iteration.
 
 #. Test the build locally, check everything works.
 
@@ -1198,11 +1212,13 @@ For this reason, the documentation must be built only after all the other module
           && git commit -m "$COMMIT_MSG" \
           && git push \
           || { echo "ERROR: Command failed: git"; return 1; }
+
+          echo "Done!"
       }
 
       do_release
 
-#. Run the `doc-kurento CI job`_ with the parameter ``JOB_RELEASE`` **ENABLED**.
+#. Run the `doc-kurento CI job`_ with the parameter *JOB_RELEASE* **ENABLED**.
 
 #. CI automatically tags Release versions in both ReadTheDocs source repos `doc-kurento`_ and `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
 
@@ -1220,7 +1236,7 @@ For this reason, the documentation must be built only after all the other module
 
       We don't set the *Default Version* field to "*stable*", because we want that the actual version number gets shown in the upper part of the side panel (below the Kurento logo, above the search box) when users open the documentation. If "*stable*" was selected here, then users would just see the word "*stable*" in the mentioned panel.
 
-#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set ``VERSION_RELEASE`` to ``false``. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
+#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set *VERSION_RELEASE* to *false*. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
 
    **All-In-One** script:
 
@@ -1252,6 +1268,8 @@ For this reason, the documentation must be built only after all the other module
           && git commit -m "$COMMIT_MSG" \
           && git push \
           || { echo "ERROR: Command failed: git"; return 1; }
+
+          echo "Done!"
       }
 
       do_release

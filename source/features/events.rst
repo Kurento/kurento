@@ -48,7 +48,7 @@ ElementDisconnected
 MediaFlowInStateChange
 ----------------------
 
-- State = *Flowing*: Data is arriving from the KMS Pipeline, and **flowing into** the Element. Technically, this means that there are GStreamer Buffers flowing from the Pipeline to the Element's ``sink`` pad. For example, with a Recorder element this event would fire when media arrives from the Pipeline to be written to disk.
+- State = *Flowing*: Data is arriving from the KMS Pipeline, and **flowing into** the Element. Technically, this means that there are GStreamer Buffers flowing from the Pipeline to the Element's *sink* pad. For example, with a Recorder element this event would fire when media arrives from the Pipeline to be written to disk.
 
 - State = *NotFlowing*: The Element is not receiving any input data from the Pipeline.
 
@@ -57,7 +57,7 @@ MediaFlowInStateChange
 MediaFlowOutStateChange
 -----------------------
 
-- State = *Flowing*: There is data **flowing out** from the Element towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Element's ``src`` pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
+- State = *Flowing*: There is data **flowing out** from the Element towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Element's *src* pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
 
 - State = *NotFlowing*: The Element is not sending any output data to the Pipeline.
 
@@ -85,16 +85,16 @@ BaseRtpEndpoint events
 
 These events provide information about the state of the RTP connection for each stream in the WebRTC call.
 
-Note that the ``MediaStateChanged`` event is not 100% reliable to check if a RTP connection is active: RTCP packets do not usually flow at a constant rate. For example, minimizing a browser window with an *RTCPeerConnection* might affect this interval.
+Note that the *MediaStateChanged* event is not 100% reliable to check if a RTP connection is active: RTCP packets do not usually flow at a constant rate. For example, minimizing a browser window with an *RTCPeerConnection* might affect this interval.
 
 
 
 ConnectionStateChanged
 ----------------------
 
-- State = *Connected*: All of the ``KmsIRtpConnection`` objects have been created [TODO: explain what this means].
+- State = *Connected*: All of the *KmsIRtpConnection* objects have been created [TODO: explain what this means].
 
-- State = *Disconnected*: At least one of the ``KmsIRtpConnection`` objects is not created yet.
+- State = *Disconnected*: At least one of the *KmsIRtpConnection* objects is not created yet.
 
 Call sequence:
 
@@ -114,7 +114,7 @@ MediaStateChanged
 
 - State = *Disconnected*: None of the RTP streams belonging to the session is alive (ie. no RTCP packets are sent or received for any of them).
 
-These signals from `GstRtpBin`_ will trigger the ``MediaStateChanged`` event:
+These signals from `GstRtpBin`_ will trigger the *MediaStateChanged* event:
 
 - ``GstRtpBin::"on-bye-ssrc"``: State = *Disconnected*.
 - ``GstRtpBin::"on-bye-timeout"``: State = *Disconnected*.
@@ -136,11 +136,11 @@ Call sequence:
 
 .. note::
 
-   ``MediaStateChanged`` (State = *Connected*) will happen after these other events have been emitted:
+   *MediaStateChanged* (State = *Connected*) will happen after these other events have been emitted:
 
-   1. ``NewCandidatePairSelected``.
-   2. ``IceComponentStateChanged`` (State: *Connected*).
-   3. ``MediaFlowOutStateChange`` (State: *Flowing*).
+   1. *NewCandidatePairSelected*.
+   2. *IceComponentStateChanged* (State: *Connected*).
+   3. *MediaFlowOutStateChange* (State: *Flowing*).
 
 
 
@@ -183,27 +183,27 @@ This event carries the state values from the signal `NiceAgent::"component-state
 
 - State = *Disconnected*: There is no active connection, and the ICE process is idle.
 
-  NiceAgent state: ``NICE_COMPONENT_STATE_DISCONNECTED``, "*No activity scheduled*".
+  NiceAgent state: *NICE_COMPONENT_STATE_DISCONNECTED*, "*No activity scheduled*".
 
-- State = *Gathering*: The Endpoint has started finding all possible local candidates, which will be notified through the event ``IceCandidateFound``.
+- State = *Gathering*: The Endpoint has started finding all possible local candidates, which will be notified through the event *IceCandidateFound*.
 
-  NiceAgent state: ``NICE_COMPONENT_STATE_GATHERING``, "*Gathering local candidates*".
+  NiceAgent state: *NICE_COMPONENT_STATE_GATHERING*, "*Gathering local candidates*".
 
 - State = *Connecting*: The Endpoint has started the connectivity checks between **at least** one pair of local and remote candidates. These checks will always start as soon as possible (i.e. whenever the very first remote candidates arrive), so don't assume that the candidate gathering has already finished, because it will probably still be running in parallel; some (possibly better) candidates might still be waiting to be found and gathered.
 
-  NiceAgent state: ``NICE_COMPONENT_STATE_CONNECTING``, "*Establishing connectivity*".
+  NiceAgent state: *NICE_COMPONENT_STATE_CONNECTING*, "*Establishing connectivity*".
 
-- State = *Connected*: **At least** one candidate pair resulted in a successful connection. This happens right after the event ``NewCandidatePairSelected``. When this event triggers, the effective communication between peers can start, and usually this means that media will start flowing between them. However, the candidate gathering hasn't really finished yet, which means that some (possibly better) candidates might still be waiting to be found, gathered, checked for connectivity, and if that completes successfully, selected as new candidate pair.
+- State = *Connected*: **At least** one candidate pair resulted in a successful connection. This happens right after the event *NewCandidatePairSelected*. When this event triggers, the effective communication between peers can start, and usually this means that media will start flowing between them. However, the candidate gathering hasn't really finished yet, which means that some (possibly better) candidates might still be waiting to be found, gathered, checked for connectivity, and if that completes successfully, selected as new candidate pair.
 
-  NiceAgent state: ``NICE_COMPONENT_STATE_CONNECTED``, "*At least one working candidate pair*".
+  NiceAgent state: *NICE_COMPONENT_STATE_CONNECTED*, "*At least one working candidate pair*".
 
 - State = *Ready*: All local candidates have been gathered, all pairs of local and remote candidates have been tested for connectivity, and a successful connection was established.
 
-  NiceAgent state: ``NICE_COMPONENT_STATE_READY``, "*ICE concluded, candidate pair selection is now final*".
+  NiceAgent state: *NICE_COMPONENT_STATE_READY*, "*ICE concluded, candidate pair selection is now final*".
 
 - State = *Failed*: All local candidates have been gathered, all pairs of local and remote candidates have been tested for connectivity, but still none of the connection checks was successful, so no connectivity was reached to the remote peer.
 
-  NiceAgent state: ``NICE_COMPONENT_STATE_FAILED``, "*Connectivity checks have been completed, but connectivity was not established*".
+  NiceAgent state: *NICE_COMPONENT_STATE_FAILED*, "*Connectivity checks have been completed, but connectivity was not established*".
 
 This graph shows the possible state changes (`source <https://cgit.freedesktop.org/libnice/libnice/tree/docs/reference/libnice/states.gv>`__):
 
@@ -286,46 +286,46 @@ When a *WebRtcEndpoint* instance has been created, and all event handlers have b
    IceGatheringDone
    IceComponentStateChanged: (Ready)
 
-1. ``IceCandidateFound``
+1. *IceCandidateFound*
 
-   Repeated multiple times; tipically, candidates of type ``host`` (corresponding to the LAN, local network) are almost immediately found after starting the ICE gathering, and this event can arrive even before the event ``IceComponentStateChanged`` is emitted.
+   Repeated multiple times; tipically, candidates of type *host* (corresponding to the LAN, local network) are almost immediately found after starting the ICE gathering, and this event can arrive even before the event *IceComponentStateChanged* is emitted.
 
-2. ``IceComponentStateChanged`` (state: *Gathering*)
+2. *IceComponentStateChanged* (state: *Gathering*)
 
    At this point, the local peer is gathering more candidates, and it is also waiting for the candidates gathered by the remote peer, which could start arriving at any time.
 
-3. ``AddIceCandidate``
+3. *AddIceCandidate*
 
-   Repeated multiple times; the remote peer found some initial candidates, and started sending them. Typically, the first candidate received is of type ``host``, because those are found the fastest.
+   Repeated multiple times; the remote peer found some initial candidates, and started sending them. Typically, the first candidate received is of type *host*, because those are found the fastest.
 
-4. ``IceComponentStateChanged`` (state: *Connecting*)
+4. *IceComponentStateChanged* (state: *Connecting*)
 
    After receiving the very first of the remote candidates, the ICE Agent starts with the connectivity checks.
 
-5. ``AddIceCandidate``
+5. *AddIceCandidate*
 
-   Repeated multiple times; the remote peer will continue sending its own gathered candidates, of any type: ``host``, ``srflx`` (:term:`STUN`), ``relay`` (:term:`TURN`).
+   Repeated multiple times; the remote peer will continue sending its own gathered candidates, of any type: *host*, *srflx* (:term:`STUN`), *relay* (:term:`TURN`).
 
-6. ``IceCandidateFound``
+6. *IceCandidateFound*
 
    Repeated multiple times; the local peer will also continue finding more of the available local candidates.
 
-7. ``NewCandidatePairSelected``
+7. *NewCandidatePairSelected*
 
    The ICE Agent makes local and remote candidate pairs. If one of those pairs pass the connectivity checks, it is selected for the WebRTC connection.
 
-8. ``IceComponentStateChanged`` (state: *Connected*)
+8. *IceComponentStateChanged* (state: *Connected*)
 
    After selecting a candidate pair, the connection is established. *At this point, the media stream(s) can start flowing*.
 
-9. ``NewCandidatePairSelected``
+9. *NewCandidatePairSelected*
 
    Typically, better candidate pairs will be found over time. The old pair will be abandoned in favor of the new one.
 
-10. ``IceGatheringDone``
+10. *IceGatheringDone*
 
     When all candidate pairs have been tested, no more work is left to do for the ICE Agent. The gathering process is finished.
 
-11. ``IceComponentStateChanged`` (state: *Ready*)
+11. *IceComponentStateChanged* (state: *Ready*)
 
     As a consequence of finishing the ICE gathering, the component state gets updated.

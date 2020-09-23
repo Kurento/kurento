@@ -31,7 +31,7 @@ Kurento's Docker Hub contains images built from each KMS nightly version. Just h
 Local Installation
 ------------------
 
-The steps to install a nightly version of Kurento Media Server are pretty much the same as those explained in :ref:`installation-local` -- with the only change of using ``dev`` instead of a version number, in the file ``/etc/apt/sources.list.d/kurento.list``.
+The steps to install a nightly version of Kurento Media Server are pretty much the same as those explained in :ref:`installation-local` -- with the only change of using *dev* instead of a version number, in the file ``/etc/apt/sources.list.d/kurento.list``.
 
 Open a terminal and run these commands:
 

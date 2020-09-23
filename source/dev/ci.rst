@@ -13,8 +13,8 @@ There is an independent repository for each released version of Kurento, and one
 - Release: ``deb http://ubuntu.openvidu.io/<KmsVersion> <UbuntuCodename> kms6``
 - Nightly: ``deb http://ubuntu.openvidu.io/dev          <UbuntuCodename> kms6``
 
-Here, ``<KmsVersion>`` is any of the released versions of KMS (e.g. ``6.7.2``, ``6.8.1``, ``6.9.0``, etc.) and ``<UbuntuCodename>`` is the name of each supported Ubuntu version (e.g. ``xenial``, ``bionic``, etc. if more added in the future.)
+Here, *<KmsVersion>* is any of the released versions of KMS (e.g. *6.7.2*, *6.8.1*, *6.9.0*, etc.) and *<UbuntuCodename>* is the name of each supported Ubuntu version (e.g. *xenial*, *bionic*, etc. if more added in the future.)
 
-We also have several Continuous-Integration (*CI*) jobs such that new nightly packages can be built from each Git repository's ``master`` branch, to be then uploaded to the nightly repositories.
+We also have several Continuous-Integration (*CI*) jobs such that new nightly packages can be built from each Git repository's *master* branch, to be then uploaded to the nightly repositories.
 
 All scripts used by CI are stored in the Git repo `adm-scripts <https://github.com/Kurento/adm-scripts>`__.

@@ -5,9 +5,9 @@ Debug Logging
 Logs Location
 =============
 
-When running Kurento Media Server manually with */usr/bin/kurento-media-server*, all logging messages are by default printed to standard out (*stdout*).
+When running Kurento Media Server manually with ``/usr/bin/kurento-media-server``, all logging messages are by default printed to standard out (*stdout*).
 
-The KMS native packages modify this behavior, placing logs in a more conventional location for the platform: ``/var/log/kurento-media-server/``. This path can be customized in the service settings file, */etc/default/kurento-media-server* (for Debian/Ubuntu packages).
+The KMS native packages modify this behavior, placing logs in a more conventional location for the platform: ``/var/log/kurento-media-server/``. This path can be customized in the service settings file, ``/etc/default/kurento-media-server`` (for Debian/Ubuntu packages).
 
 Log files are named as follows:
 
@@ -25,7 +25,7 @@ When the KMS service starts correctly, a log file such as this one will be creat
 
    2018-06-14T194426.00000.pid13006.log
 
-Besides normal log files, an ``errors.log`` file stores error messages and stack traces, in case KMS crashes.
+Besides normal log files, an *errors.log* file stores error messages and stack traces, in case KMS crashes.
 
 .. note::
 
@@ -95,7 +95,7 @@ Logging categories and levels can be filtered by two methods:
      export GST_DEBUG="3,Kurento*:4,kms*:4"
      /usr/bin/kurento-media-server
 
-If you are using the native packages (installing KMS with *apt-get*) and running KMS as a system service, then you can also configure the *GST_DEBUG* variable in the KMS service settings file, */etc/default/kurento-media-server*:
+If you are using the native packages (installing KMS with *apt-get*) and running KMS as a system service, then you can also configure the *GST_DEBUG* variable in the KMS service settings file, ``/etc/default/kurento-media-server``:
 
   .. code-block:: console
 
@@ -119,25 +119,36 @@ First, **start from the default levels**:
 
 Then **add new levels** according to your needs:
 
+* **Flowing of media**:
+
+  .. code-block:: console
+
+     export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5"
+
+  - "KurentoMediaElementImpl:5" shows *MediaFlowIn* and *MediaFlowOut* state changes, allowing know if media is actually flowing between endpoints (see :ref:`events-mediaelement`).
+
 * **Transcoding of media**:
 
   .. code-block:: console
 
-     export GST_DEBUG="$GST_DEBUG,Kurento*:5,agnosticbin*:5"
+     export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5,agnosticbin*:5"
+
+  - "KurentoMediaElementImpl:5" shows *MediaTranscoding* state changes.
+  - "agnosticbin*:5" shows the requested and available codecs on Endpoints. When there is a mismatch, transcoding is automatically enabled.
 
 * **WebRtcEndpoint** and **RtpEndpoint**:
 
   .. code-block:: console
 
-     export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5"
-     export GST_DEBUG="$GST_DEBUG,kmssdpsession:5,sdp*:5"
+     export GST_DEBUG="$GST_DEBUG,Kurento*:5,KurentoWebSocket*:4"
+     export GST_DEBUG="$GST_DEBUG,kmssdpsession:5"
+     export GST_DEBUG="$GST_DEBUG,sdp*:5"
      export GST_DEBUG="$GST_DEBUG,webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
 
-  A bit of explanation about what is achieved by each logging category:
-
-  - *KurentoMediaElementImpl* shows *MediaFlowIn* and *MediaFlowOut* state changes, important to know if media is actually flowing between endpoints (see :ref:`events-mediaelement`).
-  - *kmssdpsession* and *sdp** shows messages related to the SDP Offer/Answer negotiations and all of the media handlers.
-  - *webrtcendpoint*, *kmswebrtcsession*, and *kmsiceniceagent* all contain the logic that governs ICE gathering and ICE candidate selection for WebRTC.
+  - "Kurento*:5" shows all state changes (*MediaFlowIn*, *MediaFlowOut*, *MediaTranscoding*, etc). Use "KurentoWebSocket*:4" to avoid getting all verbose logs about the WebSocket communications.
+  - "kmssdpsession:5" prints the SDP messages (SDP Offer/Answer negotiation) processed by KMS.
+  - "sdp*:5" shows internal messages related to the construction of SDP messages and media handlers.
+  - "webrtcendpoint:5", "kmswebrtcsession:5", and "kmsiceniceagent:5" all contain the logic that governs ICE gathering and ICE candidate selection for WebRTC.
 
     .. note::
 
@@ -201,7 +212,7 @@ libnice
 
 This library uses the standard *GLib* logging functions, which comes disabled by default but can be enabled very easily. This can prove useful in situations where a developer is studying an issue with the ICE process. However, the debug output of libnice is very verbose, so it makes sense that it is left disabled by default for production systems.
 
-To enable debug logging on *libnice*, set the environment variable ``G_MESSAGES_DEBUG`` with one or more of these values (separated by commas):
+To enable debug logging on *libnice*, set the environment variable *G_MESSAGES_DEBUG* with one or more of these values (separated by commas):
 
 - *libnice*: Required in order to enable logging in libnice.
 - *libnice-verbose*: Enable extra verbose messages.

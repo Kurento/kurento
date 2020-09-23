@@ -20,9 +20,9 @@ guidelines provided in the
 `W3C WebRTC's Statistics API <https://www.w3.org/TR/webrtc-stats/>`__.
 Therefore, the statistics gathered in the KMS can be divided into two groups:
 
-- ``inboundrtp``: statistics on the stream received in the KMS.
+- *inboundrtp*: statistics on the stream received in the KMS.
 
-- ``outboundrtp``: statistics on the stream sent by KMS.
+- *outboundrtp*: statistics on the stream sent by KMS.
 
 
 API description
@@ -31,7 +31,7 @@ API description
 As usual, WebRTC statistics gathering capability is provided by the KMS and is
 consumed by means of the different Kurento client implementations (Java,
 JavaScript clients are provided out of the box). To read these statistics,
-first it should be enabled using the method ``setLatencyStats`` of a Media
+first it should be enabled using the method *setLatencyStats* of a Media
 Pipeline object. Using the Kurento Java client this is done as follows:
 
 .. sourcecode:: java
@@ -59,8 +59,8 @@ Pipeline object. Using the Kurento Java client this is done as follows:
    });
 
 Once WebRTC statistics are enabled, the second step is reading the statistics
-values using the method ``getStats`` of a Media Element, For example, to read
-the statistics of a ``WebRtcEndpoint`` object in Java:
+values using the method *getStats* of a Media Element, For example, to read
+the statistics of a *WebRtcEndpoint* object in Java:
 
 .. sourcecode:: java
 
@@ -92,46 +92,46 @@ so on). The complete description of the statistics are defined in the
 `KMD interface <https://github.com/Kurento/kms-core/blob/master/src/server/interface/core.kmd.json>`__
 description. The most relevant statistics are listed below:
 
-- ``ssrc``: The synchronized source (SSRC).
+- *ssrc*: The synchronized source (SSRC).
 
-- ``firCount``: Count the total number of Full Intra Request (FIR) packets
+- *firCount*: Count the total number of Full Intra Request (FIR) packets
   received by the sender. This metric is only valid for video and is sent by
   receiver.
 
-- ``pliCount``: Count the total number of Packet Loss Indication (PLI) packets
+- *pliCount*: Count the total number of Packet Loss Indication (PLI) packets
   received by the sender and is sent by receiver.
 
-- ``nackCount``: Count the total number of Negative ACKnowledgement (NACK)
+- *nackCount*: Count the total number of Negative ACKnowledgement (NACK)
   packets received by the sender and is sent by receiver.
 
-- ``sliCount``: Count the total number of Slice Loss Indication (SLI) packets
+- *sliCount*: Count the total number of Slice Loss Indication (SLI) packets
   received by the sender. This metric is only valid for video and is sent by
   receiver.
 
-- ``remb``: The Receiver Estimated Maximum Bitrate (REMB). This metric is only
+- *remb*: The Receiver Estimated Maximum Bitrate (REMB). This metric is only
   valid for video.
 
-- ``packetsLost``: Total number of RTP packets lost for this SSRC.
+- *packetsLost*: Total number of RTP packets lost for this SSRC.
 
-- ``packetsReceived``: Total number of RTP packets received for this SSRC.
+- *packetsReceived*: Total number of RTP packets received for this SSRC.
 
-- ``bytesReceived``: Total number of bytes received for this SSRC.
+- *bytesReceived*: Total number of bytes received for this SSRC.
 
-- ``jitter``: Packet Jitter measured in seconds for this SSRC.
+- *jitter*: Packet Jitter measured in seconds for this SSRC.
 
-- ``packetsSent``: Total number of RTP packets sent for this SSRC.
+- *packetsSent*: Total number of RTP packets sent for this SSRC.
 
-- ``bytesSent``: Total number of bytes sent for this SSRC.
+- *bytesSent*: Total number of bytes sent for this SSRC.
 
-- ``targetBitrate``: Presently configured bitrate target of this SSRC, in bits
+- *targetBitrate*: Presently configured bitrate target of this SSRC, in bits
   per second.
 
-- ``roundTripTime``: Estimated round trip time (seconds) for this SSRC based
+- *roundTripTime*: Estimated round trip time (seconds) for this SSRC based
   on the RTCP timestamp.
 
-- ``audioE2ELatency``: End-to-end audio latency measured in nano seconds.
+- *audioE2ELatency*: End-to-end audio latency measured in nano seconds.
 
-- ``videoE2ELatency``: End-to-end video latency measured in nano seconds.
+- *videoE2ELatency*: End-to-end video latency measured in nano seconds.
 
 All in all, the process for gathering WebRTC statistics in the KMS can be
 summarized in two steps: 1) Enable WebRTC statistics; 2) Read WebRTC. This
@@ -155,13 +155,13 @@ on GitHub:
 `kurento-loopback-stats <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-loopback-stats>`__.
 
 From a the Media Pipeline point of view, this demo application consists in a
-``WebRtcEndpoint`` in loopback. Once the demo is up and running, WebRTC are
+*WebRtcEndpoint* in loopback. Once the demo is up and running, WebRTC are
 enabled and gathered with a rate of 1 second.
 
 In addition to the KMS WebRTC statistics, client-side (i.e. browser WebRTC peer)
 stats are also gathered by the application. This is done using the standard
-method provided by the ``RTCPeerConnection`` object, i.e using its method
-``getStats``. Please check out the JavaScript logic located in the
+method provided by the *RTCPeerConnection* object, i.e using its method
+*getStats*. Please check out the JavaScript logic located in the
 `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-loopback-stats/js/index.js>`__
 file for implementation details.
 

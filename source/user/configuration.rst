@@ -68,4 +68,4 @@ File: ``/etc/default/kurento-media-server``.
 Service Init
 ============
 
-The package *kurento-media-server* provides a service file that integrates with the Ubuntu init system. This service file loads its user configuration from */etc/default/kurento-media-server*, where the user is able to configure several features as needed.
+The package *kurento-media-server* provides a service file that integrates with the Ubuntu init system. This service file loads its user configuration from ``/etc/default/kurento-media-server``, where the user is able to configure several features as needed.

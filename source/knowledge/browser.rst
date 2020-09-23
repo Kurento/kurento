@@ -37,11 +37,11 @@ Sources:
 * https://developer.mozilla.org/en-US/docs/Mozilla/Command_Line_Options
 * https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Gecko_Logging
 
-Debug logging can be enabled with the parameters ``MOZ_LOG`` and ``MOZ_LOG_FILE``. These are controlled either with environment variables, or command-line flags.
+Debug logging can be enabled with the parameters *MOZ_LOG* and *MOZ_LOG_FILE*. These are controlled either with environment variables, or command-line flags.
 
-In Firefox 54 and later, you can use ``about:networking``, and select the Logging option, to change ``MOZ_LOG`` / ``MOZ_LOG_FILE`` options on the fly (without restarting the browser).
+In Firefox 54 and later, you can use ``about:networking``, and select the Logging option, to change *MOZ_LOG* / *MOZ_LOG_FILE* options on the fly (without restarting the browser).
 
-Lastly, you can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting ``logging.foo`` to ``3`` will set the module *foo* to start logging at level 3 ("*Info*"). The special pref ``logging.config.LOG_FILE`` can be set at runtime to change the log file being output to, and the special boolean prefs ``logging.config.sync`` and ``logging.config.add_timestamp`` can be used to control the *sync* and *timestamp* properties:
+Lastly, you can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*"). The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special boolean prefs *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
 
 - **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
 - **timestamp**: Insert timestamp at start of each log line.
@@ -100,7 +100,7 @@ Log :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
    /usr/bin/firefox -no-remote -profile "$(mktemp --directory)" \
        "https://localhost:8443/"
 
-WebRTC dump example:
+WebRTC dump example (see https://blog.mozilla.org/webrtc/debugging-encrypted-rtp-is-more-fun-than-it-used-to-be/):
 
 .. code-block:: console
 
@@ -115,7 +115,57 @@ WebRTC dump example:
        | cut -d ' ' -f 5- \
        | text2pcap -D -n -l 1 -i 17 -u 1234,1235 -t '%H:%M:%S.' - firefox-rtp.pcap
 
-See: https://blog.mozilla.org/webrtc/debugging-encrypted-rtp-is-more-fun-than-it-used-to-be/
+Other log categories:
+
+Multimedia:
+
+* AudioStream:5
+* MediaCapabilities:5
+* MediaControl:5
+* MediaEncoder:5
+* MediaManager:5
+* MediaRecorder:5
+* MediaStream:5
+* MediaStreamTrack:5
+* MediaTimer:5
+* MediaTrackGraph:5
+* Muxer:5
+* PlatformDecoderModule:5
+* PlatformEncoderModule:5
+* TrackEncoder:5
+* VP8TrackEncoder:5
+* VideoEngine:5
+* VideoFrameConverter:5
+* cubeb:5
+
+WebRTC:
+
+* Autoplay:5
+* GetUserMedia:5
+* webrtc_trace:5
+* signaling:5
+* MediaPipeline:5
+* RtpLogger:5
+* RTCRtpReceiver:5
+* sdp:5
+
+Notes:
+
+* The audio sandbox can be enabled or disabled with the user preference *media.cubeb.sandbox*.
+
+.. code-block:: console
+
+   export MOZ_LOG=timestamp,sync,MediaPipeline:5,MediaStream:5,MediaStreamTrack:5,webrtc_trace:5
+
+   /usr/bin/firefox -no-remote -profile "$(mktemp --directory)" \
+       "https://localhost:8443/"
+
+   # Equivalent code for Selenium:
+   firefoxOptions.addPreference("media.cubeb.sandbox", true);
+   firefoxOptions.addPreference("logging.config.add_timestamp", true);
+   firefoxOptions.addPreference("logging.config.sync", true);
+   firefoxOptions.addPreference("logging.cubeb", 5);
+   firefoxOptions.addPreference("logging.MediaTrackGraph", 5);
 
 
 
@@ -163,8 +213,11 @@ Sources:
        "https://localhost:8443/"
 
 Other options:
---use-fake-device-for-media-stream \
-    --use-file-for-fake-audio-capture="${HOME}/test.wav" \
+
+.. code-block:: console
+
+   --use-fake-device-for-media-stream \
+   --use-file-for-fake-audio-capture="${HOME}/test.wav" \
 
 
 H.264 codec
@@ -206,7 +259,7 @@ Browser command-line
 Chrome
 ------
 
-export WEB_APP_HOST_PORT="192.168.1.19:8443"
+export WEB_APP_HOST_PORT="198.51.100.1:8443"
 
 /usr/bin/google-chrome \
     --user-data-dir="$(mktemp --directory)" \
@@ -222,7 +275,7 @@ export WEB_APP_HOST_PORT="192.168.1.19:8443"
 Firefox
 -------
 
-export SERVER_PUBLIC_IP="192.168.1.12"
+export SERVER_PUBLIC_IP="198.51.100.1"
 /usr/bin/firefox \
     -profile "$(mktemp --directory)" \
     -no-remote \

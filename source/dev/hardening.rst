@@ -62,36 +62,30 @@ This section explains how the Position Independent Code (PIC) and Position Indep
 
 Now follows some examples of applying these rules into an hypothetical project composed of one shared library and one executable file:
 
-- The shared library (*SHARED.so*) is composed of 4 source files:
+- The shared library (*libSHARED.so*) is composed of 4 source files:
 
-  - *A.c* and *B.c* are compiled first into a static library: *AB.a*.
-    GCC flags: ``-fPIC``.
-  - *C.c* and *D.c* are compiled into object files *C.o* and *D.o*.
-    GCC flags: ``-fPIC``.
-  - *AB.a*, *C.o*, and *D.o* are linked into a shared library: *SHARED.so*.
-    GCC flags: ``-shared -fPIC``.
+  - *A.c* and *B.c* are compiled first into a static library: *AB.a*. GCC flags: ``-fPIC``.
+  - *C.c* and *D.c* are compiled into object files *C.o* and *D.o*. GCC flags: ``-fPIC``.
+  - *AB.a*, *C.o*, and *D.o* are linked into a shared library: *libSHARED.so*. GCC flags: ``-shared -fPIC``.
 
 - The executable file (*PROGRAM*) is composed of 4 source files:
 
-  - *E.c* and *F.c* are compiled first into a static library: *EF.a*.
-    GCC flags: ``-fPIE`` (*).
-  - *G.c* and *H.c* are compiled into object files *G.o* and *H.o*.
-    GCC flags: ``-fPIE`` (*).
-  - *EF.a*, *G.o*, and *H.o* are linked into an executable file: *PROGRAM*.
-    GCC flags: ``-pie -fPIE`` (... *-lSHARED*).
+  - *E.c* and *F.c* are compiled first into a static library: *EF.a*. GCC flags: ``-fPIE`` (*).
+  - *G.c* and *H.c* are compiled into object files *G.o* and *H.o*. GCC flags: ``-fPIE`` (*).
+  - *EF.a*, *G.o*, and *H.o* are linked into an executable file: *PROGRAM*. GCC flags: ``-pie -fPIE`` (and maybe linked with the shared library with ``-lSHARED``).
 
 (*): In these cases, it is also possible to compile these files with ``-fPIC``, although ``-fPIE`` is recommended. It is also possible to mix both; for example *E.c* and *F.c* can be compiled with ``-fPIC``, while *G.c* and *H.c* are compiled with ``-fPIE`` (empirically tested, it works fine).
 
 .. seealso::
 
    `Options for Code Generation Conventions <https://gcc.gnu.org/onlinedocs/gcc-7.2.0/gcc/Code-Gen-Options.html>`__
-       See ``-fPIC``, ``-fPIE``.
+       See *-fPIC*, *-fPIE*.
 
    `Options for Linking <https://gcc.gnu.org/onlinedocs/gcc-7.2.0/gcc/Link-Options.html>`__
-       See ``-shared``, ``-pie``.
+       See *-shared*, *-pie*.
 
    `dpkg-buildflags <http://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html>`__
-       See ``FEATURE AREAS > hardening > pie``.
+       See *FEATURE AREAS* > *hardening* > *pie*.
 
 
 

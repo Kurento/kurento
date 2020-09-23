@@ -42,7 +42,7 @@ Configure a Java server to use HTTPS
 
 .. note::
 
-   If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#websocket-server-allowed-origins>`__ entry for more info.
+   If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to *setAllowedOrigins* when registering the handler. Please read the `official Spring documentation <https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#websocket-server-allowed-origins>`__ entry for more info.
 
 
 
@@ -123,7 +123,7 @@ Securing Kurento Media Server
 Signaling Plane authorization
 -----------------------------
 
-You should protect the JSON-RPC API control port (WebSocket port ``8888`` by default) of your Kurento Media Server instances from unauthorized access from public networks.
+You should protect the JSON-RPC API control port (WebSocket port *8888* by default) of your Kurento Media Server instances from unauthorized access from public networks.
 
 The Kurento WebSocket server supports using SSL certificates in order to guarantee secure communications between clients and server; however, at the time no authentication mechanism is provided. Kurento doesn't reinvent the wheel here including its own mechanism, and instead it relies on layers of security that already exist at the system level. This is something we may add (contributions are welcomed!) but for now here are some tips on how other big players are protecting KMS from unauthorized use.
 
@@ -143,11 +143,11 @@ If you need more flexibility, one idea is to restrict KMS connections to the sam
 Signaling Plane security (WebSocket)
 ------------------------------------
 
-With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port ``8888``. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_api`.
+With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port *8888*. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_api`.
 
-This is fine for initial stages of application development, but before deploying on production environments you'll probably want to move to ``wss://`` connections, i.e. using Secure WebSocket, which by default uses the port ``8433``.
+This is fine for initial stages of application development, but before deploying on production environments you'll probably want to move to ``wss://`` connections, i.e. using Secure WebSocket, which by default uses the port *8433*.
 
-To enable Secure WebSocket, edit the main KMS configuration file (*/etc/kurento/kurento.conf.json*), and un-comment the following lines:
+To enable Secure WebSocket, edit the main KMS configuration file (``/etc/kurento/kurento.conf.json``), and un-comment the following lines:
 
 .. code-block:: json-object
 
@@ -165,9 +165,9 @@ Generate your own certificate as explained here: :ref:`features-security-selfsig
 
 * **Java applications**. Follow the instructions of this link: `SunCertPathBuilderException: unable to find valid certification path to requested target <https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__ (`archive <https://web.archive.org/web/20200101052022/https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__).
 
-  Get ``InstallCert.java`` from here: https://github.com/escline/InstallCert.
+  Get *InstallCert.java* from here: https://github.com/escline/InstallCert.
 
-  You'll need to instruct the *KurentoClient* to allow using certificates. For this purpose, create an ``JsonRpcClient``:
+  You'll need to instruct the *KurentoClient* to allow using certificates. For this purpose, create an *JsonRpcClient*:
 
   .. code-block:: java
 
@@ -178,7 +178,7 @@ Generate your own certificate as explained here: :ref:`features-security-selfsig
 
 * **Node applications**. Take a look at this page: `Painless Self Signed Certificates in node.js <https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__ (`archive <https://web.archive.org/web/20200610093038/https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__).
 
-  For a faster but *INSECURE* alternative, configure Node to accept (instead of reject) invalid TLS certificates by default, setting the environment variable flag `NODE_TLS_REJECT_UNAUTHORIZED <https://nodejs.org/api/cli.html#cli_node_tls_reject_unauthorized_value>`__ to ``0``; this will disable the TLS validation for your whole Node app. You can set this environment variable before executing your app, or directly in your app code by adding the following line before performing the connection:
+  For a faster but *INSECURE* alternative, configure Node to accept (instead of reject) invalid TLS certificates by default, setting the environment variable flag `NODE_TLS_REJECT_UNAUTHORIZED <https://nodejs.org/api/cli.html#cli_node_tls_reject_unauthorized_value>`__ to *0*; this will disable the TLS validation for your whole Node app. You can set this environment variable before executing your app, or directly in your app code by adding the following line before performing the connection:
 
   .. code-block:: js
 
@@ -197,14 +197,14 @@ Now that KMS is listening for Secure WebSocket connections, and (if using a self
 
 Make sure your application uses a WebSocket URL that starts with ``wss://`` instead of ``ws://``. Depending on the platform, this is done in different ways:
 
-* **Java**: Launch with a ``kms.url`` property. For example:
+* **Java**: Launch with a *kms.url* property. For example:
 
   .. code-block:: java
 
      mvn spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=wss://{KMS_HOST}:8433/kurento"
 
-* **Node**: Launch with the ``ws_uri`` command-line argument. For example:
+* **Node**: Launch with the *ws_uri* command-line argument. For example:
 
   .. code-block:: js
 
@@ -223,7 +223,7 @@ Media Plane security (DTLS)
 
 WebRTC uses :wikipedia:`DTLS <Datagram_Transport_Layer_Security>` for media data authentication. By default, if no certificate is provided for this, Kurento Media Server will auto-generate its own self-signed certificate for every WebRtcEndpoint instance, but it is also possible to provide an already existing certificate to be used for all endpoints.
 
-To do so, edit the file */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini* and set either ``pemCertificateRSA`` or ``pemCertificateECDSA`` with a file containing the concatenation of your certificate (chain) file(s) and the private key.
+To do so, edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set either *pemCertificateRSA* or *pemCertificateECDSA* with a file containing the concatenation of your certificate (chain) file(s) and the private key.
 
 Setting a custom certificate for DTLS is needed, for example, for situations where you have to manage multiple media servers and want to make sure that all of them use the same certificate for their connections. Some browsers, such as Firefox, require this in order to allow multiple WebRTC connections from the same tab to different KMS instances.
 
@@ -257,7 +257,7 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
      # Protect against writes
      chmod 440 *.pem
 
-  The ``*.test.local`` wildcard domain is meant to allow adding any desired subdomains to the ``/etc/hosts`` file, so these cert files can be used not only for localhost but also for remote tests. Note that we propose using the ``.local`` TLD here, and not simply ``.test``, because MacOS 10.15 (*Catalina*) forbids the use of wildcards for ``.test`` TLDs (see `mkcert bug 206 <https://github.com/FiloSottile/mkcert/issues/206>`__).
+  The ``*.test.local`` wildcard domain is meant to allow adding any desired subdomains to the ``/etc/hosts`` file, so these cert files can be used not only for localhost but also for remote tests. Note that we propose using the *.local* TLD here, and not simply *.test*, because MacOS 10.15 (*Catalina*) forbids the use of wildcards for *.test* TLDs (see `mkcert bug 206 <https://github.com/FiloSottile/mkcert/issues/206>`__).
 
   You can also publish a new Zeroconf local domain for any development machine. For example, running this in Ubuntu:
 

@@ -65,7 +65,7 @@ A **PlayerEndpoint** is an input endpoint that retrieves content from file syste
 .. image:: /images/toolbox/PlayerEndpoint.png
    :align:  center
 
-A **RecorderEndpoint** is an output endpoint that provides function to store contents in reliable mode (doesn't discard data). It contains ``Media Sink`` pads for audio and video.
+A **RecorderEndpoint** is an output endpoint that provides function to store contents in reliable mode (doesn't discard data). It contains *Media Sink* pads for audio and video.
 
 .. image:: /images/toolbox/RecorderEndpoint.png
    :align:  center
@@ -83,7 +83,7 @@ Filters
 
 Filters are MediaElements that perform media processing, Computer Vision, Augmented Reality, and so on.
 
-The **ZBarFilter** filter detects QR and bar codes in a video stream. When a code is found, the filter raises a ``CodeFoundEvent``. Clients can add a listener to this event to execute some action.
+The **ZBarFilter** filter detects QR and bar codes in a video stream. When a code is found, the filter raises a *CodeFoundEvent*. Clients can add a listener to this event to execute some action.
 
 .. image:: /images/toolbox/ZBarFilter.png
    :align:  center

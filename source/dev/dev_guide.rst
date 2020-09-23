@@ -115,7 +115,7 @@ KMS is a C/C++ project developed with an Ubuntu system as main target, which mea
 Libraries
 ---------
 
-It is not a trivial task to configure the compiler to use a set of libraries because a library can be composed of several *.so* and *.h* files. To make this task easier, `pkg-config <https://www.freedesktop.org/wiki/Software/pkg-config>`__ is used when compiling programs and libraries. In short: when a library is installed in a system, it registers itself in the ``pkg-config`` database with all its required files, which allows to later query those values in order to compile with the library in question.
+It is not a trivial task to configure the compiler to use a set of libraries because a library can be composed of several *.so* and *.h* files. To make this task easier, `pkg-config <https://www.freedesktop.org/wiki/Software/pkg-config>`__ is used when compiling programs and libraries. In short: when a library is installed in a system, it registers itself in the *pkg-config* database with all its required files, which allows to later query those values in order to compile with the library in question.
 
 For example, if you want to compile a C program which depends on GLib 2.0, you can run:
 
@@ -128,7 +128,7 @@ For example, if you want to compile a C program which depends on GLib 2.0, you c
 Debian packages
 ---------------
 
-In a Debian/Ubuntu system, development libraries are distributed as Debian packages which are made available in public package repositories. When a C or C++ project is developed in these systems, it is usual to distribute it also in Debian packages. It is then possible to install them with the command ``apt-get install``, which will handle automatically all the package's dependencies.
+In a Debian/Ubuntu system, development libraries are distributed as Debian packages which are made available in public package repositories. When a C or C++ project is developed in these systems, it is usual to distribute it also in Debian packages. It is then possible to install them with *apt-get*, which will handle automatically all the package's dependencies.
 
 When a library is packaged, the result usually consists of several packages. These are some pointers on the most common naming conventions for packages, although they are not always strictly enforced by Debian or Ubuntu maintainers:
 
@@ -147,7 +147,7 @@ There are several tools for building C/C++ projects: Autotools, Make, CMake, Gra
 
 A CMake projects consists of several *CMakeLists.txt* files, which define how to compile and package native code into binaries and shared libraries. These files also contain a list of the libraries (dependencies) needed to build the code.
 
-To specify a dependency it is necessary to know how to configure this library in the compiler. The already mentioned ``pkg-config`` tool is the standard de-facto for this task, so CMake comes with the ability to use ``pkg-config`` under the hood. There are also some libraries built with CMake that use some specific CMake-only utilities.
+To specify a dependency it is necessary to know how to configure this library in the compiler. The already mentioned *pkg-config* tool is the standard de-facto for this task, so CMake comes with the ability to use *pkg-config* under the hood. There are also some libraries built with CMake that use some specific CMake-only utilities.
 
 
 
@@ -243,7 +243,7 @@ Run:
    git checkout "$REF" || true
    git submodule foreach "git checkout $REF || true"
 
-You can also set ``REF`` to any other branch or tag, such as ``REF=6.12.0``. This will bring the code to the state it had in that version release.
+You can also set *REF* to any other branch or tag, such as ``REF=6.12.0``. This will bring the code to the state it had in that version release.
 
 
 
@@ -259,7 +259,7 @@ Make sure your current directory is already *kms-omni-build*, then run this comm
 
 By default, the script `kms-build-run.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/kms-build-run.sh>`__ will set up the environment and settings to make a Debug build of KMS. You can inspect that script to learn about all the other options it offers, including builds for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, selection between GCC and Clang compilers, and other modes.
 
-You can set the logging level of specific categories by exporting the environment variable ``GST_DEBUG`` before running this script (see :doc:`/features/logging`).
+You can set the logging level of specific categories by exporting the environment variable *GST_DEBUG* before running this script (see :doc:`/features/logging`).
 
 
 
@@ -420,7 +420,7 @@ You don't *have* to build KMS from sources in order to run it with the GDB debug
 
 2. Install debug symbols: :ref:`dev-dbg`.
 
-3. Define the ``G_DEBUG`` environment variable.
+3. Define the *G_DEBUG* environment variable.
 
    This helps capturing assertions from 3rd-party libraries used by Kurento, such as *GLib* and *GStreamer*:
 
@@ -430,7 +430,7 @@ You don't *have* to build KMS from sources in order to run it with the GDB debug
 
 4. Load your service settings.
 
-   You possibly did some changes in the KMS service settings file, */etc/default/kurento-media-server*. This file contains shell code that can be sourced directly into your current session:
+   You possibly did some changes in the KMS service settings file, ``/etc/default/kurento-media-server``. This file contains shell code that can be sourced directly into your current session:
 
    .. code-block:: console
 
@@ -453,7 +453,7 @@ You don't *have* to build KMS from sources in order to run it with the GDB debug
 GDB commands
 ------------
 
-Once you see the ``(gdb)`` command prompt, you're already running a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are ``backtrace`` and ``info`` variants (`Examining the Stack <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>`__). When you want to finish, stop execution with *Ctrl+C*, then type the ``quit`` command:
+Once you see the ``(gdb)`` command prompt, you're already running a `GDB session <https://www.cprogramming.com/gdb.html>`__, and you can start issuing debug commands. Here, the most useful ones are *backtrace* and *info* variants (`Examining the Stack <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>`__). When you want to finish, stop execution with *Ctrl+C*, then type the *quit* command:
 
 .. code-block:: console
 
@@ -503,7 +503,7 @@ This is of course an extremely cumbersome process to follow during anything more
 In-place linking
 ----------------
 
-The other work method consists on changing the system library path so it points to the working copy where the fork library is being modified. Typically, this involves building the fork with its specific tool (which often is Automake), changing the environment variable ``LD_LIBRARY_PATH``, and running KMS with such configuration that any required shared libraries will load the modified version instead of the one installed in the system.
+The other work method consists on changing the system library path so it points to the working copy where the fork library is being modified. Typically, this involves building the fork with its specific tool (which often is Automake), changing the environment variable *LD_LIBRARY_PATH*, and running KMS with such configuration that any required shared libraries will load the modified version instead of the one installed in the system.
 
 This allows for the fastest development cycle, however the specific instructions to do this are very project-dependent. For example, when working on the GStreamer fork, maybe you want to run GStreamer without using any of the libraries installed in the system (see https://cgit.freedesktop.org/gstreamer/gstreamer/tree/scripts/gst-uninstalled).
 
@@ -516,7 +516,7 @@ This allows for the fastest development cycle, however the specific instructions
 Create Deb packages
 ===================
 
-You can easily create Debian packages (``.deb`` files) for KMS itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/bionic/en/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/bionic/en/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/bionic/en/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
+You can easily create Debian packages (*.deb* files) for KMS itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/bionic/en/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/bionic/en/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/bionic/en/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
 
 
 
@@ -602,7 +602,7 @@ How to disable tests
 
 Debian tools will automatically run unit tests as part of the :ref:`package creation <dev-packages>` process. However, for special situations during development, we might want to temporarily disable testing before creating an experimental package. For example, say you are investigating an issue, and want to see what happens if you force a crash in some point of the code; or maybe you want to temporarily change a module's behavior but it breaks some unit test.
 
-It is possible to skip building and running unit tests automatically, by editing the file *debian/rules* and changing the *auto_configure* rule from ``-DGENERATE_TESTS=TRUE`` to ``-DGENERATE_TESTS=FALSE -DDISABLE_TESTS=TRUE``.
+It is possible to skip building and running unit tests automatically, by editing the file ``debian/rules`` and changing the *auto_configure* rule from ``-DGENERATE_TESTS=TRUE`` to ``-DGENERATE_TESTS=FALSE -DDISABLE_TESTS=TRUE``.
 
 
 

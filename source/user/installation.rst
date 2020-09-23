@@ -53,7 +53,7 @@ Follow these steps to use it:
 
         .. note::
 
-           The template file includes *Coturn* as a :term:`STUN` server and :term:`TURN` relay. The default user/password for this server is ``kurento``/``kurento``. You can optionally change the username, but **make sure to change the default password**.
+           The template file includes *Coturn* as a :term:`STUN` server and :term:`TURN` relay. The default user/password for this server is *kurento*/*kurento*. You can optionally change the username, but **make sure to change the default password**.
 
 5. Finish the Stack creation process. Wait until the status of the newly created Stack reads *CREATE_COMPLETE*.
 
@@ -160,15 +160,15 @@ B. **Uninstall the old Kurento version**, before installing the new one.
 
    Be careful! If you fail to upgrade **all** Kurento packages, you will get wrong behaviors and **crashes**. Kurento is composed of several packages:
 
-   - ``kurento-media-server``
-   - ``kurento-module-creator``
-   - ``kms-core``
-   - ``kms-elements``
-   - ``kms-filters``
-   - ``libnice10``
-   - ``libusrsctp``
-   - ``openh264``
-   - ``openwebrtc-gst-plugins``
+   - *kurento-media-server*
+   - *kurento-module-creator*
+   - *kms-core*
+   - *kms-elements*
+   - *kms-filters*
+   - *libnice10*
+   - *libusrsctp*
+   - *openh264*
+   - *openwebrtc-gst-plugins*
    - And more
 
    To use a newer version **you have to upgrade all Kurento packages**, not only the first one.
@@ -197,7 +197,7 @@ These links contain the information needed to finish configuring your Kurento Me
 Check your installation
 =======================
 
-To verify that the Kurento process is up and running, use this command and look for the ``kurento-media-server`` process:
+To verify that the Kurento process is up and running, use this command and look for the *kurento-media-server* process:
 
 .. code-block:: console
 
@@ -205,14 +205,14 @@ To verify that the Kurento process is up and running, use this command and look 
    UID        PID  PPID  C STIME TTY          TIME CMD
    kurento   7688     1  0 13:36 ?        00:00:00 /usr/bin/kurento-media-server
 
-Unless configured otherwise, KMS will listen on the IPv6 port ``8888`` to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
+Unless configured otherwise, KMS will listen on the IPv6 port *8888* to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
 
 .. code-block:: console
 
    $ sudo netstat -tupln | grep -e kurento -e 8888
    tcp6  0  0  :::8888  :::*  LISTEN  7688/kurento-media-
 
-You can change these parameters in the file */etc/kurento/kurento.conf.json*.
+You can change these parameters in the file ``/etc/kurento/kurento.conf.json``.
 
 To check whether KMS is up and listening for connections, use the following command:
 

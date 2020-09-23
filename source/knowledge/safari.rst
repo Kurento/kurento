@@ -38,8 +38,8 @@ All Kurento tutorials are written to follow this example. As a general rule, mos
 
 You should make a couple changes in order to follow with all the latest changes in browser's policies for automatically playing videos:
 
-1. Start automatic video playback without audio, using the ``muted`` attribute together with ``autoplay``.
-2. Add the ``playsinline`` attribute if you want to avoid fullscreen videos in *iOS Safari*.
+1. Start automatic video playback without audio, using the *muted* attribute together with *autoplay*.
+2. Add the *playsinline* attribute if you want to avoid fullscreen videos in *iOS Safari*.
 
 A video tag that includes all these suggestions would be like this:
 
@@ -70,7 +70,7 @@ The solution that is most intuitive for the user is that a muted video is presen
 
 This will allow the user interface to at least automatically start playing a video, so the user will see some movement and acknowledge that the media playback has started. Then, an optional label might ask the user to press to unmute, an action that would comply with the browser's *autoplay* policies.
 
-Another alternative is to avoid using the *autoplay* attribute altogether. Instead, manually call the ``play()`` method as a result of some user interaction. The safest way is to call the ``myVideo.play()`` method from inside a button's ``onclick`` event handler.
+Another alternative is to avoid using the *autoplay* attribute altogether. Instead, manually call the ``play()`` method as a result of some user interaction. The safest way is to call the ``myVideo.play()`` method from inside a button's *onclick* event handler.
 
 
 

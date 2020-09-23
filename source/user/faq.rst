@@ -37,7 +37,7 @@ When are STUN and TURN needed?
 
 The STUN server is configured to use a range of UDP & TCP ports. All those ports should also be opened to all traffic, in the server's network configuration or security group.
 
-If you are installing Kurento in a NAT environment (e.g. if your server is behind a NAT firewall), you also need to configure an external STUN server, in */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*. Similarly, all browser clients that are behind a NAT need to configure the STUN server details with the ``iceServers`` field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
+If you are installing Kurento in a NAT environment (e.g. if your server is behind a NAT firewall), you also need to configure an external STUN server, in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Similarly, all browser clients that are behind a NAT need to configure the STUN server details with the *iceServers* field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
 
 **Example:**
 
@@ -82,7 +82,7 @@ Coturn can be installed directly from the Ubuntu package repositories:
 
 To configure it for WebRTC, follow these steps:
 
-1. Edit */etc/turnserver.conf*.
+1. Edit ``/etc/turnserver.conf``.
 
    This example configuration is a good first step; it will work for using Coturn with Kurento Media Server for WebRTC streams. However, you may want to change it according to your needs:
 
@@ -126,11 +126,11 @@ To configure it for WebRTC, follow these steps:
 
    Notes:
 
-   - The *external-ip* is necessary in cloud providers which use internal NATs, such as **Amazon EC2** (AWS). Write your server's **public** IP address, like ``198.51.100.1``, in the ``<CoturnIp>`` parameter. **It must be an IP address, not a domain name**.
+   - The *external-ip* is necessary in cloud providers which use internal NATs, such as **Amazon EC2** (AWS). Write your server's **public** IP address, like *198.51.100.1*, in the *<CoturnIp>* parameter. **It must be an IP address, not a domain name**.
 
    - The options *fingerprint*, *lt-cred-mech*, and *realm* are needed for WebRTC.
 
-   - The *user* parameter is the most basic form of authorization to use the :term:`TURN` relay capabilities. Write your desired user name and password in the fields ``<TurnUser>`` and ``<TurnPassword>``.
+   - The *user* parameter is the most basic form of authorization to use the :term:`TURN` relay capabilities. Write your desired user name and password in the fields *<TurnUser>* and *<TurnPassword>*.
 
    - Other parameters can be tuned as needed. For more information, check the Coturn help pages:
 
@@ -138,7 +138,7 @@ To configure it for WebRTC, follow these steps:
      - https://github.com/coturn/coturn/wiki/CoturnConfig
      - A fully commented example configuration file: https://raw.githubusercontent.com/coturn/coturn/master/examples/etc/turnserver.conf
 
-2. Edit the file */etc/default/coturn* and set
+2. Edit the file ``/etc/default/coturn`` and set
 
    .. code-block:: console
 
@@ -177,7 +177,7 @@ To test if your :term:`STUN`/:term:`TURN` server is functioning properly, open t
 
 3. Click on *Add Server*. You should have only **one entry** in the list, with your server details.
 
-4. Click on *Gather candidates*. **Verify** that you get candidates of type ``srflx`` if you are testing STUN. Likewise, you should get candidates of type ``srflx`` *and* type ``relay`` if you are testing TURN.
+4. Click on *Gather candidates*. **Verify** that you get candidates of type *srflx* if you are testing STUN. Likewise, you should get candidates of type *srflx* *and* type *relay* if you are testing TURN.
 
    If you are missing any of the expected candidate types, *your STUN/TURN server is not working well* and WebRTC will fail. Check your server configuration, and your cloud provider's network settings.
 
@@ -190,7 +190,7 @@ How to configure STUN/TURN?
 
 To configure a :term:`STUN` server or :term:`TURN` relay with Kurento Media Server, you may use either of two methods:
 
-A. Write the parameters into the file */etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini*. Do this if your settings are static and you know them beforehand.
+A. Write the parameters into the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Do this if your settings are static and you know them beforehand.
 
    To only use STUN server (TURN relay will not be used):
 
@@ -199,7 +199,7 @@ A. Write the parameters into the file */etc/kurento/modules/kurento/WebRtcEndpoi
       stunServerAddress=<StunServerIp>
       stunServerPort=<StunServerPort>
 
-   ``<StunServerIp>`` should be the public IP address of the STUN server. **It must be an IP address, not a domain name**. For example:
+   *<StunServerIp>* should be the public IP address of the STUN server. **It must be an IP address, not a domain name**. For example:
 
    .. code-block:: text
 
@@ -212,7 +212,7 @@ A. Write the parameters into the file */etc/kurento/modules/kurento/WebRtcEndpoi
 
       turnURL=<TurnUser>:<TurnPassword>@<TurnServerIp>:<TurnServerPort>
 
-   ``<TurnServerIp>`` should be the public IP address of the TURN relay. **It must be an IP address, not a domain name**. For example:
+   *<TurnServerIp>* should be the public IP address of the TURN relay. **It must be an IP address, not a domain name**. For example:
 
    .. code-block:: text
 
@@ -244,11 +244,11 @@ B. Use the API methods to set the parameters dynamically. Do this if your STUN s
 The following ports should be open in the firewall or your cloud machine's *Security Groups*:
 
 - **<CoturnPort>** (Default: 3478) UDP & TCP.
-- **49152-65535** UDP & TCP: As per :rfc:`5766`, these are the ports that the TURN relay will use to exchange media. These ports can be changed using Coturn's ``min-port`` and ``max-port`` parameters.
+- **49152-65535** UDP & TCP: As per :rfc:`5766`, these are the ports that the TURN relay will use to exchange media. These ports can be changed using Coturn's *min-port* and *max-port* parameters.
 
 .. note::
 
-   **Port ranges must match between Coturn and Kurento Media Server**. Check the files */etc/turnserver.conf* and */etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini*, to verify that both will be using the same set of ports.
+   **Port ranges must match between Coturn and Kurento Media Server**. Check the files ``/etc/turnserver.conf`` and ``/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini``, to verify that both will be using the same set of ports.
 
 When you are done, (re)start both Coturn and Kurento servers:
 

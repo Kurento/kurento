@@ -42,7 +42,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        Document Object Model is a cross-platform and language-independent convention for representing and interacting with objects in HTML, XHTML and XML documents.
 
    EOS
-       End Of Stream is an event that occurs when playback of some media source has finished. In Kurento, some elements will raise an ``EndOfStream`` event.
+       End Of Stream is an event that occurs when playback of some media source has finished. In Kurento, some elements will raise an *EndOfStream* event.
 
    GStreamer
        `GStreamer <https://gstreamer.freedesktop.org/>`__ is a pipeline-based multimedia framework written in the C programming language.

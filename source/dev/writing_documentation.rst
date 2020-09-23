@@ -94,15 +94,16 @@ Paragraph conventions
 Inline markup
 -------------
 
-- Paths, file names, package names, acronyms, and in general human-oriented words are emphasized with single asterisks (as in ``*word*``). Sample phrases:
+- File names, package names, variable names, class and event names, (mostly all kinds of names), acronyms, commit hashes, and in general any kind of identifier which could be broken into different lines are emphasized with single asterisks (as in ``*word*``). Sample phrases:
 
   .. code-block:: text
 
      This document talks about Kurento Media Server (*KMS*).
      All dependency targets are defined in the *CMakeLists.txt* file.
      You need to install *libboost-dev* for development.
+     Enable debug by setting the *GST_DEBUG* environment variable.
 
-- Code, commands, arguments, environment variables, commit hashes, and in general machine-oriented keywords are emphasized with double back quotes (as in ````word````). Sample phrases:
+- Paths, URLs, code samples, commands, and in general any machine-oriented keywords are emphasized with double back quotes (as in ````word````). This formatting stands out, and most importantly *it cannot be broken into different lines*. Sample phrases:
 
   .. code-block:: text
 

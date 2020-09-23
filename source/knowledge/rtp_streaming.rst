@@ -37,7 +37,7 @@ To run these examples, follow these initial steps:
 
 5. Start pipeline (e.g. in the :doc:`RTP Receiver tutorial </tutorials/java/tutorial-rtp-receiver>`, push "Start")
 6. From the logs: get the KMS port from the SDP Answer (in the RTP Receiver tutorial, this appears in the web page)
-7. Set ``PEER_V`` in the *gst-launch* commands to the KMS port.
+7. Set *PEER_V* in the *gst-launch* commands to the KMS port.
 
 
 
@@ -510,7 +510,7 @@ Features:
 
 .. note::
 
-   ``fakesrc`` is used to force ``rtpsession`` to use the desired SSRC.
+   *fakesrc* is used to force *rtpsession* to use the desired SSRC.
 
 
 

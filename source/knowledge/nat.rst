@@ -106,9 +106,9 @@ Visualization:
 .. note::
 
    - ``*`` means that any value could be used: a remote host can connect from *any* IP address and port.
-   - The **source** IP address (``REM_ADDR``) in step 2 can be different from the **destination** IP address that was used in step 1.
-   - The **source** IP port (``REM_PORT``) in step 2 can be different from the **destination** IP port that was used in step 1.
-   - The *same* port (``INT_PORT``) is used in the internal and the external sides of the NAT. This is the most common case for all Cone NATs, only being different for Symmetric NATs.
+   - The **source** IP address (*REM_ADDR*) in step 2 can be different from the **destination** IP address that was used in step 1.
+   - The **source** IP port (*REM_PORT*) in step 2 can be different from the **destination** IP port that was used in step 1.
+   - The *same* port (*INT_PORT*) is used in the internal and the external sides of the NAT. This is the most common case for all Cone NATs, only being different for Symmetric NATs.
 
 
 
@@ -128,9 +128,9 @@ Visualization:
 
 .. note::
 
-   - The **source** IP address (``REM_ADDR``) in step 2 must be the same as the **destination** IP address that was used in step 1.
-   - The **source** IP port (``REM_PORT``) in step 2 can be different from the **destination** IP port that was used in step 1.
-   - The *same* port (``INT_PORT``) is used in the internal and the external sides of the NAT.
+   - The **source** IP address (*REM_ADDR*) in step 2 must be the same as the **destination** IP address that was used in step 1.
+   - The **source** IP port (*REM_PORT*) in step 2 can be different from the **destination** IP port that was used in step 1.
+   - The *same* port (*INT_PORT*) is used in the internal and the external sides of the NAT.
 
 
 
@@ -150,9 +150,9 @@ Visualization:
 
 .. note::
 
-   - The **source** IP address (``REM_ADDR``) in step 2 must be the same as the **destination** IP address that was used in step 1.
-   - The **source** IP port (``REM_PORT``) in step 2 must be the same as the **destination** IP port that was used in step 1.
-   - The *same* port (``INT_PORT``) is used in the internal and the external sides of the NAT.
+   - The **source** IP address (*REM_ADDR*) in step 2 must be the same as the **destination** IP address that was used in step 1.
+   - The **source** IP port (*REM_PORT*) in step 2 must be the same as the **destination** IP port that was used in step 1.
+   - The *same* port (*INT_PORT*) is used in the internal and the external sides of the NAT.
 
 
 
@@ -179,8 +179,8 @@ Visualization:
 
 .. note::
 
-   - When the outbound transmission is done in step 1, ``EXT_PORT1`` gets defined as a new random port number, assigned for the new remote transport address ``(REM_ADDR, REM_PORT1)``.
-   - Later, another outbound transmission is done in step 3, from the same local address and port to the same remote host but at a different port. ``EXT_PORT2`` is a new random port number, assigned for the new remote transport address ``(REM_ADDR, REM_PORT2)``.
+   - When the outbound transmission is done in step 1, *EXT_PORT1* gets defined as a new random port number, assigned for the new remote transport address *(REM_ADDR, REM_PORT1)*.
+   - Later, another outbound transmission is done in step 3, from the same local address and port to the same remote host but at a different port. *EXT_PORT2* is a new random port number, assigned for the new remote transport address *(REM_ADDR, REM_PORT2)*.
 
 
 
@@ -226,9 +226,9 @@ Set some helper variables: the *public* IP address of each host, and their liste
 
 .. code-block:: console
 
-   A_IP="11.11.11.11"  # Public IP address of the NAT which hides the host A
+   A_IP="198.51.100.1" # Public IP address of the NAT which hides the host A
    A_PORT="1111"       # Listening port on the host A
-   B_IP="22.22.22.22"  # Public IP address of the host B
+   B_IP="203.0.113.2"  # Public IP address of the host B
    B_PORT="2222"       # Listening port of the host B
 
 1. **A** starts listening for data. Leave this running in A:
@@ -265,11 +265,11 @@ Set some helper variables: the *public* IP address of each host, and their liste
 
 .. note::
 
-   - The difference between a Cone NAT and a Symmetric NAT can be detected during step 3. If the ``tcpdump`` command on **B** shows a source port equal to ``$A_PORT``, then the NAT is respecting the source port chosen by the application, which means that it is one of the Cone NAT types. However, if ``tcpdump`` shows that the source port is different from ``$A_PORT``, then the NAT is changing the source port during outbound mapping, which means that it is a Symmetric NAT.
+   - The difference between a Cone NAT and a Symmetric NAT can be detected during step 3. If the *tcpdump* command on **B** shows a source port equal to *$A_PORT*, then the NAT is respecting the source port chosen by the application, which means that it is one of the Cone NAT types. However, if *tcpdump* shows that the source port is different from *$A_PORT*, then the NAT is changing the source port during outbound mapping, which means that it is a Symmetric NAT.
 
    - In the case of a Cone NAT, the data sent from **B** should arrive correctly at **A** after step 4.
 
-   - In the case of a Symmetric NAT, the data sent from **B** won't arrive at **A** after step 4, because ``$A_PORT`` is the wrong destination port. If you write the correct port (as discovered in step 3) instead of ``$A_PORT``, then the data should arrive to **A**.
+   - In the case of a Symmetric NAT, the data sent from **B** won't arrive at **A** after step 4, because *$A_PORT* is the wrong destination port. If you write the correct port (as discovered in step 3) instead of *$A_PORT*, then the data should arrive to **A**.
 
 
 
