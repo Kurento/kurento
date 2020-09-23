@@ -50,7 +50,11 @@ Then, please provide us with information about the crash:
 
      The *.crash* report file **must be deleted** afterwards. *If an old crash report exists, new ones will not be generated*. So if you are experiencing crashes, make sure that the crash report file is always deleted after having shared it with us, so future crashes will also generate new report files.
 
-* We might ask you to run with a special build of Kurento that comes with support for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, a memory access error detector.
+* Otherwise, you can manually enable the generation of a **core dump** whenever KMS crashes. For this, edit the file ``/etc/default/kurento-media-server`` and uncomment the setting *DAEMON_CORE_PATTERN*, which by default will tell the Linux Kernel to generate core dumps in ``/tmp/``.
+
+* As a last resort, if no crash report can be obtained by any means, you may need to run KMS with a debugger. To do so, please follow the instructions here :ref:`dev-gdb`, to get a **backtrace** when the crash happens.
+
+* Finally, if a developer suspects that the crash might be due to a memory corruption error, we could ask you to run with a special build of Kurento that comes bundled with support for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, a memory access error detector.
 
   To do this, you'll need to run a `Kurento Docker image with AddressSanitizer <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags?name=asan>`__. If we ask for it, you would have to provide the `Docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ from running this image.
 
