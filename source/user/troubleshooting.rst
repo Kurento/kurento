@@ -48,9 +48,17 @@ Then, please provide us with information about the crash:
 
   .. note::
 
+     The *.crash* report file **is already compressed**, so you can go ahead and upload it to some file transfer service to share it with us.
+
+  .. note::
+
      The *.crash* report file **must be deleted** afterwards. *If an old crash report exists, new ones will not be generated*. So if you are experiencing crashes, make sure that the crash report file is always deleted after having shared it with us, so future crashes will also generate new report files.
 
 * Otherwise, you can manually enable the generation of a **core dump** whenever KMS crashes. For this, edit the file ``/etc/default/kurento-media-server`` and uncomment the setting *DAEMON_CORE_PATTERN*, which by default will tell the Linux Kernel to generate core dumps in ``/tmp/``.
+
+  .. note::
+
+     The *core dump* file **is NOT compressed**, so before uploading you should compress it, for a typically huge file size reduction, before uploading it to some file transfer service and sharing it with us.
 
 * As a last resort, if no crash report can be obtained by any means, you may need to run KMS with a debugger. To do so, please follow the instructions here :ref:`dev-gdb`, to get a **backtrace** when the crash happens.
 
