@@ -89,7 +89,24 @@
             },
             {
               "name": "networkCache",
-              "doc": "When using RTSP sources: Amount of milliseconds to buffer",
+              "doc": "RTSP buffer length.
+<p>
+  When receiving media from an RTSP source, the streamed video can suffer spikes
+  or stuttering, caused by hardware or network issues. Having a reception buffer
+  helps alleviate these problems, because it smoothes the stream of incoming
+  data to the receiving endpoint.
+</p>
+<p>
+  Finding a buffer length that works best for your connection might take some
+  tweaking, which can be done with this optional property. Note that a longer
+  buffer will be able to fix bigger network spikes, but at the cost of
+  introducing more latency to the media playback.
+</p>
+<ul>
+  <li>Unit: milliseconds.</li>
+  <li>Default: 2000.</li>
+</ul>
+              ",
               "type": "int",
               "optional": true,
               "defaultValue": 2000
