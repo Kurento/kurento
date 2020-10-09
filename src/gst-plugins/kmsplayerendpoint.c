@@ -655,7 +655,7 @@ appsink_eos_cb (GstAppSink * appsink, gpointer user_data)
 static GstPadProbeReturn
 appsrc_query_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 {
-  GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstQuery *query = gst_pad_probe_info_get_query (info);
   GstQueryType type = GST_QUERY_TYPE (query);
   GstElement *appsink = GST_ELEMENT (element);
 
@@ -764,7 +764,7 @@ static GstPadProbeReturn
 appsink_probe_set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info,
     gpointer element)
 {
-  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+  GstEvent *event = gst_pad_probe_info_get_event (info);
   GstElement *appsrc = GST_ELEMENT (element);
   GstCaps *caps;
 
@@ -788,7 +788,7 @@ static GstPadProbeReturn
 appsink_probe_query_appsrc_caps (GstPad * pad, GstPadProbeInfo * info,
     gpointer element)
 {
-  GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstQuery *query = gst_pad_probe_info_get_query (info);
   GstQueryType type = GST_QUERY_TYPE (query);
   GstElement *appsrc = GST_ELEMENT (element);
 

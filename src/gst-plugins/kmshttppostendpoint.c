@@ -168,7 +168,7 @@ static GstPadProbeReturn
 set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer httpep)
 {
   KmsHttpPostEndpoint *self = KMS_HTTP_POST_ENDPOINT (httpep);
-  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+  GstEvent *event = gst_pad_probe_info_get_event (info);
   GstCaps *audio_caps = NULL, *video_caps = NULL;
   GstElement *appsrc, *appsink, *agnosticbin;
   GstCaps *caps;

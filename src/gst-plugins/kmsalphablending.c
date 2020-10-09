@@ -465,7 +465,7 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info,
   KmsAlphaBlending *self = port_data->mixer;
   GstEvent *event;
 
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_EOS) {
+  if (GST_EVENT_TYPE (gst_pad_probe_info_get_event (info)) != GST_EVENT_EOS) {
     return GST_PAD_PROBE_OK;
   }
 
@@ -607,7 +607,7 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
   GstPadTemplate *sink_pad_template;
   KmsAlphaBlending *mixer = data->mixer;
 
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_CAPS) {
+  if (GST_EVENT_TYPE (gst_pad_probe_info_get_event (info)) != GST_EVENT_CAPS) {
     return GST_PAD_PROBE_PASS;
   }
 
