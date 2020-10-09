@@ -262,35 +262,35 @@ release_base_time_type (gpointer data)
   g_slice_free (BaseTimeType, data);
 }
 
+// Adjust timestamps to avoid gaps created by paused recordings.
 static GstFlowReturn
 recv_sample (GstAppSink * appsink, gpointer user_data)
 {
   KmsRecorderEndpoint *self =
       KMS_RECORDER_ENDPOINT (GST_OBJECT_PARENT (appsink));
-  KmsUriEndpointState state;
-  GstAppSrc *appsrc;
-  GstFlowReturn ret;
-  GstSample *sample;
-  GstSegment *segment;
-  GstBuffer *buffer;
-  BaseTimeType *base_time;
-  GstClockTime offset;
-  GstCaps *caps;
-  gboolean unlock_element = TRUE;
+  KmsUriEndpointState state = KMS_URI_ENDPOINT_STATE_STOP;
+  BaseTimeType *base_time = NULL;
+  GstCaps *caps = NULL;
 
-  appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
+  gboolean unlock_element = FALSE;
+  GstSample *sample = NULL;
+  GstFlowReturn ret = GST_FLOW_OK;
 
+  GstAppSrc *appsrc =
+      g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
   if (appsrc == NULL) {
     GST_ERROR_OBJECT (appsink, "No appsrc attached");
-    return GST_FLOW_NOT_LINKED;
+    ret = GST_FLOW_NOT_LINKED;
+    goto end;
   }
 
   sample = gst_app_sink_pull_sample (appsink);
   if (sample == NULL) {
-    return GST_FLOW_OK;
+    ret = GST_FLOW_OK;
+    goto end;
   }
 
-  buffer = gst_sample_get_buffer (sample);
+  GstBuffer *buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
     if (gst_sample_get_buffer_list (sample) != NULL) {
       GST_ERROR_OBJECT (appsink,
@@ -301,16 +301,18 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     goto end;
   }
 
-  segment = gst_sample_get_segment (sample);
+  const GstSegment *segment = gst_sample_get_segment (sample);
 
+  unlock_element = TRUE;
   KMS_ELEMENT_LOCK (self);
+
   state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (!((state == KMS_URI_ENDPOINT_STATE_START &&
               self->priv->transition == KMS_RECORDER_ENDPOINT_COMPLETED) ||
           self->priv->transition == KMS_RECORDER_ENDPOINT_STARTING)) {
     GST_LOG_OBJECT (appsink,
-        "Not recording, dropping buffer %" GST_PTR_FORMAT, buffer);
+        "Not recording, drop buffer %" GST_PTR_FORMAT, buffer);
     ret = GST_FLOW_OK;
     goto end;
   }
@@ -318,51 +320,75 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  if (GST_BUFFER_PTS_IS_VALID (buffer))
-    GST_BUFFER_PTS (buffer) =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME,
-        GST_BUFFER_PTS (buffer));
-  if (GST_BUFFER_DTS_IS_VALID (buffer))
-    GST_BUFFER_DTS (buffer) =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME,
-        GST_BUFFER_DTS (buffer));
+  // Ensure that PTS/DTS are measured from 00:00:00. Do this by replacing each
+  // one by their GStreamer running time, which always starts from 0 wrt. its
+  // containing segment.
+  {
+    if (GST_BUFFER_PTS_IS_VALID (buffer)) {
+      GST_BUFFER_PTS (buffer) = gst_segment_to_running_time (
+          segment, GST_FORMAT_TIME, GST_BUFFER_PTS (buffer));
+    }
+
+    if (GST_BUFFER_DTS_IS_VALID (buffer)) {
+      GST_BUFFER_DTS (buffer) = gst_segment_to_running_time (
+          segment, GST_FORMAT_TIME, GST_BUFFER_DTS (buffer));
+    }
+  }
 
   BASE_TIME_LOCK (self);
 
-  base_time = g_object_get_qdata (G_OBJECT (self), base_time_key_quark ());
+  // First time this runs, create a new BaseTime storage.
+  {
+    base_time = g_object_get_qdata (G_OBJECT (self), base_time_key_quark ());
+    if (base_time == NULL) {
+      base_time = g_slice_new0 (BaseTimeType);
+      base_time->pts = GST_CLOCK_TIME_NONE;
+      base_time->dts = GST_CLOCK_TIME_NONE;
+      base_time->audio_gaps = 0;
 
-  if (base_time == NULL) {
-    base_time = g_slice_new0 (BaseTimeType);
-    base_time->pts = GST_BUFFER_PTS (buffer);
-    base_time->dts = GST_BUFFER_DTS (buffer);
-    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
-        base_time->pts);
-    g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (), base_time,
-        release_base_time_type);
+      g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (),
+          base_time, release_base_time_type);
+    }
+
+    if (!GST_CLOCK_TIME_IS_VALID (base_time->pts)
+        && GST_BUFFER_PTS_IS_VALID (buffer)) {
+      base_time->pts = GST_BUFFER_PTS (buffer);
+      GST_DEBUG_OBJECT (self, "Setting PTS base time to %" GST_TIME_FORMAT,
+          GST_TIME_ARGS (base_time->pts));
+    }
+
+    if (!GST_CLOCK_TIME_IS_VALID (base_time->dts)
+        && GST_BUFFER_DTS_IS_VALID (buffer)) {
+      base_time->dts = GST_BUFFER_DTS (buffer);
+      GST_DEBUG_OBJECT (self, "Setting DTS base time to %" GST_TIME_FORMAT,
+          GST_TIME_ARGS (base_time->dts));
+    }
   }
 
-  if (!GST_CLOCK_TIME_IS_VALID (base_time->pts)
-      && GST_BUFFER_PTS_IS_VALID (buffer)) {
-    base_time->pts = GST_BUFFER_PTS (buffer);
-    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
-        base_time->pts);
-    base_time->dts = GST_BUFFER_DTS (buffer);
-  }
+  // Adjust PTS/DTS of all buffers, so recordings are always created with an
+  // initial timestamp of 0 (0:00:00.000).
+  {
+    // FIXME: There is some skew introduced each time the recording is paused.
+    // The 'paused_time' doesn't account exactly for all the time, it is missing
+    // some milliseconds. Maybe due to latency in upstream elements?
 
-  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)) {
-    if (GST_BUFFER_PTS_IS_VALID (buffer)) {
-      offset = base_time->pts + self->priv->paused_time;
+    if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
+        && GST_BUFFER_PTS_IS_VALID (buffer)) {
+      const GstClockTime offset =
+          base_time->pts + self->priv->paused_time;
+      // PTS -= offset, but preventing underflows.
       if (GST_BUFFER_PTS (buffer) > offset) {
         GST_BUFFER_PTS (buffer) -= offset;
       } else {
         GST_BUFFER_PTS (buffer) = 0;
       }
     }
-  }
 
-  if (GST_CLOCK_TIME_IS_VALID (base_time->dts)) {
-    if (GST_BUFFER_DTS_IS_VALID (buffer)) {
-      offset = base_time->dts + self->priv->paused_time;
+    if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
+        && GST_BUFFER_DTS_IS_VALID (buffer)) {
+      const GstClockTime offset =
+          base_time->dts + self->priv->paused_time;
+      // DTS -= offset, but preventing underflows.
       if (GST_BUFFER_DTS (buffer) > offset) {
         GST_BUFFER_DTS (buffer) -= offset;
       } else {
@@ -371,29 +397,26 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     }
   }
 
-  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
+  BASE_TIME_UNLOCK (self);
 
+  // Set some flags to make sure the buffer is appropriately handled downstream.
   GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_LIVE);
-
-  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER))
+  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER)) {
     GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+  unlock_element = FALSE;
 
   caps = gst_app_src_get_caps (appsrc);
-
   if (caps == NULL) {
     GST_ERROR_OBJECT (appsrc, "Trying to push buffer without setting caps");
   } else {
     gst_caps_unref (caps);
   }
-
-  KMS_ELEMENT_UNLOCK (self);
-
-  unlock_element = FALSE;
-
   ret = gst_app_src_push_buffer (appsrc, buffer);
 
   if (ret != GST_FLOW_OK) {
-    /* something wrong */
     GST_ERROR_OBJECT (self, "Could not send buffer to appsrc %s. Cause: %s",
         GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
     ret = GST_FLOW_CUSTOM_SUCCESS;
@@ -995,42 +1018,40 @@ configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
   GstEvent *event = gst_pad_probe_info_get_event (info);
-  GstElement *appsrc, *appsink;
-  GstCaps *caps;
+  GstCaps *caps = NULL;
+  GstPadProbeReturn ret = GST_PAD_PROBE_OK;
 
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
-    return GST_PAD_PROBE_OK;
+  if (GST_EVENT_TYPE (event) == GST_EVENT_CAPS) {
+    gst_event_parse_caps (event, &caps);
 
-  gst_event_parse_caps (event, &caps);
+    if (gst_caps_get_size (caps) == 0) {
+      GST_ERROR_OBJECT (pad, "Invalid CAPS event %" GST_PTR_FORMAT, event);
+      return GST_PAD_PROBE_OK;
+    }
 
-  GST_DEBUG_OBJECT (pad, "Processing caps event %" GST_PTR_FORMAT, caps);
+    GST_DEBUG_OBJECT (pad, "Processing CAPS event %" GST_PTR_FORMAT, caps);
 
-  if (gst_caps_get_size (caps) == 0) {
-    GST_ERROR_OBJECT (pad, "Invalid event %" GST_PTR_FORMAT, event);
+    if (!gst_caps_is_fixed (caps)) {
+      GST_WARNING_OBJECT (
+          pad, "Not fixed caps in CAPS event %" GST_PTR_FORMAT, event);
+    }
 
-    return GST_PAD_PROBE_OK;
+    GstElement *appsink = gst_pad_get_parent_element (pad);
+    GST_DEBUG_OBJECT (appsink, "Setting caps: %" GST_PTR_FORMAT, caps);
+    set_appsink_caps (appsink, caps, self->priv->profile);
+
+    GstElement *appsrc =
+        g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
+    if (appsrc != NULL) {
+      set_appsrc_caps (appsrc, caps);
+    } else {
+      GST_ERROR_OBJECT (pad, "No appsrc attached");
+    }
+
+    g_object_unref (appsink);
   }
 
-  if (!gst_caps_is_fixed (caps)) {
-    GST_WARNING_OBJECT (pad, "Not fixed caps in event %" GST_PTR_FORMAT, event);
-  }
-
-  appsink = gst_pad_get_parent_element (pad);
-  GST_DEBUG_OBJECT (appsink, "Setting caps: %" GST_PTR_FORMAT, caps);
-
-  set_appsink_caps (appsink, caps, self->priv->profile);
-
-  appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
-
-  if (appsrc != NULL) {
-    set_appsrc_caps (appsrc, caps);
-  } else {
-    GST_ERROR_OBJECT (pad, "No appsrc attached");
-  }
-
-  g_object_unref (appsink);
-
-  return GST_PAD_PROBE_OK;
+  return ret;
 }
 
 static GstPadLinkReturn
@@ -1168,12 +1189,12 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   GstPad *sinkpad;
 
   if (g_hash_table_contains (self->priv->sink_pad_data, name)) {
-    GST_WARNING_OBJECT (self, "Sink %s already added", name);
+    GST_WARNING_OBJECT (self, "Sink '%s' already added", name);
     return;
   }
 
   if (type != KMS_ELEMENT_PAD_TYPE_AUDIO && type != KMS_ELEMENT_PAD_TYPE_VIDEO) {
-    GST_WARNING_OBJECT (self, "Unsupported pad type %u", type);
+    GST_WARNING_OBJECT (self, "Unsupported pad type: %u", type);
     return;
   }
 
