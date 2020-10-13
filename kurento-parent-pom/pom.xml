@@ -124,7 +124,7 @@
 		<version.keystone-client>3.2.7</version.keystone-client>
 
 		<version.javax.inject>1</version.javax.inject>
-		<version.junit>4.12</version.junit>
+		<version.junit>4.13.1</version.junit>
 		<version.mockito>1.10.19</version.mockito>
 		<version.powermock>1.7.4</version.powermock>
 		<version.hamcrest>2.1</version.hamcrest>
