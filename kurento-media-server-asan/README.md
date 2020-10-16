@@ -2,8 +2,9 @@
     <img src="https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120">
 </a>
 
-Kurento Media Server with AddressSanitizer
-==========================================
+
+
+# Kurento Media Server with AddressSanitizer
 
 [![FIWARE Chapter](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/media-streams.svg)](https://www.fiware.org/developers/catalogue/)
 [![License badge](https://img.shields.io/badge/license-Apache2-orange.svg)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -11,7 +12,7 @@ Kurento Media Server with AddressSanitizer
 [![Docker badge](https://img.shields.io/docker/pulls/fiware/orion.svg)](https://hub.docker.com/r/kurento/kurento-media-server)
 [![Support badge]( https://img.shields.io/badge/tag-Kurento-orange.svg?logo=stackoverflow)](http://stackoverflow.com/questions/tagged/kurento)
 <br/>
-[![Documentation badge](https://readthedocs.org/projects/fiware-orion/badge/?version=latest)](https://doc-kurento.readthedocs.io)
+[![Documentation badge](https://readthedocs.org/projects/fiware-orion/badge/?version=latest)](https://doc-kurento.readthedocs.io/)
 [![FIWARE member status](https://nexus.lab.fiware.org/static/badges/statuses/kurento.svg)](https://www.fiware.org/developers/catalogue/)
 
 This Docker image contains a special build of Kurento Media Server with [AddressSanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer), the memory error detector that comes built-in with GCC, the C and C++ compiler that Kurento uses.
@@ -20,12 +21,11 @@ This memory error detector helps finding about out-of-bounds accesses, use-after
 
 Usage information for the Kurento Media Server Docker images is in the appropriate page in Docker Hub:
 
-[kurento/kurento-media-server-asan](https://hub.docker.com/r/kurento/kurento-media-server-asan)
+[kurento/kurento-media-server](https://hub.docker.com/r/kurento/kurento-media-server)
 
 
 
-About Kurento
-=============
+# About Kurento
 
 Kurento is an open source software project providing a platform suitable for creating modular applications with advanced real-time communication capabilities. For knowing more about Kurento, please visit the Kurento project website: https://www.kurento.org/.
 
@@ -56,8 +56,7 @@ Kurento is also part of the [NUBOMEDIA] research initiative.
 
 
 
-Documentation
--------------
+## Documentation
 
 The Kurento project provides detailed [documentation] including tutorials, installation and development guides. The [Open API specification], also known as *Kurento Protocol*, is available on [apiary.io].
 
@@ -67,14 +66,13 @@ The Kurento project provides detailed [documentation] including tutorials, insta
 
 
 
-Useful Links
-------------
+## Useful Links
 
 Usage:
 
 * [Installation Guide](https://doc-kurento.readthedocs.io/en/stable/user/installation.html)
 * [Docker Deployment Guide](https://hub.docker.com/r/kurento/kurento-media-server)
-* [Contribution Guide](https://doc-kurento.readthedocs.io/en/stable/project/contribute.html)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/stable/project/contributing.html)
 * [Developer Guide](https://doc-kurento.readthedocs.io/en/stable/dev/dev_guide.html)
 
 Issues:
@@ -90,35 +88,29 @@ News:
 
 Training:
 
-* [Kurento tutorials](https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html)
+* [Kurento Tutorials]
 
 
 
-Source
-------
+## Source code
 
-All source code belonging to the Kurento project can be found in the [Kurento GitHub organization page].
-
-[Kurento GitHub organization page]: https://github.com/Kurento
+All source code belonging to the Kurento project can be found under the [Kurento GitHub organization](https://github.com/Kurento) page.
 
 
 
-Testing
--------
+## Testing
 
 Kurento has a full set of different tests mainly focused in the integrated and system tests, more specifically e2e tests that anyone can run to assess different parts of Kurento, namely functional, stability, tutorials, and API.
 
 In order to assess properly Kurento from a final user perspective, a rich suite of E2E tests has been designed and implemented. To that aim, the Kurento Testing Framework (KTF) has been created. KTF is a part of the Kurento project aimed to carry out end-to-end (E2E) tests for Kurento. KTF has been implemented on the top of two well-known open-source testing frameworks: JUnit and Selenium.
 
-If you want to know more about the Kurento Testing Framework and how to run all the available tests for Kurento you will find more information in [Kurento developers documentation > Testing]
-
-[Kurento developers documentation > Testing]: https://doc-kurento.readthedocs.io/en/stable/dev/testing.html
+If you want to know more about the Kurento Testing Framework and how to run all the available tests for Kurento you will find more information here: [Kurento Testing](https://doc-kurento.readthedocs.io/en/stable/dev/testing.html).
 
 
 
-Licensing and distribution
---------------------------
+## Licensing and distribution
 
+```
 Copyright 2019 Kurento
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -132,3 +124,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+```
+
+
+
+<!--- Links --->
+
+[Kurento Client]: https://doc-kurento.readthedocs.io/en/stable/features/kurento_client.html
+[Kurento Tutorials]: https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html

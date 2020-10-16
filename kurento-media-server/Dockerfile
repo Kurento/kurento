@@ -53,11 +53,13 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     LANG="C.UTF-8"
 
 # Install required tools:
+# * curl: For `healthchecker.sh`
+# * dnsutils: For `dig` in `getmyip.sh`
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
-# * curl: For "entrypoint.sh" and "healthchecker.sh"
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
-        gnupg \
         curl \
+        dnsutils \
+        gnupg \
  && rm -rf /var/lib/apt/lists/*
 
 # Configure Apt:
@@ -103,14 +105,15 @@ RUN apt-key adv \
         kurento-dbg \
  && rm -rf /var/lib/apt/lists/*
 
-# Configure environment for KMS. All of this can be overriden with `docker run`.
+# Configure environment for KMS. All of these can be overriden with `docker run`.
 # * Disable color in debug logs
 # * Provide default empty values for all environment variables supported by
 #   the entrypoint script. This acts more as documentation than really a need.
 ENV GST_DEBUG_NO_COLOR=1 \
     GST_DEBUG="" \
     KMS_MTU="" \
-    KMS_EXTERNAL_ADDRESS="" \
+    KMS_EXTERNAL_IPV4="" \
+    KMS_EXTERNAL_IPV6="" \
     KMS_NETWORK_INTERFACES="" \
     KMS_STUN_IP="" \
     KMS_STUN_PORT="" \
@@ -119,8 +122,9 @@ ENV GST_DEBUG_NO_COLOR=1 \
 # Expose default Kurento RPC control port
 EXPOSE 8888
 
-COPY ./entrypoint.sh /entrypoint.sh
-COPY ./healthchecker.sh /healthchecker.sh
+COPY entrypoint.sh /
+COPY getmyip.sh /
+COPY healthchecker.sh /
 
 HEALTHCHECK --start-period=15s --interval=30s --timeout=3s --retries=1 CMD /healthchecker.sh
 

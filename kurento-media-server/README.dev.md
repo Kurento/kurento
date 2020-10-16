@@ -142,19 +142,23 @@ Equivalent to KMS options `stunServerAddress`, `stunServerPort`, and `turnURL`, 
 
 To specify the network interface name(s) that KMS should use to communicate from within Docker, you can do so with the variable `KMS_NETWORK_INTERFACES`.
 
-Equivalent to KMS option `networkInterfaces` in the settings file `/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`. Client API docs: [Java](https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String-), [Javascript](https://doc-kurento.readthedocs.io/en/stable/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces).
+Equivalent to KMS option `networkInterfaces` in the settings file `/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`.
+
+Client API docs: [Java](https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String-), [Javascript](https://doc-kurento.readthedocs.io/en/stable/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces).
 
 
 
-### External IP address: KMS_EXTERNAL_ADDRESS
+### External IP address: KMS_EXTERNAL_IPV4, KMS_EXTERNAL_IPV6
 
 Only for advanced users who know what they are doing.
 
-To force an external IP address to be used in all of WebRTC ICE candidates (which can speed up WenRTC connection establishment in scenarios where the external or public IP is already well known) you can use the variable `KMS_EXTERNAL_ADDRESS`.
+You can use the variables `KMS_EXTERNAL_IPV4` or `KMS_EXTERNAL_IPV6` to force mangling all of the Kurento IPv4 or IPv6 ICE candidates to contain the given address. This can speed up WebRTC connection establishment in scenarios where the external or public IP is already well known, also having the benefit that STUN won't be needed *for the media server*.
 
-If the special value `auto` is used, then the container's *entrypoint* script auto-discovers its own public IP address by using the external service **ifconfig.co**. In cases where this service is not reachable, the `KMS_EXTERNAL_ADDRESS` parameter is left unset.
+If the special value `auto` is used, then the container will auto-discover its own public IP address by performing a DNS query to some of the well established providers (OpenDNS, Google, Cloudflare). In cases where these services are not reachable, the external IP parameters are left unset.
 
-Equivalent to KMS option `externalAddress` in the settings file `/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`. Client API docs: [Java](https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalAddress-java.lang.String-), [Javascript](https://doc-kurento.readthedocs.io/en/stable/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalAddress).
+Equivalent to KMS options `externalIPv4` and `externalIPv6` in the settings file `/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`.
+
+Client API docs: [Java](https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalIPv4-java.lang.String-), [Javascript](https://doc-kurento.readthedocs.io/en/stable/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalIPv4).
 
 
 
@@ -172,7 +176,9 @@ Only for advanced users who know what they are doing.
 
 It is possible to specify a network MTU different than the default of 1200 Bytes, by using the variable `KMS_MTU`.
 
-Equivalent to KMS option `mtu` in the settings file `/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini`. Client API docs: [Java](https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int-), [Javascript](https://doc-kurento.readthedocs.io/en/stable/_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu).
+Equivalent to KMS option `mtu` in the settings file `/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini`.
+
+Client API docs: [Java](https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int-), [Javascript](https://doc-kurento.readthedocs.io/en/stable/_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu).
 
 
 

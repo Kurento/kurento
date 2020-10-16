@@ -27,9 +27,9 @@
 #
 #   Optional. Default: "dev".
 #
-# --build-arg KMS_IMAGE=<DockerTag>
+# --build-arg KMS_IMAGE=<KmsImage>
 #
-#   <DockerTag> is:
+#   <KmsImage> is:
 #   * "kurento/kurento-media-server:<KmsVersion>" for release,
 #   * "kurento/kurento-media-server-dev:latest" for nightly.
 #
@@ -94,7 +94,7 @@ RUN add-apt-repository --yes ppa:ubuntu-toolchain-r/test \
  && update-alternatives --set gcc "/usr/bin/gcc-${GCC_VERSION}"
 
 # Download, build, and dist KMS
-COPY ./build.sh /
+COPY build.sh /
 RUN /build.sh
 
 # Final Docker stage with only the final files
@@ -112,6 +112,7 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 COPY --from=builder /kurento-asan /kurento-asan
 
 # Get and run the custom entrypoint
-COPY ./entrypoint.sh /
+COPY entrypoint.sh /
+COPY getmyip.sh /
 WORKDIR /kurento-asan
 ENTRYPOINT ["/entrypoint.sh"]

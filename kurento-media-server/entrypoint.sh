@@ -57,14 +57,22 @@ if [[ -n "${KMS_MTU:-}" ]]; then
 fi
 
 # WebRtcEndpoint settings
-if [[ -n "${KMS_EXTERNAL_ADDRESS:-}" ]]; then
-    if [[ "$KMS_EXTERNAL_ADDRESS" == "auto" ]]; then
-        # shellcheck disable=SC2015
-        IP="$(curl ifconfig.co 2>/dev/null)" \
-            && set_parameter "$WEBRTC_FILE" "externalAddress" "$IP" \
-            || true
+if [[ -n "${KMS_EXTERNAL_IPV4:-}" ]]; then
+    if [[ "$KMS_EXTERNAL_IPV4" == "auto" ]]; then
+        if IP="$(/getmyip.sh --ipv4)"; then
+            set_parameter "$WEBRTC_FILE" "externalIPv4" "$IP"
+        fi
     else
-        set_parameter "$WEBRTC_FILE" "externalAddress" "$KMS_EXTERNAL_ADDRESS"
+        set_parameter "$WEBRTC_FILE" "externalIPv4" "$KMS_EXTERNAL_IPV4"
+    fi
+fi
+if [[ -n "${KMS_EXTERNAL_IPV6:-}" ]]; then
+    if [[ "$KMS_EXTERNAL_IPV6" == "auto" ]]; then
+        if IP="$(/getmyip.sh --ipv6)"; then
+            set_parameter "$WEBRTC_FILE" "externalIPv6" "$IP"
+        fi
+    else
+        set_parameter "$WEBRTC_FILE" "externalIPv6" "$KMS_EXTERNAL_IPV6"
     fi
 fi
 if [[ -n "${KMS_NETWORK_INTERFACES:-}" ]]; then

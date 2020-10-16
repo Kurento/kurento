@@ -8,9 +8,24 @@ set -o errexit -o errtrace -o pipefail -o nounset
 # Trace all commands
 set -o xtrace
 
+# Trap functions
+function on_error() {
+    echo "[Docker entrypoint] ERROR ($?)"
+    exit 1
+}
+trap on_error ERR
+
 # Settings
 BASE_RTP_FILE="/etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini"
 WEBRTC_FILE="/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini"
+
+# Check root permissions -- Overriding the Docker container run user (e.g. with
+# `docker run --user=1234`) is not supported, because this entrypoint script
+# needs to edit root-owned files under "/etc".
+[[ "$(id -u)" -eq 0 ]] || {
+    echo "[Docker entrypoint] ERROR: Please run container as root user"
+    exit 1
+}
 
 # Aux function: set value to a given parameter
 function set_parameter() {
@@ -22,8 +37,8 @@ function set_parameter() {
     local COMMENT=";"  # Kurento .ini files use ';' for comment lines
     local REGEX="^${COMMENT}?\s*${PARAM}=.*"
 
-    if grep --extended-regexp --quiet "$REGEX" "$FILE"; then
-        sed --regexp-extended --in-place "s/${REGEX}/${PARAM}=${VALUE}/" "$FILE"
+    if grep --extended-regexp -q "$REGEX" "$FILE"; then
+        sed --regexp-extended -i "s/${REGEX}/${PARAM}=${VALUE}/" "$FILE"
     else
         echo "${PARAM}=${VALUE}" >>"$FILE"
     fi
@@ -41,14 +56,22 @@ if [[ -n "${KMS_MTU:-}" ]]; then
 fi
 
 # WebRtcEndpoint settings
-if [[ -n "${KMS_EXTERNAL_ADDRESS:-}" ]]; then
-    if [[ "$KMS_EXTERNAL_ADDRESS" == "auto" ]]; then
-        # shellcheck disable=SC2015
-        IP="$(curl ifconfig.co 2>/dev/null)" \
-            && set_parameter "$WEBRTC_FILE" "externalAddress" "$IP" \
-            || true
+if [[ -n "${KMS_EXTERNAL_IPV4:-}" ]]; then
+    if [[ "$KMS_EXTERNAL_IPV4" == "auto" ]]; then
+        if IP="$(/getmyip.sh --ipv4)"; then
+            set_parameter "$WEBRTC_FILE" "externalIPv4" "$IP"
+        fi
     else
-        set_parameter "$WEBRTC_FILE" "externalAddress" "$KMS_EXTERNAL_ADDRESS"
+        set_parameter "$WEBRTC_FILE" "externalIPv4" "$KMS_EXTERNAL_IPV4"
+    fi
+fi
+if [[ -n "${KMS_EXTERNAL_IPV6:-}" ]]; then
+    if [[ "$KMS_EXTERNAL_IPV6" == "auto" ]]; then
+        if IP="$(/getmyip.sh --ipv6)"; then
+            set_parameter "$WEBRTC_FILE" "externalIPv6" "$IP"
+        fi
+    else
+        set_parameter "$WEBRTC_FILE" "externalIPv6" "$KMS_EXTERNAL_IPV6"
     fi
 fi
 if [[ -n "${KMS_NETWORK_INTERFACES:-}" ]]; then
@@ -62,7 +85,7 @@ if [[ -n "${KMS_TURN_URL:-}" ]]; then
     set_parameter "$WEBRTC_FILE" "turnURL" "$KMS_TURN_URL"
 fi
 
-# Remove the IPv6 loopback until IPv6 is well supported.
+# Remove the IPv6 loopback until IPv6 is well supported in KMS.
 # Notes:
 # - `cat /etc/hosts | sed | tee` because `sed -i /etc/hosts` won't work inside a
 #   Docker container.
@@ -70,6 +93,12 @@ fi
 #   E.g. `docker run --user=1234`.
 # shellcheck disable=SC2002
 cat /etc/hosts | sed '/::1/d' | tee /etc/hosts >/dev/null || true
+
+# Debug logging -- If empty or unset, use suggested levels
+# https://doc-kurento.readthedocs.io/en/latest/features/logging.html#suggested-levels
+if [[ -z "${GST_DEBUG:-}" ]]; then
+    export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
+fi
 
 # Run Kurento Media Server
 # Use ASAN_OPTIONS recommended for aggressive diagnostics:
