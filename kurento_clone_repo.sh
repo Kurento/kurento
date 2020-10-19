@@ -10,7 +10,7 @@
 #/
 #/   2: Branch, tag or commit hash.
 #/      Optional.
-#/      Default: $JOB_GIT_REF, or "master".
+#/      Default: $JOB_GIT_REF, or repo default branch.
 #/
 #/   3: Destination directory.
 #/      Optional.
@@ -20,7 +20,12 @@
 #/ Environment variables:
 #/
 #/ KURENTO_GIT_REPOSITORY="git@github.com:Kurento"
-#/   Defined in Jenkins
+#/   Defined in Jenkins.
+#/   Required.
+#/
+#/ JOB_GIT_REF
+#/   Defined in Jenkins job.
+#/   Optional.
 
 
 # Shell setup
@@ -39,15 +44,16 @@ set -o xtrace
 
 # ------------ Script start ------------
 
-# Load arguments, with default fallbacks
-CLONE_NAME="${1:-${KURENTO_PROJECT}}"
-CLONE_REF="${2:-${JOB_GIT_REF:-master}}"
+# Check arguments, with default fallbacks
+CLONE_NAME="${1:-${KURENTO_PROJECT:-}}"
+CLONE_REF="${2:-${JOB_GIT_REF:-}}"
 CLONE_DIR="${3:-${CLONE_NAME}}"
+
+[[ -n "${KURENTO_GIT_REPOSITORY:-}" ]] \
+|| { echo "ERROR Missing env var: KURENTO_GIT_REPOSITORY"; exit 1; }
 
 # Internal variables
 CLONE_URL="${KURENTO_GIT_REPOSITORY}/${CLONE_NAME}.git"
-
-log "Git clone $CLONE_URL ($CLONE_REF) to $PWD/$CLONE_DIR"
 
 if [ -z "${GIT_KEY}" ]; then
     git clone "$CLONE_URL" "$CLONE_DIR" \
@@ -61,6 +67,13 @@ fi
 
 {
     pushd "$CLONE_DIR"
+
+    # If no checkout reference, use the repo default branch.
+    if [[ -z "$CLONE_REF" ]]; then
+        CLONE_REF="$(kurento_git_default_branch.sh)"
+    fi
+
+    log "Git clone $CLONE_URL ($CLONE_REF) to $PWD/$CLONE_DIR"
 
     git fetch . refs/changes/*:refs/changes/* \
     || { log "ERROR Command failed: git fetch"; exit 1; }

@@ -14,7 +14,8 @@ echo "##################### EXECUTE: kurento_build_js_project ##################
 #   Name of the branch where artifacts are build
 
 [ -z "$BASE_NAME" ] && exit 1
-[ -z "$GERRIT_REFSPEC" ] && GERRIT_REFSPEC=master
+# If no checkout reference, use the repo default branch.
+[ -z "$GERRIT_REFSPEC" ] && GERRIT_REFSPEC="$(kurento_git_default_branch.sh)"
 export PROJECT_NAME=$BASE_NAME-js
 kurento_mavenize_js_project.sh
 

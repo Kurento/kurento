@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Clone all sub-repos forming part of kms-omni-build, in their 'master' branch.
+# Clone all sub-repos forming part of kms-omni-build, in their default branch.
 # This provides independent repositories, instead of using Git submodules.
 
 

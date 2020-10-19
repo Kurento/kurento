@@ -147,7 +147,8 @@ cd kms-omni-build/
 git submodule update --init --recursive
 git submodule update --remote
 if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
-    REF="master"
+    # Use the repo default branch.
+    REF="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD)"
 else
     REF="$DOCKER_KMS_VERSION"
 fi

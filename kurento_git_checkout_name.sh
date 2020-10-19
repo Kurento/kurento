@@ -3,7 +3,7 @@
 #/ Check out a given branch or tag name, if it exists.
 #/
 #/ This script will try to check out the provided name in the current Git
-#/ repository, and will revert back to the name 'master' if the desired one
+#/ repository, and will revert back to the default branch if the desired one
 #/ does not exist.
 #/
 #/
@@ -14,7 +14,7 @@
 #/
 #/   Git branch or tag name that should be checked out, if it exists.
 #/
-#/   Optional. Default: 'master'.
+#/   Optional. Default: Default repo branch.
 #/   See also: '--fallback'.
 #/
 #/ --fallback <FallbackName>
@@ -22,7 +22,7 @@
 #/   Branch name that should be checked out when a <GitName> has been
 #/   requested but it doesn't exist in the current repository.
 #/
-#/   Optional. Default: 'master'.
+#/   Optional. Default: Default repo branch.
 #/   See also: '--name'.
 
 
@@ -41,11 +41,16 @@ set -o xtrace
 
 
 
+# Repo default branch.
+GIT_DEFAULT="$(kurento_git_default_branch.sh)"
+
+
+
 # Parse call arguments
 # --------------------
 
-CFG_NAME="master"
-CFG_FALLBACK="master"
+CFG_NAME="$GIT_DEFAULT"
+CFG_FALLBACK="$GIT_DEFAULT"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -101,7 +106,7 @@ else
     if git rev-parse --verify --quiet "$BRANCH_NAME"; then
         git checkout --track "$BRANCH_NAME"
     else
-        git checkout master
+        git checkout "$GIT_DEFAULT"
     fi
 fi
 
