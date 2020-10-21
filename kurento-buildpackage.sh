@@ -273,10 +273,7 @@ log "CFG_TIMESTAMP=$CFG_TIMESTAMP"
 # Internal control variables
 # --------------------------
 
-APT_UPDATE_NEEDED="true"
-
 # Get Ubuntu version definitions. This brings variables such as:
-#
 #     DISTRIB_CODENAME="bionic"
 #     DISTRIB_RELEASE="18.04"
 #
@@ -369,12 +366,17 @@ pushd "$CFG_SRCDIR" || {
 
 log "Install build dependencies"
 
-# In clean Ubuntu systems 'tzdata' might not be installed yet, but it may be now,
-# so make sure interactive prompts from it are disabled
+# Notes:
+# * DEBIAN_FRONTEND: In clean Ubuntu systems 'tzdata' might not be installed
+#   yet, but it may be now, so make sure interactive prompts are disabled.
+# * Debug::pkgProblemResolver=yes: Show details about the dependency resolution.
+#   Docs: http://manpages.ubuntu.com/manpages/bionic/man5/apt.conf.5.html
+# * --target-release '*-backports': Prefer installing newer versions of packages
+#   from the backports repository.
 DEBIAN_FRONTEND=noninteractive \
 apt-get update \
 && mk-build-deps --install --remove \
-    --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --no-remove --yes' \
+    --tool="apt-get -o Debug::pkgProblemResolver=yes --target-release '*-backports' --no-install-recommends --no-remove --yes" \
     ./debian/control
 
 # HACK
