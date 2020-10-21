@@ -13,6 +13,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -80,5 +82,9 @@ if [ $NUM_IMAGES -gt $KEEP_IMAGES ]; then
         done
     done
 fi
+
+
+
+log "==================== END ===================="
 
 exit ${status:-0}

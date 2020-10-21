@@ -37,6 +37,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -160,3 +162,7 @@ echo "Everything got installed and built successfully!"
 
 DOCKERCOMMANDS
 # In-place Docker container commands END
+
+
+
+log "==================== END ===================="

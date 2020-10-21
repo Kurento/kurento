@@ -49,6 +49,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -119,3 +121,7 @@ docker run --rm \
     "$CONTAINER_IMAGE" \
     --install-files . \
     $KURENTO_BUILDPACKAGE_ARGS
+
+
+
+log "==================== END ===================="

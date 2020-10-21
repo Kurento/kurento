@@ -7,12 +7,12 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
 
-
-log "##################### EXECUTE: kurento_mavenice_js_project #####################"
 
 # PROJECT_NAME string
 #   Project name used in pom.xml
@@ -271,3 +271,7 @@ cat >"$ASSEMBLY_FILE" <<EOF
   </fileSets>
 </assembly>
 EOF
+
+
+
+log "==================== END ===================="

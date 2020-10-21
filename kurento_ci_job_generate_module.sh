@@ -55,6 +55,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -135,3 +137,7 @@ RUN_COMMANDS=(
 
 export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:xenial"
 "${KURENTO_SCRIPTS_HOME}/kurento_ci_container_job_setup.sh" "${RUN_COMMANDS[@]}"
+
+
+
+log "==================== END ===================="

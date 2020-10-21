@@ -34,6 +34,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -102,3 +104,9 @@ else
         git checkout master
     fi
 fi
+
+
+
+log "==================== END ===================="
+
+exit ${status:-0}

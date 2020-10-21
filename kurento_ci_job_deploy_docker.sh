@@ -48,6 +48,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -125,3 +127,7 @@ fi
 log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}:${TAG}'"
 
 popd  # Exit kurento-media-server/
+
+
+
+log "==================== END ===================="

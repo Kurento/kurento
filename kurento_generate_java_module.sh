@@ -9,12 +9,12 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
 
-
-log "##################### EXECUTE: kurento_generate_java_module #####################"
 
 # MAVEN_KURENTO_SNAPSHOTS url
 #   URL of Kurento repository for maven snapshots
@@ -80,3 +80,7 @@ kurento_maven_deploy.sh || {
 #   log "ERROR: Command failed: kurento_check_version (tagging enabled)"
 #   exit 1
 # }
+
+
+
+log "==================== END ===================="

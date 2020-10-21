@@ -30,6 +30,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -80,3 +82,7 @@ fi
 
     popd  # $CLONE_DIR
 }
+
+
+
+log "==================== END ===================="

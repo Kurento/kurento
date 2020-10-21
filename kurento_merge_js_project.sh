@@ -7,12 +7,12 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
 
-
-log "##################### EXECUTE: kurento_merge_js_project #####################"
 
 # KURENTO_PROJECT string
 #   Name of the project to be merged
@@ -142,3 +142,7 @@ kurento_check_version.sh true || {
   log "ERROR: Command failed: kurento_check_version (tagging enabled)"
   exit 1
 }
+
+
+
+log "==================== END ===================="

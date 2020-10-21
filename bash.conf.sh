@@ -62,14 +62,9 @@ alias log='({ flags="$-"; set +x; } 2>/dev/null; echo_and_restore) <<<'
 # This runs at the end or, thanks to 'errexit', upon any error
 on_exit() {
     { _RC="$?"; set +x; } 2>/dev/null
-    if ((_RC)); then log "ERROR ($_RC)"; else log "SUCCESS"; fi
-    log "#################### END ####################"
+    if ((_RC)); then log "ERROR ($_RC)"; fi
 }
 trap on_exit EXIT
-
-
-
-log "==================== BEGIN ===================="
 
 
 

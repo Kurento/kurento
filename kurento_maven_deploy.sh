@@ -9,12 +9,13 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
 
 
-log "##################### EXECUTE: kurento_maven_deploy.sh #####################"
 # MAVEN_SETTINGS path
 #   Path to settings.xml file used by maven
 #
@@ -120,3 +121,7 @@ elif [[ $PROJECT_VERSION != *-SNAPSHOT ]] && [[ -n "$RELEASE_REPOSITORY" ]]; the
             }
     fi
 fi
+
+
+
+log "==================== END ===================="

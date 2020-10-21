@@ -10,17 +10,21 @@
 
 
 
-# NOTE: Other scripts expect that this script only prints the version.
-# Don't print any debug messages, and if you do, make sure they are redirected
-# to stderr.
-#
-# For this reason, we don't load our shell setup script here: bash.conf.sh
+# NOTE: DO NOT print debug messages to stdout; callers expect that this script
+# only outputs its intended result.
+# If you need debug, make sure it gets redirected to stderr.
 
-# Bash options for strict error checking
-set -o errexit -o errtrace -o pipefail -o nounset
 
-# Trace all commands
-set -o xtrace
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+# Trace all commands (to stderr).
+#set -o xtrace
 
 
 

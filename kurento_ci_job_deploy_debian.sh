@@ -65,6 +65,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -222,3 +224,7 @@ apt-get update && apt-get install --no-install-recommends --yes \
 echo "KMS packages were installed successfully!"
 
 DOCKERCOMMANDS
+
+
+
+log "==================== END ===================="

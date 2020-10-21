@@ -33,6 +33,8 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+log "==================== BEGIN ===================="
+
 # Trace all commands
 set -o xtrace
 
@@ -87,3 +89,7 @@ export BUILD_COMMAND="./run.sh"
 "${OPENVIDU_ADM_SCRIPTS_HOME}/openvidu_ci_container_job_setup.sh"
 
 log "New AWS CloudFormation template deployed: '$AWS_CF_TEMPLATE_FILE'"
+
+
+
+log "==================== END ===================="
