@@ -11,6 +11,7 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 source "$BASEPATH/../bash.conf.sh" || {
     # Bash options for strict error checking
     set -o errexit -o errtrace -o pipefail -o nounset
+    shopt -s inherit_errexit 2>/dev/null || true
 }
 
 

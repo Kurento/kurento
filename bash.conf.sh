@@ -45,6 +45,7 @@
 
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
+shopt -s inherit_errexit 2>/dev/null || true
 
 # Log function
 # This disables and re-enables debug trace mode (only if it was already set)
