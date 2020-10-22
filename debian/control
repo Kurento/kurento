@@ -9,9 +9,9 @@ Build-Depends: debhelper (>= 9),
  gstreamer1.5-plugins-bad,
  gstreamer1.5-plugins-good,
  gstreamer1.5-x,
- kms-cmake-utils (>= 6.7.0),
- kms-core-dev (>= 6.7.0),
- kurento-module-creator (>= 6.7.0),
+ kms-cmake-utils (>= 6.14.0),
+ kms-core-dev (>= 6.14.0),
+ kurento-module-creator (>= 6.14.0),
  libboost-filesystem-dev,
  libboost-system-dev,
  libboost-test-dev,
@@ -32,7 +32,7 @@ Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
  gstreamer1.5-nice,
- kms-core (>= 6.7.0),
+ kms-core (>= 6.14.0),
  openh264-gst-plugins-bad-1.5,
  openwebrtc-gst-plugins
 Breaks: kms-elements-6.0
@@ -44,9 +44,9 @@ Package: kms-elements-dev
 Architecture: any
 Section: libdevel
 Depends: kms-elements (= ${binary:Version}),
- kms-cmake-utils (>= 6.7.0),
- kms-core-dev (>= 6.7.0),
- kurento-module-creator (>= 6.7.0),
+ kms-cmake-utils (>= 6.14.0),
+ kms-core-dev (>= 6.14.0),
+ kurento-module-creator (>= 6.14.0),
  libboost-filesystem-dev,
  libboost-system-dev,
  libboost-test-dev,
