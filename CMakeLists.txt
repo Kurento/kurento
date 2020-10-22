@@ -28,7 +28,8 @@ common_buildflags_set()
 # Development: Add here exceptions to the "Warnings are Errors" rule.
 # Also, DOCUMENT WHY and always remove them as soon as the problem is fixed.
 # For example:
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-variable")
 
 # FIXME Disable error when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered
 include(CheckCXXCompilerFlag)
