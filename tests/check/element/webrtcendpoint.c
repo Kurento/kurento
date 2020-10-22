@@ -2124,7 +2124,7 @@ not_enough_ports_on_ice_candidate (GstElement *self, gchar *sess_id,
       kms_ice_candidate_get_candidate_tcp_type (candidate);
   const KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
 
-  GST_DEBUG ("SessionId: '%s', candidate: '%s'", sess_id,
+  GST_DEBUG_OBJECT (self, "SessionId: '%s', candidate: '%s'", sess_id,
       kms_ice_candidate_get_candidate (candidate));
 
   if (tcp_type == KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE) {
@@ -2212,29 +2212,19 @@ GST_START_TEST (test_not_enough_ports)
   g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
   fail_unless (ret);
 
-  /* libnice 0.1.13 should fail here because the second offerer cannot get
-   * two UDP ports for its two components.
+  /* Since libnice 0.1.18, the next call should fail because there are not
+   * enough available ports for the seconds WebRtcEndpoint to gather its
+   * candidates.
    *
-   * libnice 0.1.14 was improved in this regard, and shouldn't fail because
-   * even if it doesn't find UDP candidates, it should be able to find
-   * TCP-ACTIVE type ones for the second component of the second offerer.
+   * Ports 55000-55002 UDP/TCP combinations are all used up by both components
+   * 1 (RTP) and 2 (RTCP) from the first WebRtcEndpoint, and libnice fails with
+   * this message:
    *
-   * Example list of candidate gathering (from libnice-0.1.14 debug log):
-   * Component 1:
-   * UDP local candidate : [192.168.56.5]:55000 for s1/c1
-   * TCP-ACT local candidate : [192.168.56.5]:0 for s1/c1
-   * TCP-PASS local candidate : [192.168.56.5]:55000 for s1/c1
-   * UDP local candidate : [192.168.1.2]:55000 for s1/c1
-   * TCP-ACT local candidate : [192.168.1.2]:0 for s1/c1
-   * TCP-PASS local candidate : [192.168.1.2]:55002 for s1/c1
-   * Component 2:
-   * TCP-ACT local candidate : [192.168.56.5]:0 for s1/c2
-   * TCP-ACT local candidate : [192.168.1.2]:0 for s1/c2
+   * Agent 0x55d0e51021e0: Unable to add local host 192.168.1.2 candidate tcp-pass for s1:2. Every port is duplicated
    */
-
   g_signal_emit_by_name (
       second_offerer, "gather-candidates", second_offerer_sess_id, &ret);
-  fail_unless (ret);
+  fail_if (ret);
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (second_offer);
