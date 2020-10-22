@@ -116,10 +116,12 @@ on_ice_candidate (KmsWebrtcSession * sess, KmsIceCandidate * candidate,
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
   GST_DEBUG_OBJECT (self,
-      "[IceCandidateFound] local: '%s', stream_id: %s, component_id: %d",
+      "[IceCandidateFound] local: '%s', stream_id: %s, component_id: %d, sdpMid: '%s', sdpMLineIndex: %u",
       kms_ice_candidate_get_candidate (candidate),
       kms_ice_candidate_get_stream_id (candidate),
-      kms_ice_candidate_get_component (candidate));
+      kms_ice_candidate_get_component (candidate),
+      kms_ice_candidate_get_sdp_mid (candidate),
+      kms_ice_candidate_get_sdp_m_line_index (candidate));
 
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_CANDIDATE], 0,
@@ -479,9 +481,11 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
 
   // Remote candidates haven't been assigned a stream_id yet, so don't print it
   GST_DEBUG_OBJECT (self,
-      "[AddIceCandidate] remote: '%s', component_id: %d",
+      "[AddIceCandidate] remote: '%s', component_id: %d, sdpMid: '%s', sdpMLineIndex: %u",
       kms_ice_candidate_get_candidate (candidate),
-      kms_ice_candidate_get_component (candidate));
+      kms_ice_candidate_get_component (candidate),
+      kms_ice_candidate_get_sdp_mid (candidate),
+      kms_ice_candidate_get_sdp_m_line_index (candidate));
 
   webrtc_sess = KMS_WEBRTC_SESSION (sess);
   g_signal_emit_by_name (webrtc_sess, "add-ice-candidate", candidate, &ret);

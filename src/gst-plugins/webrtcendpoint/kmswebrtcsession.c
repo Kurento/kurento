@@ -384,10 +384,6 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
       GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
           "... (Will add later)");
     }
-    else {
-      GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
-          "... (Error)");
-    }
     return allow_error;
   }
 
@@ -397,10 +393,6 @@ kms_webrtc_session_agent_add_ice_candidate (KmsWebrtcSession * self,
     if (allow_error) {
       GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
           "... (Will add later)");
-    }
-    else {
-      GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, dbg, self,
-          "... (Error)");
     }
     return allow_error;
   }
@@ -589,10 +581,12 @@ kms_webrtc_session_new_candidate (KmsIceBaseAgent * agent,
 
   gboolean is_candidate_ipv6 = kms_ice_candidate_get_ip_version (candidate) == IP_VERSION_6;
 
-  if (self->external_address != NULL) {
+  if (self->external_address != NULL
+      && kms_ice_candidate_get_candidate_type (candidate)
+          == KMS_ICE_CANDIDATE_TYPE_HOST) {
+    // DEPRECATED
     kms_ice_candidate_set_address (candidate, self->external_address);
-    GST_DEBUG_OBJECT (self,
-        "[IceCandidateFound] Mangled local: '%s'",
+    GST_DEBUG_OBJECT (self, "[IceCandidateFound] Mangled local: '%s'",
         kms_ice_candidate_get_candidate (candidate));
   } else if (self->external_ipv4 != NULL && is_candidate_ipv6 == FALSE) {
     kms_ice_candidate_set_address (candidate, self->external_ipv4);
@@ -803,6 +797,9 @@ kms_webrtc_session_set_network_ifs_info (KmsWebrtcSession * self,
     return;
   }
 
+  GST_DEBUG_OBJECT (self, "Use network interfaces: %s",
+      self->network_interfaces);
+
   kms_webrtc_base_connection_set_network_ifs_info (conn,
       self->network_interfaces);
 }
@@ -815,6 +812,9 @@ kms_webrtc_session_set_stun_server_info (KmsWebrtcSession * self,
     return;
   }
 
+  GST_DEBUG_OBJECT (self, "Use STUN server: %s:%u", self->stun_server_ip,
+      self->stun_server_port);
+
   kms_webrtc_base_connection_set_stun_server_info (conn, self->stun_server_ip,
       self->stun_server_port);
 }
@@ -826,6 +826,9 @@ kms_webrtc_session_set_relay_info (KmsWebrtcSession * self,
   if (self->turn_address == NULL) {
     return;
   }
+
+  GST_DEBUG_OBJECT (self, "Use TURN server: %s:%u", self->turn_address,
+      self->turn_port);
 
   kms_webrtc_base_connection_set_relay_info (conn, self->turn_address,
       self->turn_port, self->turn_user, self->turn_password,
