@@ -254,6 +254,7 @@ typedef struct _BaseTimeType
 {
   GstClockTime pts;
   GstClockTime dts;
+  GstClockTime audio_gaps;
 } BaseTimeType;
 
 static void
@@ -344,6 +345,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
       base_time = g_slice_new0 (BaseTimeType);
       base_time->pts = GST_CLOCK_TIME_NONE;
       base_time->dts = GST_CLOCK_TIME_NONE;
+      base_time->audio_gaps = 0;
 
       g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (),
           base_time, release_base_time_type);
@@ -374,7 +376,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
         && GST_BUFFER_PTS_IS_VALID (buffer)) {
       const GstClockTime offset =
-          base_time->pts + self->priv->paused_time;
+          base_time->pts + base_time->audio_gaps + self->priv->paused_time;
       // PTS -= offset, but preventing underflows.
       if (GST_BUFFER_PTS (buffer) > offset) {
         GST_BUFFER_PTS (buffer) -= offset;
@@ -386,7 +388,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
         && GST_BUFFER_DTS_IS_VALID (buffer)) {
       const GstClockTime offset =
-          base_time->dts + self->priv->paused_time;
+          base_time->dts + base_time->audio_gaps + self->priv->paused_time;
       // DTS -= offset, but preventing underflows.
       if (GST_BUFFER_DTS (buffer) > offset) {
         GST_BUFFER_DTS (buffer) -= offset;
@@ -1012,7 +1014,7 @@ end:
 }
 
 static GstPadProbeReturn
-configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
+appsink_event_probe (GstPad * pad, GstPadProbeInfo * info,
     gpointer user_data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
@@ -1047,6 +1049,41 @@ configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
       GST_ERROR_OBJECT (pad, "No appsrc attached");
     }
 
+    g_object_unref (appsink);
+  } else if (GST_EVENT_TYPE (event) == GST_EVENT_GAP) {
+    /*
+    This event could arrive from upstream if, for example, the RtpBin inside a
+    WebRtcEndpoint detects missing audio frames and generates a GAP event
+    (technicaly, the RtpJitterBuffer generates a CUSTOM_DOWNSTREAM event
+    named "GstRTPPacketLost", and the RTP depayloader converts it into a GAP
+    event).
+
+    The GAP event for video streams is handled at the output of the
+    RtpJitterBuffer (see gap_detection_probe in kmsutils), but the audio one
+    isn't, so it will reach downstream elements such as this one.
+    */
+
+    // Get the RecorderEndpoint base timings, if any yet.
+    BaseTimeType *base_time =
+        g_object_get_qdata (G_OBJECT (self), base_time_key_quark ());
+
+    // Get the current appsink caps to see if this is applies to the audio.
+    GstAppSink *appsink = GST_APP_SINK (gst_pad_get_parent_element (pad));
+    caps = gst_app_sink_get_caps (appsink);
+
+    if (base_time != NULL && kms_utils_caps_is_audio (caps)) {
+      GstClockTime gap_pts;
+      GstClockTime gap_duration;
+      gst_event_parse_gap (event, &gap_pts, &gap_duration);
+
+      // This will later be used to adjust timestamp of audio buffers.
+      base_time->audio_gaps += gap_duration;
+
+      // The GAP event has been handled here, so no need to pass it downstream.
+      ret = GST_PAD_PROBE_DROP;
+    }
+
+    gst_caps_unref (caps);
     g_object_unref (appsink);
   }
 
@@ -1213,7 +1250,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
       g_strdup (name), g_free);
 
   gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      configure_pipeline_capabilities, self, NULL);
+      appsink_event_probe, self, NULL);
 
   g_object_unref (sinkpad);
 
