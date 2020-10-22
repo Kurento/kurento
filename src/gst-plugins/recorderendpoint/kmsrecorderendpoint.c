@@ -344,7 +344,6 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
       base_time = g_slice_new0 (BaseTimeType);
       base_time->pts = GST_CLOCK_TIME_NONE;
       base_time->dts = GST_CLOCK_TIME_NONE;
-      base_time->audio_gaps = 0;
 
       g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (),
           base_time, release_base_time_type);
