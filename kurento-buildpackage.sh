@@ -329,7 +329,11 @@ log "CFG_APT_PROXY_URL=$CFG_APT_PROXY_URL"
 source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
 # Extra options for all apt-get invocations
-APT_ARGS=("")
+APT_ARGS=()
+# NOTE: `${arr[@]+"${arr[@]}"}` is required with Bash < 4.4 (Ubuntu 16.04) to
+# avoid a bug with `set -o nounset` and empty arrays. Bash >= 4.4 (Ubuntu 18.04)
+# fixed it and can use the normal expansion: `"${APT_ARGS[@]}"`.
+# See: https://stackoverflow.com/a/61551944
 
 
 
@@ -411,7 +415,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
         dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
             log "Try to install remaining dependencies"
-            apt-get update && apt-get "${APT_ARGS[@]}" install --yes --fix-broken --no-remove
+            apt-get update && apt-get ${APT_ARGS[@]+"${APT_ARGS[@]}"} install --yes --fix-broken --no-remove
         }
     else
         log "No '.deb' package files are present!"
@@ -448,7 +452,7 @@ log "Install build dependencies"
 DEBIAN_FRONTEND=noninteractive \
 apt-get update \
 && mk-build-deps --install --remove \
-    --tool="apt-get ${APT_ARGS[*]} -o Debug::pkgProblemResolver=yes --target-release '*-backports' --no-install-recommends --no-remove --yes" \
+    --tool="apt-get ${APT_ARGS[*]+"${APT_ARGS[*]}"} -o Debug::pkgProblemResolver=yes --target-release '*-backports' --no-install-recommends --no-remove --yes" \
     ./debian/control
 
 
@@ -533,6 +537,10 @@ fi
 # ---------------------
 
 GBP_ARGS=()
+# NOTE: `${arr[@]+"${arr[@]}"}` is required with Bash < 4.4 (Ubuntu 16.04) to
+# avoid a bug with `set -o nounset` and empty arrays. Bash >= 4.4 (Ubuntu 18.04)
+# fixed it and can use the normal expansion: `"${GBP_ARGS[@]}"`.
+# See: https://stackoverflow.com/a/61551944
 
 # `dpkg-buildpackage`: don't sign packages
 GBP_ARGS+=("-uc")
@@ -585,7 +593,7 @@ gbp buildpackage \
     --git-ignore-branch \
     --git-upstream-tree=SLOPPY \
     --git-builder="$GBP_BUILDER" \
-    "${GBP_ARGS[@]}"
+    ${GBP_ARGS[@]+"${GBP_ARGS[@]}"}
 
 
 

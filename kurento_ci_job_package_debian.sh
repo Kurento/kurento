@@ -63,8 +63,13 @@ set -o xtrace
 "${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
     --name "$JOB_GIT_NAME" --fallback "$JOB_DISTRO"
 
-# Optional build arguments
-KURENTO_BUILDPACKAGE_ARGS=("")
+# Arguments to kurento-buildpackage.
+KURENTO_BUILDPACKAGE_ARGS=()
+# NOTE: `${arr[@]+"${arr[@]}"}` is required with Bash < 4.4 (Ubuntu 16.04) to
+# avoid a bug with `set -o nounset` and empty arrays. Bash >= 4.4 (Ubuntu 18.04)
+# fixed it and can use the normal expansion: `"${KURENTO_BUILDPACKAGE_ARGS[@]}"`.
+# See: https://stackoverflow.com/a/61551944
+
 
 if [[ "$JOB_RELEASE" == "true" ]]; then
     KURENTO_BUILDPACKAGE_ARGS+=("--release")
@@ -125,7 +130,7 @@ docker run --rm \
         --install-files . \
         --apt-proxy 'http://proxy.openvidu.io:3142' \
         --timestamp "$JOB_TIMESTAMP" \
-        "${KURENTO_BUILDPACKAGE_ARGS[@]}"
+        ${KURENTO_BUILDPACKAGE_ARGS[@]+"${KURENTO_BUILDPACKAGE_ARGS[@]}"}
 
 
 
