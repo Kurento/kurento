@@ -217,13 +217,13 @@ while [[ $# -gt 0 ]]; do
         --install-files)
             CFG_INSTALL_FILES="true"
             if [[ -n "${2-}" ]]; then
-                CFG_INSTALL_FILES_DIR="$(realpath $2)"
+                CFG_INSTALL_FILES_DIR="$(realpath "$2")"
                 shift
             fi
             ;;
         --srcdir)
             if [[ -n "${2-}" ]]; then
-                CFG_SRCDIR="$(realpath $2)"
+                CFG_SRCDIR="$(realpath "$2")"
                 shift
             else
                 log "ERROR: --srcdir expects <SrcDir>"
@@ -233,7 +233,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dstdir)
             if [[ -n "${2-}" ]]; then
-                CFG_DSTDIR="$(realpath $2)"
+                CFG_DSTDIR="$(realpath "$2")"
                 shift
             else
                 log "ERROR: --dstdir expects <DstDir>"
@@ -442,7 +442,7 @@ log "Install build dependencies"
 # * DEBIAN_FRONTEND: In clean Ubuntu systems 'tzdata' might not be installed
 #   yet, but it may be now, so make sure interactive prompts are disabled.
 # * Debug::pkgProblemResolver=yes: Show details about the dependency resolution.
-#   Docs: http://manpages.ubuntu.com/manpages/bionic/man5/apt.conf.5.html
+#   Doc: http://manpages.ubuntu.com/manpages/bionic/man5/apt.conf.5.html
 # * --target-release '*-backports': Prefer installing newer versions of packages
 #   from the backports repository.
 DEBIAN_FRONTEND=noninteractive \
@@ -450,25 +450,6 @@ apt-get update \
 && mk-build-deps --install --remove \
     --tool="apt-get ${APT_ARGS[*]} -o Debug::pkgProblemResolver=yes --target-release '*-backports' --no-install-recommends --no-remove --yes" \
     ./debian/control
-
-# HACK
-# By default, 'dh_strip' in Debian will generate '-dbgsym' packages automatically
-# from each binary package defined in the control file. This eliminates the need
-# to define '-dbg' files explicitly and manually:
-#     https://wiki.debian.org/AutomaticDebugPackages
-#
-# This mechanism also works in Ubuntu 16.04 (Xenial) and earlier, but only if
-# the package 'pkg-create-dbgsym' is already installed at build time, so we need
-# to install it before building the package.
-#
-# Ubuntu 18.04 (Bionic) doesn't need this any more, because it already comes
-# with Debhelper v10, which has this as the default behavior.
-#
-# REVIEW 2019-02-05 - Disable automatic generation of debug packages
-# For now, we'll keep on defining '-dbg' packages in 'debian/control'.
-# if [[ ${DISTRIB_RELEASE%%.*} -lt 18 ]]; then
-#     apt-get install --yes pkg-create-dbgsym
-# fi
 
 
 
@@ -551,30 +532,31 @@ fi
 # Build Debian packages
 # ---------------------
 
-GBP_ARGS=""
+GBP_ARGS=()
 
 # `dpkg-buildpackage`: don't sign packages
-GBP_ARGS+=" -uc -us"
+GBP_ARGS+=("-uc")
+GBP_ARGS+=("-us")
 
 # Debhelper and all dpkg-related tools: Parallelize build jobs
 # This can be overriden with DEB_BUILD_OPTIONS. For example:
 #     $ DEB_BUILD_OPTIONS="parallel=2" ./kurento-buildpackage.sh
 if [[ ! "${DEB_BUILD_OPTIONS:-}" =~ "parallel" ]]; then
-    GBP_ARGS+=" -j$(nproc)"
+    GBP_ARGS+=("-j$(nproc)")
 fi
 
 if [[ "$CFG_ALLOW_DIRTY" == "true" ]]; then
     # `dpkg-buildpackage`: build a Binary-only package,
     # skipping `dpkg-source` source tarball altogether
-    #GBP_ARGS+=" -b"
+    #GBP_ARGS+=("-b")
 
     # `dpkg-source`: generate the source tarball by ignoring
     # ALL changed files in the working directory
-    GBP_ARGS+=" --source-option=--extend-diff-ignore=.*"
+    GBP_ARGS+=("--source-option=--extend-diff-ignore=.*")
 elif [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     # `dpkg-source`: generate the source tarball by ignoring
     # '*.deb' and '*.ddeb' files inside $CFG_INSTALL_FILES_DIR
-    GBP_ARGS+=" --source-option=--extend-diff-ignore=.*\.d?deb$"
+    GBP_ARGS+=("--source-option=--extend-diff-ignore=.*\.d?deb$")
 fi
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
@@ -587,8 +569,9 @@ fi
 # this check isn't needed because `git-buildpackage` is just going to create
 # the source tarball when it doesn't find it in the working directory.
 #
-# Also, use `--preserve-env` to pass variables such as DEB_BUILD_OPTIONS to
-# debian/rules, and ultimately, debhelper and dh_auto_* tools.
+# Also, use `--preserve-env` to pass all of our CTEST_* or GST_* environment
+# variables (for Check and GStreamer, respectively) to debian/rules, and
+# ultimately to the corresponding tools when they run.
 GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
 
 # CMake: Print logs from failed tests
@@ -602,7 +585,7 @@ gbp buildpackage \
     --git-ignore-branch \
     --git-upstream-tree=SLOPPY \
     --git-builder="$GBP_BUILDER" \
-    $GBP_ARGS
+    "${GBP_ARGS[@]}"
 
 
 
