@@ -534,7 +534,9 @@ For example, say you want to build the current *kms-core* development branch aga
    git clone https://github.com/Kurento/adm-scripts.git
    git clone https://github.com/Kurento/kms-core.git
    cd kms-core/
-   ../adm-scripts/kurento-buildpackage.sh --install-kurento 6.12.0
+   ../adm-scripts/kurento-buildpackage.sh \
+       --install-kurento 6.12.0 \
+       --apt-add-repo
 
 Run ``kurento-buildpackage.sh --help``, to read about what are the dependencies that you'll have to install to use this tool, and what are the command-line flags that can be used with it.
 
@@ -556,7 +558,8 @@ For example, say you want to build the current *kms-core* development branch aga
    docker run --rm \
        --mount type=bind,src="$PWD",dst=/hostdir \
        kurento/kurento-buildpackage:xenial \
-       --install-kurento 6.12.0
+           --install-kurento 6.12.0 \
+           --apt-add-repo
 
 
 
