@@ -41,16 +41,11 @@ set -o xtrace
 
 
 
-# Repo default branch.
-GIT_DEFAULT="$(kurento_git_default_branch.sh)"
-
-
-
 # Parse call arguments
 # --------------------
 
-CFG_NAME="$GIT_DEFAULT"
-CFG_FALLBACK="$GIT_DEFAULT"
+CFG_NAME=""
+CFG_FALLBACK=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -77,6 +72,14 @@ while [[ $# -gt 0 ]]; do
     esac
     shift
 done
+
+if [[ -z "$CFG_NAME" || -z "$CFG_FALLBACK" ]]; then
+    # Repo default branch.
+    GIT_DEFAULT="$(kurento_git_default_branch.sh)"
+
+    CFG_NAME="${CFG_NAME:-$GIT_DEFAULT}"
+    CFG_FALLBACK="${CFG_FALLBACK:-$GIT_DEFAULT}"
+fi
 
 log "CFG_NAME=$CFG_NAME"
 log "CFG_FALLBACK=$CFG_FALLBACK"
