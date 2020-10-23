@@ -205,7 +205,7 @@ To verify that the Kurento process is up and running, use this command and look 
    UID        PID  PPID  C STIME TTY          TIME CMD
    kurento   7688     1  0 13:36 ?        00:00:00 /usr/bin/kurento-media-server
 
-Unless configured otherwise, KMS will listen on the IPv6 port *8888* to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
+Unless configured otherwise, KMS will listen on the port TCP 8888, to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
 
 .. code-block:: console
 

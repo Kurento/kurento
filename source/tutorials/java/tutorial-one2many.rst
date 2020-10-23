@@ -165,7 +165,7 @@ As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to your applications. In this instantiation we see
 that a WebSocket is used to connect with Kurento Media Server, by default in
-the *localhost* and listening in the port 8888.
+the *localhost* and listening in the port TCP 8888.
 
 .. sourcecode:: java
 

@@ -62,7 +62,7 @@ If you want to run this tutorial from a **remote web server**, then you have to 
 
 1. Configure **Secure WebSocket** in KMS. For instructions, check :ref:`features-security-kms-wss`.
 
-2. In *index.js*, change the ``ws_uri`` to use Secure WebSocket (``wss://`` instead of ``ws://``) and the correct KMS port (8433 instead of 8888).
+2. In *index.js*, change the ``ws_uri`` to use Secure WebSocket (``wss://`` instead of ``ws://``) and the correct KMS port (TCP 8433 instead of TCP 8888).
 
 3. As explained in the link from step 1, if you configured KMS to use Secure WebSocket with a self-signed certificate you now have to browse to ``https://{KMS_HOST}:8433/kurento`` and click to accept the untrusted certificate.
 
@@ -158,7 +158,7 @@ Inside this function, a call to *generateOffer* is performed. This function
 accepts a callback in which the SDP offer is received. In this callback we
 create an instance of the *KurentoClient* class that will manage communications
 with the Kurento Media Server. So, we need to provide the URI of its WebSocket
-endpoint. In this example, we assume it's listening in port 8433 at the same
+endpoint. In this example, we assume it's listening in port TCP 8433 at the same
 host than the HTTP serving the application.
 
 .. sourcecode:: js

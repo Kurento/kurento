@@ -240,7 +240,7 @@ In order to control the media capabilities provided by the Kurento Media Server,
 we need an instance of the *KurentoClient* in the Node application server. In
 order to create this instance, we need to specify to the client library the
 location of the Kurento Media Server. In this example, we assume it's located
-at *localhost* listening in port 8888.
+at *localhost* listening in port TCP 8888.
 
 .. sourcecode:: js
 

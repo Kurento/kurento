@@ -123,7 +123,7 @@ Securing Kurento Media Server
 Signaling Plane authorization
 -----------------------------
 
-You should protect the JSON-RPC API control port (WebSocket port *8888* by default) of your Kurento Media Server instances from unauthorized access from public networks.
+You should protect the JSON-RPC API control port (WebSocket port, by default TCP 8888) of your Kurento Media Server instances from unauthorized access from public networks.
 
 The Kurento WebSocket server supports using SSL certificates in order to guarantee secure communications between clients and server; however, at the time no authentication mechanism is provided. Kurento doesn't reinvent the wheel here including its own mechanism, and instead it relies on layers of security that already exist at the system level. This is something we may add (contributions are welcomed!) but for now here are some tips on how other big players are protecting KMS from unauthorized use.
 
@@ -143,9 +143,9 @@ If you need more flexibility, one idea is to restrict KMS connections to the sam
 Signaling Plane security (WebSocket)
 ------------------------------------
 
-With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port *8888*. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_api`.
+With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port TCP 8888. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_api`.
 
-This is fine for initial stages of application development, but before deploying on production environments you'll probably want to move to ``wss://`` connections, i.e. using Secure WebSocket, which by default uses the port *8433*.
+This is fine for initial stages of application development, but before deploying on production environments you'll probably want to move to ``wss://`` connections, i.e. using Secure WebSocket, which by default uses the port TCP 8433.
 
 To enable Secure WebSocket, edit the main KMS configuration file (``/etc/kurento/kurento.conf.json``), and un-comment the following lines:
 

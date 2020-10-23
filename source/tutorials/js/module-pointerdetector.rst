@@ -61,7 +61,7 @@ If you want to run this tutorial from a **remote web server**, then you have to 
 
 1. Configure **Secure WebSocket** in KMS. For instructions, check :ref:`features-security-kms-wss`.
 
-2. In *index.js*, change the ``ws_uri`` to use Secure WebSocket (``wss://`` instead of ``ws://``) and the correct KMS port (8433 instead of 8888).
+2. In *index.js*, change the ``ws_uri`` to use Secure WebSocket (``wss://`` instead of ``ws://``) and the correct KMS port (TCP 8433 instead of TCP 8888).
 
 3. As explained in the link from step 1, if you configured KMS to use Secure WebSocket with a self-signed certificate you now have to browse to ``https://{KMS_HOST}:8433/kurento`` and click to accept the untrusted certificate.
 

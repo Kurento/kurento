@@ -122,7 +122,7 @@ Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to the application. In this instantiation we see that
 we need to specify to the client library the location of the Kurento Media
 Server. In this example, we assume it is located at *localhost* listening in
-port 8888. If you reproduce this example you'll need to insert the specific
+port TCP 8888. If you reproduce this example you'll need to insert the specific
 location of your Kurento Media Server instance there.
 
 Once the *Kurento Client* has been instantiated, you are ready for communicating

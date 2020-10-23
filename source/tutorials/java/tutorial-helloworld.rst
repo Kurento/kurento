@@ -119,7 +119,7 @@ In the following, figure you can see a class diagram of the server side code:
 
 The main class of this demo is `HelloWorldApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`__.
 
-As you can see, the *KurentoClient* is instantiated in this class as a Spring Bean. This bean is used to create **Kurento Media Pipelines**, which are used to add media capabilities to the application. In this instantiation we see that we need to specify to the client library the location of the Kurento Media Server. In this example, we assume it is located at ``localhost``, listening in port 8888. If you reproduce this example, you'll need to insert the specific location of your Kurento Media Server instance there.
+As you can see, the *KurentoClient* is instantiated in this class as a Spring Bean. This bean is used to create **Kurento Media Pipelines**, which are used to add media capabilities to the application. In this instantiation we see that we need to specify to the client library the location of the Kurento Media Server. In this example, we assume it is located at ``localhost``, listening in port TCP 8888. If you reproduce this example, you'll need to insert the specific location of your Kurento Media Server instance there.
 
 Once the *Kurento Client* has been instantiated, you are ready for communicating with Kurento Media Server and controlling its multimedia capabilities.
 
