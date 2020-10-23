@@ -9,28 +9,30 @@
 #/ This script must be called from within a Git repository.
 #/
 #/
+#/
 #/ Arguments
 #/ ---------
 #/
 #/ --install-kurento <KurentoVersion>
 #/
 #/   Install dependencies that are required to build the package, using the
-#/   Kurento package repository for those packages that need it.
+#/   Kurento package repository for those packages that need it. This is useful
+#/   for quickly building a specific component of Kurento (e.g. "kms-core")
+#/   without also having to build all of its dependencies.
 #/
-#/   <KurentoVersion> indicates which Kurento repo must be used to download
-#/   packages from. E.g.: "6.8.0". If "dev" is given, then Kurento nightly
-#/   packages will be used instead.
+#/   <KurentoVersion> indicates which Kurento repo should be used to download
+#/   packages from. E.g.: "6.8.0", or "dev" for nightly builds. Typically, you
+#/   will provide an actual version number when also using '--release', and just
+#/   use "dev" otherwise.
 #/
-#/   Typically, you will provide an actual version number when also using the
-#/   '--release' flag, and just use "dev" otherwise. With this, `apt-get` will
-#/   download and install all required packages from the Kurento repository.
-#/
-#/   This argument is useful for end users, or external developers which may
-#/   want to build a specific component of Kurento without having to build all
-#/   the dependencies.
+#/   The appropriate Kurento repository line for apt-get must be already present
+#/   in some ".list" file under /etc/apt/. To have this script adding the
+#/   required line automatically for you, use '--apt-add-repo'.
 #/
 #/   Optional. Default: Disabled.
-#/   See also: '--install-files'.
+#/   See also:
+#/     --install-files
+#/     --apt-add-repo
 #/
 #/ --install-files [FilesDir]
 #/
@@ -48,7 +50,8 @@
 #/   expected to be already installed.
 #/
 #/   Optional. Default: Disabled.
-#/   See also: '--install-kurento'.
+#/   See also:
+#/     --install-kurento
 #/
 #/ --srcdir <SrcDir>
 #/
@@ -104,6 +107,27 @@
 #/
 #/   Optional. Default: Current date and time, as given by the command
 #/   `date --utc +%Y%m%d%H%M%S`.
+#/
+#/ --apt-add-repo
+#/
+#/   Edit the system config to add a Kurento repository line for apt-get.
+#/
+#/   This adds or edits the file "/etc/apt/sources.list.d/kurento.list" to make
+#/   sure that `apt-get` will be able to download and install all required
+#/   packages from the Kurento repository, if the line wasn't already there.
+#/
+#/   To use this argument, '--install-kurento' must be used too.
+#/
+#/ --apt-proxy <ProxyUrl>
+#/
+#/   Use the given HTTP proxy for apt-get. This can be useful in environments
+#/   where such a proxy is set up, in order to save on data transfer costs from
+#/   official system repositories.
+#/
+#/   <ProxyUrl> is set to Apt option "Acquire::http::Proxy".
+#/
+#/   Doc: https://manpages.ubuntu.com/manpages/bionic/en/man1/apt-transport-http.1.html
+#/
 #/
 #/
 #/ Dependency tree
@@ -166,7 +190,7 @@ set -o xtrace
 # --------------------
 
 CFG_INSTALL_KURENTO="false"
-CFG_INSTALL_KURENTO_VERSION="0.0.0"
+CFG_INSTALL_KURENTO_VERSION=""
 CFG_INSTALL_FILES="false"
 CFG_INSTALL_FILES_DIR="$PWD"
 CFG_SRCDIR="$PWD"
@@ -174,6 +198,8 @@ CFG_DSTDIR="$PWD"
 CFG_ALLOW_DIRTY="false"
 CFG_RELEASE="false"
 CFG_TIMESTAMP="$(date --utc +%Y%m%d%H%M%S)"
+CFG_APT_ADD_REPO="false"
+CFG_APT_PROXY_URL=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -231,6 +257,19 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
+        --apt-add-repo)
+            CFG_APT_ADD_REPO="true"
+            ;;
+        --apt-proxy)
+            if [[ -n "${2-}" ]]; then
+                CFG_APT_PROXY_URL="$2"
+                shift
+            else
+                log "ERROR: --apt-proxy expects <ProxyUrl>"
+                log "Run with '--help' to read usage details"
+                exit 1
+            fi
+            ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
             log "Run with '--help' to read usage details"
@@ -260,6 +299,10 @@ done
     exit 1
 }
 
+[[ "$CFG_INSTALL_KURENTO" == "true" ]] || {
+    CFG_APT_ADD_REPO="false"
+}
+
 log "CFG_INSTALL_KURENTO=$CFG_INSTALL_KURENTO"
 log "CFG_INSTALL_KURENTO_VERSION=$CFG_INSTALL_KURENTO_VERSION"
 log "CFG_INSTALL_FILES=$CFG_INSTALL_FILES"
@@ -269,6 +312,8 @@ log "CFG_DSTDIR=$CFG_DSTDIR"
 log "CFG_ALLOW_DIRTY=$CFG_ALLOW_DIRTY"
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_TIMESTAMP=$CFG_TIMESTAMP"
+log "CFG_APT_ADD_REPO=$CFG_APT_ADD_REPO"
+log "CFG_APT_PROXY_URL=$CFG_APT_PROXY_URL"
 
 
 
@@ -283,10 +328,13 @@ log "CFG_TIMESTAMP=$CFG_TIMESTAMP"
 # "/etc/upstream-release/lsb-release" in Ubuntu-derived distributions
 source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
+# Extra options for all apt-get invocations
+APT_ARGS=("")
 
 
-# Initial package installation
-# ----------------------------
+
+# Initial apt-get setup
+# ---------------------
 
 # HACK - UBUNTU 18.04 BIONIC - Install both libcurl3 and libcurl4
 # Our projects depend on OpenSSL 1.0, but Bionic comes with 1.1. This manifests
@@ -317,20 +365,42 @@ if [[ ${DISTRIB_RELEASE%%.*} -ge 18 ]]; then
     popd # /tmp
 fi
 
-# If requested, add the repository
+# If requested, use an Apt proxy
+if [[ -n "$CFG_APT_PROXY_URL" ]]; then
+    APT_ARGS+=("-o")
+    APT_ARGS+=("Acquire::http::Proxy=$CFG_APT_PROXY_URL")
+fi
+
+# If requested to install Kurento packages, verify the Apt repos
 if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
-    log "Add the Kurento Apt repository key"
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
     REPO="$CFG_INSTALL_KURENTO_VERSION"
 
-    if grep -qs "ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" /etc/apt/sources.list.d/kurento.list; then
-        log "Kurento Apt repository line already exists"
+    if KURENTO_LIST="$(grep --recursive --files-with-matches --include='*.list' "ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" /etc/apt/)"; then
+        log "Found Kurento repository line for apt-get:"
+        log "$KURENTO_LIST"
     else
-        log "Kurento Apt repository line has to be added"
+        # If requested, add the repository
+        if [[ "$CFG_APT_ADD_REPO" == "true" ]]; then
+            log "Add Kurento repository key for apt-get"
+            apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-        echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" \
-            >>/etc/apt/sources.list.d/kurento.list
+            log "Add Kurento repository line for apt-get"
+            echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" \
+                | tee -a /etc/apt/sources.list.d/kurento.list
+        else
+            log "ERROR: Could not find Kurento repository line for apt-get"
+            log ""
+            log "Suggested solution 1:"
+            log "    Re-run with '--apt-add-repo'"
+            log ""
+            log "Suggested solution 2:"
+            log "    Run commands:"
+            log "    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83"
+            log "    $ echo 'deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6' | sudo tee -a /etc/apt/sources.list.d/kurento.list"
+            log ""
+            exit 1
+        fi
     fi
 fi
 
@@ -341,7 +411,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
         dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
             log "Try to install remaining dependencies"
-            apt-get update && apt-get install --yes --fix-broken --no-remove
+            apt-get update && apt-get "${APT_ARGS[@]}" install --yes --fix-broken --no-remove
         }
     else
         log "No '.deb' package files are present!"
@@ -378,7 +448,7 @@ log "Install build dependencies"
 DEBIAN_FRONTEND=noninteractive \
 apt-get update \
 && mk-build-deps --install --remove \
-    --tool="apt-get -o Debug::pkgProblemResolver=yes --target-release '*-backports' --no-install-recommends --no-remove --yes" \
+    --tool="apt-get ${APT_ARGS[*]} -o Debug::pkgProblemResolver=yes --target-release '*-backports' --no-install-recommends --no-remove --yes" \
     ./debian/control
 
 # HACK
