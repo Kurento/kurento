@@ -63,9 +63,12 @@ set -o xtrace
 "${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
     --name "$JOB_GIT_NAME" --fallback "$JOB_DISTRO"
 
-# Set build arguments
-KURENTO_BUILDPACKAGE_ARGS="--timestamp $JOB_TIMESTAMP"
-[[ "$JOB_RELEASE" == "true" ]] && KURENTO_BUILDPACKAGE_ARGS+=" --release"
+# Optional build arguments
+KURENTO_BUILDPACKAGE_ARGS=("")
+
+if [[ "$JOB_RELEASE" == "true" ]]; then
+    KURENTO_BUILDPACKAGE_ARGS+=("--release")
+fi
 
 
 
@@ -119,9 +122,10 @@ docker run --rm \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \
     "$CONTAINER_IMAGE" \
-    --install-files . \
-    --apt-proxy 'http://proxy.openvidu.io:3142' \
-    $KURENTO_BUILDPACKAGE_ARGS
+        --install-files . \
+        --apt-proxy 'http://proxy.openvidu.io:3142' \
+        --timestamp "$JOB_TIMESTAMP" \
+        "${KURENTO_BUILDPACKAGE_ARGS[@]}"
 
 
 
