@@ -120,6 +120,7 @@ docker run --rm \
     --env G_MESSAGES_DEBUG \
     "$CONTAINER_IMAGE" \
     --install-files . \
+    --apt-proxy 'http://proxy.openvidu.io:3142' \
     $KURENTO_BUILDPACKAGE_ARGS
 
 
