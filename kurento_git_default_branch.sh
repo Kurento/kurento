@@ -71,12 +71,12 @@ fi
 # This works only if this repo is a clone; will fail otherwise, for example with
 # a detached fetch like what the Jenkins Git plugin does (because the remote
 # HEAD doesn't get cached locally).
-if [[ -z "$BRANCH" ]] && OUT="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD)"; then
+if [[ -z "$BRANCH" ]] && OUT="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD 2>/dev/null)"; then
     BRANCH="$OUT"
 fi
 
 if [[ -n "$BRANCH" ]]; then
     echo "$BRANCH"
 else
-    exit 1
+    echo "master"
 fi
