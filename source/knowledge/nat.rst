@@ -115,7 +115,7 @@ Visualization:
 (Address-)Restricted Cone NAT
 -----------------------------
 
-This type of NAT allows inbound transmissions from a *specific source IP address* but allowing for *any source port*. Typically, an inbound rule of this type was previously created dynamically, when the local host initiated an outbound transmission to a remote one.
+This type of NAT allows inbound transmissions from a *specific source IP address* but allows for *any source port*. Typically, an inbound rule of this type was previously created dynamically, when the local host initiated an outbound transmission to a remote one.
 
 Visualization:
 
@@ -219,7 +219,7 @@ Do-It-Yourself hole punching
 
 It is very easy to test the NAT capabilities in a local network. To do this, you need access to two hosts:
 
-A. One siting behind a NAT. We'll call this the host **A**.
+A. One sitting behind a NAT. We'll call this the host **A**.
 B. One directly connected to the internet, with no firewall. This is host **B**.
 
 Set some helper variables: the *public* IP address of each host, and their listening ports:
@@ -269,14 +269,14 @@ Set some helper variables: the *public* IP address of each host, and their liste
 
    - In the case of a Cone NAT, the data sent from **B** should arrive correctly at **A** after step 4.
 
-   - In the case of a Symmetric NAT, the data sent from **B** won't arrive at **A** after step 4, because *$A_PORT* is the wrong destination port. If you write the correct port (as discovered in step 3) instead of *$A_PORT*, then the data should arrive to **A**.
+   - In the case of a Symmetric NAT, the data sent from **B** won't arrive at **A** after step 4, because *$A_PORT* is the wrong destination port. If you write the correct port (as discovered in step 3) instead of *$A_PORT*, then the data should arrive at **A**.
 
 
 
 PySTUN
 ------
 
-**PySTUN** is a tool that uses STUN servers in order to try and detect what is the type of the NAT, when ran from a host behind it.
+**PySTUN** is a tool that uses STUN servers in order to try and detect what is the type of the NAT, when run from a host behind it.
 
 Currently it has been best updated in one of its forks, so we suggest using that instead of the version from the original creator. To install and run:
 
