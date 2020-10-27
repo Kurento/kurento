@@ -73,6 +73,52 @@ Then, please provide us with information about the crash:
 Other Media Server issues
 =========================
 
+Reached limit / Resource temporarily unavailable
+------------------------------------------------
+
+If the server is malfunctioning or crashing and you can see a message similar to this one in the logs:
+
+.. code-block:: text
+
+   Reached KMS files limit: 819 (system max: 1024)
+
+or
+
+.. code-block:: text
+
+   Error creating thread: Resource temporarily unavailable
+
+then KMS is hitting resource limits imposed by the Kernel. The 2 most common reasons for this issue are:
+
+1. You might have a custom service or Kurento plugin that is acquiring resources without releasing them afterwards. You should profile and debug your code to make sure that it is not leaking resources (such as open file descriptors, threads, sockets, etc) and exhausting the limits enforced by the Linux Kernel.
+
+2. Congratulations! Your service is growing, time to deal with resource & concurrency issues.
+
+   Check the running stats of your operating system, to see if the KMS process is being limited to the default 1024 file/device handles (*ulimit*), and increase that number.
+
+   For local installations (:ref:`with apt-get install <installation-local>`), you can edit the file ``/etc/default/kurento-media-server`` to raise either of the *DAEMON_MAX_FILES* and/or *DAEMON_MAX_THREADS* and see if this solves the issue. For other installation methods such as Docker, you will need to use tool-specific mechanisms to change resource limits, like running with ``docker run --ulimit``.
+
+   If **systemd** is configured, it might also be applying its own limit on process resources; for example you can check how many threads are being used by Kurento and what is the maximum, with these commands:
+
+   .. code-block:: console
+
+      systemctl status kurento-media-server | grep Tasks
+      systemctl show kurento-media-server | grep TasksMax
+
+   In *systemd* it is possible to configure limits with parameters such as *DefaultTasksMax* in either ``/etc/systemd/system.conf`` (for the default system instance) or ``/etc/systemd/user.conf`` (for the custom user instance, if you have configured one in your machine). The current effective value of *DefaultTasksMax* can be queried with this command:
+
+   .. code-block:: console
+
+      systemctl show --property DefaultTasksMax
+
+   If left to its default setting, *DefaultTasksMax* will be 15% of the absolute maximum limit from the Kernel, that you can get or set through the file ``/proc/sys/kernel/pid_max``. If you change that, don't forget to run ``systemctl daemon-reexec`` to have *systemd* load the new value.
+
+   .. note::
+
+      You need to use ``systemctl daemon-reexec`` because ``systemctl daemon-reload`` `has a bug <https://github.com/systemd/systemd/issues/13419#issuecomment-527915700>`__ in *systemd* <= v242 (so this affects Ubuntu versions earlier than 20.04 "Focal").
+
+
+
 ``GStreamer-CRITICAL`` messages in the log
 ------------------------------------------
 
@@ -151,13 +197,13 @@ See: `free() in C doesn't reduce memory usage <https://stackoverflow.com/questio
 
 To run Kurento Media Server with Valgrind and find memory leaks, the process is just a matter of following the steps outlined in :ref:`dev-sources`, but instead of
 
-.. code-block:: text
+.. code-block:: console
 
    ./bin/kms-build-run.sh
 
 you'll want to do
 
-.. code-block:: text
+.. code-block:: console
 
    ./bin/kms-build-run.sh --valgrind-memcheck
 
