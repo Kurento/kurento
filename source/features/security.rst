@@ -244,20 +244,28 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
 
   Note that while a self-signed certificate can be used for web development, browsers will show a big security warning. Users will see this warning, and must click to accept the unsafe certificate before proceeding to the page.
 
-  To generate certificates with mkcert, run these commands:
+  To generate new certificate files with mkcert, run these commands:
 
   .. code-block:: console
 
-     CAROOT="$PWD" mkcert -cert-file ./cert.pem -key-file ./key.pem \
+     # Generate new untrusted self-signed certificate files:
+     CAROOT="$PWD" mkcert -cert-file cert.pem -key-file key.pem \
          "127.0.0.1" \
          "::1"       \
          "localhost" \
          "*.test.local"
 
+     # Make a single file to be used with Kurento Media Server:
+     cat cert.pem key.pem > cert+key.pem
+
      # Protect against writes
      chmod 440 *.pem
 
-  The ``*.test.local`` wildcard domain is meant to allow adding any desired subdomains to the ``/etc/hosts`` file, so these cert files can be used not only for localhost but also for remote tests. Note that we propose using the *.local* TLD here, and not simply *.test*, because MacOS 10.15 (*Catalina*) forbids the use of wildcards for *.test* TLDs (see `mkcert bug 206 <https://github.com/FiloSottile/mkcert/issues/206>`__).
+  This command is just an example, and includes some useful things for local development: access from localhost in its IPv4, IPv6, and hostname forms; and also the ``*.test.local`` wildcard, meant to allow adding any desired subdomains to the ``/etc/hosts`` file in your development computer(s), so these cert files can be used not only for localhost but also for remote tests in your LAN.
+
+  .. note::
+
+     Simply using ``*.test`` would be nice, but wildcards are forbidden for global TLDs, so it wouldn't work. For example, MacOS 10.15 (*Catalina*) would reject such certificate (see `mkcert bug 206 <https://github.com/FiloSottile/mkcert/issues/206>`__). For this reason, we propose using ``*.test.local``.
 
   You can also publish a new Zeroconf local domain for any development machine. For example, running this in Ubuntu:
 
