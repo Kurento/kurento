@@ -180,11 +180,9 @@ B. **Uninstall the old Kurento version**, before installing the new one.
 STUN/TURN server install
 ========================
 
-Working with WebRTC *requires* developers to know and have a good understanding about everything related to NAT, ICE, STUN, and TURN. If you don't know about these, you should start reading here: :ref:`faq-nat-ice-stun-turn`.
+Working with WebRTC *requires* developers to learn and have a good understanding about everything related to NAT, ICE, STUN, and TURN. If you don't know about these, you should start reading here: :ref:`faq-nat-ice-stun-turn`.
 
-Kurento Media Server, just like any WebRTC endpoint, will work fine on its own, for *localhost* connections. You only need to install KMS if all you need are local network connections.
-
-However, sooner or later you will want to make your application work in a cloud environment, and allow KMS to connect with remote clients. The problem is, remote clients will probably want to connect from behind a :term:`NAT` router, so your application needs to perform :term:`NAT Traversal` in the client's router. This can be done by setting up a :term:`STUN` server or a :term:`TURN` relay, and configuring it **in both KMS and the client browser**.
+Kurento Media Server, just like any WebRTC endpoint, will work fine on its own, for *LAN* connections or for servers which have a public IP address assigned to them. However, sooner or later you will want to make your application work in a cloud environment with NAT firewalls, and allow KMS to connect with remote clients. At the same time, remote clients will probably want to connect from behind their own :term:`NAT` router too, so your application needs to be prepared to perform :term:`NAT Traversal` in both sides. This can be done by setting up a :term:`STUN` server or a :term:`TURN` relay, and configuring it **in both KMS and the client browser**.
 
 These links contain the information needed to finish configuring your Kurento Media Server with a STUN/TURN server:
 

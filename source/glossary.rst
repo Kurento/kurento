@@ -408,7 +408,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
 
        .. note::
 
-          **You don't need to set a STUN server up if you have already configured a TURN relay**, because TURN is just an extension of STUN.
+          **You don't need to configure both STUN and TURN**, because TURN already includes STUN functionality.
 
    VP8
        VP8 is a video compression format created by On2 Technologies as a successor to VP7. Its  patents rights are owned by Google, who made an irrevocable patent promise on its patents for implementing it and released a specification under the `Creative Commons Attribution 3.0 license <https://creativecommons.org/licenses/by/3.0/>`__.

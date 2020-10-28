@@ -220,7 +220,7 @@ If the machine is disconnected during the actual installation of this package, t
 Missing audio or video streams
 ------------------------------
 
-If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a :term:`STUN` server or a :term:`TURN` relay, to traverse through the :term:`NAT` firewall of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <faq-coturn-install>`.
+If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a :term:`STUN` server or a :term:`TURN` relay, to traverse through the :term:`NAT` of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <faq-coturn-install>`.
 
 
 
