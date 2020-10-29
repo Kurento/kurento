@@ -35,7 +35,9 @@ ENV APT_KEEP_CACHE="false"
 # Install Node, NPM, and Bower (fox JavaScript-based projects)
 # - Tested Node version: 8.x (10.x might introduce breaking changes)
 # - Tested NPM version: 6.14.5 (newer versions should probably work fine)
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        wget \
+ && wget --no-verbose -O - https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get -q update && apt-get -q install --no-install-recommends --yes \
         nodejs \
  && rm -rf /var/lib/apt/lists/* \
