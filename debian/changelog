@@ -1,8 +1,9 @@
-kms-elements (6.14.1-0kurento1) UNRELEASED; urgency=medium
+kms-elements (6.15.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
+  * Prepare release 6.15.0-0kurento1
+  * debian: update versions of Kurento dependencies
 
- -- Juan Navarro <juan.navarro@gmx.es>  Thu, 18 Jun 2020 11:43:48 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 03 Nov 2020 18:04:22 +0100
 
 kms-elements (6.14.0-0kurento1) testing; urgency=medium
 
