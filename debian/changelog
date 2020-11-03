@@ -1,8 +1,8 @@
-kms-cmake-utils (6.14.1-0kurento1) UNRELEASED; urgency=medium
+kms-cmake-utils (6.15.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
+  * Prepare release 6.15.0-0kurento1
 
- -- Juan Navarro <juan.navarro@gmx.es>  Thu, 18 Jun 2020 11:43:46 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 03 Nov 2020 18:04:20 +0100
 
 kms-cmake-utils (6.14.0-0kurento1) testing; urgency=medium
 
