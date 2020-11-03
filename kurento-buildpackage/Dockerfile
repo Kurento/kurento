@@ -65,9 +65,10 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends
 
 # Install a basic set of packages
-# * build-essential, cmake, pkg-config: For C/C++ based projects
+# * build-essential: For C/C++ Kurento modules that generate client SDK files
 # * Miscellaneous tools that are used by CI scripts
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        build-essential \
         gnupg \
         iproute2 \
         zip unzip \
