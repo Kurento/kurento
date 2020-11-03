@@ -183,7 +183,7 @@ else
     if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
     else
-        COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
+        COMMIT_MSG="Update version to $PACKAGE_VERSION"
     fi
 fi
 

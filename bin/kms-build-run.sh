@@ -167,6 +167,7 @@ CFG_VALGRIND_CALLGRIND="false"
 CFG_ADDRESS_SANITIZER="false"
 CFG_THREAD_SANITIZER="false"
 CFG_UNDEFINED_SANITIZER="false"
+CFG_KMS_ARGS=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -182,9 +183,8 @@ while [[ $# -gt 0 ]]; do
         --thread-sanitizer) CFG_THREAD_SANITIZER="true" ;;
         --undefined-sanitizer) CFG_UNDEFINED_SANITIZER="true" ;;
         *)
-            log "ERROR: Unknown argument '${1-}'"
-            log "Run with '--help' to read usage details"
-            exit 1
+            log "Argument '${1-}' will be passed to KMS"
+            CFG_KMS_ARGS+=" ${1-}"
             ;;
     esac
     shift
@@ -287,8 +287,7 @@ if [[ "$CFG_UNDEFINED_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-ubsan"
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_UNDEFINED=ON"
 
-    # FIXME
-    # A bug in the `ld` linker (package "binutils") in Ubuntu 16.04 "Xenial"
+    # FIXME: A bug in the `ld` linker (package "binutils") in Ubuntu 16.04 "Xenial"
     # makes the CMake test for UBSan compatibility to fail.
     # A simple workaround is to use `gold` instead of `ld`.
     # Clang doesn't need this, because it uses `lld`, the LLVM linker.
@@ -348,7 +347,12 @@ RUN_WRAPPER=""
 if [[ "$CFG_GDB" == "true" ]]; then
     # RUN_WRAPPER="gdb -ex 'run' --args"
     RUN_WRAPPER="gdb --args"
-    RUN_VARS+=("G_DEBUG='fatal-warnings'")
+    RUN_VARS+=(
+        "G_DEBUG='fatal-warnings'"
+
+        # Prevent GStreamer from forking on startup
+        "GST_REGISTRY_FORK='no'"
+    )
 fi
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
@@ -360,6 +364,9 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
         #"G_SLICE='always-malloc'"
         #"G_SLICE='debug-blocks'"
         "G_SLICE='all'"
+
+        # Prevent GStreamer from forking on startup
+        "GST_REGISTRY_FORK='no'"
 
         # Enable deletion of MediaSet objects in KMS, to avoid leak reports
         "DEBUG_MEDIASET='1'"
@@ -421,7 +428,7 @@ fi
 # export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
 # export GST_DEBUG="${GST_DEBUG:-3},baseparse:6,h264parse:6"
 # export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
-export GST_DEBUG="${GST_DEBUG:-3},kmswebrtcsession:6"
+# export GST_DEBUG="${GST_DEBUG:-3},kmswebrtcsession:6"
 
 
 
@@ -459,19 +466,14 @@ done
 
 COMMAND="$COMMAND $RUN_WRAPPER"
 
-# NOTE: "--gst-disable-registry-fork" is used to prevent GStreamer from
-# spawning a helper process that loads plugins, which can cause confusing
-# results from analysis tools such as Valgrind.
-
 COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
     --conf-file='$PWD/config/kurento.conf.json' \
     --modules-config-path='$PWD/config' \
     --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
-    --gst-plugin-path='$PWD' \
-    --gst-disable-registry-fork \
-    --gst-disable-registry-update"
+    --gst-plugin-path='$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.5' \
+"
 
 log "Run command: $COMMAND"
-eval "$COMMAND" "$@"
+eval "$COMMAND" "$CFG_KMS_ARGS"
 
 popd || exit 1  # Exit $BUILD_DIR

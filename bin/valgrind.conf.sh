@@ -231,7 +231,7 @@ VALGRIND_ARGS=(
     # Start simulation and profiling from the beginning of the program.
     # Use the command `callgrind_control -i on` to manually start profiling.
     # =<yes|no> [default: yes]
-    # "--callgrind:instr-atstart=no"
+    "--callgrind:instr-atstart=no"
 
     # Start event collection from the beginning of the profile run.
     # =<yes|no> [default: yes]
@@ -239,7 +239,7 @@ VALGRIND_ARGS=(
 
     # Separate generation of profile data for every thread.
     # =<no|yes> [default: no]
-    # "--callgrind:separate-threads=yes"
+    "--callgrind:separate-threads=yes"
 
     # Do full cache simulation instead of only counting instruction read accesses.
     # =<yes|no> [default: no]
