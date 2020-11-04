@@ -1,6 +1,6 @@
 {
   "name": "kurento-recorder",
-  "version": "6.14.1-dev",
+  "version": "6.15.0",
   "description": "Kurento demo with Recorder",
   "keywords": [
     "kurento",
@@ -66,7 +66,7 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.3.0",
     "demo-console": "1.5.1",
-    "kurento-client": "git+https://github.com/Kurento/kurento-client-bower.git",
-    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git"
+    "kurento-client": "6.15.0",
+    "kurento-utils": "6.15.0"
   }
 }
