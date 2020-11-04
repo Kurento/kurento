@@ -1,11 +1,12 @@
-kms-datachannelexample (6.14.1-0kurento1) UNRELEASED; urgency=medium
+kms-datachannelexample (6.15.0-0kurento1) testing; urgency=medium
 
   * debian/control: Sort deps, add missing one
   * debian: add missing dependencies (fixes show-data example)
   * debian: copy kms-core control file, add dbg section
   * debian: recommend installing "fonts-droid-fallback"
+  * Prepare release 6.15.0-0kurento1
 
- -- Juan Navarro <juan.navarro@gmx.es>  Fri, 03 Jul 2020 19:28:44 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 04 Nov 2020 13:07:31 +0100
 
 kms-datachannelexample (6.7.0) testing; urgency=medium
 
