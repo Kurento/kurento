@@ -82,6 +82,11 @@ GIT_COMMIT="$(git rev-parse --short HEAD)"
       }
     }
 
+    # Set a git tag in the destination repo: this ensures the latest tag is
+    # present, regardless of whether there are actual changes in it.
+    # This is needed because otherwise if there are no changes between releases,
+    # the destination repo's specific job (kurento_merge_js_project.sh) will
+    # not run, and thus no tag will be created by that job.
     kurento_check_version.sh true || {
         log "ERROR: Command failed: kurento_check_version (tagging enabled)"
         exit 1
