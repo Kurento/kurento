@@ -1,8 +1,9 @@
-kms-markerdetector (6.14.1-0kurento1) UNRELEASED; urgency=medium
+kms-markerdetector (6.15.0-0kurento1) testing; urgency=medium
 
   * Fix build for both Ubuntu 16.04 Xenial and 18.04 Bionic
+  * fix debian/install and build process for binary & API clients
 
- -- Juan Navarro <juan.navarro@gmx.es>  Fri, 03 Jul 2020 19:27:37 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 04 Nov 2020 13:08:26 +0100
 
 kms-markerdetector (6.7.0) testing; urgency=medium
 
