@@ -46,6 +46,7 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
  && npm cache clean --force
 
 # Install packages
+# * curl: For CI script kurento_http_publish.sh
 # * default-jdk (Java JDK): For Java projects
 # * maven: For Java projects
 # * jq, jshon: For some JavaScript tools and jobs
@@ -56,6 +57,7 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 # * libmediainfo-dev: MediaInfoLibrary class
 # * netcat: KmsService class, to check if KMS port is already in use
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        curl \
         default-jdk \
         maven \
         jq jshon \
