@@ -1,8 +1,9 @@
-kms-pointerdetector (6.14.1-0kurento1) UNRELEASED; urgency=medium
+kms-pointerdetector (6.15.0-0kurento1) testing; urgency=medium
 
   * Fix build for both Ubuntu 16.04 Xenial and 18.04 Bionic
+  * Prepare release 6.15.0-0kurento1
 
- -- Juan Navarro <juan.navarro@gmx.es>  Fri, 03 Jul 2020 19:28:21 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 04 Nov 2020 13:10:02 +0100
 
 kms-pointerdetector (6.7.0) testing; urgency=medium
 
