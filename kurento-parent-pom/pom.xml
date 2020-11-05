@@ -280,16 +280,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-tree-server</artifactId>
-				<version>${version.kurento-java}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-tree-client</artifactId>
-				<version>${version.kurento-java}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
 				<artifactId>kurento-utils-js</artifactId>
 				<version>${version.kurento-utils-js}</version>
 			</dependency>
