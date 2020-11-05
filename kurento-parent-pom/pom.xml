@@ -240,11 +240,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento.module</groupId>
-				<artifactId>imageendpoint</artifactId>
-				<version>${version.kurento-imageendpoint}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
 				<artifactId>platedetector</artifactId>
 				<version>${version.kurento-platedetector}</version>
 			</dependency>
@@ -262,16 +257,6 @@
 				<groupId>org.kurento.module</groupId>
 				<artifactId>crowddetector</artifactId>
 				<version>${version.kurento-crowddetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>facesegmentator</artifactId>
-				<version>${version.kurento-facesegmentator}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>backgroundextractor</artifactId>
-				<version>${version.kurento-backgroundextractor}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
