@@ -11,7 +11,37 @@ To install Kurento Media Server: :doc:`/user/installation`.
 Added
 =====
 
-* Description.
+* **Small addition**. Description.
+
+
+
+Big addition name
+-----------------
+
+Full description, with images, code samples, external links, etc. Some useful syntax examples:
+
+* Documentation section: :doc:`/user/tutorials`.
+
+* Glossary term: :term:`SDP`.
+
+* Inline link: `How to avoid Data Channel breaking <https://blog.mozilla.org/webrtc/how-to-avoid-data-channel-breaking/>`__.
+
+* Blocks:
+
+  .. code-block:: java
+
+     System.out.println("Some example Java code");
+
+  .. code-block:: text
+
+     Some literal command output
+
+  .. note::
+
+     Something to keep in mind.
+
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (*Issue title*).
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kms-core#PrNum <https://github.com/Kurento/kms-core/pull/PrNum>`__ (*Pull Request title*).
 
 
 
@@ -36,45 +66,15 @@ Fixed
 
 
 
-Big change
-==========
+Other changes
+=============
 
-Full description, with images, code samples, external links, etc.
+This list includes other changes and fixes contributed by users and/or fellow developers, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
 
-Some useful syntax examples:
+**RepoName 1**
 
-* Documentation section: :doc:`/user/tutorials`
+* "Username for PR" ...
 
-* Glossary term: :term:`SDP`
+**RepoName 2**
 
-* Inline link: `How to avoid Data Channel breaking <https://blog.mozilla.org/webrtc/how-to-avoid-data-channel-breaking/>`__
-
-* Code block:
-
-  .. code-block:: text
-
-     Text in the code block
-
-
-
-Thanks for the change
----------------------
-
-* `@Username <https://github.com/Username>`__ (Full Name) for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (*Issue title*).
-* `@Username <https://github.com/Username>`__ for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (*Issue title*).
-* `@Username <https://github.com/Username>`__ for `Kurento/kms-core#PrNum <https://github.com/Kurento/kms-core/pull/PrNum>`__ (*Pull Request title*).
-
-
-
-Thank You
-=========
-
-There were other changes and fixes contributed by users, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
-
-**RepoName**
-
-* ...
-
-**RepoName**
-
-* ...
+* "Username for PR" ...

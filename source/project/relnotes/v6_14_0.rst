@@ -21,6 +21,12 @@ Changed
 
   Some basic operations, such as SDP Offer/Answer negotiations, ended up logging thousands of lines that don't really convey anything useful in a typical deployment, and can make it harder to find other more interesting messages. For this reason, the bulk of general messages that are part of WebRTC have been modified from ``INFO`` to ``DEBUG`` log level (see :doc:`/features/logging`).
 
+* **Flexible TLS negotiation for Secure WebSocket**. Kurento 6.13.2 moved towards using **TLS 1.2** with its Secure WebSocket control endpoint, as a response to all of the most used browsers moving away from previous versions of TLS. This applies to applications that are written in Browser JavaScript, and want to connect directly from the browser to the JSON-RPC port of Kurento media Server.
+
+  However, for greater flexibility, we have now changed this to allow a flexible security negotiation with clients. Instead of forcing that clients connect with the Secure WebSocket using a fixed version of TLS 1.2, the server (OpenSSL behind the scenes) is now allowed to negotiate the highest version of TLS supported by the client, among TLS 1.0, TLS 1.1, and TLS 1.2.
+
+  Note that TLS 1.3 is not supported yet by OpenSSL 1.0.2, which is the version used on Ubuntu 16.04 Xenial. However, when we finish migration to more modern OS versions, newer OpenSSL versions in the system will mean that Kurento will implicitly support TLS 1.3 too.
+
 
 
 Fixed
