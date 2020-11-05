@@ -8,7 +8,9 @@
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
 		<version>6.14.0</version>
-		<relativePath /> <!-- lookup parent from repository -->
+
+		<!-- lookup parent from repository -->
+		<relativePath />
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
 	<version>6.14.1-SNAPSHOT</version>
@@ -63,8 +65,6 @@
 	<!-- Project configuration -->
 
 	<properties>
-		<version.kurento-java>${project.version}</version.kurento-java>
-
 		<!-- Kurento Media Server API.
 		These properties select which version of the Kurento API definition files
 		(the .kmd JSON files found in Kurento Media Server modules) will be used.
@@ -75,15 +75,19 @@
 		<version.kms-api-elements>6.14.1-SNAPSHOT</version.kms-api-elements>
 		<version.kms-api-filters>6.14.1-SNAPSHOT</version.kms-api-filters>
 
-		<version.kurento-utils-js>6.14.1-SNAPSHOT</version.kurento-utils-js>
-		<version.kurento-maven-plugin>6.14.1-SNAPSHOT</version.kurento-maven-plugin>
-
 		<!-- Kurento extra modules -->
 		<version.kurento-chroma>6.6.0</version.kurento-chroma>
 		<version.kurento-crowddetector>6.6.0</version.kurento-crowddetector>
-		<!--<version.kurento-markerdetector>6.6.0</version.kurento-markerdetector>-->
+		<version.kurento-markerdetector>6.6.0</version.kurento-markerdetector>
 		<version.kurento-platedetector>6.6.0</version.kurento-platedetector>
 		<version.kurento-pointerdetector>6.6.0</version.kurento-pointerdetector>
+
+		<!-- Kurento miscellaneous tools -->
+		<version.kurento-utils-js>6.14.1-SNAPSHOT</version.kurento-utils-js>
+		<version.kurento-maven-plugin>6.14.1-SNAPSHOT</version.kurento-maven-plugin>
+
+		<!-- Kurento Java modules -->
+		<version.kurento-java>${project.version}</version.kurento-java>
 
 		<!-- External versions -->
 		<webjars-locator.version>0.36</webjars-locator.version>
@@ -232,11 +236,38 @@
 	<dependencyManagement>
 		<dependencies>
 
-			<!-- Kurento dependencies -->
+			<!-- Kurento Media Server API -->
+			<dependency>
+				<groupId>org.kurento</groupId>
+				<artifactId>kms-api-core</artifactId>
+				<version>${version.kms-api-core}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento</groupId>
+				<artifactId>kms-api-elements</artifactId>
+				<version>${version.kms-api-elements}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento</groupId>
+				<artifactId>kms-api-filters</artifactId>
+				<version>${version.kms-api-filters}</version>
+			</dependency>
+
+			<!-- Kurento extra modules -->
 			<dependency>
 				<groupId>org.kurento.module</groupId>
 				<artifactId>chroma</artifactId>
 				<version>${version.kurento-chroma}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>crowddetector</artifactId>
+				<version>${version.kurento-crowddetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>markerdetector</artifactId>
+				<version>${version.kurento-markerdetector}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento.module</groupId>
@@ -248,25 +279,19 @@
 				<artifactId>pointerdetector</artifactId>
 				<version>${version.kurento-pointerdetector}</version>
 			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>markerdetector</artifactId>
-				<version>${version.kurento-markerdetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>crowddetector</artifactId>
-				<version>${version.kurento-crowddetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-test</artifactId>
-				<version>${version.kurento-java}</version>
-			</dependency>
+
+			<!-- Kurento miscellaneous tools -->
 			<dependency>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-utils-js</artifactId>
 				<version>${version.kurento-utils-js}</version>
+			</dependency>
+
+			<!-- Kurento Java modules -->
+			<dependency>
+				<groupId>org.kurento</groupId>
+				<artifactId>kurento-commons</artifactId>
+				<version>${version.kurento-java}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
@@ -296,23 +321,8 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-commons</artifactId>
+				<artifactId>kurento-test</artifactId>
 				<version>${version.kurento-java}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kms-api-core</artifactId>
-				<version>${version.kms-api-core}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kms-api-elements</artifactId>
-				<version>${version.kms-api-elements}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kms-api-filters</artifactId>
-				<version>${version.kms-api-filters}</version>
 			</dependency>
 
 			<!-- Webjars -->
