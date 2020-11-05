@@ -23,7 +23,7 @@ package org.kurento.test.base;
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.3.1
  */
-public class PlayerTest extends RepositoryMongoTest {
+public class PlayerTest extends BaseTest {
 
   public PlayerTest() {
     setDeleteLogsIfSuccess(false);

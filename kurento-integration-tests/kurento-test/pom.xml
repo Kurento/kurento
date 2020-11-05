@@ -33,10 +33,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-repository-internal</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
 			<artifactId>kurento-utils-js</artifactId>
 		</dependency>
 		<dependency>
@@ -220,6 +216,22 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>org/kurento/test/base/RepositoryFunctionalTest.java</exclude>
+						<exclude>org/kurento/test/base/RepositoryMongoTest.java</exclude>
+					</excludes>
+					<testExcludes>
+						<exclude>org/kurento/test/functional/repository/RepositoryRecorderTest.java</exclude>
+					</testExcludes>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 </project>

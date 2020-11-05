@@ -295,26 +295,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-repository</artifactId>
-				<version>${version.kurento-java}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-repository-internal</artifactId>
-				<version>${version.kurento-java}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-repository-client</artifactId>
-				<version>${version.kurento-java}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-repository-server</artifactId>
-				<version>${version.kurento-java}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
 				<artifactId>kurento-client</artifactId>
 				<version>${version.kurento-java}</version>
 			</dependency>

@@ -36,7 +36,6 @@
 				<module>kurento-parent-pom</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-client</module>
-				<module>kurento-repository</module>
 				<module>kurento-assembly</module>
 				<module>kurento-integration-tests</module>
 				<module>kurento-basicroom</module>
@@ -67,7 +66,6 @@
 				<module>kurento-parent-pom</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-client</module>
-				<module>kurento-repository</module>
 				<module>kurento-integration-tests</module>
 			</modules>
 			<build>

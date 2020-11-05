@@ -45,7 +45,7 @@ import org.kurento.test.utils.Shell;
  * @since 5.0.5
  */
 @Category(SystemStabilityTests.class)
-public class StabilityTest extends RepositoryMongoTest {
+public class StabilityTest extends BaseTest {
 
   private static final int WAIT_POLL_TIME = 200; // milliseconds
 
