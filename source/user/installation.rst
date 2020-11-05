@@ -21,9 +21,7 @@ If you want to try nightly builds of KMS, then head to the section :doc:`/user/i
 Amazon Web Services
 ===================
 
-The Kurento project provides an *AWS CloudFormation* template file for `Amazon Web Services`_ (AWS). It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server.
-
-Note that this template is specifically tailored to be deployed on the default *Amazon Virtual Private Cloud* (`Amazon VPC <https://aws.amazon.com/documentation/vpc/>`__) network. **You need an Amazon VPC to deploy this template**.
+Kurento provides a sample *AWS CloudFormation* template file for `Amazon Web Services`_ (AWS). It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server.
 
 Follow these steps to use it:
 
@@ -41,7 +39,7 @@ Follow these steps to use it:
 
    4.1. **Stack name**: A descriptive name for your Stack.
 
-   4.2. **InstanceType**: Choose an appropriate size for your instance. `Check the different ones <https://aws.amazon.com/ec2/instance-types/?nc1=h_ls>`__.
+   4.2. **InstanceType**: Choose an appropriate size for your instance. `Check the different ones <https://aws.amazon.com/ec2/instance-types/>`__.
 
    4.3. **KeyName**: You need to create an RSA key beforehand in order to access the instance. Check AWS documentation on `how to create one <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html>`__.
 
@@ -58,6 +56,14 @@ Follow these steps to use it:
 5. Finish the Stack creation process. Wait until the status of the newly created Stack reads *CREATE_COMPLETE*.
 
 6. Select the Stack and then open the *Outputs* tab, where you'll find the instance's public IP address, and the Kurento Media Server endpoint URL that must be used by :doc:`Application Servers </user/writing_applications>`.
+
+.. note::
+
+   The Kurento CF template is written to deploy **on the default VPC** (see the `Amazon Virtual Private Cloud <https://docs.aws.amazon.com/vpc/>`__ docs). There is no VPC selector defined in this template, so you won't see a choice for it during the AWS CF wizard. If you need more flexibility than what this template offers, you have two options:
+
+   A. Manually create an EC2 instance, assigning all the resources as needed, and then using the other installation methods to set Kurento Media Server up on it: :ref:`installation-docker`, :ref:`installation-local`.
+
+   B. Download the current CF from the link above, and edit it to create your own custom version with everything you need from it.
 
 
 
