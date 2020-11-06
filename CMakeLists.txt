@@ -11,7 +11,7 @@ set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of ent
 # Add CMake modules provided by this project
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(KurentoGitHelpers)
-get_git_version(PROJECT_VERSION 6.15.0)
+get_git_version(PROJECT_VERSION 6.15.1-dev)
 message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 
 set(CMAKE_MODULES_INSTALL_DIR
