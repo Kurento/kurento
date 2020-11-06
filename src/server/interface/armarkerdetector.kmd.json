@@ -1,6 +1,6 @@
 {
   "name": "markerdetector",
-  "version": "6.15.0",
+  "version": "6.15.1-dev",
   "kurentoVersion": "^6.7.0",
   "code": {
     "api": {
