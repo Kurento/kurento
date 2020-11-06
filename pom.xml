@@ -154,7 +154,7 @@
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-module-creator</artifactId>
-			<version>6.15.0</version>
+			<version>6.15.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
