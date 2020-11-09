@@ -27,7 +27,7 @@ This application includes an integration test. The requirements of this test are
 
   * Kurento Media Server. It must be installed and running an instance of KMS
     in the machine running the test. For further information please visit the
-    official [KMS installation guide](https://doc-kurento.readthedocs.io/en/stable/user/installation.html).
+    official [KMS installation guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html).
 
   * Chrome. It must be installed an Google Chrome browser in the machine running
     the test. In addition, it is recommended to use its latest stable version.
@@ -78,14 +78,14 @@ Useful Links
 
 Usage:
 
-* [Installation Guide](http://doc-kurento.readthedocs.io/en/stable/user/installation.html)
-* [Compilation Guide](http://doc-kurento.readthedocs.io/en/stable/dev/dev_guide.html#developing-kms)
-* [Contribution Guide](http://doc-kurento.readthedocs.io/en/stable/project/contribute.html)
+* [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html)
+* [Compilation Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#developing-kms)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contribute.html)
 
 Issues:
 
 * [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
-* [Support](http://doc-kurento.readthedocs.io/en/stable/user/support.html)
+* [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:
 
