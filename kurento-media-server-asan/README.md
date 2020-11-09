@@ -61,7 +61,7 @@ Kurento is also part of the [NUBOMEDIA] research initiative.
 The Kurento project provides detailed [documentation] including tutorials, installation and development guides. The [Open API specification], also known as *Kurento Protocol*, is available on [apiary.io].
 
 [documentation]: https://www.kurento.org/documentation
-[Open API specification]: https://doc-kurento.readthedocs.io/en/stable/features/kurento_api.html
+[Open API specification]: https://doc-kurento.readthedocs.io/en/latest/features/kurento_api.html
 [apiary.io]: http://docs.streamoriented.apiary.io/
 
 
@@ -70,15 +70,15 @@ The Kurento project provides detailed [documentation] including tutorials, insta
 
 Usage:
 
-* [Installation Guide](https://doc-kurento.readthedocs.io/en/stable/user/installation.html)
+* [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html)
 * [Docker Deployment Guide](https://hub.docker.com/r/kurento/kurento-media-server)
-* [Contribution Guide](https://doc-kurento.readthedocs.io/en/stable/project/contributing.html)
-* [Developer Guide](https://doc-kurento.readthedocs.io/en/stable/dev/dev_guide.html)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contributing.html)
+* [Developer Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html)
 
 Issues:
 
 * [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
-* [Support](https://doc-kurento.readthedocs.io/en/stable/user/support.html)
+* [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:
 
@@ -104,7 +104,7 @@ Kurento has a full set of different tests mainly focused in the integrated and s
 
 In order to assess properly Kurento from a final user perspective, a rich suite of E2E tests has been designed and implemented. To that aim, the Kurento Testing Framework (KTF) has been created. KTF is a part of the Kurento project aimed to carry out end-to-end (E2E) tests for Kurento. KTF has been implemented on the top of two well-known open-source testing frameworks: JUnit and Selenium.
 
-If you want to know more about the Kurento Testing Framework and how to run all the available tests for Kurento you will find more information here: [Kurento Testing](https://doc-kurento.readthedocs.io/en/stable/dev/testing.html).
+If you want to know more about the Kurento Testing Framework and how to run all the available tests for Kurento you will find more information here: [Kurento Testing](https://doc-kurento.readthedocs.io/en/latest/dev/testing.html).
 
 
 
@@ -130,5 +130,5 @@ limitations under the License.
 
 <!--- Links --->
 
-[Kurento Client]: https://doc-kurento.readthedocs.io/en/stable/features/kurento_client.html
-[Kurento Tutorials]: https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html
+[Kurento Client]: https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html
+[Kurento Tutorials]: https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html
