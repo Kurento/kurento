@@ -72,7 +72,7 @@ Stability tests have been also created using Java, and they are contained in the
 Tutorials
 ---------
 
-The documentation of Kurento includes a number of tutorials `tutorials <https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html>`_ which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in the project `kurento-tutorial-test <https://github.com/Kurento/kurento-tutorial-test/>`_. In order to run these tests, Maven should be used:
+The documentation of Kurento includes a number of tutorials `tutorials <https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html>`_ which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in the project `kurento-tutorial-test <https://github.com/Kurento/kurento-tutorial-test/>`_. In order to run these tests, Maven should be used:
 
 .. code-block:: console
 
@@ -83,7 +83,7 @@ The documentation of Kurento includes a number of tutorials `tutorials <https://
 API
 ---
 
-The `Kurento API <https://doc-kurento.readthedocs.io/en/stable/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS. In you want to run API tests for Java, as usual for Kurento tests, Maven is required, as follows:
+The `Kurento API <https://doc-kurento.readthedocs.io/en/latest/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS. In you want to run API tests for Java, as usual for Kurento tests, Maven is required, as follows:
 
 .. code-block:: console
 

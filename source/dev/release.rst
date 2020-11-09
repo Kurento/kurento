@@ -1201,7 +1201,7 @@ The repository `kurento-docker`_ contains *Dockerfile*s for all the `Kurento Doc
 Kurento documentation
 =====================
 
-The documentation scripts will download both Java and JavaScript clients, generate HTML Javadoc / Jsdoc pages from them, and embed everything into a `static section <https://doc-kurento.readthedocs.io/en/stable/features/kurento_client.html#reference-documentation>`__.
+The documentation scripts will download both Java and JavaScript clients, generate HTML Javadoc / Jsdoc pages from them, and embed everything into a `static section <https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html#reference-documentation>`__.
 
 For this reason, the documentation must be built only after all the other modules have been released.
 

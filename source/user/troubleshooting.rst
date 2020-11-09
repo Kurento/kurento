@@ -275,12 +275,12 @@ Low video quality
 
 You have several ways to override the default settings for variable bitrate:
 
-- Methods in `org.kurento.client.BaseRtpEndpoint <https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__:
+- Methods in `org.kurento.client.BaseRtpEndpoint <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__:
 
   - *setMinVideoRecvBandwidth()* / *setMaxVideoRecvBandwidth()*
   - *setMinVideoSendBandwidth()* / *setMaxVideoSendBandwidth()*
 
-- Methods in `org.kurento.client.MediaElement <https://doc-kurento.readthedocs.io/en/stable/_static/client-javadoc/org/kurento/client/MediaElement.html>`__:
+- Methods in `org.kurento.client.MediaElement <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/MediaElement.html>`__:
 
   - *setMinOutputBitrate()* / *setMaxOutputBitrate()*
 

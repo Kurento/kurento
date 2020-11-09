@@ -52,14 +52,14 @@ Useful Links
 
 Usage:
 
-* [Installation Guide](https://doc-kurento.readthedocs.io/en/stable/user/installation.html)
-* [Compilation Guide](https://doc-kurento.readthedocs.io/en/stable/dev/dev_guide.html#developing-kms)
-* [Contribution Guide](https://doc-kurento.readthedocs.io/en/stable/project/contributing.html)
+* [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html)
+* [Compilation Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#developing-kms)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contributing.html)
 
 Issues:
 
 * [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
-* [Support](https://doc-kurento.readthedocs.io/en/stable/user/support.html)
+* [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:
 
