@@ -33,7 +33,7 @@ declare -A PROJECT_VERSIONS=(
     # Indicates if the current state of this code is Release or Nightly.
     # If "true", all mentioned repos will be checked out to the corresponding
     # versions; otherwise, they will be kept at the default branch (master).
-    [VERSION_RELEASE]="true"
+    [VERSION_RELEASE]="false"
 )
 
 # If the build is not for a release, then some versions can be set to more
