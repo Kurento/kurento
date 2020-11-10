@@ -206,7 +206,7 @@ Release steps
 
 #. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, increment the **Debian revision** number.
 
-   The version number will only be changed when the fork gets updated from upstream code. When doing that, then change our version number so it matched the version number used in upstream.
+   The version number (as opposed to the Debian revision) is only changed when the fork gets updated from upstream sources. Meanwhile, we only update the Debian revision.
 
    .. code-block:: console
 
@@ -239,81 +239,6 @@ Release steps
 
 
 
-Kurento Maven Plugin
-====================
-
-#. Decide what is going to be the *final release version*. For this, follow the SemVer guidelines, as explained above in :ref:`dev-release-general`.
-
-#. Set the final release version in *pom.xml*. Remove ``-SNAPSHOT``.
-
-   .. code-block:: xml
-
-         <groupId>org.kurento</groupId>
-         <artifactId>kurento-maven-plugin</artifactId>
-      -  <version>6.9.0-SNAPSHOT</version>
-      +  <version>6.9.0</version>
-
-#. Set the correct kurento-module-creator version in *pom.xml*.
-
-   .. code-block:: xml
-
-         <groupId>org.kurento</groupId>
-         <artifactId>kurento-module-creator</artifactId>
-      -  <version>6.8.2</version>
-      +  <version>6.9.0</version>
-
-#. Git add, commit, tag, and push.
-
-   .. code-block:: console
-
-      # Change this
-      NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
-
-      function do_release {
-          local COMMIT_MSG="Prepare release $NEW_VERSION"
-
-          git add pom.xml \
-          && git commit -m "$COMMIT_MSG" \
-          && git push \
-          && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-          && git push origin "$NEW_VERSION" \
-          || echo "ERROR: Command failed: git"
-
-          echo "Done!"
-      }
-
-      # Run in a subshell where all commands are traced
-      (set -o xtrace; do_release)
-
-#. The CI job should start automatically; some tests are run as a result of this commit, so you should wait for their completion.
-
-   WARNING: This depends on Kurento Module Creator, which is not built until Kurento Media Server is done! So we have here a dependency loop that needs to be solved by hand: first force running the job for the Module Creator, then the job for Maven Plugin, and lastly the jobs for the Media Server.
-
-#. [TODO: Sonatype]
-
-#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, increment the **patch** number and add ``-SNAPSHOT``.
-
-   .. code-block:: xml
-
-         <groupId>org.kurento</groupId>
-         <artifactId>kurento-maven-plugin</artifactId>
-      -  <version>6.9.0</version>
-      +  <version>6.9.1-SNAPSHOT</version>
-
-6. Git add, commit, and push.
-
-   .. code-block:: console
-
-      COMMIT_MSG="Prepare for next development iteration"
-
-      cd kurento-maven-plugin
-      git add pom.xml \
-      && git commit -m "$COMMIT_MSG" \
-      && git push \
-      || echo "ERROR: Command failed: git"
-
-
-
 Kurento Media Server
 ====================
 
@@ -326,6 +251,7 @@ All KMS projects:
 Release order:
 
 * `kurento-module-creator`_
+* `kurento-maven-plugin`_
 * `kms-cmake-utils`_
 * `kms-jsonrpc`_
 * `kms-core`_
@@ -611,7 +537,7 @@ Release steps
 
    .. note::
 
-      You'll need to install the **jq** command-line JSON processor.
+      The **jq** command-line JSON processor must be installed.
 
    .. code-block:: console
 
@@ -639,7 +565,7 @@ Release steps
               git pull --rebase \
               || { echo "ERROR: Command failed: git pull"; return 3; }
 
-              # Set the final release version in project and dependencies
+              # Set new version in project and dependencies
               JQ_PROGRAM="$(mktemp)"
               tee "$JQ_PROGRAM" >/dev/null <<EOF
       # This is a program for the "jq" command-line JSON processor.
@@ -717,6 +643,7 @@ Release steps
           for PROJECT in "${PROJECTS[@]}"; do
               pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 8; }
 
+              # Commit all modified files.
               git commit -m "$COMMIT_MSG" \
               && git push \
               || { echo "ERROR: Command failed: git"; return 9; }
@@ -755,10 +682,14 @@ Release steps
 
    **All-In-One** script:
 
+   .. note::
+
+      The **jq** command-line JSON processor must be installed.
+
    .. code-block:: console
 
       # Change this
-      NEW_VERSION="<NextVersion>-dev"           # Eg.: 1.0.1-dev
+      NEW_VERSION="<NextVersion>-dev"       # Eg.: 1.0.1-dev
 
       function do_release {
           local COMMIT_MSG="Prepare for next development iteration"
@@ -777,7 +708,7 @@ Release steps
               git pull --rebase \
               || { echo "ERROR: Command failed: git pull"; return 2; }
 
-              # Set the next development version in project and dependencies
+              # Set new version in project and dependencies
               JQ_PROGRAM="$(mktemp)"
               tee "$JQ_PROGRAM" >/dev/null <<EOF
       # This is a program for the "jq" command-line JSON processor.
@@ -836,6 +767,7 @@ Release steps
           for PROJECT in "${PROJECTS[@]}"; do
               pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 4; }
 
+              # Commit all modified files.
               git commit -m "$COMMIT_MSG" \
               && git push \
               || { echo "ERROR: Command failed: git"; return 5; }
@@ -953,14 +885,16 @@ Release steps
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
-      KMS_VERSION="<KmsApiVersion>"         # Eg.: 1.0.0
+      KMS_VERSION="<KmsVersion>"            # Eg.: 1.0.0
 
       function do_release {
           local COMMIT_MSG="Prepare release $NEW_VERSION"
 
           local PROJECTS=(
               kurento-qa-pom
+              kurento-java/kurento-parent-pom
               kurento-java
+
               kurento-tutorial-java
 
               # FIXME tests fail because Kurento Test Framework needs improvements
@@ -979,53 +913,76 @@ Release steps
 
               # Set the final release version in project and dependencies
               if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
-                  mvn \
-                      versions:set \
+                  # Update project's own version.
+                  mvn versions:set \
                       -DgenerateBackupPoms=false \
                       -DnewVersion="$NEW_VERSION" \
                   || { echo "ERROR: Command failed: mvn versions:set"; return 4; }
-              elif [[ "$PROJECT" == "kurento-java" ]]; then
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set \
+
+              elif [[ "$PROJECT" == "kurento-java/kurento-parent-pom" ]]; then
+                  # Update to latest parent version (from cached local install).
+                  mvn versions:update-parent \
+                      -DgenerateBackupPoms=false
+                  || { echo "ERROR: Command failed: versions:update-parent"; return 5; }
+
+                  # Update project's own version.
+                  mvn versions:set \
                       -DgenerateBackupPoms=false \
                       -DnewVersion="$NEW_VERSION" \
-                  || { echo "ERROR: Command failed: mvn versions:set"; return 5; }
+                  || { echo "ERROR: Command failed: mvn versions:set"; return 6; }
 
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set-property \
+                  # Update server API dependencies: kms-{core,elements,filters}.
+                  local MODULES=(
+                      kms-api-core
+                      kms-api-elements
+                      kms-api-filters
+                  )
+                  for MODULE in "${MODULES[@]}"; do
+                      mvn versions:set-property \
+                          -DgenerateBackupPoms=false \
+                          -Dproperty="version.${MODULE}" \
+                          -DnewVersion="$KMS_VERSION" \
+                      || { echo "ERROR: Command failed: versions:set-property"; return 7; }
+                  done
+
+              elif [[ "$PROJECT" == "kurento-java" ]]; then
+                  # Update to latest parent version (from cached local install).
+                  mvn versions:update-parent \
                       -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-core \
-                      -DnewVersion="$KMS_VERSION"
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set-property \
+                  || { echo "ERROR: Command failed: versions:update-parent"; return 8; }
+
+                  # Project's own version is inherited from parent.
+
+                  # Update project's children versions.
+                  mvn versions:update-child-modules \
                       -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-elements \
-                      -DnewVersion="$KMS_VERSION"
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set-property \
-                      -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-filters \
-                      -DnewVersion="$KMS_VERSION"
+                  || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 9; }
+
               elif [[ "$PROJECT" == "kurento-tutorial-java" || "$PROJECT" == "kurento-tutorial-test" ]]; then
-                  mvn \
-                      versions:update-parent \
-                      -DgenerateBackupPoms=false \
-                      -DparentVersion="[${NEW_VERSION}]" \
-                  || { echo "ERROR: Command failed: mvn versions:update-parent"; return 6; }
+                  # Update to latest parent version (from cached local install).
+                  mvn versions:update-parent \
+                      -DgenerateBackupPoms=false
+                  || { echo "ERROR: Command failed: mvn versions:update-parent"; return 10; }
 
-                  mvn -N \
-                      versions:update-child-modules \
+                  # Update project's children versions.
+                  mvn versions:update-child-modules \
                       -DgenerateBackupPoms=false \
-                  || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 7; }
+                  || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 11; }
+
+              else
+                  { echo "ERROR: Unhandled project: $PROJECT"; return 12; }
               fi
 
               # Review all dependencies to remove development versions
               grep . --include='pom.xml' -Fr -e '-SNAPSHOT' \
               && echo "ERROR: Development versions not allowed!"
 
-              # Test the build
-              mvn -U clean install -Dmaven.test.skip=false -Pkurento-release \
-              || { echo "ERROR: Command failed: mvn clean install"; return 8; }
+              # Install the project.
+              # * Build and run tests.
+              # * Don't use `-U` because for each project we want Maven to find
+              #   the locally installed artifacts from previous "$PROJECTS".
+              mvn clean install -Dmaven.test.skip=false -Pkurento-release \
+              || { echo "ERROR: Command failed: mvn clean install"; return 13; }
 
               popd
           done
@@ -1033,14 +990,17 @@ Release steps
           echo "Everything seems OK; proceed to commit and push"
 
           for PROJECT in "${PROJECTS[@]}"; do
-              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 9; }
+              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 14; }
 
-              ( git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add ) || true \
+              # Commit all modified files.
+              git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add \
               && git commit -m "$COMMIT_MSG" \
               && git push \
-              && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-              && git push origin "$NEW_VERSION" \
-              || { echo "ERROR: Command failed: git"; return 10; }
+              || { echo "ERROR: Command failed: git"; return 15; }
+
+              # && git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
+              # && git push origin "$NEW_VERSION" \
+              # NOTE: the CI jobs automatically tag the repos upon releases
 
               popd
           done
@@ -1091,10 +1051,6 @@ Release steps
 
    .. note::
 
-      Maven can do this automatically with the `Maven Versions Plugin`_.
-
-   .. note::
-
       You should wait for a full nightly run of the Kurento Media Server pipeline, so the next development packages become available from KMS API modules: *kms-api-core*, *kms-api-elements*, and *kms-api-filters*. This way, the properties in ``kurento-parent-pom/pom.xml`` will get updated to the latest SNAPSHOT version.
 
    **All-In-One** script:
@@ -1105,14 +1061,21 @@ Release steps
 
    .. code-block:: console
 
+      # Change this
+      NEW_VERSION="<NextVersion>-SNAPSHOT"  # Eg.: 1.0.1-SNAPSHOT
+      KMS_VERSION="<KmsVersion>-SNAPSHOT"   # Eg.: 1.0.0-SNAPSHOT
+
       function do_release {
           local COMMIT_MSG="Prepare for next development iteration"
 
           local PROJECTS=(
               kurento-qa-pom
+              kurento-java/kurento-parent-pom
               kurento-java
-              kurento-tutorial-java
-              kurento-tutorial-test
+
+              # Do nothing; tutorials are left depending on release versions.
+              # kurento-tutorial-java
+              # kurento-tutorial-test
           )
 
           for PROJECT in "${PROJECTS[@]}"; do
@@ -1120,50 +1083,64 @@ Release steps
 
               # Set the next development version in project and dependencies
               if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
-                  mvn \
-                      versions:set \
+                  # Update project's own version.
+                  mvn versions:set \
                       -DgenerateBackupPoms=false \
-                      -DnextSnapshot=true \
+                      -DnewVersion="$NEW_VERSION" \
                   || { echo "ERROR: Command failed: mvn versions:set"; return 2; }
+
+              elif [[ "$PROJECT" == "kurento-java/kurento-parent-pom" ]]; then
+                  # Update to latest parent version (from cached local install).
+                  mvn versions:update-parent \
+                      -DgenerateBackupPoms=false \
+                      -DallowSnapshots=true \
+                  || { echo "ERROR: Command failed: versions:update-parent"; return 3; }
+
+                  # Update project's own version.
+                  mvn versions:set \
+                      -DgenerateBackupPoms=false \
+                      -DnewVersion="$NEW_VERSION" \
+                  || { echo "ERROR: Command failed: mvn versions:set"; return 4; }
+
+                  # Update server API dependencies: kms-{core,elements,filters}.
+                  local MODULES=(
+                      kms-api-core
+                      kms-api-elements
+                      kms-api-filters
+                  )
+                  for MODULE in "${MODULES[@]}"; do
+                      mvn versions:set-property \
+                          -DgenerateBackupPoms=false \
+                          -Dproperty="version.${MODULE}" \
+                          -DnewVersion="$KMS_VERSION" \
+                      || { echo "ERROR: Command failed: versions:set-property"; return 5; }
+                  done
+
               elif [[ "$PROJECT" == "kurento-java" ]]; then
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:set \
-                      -DgenerateBackupPoms=false \
-                      -DnextSnapshot=true \
-                  || { echo "ERROR: Command failed: mvn versions:set"; return 3; }
-
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:update-property \
-                      -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-core \
-                      -DallowSnapshots=true
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:update-property \
-                      -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-elements \
-                      -DallowSnapshots=true
-                  mvn --file kurento-parent-pom/pom.xml \
-                      versions:update-property \
-                      -DgenerateBackupPoms=false \
-                      -Dproperty=version.kms-api-filters \
-                      -DallowSnapshots=true
-              else # kurento-tutorial-java, kurento-tutorial-test
-                  mvn \
-                      versions:update-parent \
+                  # Update to latest parent version (from cached local install).
+                  mvn versions:update-parent \
                       -DgenerateBackupPoms=false \
                       -DallowSnapshots=true \
-                  || { echo "ERROR: Command failed: mvn versions:update-parent"; return 4; }
+                  || { echo "ERROR: Command failed: versions:update-parent"; return 6; }
 
-                  mvn -N \
-                      versions:update-child-modules \
+                  # Project's own version is inherited from parent.
+
+                  # Update project's children versions.
+                  mvn versions:update-child-modules \
                       -DgenerateBackupPoms=false \
                       -DallowSnapshots=true \
-                  || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 5; }
+                  || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 7; }
+
+              else
+                  { echo "ERROR: Unhandled project: $PROJECT"; return 8; }
               fi
 
-              # Test the build
-              mvn -U clean install -Dmaven.test.skip=true \
-              || { echo "ERROR: Command failed: mvn clean install"; return 6; }
+              # Install the project.
+              # * Skip building and running tests.
+              # * Do not use `-U` because for each project we want Maven to find
+              #   the locally installed artifacts from previous "$PROJECTS".
+              mvn clean install -Dmaven.test.skip=true \
+              || { echo "ERROR: Command failed: mvn clean install"; return 9; }
 
               popd
           done
@@ -1171,12 +1148,13 @@ Release steps
           echo "Everything seems OK; proceed to commit and push"
 
           for PROJECT in "${PROJECTS[@]}"; do
-              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 7; }
+              pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 10; }
 
-              ( git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add ) \
+              # Commit all modified files.
+              git ls-files --modified | grep -E '/?pom.xml$' | xargs -r git add \
               && git commit -m "$COMMIT_MSG" \
               && git push \
-              || { echo "ERROR: Command failed: git"; return 8; }
+              || { echo "ERROR: Command failed: git push"; return 11; }
 
               popd
           done
@@ -1335,6 +1313,7 @@ For this reason, the documentation must be built only after all the other module
 .. _libnice: https://github.com/Kurento/libnice
 
 .. _kurento-module-creator: https://github.com/Kurento/kurento-module-creator
+.. _kurento-maven-plugin: https://github.com/Kurento/kurento-maven-plugin
 .. _kms-cmake-utils: https://github.com/Kurento/kms-cmake-utils
 .. _kms-jsonrpc: https://github.com/Kurento/kms-jsonrpc
 .. _kms-core: https://github.com/Kurento/kms-core
