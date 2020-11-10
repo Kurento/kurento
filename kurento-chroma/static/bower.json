@@ -23,6 +23,6 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.3.0",
     "demo-console": "1.5.1",
-    "kurento-utils": "6.15.0"
+    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-js.git"
   }
 }
