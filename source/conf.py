@@ -4,6 +4,7 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import sphinx_rtd_theme
 
 
 # -- Path setup -----------------------------------------------------------
@@ -44,6 +45,7 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx.ext.graphviz',
     'sphinx.ext.ifconfig',
+    'sphinx_rtd_theme',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -101,6 +103,9 @@ html_theme_options = {
     'logo_only': False,
     'display_version': True
 }
+
+# Force the "Edit on GitHub" button to use this URL.
+github_url = "https://github.com/Kurento/doc-kurento"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
