@@ -913,7 +913,7 @@ Release steps
 
               # Set the final release version in project and dependencies
               if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
-                  # Update project's own version.
+                  # Update project version.
                   mvn versions:set \
                       -DgenerateBackupPoms=false \
                       -DnewVersion="$NEW_VERSION" \
@@ -925,7 +925,7 @@ Release steps
                       -DgenerateBackupPoms=false \
                   || { echo "ERROR: Command failed: versions:update-parent"; return 5; }
 
-                  # Update project's own version.
+                  # Update project version.
                   mvn versions:set \
                       -DgenerateBackupPoms=false \
                       -DnewVersion="$NEW_VERSION" \
@@ -951,9 +951,9 @@ Release steps
                       -DgenerateBackupPoms=false \
                   || { echo "ERROR: Command failed: versions:update-parent"; return 8; }
 
-                  # Project's own version is inherited from parent.
+                  # Project version is inherited from parent.
 
-                  # Update project's children versions.
+                  # Update children versions.
                   mvn versions:update-child-modules \
                       -DgenerateBackupPoms=false \
                   || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 9; }
@@ -964,7 +964,7 @@ Release steps
                       -DgenerateBackupPoms=false \
                   || { echo "ERROR: Command failed: mvn versions:update-parent"; return 10; }
 
-                  # Update project's children versions.
+                  # Update children versions.
                   mvn versions:update-child-modules \
                       -DgenerateBackupPoms=false \
                   || { echo "ERROR: Command failed: mvn versions:update-child-modules"; return 11; }
@@ -979,7 +979,7 @@ Release steps
 
               # Install the project.
               # * Build and run tests.
-              # * Don't use `-U` because for each project we want Maven to find
+              # * Do not use `-U` because for each project we want Maven to find
               #   the locally installed artifacts from previous "$PROJECTS".
               mvn clean install -Dmaven.test.skip=false -Pkurento-release \
               || { echo "ERROR: Command failed: mvn clean install"; return 13; }
@@ -1083,7 +1083,7 @@ Release steps
 
               # Set the next development version in project and dependencies
               if [[ "$PROJECT" == "kurento-qa-pom" ]]; then
-                  # Update project's own version.
+                  # Update project version.
                   mvn versions:set \
                       -DgenerateBackupPoms=false \
                       -DnewVersion="$NEW_VERSION" \
@@ -1096,7 +1096,7 @@ Release steps
                       -DallowSnapshots=true \
                   || { echo "ERROR: Command failed: versions:update-parent"; return 3; }
 
-                  # Update project's own version.
+                  # Update project version.
                   mvn versions:set \
                       -DgenerateBackupPoms=false \
                       -DnewVersion="$NEW_VERSION" \
@@ -1123,9 +1123,9 @@ Release steps
                       -DallowSnapshots=true \
                   || { echo "ERROR: Command failed: versions:update-parent"; return 6; }
 
-                  # Project's own version is inherited from parent.
+                  # Project version is inherited from parent.
 
-                  # Update project's children versions.
+                  # Update children versions.
                   mvn versions:update-child-modules \
                       -DgenerateBackupPoms=false \
                       -DallowSnapshots=true \
