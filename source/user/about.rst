@@ -76,7 +76,7 @@ Kurento Design Principles
 Kurento is designed based on the following main principles:
 
     **Separate Media and Signaling Planes**
-        :term:`Signaling <signaling plane>` and :term:`Media <media plane>` are two separate planes and Kurento is designed so that applications can handle separately those facets of multimedia processing.
+        :term:`Signaling <Signaling Plane>` and :term:`Media <Media Plane>` are two separate planes and Kurento is designed so that applications can handle separately those facets of multimedia processing.
 
     **Distribution of Media and Application Services**
         Kurento Media Server and applications can be collocated, escalated or distributed among different machines.

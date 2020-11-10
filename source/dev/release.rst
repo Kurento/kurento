@@ -922,7 +922,7 @@ Release steps
               elif [[ "$PROJECT" == "kurento-java/kurento-parent-pom" ]]; then
                   # Update to latest parent version (from cached local install).
                   mvn versions:update-parent \
-                      -DgenerateBackupPoms=false
+                      -DgenerateBackupPoms=false \
                   || { echo "ERROR: Command failed: versions:update-parent"; return 5; }
 
                   # Update project's own version.
@@ -961,7 +961,7 @@ Release steps
               elif [[ "$PROJECT" == "kurento-tutorial-java" || "$PROJECT" == "kurento-tutorial-test" ]]; then
                   # Update to latest parent version (from cached local install).
                   mvn versions:update-parent \
-                      -DgenerateBackupPoms=false
+                      -DgenerateBackupPoms=false \
                   || { echo "ERROR: Command failed: mvn versions:update-parent"; return 10; }
 
                   # Update project's children versions.
