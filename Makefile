@@ -15,7 +15,8 @@ $(error This Make doesn't support '.ONESHELL', use Make >= 3.82)
 endif
 
 # You can set these variables from the command line.
-SPHINXOPTS  :=
+# Adding more '-v' increases the log verbosity level.
+SPHINXOPTS  := -v
 SPHINXBUILD := sphinx-build
 SPHINXPROJ  := Kurento
 SOURCEDIR   := source
@@ -41,8 +42,8 @@ help:
 	@echo "- texlive-latex-extra"
 	@echo ""
 	@echo "python pip dependencies:"
-	@echo "- sphinx >= 1.5.0 (Tested: 1.6.6)"
-	@echo "- sphinx_rtd_theme"
+	@echo "- sphinx >= 1.5.0 (Tested: 3.3.0)"
+	@echo "- sphinx_rtd_theme  (Tested: 0.5.0)"
 
 init-workdir:
 	mkdir -p $(WORKDIR)
