@@ -37,11 +37,9 @@ sys.path.insert(0, os.path.abspath('.'))
 # ones.
 sys.path.append(os.path.abspath('extensions'))
 extensions = [
+    'sphinx.ext.extlinks',
     'sphinx.ext.graphviz',
     'sphinx.ext.ifconfig',
-    'sphinx.ext.todo',
-    'wikipedia',
-    'examplecode'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -93,11 +91,10 @@ pygments_style = 'sphinx'
 # their width to the available space (overflows the paragraph size).
 graphviz_output_format = 'png'
 
-# If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
-
-# Default language for Wikipedia articles. Default: 'en'.
-wikipedia_lang = 'en'  # English
+# Add English Wikipedia as an external site role.
+extlinks = {
+    'wikipedia': ('https://en.wikipedia.org/wiki/%s', 'Wikipedia: ')
+}
 
 
 # -- Options for HTML output ----------------------------------------------
