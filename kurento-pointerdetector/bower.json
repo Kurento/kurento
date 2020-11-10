@@ -1,6 +1,6 @@
 {
   "name": "kurento-pointerdetector",
-  "version": "6.15.0",
+  "version": "6.15.1-dev",
   "description": "Kurento Browser JavaScript Tutorial: Pointer Detector",
   "keywords": [
     "kurento",
@@ -66,8 +66,8 @@
     "bootstrap": "~3.3.0",
     "demo-console": "1.5.1",
     "ekko-lightbox": "~3.3.0",
-    "kurento-client": "6.15.0",
-    "kurento-module-pointerdetector": "6.15.0",
-    "kurento-utils": "6.15.0"
+    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
+    "kurento-module-pointerdetector": "git+https://github.com/Kurento/kurento-module-pointerdetector-js.git",
+    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-js.git"
   }
 }
