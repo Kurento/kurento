@@ -1193,6 +1193,7 @@ For this reason, the documentation must be built only after all the other module
 
    These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency. Check each one of the Kurento repositories to verify what is the latest version of each one, and put it in the corresponding variable:
 
+   - ``[VERSION_DOC]``: The docs version shown to readers. Normally same as ``[VERSION_KMS]``.
    - ``[VERSION_KMS]``: Repo `kurento-media-server`_.
    - ``[VERSION_CLIENT_JAVA]``: Repo `kurento-java`_.
    - ``[VERSION_CLIENT_JS]``: Repo `kurento-client-js`_.
@@ -1257,6 +1258,11 @@ For this reason, the documentation must be built only after all the other module
           sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="false"/' VERSIONS.conf.sh \
           || { echo "ERROR: Command failed: sed"; return 1; }
 
+          # Set [VERSION_DOC]
+          local VERSION_DOC="${NEW_VERSION}-dev"
+          sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.conf.sh \
+          || { echo "ERROR: Command failed: sed"; return 2; }
+
           # Add a new Release Notes document
           local RELNOTES_NAME="v${NEW_VERSION//./_}"
           cp source/project/relnotes/v0_TEMPLATE.rst \
@@ -1265,14 +1271,14 @@ For this reason, the documentation must be built only after all the other module
               "source/project/relnotes/${RELNOTES_NAME}.rst" \
           && sed -i "8i\   $RELNOTES_NAME" \
               source/project/relnotes/index.rst \
-          || { echo "ERROR: Command failed: sed"; return 1; }
+          || { echo "ERROR: Command failed: sed"; return 3; }
 
           git add \
               VERSIONS.conf.sh \
               source/project/relnotes/ \
           && git commit -m "$COMMIT_MSG" \
           && git push \
-          || { echo "ERROR: Command failed: git"; return 1; }
+          || { echo "ERROR: Command failed: git"; return 4; }
 
           echo "Done!"
       }
