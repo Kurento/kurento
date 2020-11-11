@@ -15,22 +15,22 @@ import sphinx_rtd_theme
 #
 # import os
 # import sys
-# sys.path.insert(0, os.path.abspath("."))
-# sys.path.insert(0, os.path.abspath("extensions"))
+# sys.path.insert(0, os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('extensions'))
 
 
 # -- Project information --------------------------------------------------
 
-project = "Kurento"
-copyright = "2020, Kurento"
-author = "Kurento"
+project = 'Kurento'
+copyright = '2020, Kurento'
+author = 'Kurento'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
 # The short X.Y version.
-version = "|VERSION_DOC|"
+version = '|VERSION_DOC|'
 
 # The full version, including alpha/beta/rc tags.
 release = version
@@ -105,7 +105,7 @@ html_theme_options = {
 }
 
 # Force the "Edit on GitHub" button to use this URL.
-github_url = "https://github.com/Kurento/doc-kurento"
+github_url = 'https://github.com/Kurento/doc-kurento'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
