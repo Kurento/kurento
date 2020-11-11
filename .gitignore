@@ -6,8 +6,3 @@
 .settings
 npm-debug.log
 build/
-
-# Files that should commit in 'doc-kurento-readthedocs'
-# but be ignored in 'doc-kurento':
-source/VERSION
-source/langdoc/
