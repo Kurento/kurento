@@ -13,7 +13,7 @@
 # shellcheck disable=SC2034
 declare -A PROJECT_VERSIONS=(
     # Version of the documentation itself; it appears in the main menu
-    [VERSION_DOC]="6.15.0"
+    [VERSION_DOC]="6.15.1-dev"
 
     # Version of Kurento Media Server
     [VERSION_KMS]="6.15.0"
