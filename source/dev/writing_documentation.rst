@@ -87,14 +87,14 @@ Kurento documentation Style Guide
 Paragraph conventions
 ---------------------
 
-- **Line breaks**: *Don't* break the lines. The documentation is a prose text, and not source code, so the typical restrictions of line length don't apply here. Use automatic line breaks in your editor, if you want. The overall flow of the text should be dictated by the width of the screen where the text is being presented, and not by some arbitrary line length limit.
+* **Line breaks**: *Don't* break the lines. The documentation is a prose text, and not source code, so the typical restrictions of line length don't apply here. Use automatic line breaks in your editor, if you want. The overall flow of the text should be dictated by the width of the screen where the text is being presented, and not by some arbitrary line length limit.
 
 
 
 Inline markup
 -------------
 
-- File names, package names, variable names, class and event names, (mostly all kinds of names), acronyms, commit hashes, and in general any kind of identifier which could be broken into different lines are emphasized with single asterisks (as in ``*word*``). Sample phrases:
+* File names, package names, variable names, class and event names, (mostly all kinds of names), acronyms, commit hashes, and in general any kind of identifier which could be broken into different lines are emphasized with single asterisks (as in ``*word*``). Sample phrases:
 
   .. code-block:: text
 
@@ -103,7 +103,7 @@ Inline markup
      You need to install *libboost-dev* for development.
      Enable debug by setting the *GST_DEBUG* environment variable.
 
-- Paths, URLs, code samples, commands, and in general any machine-oriented keywords are emphasized with double back quotes (as in ````word````). This formatting stands out, and most importantly *it cannot be broken into different lines*. Sample phrases:
+* Paths, URLs, code samples, commands, and in general any machine-oriented keywords are emphasized with double back quotes (as in ````word````). This formatting stands out, and most importantly *it cannot be broken into different lines*. Sample phrases:
 
   .. code-block:: text
 
@@ -111,18 +111,18 @@ Inline markup
      Set ``CMAKE_BUILD_TYPE=Debug`` to build with debug symbols.
      The argument ``--gst-debug`` can be used to control the logging level.
 
-- There is no difference between using *single asterisks* (``*word*``), and `single back quotes` (```word```); they get rendered as *italic text*. So, always use asterisks when wanting to emphasize some text.
+* There is no difference between using *single asterisks* (``*word*``), and `single back quotes` (```word```); they get rendered as *italic text*. So, always use asterisks when wanting to emphasize some text.
 
-- As opposed to Markdown, underscores (as in ``_word_``) *don't get rendered*, so don't use them to emphasize text.
+* As opposed to Markdown, underscores (as in ``_word_``) *don't get rendered*, so don't use them to emphasize text.
 
 
 
 Header conventions
 ------------------
 
-- **Header separation**: Always separate each header from the preceding paragraph, by using **3** empty lines. The only exception to this rule is when two headers come together (e.g. a document title followed by a section title); in that case, they are separated by just **1** empty line.
+* **Header separation**: Always separate each header from the preceding paragraph, by using **3** empty lines. The only exception to this rule is when two headers come together (e.g. a document title followed by a section title); in that case, they are separated by just **1** empty line.
 
-- **Header shape**: *reST* allows to express section headers with any kind of characters that form an underline shape below the section title. We follow these conventions for Kurento documentation files:
+* **Header shape**: *reST* allows to express section headers with any kind of characters that form an underline shape below the section title. We follow these conventions for Kurento documentation files:
 
   1. Level 1 (Document title). Use ``=`` above and below:
 
@@ -169,7 +169,7 @@ Our Sphinx-based project is hosted in the `doc-kurento`_ repository. Here, the m
 
 .. _doc-kurento: https://github.com/Kurento/doc-kurento
 
-- **init-workdir**. This target constitutes the first step to be run before most other targets. Our documentation source files contain substitution keywords in some parts, in the form ``| KEYWORD |``, which is expected to be substituted by some actual value during the generation process. Currently, the only keyword in use is ``VERSION``, which must be expanded to the actual version of the documentation being built.
+* **init-workdir**. This target constitutes the first step to be run before most other targets. Our documentation source files contain substitution keywords in some parts, in the form ``| KEYWORD |``, which is expected to be substituted by some actual value during the generation process. Currently, the only keyword in use is ``VERSION``, which must be expanded to the actual version of the documentation being built.
 
   For example, here is the *VERSION_KMS* keyword when substituted with its final value: ``|VERSION_KMS|``.
 
@@ -177,13 +177,13 @@ Our Sphinx-based project is hosted in the `doc-kurento`_ repository. Here, the m
 
   The *source* folder is copied into the *build* directory, and then the substitutions take place over this copy.
 
-- **langdoc**. This target creates the automatically generated reference documentation for each :doc:`/features/kurento_client`. Currently, this means the Javadoc and Jsdoc documentations for Java and Js clients, respectively. The Kurento client repositories are checked out in the same version as specified by the documentation version file, or in the master branch if no such version tag exists. Then, the client stubs of the :doc:`/features/kurento_api` are automatically generated, and from the resulting source files, the appropriate documentation is automatically generated too.
+* **langdoc**. This target creates the automatically generated reference documentation for each :doc:`/features/kurento_client`. Currently, this means the Javadoc and Jsdoc documentations for Java and Js clients, respectively. The Kurento client repositories are checked out in the same version as specified by the documentation version file, or in the master branch if no such version tag exists. Then, the client stubs of the :doc:`/features/kurento_api` are automatically generated, and from the resulting source files, the appropriate documentation is automatically generated too.
 
   The *langdoc* target is usually run before the *html* target, in order to end up with a complete set of HTML documents that include all the reST documentation with the Javadoc/Jsdoc sections.
 
-- **dist**. This target is a convenience shortcut to generate the documentation in the most commonly requested formats: HTML, PDF and EPUB. All required sub-targets will be run and the resulting files will be left as a compressed package in the *dist/* subfolder.
+* **dist**. This target is a convenience shortcut to generate the documentation in the most commonly requested formats: HTML, PDF and EPUB. All required sub-targets will be run and the resulting files will be left as a compressed package in the ``dist/`` subdir.
 
-- **ci-readthedocs**. This is a special target that is meant to be called exclusively by our Continuous Integration system. The purpose of this job is to manipulate all the documentation into a state that is a valid input for the Read The Docs CI system. Check the next section for more details.
+* **ci-readthedocs**. This is a special target that is meant to be called exclusively by our Continuous Integration system. The purpose of this job is to manipulate all the documentation into a state that is a valid input for the Read the Docs CI system. Check the next section for more details.
 
 
 
