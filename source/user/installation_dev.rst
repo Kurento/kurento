@@ -24,7 +24,7 @@ Kurento Media Server
 Docker image
 ------------
 
-Kurento's Docker Hub contains images built from each KMS nightly version. Just head to the `kurento-media-server-dev Docker Hub page <https://hub.docker.com/r/kurento/kurento-media-server-dev>`__, and follow the instructions you'll find there. The nightly images work exactly the same as `Kurento Docker release images <https://hub.docker.com/r/kurento/kurento-media-server>`__, but just using nightly builds instead of release ones.
+While official release Docker images are published as `kurento/kurento-media-server <https://hub.docker.com/r/kurento/kurento-media-server>`__, nightly builds with the latest development progress are available as `kurento/kurento-media-server-dev <https://hub.docker.com/r/kurento/kurento-media-server-dev>`__ (notice the ``-dev``). Other than that, these images behave exactly like the release ones. For usage instructions check out this section: :ref:`installation-docker`.
 
 
 

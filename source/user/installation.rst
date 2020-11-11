@@ -2,17 +2,17 @@
 Installation Guide
 ==================
 
-**Kurento Media Server (KMS)** can be installed in multiple ways
+**Kurento Media Server (KMS)** is compiled and provided for installation by the Kurento team members, in a variety of forms. The only officially supported processor architecture is **64-bit x86**, so for other platforms (such as ARM) you will have to build from sources.
 
-* :ref:`Using an EC2 instance <installation-aws>` in the `Amazon Web Services`_ (AWS) cloud service. Using AWS is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided setup does all this automatically.
+* :ref:`Using an EC2 instance <installation-aws>` in the `Amazon Web Services`_ (AWS) cloud service is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided template does all this automatically.
 
-* :ref:`Using the Kurento Docker images <installation-docker>`. Docker allows to run Kurento in any host machine, so for example it's possible to run KMS on top of a Fedora or CentOS system. In theory it could even be possible to run under Windows, but so far that possibility hasn't been explored by the Kurento team, so you would be at your own risk.
+* :ref:`The Kurento Docker image <installation-docker>` allows to run KMS on top of any host machine, for example Fedora or CentOS. In theory it could even be possible to run under Windows, but so far that possibility hasn't been explored by the Kurento team, so you would be at your own risk.
 
-* :ref:`Setting up a local installation <installation-local>` with ``apt-get install``. This method allows to have total control of the installation process.
+* :ref:`Setting up a local installation <installation-local>` with ``apt-get install`` allows to have total control of the installation process. It also means that it's easier to make mistakes, so we don't recommend this installation method. Do this only if you are a seasoned System Administrator.
 
 Besides installing KMS, a common need is also :ref:`installing a STUN/TURN server <installation-stun-turn>`, especially if KMS or any of its clients are located behind a :term:`NAT` router or firewall.
 
-If you want to try nightly builds of KMS, then head to the section :doc:`/user/installation_dev`.
+If you want to try **nightly builds** of KMS, then head to the section :doc:`/user/installation_dev`.
 
 
 
@@ -21,7 +21,7 @@ If you want to try nightly builds of KMS, then head to the section :doc:`/user/i
 Amazon Web Services
 ===================
 
-Kurento provides a sample *AWS CloudFormation* template file for `Amazon Web Services`_ (AWS). It can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server.
+The *AWS CloudFormation* template file for `Amazon Web Services`_ (AWS) can be used to create an EC2 instance that comes with everything needed and totally pre-configured to run KMS, including a `Coturn`_ server.
 
 Follow these steps to use it:
 
@@ -72,7 +72,82 @@ Follow these steps to use it:
 Docker image
 ============
 
-Kurento's Docker Hub contains images built from each KMS release. Just head to the `kurento-media-server Docker Hub page <https://hub.docker.com/r/kurento/kurento-media-server>`__, and follow the instructions you'll find there.
+The `kurento-media-server Docker image <https://hub.docker.com/r/kurento/kurento-media-server>`__ is a nice *all-in-one* package for an easy quick start. It comes with all the default settings, which is enough to let you try the :doc:`/user/tutorials`.
+
+For *real-world* application development, developers are encouraged to `base FROM <https://docs.docker.com/engine/reference/builder/#from>`__ this Docker image and build their own, with any customizations that they need or want. That's the nice thing about how Docker containers operate, you can build your own images based on the previous work of others!
+
+Running a Docker container **won't modify your host system** and **won't create new files** or anything like that, at least by default. This is part of how Docker containers work, and is important to keep in mind for certain cases. For example, when using the `RecorderEndpoint <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__ (which creates new files in the local filesystem) some users that are new to Docker might be wondering where the recordings are stored; the answer is *inside the container*.
+
+If you need to insert or extract files from a Docker container, there is a variety of methods: You could use a `bind mount <https://docs.docker.com/storage/bind-mounts/>`__; a `volume <https://docs.docker.com/storage/volumes/>`__; `export <https://docs.docker.com/engine/reference/commandline/container_export/>`__ some files from an already existing container; change your `ENTRYPOINT <https://docs.docker.com/engine/reference/run/#entrypoint-default-command-to-execute-at-runtime>`__ to generate the files at startup; or customize this Docker image to introduce any desired changes.
+
+These are the exact contents of the image:
+
+* A local ``apt-get`` installation of KMS, as described in :ref:`installation-local`.
+* Debug symbols installed, as described in :ref:`dev-dbg`. This allows getting useful stack traces in case the KMS process crashes. If this happens, please `report a bug <https://github.com/Kurento/bugtracker/issues>`__.
+* All **default settings** from the local installation, as found in ``/etc/kurento/``. For changing those settings, check :doc:`/user/configuration`.
+
+
+
+Running
+-------
+
+Docker allows to fine-tune how a container runs, so you'll want to read the `Docker run reference <https://docs.docker.com/engine/reference/run/>`__ and find out the command options that are needed for your project.
+
+This is a good starting point, which runs the latest Kurento Media Server image with default options:
+
+.. code-block:: console
+
+   docker pull kurento/kurento-media-server:latest
+
+   docker run -d --name kms --network host \
+       kurento/kurento-media-server:latest
+
+By default, KMS listens on the port **8888**. Clients wanting to control the media server using the :doc:`/features/kurento_protocol` should open a WebSocket connection to that port, either directly or by means of one of the provided :doc:`/features/kurento_client` SDKs.
+
+The `health checker script <https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh>`__ inside this Docker image does something very similar in order to check if the container is healthy.
+
+Once the container is running, you can get its log output with the `docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ command:
+
+.. code-block:: console
+
+   docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
+
+For more details about KMS logs, check :doc:`/features/logging`.
+
+
+
+Why host networking?
+~~~~~~~~~~~~~~~~~~~~
+
+Notice how our suggested ``docker run`` command uses ``--network host``? Using `Host Networking <https://docs.docker.com/network/host/>`__ is recommended for software like proxies and media servers, because otherwise publishing large ranges of container ports would consume a lot of memory. You can read more about this issue in our :ref:`Troubleshooting Guide <troubleshooting-docker-network-host>`.
+
+The Host Networking driver **only works on Linux hosts**, so if you are using Docker for Mac or Windows then you'll need to understand that the Docker network gateway acts as a NAT between your host and your container. To use KMS without STUN (e.g. if you are just testing some of the :doc:`/user/tutorials`) you'll need to publish all required ports where KMS will listen for incoming data.
+
+For example, if you use Docker for Mac and want to have KMS listening on the UDP port range **[5000, 5050]** (thus allowing incoming data on those ports), plus the TCP port **8888** for the :doc:`/features/kurento_client`, run:
+
+.. code-block:: console
+
+   docker run --rm \
+       -p 8888:8888/tcp \
+       -p 5000-5050:5000-5050/udp \
+       -e KMS_MIN_PORT=5000 \
+       -e KMS_MAX_PORT=5050 \
+       kurento/kurento-media-server:latest
+
+
+
+Docker Upgrade
+--------------
+
+One of the nicest things about the Docker deployment method is that changing versions, or upgrading, is almost trivially easy. Just *pull* the new image version and use it to run your new container:
+
+.. code-block:: console
+
+   # Download the new image version:
+   docker pull kurento/kurento-media-server:|VERSION_KMS|
+
+   # Create a new container based on the new version of KMS:
+   docker run [...] kurento/kurento-media-server:|VERSION_KMS|
 
 
 
@@ -81,7 +156,7 @@ Kurento's Docker Hub contains images built from each KMS release. Just head to t
 Local Installation
 ==================
 
-With this method, you will install Kurento Media Server from the native Ubuntu package repositories made available by the Kurento project. KMS has explicit support for two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
+With this method, you will install Kurento Media Server from the native Ubuntu packages build by us. Kurento officially supports two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits x86 only).
 
 Open a terminal and run these commands:
 
@@ -123,6 +198,11 @@ Open a terminal and run these commands:
 
    This will install the release version of Kurento Media Server.
 
+
+
+Running
+-------
+
 The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 
 .. code-block:: console
@@ -137,7 +217,7 @@ Log messages from KMS will be available in ``/var/log/kurento-media-server/``. F
 .. _installation-local-upgrade:
 
 Local Upgrade
-=============
+-------------
 
 To upgrade a local installation of Kurento Media Server, you have to write the new version number into the file ``/etc/apt/sources.list.d/kurento.list``, which was created during :ref:`installation-local`. After editing that file, you can choose between 2 options to actually apply the upgrade:
 
