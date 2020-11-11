@@ -121,6 +121,11 @@ html_favicon = 'images/favicon.ico'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static', 'langdoc']
 
+# Add any extra paths that contain custom files (such as robots.txt or
+# .htaccess) here, relative to this directory. These files are copied
+# directly to the root of the documentation.
+html_extra_path = ['_extra']
+
 
 # -- Options for HTMLHelp output ------------------------------------------
 

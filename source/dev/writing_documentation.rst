@@ -192,3 +192,15 @@ In order to overcome this limitation, we opted for the simple solution of handli
 4. Everything is then committed and pushed to this latter repo, thus triggering a new RTD build.
 
 .. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs
+
+
+
+robots.txt
+----------
+
+Read the Docs allows setting up a custom **robots.txt**, which we can use to prevent search engines from scrapping old and deprecated versions of the documentation, giving instead full priority to the ``/latest/`` and ``/stable/`` subdirectories in search engines:
+
+* `How can I avoid search results having a deprecated version of my docs? <https://docs.readthedocs.io/en/stable/faq.html#how-can-i-avoid-search-results-having-a-deprecated-version-of-my-docs>`__.
+* `Custom robots.txt Pages <https://docs.readthedocs.io/en/stable/hosting.html#custom-robots-txt-pages>`__.
+
+This is exactly the behavior we want, because without it, searches like "kurento webrtc" would show results from old 6.9 or 6.10 pages, while we'd rather have the latest or stable versions appearing.
