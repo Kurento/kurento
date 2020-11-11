@@ -324,7 +324,7 @@ The default **Maximum Transmission Unit (MTU)** in the official [libwebrtc](http
 
 * [Firefox source code](https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/media/engine/constants.cc#16).
 
-* Safari: No public source code, but Safari uses Webkit, and [Webkit uses libwebrtc](http://www.webrtcinwebkit.org/blog/2017/7/2/webrtc-in-safari-11-and-ios-11), so probably same MTU as the others.
+* Safari: No public source code, but Safari uses Webkit, and [Webkit uses libwebrtc](https://www.webrtcinwebkit.org/blog/2017/7/2/webrtc-in-safari-11-and-ios-11), so probably same MTU as the others.
 
 
 

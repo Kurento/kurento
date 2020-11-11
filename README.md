@@ -18,7 +18,7 @@ doc-kurento
 
 Kurento Documentation. Made with [Sphinx] and [Read the Docs].
 
-[Sphinx]: http://www.sphinx-doc.org
+[Sphinx]: https://www.sphinx-doc.org/
 [Read the Docs]: https://docs.readthedocs.io
 
 

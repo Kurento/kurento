@@ -8,7 +8,7 @@ Sources:
 
 - :wikipedia:`Network address translation`
 - `Symmetric NAT and It's Problems <https://www.think-like-a-computer.com/2011/09/19/symmetric-nat/>`__ (`archive <https://archive.is/jt4c2>`__)
-- `Peer-to-Peer Communication Across Network Address Translators <http://www.brynosaurus.com/pub/net/p2pnat/>`__ (`archive <https://archive.is/u7His>`__)
+- `Peer-to-Peer Communication Across Network Address Translators <https://bford.info/pub/net/p2pnat/>`__ (`archive <https://archive.is/u7His>`__)
 - `The hole trick - How Skype & Co. get round firewalls <http://www.h-online.com/security/features/How-Skype-Co-get-round-firewalls-747197.html>`__ (`archive <https://archive.is/NTvAl>`__)
 - `What type of NAT combinations requires a TURN server? <https://stackoverflow.com/questions/31424904/what-type-of-nat-combinations-requires-a-turn-server>`__
 - `Under what scenarios Server- and Peer-Reflexive candidates differ? <https://stackoverflow.com/questions/19905239/under-what-scenarios-does-server-reflexive-and-peer-reflexive-addresses-candidat>`__

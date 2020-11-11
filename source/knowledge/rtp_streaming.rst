@@ -562,7 +562,7 @@ Key formats:
 - Kurento (*RtpEndpoint*): ASCII.
 - SDP Offer/Answer: Base64.
 
-Use this website to convert between formats: http://tomeko.net/online_tools/hex_to_base64.php
+Use this website to convert between formats: https://tomeko.net/online_tools/hex_to_base64.php
 
 Encryption key used by the **sender** examples:
 

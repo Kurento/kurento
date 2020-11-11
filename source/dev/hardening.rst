@@ -84,7 +84,7 @@ Now follows some examples of applying these rules into an hypothetical project c
    `Options for Linking <https://gcc.gnu.org/onlinedocs/gcc-7.2.0/gcc/Link-Options.html>`__
        See *-shared*, *-pie*.
 
-   `dpkg-buildflags <http://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html>`__
+   `dpkg-buildflags <https://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html>`__
        See *FEATURE AREAS* > *hardening* > *pie*.
 
 
@@ -123,7 +123,7 @@ It would be nice if CMake took over the whole process of generating valid PIC/PI
 .. [#Ubuntu] https://wiki.ubuntu.com/Security/Features#Userspace_Hardening
 
 .. [#format] https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-.. [#fortify] http://man7.org/linux/man-pages/man7/feature_test_macros.7.html
+.. [#fortify] https://man7.org/linux/man-pages/man7/feature_test_macros.7.html
 .. [#stack] https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html
 .. [#pie] https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
 

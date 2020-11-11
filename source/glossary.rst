@@ -351,7 +351,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
       A single-page application is a web application that fits on a single web page with the goal of providing a more fluid user experience akin to a desktop application.
 
    Sphinx
-       `Sphinx <http://www.sphinx-doc.org/en/stable/>`__ is a documentation generation system. Text is first written using `reStructuredText <http://docutils.sourceforge.net/rst.html>`__ markup language, which then is transformed by Sphinx into different formats such as PDF or HTML.
+       `Sphinx <https://www.sphinx-doc.org/>`__ is a documentation generation system. Text is first written using `reStructuredText <https://docutils.sourceforge.io/rst.html>`__ markup language, which then is transformed by Sphinx into different formats such as PDF or HTML.
        This is the documentation tool of choice for the Kurento project.
 
        .. seealso::
@@ -359,7 +359,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
           `Easy and beautiful documentation with Sphinx <https://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html>`__ (`archive <https://web.archive.org/web/20160825195643/https://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html>`__)
 
    Spring Boot
-       `Spring Boot <http://spring.io/projects/spring-boot>`__ is Spring's convention-over-configuration solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
+       `Spring Boot <https://spring.io/projects/spring-boot>`__ is Spring's convention-over-configuration solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
        It embeds Tomcat or Jetty directly and so there is no need to deploy WAR files in order to run web applications.
 
    SRTCP

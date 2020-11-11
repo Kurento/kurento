@@ -297,7 +297,7 @@ The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video 
 
 When this problem happens, Kurento sends retransmission requests to the source of the RTP stream. However, in cases of heavy packet loss, there isn't much else that can be done and enough losses will build up until the video decoding gets negatively affected. In situations like this, the most effective change you can do is to reduce the video resolution and/or quality at the sender.
 
-Cisco has too a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__ (`archive <https://web.archive.org/web/20170506091043/http://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__)
+Cisco has too a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__ (`archive <https://web.archive.org/web/20170506091043/http://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__):
 
     **Why do I see pink or green patches in my video stream [...]?**
 

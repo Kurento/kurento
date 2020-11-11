@@ -13,11 +13,11 @@ Safari (both Desktop and iOS editions) included a half-baked implementation of t
 
 .. [*] `RFC 7742, Section 5. Mandatory-to-Implement Video Codec <https://tools.ietf.org/html/rfc7742#section-5>`__:
    | WebRTC Browsers MUST implement the VP8 video codec as described in :rfc:`6386`
-   | and H.264 Constrained Baseline as described in `H264 <http://www.itu.int/rec/T-REC-H.264>`__.
+   | and H.264 Constrained Baseline as described in `H264 <https://www.itu.int/rec/T-REC-H.264>`__.
    |
    | WebRTC Non-Browsers that support transmitting and/or receiving video
    | MUST implement the VP8 video codec as described in :rfc:`6386` and
-   | H.264 Constrained Baseline as described in `H264 <http://www.itu.int/rec/T-REC-H.264>`__.
+   | H.264 Constrained Baseline as described in `H264 <https://www.itu.int/rec/T-REC-H.264>`__.
 
 In order to ensure compatibility with Safari browsers, also caring to not trigger on-the-fly transcoding between video codecs, it is important to make sure that Kurento has been configured with support for H.264, and it is also important to check that the SDP negotiations are actually choosing this as the preferred codec.
 

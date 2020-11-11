@@ -214,7 +214,7 @@ Kurento Media Server (KMS) is the heart of Kurento and therefore it must be prop
 +------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+
 
 ..
-   This table has been generated using http://www.tablesgenerator.com/text_tables
+   This table has been generated using https://www.tablesgenerator.com/text_tables
 
 For example, in order to run the complete WebRTC functional test suite against a local instance KMS, the Maven command would be as follows:
 

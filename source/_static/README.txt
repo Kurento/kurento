@@ -1,7 +1,7 @@
 File: footer-european-union-400-optimized.png
 Source:
   Logo & graphic design
-  http://ec.europa.eu/regional_policy/en/information/logos/
+  https://ec.europa.eu/regional_policy/en/information/logos/
   -> Download example of logos (en)
 Changes: Resized to 400x77 px with IrfanView. Saved to PNG with PNGOUT optimization plugin.
 

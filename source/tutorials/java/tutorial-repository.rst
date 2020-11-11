@@ -4,7 +4,7 @@ Java - Repository
 
 This web application extends :doc:`Hello World <./tutorial-helloworld>` adding
 recording capabilities by means of the
-`Kurento Repository <http://doc-kurento-repository.readthedocs.org/>`_.
+`Kurento Repository <https://doc-kurento-repository.readthedocs.io/>`_.
 
 .. note::
 
