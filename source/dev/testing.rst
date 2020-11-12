@@ -22,7 +22,7 @@ Functional
 
 Functional tests are aimed to evaluate a given capability provided by Kurento. These tests have created in Java. You can find the source code in the repository `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ within `kurento-java <https://github.com/Kurento/kurento-java/>`_.  In order to run functional tests, Maven should be used as follows:
 
-.. code-block:: console
+.. code-block:: shell
 
    git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
@@ -59,7 +59,7 @@ Stability tests verifies Kurento capabilities in different scenarios:
 
 Stability tests have been also created using Java, and they are contained in the project `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_. Again, we use Maven to execute stability tests against a local KMS and using also local browsers (Chrome, Firefox):
 
-.. code-block:: console
+.. code-block:: shell
 
    git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
@@ -74,7 +74,7 @@ Tutorials
 
 The documentation of Kurento includes a number of tutorials `tutorials <https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html>`_ which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in the project `kurento-tutorial-test <https://github.com/Kurento/kurento-tutorial-test/>`_. In order to run these tests, Maven should be used:
 
-.. code-block:: console
+.. code-block:: shell
 
    git clone https://github.com/Kurento/kurento-tutorial-test
    cd kurento-tutorial-test
@@ -85,7 +85,7 @@ API
 
 The `Kurento API <https://doc-kurento.readthedocs.io/en/latest/features/kurento_api.html>`_ is available in two languages: Java and JavaScript. For both of them, a test suite has been created to verify the correctness of the Kurento API against a running instance of KMS. In you want to run API tests for Java, as usual for Kurento tests, Maven is required, as follows:
 
-.. code-block:: console
+.. code-block:: shell
 
    git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
@@ -97,7 +97,7 @@ The `Kurento API <https://doc-kurento.readthedocs.io/en/latest/features/kurento_
 
 In order to run JavaScript API tests against a running instance of local KMS, the command to be used is the following:
 
-.. code-block:: console
+.. code-block:: shell
 
    git clone https://github.com/Kurento/kurento-client-js
    cd kurento-client-js
@@ -112,7 +112,7 @@ Functional, stability, and Java API tests for Kurento have been created using a 
 
 Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. The next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-java <https://github.com/Kurento/kurento-java/>`_. Inside this project, we need to invoke Maven to execute tests, for example as follows:
 
-.. code-block:: console
+.. code-block:: shell
 
    git clone https://github.com/Kurento/kurento-java.git
    cd kurento-java
@@ -218,7 +218,7 @@ Kurento Media Server (KMS) is the heart of Kurento and therefore it must be prop
 
 For example, in order to run the complete WebRTC functional test suite against a local instance KMS, the Maven command would be as follows:
 
-.. code-block:: console
+.. code-block:: shell
 
    mvn \
        --projects kurento-integration-tests/kurento-test --also-make \
@@ -267,7 +267,7 @@ In order to test automatically the web application under test using Kurento, web
 
 For example, in order to run the complete WebRTC functional test suite using *dockerized* browsers and recordings, the command would be as follows:
 
-.. code-block:: console
+.. code-block:: shell
 
    mvn \
        --projects kurento-integration-tests/kurento-test --also-make \

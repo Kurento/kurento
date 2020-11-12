@@ -82,7 +82,7 @@ Logging categories and levels can be filtered by two methods:
 
 - Use a command-line argument if you are manually running KMS. For example, run:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      /usr/bin/kurento-media-server \
        --gst-debug-level=3 \
@@ -90,14 +90,14 @@ Logging categories and levels can be filtered by two methods:
 
 - You can also replace the command-line arguments with the environment variable *GST_DEBUG*. For example, run:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="3,Kurento*:4,kms*:4"
      /usr/bin/kurento-media-server
 
 If you are using the native packages (installing KMS with *apt-get*) and running KMS as a system service, then you can also configure the *GST_DEBUG* variable in the KMS service settings file, ``/etc/default/kurento-media-server``:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      # Logging level.
      export GST_DEBUG="3,Kurento*:4,kms*:4"
@@ -113,7 +113,7 @@ Here is a list of some logging levels that could be the most useful for typical 
 
 First, **start from the default levels**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
@@ -121,7 +121,7 @@ Then **add new levels** according to your needs:
 
 * **Flowing of media**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5"
 
@@ -129,7 +129,7 @@ Then **add new levels** according to your needs:
 
 * **Transcoding of media**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5,agnosticbin*:5"
 
@@ -138,7 +138,7 @@ Then **add new levels** according to your needs:
 
 * **WebRtcEndpoint** and **RtpEndpoint**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,Kurento*:5,KurentoWebSocket*:4"
      export GST_DEBUG="$GST_DEBUG,kmssdpsession:5"
@@ -156,19 +156,19 @@ Then **add new levels** according to your needs:
 
   You can also see messages about the REMB congestion control algorithm for WebRTC. However these will constantly be filling the log, so you shouldn't enable them unless explicitly working out an issue with REMB:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,kmsremb:5"
 
 * **PlayerEndpoint**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
 
 * **RecorderEndpoint**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,basemediamuxer:5,KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5,curl*:5"
 
@@ -176,25 +176,25 @@ Other less commonly used logging levels are:
 
 * **imageoverlay**, **logooverlay** (as used, for example, in some :doc:`Kurento Tutorials </user/tutorials>`):
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,imageoverlay:5,logooverlay:5"
 
 * **RTP Synchronization**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
 * **JSON-RPC** API server calls:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,KurentoWebSocket*:5"
 
 * **Unit tests**:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      export GST_DEBUG="$GST_DEBUG,check:5,test_base:5"
 
@@ -225,7 +225,7 @@ After doing this, GLib messages themselves must be enabled in the Kurento loggin
 
 Example:
 
-.. code-block:: console
+.. code-block:: shell
 
    export G_MESSAGES_DEBUG="libnice,libnice-stun"
    export GST_DEBUG="$GST_DEBUG,glib:5"
@@ -242,7 +242,7 @@ libsoup
 
 It is possible to enable detailed debug logging of the HTTP request/response headers, by defining the environment variable ``SOUP_DEBUG=1`` before running KMS:
 
-.. code-block:: console
+.. code-block:: shell
 
    export SOUP_DEBUG=1
    /usr/bin/kurento-media-server

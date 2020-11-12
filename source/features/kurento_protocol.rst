@@ -616,14 +616,14 @@ Kurento Clients contain code that is automatically generated from the IDL interf
 
 Kurento Module Creator can be installed in an Ubuntu machine using the  following command:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo apt-get update && sudo apt-get install --yes kurento-module-creator
 
 The aim of this tool is to generate the client code and also the glue code
 needed in the server-side. For code generation it uses `Freemarker <https://freemarker.apache.org/>`__ as the template engine. The typical way to use Kurento Module Creator is by running a command like this:
 
-.. code-block:: console
+.. code-block:: shell
 
    kurento-module-creator -c <CODEGEN_DIR> -r <ROM_FILE> -r <TEMPLATES_DIR>
 

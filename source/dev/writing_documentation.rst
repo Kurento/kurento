@@ -31,14 +31,14 @@ First of all, it's a very good idea to use a text editor that provides spell che
 
 To install the two mentioned features for *VSCode*, run these commands:
 
-.. code-block:: console
+.. code-block:: shell
 
    code --install-extension streetsidesoftware.code-spell-checker
    code --install-extension lextudio.restructuredtext
 
 To install Sphinx, first ensure that your system has Python 3 and the *pip* installer available. Do not run this command if you know that your system is already configured with these tools:
 
-.. code-block:: console
+.. code-block:: shell
 
    # Install Python 3 and the pip installer
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
@@ -46,7 +46,7 @@ To install Sphinx, first ensure that your system has Python 3 and the *pip* inst
 
 Also optionally, make a bit of cleanup in case old versions were installed:
 
-.. code-block:: console
+.. code-block:: shell
 
    # Ensure that old versions of Sphinx are not installed
    sudo apt-get purge --auto-remove --yes \
@@ -58,14 +58,14 @@ Also optionally, make a bit of cleanup in case old versions were installed:
 
 And finally, perform the installation:
 
-.. code-block:: console
+.. code-block:: shell
 
    # Install Sphinx and the Read the Docs theme
    sudo -H pip3 install --upgrade -r requirements.txt
 
 Now just run ``make html`` inside the documentation directory, and open the newly built files with a web browser:
 
-.. code-block:: console
+.. code-block:: shell
 
    cd doc-kurento/
    make html

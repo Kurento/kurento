@@ -17,7 +17,7 @@ These tutorials come in three flavors:
 
   To run the Java tutorials, you need to first install the Java JDK and Maven:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
          git \

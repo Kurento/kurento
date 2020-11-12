@@ -91,7 +91,7 @@ Docker allows to fine-tune how a container runs, so you'll want to read the `Doc
 
 This is a good starting point, which runs the latest Kurento Media Server image with default options:
 
-.. code-block:: console
+.. code-block:: shell
 
    docker pull kurento/kurento-media-server:latest
 
@@ -104,7 +104,7 @@ The `health checker script <https://github.com/Kurento/kurento-docker/blob/maste
 
 Once the container is running, you can get its log output with the `docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ command:
 
-.. code-block:: console
+.. code-block:: shell
 
    docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
@@ -121,7 +121,7 @@ The Host Networking driver **only works on Linux hosts**, so if you are using Do
 
 For example, if you use Docker for Mac and want to have KMS listening on the UDP port range **[5000, 5050]** (thus allowing incoming data on those ports), plus the TCP port **8888** for the :doc:`/features/kurento_client`, run:
 
-.. code-block:: console
+.. code-block:: shell
 
    docker run --rm \
        -p 8888:8888/tcp \
@@ -137,7 +137,7 @@ Docker Upgrade
 
 One of the nicest things about the Docker deployment method is that changing versions, or upgrading, is almost trivially easy. Just *pull* the new image version and use it to run your new container:
 
-.. code-block:: console
+.. code-block:: shell
 
    # Download the new image version:
    docker pull kurento/kurento-media-server:|VERSION_KMS|
@@ -158,7 +158,7 @@ Open a terminal and run these commands:
 
 1. Make sure that GnuPG is installed.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           gnupg
@@ -167,7 +167,7 @@ Open a terminal and run these commands:
 
    Run these commands:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Import the Kurento repository signing key
       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
@@ -187,7 +187,7 @@ Open a terminal and run these commands:
 
       This step applies **only for a first time installation**. If you already have installed Kurento and want to upgrade it, follow instead the steps described here: :ref:`installation-local-upgrade`.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
           kurento-media-server
@@ -201,7 +201,7 @@ Running
 
 The server includes service files which integrate with the Ubuntu init system, so you can use the following commands to start and stop it:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo service kurento-media-server start
    sudo service kurento-media-server stop
@@ -221,7 +221,7 @@ A. **Upgrade all system packages**.
 
    This is the standard procedure expected by Debian & Ubuntu maintainer methodology. Upgrading all system packages is a way to ensure that everything is set to the latest version, and all bug fixes & security updates are applied too, so this is the most recommended method:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       sudo apt-get update && sudo apt-get dist-upgrade
 
@@ -231,7 +231,7 @@ B. **Uninstall the old Kurento version**, before installing the new one.
 
    Note however that **apt-get is not good enough** to remove all of Kurento packages. We recommend that you use *aptitude* for this, which works much better than *apt-get*:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       sudo aptitude remove '?installed?version(kurento)'
 
@@ -279,7 +279,7 @@ Check your installation
 
 To verify that the Kurento process is up and running, use this command and look for the *kurento-media-server* process:
 
-.. code-block:: console
+.. code-block:: shell-session
 
    $ ps -fC kurento-media-server
    UID        PID  PPID  C STIME TTY          TIME CMD
@@ -287,7 +287,7 @@ To verify that the Kurento process is up and running, use this command and look 
 
 Unless configured otherwise, KMS will listen on the port TCP 8888, to receive RPC Requests and send RPC Responses by means of the :doc:`Kurento Protocol </features/kurento_protocol>`. Use this command to verify that this port is open and listening for incoming packets:
 
-.. code-block:: console
+.. code-block:: shell-session
 
    $ sudo netstat -tupln | grep -e kurento -e 8888
    tcp6  0  0  :::8888  :::*  LISTEN  7688/kurento-media-
@@ -296,7 +296,7 @@ You can change these parameters in the file ``/etc/kurento/kurento.conf.json``.
 
 To check whether KMS is up and listening for connections, use the following command:
 
-.. code-block:: console
+.. code-block:: shell
 
    curl \
      --include \

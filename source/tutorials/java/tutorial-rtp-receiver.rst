@@ -23,14 +23,14 @@ Follow these steps to run this demo application:
 
 2. Install Java JDK and Maven:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       sudo apt-get update
       sudo apt-get install default-jdk maven
 
 3. Run these commands:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       git clone https://github.com/Kurento/kurento-tutorial-java.git
       cd kurento-tutorial-java/kurento-rtp-receiver/

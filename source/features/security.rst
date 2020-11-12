@@ -14,7 +14,7 @@ Configure a Java server to use HTTPS
 
 * Convert your PEM certificate to either `Java KeyStore <https://en.wikipedia.org/wiki/Java_KeyStore>`__ (*JKS*) or `PKCS#12 <https://en.wikipedia.org/wiki/PKCS_12>`__. The former is a proprietary format limited to the Java ecosystem, while the latter is an industry-wide used format. To make a PKCS#12 file from an already existing PEM certificate, run these commands:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      openssl pkcs12 \
          -export \
@@ -35,7 +35,7 @@ Configure a Java server to use HTTPS
 
 * Start the Spring Boot application:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      mvn spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
@@ -101,7 +101,7 @@ Configure JavaScript applications to use HTTPS
 
 WebRTC requires HTTPS, so your JavaScript application must be served by a secure web server. You can use whichever one you prefer, such as Nginx or Apache. For quick tests, a very straightforward option is to use the simple, zero-configuration `http-server <https://www.npmjs.com/package/http-server>`__ based on Node.js:
 
-.. code-block:: console
+.. code-block:: shell
 
    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
    sudo apt-get install --yes nodejs
@@ -111,7 +111,7 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
 
 * Start the HTTPS web server, using the SSL certificate:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      http-server -p 8443 --ssl --cert cert.pem --key key.pem
 
@@ -199,7 +199,7 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
 
 * **Java**: Launch with a *kms.url* property. For example:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      mvn spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=wss://{KMS_HOST}:8433/kurento"
@@ -246,7 +246,7 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
 
   To generate new certificate files with mkcert, run these commands:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      # Generate new untrusted self-signed certificate files:
      CAROOT="$PWD" mkcert -cert-file cert.pem -key-file key.pem \
@@ -269,7 +269,7 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
 
   You can also publish a new Zeroconf local domain for any development machine. For example, running this in Ubuntu:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      # Get and publish the IP address to the default network gateway.
      IP_ADDRESS="$(ip -4 -oneline route get 1 | grep -Po 'src \K([\d.]+)')"
@@ -279,7 +279,7 @@ You need to provide a valid SSL certificate in order to enable all sorts of secu
 
   On computers, installing the Root CA is easy because mkcert does it for you:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      CAROOT="$PWD" mkcert -install
 

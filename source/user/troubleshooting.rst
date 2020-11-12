@@ -100,14 +100,14 @@ then KMS is hitting resource limits imposed by the Kernel. The 2 most common rea
 
    If **systemd** is configured, it might also be applying its own limit on process resources; for example you can check how many threads are being used by Kurento and what is the maximum, with these commands:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       systemctl status kurento-media-server | grep Tasks
       systemctl show kurento-media-server | grep TasksMax
 
    In *systemd* it is possible to configure limits with parameters such as *DefaultTasksMax* in either ``/etc/systemd/system.conf`` (for the default system instance) or ``/etc/systemd/user.conf`` (for the custom user instance, if you have configured one in your machine). The current effective value of *DefaultTasksMax* can be queried with this command:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       systemctl show --property DefaultTasksMax
 
@@ -158,7 +158,7 @@ Of these, video transcoding is the main user of CPU cycles, because encoding vid
 
 If you see that transcoding is active at some point, you may get a bit more information about why, by enabling this line:
 
-.. code-block:: console
+.. code-block:: shell
 
    export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
 
@@ -197,13 +197,13 @@ See: `free() in C doesn't reduce memory usage <https://stackoverflow.com/questio
 
 To run Kurento Media Server with Valgrind and find memory leaks, the process is just a matter of following the steps outlined in :ref:`dev-sources`, but instead of
 
-.. code-block:: console
+.. code-block:: shell
 
    ./bin/kms-build-run.sh
 
 you'll want to do
 
-.. code-block:: console
+.. code-block:: shell
 
    ./bin/kms-build-run.sh --valgrind-memcheck
 
@@ -221,13 +221,13 @@ In Ubuntu, log messages from init scripts are managed by *systemd*, and can be c
 - ``/var/log/syslog`` contains a copy of all init service messages.
   You can open it to see past messages, or follow it in real time with this command:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      tail -f /var/log/syslog
 
 - You can query the status of the *kurento-media-server* service with this command:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      systemctl status kurento-media-server.service
 
@@ -257,7 +257,7 @@ If the machine is disconnected during the actual installation of this package, t
 
 **Solution**: Ensure that the machine has access to the required URL, and try reinstalling the package:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo apt-get update && sudo apt-get install --reinstall openh264
 
@@ -321,7 +321,7 @@ Usually, the Kurento Client library is directed to connect with an instance of K
 
 This is a sample of what the console output will look like, with the logging level set to DEBUG:
 
-.. code-block:: text
+.. code-block:: shell-session
 
    $ mvn -U clean spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://localhost:8888/kurento"
@@ -342,7 +342,7 @@ This is a sample of what the console output will look like, with the logging lev
 
 As opposed to that, the console output for when a connection is successfully done with an instance of KMS should look similar to this sample:
 
-.. code-block:: text
+.. code-block:: shell-session
 
    $ mvn -U clean spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://localhost:8888/kurento"
@@ -572,7 +572,7 @@ mDNS name resolution must be enabled in the system. Check out the contents of ``
 
 If not, try fully reinstalling the package *libnss-mdns*:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo apt-get purge --yes libnss-mdns
    sudo apt-get update && sudo apt-get install --yes libnss-mdns
@@ -685,7 +685,7 @@ This jitter buffer gets full when network packets arrive faster than what Kurent
 
 You can check if this problem is affecting you by running with DEBUG :ref:`logging level <logging-levels>` enabled for the *rtpjitterbuffer* component, and searching for a specific message:
 
-.. code-block:: console
+.. code-block:: shell
 
    export GST_DEBUG="${GST_DEBUG:-3},rtpjitterbuffer:5"
    /usr/bin/kurento-media-server 2>&1 | grep -P 'rtpjitterbuffer.*(Received packet|Queue full)'

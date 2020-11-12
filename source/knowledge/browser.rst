@@ -16,7 +16,7 @@ Test instance
 
 To run a new Firefox instance with a clean profile:
 
-.. code-block:: console
+.. code-block:: shell
 
    /usr/bin/firefox -no-remote -profile "$(mktemp --directory)"
 
@@ -59,7 +59,7 @@ Some examples:
 
 Linux:
 
-.. code-block:: console
+.. code-block:: shell
 
    export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    export MOZ_LOG_FILE=/tmp/firefox.log
@@ -67,7 +67,7 @@ Linux:
 
 Mac:
 
-.. code-block:: console
+.. code-block:: shell
 
    export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    export MOZ_LOG_FILE=~/Desktop/firefox.log
@@ -75,7 +75,7 @@ Mac:
 
 Windows:
 
-.. code-block:: console
+.. code-block:: shell
 
    set MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    set MOZ_LOG_FILE=%TEMP%\firefox.log
@@ -83,7 +83,7 @@ Windows:
 
 With command line arguments:
 
-.. code-block:: console
+.. code-block:: shell
 
    /usr/bin/firefox \
        -MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5 \
@@ -91,7 +91,7 @@ With command line arguments:
 
 Log :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
 
-.. code-block:: console
+.. code-block:: shell
 
    export R_LOG_DESTINATION=stderr
    export R_LOG_LEVEL=7
@@ -102,7 +102,7 @@ Log :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
 
 WebRTC dump example (see https://blog.mozilla.org/webrtc/debugging-encrypted-rtp-is-more-fun-than-it-used-to-be/):
 
-.. code-block:: console
+.. code-block:: shell
 
    export MOZ_LOG=timestamp,signaling:5,jsep:5,RtpLogger:5
    export MOZ_LOG_FILE="$PWD/firefox"
@@ -153,7 +153,7 @@ Notes:
 
 * The audio sandbox can be enabled or disabled with the user preference *media.cubeb.sandbox*.
 
-.. code-block:: console
+.. code-block:: shell
 
    export MOZ_LOG=timestamp,sync,MediaPipeline:5,MediaStream:5,MediaStreamTrack:5,webrtc_trace:5
 
@@ -161,11 +161,11 @@ Notes:
        "https://localhost:8443/"
 
    # Equivalent code for Selenium:
-   firefoxOptions.addPreference("media.cubeb.sandbox", true);
-   firefoxOptions.addPreference("logging.config.add_timestamp", true);
-   firefoxOptions.addPreference("logging.config.sync", true);
-   firefoxOptions.addPreference("logging.cubeb", 5);
-   firefoxOptions.addPreference("logging.MediaTrackGraph", 5);
+   # firefoxOptions.addPreference("media.cubeb.sandbox", true);
+   # firefoxOptions.addPreference("logging.config.add_timestamp", true);
+   # firefoxOptions.addPreference("logging.config.sync", true);
+   # firefoxOptions.addPreference("logging.cubeb", 5);
+   # firefoxOptions.addPreference("logging.MediaTrackGraph", 5);
 
 
 
@@ -174,7 +174,7 @@ Safari
 
 To enable the Debug menu in Safari, run this command in a terminal:
 
-.. code-block:: console
+.. code-block:: shell
 
    defaults write com.apple.Safari IncludeInternalDebugMenu 1
 
@@ -188,7 +188,7 @@ Test instance
 
 To run a new Chrome instance with a clean profile:
 
-.. code-block:: console
+.. code-block:: shell
 
    /usr/bin/google-chrome --user-data-dir="$(mktemp --directory)"
 
@@ -203,7 +203,7 @@ Sources:
 * https://www.chromium.org/for-testers/enable-logging
 
 
-.. code-block:: console
+.. code-block:: shell
 
    /usr/bin/google-chrome --user-data-dir="$(mktemp --directory)" \
        --enable-logging=stderr \
@@ -214,7 +214,7 @@ Sources:
 
 Other options:
 
-.. code-block:: console
+.. code-block:: text
 
    --use-fake-device-for-media-stream \
    --use-file-for-fake-audio-capture="${HOME}/test.wav" \
@@ -260,7 +260,7 @@ Command-line
 Chrome
 ------
 
-.. code-block:: console
+.. code-block:: shell
 
    export WEB_APP_HOST_PORT="198.51.100.1:8443"
 

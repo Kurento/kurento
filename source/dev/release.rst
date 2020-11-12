@@ -76,19 +76,19 @@ General considerations
 
      - Remove the local tag:
 
-       .. code-block:: console
+       .. code-block:: shell
 
           git tag --delete <TagName>
 
      - Remove the remote tag:
 
-       .. code-block:: console
+       .. code-block:: shell
 
           git push --delete origin <TagName>
 
    - How to push just a local tag?
 
-     .. code-block:: console
+     .. code-block:: shell
 
         git push origin <TagName>
 
@@ -96,7 +96,7 @@ General considerations
 
      See: https://www.atlassian.com/git/tutorials/rewriting-history#git-commit--amend
 
-     .. code-block:: console
+     .. code-block:: shell
 
         # <Remove Tag>
         # <Amend>
@@ -153,7 +153,7 @@ Release steps
 
 #. Set the final release version, commit the results, and create a tag.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change these
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -208,7 +208,7 @@ Release steps
 
    The version number (as opposed to the Debian revision) is only changed when the fork gets updated from upstream sources. Meanwhile, we only update the Debian revision.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change these
       NEW_VERSION="<NextVersion>"           # Eg.: 1.0.0
@@ -295,7 +295,7 @@ Preparation: KMS API Java modules
 
 Test the KMS API Java module generation (local check).
 
-.. code-block:: console
+.. code-block:: shell
 
    apt-get update && apt-get install --no-install-recommends --yes \
        kurento-module-creator \
@@ -342,7 +342,7 @@ Release steps
 
 #. Set the final release version in all projects. Use the helper script `kms-omni-build/bin/set-versions.sh`_ to set version numbers, commit the results, and create a tag.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change these
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -354,13 +354,13 @@ Release steps
 
    Now push changes:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       git submodule foreach 'git push --follow-tags'
 
 #. Update the git-submodule references of the all-in-one repo *kms-omni-build*, and create a tag just like in all the other repos.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"      # Eg.: 1.0.0
@@ -437,7 +437,7 @@ Release steps
 
 #. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set the next development version in all projects. To choose the next version number, reset the **Debian revision** number to *1*, and increment the **patch** number. Use the helper script ``kms-omni-build/bin/set-versions.sh`` to set version numbers and commit.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change these
       NEW_VERSION="<NextVersion>"           # Eg.: 1.0.1
@@ -449,7 +449,7 @@ Release steps
 
    Now push changes:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       git submodule foreach 'git push'
 
@@ -483,7 +483,7 @@ Release steps
 
 #. Ensure there are no uncommitted files.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       git diff-index --quiet HEAD \
       || echo "ERROR: Uncommitted files not allowed!"
@@ -500,7 +500,7 @@ Release steps
 
    This command can be used to search for all development versions:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       grep . --exclude-dir='*node_modules' -Fr -e '-dev"' -e '"git+' \
       && echo "ERROR: Development versions not allowed!"
@@ -509,7 +509,7 @@ Release steps
 
 #. Test the build, to make sure the code is in a working state.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       npm install
       if [[ -x node_modules/.bin/grunt ]]; then
@@ -521,7 +521,7 @@ Release steps
 
    To manually run the beautifier, do this:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       npm install
 
@@ -539,7 +539,7 @@ Release steps
 
       The **jq** command-line JSON processor must be installed.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.0
@@ -686,7 +686,7 @@ Release steps
 
       The **jq** command-line JSON processor must be installed.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change this
       NEW_VERSION="<NextVersion>-dev"       # Eg.: 1.0.1-dev
@@ -840,7 +840,7 @@ Release steps
 
 #. Ensure there are no uncommitted files.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       git diff-index --quiet HEAD \
       || echo "ERROR: Uncommitted files not allowed!"
@@ -859,7 +859,7 @@ Release steps
 
    This command can be used to search for all development versions:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       grep . --include='pom.xml' -Fr -e '-SNAPSHOT' \
       && echo "ERROR: Development versions not allowed!"
@@ -870,7 +870,7 @@ Release steps
 
       The profile '*kurento-release*' is used to enforce no development versions are present.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       mvn -U clean install -Dmaven.test.skip=false -Pkurento-release \
       || echo "ERROR: Command failed: mvn clean install"
@@ -881,7 +881,7 @@ Release steps
 
       Use ``mvn --batch-mode`` if you copy this to an actual script.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change this
       NEW_VERSION="<ReleaseVersion>"        # Eg.: 1.0.1
@@ -1059,7 +1059,7 @@ Release steps
 
       Use ``mvn --batch-mode`` if you copy this to an actual script.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change this
       NEW_VERSION="<NextVersion>-SNAPSHOT"  # Eg.: 1.0.1-SNAPSHOT
@@ -1206,7 +1206,7 @@ For this reason, the documentation must be built only after all the other module
 
 #. Test the build locally, check everything works.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       make html
 
@@ -1214,7 +1214,7 @@ For this reason, the documentation must be built only after all the other module
 
 #. Git add, commit, and push. This will trigger a nightly build, where you can **check the result** of the documentation builds to have an idea of how the final release build will end up looking like, at https://doc-kurento.readthedocs.io/en/latest/.
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # `--all` to include possibly deleted files.
       git add --all \
@@ -1246,7 +1246,7 @@ For this reason, the documentation must be built only after all the other module
 
    **All-In-One** script:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       # Change this
       NEW_VERSION="<NextVersion>"           # Eg.: 1.0.1

@@ -17,7 +17,7 @@ You can develop your own modules to expand the features of Kurento Media Server.
 
 The starting point to develop a filter is to create a basic structure for the source code, what we'll call the *scaffolding*. This is done with the *kurento-module-scaffold* tool, which comes included with the *kurento-media-server-dev* package. To install it, run this command:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        kurento-media-server-dev
@@ -26,13 +26,13 @@ Now use the scaffold tool to generate code for your new module. For example:
 
 * For an OpenCV module:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      kurento-module-scaffold MyCvModule cv-module-dir true
 
 * For a GStreamer module:
 
-  .. code-block:: console
+  .. code-block:: shell
 
      kurento-module-scaffold MyGstModule gst-module-dir
 
@@ -40,7 +40,7 @@ The scaffolding tool generates a complete folder tree, with all the needed *CMak
 
 Once your *.kmd* files have been filled with a complete description of the module, it is time to generate the corresponding server stub code with *kurento-module-creator*. Run this from the root directory of your module:
 
-.. code-block:: console
+.. code-block:: shell
 
    mkdir build/ && cd build/
    cmake ..
@@ -154,7 +154,7 @@ The recommended way to distribute a module is to build it into a Debian package 
 
 To build a Debian package file, you can either use the **kurento-buildpackage** tool as described in :ref:`dev-packages`, or do it manually by installing and running the appropriate tools:
 
-.. code-block:: console
+.. code-block:: shell
 
    # Install dpkg-buildpackage, the Debian package builder
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
@@ -168,7 +168,7 @@ To build a Debian package file, you can either use the **kurento-buildpackage** 
 
 The Debian builder tool ends up generating one or more *.deb* package files **in the parent directory** from where it was called, together with some additional files that can be ignored. For example:
 
-.. code-block:: console
+.. code-block:: shell-session
 
    $ ls -1 ../*.*deb
    ../my-gst-module-dev_0.0.1~rc1_amd64.deb
@@ -183,7 +183,7 @@ Depending on the contents of the module project, the Debian package builder can 
 
 Now copy and install the package(s) into any Debian- or Ubuntu-based system where KMS is already installed:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo dpkg -i my-gst-module_0.0.1~rc1_amd64.deb
 
@@ -194,7 +194,7 @@ For more information about the process of creating Debian packages, check these 
 
 **Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento``, to instruct KMS about where the plugin files have been copied:
 
-.. code-block:: console
+.. code-block:: shell
 
    KURENTO_MODULES_PATH+=" /path/to/module"
    GST_PLUGIN_PATH+=" /path/to/module"
@@ -203,7 +203,7 @@ KMS will then add these paths to the path lookup it performs at startup, when lo
 
 When ready, you should **verify the module installation**. Run KMS twice, with the ``--version`` and ``--list`` arguments. The former shows a list of all installed modules and their versions, while the latter prints a list of all the actual *MediaObject* Factories that clients can invoke with the JSON-RPC API. Your own module should show up in both lists:
 
-.. code-block:: console
+.. code-block:: shell-session
 
    $ /usr/bin/kurento-media-server --version
    Kurento Media Server version: 6.12.0
@@ -238,7 +238,7 @@ A *Dockerfile* such as this one would be a good enough starting point:
 
 Now build the new image:
 
-.. code-block:: console
+.. code-block:: shell-session
 
    $ docker build --tag kms-with-my-gst-module:latest .
    Step 1/3 : FROM kurento/kurento-media-server:latest
@@ -249,7 +249,7 @@ Now build the new image:
 
 And verify your module is correctly loaded by KMS:
 
-.. code-block:: console
+.. code-block:: shell-session
 
    $ docker run --rm kms-with-my-gst-module:latest --version
    Kurento Media Server version: 6.12.0
@@ -272,7 +272,7 @@ Java client code
 
 Run this from the root directory of your module:
 
-.. code-block:: console
+.. code-block:: shell
 
    mkdir build/ && cd build/
    cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
@@ -294,7 +294,7 @@ JavaScript client code
 
 Run this from the root directory of your module:
 
-.. code-block:: console
+.. code-block:: shell
 
    mkdir build/ && cd build/
    cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE

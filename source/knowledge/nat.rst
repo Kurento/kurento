@@ -224,7 +224,7 @@ B. One directly connected to the internet, with no firewall. This is host **B**.
 
 Set some helper variables: the *public* IP address of each host, and their listening ports:
 
-.. code-block:: console
+.. code-block:: shell
 
    A_IP="198.51.100.1" # Public IP address of the NAT which hides the host A
    A_PORT="1111"       # Listening port on the host A
@@ -233,13 +233,13 @@ Set some helper variables: the *public* IP address of each host, and their liste
 
 1. **A** starts listening for data. Leave this running in A:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       nc -4nul "$A_PORT"
 
 2. **B** tries to send data, but the NAT in front of **A** will discard the packets. Run in B:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       echo "TEST" | nc -4nu -q 1 -p "$B_PORT" "$A_IP" "$A_PORT"
 
@@ -247,19 +247,19 @@ Set some helper variables: the *public* IP address of each host, and their liste
 
    Run in B:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       sudo tcpdump -n -i eth0 "src host $A_IP and udp dst port $B_PORT"
 
    Run in A:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       sudo hping3 --count 1 --udp --baseport "$A_PORT" --keep --destport "$B_PORT" "$B_IP"
 
 4. **B** tries to send data again. Run in B:
 
-   .. code-block:: console
+   .. code-block:: shell
 
       echo "TEST" | nc -4nu -q 1 -p "$B_PORT" "$A_IP" "$A_PORT"
 
@@ -280,7 +280,7 @@ PySTUN
 
 Currently it has been best updated in one of its forks, so we suggest using that instead of the version from the original creator. To install and run:
 
-.. code-block:: console
+.. code-block:: shell
 
    git clone https://github.com/konradkonrad/pystun.git pystun-konrad
    cd pystun-konrad/

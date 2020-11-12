@@ -95,7 +95,7 @@ Coturn is a :term:`STUN` server and :term:`TURN` relay, supporting all features 
 
 Coturn can be installed directly from the Ubuntu package repositories:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        coturn
@@ -160,7 +160,7 @@ To configure it for WebRTC, follow these steps:
 
 2. Edit the file ``/etc/default/coturn`` and set
 
-   .. code-block:: console
+   .. code-block:: shell
 
       TURNSERVER_ENABLED=1
 
@@ -274,7 +274,7 @@ The following ports should be open in the firewall or your cloud provider *Secur
 
 When you are done, (re)start both Coturn and Kurento servers:
 
-.. code-block:: console
+.. code-block:: shell
 
    sudo service coturn restart
    sudo service kurento-media-server restart
@@ -297,7 +297,7 @@ If you want to provide your own configuration files to the Kurento Docker image,
 
 However, the first thing you'll need are the actual files! You can get them with these commands:
 
-.. code-block:: console
+.. code-block:: shell
 
    CONTAINER="$(docker create kurento/kurento-media-server:latest)"
    docker cp "$CONTAINER":/etc/kurento/. ./etc-kurento
@@ -305,7 +305,7 @@ However, the first thing you'll need are the actual files! You can get them with
 
 Now, edit the files as needed. Later, provide them to newly created containers as a bind-mount:
 
-.. code-block:: console
+.. code-block:: shell
 
    docker run -d --name kms --network host \
        --mount type=bind,src="$PWD/etc-kurento",dst=/etc/kurento \

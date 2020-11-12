@@ -31,7 +31,7 @@ Hardening validation
 
 Debian-based distributions provide the *hardening-check* tool (package *hardening-includes*), which can be used to check if a binary file (either an executable or a shared library) was properly hardened:
 
-.. code-block:: console
+.. code-block:: shell-session
 
    $ hardening-check /usr/sbin/sshd
    /usr/sbin/sshd:
