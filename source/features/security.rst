@@ -149,7 +149,7 @@ This is fine for initial stages of application development, but before deploying
 
 To enable Secure WebSocket, edit the main KMS configuration file (``/etc/kurento/kurento.conf.json``), and un-comment the following lines:
 
-.. code-block:: json-object
+.. code-block:: json
 
    "secure": {
      "port": 8433,
