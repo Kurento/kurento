@@ -293,9 +293,7 @@ Docker is the recommended method of deploying Kurento Media Server, because it m
 How to edit configuration files?
 --------------------------------
 
-If you want to provide your own configuration files to the Kurento Docker image, you can use either a Docker `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ or `volume <https://docs.docker.com/storage/volumes/>`__.
-
-However, the first thing you'll need are the actual files! You can get them with these commands:
+If you want to provide your own configuration files to the Kurento Docker image, the easiest method is to provide them through a `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__. However, the first thing you'll need are the actual files; run these commands to get the default ones from the Kurento Docker image:
 
 .. code-block:: shell
 
@@ -303,13 +301,27 @@ However, the first thing you'll need are the actual files! You can get them with
    docker cp "$CONTAINER":/etc/kurento/. ./etc-kurento
    docker rm "$CONTAINER"
 
-Now, edit the files as needed. Later, provide them to newly created containers as a bind-mount:
+Now, edit the files as needed. Later, provide them to newly created containers:
 
 .. code-block:: shell
 
    docker run -d --name kms --network host \
        --mount type=bind,src="$PWD/etc-kurento",dst=/etc/kurento \
        kurento/kurento-media-server:latest
+
+The equivalent definition for Docker Compose would look like this:
+
+.. code-block:: yaml
+
+   version: "3.8"
+   services:
+     kms:
+       image: kurento/kurento-media-server:latest
+       network_mode: host
+       volumes:
+         - type: bind
+           source: ./etc-kurento
+           target: /etc/kurento
 
 
 
