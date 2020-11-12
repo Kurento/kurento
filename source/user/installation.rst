@@ -74,17 +74,13 @@ Docker image
 
 The `kurento-media-server Docker image <https://hub.docker.com/r/kurento/kurento-media-server>`__ is a nice *all-in-one* package for an easy quick start. It comes with all the default settings, which is enough to let you try the :doc:`/user/tutorials`.
 
-For *real-world* application development, developers are encouraged to `base FROM <https://docs.docker.com/engine/reference/builder/#from>`__ this Docker image and build their own, with any customizations that they need or want. That's the nice thing about how Docker containers operate, you can build your own images based on the previous work of others!
-
-Running a Docker container **won't modify your host system** and **won't create new files** or anything like that, at least by default. This is part of how Docker containers work, and is important to keep in mind for certain cases. For example, when using the `RecorderEndpoint <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__ (which creates new files in the local filesystem) some users that are new to Docker might be wondering where the recordings are stored; the answer is *inside the container*.
-
-If you need to insert or extract files from a Docker container, there is a variety of methods: You could use a `bind mount <https://docs.docker.com/storage/bind-mounts/>`__; a `volume <https://docs.docker.com/storage/volumes/>`__; `export <https://docs.docker.com/engine/reference/commandline/container_export/>`__ some files from an already existing container; change your `ENTRYPOINT <https://docs.docker.com/engine/reference/run/#entrypoint-default-command-to-execute-at-runtime>`__ to generate the files at startup; or customize this Docker image to introduce any desired changes.
+If you need to insert or extract files from a Docker container, there is a variety of methods: You could use a `bind mount <https://docs.docker.com/storage/bind-mounts/>`__; a `volume <https://docs.docker.com/storage/volumes/>`__; `cp <https://docs.docker.com/engine/reference/commandline/cp/>`__ some files from an already existing container; change your `ENTRYPOINT <https://docs.docker.com/engine/reference/run/#entrypoint-default-command-to-execute-at-runtime>`__ to generate or copy the files at startup; or `base FROM <https://docs.docker.com/engine/reference/builder/#from>`__ this Docker image and build a new one with your own customizations. Check :ref:`faq-docker` for an example of how to use bind-mounts to provide your own configuration files.
 
 These are the exact contents of the image:
 
-* A local ``apt-get`` installation of KMS, as described in :ref:`installation-local`.
+* A local ``apt-get`` installation of KMS, as described in :ref:`installation-local`, plus all its extra plugins (chroma, platedetector, etc).
 * Debug symbols installed, as described in :ref:`dev-dbg`. This allows getting useful stack traces in case the KMS process crashes. If this happens, please `report a bug <https://github.com/Kurento/bugtracker/issues>`__.
-* All **default settings** from the local installation, as found in ``/etc/kurento/``. For changing those settings, check :doc:`/user/configuration`.
+* All **default settings** from the local installation, as found in ``/etc/kurento/``. For details, see :doc:`/user/configuration`.
 
 
 

@@ -281,10 +281,69 @@ When you are done, (re)start both Coturn and Kurento servers:
 
 
 
-How many Media Pipelines do I need for my Application?
-======================================================
+.. _faq-docker:
 
-A Pipeline is a top-level container that handles every resource that should be able to achieve any kind of interaction with each other. Media Elements can only communicate when they are part of the same Pipeline. Different Pipelines in the server are independent, so they do not share audio, video, data or events.
+About using Kurento with Docker
+===============================
+
+Docker is the recommended method of deploying Kurento Media Server, because it makes it easy to bundle all of the different modules and dependencies into a single, manageable unit. This makes installation and upgrades a trivial operation. However, due to the nature of containers, it also makes configuration slightly more inconvenient, so in this section we'll provide a heads up in Docker concepts that could be very useful for users of `Kurento Docker images <https://hub.docker.com/r/kurento/kurento-media-server>`__.
+
+
+
+How to edit configuration files?
+--------------------------------
+
+If you want to provide your own configuration files to the Kurento Docker image, you can use either a Docker `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ or `volume <https://docs.docker.com/storage/volumes/>`__.
+
+However, the first thing you'll need are the actual files! You can get them with these commands:
+
+.. code-block:: console
+
+   CONTAINER="$(docker create kurento/kurento-media-server:latest)"
+   docker cp "$CONTAINER":/etc/kurento/. ./etc-kurento
+   docker rm "$CONTAINER"
+
+Now, edit the files as needed. Later, provide them to newly created containers as a bind-mount:
+
+.. code-block:: console
+
+   docker run -d --name kms --network host \
+       --mount type=bind,src="$PWD/etc-kurento",dst=/etc/kurento \
+       kurento/kurento-media-server:latest
+
+
+
+Where are my recordings?
+------------------------
+
+Running a Docker container **won't modify your host system** and **won't create new files** or anything like that, at least by default. This is part of how Docker containers work, and is important to keep in mind for certain cases.
+
+For example, when using the *RecorderEndpoint*, a common question is where the recorded files are being stored, because they don't show up anywhere in the file system. The answer is that KMS stores files *inside the container*, in the path defined by the *RecorderEndpoint* constructor (`Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.Builder.html#Builder-org.kurento.client.MediaPipeline-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.RecorderEndpoint.html#.constructorParams>`__).
+
+
+
+About Kurento Media Pipelines
+=============================
+
+These questions relate to the concept of :term:`Media Pipeline` in Kurento, touching topics about architecture or performance.
+
+
+
+How many simultaneous participants are supported?
+-------------------------------------------------
+
+This depends entirely on the performance of the machine where Kurento Media Server is running. The best thing you can do to know is performing an actual load test and see it by yourself.
+
+The folks working on `OpenVidu <https://openvidu.io/>`__ (a WebRTC platform that is based on Kurento) conducted a study that you might find interesting:
+
+* `OpenVidu load testing: a systematic study of OpenVidu platform performance <https://medium.com/@openvidu/openvidu-load-testing-a-systematic-study-of-openvidu-platform-performance-b1aa3c475ba9>`__.
+
+
+
+How many Media Pipelines do I need for my Application?
+------------------------------------------------------
+
+A Pipeline is a top-level container that handles every resource that should be able to achieve any kind of interaction with each other. A :term:`Media Element` can only communicate when they are part of the same Pipeline. Different Pipelines in the server are independent and isolated, so they do not share audio, video, data or events.
 
 99% times, this translates to using 1 Pipeline object for each "room"-like videoconference. It doesn't matter if there is 1 single presenter and N viewers ("one-to-many"), or if there are N participants Skype-style ("many-to-many"), all of them are managed by the same Pipeline. So, most actual real-world applications would only ever create 1 Pipeline, because that's good enough for most needs.
 
@@ -293,13 +352,13 @@ A good heuristic is that you will need one Pipeline per each set of communicatin
 
 
 How many Endpoints do I need?
-=============================
+-----------------------------
 
 Your application will need to create at least one Endpoint for each media stream flowing to (or from) each participant. You might actually need more, if the streams are to be recorded or if streams are being duplicated for other purposes.
 
 
 
 Which participant corresponds to which Endpoint?
-================================================
+------------------------------------------------
 
 The Kurento API offers no way to get application-level semantic attributes stored in a Media Element. However, the application developer can maintain a HashMap or equivalent data structure, storing the Endpoint identifiers (which are plain strings) to whatever application information is desired, such as the names of the participants.
