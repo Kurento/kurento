@@ -110,6 +110,7 @@ Information about development of *Kurento itself* is also available:
    :maxdepth: 2
    :caption: Knowledge Base
 
+   /knowledge/browser
    /knowledge/congestion_rmcat
    /knowledge/h264
    /knowledge/mp4

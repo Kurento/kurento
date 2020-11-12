@@ -1,6 +1,6 @@
-=================
-Browser Knowledge
-=================
+===============
+Browser Details
+===============
 
 This page is a compendium of information that can be useful to work with or configure different web browsers, for tasks that are common to WebRTC development.
 
@@ -239,100 +239,95 @@ H.264 encoding/decoding profile
 
 By default, Chrome uses this line in the SDP Offer for an H.264 media:
 
-    a=fmtp:100 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f
+.. code-block:: text
+
+   a=fmtp:100 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f
 
 `profile-level-id` is an SDP attribute, defined in [RFC 6184] as the hexadecimal representation of the *Sequence Parameter Set* (SPS) from the H.264 Specification. The value **42e01f** decomposes as the following parameters:
 - `profile_idc` = 0x42 = 66
 - `profile-iop` = 0xE0 = 1110_0000
 - `level_idc` = 0x1F = 31
 
-[RFC 6184]: https://tools.ietf.org/html/rfc6184
+:rfc:`6184`.
 
 These values translate into the **Constrained Baseline Profile, Level 3.1**.
 
 
 
-====================
-Browser command-line
-====================
+Command-line
+============
 
 Chrome
 ------
 
-export WEB_APP_HOST_PORT="198.51.100.1:8443"
+.. code-block:: console
 
-/usr/bin/google-chrome \
-    --user-data-dir="$(mktemp --directory)" \
-    --enable-logging=stderr \
-    --no-first-run \
-    --allow-insecure-localhost \
-    --allow-running-insecure-content \
-    --disable-web-security \
-    --unsafely-treat-insecure-origin-as-secure="https://${WEB_APP_HOST_PORT}" \
-    "https://${WEB_APP_HOST_PORT}"
+   export WEB_APP_HOST_PORT="198.51.100.1:8443"
+
+   /usr/bin/google-chrome \
+       --user-data-dir="$(mktemp --directory)" \
+       --enable-logging=stderr \
+       --no-first-run \
+       --allow-insecure-localhost \
+       --allow-running-insecure-content \
+       --disable-web-security \
+       --unsafely-treat-insecure-origin-as-secure="https://${WEB_APP_HOST_PORT}" \
+       "https://${WEB_APP_HOST_PORT}"
 
 
 Firefox
 -------
 
-export SERVER_PUBLIC_IP="198.51.100.1"
-/usr/bin/firefox \
-    -profile "$(mktemp --directory)" \
-    -no-remote \
-    "https://${SERVER_PUBLIC_IP}:4443/" \
-    "http://${SERVER_PUBLIC_IP}:4200/#/test-sessions"
+.. code-block:: text
+
+   export SERVER_PUBLIC_IP="198.51.100.1"
+
+   /usr/bin/firefox \
+       -profile "$(mktemp --directory)" \
+       -no-remote \
+       "https://${SERVER_PUBLIC_IP}:4443/" \
+       "http://${SERVER_PUBLIC_IP}:4200/#/test-sessions"
 
 
 
-=====================
 WebRTC JavaScript API
 =====================
 
 Generate an SDP Offer.
 
-let pc1 = new RTCPeerConnection();
-navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-.then((stream) => {
-    stream.getTracks().forEach((track) => {
-        console.log("Local track available: " + track.kind);
-        pc1.addTrack(track, stream);
-    });
-    pc1.createOffer().then((offer) => {
-        console.log(JSON.stringify(offer).replace(/\\r\\n/g, '\n'));
-    });
-});
+.. code-block:: text
+
+   let pc1 = new RTCPeerConnection();
+   navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+   .then((stream) => {
+       stream.getTracks().forEach((track) => {
+           console.log("Local track available: " + track.kind);
+           pc1.addTrack(track, stream);
+       });
+       pc1.createOffer().then((offer) => {
+           console.log(JSON.stringify(offer).replace(/\\r\\n/g, '\n'));
+       });
+   });
 
 
 
-
-VP8
-===
-
-Safari technology preview 68 / Safari 12.1 ya trae soporte de VP8 así que no será tan sencillo probar situaciones de transcoding:
-- https://developer.apple.com/safari/technology-preview/release-notes/#r68
-- https://developer.apple.com/documentation/safari_release_notes/safari_12_1_beta_3_release_notes#3130319
-
-
-
+.. _browser-mtu:
 
 Browser MTU
 ===========
 
-The default **Maximum Transmission Unit (MTU)** in the official [libwebrtc](https://webrtc.org/) implementation is **1200** Bytes ([source code](https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/constants.cc#15)). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same MTU:
+The default **Maximum Transmission Unit (MTU)** in the official `libwebrtc <https://webrtc.org/>`__ implementation is **1200 Bytes** (`source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/constants.cc#15>`__). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same MTU:
 
-* [Chrome source code](https://codesearch.chromium.org/chromium/src/third_party/webrtc/media/engine/constants.cc?rcl=f092e4d0ff252f52404a0c867f20cf103bbaa663&l=15).
-
-* [Firefox source code](https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/media/engine/constants.cc#16).
-
-* Safari: No public source code, but Safari uses Webkit, and [Webkit uses libwebrtc](https://www.webrtcinwebkit.org/blog/2017/7/2/webrtc-in-safari-11-and-ios-11), so probably same MTU as the others.
+* `Chrome source code <https://codesearch.chromium.org/chromium/src/third_party/webrtc/media/engine/constants.cc?rcl=f092e4d0ff252f52404a0c867f20cf103bbaa663&l=15>`__.
+* `Firefox source code <https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/media/engine/constants.cc#16>`__.
+* Safari: No public source code, but Safari uses Webkit, and `Webkit uses libwebrtc <https://www.webrtcinwebkit.org/blog/2017/7/2/webrtc-in-safari-11-and-ios-11>`__, so probably same MTU as the others.
 
 
 
 Initial bandwidth estimation
 ============================
 
-WebRTC **bandwidth estimation (BWE)** was implemented first with *Google REMB*, and later with *Transport-CC*. Clients need to start "somewhere" with their estimations, and the official [libwebrtc](https://webrtc.org/) implementation chose to do so at 300 kbps (kilobits per second) ([source code](https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/api/transport/bitrate_settings.h#45)). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same initial BWE:
+WebRTC **bandwidth estimation (BWE)** was implemented first with *Google REMB*, and later with *Transport-CC*. Clients need to start "somewhere" with their estimations, and the official `libwebrtc <https://webrtc.org/>`__ implementation chose to do so at 300 kbps (kilobits per second) (`source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/api/transport/bitrate_settings.h#45>`__). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same initial BWE:
 
-* [Chrome source code](https://codesearch.chromium.org/chromium/src/third_party/webrtc/api/transport/bitrate_settings.h?rcl=f092e4d0ff252f52404a0c867f20cf103bbaa663&l=45).
-
-* [Firefox source code](https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/call/call.h#84).
+* `Chrome source code <https://codesearch.chromium.org/chromium/src/third_party/webrtc/api/transport/bitrate_settings.h?rcl=f092e4d0ff252f52404a0c867f20cf103bbaa663&l=45>`__.
+* `Firefox source code <https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/call/call.h#84>`__.
