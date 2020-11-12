@@ -199,7 +199,7 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
 
 * **Java**: Launch with a *kms.url* property. For example:
 
-  .. code-block:: java
+  .. code-block:: console
 
      mvn spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=wss://{KMS_HOST}:8433/kurento"

@@ -52,7 +52,7 @@ init-workdir:
 langdoc-init:
 	# Care must be taken because the Current Directory changes in this target,
 	# so it's better to use absolute paths for destination dirs.
-	# The 'client-doc' part must match the setting 'html_static_path' in 'conf.py',
+	# DESTPATH must be added to the setting 'html_static_path' in 'conf.py',
 	# and its contents must match the URLs used in the documentation files.
 	$(eval WORKPATH := $(CURDIR)/$(BUILDDIR)/client-src)
 	$(eval DESTPATH := $(CURDIR)/$(BUILDDIR)/langdoc)
