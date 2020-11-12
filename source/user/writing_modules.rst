@@ -204,6 +204,7 @@ KMS will then add these paths to the path lookup it performs at startup, when lo
 When ready, you should **verify the module installation**. Run KMS twice, with the ``--version`` and ``--list`` arguments. The former shows a list of all installed modules and their versions, while the latter prints a list of all the actual *MediaObject* Factories that clients can invoke with the JSON-RPC API. Your own module should show up in both lists:
 
 .. code-block:: shell-session
+   :emphasize-lines: 7,12,13
 
    $ /usr/bin/kurento-media-server --version
    Kurento Media Server version: 6.12.0
@@ -250,6 +251,7 @@ Now build the new image:
 And verify your module is correctly loaded by KMS:
 
 .. code-block:: shell-session
+   :emphasize-lines: 7,12,13
 
    $ docker run --rm kms-with-my-gst-module:latest --version
    Kurento Media Server version: 6.12.0
@@ -314,18 +316,18 @@ Examples
 
 Simple examples for both kinds of modules are available in GitHub:
 
-- `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample>`__.
-- `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`__.
+* `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample>`__.
+* `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`__.
 
-There are a lot of examples showing how to define methods, parameters or events in all our public built-in modules:
+There are a lot of examples showing how to define methods, parameters or events in the "extra" modules that Kurento provides for demonstration purposes:
 
-- `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector/tree/master/src/server/interface>`__.
-- `kms-crowddetector <https://github.com/Kurento/kms-crowddetector/tree/master/src/server/interface>`__.
-- `kms-chroma <https://github.com/Kurento/kms-chroma/tree/master/src/server/interface>`__.
-- `kms-platedetector <https://github.com/Kurento/kms-platedetector/tree/master/src/server/interface>`__.
+* `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector/tree/master/src/server/interface>`__.
+* `kms-crowddetector <https://github.com/Kurento/kms-crowddetector/tree/master/src/server/interface>`__.
+* `kms-chroma <https://github.com/Kurento/kms-chroma/tree/master/src/server/interface>`__.
+* `kms-platedetector <https://github.com/Kurento/kms-platedetector/tree/master/src/server/interface>`__.
 
 Besides that, all of the Kurento main modules are developed using this methodology, so you can also have a look in these:
 
-- `kms-core <https://github.com/Kurento/kms-core>`__.
-- `kms-elements <https://github.com/Kurento/kms-elements>`__.
-- `kms-filters <https://github.com/Kurento/kms-filters>`__.
+* `kms-core <https://github.com/Kurento/kms-core>`__.
+* `kms-elements <https://github.com/Kurento/kms-elements>`__.
+* `kms-filters <https://github.com/Kurento/kms-filters>`__.
