@@ -73,7 +73,13 @@ master_doc = 'index'
 language = 'en'
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+# pygments_style = 'abap'
+# pygments_style = 'default'
+# pygments_style = 'manni'
+# pygments_style = 'monokai'
+pygments_style = 'tango'
+# pygments_style = 'trac'
+# pygments_style = 'xcode'
 
 
 # -- Extensions configuration ---------------------------------------------
