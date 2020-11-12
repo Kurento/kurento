@@ -218,8 +218,9 @@ kms_sample_filter_transform_frame_ip (GstVideoFilter *filter,
 
   if (filter_type == KMS_SAMPLE_FILTER_TYPE_EDGES) {
     GST_DEBUG ( "Calculating edges");
-    Canny ( (*sample_filter->priv->cv_image), output_image,
-            edge_threshold, 255);
+    Mat gray_image;
+    cvtColor ( (*sample_filter->priv->cv_image), gray_image, COLOR_BGR2GRAY);
+    Canny (gray_image, output_image, edge_threshold, 255);
   } else if (filter_type == KMS_SAMPLE_FILTER_TYPE_GREY) {
     GST_DEBUG ( "Calculating black&white image");
     cvtColor ( (*sample_filter->priv->cv_image), output_image, COLOR_BGR2GRAY );
