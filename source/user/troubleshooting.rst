@@ -663,12 +663,33 @@ Element-specific info
 PlayerEndpoint
 --------------
 
+RTSP broken audio
+~~~~~~~~~~~~~~~~~
+
+If you have your own RTSP tool generating OPUS encoded audio to be consumed in Kurento with a *PlayerEndpoint* (`Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/PlayerEndpoint.html>`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.PlayerEndpoint.html>`__), and the resulting audio is very choppy and robotic, you should start by verifying that your encoding process is configured correctly for the OPUS frame size used in WebRTC.
+
+This was the case for a user who later shared with us the reasons for the bad quality audio they were perceiving:
+
+    `Bad audio quality <https://groups.google.com/g/kurento/c/nq-BNeZn2P8>`__
+
+    > *There was a mismatch between the incoming raw audio frame size and the opus encoding frame size,
+    which resulted in a bad encoding cadence causing irregular encoded frame intervals.*
+
+    > *We remedied this by ensuring that the incoming audio frame size and the opus encoding frame size are
+    the same --- or the incoming frame size is a divisor of the encoding frame size.*
+
+
+
 RTSP broken video
 ~~~~~~~~~~~~~~~~~
 
 Some users have reported huge macro-blocks or straight out broken video frames when using a PlayerEndpoint to receive an RTSP stream containing H.264 video. A possible solution to fix this issue is to fine-tune the PlayerEndpoint's **networkCache** parameter. It basically sets the buffer size (in milliseconds) that the underlying GStreamer decoding element will use to cache the stream.
 
-There's no science for that parameter, though. The perfect value depends on your network topology and efficiency, so you should proceed in a trial-and-error approach. For some situations, values lower than **100ms** have worked fine; some users have reported that 10ms was required to make their specific camera work, others have seen good results with setting this parameter to **0ms**.
+There's no science for that parameter, though. The perfect value depends on your network topology and efficiency, so you should proceed in a trial-and-error approach. For some situations, values lower than **100ms** have worked fine; some users have reported that 10ms was required to make their specific camera work, others have seen good results with setting this parameter to **0ms**. However, these are outlier cases and normally a higher *networkCache* is needed.
+
+In principle, *networkCache = 0* would mean that all RTP packets must be exactly on point at the expected times in the RTSP stream, or else they will be dropped. So even a slight amount of jitter or delay in the network might cause packets to be dropped when they arrive to the PlayerEndpoint.
+
+*networkCache* translates directly to the *latency* property of GStreamer's `rtspsrc <https://gstreamer.freedesktop.org/documentation/rtsp/rtspsrc.html>`__ element, which in turn is passed to the `rtpbin <https://gstreamer.freedesktop.org/documentation/rtpmanager/rtpbin.html>`__ and ultimately the `rtpjitterbuffer <https://gstreamer.freedesktop.org/documentation/rtpmanager/rtpjitterbuffer.html>`__ inside it.
 
 
 
