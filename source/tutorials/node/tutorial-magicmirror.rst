@@ -508,7 +508,7 @@ to handle the WebRTC communication.
 Dependencies
 ============
 
-Server-side dependencies of this demo are managed using :term:`npm`. Our main
+Server-side dependencies of this demo are managed using :term:`NPM`. Our main
 dependency is the Kurento Client JavaScript (*kurento-client*). The relevant
 part of the
 `package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/package.json>`_

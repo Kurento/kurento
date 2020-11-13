@@ -9,7 +9,7 @@ This page summarizes the features that Kurento provides, with links to their own
 Kurento API, Clients, and Protocol
 ==================================
 
-Kurento Media Server exposes all its functionality through an RPC API called :doc:`Kurento API </features/kurento_api>`. This API can be queried directly by any kind of JSON-compatible client, but the recommended way to work with it is by means of a :doc:`Kurento Client </features/kurento_client>` library; these are currently provided for *Java*, *Browser Javascript*, and *Node.js*.
+Kurento Media Server exposes all its functionality through an RPC API called :doc:`Kurento API </features/kurento_api>`. This API can be queried directly by any kind of JSON-compatible client, but the recommended way to work with it is by means of a :doc:`Kurento Client </features/kurento_client>` library; these are currently provided for *Java*, *Browser JavaScript*, and *Node.js*.
 
 If you prefer a different programming language, it's possible to write a custom client library by following the specification of the :doc:`Kurento Protocol </features/kurento_protocol>`, based on *WebSocket* and *JSON-RPC*.
 

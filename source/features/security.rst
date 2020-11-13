@@ -48,8 +48,8 @@ Configure a Java server to use HTTPS
 
 .. _features-security-node-https:
 
-Configure a Node server to use HTTPS
-------------------------------------
+Configure a Node.js server to use HTTPS
+---------------------------------------
 
 * Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :ref:`features-security-selfsigned`.
 
@@ -176,9 +176,9 @@ Generate your own certificate as explained here: :ref:`features-security-selfsig
      JsonRpcClientWebSocket rpcClient = new JsonRpcClientWebSocket(uri, sec);
      KurentoClient kurentoClient = KurentoClient.createFromJsonRpcClient(rpcClient);
 
-* **Node applications**. Take a look at this page: `Painless Self Signed Certificates in node.js <https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__ (`archive <https://web.archive.org/web/20200610093038/https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__).
+* **Node.js applications**. Take a look at this page: `Painless Self Signed Certificates in node.js <https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__ (`archive <https://web.archive.org/web/20200610093038/https://git.coolaj86.com/coolaj86/ssl-root-cas.js/src/branch/master/Painless-Self-Signed-Certificates-in-node.js.md>`__).
 
-  For a faster but *INSECURE* alternative, configure Node to accept (instead of reject) invalid TLS certificates by default, setting the environment variable flag `NODE_TLS_REJECT_UNAUTHORIZED <https://nodejs.org/api/cli.html#cli_node_tls_reject_unauthorized_value>`__ to *0*; this will disable the TLS validation for your whole Node app. You can set this environment variable before executing your app, or directly in your app code by adding the following line before performing the connection:
+  For a faster but *INSECURE* alternative, configure Node.js to accept (instead of reject) invalid TLS certificates by default, setting the environment variable flag `NODE_TLS_REJECT_UNAUTHORIZED <https://nodejs.org/api/cli.html#cli_node_tls_reject_unauthorized_value>`__ to *0*; this will disable the TLS validation for your whole Node.js app. You can set this environment variable before executing your app, or directly in your app code by adding the following line before performing the connection:
 
   .. code-block:: js
 
@@ -204,7 +204,7 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
      mvn spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=wss://{KMS_HOST}:8433/kurento"
 
-* **Node**: Launch with the *ws_uri* command-line argument. For example:
+* **Node.js**: Launch with the *ws_uri* command-line argument. For example:
 
   .. code-block:: js
 

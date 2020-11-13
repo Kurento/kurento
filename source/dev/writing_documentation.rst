@@ -2,7 +2,7 @@
 Writing this documentation
 ==========================
 
-Although each of the Kurento repositories contains a *README* file, the main source of truth for up-to-date information about Kurento is *this* documentation you are reading right now, hosted at Read The Docs.
+Although each of the Kurento repositories contains a *README* file, the main source of truth for up-to-date information about Kurento is *this* documentation you are reading right now, hosted at Read the Docs.
 
 The final deliverable form of the documentation is obtained by following a 3-step process:
 
@@ -187,14 +187,14 @@ Our Sphinx-based project is hosted in the `doc-kurento`_ repository. Here, the m
 
 
 
-Read The Docs builds
+Read the Docs builds
 ====================
 
-It would be great if Read The Docs worked by simply calling the command *make html*, as then we would be able to craft a Makefile that would build the complete documentation in one single step (by making the Sphinx's *html* target dependent on our *init-workdir* and *langdoc*). But alas, they don't work like this; instead, they run Sphinx directly from their Python environment, rendering our Makefile as useless in their CI.
+It would be great if Read the Docs worked by simply calling the command *make html*, as then we would be able to craft a Makefile that would build the complete documentation in one single step (by making the Sphinx's *html* target dependent on our *init-workdir* and *langdoc*). But alas, they don't work like this; instead, they run Sphinx directly from their Python environment, rendering our Makefile as useless in their CI.
 
 In order to overcome this limitation, we opted for the simple solution of handling RTD a specifically-crafted Git repository, with the contents that they expect to find. This works as follows:
 
-1. Read The Docs has been configured to watch for changes in the `doc-kurento-readthedocs`_ repo, instead of *doc-kurento*.
+1. Read the Docs has been configured to watch for changes in the `doc-kurento-readthedocs`_ repo, instead of *doc-kurento*.
 2. The *init-workdir* and *langdoc* targets run locally from our *doc-kurento* repo.
 3. The resulting files from those targets are copied as-is to the *doc-kurento-readthedocs* repository.
 4. Everything is then committed and pushed to this latter repo, thus triggering a new RTD build.

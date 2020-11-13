@@ -111,7 +111,7 @@ of the running example is shown in the following picture:
 .. note::
 
    Modules can have options. For configuring these options, you'll need to get the constructor for them.
-   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is
+   In JavaScript and Node.js, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is
    an example in the code.
 
 The following snippet shows how the media pipeline is implemented in the Java

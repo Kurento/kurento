@@ -1187,7 +1187,7 @@ For this reason, the documentation must be built only after all the other module
 
 #. Ensure that the whole nightly CI chain works:
 
-   Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at ReadTheDocs`_.
+   Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at Read the Docs`_.
 
 #. Edit `VERSIONS.conf.sh`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries.
 
@@ -1209,7 +1209,7 @@ For this reason, the documentation must be built only after all the other module
 
       make html
 
-   Note that the JavaDoc and JsDoc pages won't be generated locally if you don't have your system prepared to do so; also there are some Sphinx constructs or plugins that might fail if you don't have them ready to use, but the ReadTheDocs servers have them so they should end up working fine.
+   Note that the JavaDoc and JsDoc pages won't be generated locally if you don't have your system prepared to do so; also there are some Sphinx constructs or plugins that might fail if you don't have them ready to use, but the Read the Docs servers have them so they should end up working fine.
 
 #. Git add, commit, and push. This will trigger a nightly build, where you can **check the result** of the documentation builds to have an idea of how the final release build will end up looking like, at https://doc-kurento.readthedocs.io/en/latest/.
 
@@ -1225,13 +1225,13 @@ For this reason, the documentation must be built only after all the other module
 
 #. Run the `doc-kurento CI job`_ with the parameter *JOB_RELEASE* **ENABLED**.
 
-#. CI automatically tags Release versions in both ReadTheDocs source repos `doc-kurento`_ and `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
+#. CI automatically tags Release versions in both Read the Docs source repos `doc-kurento`_ and `doc-kurento-readthedocs`_, so the release will show up in the Read the Docs dashboard.
 
    .. note::
 
-      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. ReadTheDocs CI servers will read the latter one to obtain the documentation sources and release tags.
+      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. Read the Docs CI servers will read the latter one to obtain the documentation sources and release tags.
 
-#. Open `ReadTheDocs Builds`_. If the new version hasn't been detected and built, do it manually: use the *Build Version* button to force a build of the *latest* version.
+#. Open `Read the Docs Builds`_. If the new version hasn't been detected and built, do it manually: use the *Build Version* button to force a build of the *latest* version. Doing this, Read the Docs will "realize" that there is a new tagged release version of the documentation in the *doc-kurento-readthedocs* repo.
 
    Doing this, ReadTheDocs will "realize" that there is a new tagged release version of the documentation, in the *doc-kurento-readthedocs* repo. After the build is finished, the new release version will be available for selection in the next step.
 
@@ -1357,6 +1357,6 @@ For this reason, the documentation must be built only after all the other module
 .. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
 .. _this Ask Ubuntu answer: https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names/620539#620539
-.. _ReadTheDocs Builds: https://readthedocs.org/projects/doc-kurento/builds/
-.. _New build at ReadTheDocs: https://readthedocs.org/projects/doc-kurento/builds/
-.. _ReadTheDocs Advanced Settings: https://readthedocs.org/dashboard/doc-kurento/advanced/
+.. _Read the Docs Builds: https://readthedocs.org/projects/doc-kurento/builds/
+.. _New build at Read the Docs: https://readthedocs.org/projects/doc-kurento/builds/
+.. _Read the Docs Advanced Settings: https://readthedocs.org/dashboard/doc-kurento/advanced/

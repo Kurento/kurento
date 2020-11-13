@@ -16,7 +16,7 @@ Kurento offers a multimedia framework that eases the task of building multimedia
 
 This document contains a high level explanation of how to become a KMS developer. Development of *Kurento Client Applications* is out of the scope for this document, and won't be explained here.
 
-The code of Kurento Media Server is open source, released under the terms of `Apache License Version 2.0`_ and `available on GitHub`_.
+The code of Kurento Media Server is Open Source, released under the terms of `Apache License Version 2.0`_ and `available on GitHub`_.
 
 .. _Apache License Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
 .. _available on GitHub: https://github.com/Kurento

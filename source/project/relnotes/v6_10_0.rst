@@ -197,7 +197,7 @@ Similarly, if you want to run KMS under Valgrind, `kms-omni-build <https://githu
 Special Thanks
 ==============
 
-A great community is a key part of what makes any open source project special. From bug fixes, patches, and features, to those that help new users in the `forum / mailing list <https://groups.google.com/forum/#!forum/kurento>`__ and `GitHub issues <https://github.com/Kurento/bugtracker/issues>`__, we'd like to say: **Thanks!**
+A great community is a key part of what makes any Open Source project special. From bug fixes, patches, and features, to those that help new users in the `forum / mailing list <https://groups.google.com/forum/#!forum/kurento>`__ and `GitHub issues <https://github.com/Kurento/bugtracker/issues>`__, we'd like to say: **Thanks!**
 
 Additionally, special thanks to these awesome community members for their contributions:
 

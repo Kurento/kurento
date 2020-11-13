@@ -119,7 +119,7 @@ capabilities. All in all, the high level architecture of this demo is
 three-tier. To communicate these entities, two WebSockets are used. First, a
 WebSocket is created between client and application server to implement a
 custom signaling protocol. Second, another WebSocket is used to perform the
-communication between the Kurento Javascript Client and the Kurento Media Server.
+communication between the Kurento JavaScript Client and the Kurento Media Server.
 This communication takes place using the **Kurento Protocol**. For further
 information on it, please see this
 :doc:`page </features/kurento_protocol>` of the documentation.
@@ -504,7 +504,7 @@ to handle the WebRTC communication.
 Dependencies
 ============
 
-Server-side dependencies of this demo are managed using :term:`npm`. Our main
+Server-side dependencies of this demo are managed using :term:`NPM`. Our main
 dependency is the Kurento Client JavaScript (*kurento-client*). The relevant
 part of the
 `package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/package.json>`_

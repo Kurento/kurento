@@ -123,7 +123,7 @@ corner of the following screenshot:
 .. note::
 
    Modules can have options. For configuring these options, you'll need to get the constructor for them.
-   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is
+   In JavaScript and Node.js, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is
    an example in the code.
 
 The media pipeline of this demo is is implemented in the JavaScript logic as

@@ -58,7 +58,7 @@ Do you intend to add a new feature or change an existing one?
 
 - Specify the licensing restrictions of the code you contribute.
 
-- By having some work contributed for incorporation in the Kurento project, you will be implicitly accepting Kurento to own the code copyright, so that the open-source nature of the project can be guaranteed.
+- By having some work contributed for incorporation in the Kurento project, you will be implicitly accepting Kurento to own the code copyright, so that the Open Source nature of the project can be guaranteed.
 
 - Remember that the Kurento project has no obligations in relation to accepting contributions from third parties.
 

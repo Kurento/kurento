@@ -143,7 +143,7 @@ This demo has been developed using the **express** framework for Node.js, but
 express is not a requirement for Kurento. The main script of this demo is
 `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2many-call/server.js>`_.
 
-In order to communicate the JavaScript client and the Node application server a
+In order to communicate the JavaScript client and the Node.js application server a
 WebSocket is used. The incoming messages to this WebSocket (variable ``ws`` in
 the code) are conveniently handled to implemented the signaling protocol
 depicted in the figure before (i.e. messages ``presenter``, ``viewer``,
@@ -629,7 +629,7 @@ start a WebRTC communication in receive-only mode.
 Dependencies
 ============
 
-Server-side dependencies of this demo are managed using :term:`npm`. Our main
+Server-side dependencies of this demo are managed using :term:`NPM`. Our main
 dependency is the Kurento Client JavaScript (*kurento-client*). The relevant
 part of the
 `package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2many-call/package.json>`_

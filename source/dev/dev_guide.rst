@@ -42,7 +42,7 @@ As the dependency graph is not strictly linear, there are multiple possible ways
 
 **Fork repositories**:
 
-KMS depends on several open source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries.
+KMS depends on several Open Source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries.
 
 - `jsoncpp <https://github.com/Kurento/jsoncpp>`__
 - `libsrtp <https://github.com/Kurento/libsrtp>`__

@@ -192,7 +192,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        `NPM <https://www.npmjs.org/>`__ is the official package manager for :term:`Node.js`.
 
    OpenCV
-       OpenCV (Open Source Computer Vision Library) is a BSD-licensed open source computer vision and machine learning software library. OpenCV aims to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception.
+       OpenCV (Open Source Computer Vision Library) is a BSD-licensed Open Source computer vision and machine learning software library. OpenCV aims to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception.
 
    Pad, Media
        A :index:`Media Pad <single: Media; Pad>` is is an element's interface with the outside world. Data streams from the MediaSource pad to another element's MediaSink pad.

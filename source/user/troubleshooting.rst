@@ -415,10 +415,10 @@ This is how this process would look like. In this example, KMS was restarted so 
 
 
 
-Node / NPM failures
--------------------
+Node.js / NPM failures
+----------------------
 
-Kurento Client does not currently support Node v10 (LTS), you will have to use Node v8 or below.
+Kurento Client does not currently support Node.js v10 (LTS), you will have to use Node.js v8 or below.
 
 
 
@@ -456,7 +456,7 @@ The solution is to ensure that both peers are able to find a match in their supp
 
 This issue is commonly caused by setting an invalid ID to any of the client method calls. The usual solution is to provide a null identifier, forcing the server to generate a new one for the object.
 
-For example, a Node application wanting to use the *ImageOverlayFilter* (`Java API <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/ImageOverlayFilter.html>`__, `JavaScript API <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html>`__) might mistakenly try to provide an invalid ID in the `addImage() <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html#.addImage>`__ call:
+For example, a Node.js application wanting to use the *ImageOverlayFilter* (`Java API <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/ImageOverlayFilter.html>`__, `JavaScript API <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html>`__) might mistakenly try to provide an invalid ID in the `addImage() <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html#.addImage>`__ call:
 
 .. code-block:: js
 

@@ -7,7 +7,7 @@
    - Un-comment the section's name in the index file
 
 ======================
-Open-Source Philosophy
+Open Source Philosophy
 ======================
 
 [TODO - hidden]

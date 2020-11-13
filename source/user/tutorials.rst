@@ -191,7 +191,7 @@ Users can choose which type of media to send and record: audio, video or both.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-recorder>
-   Browser Javascript </tutorials/js/tutorial-recorder>
+   Browser JavaScript </tutorials/js/tutorial-recorder>
 
 
 

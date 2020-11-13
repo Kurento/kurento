@@ -22,7 +22,7 @@ How to use it
   `here <http://builds.openvidu.io/release/|VERSION_UTILS_JS|/js/kurento-utils.min.js>`__.
 
 
-* **NPM** - Install and use library in your NodeJS files.
+* **NPM** - Install and use library in your Node.js files.
 
   .. sourcecode:: bash
 
@@ -50,12 +50,12 @@ Examples
 ========
 
 There are several tutorials that show kurento-utils used in complete WebRTC
-applications developed on Java, Node and JavaScript. These tutorials are in
+applications developed on Java, Node.js and JavaScript. These tutorials are in
 GitHub, and you can download and run them at any time.
 
 * **Java** - https://github.com/Kurento/kurento-tutorial-java
 
-* **Node** - https://github.com/Kurento/kurento-tutorial-node
+* **Node.js** - https://github.com/Kurento/kurento-tutorial-node
 
 * **JavaScript** - https://github.com/Kurento/kurento-tutorial-js
 
