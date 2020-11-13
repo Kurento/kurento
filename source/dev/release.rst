@@ -1202,7 +1202,7 @@ For this reason, the documentation must be built only after all the other module
    - ``[VERSION_TUTORIAL_JS]``: Repo `kurento-tutorial-js`_.
    - ``[VERSION_TUTORIAL_NODE]``: Repo `kurento-tutorial-node`_.
 
-#. In *VERSIONS.conf.sh*, set *VERSION_RELEASE* to *true*. Remember to set it again to *false* after the release, when starting a new development iteration.
+#. In *VERSIONS.conf.sh*, set *VERSION_RELEASE* to **true**. Remember to set it again to *false* after the release, when starting a new development iteration.
 
 #. Test the build locally, check everything works.
 
@@ -1234,15 +1234,7 @@ For this reason, the documentation must be built only after all the other module
 
 #. Open `Read the Docs Builds`_. If the new version hasn't been detected and built, do it manually: use the *Build Version* button to force a build of the *latest* version. Doing this, Read the Docs will "realize" that there is a new tagged release version of the documentation in the *doc-kurento-readthedocs* repo.
 
-   Doing this, ReadTheDocs will "realize" that there is a new tagged release version of the documentation, in the *doc-kurento-readthedocs* repo. After the build is finished, the new release version will be available for selection in the next step.
-
-#. Open `ReadTheDocs Advanced Settings`_ and select the new version in the *Default Version* combo box.
-
-   .. note::
-
-      We don't set the *Default Version* field to "*stable*", because we want that the actual version number gets shown in the upper part of the side panel (below the Kurento logo, above the search box) when users open the documentation. If "*stable*" was selected here, then users would just see the word "*stable*" in the mentioned panel.
-
-#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set *VERSION_RELEASE* to *false*. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
+#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set *VERSION_RELEASE* to **false**. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
 
    **All-In-One** script:
 
