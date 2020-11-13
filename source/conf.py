@@ -110,9 +110,6 @@ html_theme_options = {
     'display_version': True
 }
 
-# Force the "Edit on GitHub" button to use this URL.
-github_url = 'https://github.com/Kurento/doc-kurento'
-
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 html_logo = 'images/kurento-white.png'
