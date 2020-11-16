@@ -294,8 +294,6 @@ Docker is the recommended method of deploying Kurento Media Server, because it m
 
 
 
-.. _faq-docker-config:
-
 How to provide configuration files?
 -----------------------------------
 
@@ -367,9 +365,9 @@ The equivalent definition for Docker Compose would look like this:
 Where are my recordings?
 ------------------------
 
-Running a Docker container **won't modify your host system** and **won't create new files** or anything like that, at least by default. This is part of how Docker containers work, and is important to keep in mind for certain cases.
+A frequent question, by users who are new to Docker, is where the *RecorderEndpoint* files are being stored, because they don't show up anywhere in the host file system. The answer is that KMS is recording files *inside the container's local storage*, in the path defined by the *RecorderEndpoint* constructor (`Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.Builder.html#Builder-org.kurento.client.MediaPipeline-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.RecorderEndpoint.html#.constructorParams>`__).
 
-For example, when using the *RecorderEndpoint*, a common question is where the recorded files are being stored, because they don't show up anywhere in the file system. The answer is that KMS stores files *inside the container*, in the path defined by the *RecorderEndpoint* constructor (`Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.Builder.html#Builder-org.kurento.client.MediaPipeline-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.RecorderEndpoint.html#.constructorParams>`__).
+In general, running a Docker container **won't modify your host system** and **won't create new files** in it, at least by default. This is an integral part of how Docker containers work. To get those files out, you should use the mechanisms that Docker offers, like for example a `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ to the recording path.
 
 
 
