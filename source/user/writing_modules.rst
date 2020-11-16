@@ -229,7 +229,7 @@ It is perfectly possible to install and use additional Kurento modules with Dock
 
 Our recommendation is to leverage the `FROM <https://docs.docker.com/engine/reference/builder/#from>`__ feature of *Dockerfiles*, to derive directly from a `Kurento Docker image <https://hub.docker.com/r/kurento/kurento-media-server>`__, and create your own fully customized image.
 
-A *Dockerfile* such as this one would be a good enough starting point:
+A ``Dockerfile`` such as this one would be a good enough starting point:
 
 .. code-block:: docker
 

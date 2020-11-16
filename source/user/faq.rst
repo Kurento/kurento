@@ -294,10 +294,12 @@ Docker is the recommended method of deploying Kurento Media Server, because it m
 
 
 
-How to edit configuration files?
---------------------------------
+.. _faq-docker-config:
 
-If you want to provide your own configuration files to the Kurento Docker image, the easiest method is to provide them through a `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__. However, the first thing you'll need are the actual files; run these commands to get the default ones from the Kurento Docker image:
+How to provide configuration files?
+-----------------------------------
+
+To edit the configuration files that Kurento will use from within a Docker container, the first thing you'll need are the actual files; run these commands to get the default ones from a temporary container:
 
 .. code-block:: shell
 
@@ -305,7 +307,40 @@ If you want to provide your own configuration files to the Kurento Docker image,
    docker cp "$CONTAINER":/etc/kurento/. ./etc-kurento
    docker rm "$CONTAINER"
 
-Now, edit the files as needed. Later, provide them to newly created containers:
+After editing these files as needed, provide them to newly created Kurento Docker containers, with any of the mechanisms offered by Docker. Here we show examples for two of them:
+
+
+
+FROM image
+~~~~~~~~~~
+
+Creating a custom Docker image is a good choice for changing Kurento configuration files when you don't have direct control of the host environment. The `FROM <https://docs.docker.com/engine/reference/builder/#from>`__ feature of *Dockerfiles* can be used to derive directly from the official `Kurento Docker image <https://hub.docker.com/r/kurento/kurento-media-server>`__ and create your own fully customized image.
+
+A ``Dockerfile`` such as this one would be a good enough starting point:
+
+.. code-block:: docker
+
+   FROM kurento/kurento-media-server:latest
+   COPY etc-kurento/* /etc/kurento/
+
+Now, build the new image:
+
+.. code-block:: shell-session
+
+   $ docker build --tag kms-with-my-config:latest .
+   Step 1/2 : FROM kurento/kurento-media-server:latest
+   Step 2/2 : COPY etc-kurento/* /etc/kurento/
+   Successfully built 3d2bedb31a9d
+   Successfully tagged kms-with-my-config:latest
+
+And use the new image "*kms-with-my-config:latest*" in place of the original one.
+
+
+
+Bind mount
+~~~~~~~~~~
+
+A `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ will replace the default set of config files inside the official Kurento Docker image, with the ones you provide from the host filesystem. This method can be used if you are in control of the host system:
 
 .. code-block:: shell
 
