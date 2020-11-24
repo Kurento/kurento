@@ -102,7 +102,7 @@ process.
    size="12,8"; fontname = "Bitstream Vera Sans" fontsize = 8
 
    node [
-        fontname = "Bitstream Vera Sans" fontsize = 8 shape = "record"
+        fontname = "Bitstream Vera Sans" fontsize = 8 shape = "rect"
          style=filled
         fillcolor = "#E7F2FA"
    ]

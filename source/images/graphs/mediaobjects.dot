@@ -8,7 +8,7 @@ digraph mediaobjects {
     fillcolor = "#E7F2FA";
     fontname = "Bitstream Vera Sans";
     fontsize = 8;
-    shape = "record";
+    shape = "rect";
     style = "filled";
   ]
 
