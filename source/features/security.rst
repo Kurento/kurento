@@ -129,7 +129,7 @@ The Kurento WebSocket server supports using SSL certificates in order to guarant
 
 Think of KMS like you would of a database in a traditional web application; there are two levels:
 
-1. The **application level**. We usually call this the ":doc:`Application Server </user/writing_applications>`" of Kurento Media Server. It usually is a web application that uses :doc:`/features/kurento_client` to access :doc:`/features/kurento_api`.
+1. The **application level**. We usually call this the ":doc:`Application Server </user/writing_applications>`" of Kurento Media Server. It usually is a web application that uses :doc:`/features/kurento_client` to access features of :doc:`/features/kurento_modules`.
 2. The **media level** (actual audio/video transmissions to/from KMS).
 
 The idea is that nobody unauthorized should be able to access the exchanged media. At the application level we can use all the available techniques used to protect any web server, for example with a custom user/password mechanism. Regarding KMS, the idea is that only the *Application Server* can access KMS. We can restrict that at the system level, for example using `iptables <https://linux.die.net/man/8/iptables>`__ to restrict all incoming WebSocket connections to KMS only from a given host, or a given subnet, similar to this: `Iptables Essentials: Common Firewall Rules and Commands <https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands>`__ (`archive <https://archive.is/frjCa>`__). It may be a good idea to have the *Application Server* running in the same host than the Media Server, and in that case just restrict incoming connections to the same host.
@@ -143,7 +143,7 @@ If you need more flexibility, one idea is to restrict KMS connections to the sam
 Signaling Plane security (WebSocket)
 ------------------------------------
 
-With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port TCP 8888. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_api`.
+With the default configuration, Kurento Media Server will use the ``ws://`` URI scheme for non-secure WebSocket connections, listening on the port TCP 8888. Application Servers (Kurento clients) will establish a WebSocket connection with KMS, in order to control the media server and send messages conforming to the :doc:`/features/kurento_protocol`.
 
 This is fine for initial stages of application development, but before deploying on production environments you'll probably want to move to ``wss://`` connections, i.e. using Secure WebSocket, which by default uses the port TCP 8433.
 

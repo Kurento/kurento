@@ -6,7 +6,7 @@ Kurento Protocol
 
 .. contents:: Table of Contents
 
-Kurento Media Server is controlled by means of an :doc:`RPC API </features/kurento_api>`, implemented in terms of the **Kurento Protocol** specification as described in this document, based on :term:`WebSocket` and :term:`JSON-RPC`.
+Kurento Media Server is controlled by means of an JSON-RPC API, implemented in terms of the **Kurento Protocol** specification as described in this document, based on :term:`WebSocket` and :term:`JSON-RPC`.
 
 
 
@@ -104,9 +104,7 @@ The following example shows a typical error response:
 Kurento API over JSON-RPC
 =========================
 
-As explained in the :doc:`Kurento API section </features/kurento_api>`, Kurento Media Server exposes a full fledged API to let applications process media in several ways.
-
-To allow this rich API, Kurento Clients require full-duplex communications between client and server. For this reason, the Kurento Protocol is based on the :term:`WebSocket` transport.
+Kurento Media Server exposes a full fledged API to let applications process media in several ways. To allow this rich API, Kurento Clients require full-duplex communications between client and server. For this reason, the Kurento Protocol is based on the :term:`WebSocket` transport.
 
 Before issuing commands, the Kurento Client requires establishing a WebSocket connection with Kurento Media Server to this URL: ``ws://hostname:port/kurento``.
 
@@ -162,7 +160,7 @@ The response to a *ping* request must contain a *result* object with the paramet
 Create
 ------
 
-This message requests the creation of an object from the Kurento API (Media Pipelines and Media Elements). The parameter *type* specifies the type of the object to be created. The parameter *constructorParams* contains all the information needed to create the object. Each message needs different *constructorParams* to create the object. These parameters are defined in the :doc:`Kurento API section </features/kurento_api>`.
+This message requests the creation of an object from the Kurento API (Media Pipelines and Media Elements). The parameter *type* specifies the type of the object to be created. The parameter *constructorParams* contains all the information needed to create the object. Each message needs different *constructorParams* to create the object. These parameters are defined :doc:`per-module </features/kurento_modules>`.
 
 Media Elements have to be contained in a previously created Media Pipeline. Therefore, before creating Media Elements, a Media Pipeline must exist. The response of the creation of a Media Pipeline contains a parameter called *sessionId*, which must be included in the next create requests for Media Elements.
 

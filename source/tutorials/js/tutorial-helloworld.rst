@@ -6,8 +6,7 @@ This web application has been designed to introduce the principles of
 programming with Kurento for JavaScript developers. It consists of a
 `WebRTC`:term: video communication in mirror (*loopback*). This tutorial
 assumes you have basic knowledge of JavaScript, HTML and WebRTC. We also
-recommend reading the :doc:`Introducing Kurento </user/about>`
-section before starting this tutorial.
+recommend reading :doc:`/user/intro` before starting this tutorial.
 
 .. note::
 

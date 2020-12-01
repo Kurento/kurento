@@ -2,14 +2,9 @@
 Welcome to Kurento
 ==================
 
-:term:`Kurento` is a :term:`WebRTC` Media Server and a set of client APIs that simplify the development of advanced video applications for web and smartphone platforms. Its features include group communications, transcoding, recording, mixing, broadcasting and routing of audiovisual flows.
+:term:`Kurento` Media Server (**KMS**) is a multimedia server package that can be used to develop advanced video applications for :term:`WebRTC` platforms. It is an Open Source project, with source code released under the terms of `Apache License Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>`__ and `available on GitHub <https://github.com/Kurento>`__.
 
-The code is Open Source, released under the terms of `Apache License Version 2.0`_ and `available on GitHub`_.
-
-.. _Apache License Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
-.. _available on GitHub: https://github.com/Kurento
-
-You can read more on our page :doc:`About Kurento and WebRTC </user/about>`. Check now how to :doc:`get started </user/quickstart>` with Kurento and take a look at our :doc:`tutorials </user/tutorials>`, which showcase some demo applications.
+**Start here**: :doc:`/user/intro` and :doc:`/user/quickstart`, and then learn to write Kurento applications with :doc:`/user/tutorials`.
 
 The main documentation for the project is organized into different sections:
 
@@ -17,7 +12,7 @@ The main documentation for the project is organized into different sections:
 - :ref:`feature-docs`
 - :ref:`project-docs`
 
-Information about development of *Kurento itself* is also available:
+Information about *development of Kurento itself* is also available:
 
 - :doc:`/project/relnotes/index`
 - :ref:`dev-docs`
@@ -30,14 +25,13 @@ Information about development of *Kurento itself* is also available:
    :maxdepth: 2
    :caption: User Documentation
 
-   /user/about
-   /user/about_openvidu
+   /user/intro
+   /user/openvidu
    /user/quickstart
    /user/installation
    /user/installation_dev
-   /user/tutorials
-   /user/features
    /user/configuration
+   /user/tutorials
    /user/writing_applications
    /user/writing_modules
    /user/faq
@@ -52,14 +46,13 @@ Information about development of *Kurento itself* is also available:
    :maxdepth: 2
    :caption: Feature Documentation
 
-   /features/kurento_api
+   /features/kurento_modules
    /features/kurento_client
    /features/kurento_protocol
-   /features/kurento_modules
    /features/kurento_utils_js
+   /features/security
    /features/events
    /features/nat_traversal
-   /features/security
    /features/statistics
    /features/logging
 

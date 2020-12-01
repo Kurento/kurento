@@ -26,11 +26,9 @@ Generally speaking, these are the first steps that any user interested in Kurent
 
 4. **Write an Application**
 
-   Write an application that queries the :doc:`Kurento API </features/kurento_api>` to make use of the capabilities offered by KMS. The easiest way of doing this is to build on one of the provided :doc:`Kurento Clients </features/kurento_client>`.
+   Write an application that uses the :doc:`/features/kurento_protocol` to comunicate with KMS and use its capabilities. The easiest way of doing this is to build on one of the provided :doc:`Kurento Clients </features/kurento_client>`.
 
-   In general, you can use *any programming language* to write your application, as long as it speaks the :doc:`Kurento Protocol </features/kurento_protocol>`.
-
-   Have a look at the :doc:`features </user/features>` offered by Kurento, and follow any of the multiple :doc:`tutorials </user/tutorials>` that explain how to build basic applications.
+   Have a look at any of the multiple :doc:`tutorials </user/tutorials>` that explain how to build basic applications.
 
 5. **Ask for help**
 

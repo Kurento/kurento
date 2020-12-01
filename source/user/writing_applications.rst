@@ -145,7 +145,7 @@ Media Plane
 
 From the application developer perspective, Media Elements are like *Lego* pieces: you just need to take the elements needed for an application and connect them, following the desired topology. In Kurento jargon, a graph of connected media elements is called a **Media Pipeline**. Hence, when creating a pipeline, developers need to determine the capabilities they want to use (the Media Elements) and the topology determining which Media Element provides media to which other Media Elements (the connectivity).
 
-.. figure:: /images/media-pipeline-sample.png
+.. figure:: /images/example-pipeline-browser-recorder.png
    :align: center
    :alt: Simple Example of a Media Pipeline
 

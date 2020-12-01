@@ -216,3 +216,59 @@ This tutorial implements a :term:`WebRTC` *loopback* and shows how to collect We
    :maxdepth: 1
 
    Browser JavaScript </tutorials/js/tutorial-loopback-stats>
+
+
+
+Chroma Filter
+=============
+
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a chroma filter element.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/module-chromafilter>
+   Browser JavaScript </tutorials/js/module-chromafilter>
+   Node.js </tutorials/node/module-chromafilter>
+
+
+
+Crowd Detector Filter
+=====================
+
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a crowd detector filter. This filter detects people agglomeration in video streams.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/module-crowddetector>
+   Browser JavaScript </tutorials/js/module-crowddetector>
+   Node.js </tutorials/node/module-crowddetector>
+
+
+
+Plate Detector Filter
+=====================
+
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a plate detector filter element.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/module-platedetector>
+   Browser JavaScript </tutorials/js/module-platedetector>
+   Node.js </tutorials/node/module-platedetector>
+
+
+
+Pointer Detector Filter
+=======================
+
+This web application consists of a :term:`WebRTC` video communication in mirror (*loopback*) with a pointer-tracking filter element.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/module-pointerdetector>
+   Browser JavaScript </tutorials/js/module-pointerdetector>
+   Node.js </tutorials/node/module-pointerdetector>

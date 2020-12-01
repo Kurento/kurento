@@ -2,7 +2,7 @@
 Kurento Client
 ==============
 
-Currently, the Kurento project provides implementations of the :doc:`Kurento API </features/kurento_api>` for two programming languages: *Java* and *JavaScript*.
+Currently, the Kurento project provides implementations of the :doc:`/features/kurento_protocol` for two programming languages: *Java* and *JavaScript*.
 
 In the future, additional Kurento Clients can be created, exposing the same kind of modularity in other languages such as Python, C/C++, PHP, etc.
 

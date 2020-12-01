@@ -20,7 +20,7 @@ Changed
 
 - *WebRtcEndpoint* now doesn't use reduced minimum interval for RTCP packets when the :term:`REMB` network congestion control algorithm is not in use.
 
-  :rfc:`3550` section 6.2 (*RTCP Transmission Interval*) recommends an initial value of 5 seconds for the interval between sending of RTCP packets. However, Kurento configures a much lower value, and RTCP packets are sent every 500 milliseconds. The reasoning for this is that the congestion control algorithm (:ref:`features-remb`) should be able to react as soon as possible when congestion occurs, and this is helped by a faster RTCP interval.
+  :rfc:`3550` section 6.2 (*RTCP Transmission Interval*) recommends an initial value of 5 seconds for the interval between sending of RTCP packets. However, Kurento configures a much lower value, and RTCP packets are sent every 500 milliseconds. The reasoning for this is that the congestion control algorithm (REMB) should be able to react as soon as possible when congestion occurs, and this is helped by a faster RTCP interval.
 
   The use case for this change is audio-only calls; Kurento doesn't support using the network congestion algorithm for audio streams, so it doesn't make sense to force sending high-frequency RTCP packets in this case. This has the secondary effect of greatly reducing consumed bandwidth when an audio track is muted via one of the browser's *RTCPeerConnection* methods.
 

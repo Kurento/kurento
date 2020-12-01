@@ -381,9 +381,9 @@ These questions relate to the concept of :term:`Media Pipeline` in Kurento, touc
 How many simultaneous participants are supported?
 -------------------------------------------------
 
-This depends entirely on the performance of the machine where Kurento Media Server is running. The best thing you can do to know is performing an actual load test and see it by yourself.
+This depends entirely on the performance of the machine where Kurento Media Server is running. The best thing you can do is performing an actual load test under your particular conditions.
 
-The folks working on `OpenVidu <https://openvidu.io/>`__ (a WebRTC platform that is based on Kurento) conducted a study that you might find interesting:
+The folks working on `OpenVidu <https://openvidu.io/>`__ (a WebRTC platform based on Kurento) conducted a study that you might find interesting:
 
 * `OpenVidu load testing: a systematic study of OpenVidu platform performance <https://medium.com/@openvidu/openvidu-load-testing-a-systematic-study-of-openvidu-platform-performance-b1aa3c475ba9>`__.
 
