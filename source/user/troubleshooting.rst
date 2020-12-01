@@ -270,10 +270,12 @@ If the Kurento Tutorials are showing an spinner, or your application is missing 
 
 
 
+.. _troubleshooting-low-quality:
+
 Low video quality
 -----------------
 
-You have several ways to override the default settings for variable bitrate:
+You have several ways to override the default settings for variable bitrate and network bandwidth detection:
 
 - Methods in `org.kurento.client.BaseRtpEndpoint <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__:
 
@@ -285,6 +287,19 @@ You have several ways to override the default settings for variable bitrate:
   - *setMinOutputBitrate()* / *setMaxOutputBitrate()*
 
     This setting is also configurable in ``/etc/kurento/modules/kurento/MediaElement.conf.ini``.
+
+Also, note that web browsers will adapt their output video quality according to what they detect is the network quality. Most browsers will adapt the **video bitrate**; in addition, Chrome also adapts the **video resolution**.
+
+Browsers offer internal stats through a special web address that you can use to verify what is being sent. For example, to check the outbound stats in Chrome:
+
+#. Open this URL: chrome://webrtc-internals/
+#. Look for the stat name "*Stats graphs for RTCOutboundRTPVideoStream (outbound-rtp)*".
+#. You will find the effective output video bitrate in ``[bytesSent_in_bits/s]``, and the output resolution in ``frameWidth`` and ``frameHeight``.
+
+You can also check what is the network quality estimation in Chrome:
+
+#. Look for the stat name "*Stats graphs for RTCIceCandidatePair (candidate-pair)*". Note that there might be several of these, but only one will be active.
+#. Find the output network bandwidth estimation in ``availableOutgoingBitrate``. Chrome will try to slowly increase its output bitrate, until it reaches this estimation.
 
 
 
@@ -746,6 +761,17 @@ Follow this checklist to see if any of these problems is preventing the Recorder
 - User is sleeping/hibernating the computer, and then possibly waking it up, while recording.
 - Check the browser information about the required media tracks, e.g. *track.readyState*.
 - Track user agents, ICE candidates, etc.
+
+
+
+Smaller or low quality video files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Kurento will just record whatever arrives as input, so if your recordings have less quality or lower resolution than expected, this is because the source video was already sent like that.
+
+In most situations, the real cause of this issue is the web browser encoding and sending a low bitrate or a low resolution video. Keep in mind that some browsers (Chrome, as of this writing) are able to dynamically adjust the output resolution; this means that the real size of the video coming out from Chrome will vary over time. Normally it starts small, and after some time it improves, when the browser detects that the available network bandwidth allows for it.
+
+Check this section to get some advice about how to investigate low quality issues: :ref:`troubleshooting-low-quality`.
 
 
 
