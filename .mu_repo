@@ -1,8 +1,17 @@
 repo=kurento-module-creator
+repo=kurento-maven-plugin
 repo=kms-cmake-utils
 repo=kms-jsonrpc
 repo=kms-core
 repo=kms-elements
 repo=kms-filters
 repo=kurento-media-server
+repo=module/kms-chroma
+repo=module/kms-crowddetector
+repo=module/kms-datachannelexample
+repo=module/kms-markerdetector
+repo=module/kms-opencv-plugin-sample
+repo=module/kms-platedetector
+repo=module/kms-plugin-sample
+repo=module/kms-pointerdetector
 serial=False
