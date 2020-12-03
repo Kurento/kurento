@@ -263,8 +263,8 @@ To configure a :term:`STUN` server or :term:`TURN` relay with Kurento Media Serv
 
   **Client API**
 
-  * Java: `setStunServerAddress </_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__, `setStunServerPort <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort-int->`__, `setTurnUrl <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__.
-  * JavaScript: `setStunServerAddress <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerAddress>`__, `setStunServerPort <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerPort>`__, `setTurnUrl <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__.
+  * Java: `setStunServerAddress <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__, `setStunServerPort <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort-int->`__, `setTurnUrl <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__.
+  * JavaScript: `setStunServerAddress <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__.
 
 .. note::
 
@@ -370,7 +370,7 @@ The equivalent definition for Docker Compose would look like this:
 Where are my recordings?
 ------------------------
 
-A frequent question, by users who are new to Docker, is where the *RecorderEndpoint* files are being stored, because they don't show up anywhere in the host file system. The answer is that KMS is recording files *inside the container's local storage*, in the path defined by the *RecorderEndpoint* constructor (`Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.Builder.html#Builder-org.kurento.client.MediaPipeline-java.lang.String->`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.RecorderEndpoint.html#.constructorParams>`__).
+A frequent question, by users who are new to Docker, is where the *RecorderEndpoint* files are being stored, because they don't show up anywhere in the host file system. The answer is that KMS is recording files *inside the container's local storage*, in the path defined by the *RecorderEndpoint* constructor (`Java <../_static/client-jsdoc/module-elements.RecorderEndpoint.html#.constructorParams>`__).
 
 In general, running a Docker container **won't modify your host system** and **won't create new files** in it, at least by default. This is an integral part of how Docker containers work. To get those files out, you should use the mechanisms that Docker offers, like for example a `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ to the recording path.
 

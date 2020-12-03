@@ -75,8 +75,8 @@ Read :ref:`faq-stun-needed` to learn about when you might need to use these, and
 
 **Client API**
 
-* Java: `setStunServerAddress <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__, `setStunServerPort <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort-int->`__, `setTurnUrl <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__.
-* JavaScript: `setStunServerAddress <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerAddress>`__, `setStunServerPort <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerPort>`__, `setTurnUrl <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__.
+* Java: `setStunServerAddress <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__.
+* JavaScript: `setStunServerAddress <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__.
 
 
 
@@ -95,8 +95,8 @@ To specify the network interface name(s) that KMS should use to communicate from
 
 **Client API**
 
-* Java: `setNetworkInterfaces <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__.
-* JavaScript: `setNetworkInterfaces <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__.
+* Java: `setNetworkInterfaces <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__.
+* JavaScript: `setNetworkInterfaces <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__.
 
 
 
@@ -138,8 +138,8 @@ When this feature is used, all of the Kurento IPv4 and/or IPv6 ICE candidates ar
 
 **Client API**
 
-* Java: `setExternalIPv4 <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalIPv4-java.lang.String->`__.
-* JavaScript: `setExternalIPv4 <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalIPv4>`__.
+* Java: `setExternalIPv4 <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalIPv4-java.lang.String->`__.
+* JavaScript: `setExternalIPv4 <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalIPv4>`__.
 
 
 
@@ -160,5 +160,5 @@ For the vast majority of use cases it is better to use the default MTU value of 
 
 **Client API**
 
-* Java: `setMtu <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__.
-* JavaScript: `setMtu <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.
+* Java: `setMtu <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__.
+* JavaScript: `setMtu <../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.

@@ -39,7 +39,7 @@ Kurento exposes a rich toolbox of media elements as part of its API:
 
    *Some Media Elements provided out of the box by Kurento*
 
-To better understand theses concepts it is recommended to take a look to the sections :doc:`/features/kurento_modules` and :doc:`/features/kurento_protocol`. You can also take a look at the API SDK implementations in :doc:`/features/kurento_client`.
+To better understand these concepts it is recommended to take a look to the sections :doc:`/features/kurento_modules` and :doc:`/features/kurento_protocol`. You can also take a look at the API SDK implementations in :doc:`/features/kurento_client`.
 
 Furthermore, Kurento has a plugin API that allows you to :doc:`write your own modules </user/writing_modules>`!
 
@@ -48,21 +48,21 @@ Furthermore, Kurento has a plugin API that allows you to :doc:`write your own mo
 JSON-RPC Protocol
 -----------------
 
-KMS exposes all its features through a JSON-RPC API called :doc:`/features/kurento_protocol`, which can be accessed directly through a WebSocket connection. For convenience, Kurento offers Java and JavaScript SDK wrappers around the protocol: :doc:`/features/kurento_client`. But you can use **any programming language**, simply writing your code directly against the protocol.
+KMS exposes all its API features through a JSON-RPC protocol called :doc:`/features/kurento_protocol`, which can be accessed directly through a WebSocket connection. For convenience, Kurento also offers Java and JavaScript SDKs: :doc:`/features/kurento_client`. But you can use **any programming language**, simply writing your code directly against the protocol.
 
-The picture below shows how to use Kurento Clients in three scenarios:
+The picture below shows how to use Kurento in three scenarios:
 
-- Using the Kurento JavaScript Client directly in a compliant WebRTC browser.
-- Using the Kurento Java Client in a Java EE Application Server.
-- Using the Kurento JavaScript Client in a Node.js server.
+- Using the Kurento JavaScript SDK directly from a WebRTC browser (only recommended for quick tests and development, not for production services).
+- Using the Kurento Java SDK in a standalone Java EE Application Server. The web browser is a client of this application for things like HTML, and :term:`WebRTC` signaling, while the application itself is client of KMS (using the Kurento Protocol to control KMS).
+- Using the Kurento JavaScript SDK in a Node.js Application Server. Again, the web browser is a client of this application, while the application is client of KMS.
 
 .. figure:: /images/kurento-clients-connection.png
    :align: center
-   :alt: Connection of Kurento Clients (Java and JavaScript) to Kurento Media Server
+   :alt: Connection of Kurento Java and JavaScript SDKs to Kurento Media Server
 
-   *Connection of Kurento Clients (Java and JavaScript) to Kurento Media Server*
+   *Connection of Kurento Java and JavaScript SDKs to Kurento Media Server*
 
-Complete examples for these three technologies is described in the :doc:`Tutorials section </user/tutorials>`.
+Complete examples for the supported SDK technologies are described in the :doc:`Tutorials section </user/tutorials>`.
 
 
 
@@ -84,7 +84,7 @@ What is a WebRTC media server?
 
    *Peer-to-peer WebRTC approach vs. WebRTC through a media server*
 
-Conceptually, a WebRTC media server is just a multimedia middleware where media traffic passes through when moving from source to destinations.
+Conceptually, a WebRTC media server is just a multimedia middleware where media traffic passes through when moving from source(s) to destination(s).
 
 Media servers are capable of processing incoming media streams and offer different outcomes, such as:
 
@@ -107,8 +107,8 @@ Why Kurento Media Server?
 **Kurento Media Server** (KMS) can be used in the *WebRTC Media Server* model, to allow for media transmission, processing, recording, and playback. KMS is built on top of the fantastic :term:`GStreamer` multimedia library, and provides the following features:
 
 *  Networked streaming protocols, including :term:`HTTP`, :term:`RTP` and :term:`WebRTC`.
-*  Group communications (MCU and SFU functionality) supporting both media mixing and media routing/dispatching.
-*  Generic support for filters implementing Computer Vision and Augmented Reality algorithms.
+*  Group communications (*both* MCU *and* SFU functionality) supporting media mixing and media routing/dispatching.
+*  Generic support for filters implementing **Computer Vision** and **Augmented Reality** algorithms.
 *  Media storage that supports writing operations for :term:`WebM` and :term:`MP4` and playing in all formats supported by *GStreamer*.
 *  Automatic media transcoding between any of the codecs supported by GStreamer, including VP8, H.264, H.263, AMR, OPUS, Speex, G.711, and more.
 

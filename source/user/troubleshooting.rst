@@ -277,12 +277,12 @@ Low video quality
 
 You have several ways to override the default settings for variable bitrate and network bandwidth detection:
 
-- Methods in `org.kurento.client.BaseRtpEndpoint <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__:
+- Methods in `org.kurento.client.BaseRtpEndpoint <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__:
 
   - *setMinVideoRecvBandwidth()* / *setMaxVideoRecvBandwidth()*
   - *setMinVideoSendBandwidth()* / *setMaxVideoSendBandwidth()*
 
-- Methods in `org.kurento.client.MediaElement <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/MediaElement.html>`__:
+- Methods in `org.kurento.client.MediaElement <../_static/client-javadoc/org/kurento/client/MediaElement.html>`__:
 
   - *setMinOutputBitrate()* / *setMaxOutputBitrate()*
 
@@ -471,7 +471,7 @@ The solution is to ensure that both peers are able to find a match in their supp
 
 This issue is commonly caused by setting an invalid ID to any of the client method calls. The usual solution is to provide a null identifier, forcing the server to generate a new one for the object.
 
-For example, a Node.js application wanting to use the *ImageOverlayFilter* (`Java API <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/ImageOverlayFilter.html>`__, `JavaScript API <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html>`__) might mistakenly try to provide an invalid ID in the `addImage() <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-filters.ImageOverlayFilter.html#.addImage>`__ call:
+For example, a Node.js application wanting to use the *ImageOverlayFilter* (`Java API <../_static/client-jsdoc/module-filters.ImageOverlayFilter.html#.addImage>`__ call:
 
 .. code-block:: js
 
@@ -681,7 +681,7 @@ PlayerEndpoint
 RTSP broken audio
 ~~~~~~~~~~~~~~~~~
 
-If you have your own RTSP tool generating OPUS encoded audio to be consumed in Kurento with a *PlayerEndpoint* (`Java <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/PlayerEndpoint.html>`__, `JavaScript <https://doc-kurento.readthedocs.io/en/latest/_static/client-jsdoc/module-elements.PlayerEndpoint.html>`__), and the resulting audio is very choppy and robotic, you should start by verifying that your encoding process is configured correctly for the OPUS frame size used in WebRTC.
+If you have your own RTSP tool generating OPUS encoded audio to be consumed in Kurento with a *PlayerEndpoint* (`Java <../_static/client-jsdoc/module-elements.PlayerEndpoint.html>`__), and the resulting audio is very choppy and robotic, you should start by verifying that your encoding process is configured correctly for the OPUS frame size used in WebRTC.
 
 This was the case for a user who later shared with us the reasons for the bad quality audio they were perceiving:
 
@@ -744,11 +744,11 @@ If you are trying to generate a video recording, keep in mind that **the endpoin
 
 .. ifconfig:: "|VERSION_RELEASE|" == "true"
 
-   Quoting from the `Client documentation <https://doc-kurento.readthedocs.io/en/|VERSION_DOC|/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
+   Quoting from the `Client documentation <../_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
 
 .. ifconfig:: "|VERSION_RELEASE|" != "true"
 
-   Quoting from the `Client documentation <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
+   Quoting from the `Client documentation <../_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
 
     It is recommended to start recording only after media arrives, either to the endpoint that is the source of the media connected to the recorder, to the recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut events, and synchronize the recording with the moment media comes in. In any case, nothing will be stored in the file until the first media packets arrive.
 
