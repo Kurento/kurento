@@ -777,19 +777,18 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj, GError ** error)
   state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (self->priv->stopped) {
-    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
-        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopped");
-    GST_ERROR_OBJECT (self, "No stop");
-    return FALSE;
+    GST_WARNING_OBJECT (self,
+        "Stop requested, but recorder is already stopped");
+    return TRUE;
   } else if (state == KMS_URI_ENDPOINT_STATE_STOP ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_STOPPING) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
-        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopping");
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Stop requested, but recorder is already stopping");
     return FALSE;
   } else if (self->priv->transition != KMS_RECORDER_ENDPOINT_COMPLETED) {
     g_set_error (error, KMS_URI_ENDPOINT_ERROR,
         KMS_URI_ENDPOINT_INVALID_TRANSITION,
-        "Can not go to stop. Recorder is %s",
+        "Cannot stop. Recorder status is '%s'",
         transition[self->priv->transition]);
     return FALSE;
   }
