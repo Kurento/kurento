@@ -20,16 +20,18 @@ Modular Pipelines
 
    *Simple Example of a Media Pipeline*
 
-A Kurento Pipeline is based on composable elements such as WebRTC or RTP receivers, recorders, mixers, etc. that can be mix-and-matched, activated, or deactivated at any point in time, even when the media is already flowing.
+Kurento provides building blocks such as **WebRTC** and **RTP** senders & receivers, audio/video **mixers**, **media recording**, and more. These *Media Elements* are self-contained objects that hold a specific media capability; they are extremely easy to **compose** by inserting, activating, or deactivating them at any point in time, even when the media is already flowing.
+
+It is also very easy to **extend** Kurento and write your own elements, which can then be integrated with the already existing ones!
+
+Application developers use Kurento to control a so-called *Media Pipeline* with the desired Media Elements, effectively forming a fully customized architecture that is tailored to their needs. Several built-in modules are provided for **group communications**, **transcoding** of media formats, and **routing** of audiovisual flows.
+
+Given the flexible modular approach that Kurento offers, it is possible to achieve both **Selective Forwarding Unit** (*SFU*) and **Multipoint Conferencing Unit** (*MCU*) application architectures.
 
 
 
 Built-in Modules
 ----------------
-
-Kurento is based on the concept of **Media Elements**: self-contained objects that hold a specific media capability. Several modules are provided for **group communications**, **transcoding** of media formats, **recording**, **mixing**, and **routing** of audiovisual flows.
-
-For example, the *WebRtcEndpoint* element is able to send and receive :term:`WebRTC` media streams; the *RecorderEndpoint* element can store media streams into a file system; the *FaceOverlayFilter* element detects faces on the exchanged video streams and adds a specific overlaid image on top of them; and so on.
 
 Kurento exposes a rich toolbox of media elements as part of its API:
 
@@ -39,9 +41,16 @@ Kurento exposes a rich toolbox of media elements as part of its API:
 
    *Some Media Elements provided out of the box by Kurento*
 
-To better understand these concepts it is recommended to take a look to the sections :doc:`/features/kurento_modules` and :doc:`/features/kurento_protocol`. You can also take a look at the API SDK implementations in :doc:`/features/kurento_client`.
+For example:
 
-Furthermore, Kurento has a plugin API that allows you to :doc:`write your own modules </user/writing_modules>`!
+* The **WebRtcEndpoint** is able to send and receive :term:`WebRTC` media streams.
+* The **PlayerEndpoint** can be used to consume media from **RTSP**, **HTTP**, or local sources.
+* The **RecorderEndpoint** can store media streams into a local or remote file system.
+* The **FaceOverlayFilter** is a simple Computer Vision example that detects people's faces on the video streams, to add an overlay image on top of them.
+
+Jump straight into the :doc:`/user/tutorials` to see practical examples of all these elements, used in applications built with kurento.
+
+To learn more, read the section about :doc:`/features/kurento_modules`. Furthermore, remember that Kurento has a plugin API that allows you to :doc:`write your own modules </user/writing_modules>`!
 
 
 
@@ -62,19 +71,12 @@ The picture below shows how to use Kurento in three scenarios:
 
    *Connection of Kurento Java and JavaScript SDKs to Kurento Media Server*
 
-Complete examples for the supported SDK technologies are described in the :doc:`Tutorials section </user/tutorials>`.
+Complete examples for the supported SDK technologies are described in :doc:`/user/tutorials`.
 
 
 
-WebRTC implementation
----------------------
-
-KMS offers a functional implementation of the whole :term:`WebRTC` stack. Use it to send or receive media from web browsers such as Firefox, Safari, or Chrome.
-
-
-
-What is a WebRTC media server?
-==============================
+Why a WebRTC media server?
+==========================
 
 `WebRTC <https://webrtc.org/>`__ is a set of protocols and APIs that provide web browsers and mobile applications with Real-Time Communications (RTC) capabilities over peer-to-peer connections. It was conceived to allow connecting browsers without intermediate helpers or services, but in practice this P2P model falls short when trying to create more complex applications. For this reason, in most cases a central media server is required.
 
