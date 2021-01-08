@@ -765,15 +765,20 @@ Quoting from the `Client documentation <../_static/client-javadoc/org/kurento/cl
 
     It is recommended to start recording only after media arrives, either to the endpoint that is the source of the media connected to the recorder, to the recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut events, and synchronize the recording with the moment media comes in. In any case, nothing will be stored in the file until the first media packets arrive.
 
-Follow this checklist to see if any of these problems is preventing the RecorderEndpoint from working correctly:
+Follow this issue checklist to see if any of them is preventing the RecorderEndpoint from working correctly:
 
-- The RecorderEndpoint is configured for both audio and video, but only video (or only audio) is being provided by the application.
-- Availability of audio/video devices at recorder client initialization, and just before starting the recording.
-- User is disconnecting existing hardware, or maybe connecting new hardware (usb webcams, mic, etc).
-- User is clicking "*Deny*" when asked to allow access to microphone/camera by the browser.
-- User is sleeping/hibernating the computer, and then possibly waking it up, while recording.
-- Check the browser information about the required media tracks, e.g. *track.readyState*.
-- Track user agents, ICE candidates, etc.
+* The RecorderEndpoint was connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__), which assumes both audio and video, but only video (or only audio) is arriving:
+
+  - Monitor the :ref:`MediaFlowInStateChange <events-mediaflowin>` and :ref:`MediaFlowOutStateChange <events-mediaflowout>` events from all MediaElements.
+  - Make sure that the element providing media (the *source*) is firing a *MediaFlowOut* event, and that the RecorderEndpoint is firing a corresponding *MediaFlowIn* event.
+  - If your recording should be only-audio or only-video, use the ``connect(MediaElement, MediaType)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement-org.kurento.client.MediaType->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__).
+
+* Check the availability of audio/video devices at recorder client initialization, and just before starting the recording.
+* User is disconnecting existing hardware, or maybe connecting new hardware (usb webcams, mic, etc).
+* User is clicking "*Deny*" when asked to allow access to microphone/camera by the browser.
+* User is sleeping/hibernating the computer, and then possibly waking it up, while recording.
+* Check the browser information about the required media tracks, e.g. ``track.readyState``.
+* Track user agents, ICE candidates, etc.
 
 
 

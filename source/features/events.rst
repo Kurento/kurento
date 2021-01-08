@@ -45,6 +45,8 @@ ElementDisconnected
 
 
 
+.. _events-mediaflowin:
+
 MediaFlowInStateChange
 ----------------------
 
@@ -53,6 +55,8 @@ MediaFlowInStateChange
 - State = *NotFlowing*: The Element is not receiving any input data from the Pipeline.
 
 
+
+.. _events-mediaflowout:
 
 MediaFlowOutStateChange
 -----------------------
