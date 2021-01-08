@@ -3,51 +3,114 @@
     {
       "name": "PlayerEndpoint",
       "extends": "UriEndpoint",
-      "doc": "
-      <p>
-      Retrieves content from seekable or non-seekable sources, and injects them into :term:`KMS`, so they can be delivered to any Filter or Endpoint in the same MediaPipeline. Following URI schemas are supported:
-      <ul>
-        <li>
-          Files: Mounted in the local file system.
-          <ul><li>file:///path/to/file</li></ul>
-        </li>
-        <li>
-          RTSP: Those of IP cameras would be a good example.
-          <ul>
-            <li>rtsp://<server-ip></li>
-            <li>rtsp://username:password@<server-ip></li>
-          </ul>
-        </li>
-        <li>
-          HTTP: Any file available in an HTTP server
-          <ul>
-            <li>http(s)://<server-ip>/path/to/file</li>
-            <li>http(s)://username:password@<server-ip>/path/to/file</li>
-          </ul>
-        </li>
-      </ul>
-      </p>
-      <p>
-      For the player to stream the contents of the file, the server must have access to the resource. In case of local files, the user running the process must have read permissions over the file. For network resources, the path to the resource must be accessible: IP and port access not blocked, correct credentials, etc.The resource location can’t be changed after the player is created, and a new player should be created for streaming a different resource.
-      </p>
-      <p>
-      The list of valid operations is
-      <ul>
-        <li>*play*: starts streaming media. If invoked after pause, it will resume playback.</li>
-        <li>*stop*: stops streaming media. If play is invoked afterwards, the file will be streamed from the beginning.</li>
-        <li>*pause*: pauses media streaming. Play must be invoked in order to resume playback.</li>
-        <li>*seek*: If the source supports “jumps” in the timeline, then the PlayerEndpoint can
-          <ul>
-            <li>*setPosition*: allows to set the position in the file.</li>
-            <li>*getPosition*: returns the current position being streamed.</li>
-          </ul>
-        </li>
-      </ul>
-      </p>
-      <p>
-      <h2>Events fired:</h2>
-      <ul><li>EndOfStreamEvent: If the file is streamed completely.</li></ul>
-      </p>
+      "doc": "Retrieves content from external sources.
+<p>
+  PlayerEndpoint will access the given resource, read all available data, and
+  inject it into :term:`KMS`. Once this is is done, the injected video or audio
+  will be available for passing through any other Filter or Endpoint to which
+  the PlayerEndpoint gets connected.
+</p>
+<p>
+  The source can provide either seekable or non-seekable media; this will
+  dictate whether the PlayerEndpoint is able (or not) to seek through the file,
+  for example to jump to any given timestamp.
+</p>
+<p>The <strong>Source URI</strong> supports these formats:</p>
+<ul>
+  <li>
+    File: A file path that will be read from the local file system. Example:
+    <ul>
+      <li><code>file:///path/to/file</code></li>
+    </ul>
+  </li>
+  <li>
+    HTTP: Any file available in an HTTP server. Examples:
+    <ul>
+      <li><code>http(s)://{server-ip}/path/to/file</code></li>
+      <li>
+        <code>
+          http(s)://{username}:{password}@{server-ip}:{server-port}/path/to/file
+        </code>
+      </li>
+    </ul>
+  </li>
+  <li>
+    RTSP: Typically used to capture a feed from an IP Camera. Examples:
+    <ul>
+      <li><code>rtsp://{server-ip}</code></li>
+      <li>
+        <code>
+          rtsp://{username}:{password}@{server-ip}:{server-port}/path/to/file
+        </code>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <strong>
+      NOTE (for current versions of Kurento 6.x): special characters are not
+      supported in <code>{username}</code> or <code>{password}</code>.
+    </strong>
+    This means that <code>{username}</code> cannot contain colons
+    (<code>:</code>), and <code>{password}</code> cannot contain 'at' signs
+    (<code>@</code>). This is a limitation of GStreamer 1.8 (the underlying
+    media framework behind Kurento), and is already fixed in newer versions
+    (which the upcoming Kurento 7.x will use).
+  </li>
+  <li>
+    <strong>
+      NOTE (for upcoming Kurento 7.x): special characters in
+      <code>{username}</code> or <code>{password}</code> must be url-encoded.
+    </strong>
+    This means that colons (<code>:</code>) should be replaced with
+    <code>%3A</code>, and 'at' signs (<code>@</code>) should be replaced with
+    <code>%40</code>.
+  </li>
+</ul>
+<p>
+  Note that
+  <strong> PlayerEndpoint requires read permissions to the source </strong>
+  ; otherwise, the media server won't be able to retrieve any data, and an
+  :rom:evt:`Error` will be fired. Make sure your application subscribes to this
+  event, otherwise troubleshooting issues will be difficult.
+</p>
+
+<p>The list of valid operations is:</p>
+<ul>
+  <li>
+    <strong><code>play</code></strong>
+    : Starts streaming media. If invoked after pause, it will resume playback.
+  </li>
+  <li>
+    <strong><code>stop</code></strong>
+    : Stops streaming media. If play is invoked afterwards, the file will be
+    streamed from the beginning.
+  </li>
+  <li>
+    <strong><code>pause</code></strong>
+    : Pauses media streaming. Play must be invoked in order to resume playback.
+  </li>
+  <li>
+    <strong><code>seek</code></strong>
+    : If the source supports seeking to a different time position, then the
+    PlayerEndpoint can:
+    <ul>
+      <li>
+        <strong><code>setPosition</code></strong>
+        : Allows to set the position in the file.
+      </li>
+      <li>
+        <strong><code>getPosition</code></strong>
+        : Returns the current position being streamed.
+      </li>
+    </ul>
+  </li>
+</ul>
+<h2>Events fired</h2>
+<ul>
+  <li>
+    <strong>EndOfStreamEvent</strong>: If the file is streamed completely.
+  </li>
+</ul>
       ",
       "constructor":
         {
