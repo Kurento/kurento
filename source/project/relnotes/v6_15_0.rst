@@ -101,7 +101,7 @@ When a WebRTC implementation creates a new SDP Offer in order to negotiate usage
 
 **RecorderEndpoint HTTP docs**.
 
-Client docs (`Java <../_static/client-jsdoc/module-elements.RecorderEndpoint.html>`__) wrongly stated that the HTTP recording mode requires an HTTP server with support for the ``PUT`` method. This was wrong, and now it correctly explains that the HTTP method is ``POST`` in chunked mode (using the HTTP header ``Transfer-Encoding: chunked``).
+Client docs (`Java <../_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__, `JavaScript <../_static/client-jsdoc/module-elements.RecorderEndpoint.html>`__) wrongly stated that the HTTP recording mode requires an HTTP server with support for the ``PUT`` method. This was wrong, and now it correctly explains that the HTTP method is ``POST`` in chunked mode (using the HTTP header ``Transfer-Encoding: chunked``).
 
 **GStreamer Merge Request 38**.
 
