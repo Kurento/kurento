@@ -437,6 +437,25 @@ Kurento Client does not currently support Node.js v10 (LTS), you will have to us
 
 
 
+.. _troubleshooting-app-proxy:
+
+Connection ends exactly after 60 seconds
+----------------------------------------
+
+This is typically caused by an intermediate proxy, which is prematurely ending the WebSocket session from the Application Server, and thus making the media server believe that all resources should be released.
+
+For example, if **Nginx Reverse Proxy** is used, the default value of `proxy_read_timeout <http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout>`__ is **60 seconds**, but the default Kurento :ref:`Ping/Pong keep-alive <protocol-ping>` mechanism works in intervals of 240 seconds.
+
+This issue can also manifest itself with this (misleading) error message in the browser's JavaScript console:
+
+.. code-block:: text
+
+   WebRTC: ICE failed, add a TURN server and see about:webrtc for more details
+
+The solution is to increase the timeout value in your proxy settings.
+
+
+
 "Expects at least 4 fields"
 ---------------------------
 
@@ -530,7 +549,7 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 
       > The problem was that our Socket.IO client did not correctly *URL-Encode* its JSON payload when *xhr-polling*, which resulted in all "plus" signs ('+') being changed into spaces (' ') on the server. This meant that the *ufrag* in the client's SDP was invalid if it contained a plus sign! Only some of the connections failed because not all *ufrag* contain plus signs.
 
-* If WebRTC seems to disconnect exactly after some amount of time, every single time, **watch out for proxy timeouts**. Sometimes you have to extend the timeout for the site that is being hit with the problem.
+* If WebRTC seems to disconnect exactly after some amount of time, every single time, **watch out for proxy timeouts**. Sometimes you have to extend the timeout for the site that is being hit with the problem. See also: :ref:`troubleshooting-app-proxy`.
 
 * Have a look at these articles about troubleshooting WebRTC:
 

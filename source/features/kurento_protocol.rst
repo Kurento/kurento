@@ -123,6 +123,8 @@ The Kurento Protocol allows that Kurento Media Server sends requests to clients:
 
 
 
+.. _protocol-ping:
+
 Ping
 ----
 
