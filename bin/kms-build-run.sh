@@ -420,15 +420,15 @@ if [[ -n "${GST_DEBUG:-}" ]]; then
     )
 else
     RUN_VARS+=(
-        "GST_DEBUG='3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
+        "GST_DEBUG='2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
     )
 fi
 
 # (Optional) Extra GST_DEBUG categories
-# export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
-# export GST_DEBUG="${GST_DEBUG:-3},baseparse:6,h264parse:6"
-# export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
-# export GST_DEBUG="${GST_DEBUG:-3},kmswebrtcsession:6"
+# export GST_DEBUG="${GST_DEBUG:-2},aggregator:5,compositor:5,compositemixer:5"
+# export GST_DEBUG="${GST_DEBUG:-2},baseparse:6,h264parse:6"
+# export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,agnosticbin*:5"
+# export GST_DEBUG="${GST_DEBUG:-2},kmswebrtcsession:6"
 
 
 
