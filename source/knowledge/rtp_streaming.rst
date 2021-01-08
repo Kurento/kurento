@@ -24,7 +24,7 @@ To run these examples, follow these initial steps:
 
    .. code-block:: shell
 
-      export GST_DEBUG=3
+      export GST_DEBUG="2"
 
 3. Copy & paste these commands into a console.
 

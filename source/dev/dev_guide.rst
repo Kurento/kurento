@@ -576,7 +576,7 @@ KMS uses the Check unit testing framework for C (https://libcheck.github.io/chec
    .. code-block:: shell
 
       export GST_DEBUG_NO_COLOR=1
-      export GST_DEBUG="3,check:5"
+      export GST_DEBUG="2,check:5"
       make check
 
 The log output of the whole test suite will get saved into the file *./Testing/Temporary/LastTest.log*. To find the starting point of each individual test inside this log file, search for the words "**test start**". For the start of a specific test, search for "**{TestName}: test start**". For example:

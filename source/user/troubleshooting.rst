@@ -160,7 +160,7 @@ If you see that transcoding is active at some point, you may get a bit more info
 
 .. code-block:: shell
 
-   export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
+   export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,agnosticbin*:5"
 
 in your daemon settings file, ``/etc/default/kurento-media-server``.
 
@@ -723,7 +723,7 @@ You can check if this problem is affecting you by running with DEBUG :ref:`loggi
 
 .. code-block:: shell
 
-   export GST_DEBUG="${GST_DEBUG:-3},rtpjitterbuffer:5"
+   export GST_DEBUG="${GST_DEBUG:-2},rtpjitterbuffer:5"
    /usr/bin/kurento-media-server 2>&1 | grep -P 'rtpjitterbuffer.*(Received packet|Queue full)'
 
 With this command, a new line will get printed for each single *Received packet*, plus an extra line will appear informing about *Queue full* whenever a packet is dropped.

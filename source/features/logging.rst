@@ -92,7 +92,7 @@ Logging categories and levels can be filtered by two methods:
 
   .. code-block:: shell
 
-     export GST_DEBUG="3,Kurento*:4,kms*:4"
+     export GST_DEBUG="2,Kurento*:4,kms*:4"
      /usr/bin/kurento-media-server
 
 If you are using the native packages (installing KMS with *apt-get*) and running KMS as a system service, then you can also configure the *GST_DEBUG* variable in the KMS service settings file, ``/etc/default/kurento-media-server``:
@@ -100,7 +100,7 @@ If you are using the native packages (installing KMS with *apt-get*) and running
   .. code-block:: shell
 
      # Logging level.
-     export GST_DEBUG="3,Kurento*:4,kms*:4"
+     export GST_DEBUG="2,Kurento*:4,kms*:4"
 
 Logs will be colored by default, but colors can be explicitly disabled in the same two ways: either with ``--gst-debug-no-color`` or with ``export GST_DEBUG_NO_COLOR=1``. When running KMS as a system service, this option is enabled in order to generate clean logs without strange terminal ANSI color escape sequences.
 
@@ -115,7 +115,7 @@ First, **start from the default levels**:
 
   .. code-block:: shell
 
-     export GST_DEBUG="3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
+     export GST_DEBUG="2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 
 Then **add new levels** according to your needs:
 
@@ -123,7 +123,7 @@ Then **add new levels** according to your needs:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5"
+     export GST_DEBUG="${GST_DEBUG:-2},KurentoMediaElementImpl:5"
 
   - "KurentoMediaElementImpl:5" shows *MediaFlowIn* and *MediaFlowOut* state changes, allowing know if media is actually flowing between endpoints (see :ref:`events-mediaelement`).
 
@@ -131,7 +131,7 @@ Then **add new levels** according to your needs:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,KurentoMediaElementImpl:5,agnosticbin*:5"
+     export GST_DEBUG="${GST_DEBUG:-2},KurentoMediaElementImpl:5,agnosticbin*:5"
 
   - "KurentoMediaElementImpl:5" shows *MediaTranscoding* state changes.
   - "agnosticbin*:5" shows the requested and available codecs on Endpoints. When there is a mismatch, transcoding is automatically enabled.
@@ -140,10 +140,10 @@ Then **add new levels** according to your needs:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,Kurento*:5,KurentoWebSocket*:4"
-     export GST_DEBUG="$GST_DEBUG,kmssdpsession:5"
-     export GST_DEBUG="$GST_DEBUG,sdp*:5"
-     export GST_DEBUG="$GST_DEBUG,webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
+     export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,KurentoWebSocket*:4"
+     export GST_DEBUG="${GST_DEBUG:-2},kmssdpsession:5"
+     export GST_DEBUG="${GST_DEBUG:-2},sdp*:5"
+     export GST_DEBUG="${GST_DEBUG:-2},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
 
   - "Kurento*:5" shows all state changes (*MediaFlowIn*, *MediaFlowOut*, *MediaTranscoding*, etc). Use "KurentoWebSocket*:4" to avoid getting all verbose logs about the WebSocket communications.
   - "kmssdpsession:5" prints the SDP messages (SDP Offer/Answer negotiation) processed by KMS.
@@ -158,19 +158,19 @@ Then **add new levels** according to your needs:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,kmsremb:5"
+     export GST_DEBUG="${GST_DEBUG:-2},kmsremb:5"
 
 * **PlayerEndpoint**:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
+     export GST_DEBUG="${GST_DEBUG:-2},kmselement:5,playerendpoint:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
 
 * **RecorderEndpoint**:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,basemediamuxer:5,KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5,curl*:5"
+     export GST_DEBUG="${GST_DEBUG:-2},basemediamuxer:5,KurentoRecorderEndpointImpl:4,recorderendpoint:5,qtmux:5,curl*:5"
 
 Other less commonly used logging levels are:
 
@@ -178,25 +178,25 @@ Other less commonly used logging levels are:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,imageoverlay:5,logooverlay:5"
+     export GST_DEBUG="${GST_DEBUG:-2},imageoverlay:5,logooverlay:5"
 
 * **RTP Synchronization**:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
+     export GST_DEBUG="${GST_DEBUG:-2},kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
 * **JSON-RPC** API server calls:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,KurentoWebSocket*:5"
+     export GST_DEBUG="${GST_DEBUG:-2},KurentoWebSocket*:5"
 
 * **Unit tests**:
 
   .. code-block:: shell
 
-     export GST_DEBUG="$GST_DEBUG,check:5,test_base:5"
+     export GST_DEBUG="${GST_DEBUG:-2},check:5,test_base:5"
 
 
 
@@ -228,7 +228,7 @@ Example:
 .. code-block:: shell
 
    export G_MESSAGES_DEBUG="libnice,libnice-stun"
-   export GST_DEBUG="$GST_DEBUG,glib:5"
+   export GST_DEBUG="${GST_DEBUG:-2},glib:5"
    /usr/bin/kurento-media-server
 
 You can also set this configuration in the Kurento service settings file, which gets installed at ``/etc/default/kurento-media-server``.
