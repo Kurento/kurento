@@ -326,10 +326,25 @@ The default **Maximum Transmission Unit (MTU)** in the official `libwebrtc <http
 
 
 
-Initial bandwidth estimation
-============================
+Bandwidth Estimation
+====================
 
 WebRTC **bandwidth estimation (BWE)** was implemented first with *Google REMB*, and later with *Transport-CC*. Clients need to start "somewhere" with their estimations, and the official `libwebrtc <https://webrtc.org/>`__ implementation chose to do so at 300 kbps (kilobits per second) (`source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/api/transport/bitrate_settings.h#45>`__). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same initial BWE:
 
 * `Chrome source code <https://codesearch.chromium.org/chromium/src/third_party/webrtc/api/transport/bitrate_settings.h?rcl=f092e4d0ff252f52404a0c867f20cf103bbaa663&l=45>`__.
 * `Firefox source code <https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/call/call.h#84>`__.
+
+
+
+Video Encoding
+==============
+
+The WebRTC **maximum video bitrate** is limited by a simple calculation based on its **width** and **height**:
+
+* 600 kbps if ``width * height <= 320 * 240``.
+* 1700 kbps if ``width * height <= 640 * 480``.
+* 2000 kbps (2 Mbps) if ``width * height <= 960 * 540``.
+* 2500 kbps (2.5 Mbps) for bigger video sizes.
+* Even for bigger sizes, bitrate max is 1200 kbps if video is a screen capture.
+
+`libwebrtc source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/webrtc_video_engine.cc#231>`__ (``GetMaxDefaultVideoBitrateKbps``).
