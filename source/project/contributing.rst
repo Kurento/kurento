@@ -2,6 +2,8 @@
 Contribution Guide
 ==================
 
+.. contents:: Table of Contents
+
 The Kurento project accepts contributions from third parties in all kinds of forms:
 
 - Bug reports

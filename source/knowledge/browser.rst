@@ -6,6 +6,8 @@ This page is a compendium of information that can be useful to work with or conf
 
 Example commands are written for a Linux shell, because that's what Kurento developers use in their day to day. But most if not all of these commands should be easily converted for use on Windows or Mac systems.
 
+.. contents:: Table of Contents
+
 
 
 Firefox

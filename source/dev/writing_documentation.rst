@@ -2,6 +2,8 @@
 Writing this documentation
 ==========================
 
+.. contents:: Table of Contents
+
 Although each of the Kurento repositories contains a *README* file, the main source of truth for up-to-date information about Kurento is *this* documentation you are reading right now, hosted at Read the Docs.
 
 The final deliverable form of the documentation is obtained by following a 3-step process:

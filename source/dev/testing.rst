@@ -2,6 +2,8 @@
 Testing
 =======
 
+.. contents:: Table of Contents
+
 Software testing is a broad term within software engineering encompassing a wide spectrum of different concepts. Depending on the size of the System Under Test (SUT) and the scenario in which it is exercised, testing can be carried out at different levels. There is no universal classification for all the different testing levels. Nevertheless, the following levels are broadly accepted:
 
 - Unit: individual program units are tested. Unit tests typically focus on the functionality of individual objects or methods.

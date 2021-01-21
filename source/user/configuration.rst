@@ -2,6 +2,8 @@
 Configuration
 =============
 
+.. contents:: Table of Contents
+
 Most (but not all, see below) of the settings in Kurento can be set statically in configuration files:
 
 * ``/etc/kurento/kurento.conf.json``

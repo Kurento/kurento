@@ -2,6 +2,8 @@
 Installation Guide
 ==================
 
+.. contents:: Table of Contents
+
 **Kurento Media Server (KMS)** is compiled and provided for installation by the Kurento team members, in a variety of forms. The only officially supported processor architecture is **64-bit x86**, so for other platforms (such as ARM) you will have to build from sources.
 
 * :ref:`Using an EC2 instance <installation-aws>` in the `Amazon Web Services`_ (AWS) cloud service is suggested to users who don't want to worry about properly configuring a server and all software packages, because the provided template does all this automatically.

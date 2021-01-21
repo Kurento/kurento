@@ -2,6 +2,8 @@
 Tutorials
 =========
 
+.. contents:: Table of Contents
+
 This section contains tutorials showing how to use the Kurento framework to build different types of :term:`WebRTC` and multimedia applications.
 
 .. note::

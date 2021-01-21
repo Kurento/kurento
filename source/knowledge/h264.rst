@@ -4,12 +4,12 @@ H.264 video codec
 
 This page is all about H.264, also known as **Advanced Video Coding (AVC)**, **MPEG-4 Part 10**, or **MPEG-4 AVC**.
 
-Main resources:
+.. contents:: Table of Contents
+
+Sources:
 
 * `H.264 Specification`_
 * :wikipedia:`Advanced Video Coding`
-
-.. contents:: Table of Contents
 
 
 

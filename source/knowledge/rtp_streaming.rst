@@ -2,8 +2,6 @@
 RTP Streaming Commands
 ======================
 
-.. contents:: Table of Contents
-
 In this document you will find several examples of command-line programs that can be used to generate RTP and SRTP streams. These streams can then be used to feed any general (S)RTP receiver, although the intention here is to use them to connect an *RtpEndpoint* from a Kurento Media Server pipeline.
 
 The tool used for all these programs is `gst-launch <https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html>`__, part of the GStreamer multimedia library.
@@ -38,6 +36,8 @@ To run these examples, follow these initial steps:
 5. Start pipeline (e.g. in the :doc:`RTP Receiver tutorial </tutorials/java/tutorial-rtp-receiver>`, push "Start")
 6. From the logs: get the KMS port from the SDP Answer (in the RTP Receiver tutorial, this appears in the web page)
 7. Set *PEER_V* in the *gst-launch* commands to the KMS port.
+
+.. contents:: Table of Contents
 
 
 
