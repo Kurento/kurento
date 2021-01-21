@@ -110,6 +110,7 @@ Information about *development of Kurento itself* is also available:
    /knowledge/nat
    /knowledge/rtp_streaming
    /knowledge/safari
+   /knowledge/selfsigned_certs
    /glossary
 
 

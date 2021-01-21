@@ -14,7 +14,7 @@ Securing Application Servers
 Configure a Java server to use HTTPS
 ------------------------------------
 
-* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :ref:`features-security-selfsigned`.
+* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :doc:`/knowledge/selfsigned_certs`.
 
 * Convert your PEM certificate to either `Java KeyStore <https://en.wikipedia.org/wiki/Java_KeyStore>`__ (*JKS*) or `PKCS#12 <https://en.wikipedia.org/wiki/PKCS_12>`__. The former is a proprietary format limited to the Java ecosystem, while the latter is an industry-wide used format. To make a PKCS#12 file from an already existing PEM certificate, run these commands:
 
@@ -55,7 +55,7 @@ Configure a Java server to use HTTPS
 Configure a Node.js server to use HTTPS
 ---------------------------------------
 
-* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :ref:`features-security-selfsigned`.
+* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :doc:`/knowledge/selfsigned_certs`.
 
 * Add the following changes to your *server.js*, in order to enable HTTPS:
 
@@ -111,7 +111,7 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
    sudo apt-get install --yes nodejs
    sudo npm install -g http-server
 
-* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :ref:`features-security-selfsigned`.
+* Obtain a certificate. For this, either request one from a trusted Certification Authority (*CA*), or generate your own one as explained here: :doc:`/knowledge/selfsigned_certs`.
 
 * Start the HTTPS web server, using the SSL certificate:
 
@@ -165,7 +165,7 @@ If you use a signed certificate issued by a trusted Certification Authority (*CA
 
 However, if you are going to use an untrusted self-signed certificate (typically during development), there is still more work to do.
 
-Generate your own certificate as explained here: :ref:`features-security-selfsigned`. Now, because self-signed certificates are untrusted by nature, client browsers and server applications will reject it by default. You'll need to force all consumers of the certificate to accept it:
+Generate your own certificate as explained here: :doc:`/knowledge/selfsigned_certs`. Now, because self-signed certificates are untrusted by nature, client browsers and server applications will reject it by default. You'll need to force all consumers of the certificate to accept it:
 
 * **Java applications**. Follow the instructions of this link: `SunCertPathBuilderException: unable to find valid certification path to requested target <https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__ (`archive <https://web.archive.org/web/20200101052022/https://mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`__).
 
@@ -230,67 +230,3 @@ WebRTC uses :wikipedia:`DTLS <Datagram_Transport_Layer_Security>` for media data
 To do so, edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set either *pemCertificateRSA* or *pemCertificateECDSA* with a file containing the concatenation of your certificate (chain) file(s) and the private key.
 
 Setting a custom certificate for DTLS is needed, for example, for situations where you have to manage multiple media servers and want to make sure that all of them use the same certificate for their connections. Some browsers, such as Firefox, require this in order to allow multiple WebRTC connections from the same tab to different KMS instances.
-
-
-
-.. _features-security-selfsigned:
-
-Generating a self-signed certificate
-====================================
-
-You need to provide a valid SSL certificate in order to enable all sorts of security features, ranging from HTTPS to Secure WebSocket (``wss://``). For this, there are two alternatives:
-
-* Obtain a certificate from a trusted Certification Authority (*CA*). This should be your primary choice, and will be necessary for production-grade deployments.
-
-* Create your own untrusted self-signed certificate. This can ease operations during the phase of software development. You can search articles online that explain how to do this, for example `this one <https://www.akadia.com/services/ssh_test_certificate.html>`__.
-
-  Alternatively, it is much easier and convenient to use a self-signed certificate generation tool, such as `mkcert <https://github.com/FiloSottile/mkcert>`__. This kind of tools already take into account the requisites and limitations of most popular applications and browsers, so that you don't need to.
-
-  Note that while a self-signed certificate can be used for web development, browsers will show a big security warning. Users will see this warning, and must click to accept the unsafe certificate before proceeding to the page.
-
-  To generate new certificate files with mkcert, run these commands:
-
-  .. code-block:: shell
-
-     # Generate new untrusted self-signed certificate files:
-     CAROOT="$PWD" mkcert -cert-file cert.pem -key-file key.pem \
-         "127.0.0.1" \
-         "::1"       \
-         "localhost" \
-         "*.test.local"
-
-     # Make a single file to be used with Kurento Media Server:
-     cat cert.pem key.pem > cert+key.pem
-
-     # Protect against writes
-     chmod 440 *.pem
-
-  This command is just an example, and includes some useful things for local development: access from localhost in its IPv4, IPv6, and hostname forms; and also the ``*.test.local`` wildcard, meant to allow adding any desired subdomains to the ``/etc/hosts`` file in your development computer(s), so these cert files can be used not only for localhost but also for remote tests in your LAN.
-
-  .. note::
-
-     Simply using ``*.test`` would be nice, but wildcards are forbidden for global TLDs, so it wouldn't work. For example, MacOS 10.15 (*Catalina*) would reject such certificate (see `mkcert bug 206 <https://github.com/FiloSottile/mkcert/issues/206>`__). For this reason, we propose using ``*.test.local``.
-
-  You can also publish a new Zeroconf local domain for any development machine. For example, running this in Ubuntu:
-
-  .. code-block:: shell
-
-     # Get and publish the IP address to the default network gateway.
-     IP_ADDRESS="$(ip -4 -oneline route get 1 | grep -Po 'src \K([\d.]+)')"
-     avahi-publish --address --no-reverse -v "dev.test.local" "$IP_ADDRESS"
-
-* (Optional) Convert your untrusted self-signed certificate into a trusted one. This is done by installing the Root CA into the client device.
-
-  On computers, installing the Root CA is easy because mkcert does it for you:
-
-  .. code-block:: shell
-
-     CAROOT="$PWD" mkcert -install
-
-  Installing the Root CA on mobile devices is a bit more difficult, because you cannot simply run mkcert:
-
-  - On iOS, you can either use AirDrop, email the CA to yourself, or serve it from an HTTP server. After installing it, you must `enable full trust in it <https://support.apple.com/en-nz/HT204477>`__. **Note**: earlier versions of mkcert ran into `an iOS bug <https://forums.developer.apple.com/thread/89568>`__, if you can't see the root in "Certificate Trust Settings" you might have to update mkcert and `regenerate the root <https://github.com/FiloSottile/mkcert/issues/47#issuecomment-408724149>`__.
-
-    Note that only AirDrop, Apple Mail, or Safari are allowed to download and install certificates on iOS. Other applications will not work for this.
-
-  - For Android, you will have to install the CA and then enable user roots in the development build of your app. See `this StackOverflow answer <https://stackoverflow.com/a/22040887/749014>`__.
