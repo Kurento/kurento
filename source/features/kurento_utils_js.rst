@@ -16,7 +16,7 @@ Kurento Utils is a wrapper object of an
 to simplify the development of WebRTC-based applications.
 
 The source code of this project can be cloned from the
-`GitHub repository <https://github.com/kurento/kurento-utils>`__.
+`GitHub repository <https://github.com/Kurento/kurento-utils-js>`__.
 
 
 How to use it
@@ -421,7 +421,7 @@ Be sure to have :term:`Node.js` and :term:`Bower` installed in your system:
    sudo npm install -g bower
 
 To install the library, it is recommended to do that from the
-`NPM repository <https://www.npmjs.org/package/kurento-utils>`__:
+`NPM repository <https://www.npmjs.com/package/kurento-utils>`__:
 
 .. sourcecode:: bash
 
@@ -432,8 +432,8 @@ dependencies:
 
 .. sourcecode:: bash
 
-   git clone https://github.com/Kurento/kurento-utils
-   cd kurento-utils
+   git clone https://github.com/Kurento/kurento-utils-js.git
+   cd kurento-utils-js/
    npm install
 
 
@@ -447,5 +447,7 @@ have it globally installed, you can run a local copy by executing:
 
 .. sourcecode:: bash
 
-   cd kurento-utils
+   git clone https://github.com/Kurento/kurento-utils-js.git
+   cd kurento-utils-js/
+   npm install
    node_modules/.bin/grunt
