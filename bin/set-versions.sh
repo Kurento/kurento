@@ -20,7 +20,7 @@
 #/ --debian <DebianVersion>
 #/
 #/   Debian version used for packaging. This gets appended to the base version
-#/   in the Debian control file, ./debian/changelog
+#/   in the Debian control file, debian/changelog
 #/
 #/   Check the Debian Policy for the syntax of this field:
 #/      https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
@@ -88,6 +88,17 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
+# Check requirements
+command -v perl >/dev/null || {
+    log "ERROR: 'perl' is not installed; please install it"
+    exit 1
+}
+command -v xmlstarlet >/dev/null || {
+    log "ERROR: 'xmlstarlet' is not installed; please install it"
+    exit 1
+}
+
+set -o xtrace
 
 
 # Parse call arguments
@@ -142,7 +153,7 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 
 if [[ "$CFG_TAG" == "true" ]]; then
-    if [[ "$CFG_RELEASE" != "true" ]] || [[ "$CFG_COMMIT" != "true" ]]; then
+    if [[ "$CFG_RELEASE" != "true" || "$CFG_COMMIT" != "true" ]]; then
         log "WARNING: Ignoring '--tag': Requires '--release' and '--commit'"
         CFG_TAG="false"
     fi
@@ -171,20 +182,22 @@ log "CFG_TAG=$CFG_TAG"
 # Init internal variables
 # -----------------------
 
-PACKAGE_VERSION="${CFG_VERSION}-${CFG_DEBIAN}"
+VERSION_PKG="${CFG_VERSION}-${CFG_DEBIAN}"
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    SUFFIX_C=""
-    SUFFIX_JAVA=""
-    COMMIT_MSG="Prepare release $PACKAGE_VERSION"
+    COMMIT_MSG="Prepare release $VERSION_PKG"
+
+    VERSION_C="${CFG_VERSION}"
+    VERSION_JAVA="${CFG_VERSION}"
 else
-    SUFFIX_C="-dev"
-    SUFFIX_JAVA="-SNAPSHOT"
     if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
     else
-        COMMIT_MSG="Update version to $PACKAGE_VERSION"
+        COMMIT_MSG="Update version to $VERSION_PKG"
     fi
+
+    VERSION_C="${CFG_VERSION}-dev"
+    VERSION_JAVA="${CFG_VERSION}-SNAPSHOT"
 fi
 
 
@@ -192,7 +205,8 @@ fi
 # Helper functions
 # ----------------
 
-update_changelog() {
+# Edits debian/changelog to add a new section with the given version.
+update_debian_changelog() {
     local SNAPSHOT_ENTRY="* UNRELEASED"
     local RELEASE_ENTRY="* $COMMIT_MSG"
 
@@ -201,37 +215,47 @@ update_changelog() {
             --ignore-branch \
             --git-author \
             --spawn-editor=never \
-            --new-version="$PACKAGE_VERSION" \
+            --new-version="$VERSION_PKG" \
             \
             --release \
             --distribution="testing" \
             --force-distribution \
             \
-            ./debian
+            debian/
 
         # First appearance of "UNRELEASED": Put our commit message
-        sed --in-place --expression="0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
-            ./debian/changelog
+        sed -i "0,/${SNAPSHOT_ENTRY}/{s/${SNAPSHOT_ENTRY}/${RELEASE_ENTRY}/}" \
+            debian/changelog
 
         # Remaining appearances of "UNRELEASED" (if any): Delete line
-        sed --in-place --expression="/${SNAPSHOT_ENTRY}/d" \
-            ./debian/changelog
+        sed -i "/${SNAPSHOT_ENTRY}/d" \
+            debian/changelog
     else
         gbp dch \
             --ignore-branch \
             --git-author \
             --spawn-editor=never \
-            --new-version="$PACKAGE_VERSION" \
-            ./debian
+            --new-version="$VERSION_PKG" \
+            debian/
     fi
+
+    git add debian/changelog
+}
+
+# Edits debian/control to set all Kurento dependencies to the given version.
+update_debian_control() {
+    perl -i -pe \
+        "s/^\s+(kms-|kurento-)\S+ \([<=>]+ \K\d\S*(?=\),)/${CFG_VERSION}/" \
+        debian/control
+
+    git add debian/control
 }
 
 commit_and_tag() {
     [[ $# -eq 0 ]] && return 1
 
     if [[ "$CFG_COMMIT" == "true" ]]; then
-        git add debian/changelog
-        git add "$1"
+        git add "$@"
         git commit -m "$COMMIT_MSG"
 
         if [[ "$CFG_TAG" == "true" ]]; then
@@ -245,82 +269,171 @@ commit_and_tag() {
 # Apply versions
 # --------------
 
-pushd kurento-module-creator
-sed --in-place --expression="
-    \|<artifactId>kurento-module-creator</artifactId>$|{
-        N
-        s|<version>.*</version>|<version>${CFG_VERSION}${SUFFIX_JAVA}</version>|
-    }" \
-    ./pom.xml
-update_changelog
-commit_and_tag ./pom.xml
-popd  # kurento-module-creator
+pushd kurento-module-creator/
+TEMP="$(mktemp)"
+FILE="pom.xml"
+xmlstarlet edit -S --update "/_:project/_:version" --value "${VERSION_JAVA}" "$FILE" \
+    >"$TEMP" && mv "$TEMP" "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE" src/main/templates/maven/model_pom_xml.ftl
+popd
 
 
 
-pushd kms-cmake-utils
-sed --in-place --expression="
-    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${CFG_VERSION}${SUFFIX_C})|" \
-    ./CMakeLists.txt
-update_changelog
-commit_and_tag ./CMakeLists.txt
-popd  # kms-cmake-utils
+pushd kurento-maven-plugin/
+FILE="pom.xml"
+xmlstarlet edit -S --inplace \
+    --update "/_:project/_:version" \
+    --value "${VERSION_JAVA}" \
+    "$FILE"
+xmlstarlet edit -S --inplace \
+    --update "/_:project/_:dependencies/_:dependency[_:artifactId='kurento-module-creator']/_:version" \
+    --value "${VERSION_JAVA}" \
+    "$FILE"
+commit_and_tag "$FILE"
+popd
 
 
 
-pushd kms-jsonrpc
-sed --in-place --expression="
-    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${CFG_VERSION}${SUFFIX_C})|" \
-    ./CMakeLists.txt
-update_changelog
-commit_and_tag ./CMakeLists.txt
-popd  # kms-jsonrpc
+pushd kms-cmake-utils/
+FILE="CMakeLists.txt"
+sed -i \
+    "s/get_git_version(PROJECT_VERSION .*)/get_git_version(PROJECT_VERSION ${VERSION_C})/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
 
 
 
-pushd kms-core
-sed --in-place --expression="
-    \|\"name\": \"core\",$|{
-        N
-        s|\"version\": \".*\"|\"version\": \"${CFG_VERSION}${SUFFIX_C}\"|
-    }" \
-    ./src/server/interface/core.kmd.json
-update_changelog
-commit_and_tag ./src/server/interface/core.kmd.json
-popd  # kms-core
+pushd kms-jsonrpc/
+FILE="CMakeLists.txt"
+sed -i \
+    "s/get_git_version(PROJECT_VERSION .*)/get_git_version(PROJECT_VERSION ${VERSION_C})/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
 
 
 
-pushd kms-elements
-sed --in-place --expression="
-    \|\"name\": \"elements\",$|{
-        N
-        s|\"version\": \".*\"|\"version\": \"${CFG_VERSION}${SUFFIX_C}\"|
-    }" \
-    ./src/server/interface/elements.kmd.json
-update_changelog
-commit_and_tag ./src/server/interface/elements.kmd.json
-popd  # kms-elements
+pushd kms-core/
+FILE="src/server/interface/core.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
 
 
 
-pushd kms-filters
-sed --in-place --expression="
-    \|\"name\": \"filters\",$|{
-        N
-        s|\"version\": \".*\"|\"version\": \"${CFG_VERSION}${SUFFIX_C}\"|
-    }" \
-    ./src/server/interface/filters.kmd.json
-update_changelog
-commit_and_tag ./src/server/interface/filters.kmd.json
-popd  # kms-filters
+pushd kms-elements/
+FILE="src/server/interface/elements.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
 
 
 
-pushd kurento-media-server
-sed --in-place --expression="
-    s|get_git_version(PROJECT_VERSION .*)|get_git_version(PROJECT_VERSION ${CFG_VERSION}${SUFFIX_C})|" \
-    ./CMakeLists.txt
-update_changelog
-commit_and_tag ./CMakeLists.txt
-popd  # kurento-media-server
+pushd kms-filters/
+FILE="src/server/interface/filters.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
+
+
+
+pushd kurento-media-server/
+FILE="CMakeLists.txt"
+sed -i \
+    "s/get_git_version(PROJECT_VERSION .*)/get_git_version(PROJECT_VERSION ${VERSION_C})/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
+
+
+
+pushd module/kms-chroma/
+FILE="src/server/interface/chroma.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
+
+
+
+pushd module/kms-crowddetector/
+FILE="src/server/interface/crowddetector.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
+
+
+
+pushd module/kms-datachannelexample/
+FILE="src/server/interface/kmsdatachannelexample.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
+
+
+
+pushd module/kms-markerdetector/
+FILE="src/server/interface/armarkerdetector.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
+
+
+
+pushd module/kms-platedetector/
+FILE="src/server/interface/platedetector.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
+
+
+
+pushd module/kms-pointerdetector/
+FILE="src/server/interface/pointerdetector.kmd.json"
+perl -i -pe \
+    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "$FILE"
+update_debian_changelog
+update_debian_control
+commit_and_tag "$FILE"
+popd
