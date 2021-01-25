@@ -132,7 +132,7 @@ elif [[ "$CFG_JS" == "true" ]]; then
 fi
 
 RUN_COMMANDS=(
-    "dpkg --install ./*.*deb || { apt-get update && apt-get install --yes --fix-broken --no-remove; }"
+    "dpkg --install ./*.*deb || { apt-get update && apt-get install --fix-broken --no-remove --yes; }"
     "$GEN_SCRIPT"
 )
 

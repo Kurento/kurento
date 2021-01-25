@@ -415,7 +415,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
         dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
             log "Try to install remaining dependencies"
-            apt-get update && apt-get ${APT_ARGS[@]+"${APT_ARGS[@]}"} install --yes --fix-broken --no-remove
+            apt-get update && apt-get ${APT_ARGS[@]+"${APT_ARGS[@]}"} install --fix-broken --no-remove --yes
         }
     else
         log "No '.deb' package files are present!"

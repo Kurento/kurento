@@ -55,8 +55,8 @@ kurento-client-core-js \
 | kurento-client-elements-js \
 | kurento-client-filters-js)
     # Only create a tag if the deployment process was successful.
-    # Note that the tag could already exist if the module generation job
-    # (kurento_generate_js_module) already applied it on this repo.
+    # Allow errors because the tag might already exist (like if the release
+    # is being done again after solving some deployment issue).
     kurento_check_version.sh true || {
       log "WARNING: Command failed: kurento_check_version (tagging enabled)"
     }
@@ -139,8 +139,8 @@ else
 fi
 
 # Only create a tag if the deployment process was successful
-# Note that the tag could already exist if the module generation job
-# (kurento_generate_js_module) already applied it on this repo.
+# Allow errors because the tag might already exist (like if the release
+# is being done again after solving some deployment issue).
 kurento_check_version.sh true || {
   log "WARNING: Command failed: kurento_check_version (tagging enabled)"
 }

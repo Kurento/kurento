@@ -158,27 +158,12 @@ fi
 
 
 
-# Release
-# -------
-
-# Only if the whole deployment process ran with success...
-
-# if [[ "$CFG_RELEASE" == "true" ]]; then
-#     # Tag current commit (Release commit)
-#     git tag -a -m "$RELEASE_COMMIT_MSG" "$RELEASE_VERSION"
-#
-#     # Bump to next SNAPSHOT version
-#     mvn --batch-mode versions:set -DgenerateBackupPoms=false \
-#         -DnextSnapshot=true \
-#         --file "$CFG_VERSION_FILE"
-#
-#     # Commit version change
-#     git ls-files --modified | grep 'pom.xml' | xargs -r git add
-#     git commit -m "Prepare for next development iteration"
-#
-#     # Push everything
-#     git push --follow-tags
-# fi
+# Only create a tag if the deployment process was successful
+# Allow errors because the tag might already exist (like if the release
+# is being done again after solving some deployment issue).
+kurento_check_version.sh true || {
+  log "WARNING: Command failed: kurento_check_version (tagging enabled)"
+}
 
 
 

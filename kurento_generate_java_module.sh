@@ -74,14 +74,6 @@ kurento_maven_deploy.sh || {
   exit 1
 }
 
-# Only create a tag if the deployment process was successful
-# Commented out because this is currently being done in the main kms-{core,elements,filters} job.
-# Uncomment when this is sorted out and we know WHEN we want to create tags.
-# kurento_check_version.sh true || {
-#   log "ERROR: Command failed: kurento_check_version (tagging enabled)"
-#   exit 1
-# }
-
 
 
 log "==================== END ===================="
