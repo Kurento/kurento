@@ -25,10 +25,10 @@ fi
 # Find or clone 'adm-scripts'
 ADM_SCRIPTS_PATH="/adm-scripts"
 if [[ -e "$ADM_SCRIPTS_PATH/kurento-buildpackage.sh" ]]; then
-    echo "[Docker entrypoint] Kurento 'adm-scripts' found in $ADM_SCRIPTS_PATH"
+    echo "[Docker entrypoint] Kurento adm-scripts found in $ADM_SCRIPTS_PATH"
 else
-    echo "[Docker entrypoint] Kurento 'adm-scripts' not found in $ADM_SCRIPTS_PATH"
-    echo "[Docker entrypoint] Clone 'adm-scripts' from Git repo..."
+    echo "[Docker entrypoint] Kurento adm-scripts not found in $ADM_SCRIPTS_PATH"
+    echo "[Docker entrypoint] Clone adm-scripts from Git repo..."
     git clone https://github.com/Kurento/adm-scripts.git "$ADM_SCRIPTS_PATH"
 fi
 

@@ -30,8 +30,9 @@
 # docker run --rm \
 #     --mount type=bind,src="$PWD",dst=/hostdir \
 #     kurento/kurento-buildpackage:xenial \
-#     --install-kurento nightly \
-#     [RunArguments...]
+#         --install-kurento 6.12.0 \
+#         --apt-add-repo \
+#         [kurento-buildpackage arguments...]
 #
 #
 # Run arguments
@@ -40,8 +41,8 @@
 # It is possible to pass arguments to the `kurento-buildpackage.sh` script in
 # this image: just append them to the `docker run` call.
 #
-# The argument '--install-kurento <Version>' is strongly recommended, because
-# this Docker image doesn't include any build dependencies.
+# It is strongly recommended to use '--install-kurento' and '--apt-add-repo',
+# because this Docker image doesn't include any build dependencies or repos.
 #
 # Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
@@ -65,10 +66,8 @@ RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
  && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends
 
 # Install a basic set of packages
-# * build-essential: For C/C++ Kurento modules that generate client SDK files
-# * Miscellaneous tools that are used by CI scripts
+# * gnupg, iproute2, zip: Tools used by various CI scripts.
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
-        build-essential \
         gnupg \
         iproute2 \
         zip unzip \
@@ -88,13 +87,19 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
  && rm -rf /var/lib/apt/lists/*
 
 # Install 'git-buildpackage'
-RUN pip3 --no-cache-dir install --upgrade gbp==0.9.10 \
- || pip3                install --upgrade gbp==0.9.10
+# WARNING: Don't update the GBP version.
+# gbp>=0.9.14 requires git>=2.10, because is uses `--no-show-signature`:
+# https://raw.githubusercontent.com/git/git/master/Documentation/RelNotes/2.10.0.txt
+# Workaround: install gbp==0.9.13... but gbp between 0.9.11 and 0.9.13 had a
+# broken install script! :-(
+# So, GBP version can be updated only when this image bases from 18.04/Bionic.
+RUN pip3 --no-cache-dir install --upgrade 'gbp == 0.9.10' \
+ || pip3                install --upgrade 'gbp == 0.9.10'
 
 # Configure Git user, which will appear in the Debian Changelog files
 # (this is needed by git-buildpackage)
-RUN git config --system user.name "kurento-buildpackage" \
- && git config --system user.email "kurento@googlegroups.com"
+RUN git config --system user.name "Kurento" \
+ && git config --system user.email "info@kurento.org"
 
 # APT_KEEP_CACHE
 #
