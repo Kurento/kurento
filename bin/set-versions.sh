@@ -354,6 +354,11 @@ FILE="src/server/interface/elements.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
@@ -366,6 +371,11 @@ FILE="src/server/interface/filters.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
@@ -390,6 +400,11 @@ FILE="src/server/interface/chroma.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
@@ -402,6 +417,11 @@ FILE="src/server/interface/crowddetector.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
@@ -414,6 +434,11 @@ FILE="src/server/interface/kmsdatachannelexample.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
@@ -426,6 +451,11 @@ FILE="src/server/interface/armarkerdetector.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
@@ -438,6 +468,11 @@ FILE="src/server/interface/platedetector.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
@@ -450,6 +485,11 @@ FILE="src/server/interface/pointerdetector.kmd.json"
 perl -i -pe \
     "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\",)/\^${VERSION_C}/" \
+        "$FILE"
+fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
