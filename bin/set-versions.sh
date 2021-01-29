@@ -323,7 +323,7 @@ popd
 pushd kms-core/
 FILE="src/server/interface/core.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -335,7 +335,7 @@ popd
 pushd kms-elements/
 FILE="src/server/interface/elements.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -347,7 +347,7 @@ popd
 pushd kms-filters/
 FILE="src/server/interface/filters.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -371,7 +371,7 @@ popd
 pushd module/kms-chroma/
 FILE="src/server/interface/chroma.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -383,7 +383,7 @@ popd
 pushd module/kms-crowddetector/
 FILE="src/server/interface/crowddetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -395,7 +395,7 @@ popd
 pushd module/kms-datachannelexample/
 FILE="src/server/interface/kmsdatachannelexample.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -407,7 +407,7 @@ popd
 pushd module/kms-markerdetector/
 FILE="src/server/interface/armarkerdetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -419,7 +419,7 @@ popd
 pushd module/kms-platedetector/
 FILE="src/server/interface/platedetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -431,7 +431,7 @@ popd
 pushd module/kms-pointerdetector/
 FILE="src/server/interface/pointerdetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\d\S*(?=\",)/${VERSION_C}/" \
+    "s/^\s+\"version\": \"\K\S*(?=\",)/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
