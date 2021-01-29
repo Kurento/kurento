@@ -269,6 +269,23 @@ commit_and_tag() {
 # Apply versions
 # --------------
 
+# Perl Regex doc: https://perldoc.perl.org/perlre
+#
+# Some tips:
+#
+# \K
+#     Zero-width positive lookbehind assertion.
+#     Require the stuff left of the \K, but don't include it in the match.
+#
+# (?=pattern)
+#     Zero-width positive lookahead assertion.
+#     Require the stuff left of the (?=), but don't include it in the match.
+#     (?=\",) matches a double quote and a comma: ",
+#
+# \S
+#     Match a non-whitespace character.
+#     \S* matches all consecutive non-whitespace character.
+
 pushd kurento-module-creator/
 TEMP="$(mktemp)"
 FILE="pom.xml"
