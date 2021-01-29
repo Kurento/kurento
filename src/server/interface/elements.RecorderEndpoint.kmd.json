@@ -192,7 +192,7 @@
       ",
       "constructor":
         {
-          "doc": "",
+          "doc": "Builder for the :rom:cls:`RecorderEndpoint`",
           "params": [
             {
               "name": "mediaPipeline",
@@ -201,16 +201,16 @@
             },
             {
               "name": "uri",
-              "doc": "URI where the recording will be stored. It has to be accessible to the KMS process.
+              "doc": "URI where the recording will be stored. It must be accessible from the media server process itself:
               <ul>
                 <li>Local server resources: The user running the Kurento Media Server must have write permission over the file.</li>
-                <li>Network resources: Must be accessible from the server where the media server is running.</li>
+                <li>Network resources: Must be accessible from the network where the media server is running.</li>
               </ul>",
               "type": "String"
             },
             {
               "name": "mediaProfile",
-              "doc": "Sets the media profile used for recording. If the profile is different than the one being recieved at the sink pad, media will be trnascoded, resulting in a higher CPU load. For instance, when recording a VP8 encoded video from a WebRTC endpoint in MP4, the load is higher that when recording in WEBM.",
+              "doc": "Sets the media profile used for recording. If the profile is different than the one being received at the sink pad, media will be transcoded, resulting in a higher CPU load. For instance, when recording a VP8 encoded video from a WebRTC endpoint in MP4, the load is higher that when recording to WEBM.",
               "type": "MediaProfileSpecType",
               "optional": true,
               "defaultValue": "WEBM"
