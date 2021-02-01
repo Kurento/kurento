@@ -74,7 +74,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$CFG_NAME" || -z "$CFG_FALLBACK" ]]; then
-    # Repo default branch.
+    # Default repo branch.
     GIT_DEFAULT="$(kurento_git_default_branch.sh)"
 
     CFG_NAME="${CFG_NAME:-$GIT_DEFAULT}"
@@ -109,6 +109,8 @@ else
     if git rev-parse --verify --quiet "$BRANCH_NAME"; then
         git checkout --track "$BRANCH_NAME"
     else
+        # Default repo branch.
+        GIT_DEFAULT="$(kurento_git_default_branch.sh)"
         git checkout "$GIT_DEFAULT"
     fi
 fi
