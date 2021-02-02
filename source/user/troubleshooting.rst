@@ -189,25 +189,26 @@ These messages can help understand what codec settings are being received by Kur
 Memory usage grows too high
 ---------------------------
 
-If you are trying to establish whether Kurento Media Server has a memory leak, then neither *top* nor *ps* are the right tool for the job; **Valgrind** is.
+**Problem**: Each new Session consumes some memory, but later the memory is not freed back to the system after the Kurento Session is closed.
 
-If you are using *top* or *ps* to evaluate memory usage, keep in mind that these tools show memory usage *as seen by the Operating System*, not by the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the Operating System. Typically, it won't! Memory allocator implementations do not return *free*'d memory : it is available for use by the same program, but not by others. So *top* or *ps* won't be able to "see" the free'd memory.
+**Reason**: The most common cause for increasingly growing memory usage is not a memory leak, but :doc:`/knowledge/memory_fragmentation`.
 
-See: `free() in C doesn't reduce memory usage <https://stackoverflow.com/questions/6005333/problem-with-free-on-structs-in-c-it-doesnt-reduce-memory-usage>`__
+**Solution**: Try using an alternative memory allocator to see if it solves the issue of memory fragmentation. Please have a look at :ref:`knowledge-memfrag-jemalloc`.
 
-To run Kurento Media Server with Valgrind and find memory leaks, the process is just a matter of following the steps outlined in :ref:`dev-sources`, but instead of
+If you still think there might be a memory leak in KMS, keep reading:
 
-.. code-block:: shell
+* Neither *top* nor *ps* are the right tool for the job to establish whether Kurento Media Server has a memory leak; **Valgrind** is.
+* Tools like *top* or *ps* show memory usage *as seen by the Operating System*, not by the process of the media server. Even after freeing memory, there is no guarantee that the memory will get returned to the Operating System. Typically, it won't! Memory allocator implementations do not return *free*'d memory : it is marked as available for use by the same program, but not by others. So *top* or *ps* won't be able to "see" the memory after KMS frees it.
 
-   ./bin/kms-build-run.sh
+  See: `free() in C doesn't reduce memory usage <https://stackoverflow.com/questions/6005333/problem-with-free-on-structs-in-c-it-doesnt-reduce-memory-usage>`__.
 
-you'll want to do
+To run Kurento Media Server with Valgrind and find memory leaks, the process is just a matter of following the steps outlined in :ref:`dev-sources`, but with an extra argument:
 
 .. code-block:: shell
 
    ./bin/kms-build-run.sh --valgrind-memcheck
 
-Also, please have a look at the information shown in :ref:`troubleshooting-crashes` about our special Docker image based on **AddressSanitizer**. Running Kurento with this image might help finding memory-related issues.
+Also, please have a look at the information shown in :ref:`troubleshooting-crashes` about our special Docker image based on **AddressSanitizer**. Running KMS with this image might help finding memory-related issues.
 
 
 

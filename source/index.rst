@@ -106,6 +106,7 @@ Information about *development of Kurento itself* is also available:
    /knowledge/browser
    /knowledge/congestion_rmcat
    /knowledge/h264
+   /knowledge/memory_fragmentation
    /knowledge/mp4
    /knowledge/nat
    /knowledge/rtp_streaming
