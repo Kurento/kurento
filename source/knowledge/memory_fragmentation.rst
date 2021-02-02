@@ -26,15 +26,15 @@ Solution
 
 The best option we know about is replacing ``malloc``, the standard memory allocator that comes by default with the system, with a specific-purpose allocator, written with this issue in mind in order to avoid or mitigate it as much as possible.
 
-Two of the most known alternative allocators are `jemalloc <http://jemalloc.net/>`__ (`code repository <https://github.com/jemalloc/jemalloc>`__) and Google's `TCMalloc <https://google.github.io/tcmalloc/>`__ (`code repository <https://github.com/google/tcmalloc>`__).
+Two of the most known alternative allocators are `Jemalloc <http://jemalloc.net/>`__ (`code repository <https://github.com/jemalloc/jemalloc>`__) and Google's `TCMalloc <https://google.github.io/tcmalloc/>`__ (`code repository <https://github.com/google/tcmalloc>`__).
 
-*jemalloc* has been tested with Kurento Media Server, and found to give pretty good results. It is important to note that internal fragmentation cannot be reduced to zero, but this alternative allocator was able to reduce memory fragmentation issues to a minimum.
+Jemalloc has been tested with Kurento Media Server, and found to give pretty good results. It is important to note that internal fragmentation cannot be reduced to zero, but this alternative allocator was able to reduce memory fragmentation issues to a minimum.
 
 
 
 .. _knowledge-memfrag-jemalloc:
 
-Using jemalloc
+Using Jemalloc
 ==============
 
 First install it on your system. For the versions of Ubuntu that are explicitly supported by Kurento, you can run this command:
@@ -43,26 +43,26 @@ First install it on your system. For the versions of Ubuntu that are explicitly 
 
    sudo apt-get update && sudo apt-get install --yes libjemalloc1
 
-*jemalloc* is installed as a standalone library. To actually use it, you need to preload it when launching KMS:
+Jemalloc is installed as a standalone library. To actually use it, you need to preload it when launching KMS:
 
 .. code-block:: shell
 
    LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.1  /usr/bin/kurento-media-server
 
-This will use jemalloc with its default configuration, which should be good enough for normal operation.
+This will use Jemalloc with its default configuration, which should be good enough for normal operation.
 
-If you know how to fine-tune the allocator with better settings than the default ones, you can do so on the command line too. A useful environment variable to learn more about the internals of *jemalloc* is ``MALLOC_CONF``. For example:
+If you know how to fine-tune the allocator with better settings than the default ones, you can do so with the ``MALLOC_CONF`` environment variable. For example:
 
 .. code-block:: shell
 
    export MALLOC_CONF=stats_print:true
    LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.1  /usr/bin/kurento-media-server
 
-This will cause KMS to dump memory usage statistics when exiting. Those statistics may be used to tune *jemalloc* and define the configuration to use.
+This would cause KMS to dump memory usage statistics when exiting. Those statistics could then be used to tune Jemalloc and define the configuration to use.
 
 .. note::
 
-   To use *jemalloc* from inside a Docker container, you'll want to make a custom image that is derived from the official one, where the required package is installed and the Docker Entrypoint script has been modified to add the library preloading step.
+   To use Jemalloc from inside a Docker container, you'll want to make a custom image that is derived from the official one, where the required package is installed and the Docker Entrypoint script has been modified to add the library preloading step.
 
    There is some additional information about how to start making a customized image in :ref:`faq-docker`.
 
@@ -75,9 +75,7 @@ This will cause KMS to dump memory usage statistics when exiting. Those statisti
 Other suggestions
 =================
 
-It is a good idea to maintain health checks on servers that are running Kurento Media Server and show memory exhaustion issues.
-
-As it still may present some internal fragmentation level (it is really difficult to get rid of this in a server that makes a heavy use of dynamic memory), we suggest maintaining some health probes on KMS, that at least should take care of memory usage and behave as follows:
+It is a good idea to maintain health checks on servers that are running Kurento Media Server, to automatically detect and react against memory exhaustion issues. We suggest maintaining some health probes on KMS, that at least should take care of memory usage and behave as follows:
 
 1. Maintain a probe on memory usage of the Kurento Media Server process.
 
