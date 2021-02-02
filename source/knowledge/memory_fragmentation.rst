@@ -37,7 +37,7 @@ Two of the most known alternative allocators are `jemalloc <http://jemalloc.net/
 Using jemalloc
 ==============
 
-First install it on your system. For the versions of Ubuntu that are explicitly supported bu Kurento, you an run this command:
+First install it on your system. For the versions of Ubuntu that are explicitly supported by Kurento, you can run this command:
 
 .. code-block:: shell
 
@@ -59,6 +59,12 @@ If you know how to fine-tune the allocator with better settings than the default
    LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.1  /usr/bin/kurento-media-server
 
 This will cause KMS to dump memory usage statistics when exiting. Those statistics may be used to tune *jemalloc* and define the configuration to use.
+
+.. note::
+
+   To use *jemalloc* from inside a Docker container, you'll want to make a custom image that is derived from the official one, where the required package is installed and the Docker Entrypoint script has been modified to add the library preloading step.
+
+   There is some additional information about how to start making a customized image in :ref:`faq-docker`.
 
 .. note::
 
