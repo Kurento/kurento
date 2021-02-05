@@ -189,11 +189,17 @@ These messages can help understand what codec settings are being received by Kur
 Memory usage grows too high
 ---------------------------
 
-**Problem**: Each new Session consumes some memory, but later the memory is not freed back to the system after the Kurento Session is closed.
+**Problem**
 
-**Reason**: The most common cause for increasingly growing memory usage is not a memory leak, but :doc:`/knowledge/memory_fragmentation`.
+Each new Session consumes some memory, but later the memory is not freed back to the system after the Kurento Session is closed.
 
-**Solution**: Try using an alternative memory allocator to see if it solves the issue of memory fragmentation. Please have a look at :ref:`knowledge-memfrag-jemalloc`.
+**Reason**
+
+The most common cause for increasingly growing memory usage is not a memory leak, but :doc:`/knowledge/memory_fragmentation`.
+
+**Solution**
+
+Try using an alternative memory allocator to see if it solves the issue of memory fragmentation. Please have a look at :ref:`knowledge-memfrag-jemalloc`.
 
 If you still think there might be a memory leak in KMS, keep reading:
 
@@ -239,7 +245,9 @@ In Ubuntu, log messages from init scripts are managed by *systemd*, and can be c
 OpenH264 not found
 ------------------
 
-**Problem**: Installing and running KMS on a clean Ubuntu installation shows this message:
+**Problem**:
+
+Installing and running KMS on a clean Ubuntu installation shows this message:
 
 .. code-block:: text
 
@@ -252,11 +260,15 @@ Also these conditions apply:
 - Packages *openh264-gst-plugins-bad-1.5* and *openh264* are already installed.
 - The file ``/usr/lib/x86_64-linux-gnu/libopenh264.so`` is a broken link to the non-existing file ``/usr/lib/x86_64-linux-gnu/libopenh264.so.0``.
 
-**Reason**: The package *openh264* didn't install correctly. This package is just a wrapper that needs Internet connectivity during its installation stage, to download a binary blob file from this URL: http://ciscobinary.openh264.org/libopenh264-1.4.0-linux64.so.bz2
+**Reason**
+
+The package *openh264* didn't install correctly. This package is just a wrapper that needs Internet connectivity during its installation stage, to download a binary blob file from this URL: http://ciscobinary.openh264.org/libopenh264-1.4.0-linux64.so.bz2
 
 If the machine is disconnected during the actual installation of this package, the download will fail silently with some error messages printed on the standard output, but the installation will succeed.
 
-**Solution**: Ensure that the machine has access to the required URL, and try reinstalling the package:
+**Solution**
+
+Ensure that the machine has access to the required URL, and try reinstalling the package:
 
 .. code-block:: shell
 
@@ -271,49 +283,80 @@ If the Kurento Tutorials are showing an spinner, or your application is missing 
 
 
 
-.. _troubleshooting-low-quality:
+.. _troubleshooting-video-quality:
 
-Low video quality
------------------
+Video quality issues
+--------------------
 
-You have several ways to override the default settings for variable bitrate and network bandwidth detection:
+**Problem**
 
-- Methods in `org.kurento.client.BaseRtpEndpoint <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__:
+* Video contains green or pink patches in some areas.
 
-  - *setMinVideoRecvBandwidth()* / *setMaxVideoRecvBandwidth()*
-  - *setMinVideoSendBandwidth()* / *setMaxVideoSendBandwidth()*
+* Video contains huge blocks (aka. "*macroblocks*") that are dragged around while the video goes on.
 
-- Methods in `org.kurento.client.MediaElement <../_static/client-javadoc/org/kurento/client/MediaElement.html>`__:
+* Video image seems fine, but playback suffers from a lot of stuttering (i.e. it is not smooth, constantly "jumps" around). See here: :ref:`troubleshooting-video-stuttering`.
 
-  - *setMinOutputBitrate()* / *setMaxOutputBitrate()*
+* Video playback is smooth (no color issues, no macroblocks, no excessive stuttering), but the perceived quality of the details is very poor.
 
-    This setting is also configurable in ``/etc/kurento/modules/kurento/MediaElement.conf.ini``.
+* KMS logs contain one or more of these messages:
 
-Also, note that web browsers will adapt their output video quality according to what they detect is the network quality. Most browsers will adapt the **video bitrate**; in addition, Chrome also adapts the **video resolution**.
+  .. code-block:: text
 
-Browsers offer internal stats through a special web address that you can use to verify what is being sent. For example, to check the outbound stats in Chrome:
+     WARN rtpsource [...] duplicate or reordered packet (seqnr 32462, expected 32464)
 
-#. Open this URL: chrome://webrtc-internals/
-#. Look for the stat name "*Stats graphs for RTCOutboundRTPVideoStream (outbound-rtp)*".
-#. You will find the effective output video bitrate in ``[bytesSent_in_bits/s]``, and the output resolution in ``frameWidth`` and ``frameHeight``.
+     WARN kmsutils [...] GAP of 3 ms at PTS=0:01:54.187106448 (packet loss?); will request a new keyframe
 
-You can also check what is the network quality estimation in Chrome:
+     WARN kmsutils [...] DISCONTINUITY at non-keyframe; will drop until keyframe
 
-#. Look for the stat name "*Stats graphs for RTCIceCandidatePair (candidate-pair)*". Note that there might be several of these, but only one will be active.
-#. Find the output network bandwidth estimation in ``availableOutgoingBitrate``. Chrome will try to slowly increase its output bitrate, until it reaches this estimation.
+**Reason**
 
+* Network congestion, or a weak network link, is causing a high rate of packet loss and (in the case of *WebRtcEndpoint*) an automatic degradation of WebRTC video quality.
 
+* Too much data is sent to Kurento's *PlayerEndpoint*, which is not able to process it all on time.
 
-Video has green artifacts
--------------------------
+* Less commonly, a badly configured H.264 encoder in the sender side (this especially applies when using a *PlayerEndpoint* to consume the video stream of an IP camera).
 
-This is typically caused by missing information in the video decoder, most probably due to a high packet loss rate in the network.
+**Solution**
+
+* For decoding errors (color issues, macroblocks) the most effective change you can do is to reduce the video resolution and/or quality (bitrate, framerate) at the sender.
+
+* In all cases, getting a stronger network link on both sender and receiver sides will always help. For example, moving closer to the Wifi access points, using Ethernet cables when possible, or moving to a better data coverage area.
+
+* When the network link is not an issue, remember to change the default maximum bitrate of **500 Kbps** that Kurento uses to send WebRTC.
+
+  See also:
+
+  - :ref:`Configuring WebRTC bitrate <configuration-bitrate>`.
+  - WebRtcEndpoint API docs: `Java <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__, `JavaScript <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html>`__.
+
+**Notes about video encoding**
+
+The maximum bitrate for WebRTC video (used by browsers such as Chrome) is **2 Mbps for perfect conditions**, so you should probably avoid pushing more than that in your application.
+
+Regarding the video encoder at the sender side, keep in mind that the most compatible H.264 setting is the **Constrained Baseline Profile, Level 3.1**.
+
+Lastly, note that Chrome not only adapts its own video sending bitrate according to network conditions, but also the resolution of the video. If you see a much lower resolution than expected, you should check if it isn't because of a Chrome sender deciding to do so.
+
+See also:
+
+* :ref:`Notes on browser video encoding <browser-video>`.
+
+**Background on WebRTC low quality**
+
+WebRTC will detect the bandwidth available on the network, and will adapt the video bitrate on the fly (and, in some cases such as the Chrome web browser, the resolution will change too). This adaptation is influenced by some properties of the network, such as **jitter**, **latency**, and **packet loss**. If your WebRTC video plays back smoothly but with a very poor quality, this mostly means that the network link itself is poor.
+
+See also:
+
+* :doc:`/knowledge/congestion_rmcat`.
+* :term:`REMB`.
+
+**Background on H.264 & VP8 color encoding**
 
 The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video codecs use a color encoding system called `YCbCr <https://en.wikipedia.org/wiki/YCbCr>`__ (sometimes also written as *YCrCb*), which the decoder has to convert into the well known `RGB <https://en.wikipedia.org/wiki/RGB_color_model>`__ ("*Red-Green-Blue*") model that is used by computer screens. When there is data loss, the decoder will assume that all missing values are *0* (zero). It just turns out that a YCbCr value of *(0,0,0)* is equivalent to the **green** color in RGB.
 
-When this problem happens, Kurento sends retransmission requests to the source of the RTP stream. However, in cases of heavy packet loss, there isn't much else that can be done and enough losses will build up until the video decoding gets negatively affected. In situations like this, the most effective change you can do is to reduce the video resolution and/or quality at the sender.
+Whenever Kurento detects that packets have been lost in the network, it sends retransmission requests to the source of the WebRTC or RTP stream. However, if packet loses are too high due to a weak or congested network, enough losses will build up until the video decoding gets negatively affected.
 
-Cisco has too a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__ (`archive <https://web.archive.org/web/20170506091043/http://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__):
+Cisco has also a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__ (`archive <https://web.archive.org/web/20170506091043/http://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__):
 
     **Why do I see pink or green patches in my video stream [...]?**
 
@@ -341,20 +384,20 @@ This is a sample of what the console output will look like, with the logging lev
 
    $ mvn -U clean spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://localhost:8888/kurento"
-   INFO org.kurento.tutorial.player.Application  : Starting Application on TEST with PID 16448
-   DEBUG o.kurento.client.internal.KmsUrlLoader  : Executing getKmsUrlLoad(b843d6f6-02dd-49b4-96b6-f2fd2e8b1c8d) in KmsUrlLoader
-   DEBUG o.kurento.client.internal.KmsUrlLoader  : Obtaining kmsUrl=ws://localhost:8888/kurento from config file or system property
-   DEBUG org.kurento.client.KurentoClient        : Connecting to kms in ws://localhost:8888/kurento
-   DEBUG o.k.j.c.JsonRpcClientNettyWebSocket     : Creating JsonRPC NETTY Websocket client
-   DEBUG o.kurento.jsonrpc.client.JsonRpcClient  : Enabling heartbeat with an interval of 240000 ms
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket  : [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
-   WARN o.kurento.jsonrpc.client.JsonRpcClient   : [KurentoClient]  Error sending heartbeat to server. Exception: [KurentoClient]  Exception connecting to WebSocket server ws://localhost:8888/kurento
-   WARN o.kurento.jsonrpc.client.JsonRpcClient   : [KurentoClient]  Stopping heartbeat and closing client: failure during heartbeat mechanism
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket  : [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
-   DEBUG o.k.jsonrpc.internal.ws.PendingRequests : Sending error to all pending requests
-   WARN o.k.j.c.JsonRpcClientNettyWebSocket      : [KurentoClient]  Trying to close a JsonRpcClientNettyWebSocket with channel == null
-   WARN ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: Factory method 'kurentoClient' threw exception; nested exception is org.kurento.commons.exception.KurentoException: Exception connecting to KMS
-   ERROR o.s.boot.SpringApplication              : Application startup failed
+   INFO  [...] Starting Application on TEST with PID 16448
+   DEBUG [...] Executing getKmsUrlLoad(b843d6f6-02dd-49b4-96b6-f2fd2e8b1c8d) in KmsUrlLoader
+   DEBUG [...] Obtaining kmsUrl=ws://localhost:8888/kurento from config file or system property
+   DEBUG [...] Connecting to kms in ws://localhost:8888/kurento
+   DEBUG [...] Creating JsonRPC NETTY Websocket client
+   DEBUG [...] Enabling heartbeat with an interval of 240000 ms
+   DEBUG [...] [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
+   WARN  [...] [KurentoClient]  Error sending heartbeat to server. Exception: [KurentoClient]  Exception connecting to WebSocket server ws://localhost:8888/kurento
+   WARN  [...] [KurentoClient]  Stopping heartbeat and closing client: failure during heartbeat mechanism
+   DEBUG [...] [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
+   DEBUG [...] Sending error to all pending requests
+   WARN  [...] [KurentoClient]  Trying to close a JsonRpcClientNettyWebSocket with channel == null
+   WARN  [...] Exception encountered during context initialization - cancelling refresh attempt: Factory method 'kurentoClient' threw exception; nested exception is org.kurento.commons.exception.KurentoException: Exception connecting to KMS
+   ERROR [...] Application startup failed
 
 As opposed to that, the console output for when a connection is successfully done with an instance of KMS should look similar to this sample:
 
@@ -362,19 +405,19 @@ As opposed to that, the console output for when a connection is successfully don
 
    $ mvn -U clean spring-boot:run \
          -Dspring-boot.run.jvmArguments="-Dkms.url=ws://localhost:8888/kurento"
-   INFO org.kurento.tutorial.player.Application : Starting Application on TEST with PID 21617
-   DEBUG o.kurento.client.internal.KmsUrlLoader : Executing getKmsUrlLoad(af479feb-dc49-4a45-8b1c-eedf8325c482) in KmsUrlLoader
-   DEBUG o.kurento.client.internal.KmsUrlLoader : Obtaining kmsUrl=ws://localhost:8888/kurento from config file or system property
-   DEBUG org.kurento.client.KurentoClient       : Connecting to kms in ws://localhost:8888/kurento
-   DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : Creating JsonRPC NETTY Websocket client
-   DEBUG o.kurento.jsonrpc.client.JsonRpcClient : Enabling heartbeat with an interval of 240000 ms
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Connecting native client
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Creating new NioEventLoopGroup
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Initiating new Netty channel. Will create new handler too!
-   DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  channel active
-   DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  WebSocket Client connected!
-   INFO org.kurento.tutorial.player.Application : Started Application in 1.841 seconds (JVM running for 4.547)
+   INFO  [...] Starting Application on TEST with PID 21617
+   DEBUG [...] Executing getKmsUrlLoad(af479feb-dc49-4a45-8b1c-eedf8325c482) in KmsUrlLoader
+   DEBUG [...] Obtaining kmsUrl=ws://localhost:8888/kurento from config file or system property
+   DEBUG [...] Connecting to kms in ws://localhost:8888/kurento
+   DEBUG [...] Creating JsonRPC NETTY Websocket client
+   DEBUG [...] Enabling heartbeat with an interval of 240000 ms
+   DEBUG [...] [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
+   INFO  [...] [KurentoClient]  Connecting native client
+   INFO  [...] [KurentoClient]  Creating new NioEventLoopGroup
+   INFO  [...] [KurentoClient]  Initiating new Netty channel. Will create new handler too!
+   DEBUG [...] [KurentoClient]  channel active
+   DEBUG [...] [KurentoClient]  WebSocket Client connected!
+   INFO  [...] Started Application in 1.841 seconds (JVM running for 4.547)
 
 
 
@@ -387,27 +430,27 @@ This is how this process would look like. In this example, KMS was restarted so 
 
 .. code-block:: text
 
-   INFO org.kurento.tutorial.player.Application  : Started Application in 1.841 seconds (JVM running for 4.547)
+   INFO [...] Started Application in 1.841 seconds (JVM running for 4.547)
 
    (... Application is running normally at this point)
    (... Now, KMS becomes unresponsive)
 
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  channel closed
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  JsonRpcWsClient disconnected from ws://localhost:8888/kurento because Channel closed.
-   DEBUG o.kurento.jsonrpc.client.JsonRpcClient : Disabling heartbeat. Interrupt if running is false
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  JsonRpcWsClient reconnecting to ws://localhost:8888/kurento.
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Connecting native client
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Closing previously existing channel when connecting native client
-   DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  Closing client
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Initiating new Netty channel. Will create new handler too!
-   WARN o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Trying to close a JsonRpcClientNettyWebSocket with channel == null
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : tryReconnectingForever = true
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : tryReconnectingMaxTime = 0
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : maxTimeReconnecting = 9223372036854775807
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : currentTime = 1510773733903
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : Stop connection retries: false
-   WARN o.k.j.c.AbstractJsonRpcClientWebSocket  : [KurentoClient]  Exception trying to reconnect to server ws://localhost:8888/kurento. Retrying in 5000 ms
+   INFO  [...] [KurentoClient]  channel closed
+   DEBUG [...] [KurentoClient]  JsonRpcWsClient disconnected from ws://localhost:8888/kurento because Channel closed.
+   DEBUG [...] Disabling heartbeat. Interrupt if running is false
+   DEBUG [...] [KurentoClient]  JsonRpcWsClient reconnecting to ws://localhost:8888/kurento.
+   DEBUG [...] [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
+   INFO  [...] [KurentoClient]  Connecting native client
+   INFO  [...] [KurentoClient]  Closing previously existing channel when connecting native client
+   DEBUG [...] [KurentoClient]  Closing client
+   INFO  [...] [KurentoClient]  Initiating new Netty channel. Will create new handler too!
+   WARN  [...] [KurentoClient]  Trying to close a JsonRpcClientNettyWebSocket with channel == null
+   DEBUG [...] tryReconnectingForever = true
+   DEBUG [...] tryReconnectingMaxTime = 0
+   DEBUG [...] maxTimeReconnecting = 9223372036854775807
+   DEBUG [...] currentTime = 1510773733903
+   DEBUG [...] Stop connection retries: false
+   WARN  [...] [KurentoClient]  Exception trying to reconnect to server ws://localhost:8888/kurento. Retrying in 5000 ms
 
    org.kurento.jsonrpc.JsonRpcException: [KurentoClient]  Exception connecting to WebSocket server ws://localhost:8888/kurento
       at (...)
@@ -416,16 +459,16 @@ This is how this process would look like. In this example, KMS was restarted so 
 
    (... Now, KMS becomes responsive again)
 
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  JsonRpcWsClient reconnecting to ws://localhost:8888/kurento.
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Connecting native client
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Creating new NioEventLoopGroup
-   INFO o.k.j.c.JsonRpcClientNettyWebSocket     : [KurentoClient]  Initiating new Netty channel. Will create new handler too!
-   DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  channel active
-   DEBUG o.k.j.c.JsonRpcClientNettyWebSocket    : [KurentoClient]  WebSocket Client connected!
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Req-> {"id":2,"method":"connect","jsonrpc":"2.0"}
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  <-Res {"id":2,"result":{"serverId":"1a3b4912-9f2e-45da-87d3-430fef44720f","sessionId":"f2fd16b7-07f6-44bd-960b-dd1eb84d9952"},"jsonrpc":"2.0"}
-   DEBUG o.k.j.c.AbstractJsonRpcClientWebSocket : [KurentoClient]  Reconnected to the same session in server ws://localhost:8888/kurento
+   DEBUG [...] [KurentoClient]  JsonRpcWsClient reconnecting to ws://localhost:8888/kurento.
+   DEBUG [...] [KurentoClient]  Connecting webSocket client to server ws://localhost:8888/kurento
+   INFO  [...] [KurentoClient]  Connecting native client
+   INFO  [...] [KurentoClient]  Creating new NioEventLoopGroup
+   INFO  [...] [KurentoClient]  Initiating new Netty channel. Will create new handler too!
+   DEBUG [...] [KurentoClient]  channel active
+   DEBUG [...] [KurentoClient]  WebSocket Client connected!
+   DEBUG [...] [KurentoClient]  Req-> {"id":2,"method":"connect","jsonrpc":"2.0"}
+   DEBUG [...] [KurentoClient]  <-Res {"id":2,"result":{"serverId":"1a3b4912-9f2e-45da-87d3-430fef44720f","sessionId":"f2fd16b7-07f6-44bd-960b-dd1eb84d9952"},"jsonrpc":"2.0"}
+   DEBUG [...] [KurentoClient]  Reconnected to the same session in server ws://localhost:8888/kurento
 
    (... At this point, the Kurento Client is connected again to KMS)
 
@@ -538,11 +581,11 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 
   .. code-block:: text
 
-     INFO  Using STUN reflexive server IP: <IpAddress>
-     INFO  Using STUN reflexive server Port: <Port>
+     INFO [...] Using STUN reflexive server IP: <IpAddress>
+     INFO [...] Using STUN reflexive server Port: <Port>
 
-     INFO  Using TURN relay server: <user:password>@<IpAddress>:<Port>
-     INFO  TURN server info set: <user:password>@<IpAddress>:<Port>
+     INFO [...] Using TURN relay server: <user:password>@<IpAddress>:<Port>
+     INFO [...] TURN server info set: <user:password>@<IpAddress>:<Port>
 
 * Check that any SDP mangling you (or any of your third-party libraries) might be doing in your Application Server is being done correctly.
 
@@ -587,7 +630,7 @@ Here are some tips to keep in mind:
 mDNS ICE candidate fails: Name or service not known
 ---------------------------------------------------
 
-**Problem**:
+**Problem**
 
 When the browser conceals the local IP address behind an mDNS candidate, these errors appear in Kurento logs:
 
@@ -597,7 +640,7 @@ When the browser conceals the local IP address behind an mDNS candidate, these e
    kmsiceniceagent  [...] Cannot parse remote candidate: 'candidate:2382557538 1 udp 2113937151 2da1b2bb-a601-44e8-b672-dc70e3493bc4.local 50635 typ host generation 0 ufrag /Og/ network-cost 999'
    kmswebrtcsession [...] Adding remote candidate to ICE Agent: Agent failed, stream_id: '1'
 
-**Solution**:
+**Solution**
 
 mDNS name resolution must be enabled in the system. Check out the contents of ``/etc/nsswitch.conf``, you should see something similar to this:
 
@@ -654,18 +697,19 @@ Docker will consume a lot of memory when `publishing <https://docs.docker.com/co
 Multicast fails in Docker
 -------------------------
 
-**Problem**:
+**Problem**
 
-- Your Kurento Media Server is running in a Docker container.
-- MULTICAST streams playback fail with an error such as this one:
+* Your Kurento Media Server is running in a Docker container.
+
+* MULTICAST streams playback fail with an error such as this one:
 
   .. code-block:: text
 
-     DEBUG rtspsrc gstrtspsrc.c:7553:gst_rtspsrc_handle_message:<source> timeout on UDP port
+     DEBUG rtspsrc [...] timeout on UDP port
 
   Note that in this example, to see this message you would need to enable *DEBUG* log level for the *rtspsrc* category; see :ref:`logging-levels`.
 
-**Solution**:
+**Solution**
 
 For Multicast streaming to work properly, you need to disable Docker network isolation and use ``--network host``. Note that this gives the container direct access to the host interfaces, and you'll need to connect through published ports to access others containers.
 
@@ -728,16 +772,34 @@ In principle, *networkCache = 0* would mean that all RTP packets must be exactly
 
 
 
+.. _troubleshooting-video-stuttering:
+
 RTSP Video stuttering
 ~~~~~~~~~~~~~~~~~~~~~
 
+**Problem**
+
+*PlayerEndpoint* is used to consume an RTSP stream from some source (typically, an IP camera). However, the resulting video (e.g. after recording with *RecorderEndpoint*, or after relaying video to WebRTC viewers with *WebRtcEndpoint*) shows stuttering (i.e. the video playback is not smooth, it constantly "jumps" around).
+
+**Reason**
+
+The source video is too heavy and KMS is not able to process it on time, so it lags behind and ends up losing parts of it.
+
+**Solution**
+
+The most effective change you can do is to reduce the video resolution and/or quality (bitrate, framerate) at the sender.
+
+Kurento Media Server is known to work well receiving videos of up to **720p** resolution (1280x720) at **30fps** and bitrate around **2Mbps**. If you are using values beyond those, there is a chance that KMS will be unable to process all incoming data on time, and this will cause buffers filling up and frames getting dropped. Try reducing the resolution of your input videos to see if this helps solving the issue.
+
+See also:
+
+* :ref:`troubleshooting-video-quality`.
+
+**Background**
+
 The GStreamer element in charge of RTSP reception is `rtspsrc <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtspsrc.html>`__, and this element contains an `rtpjitterbuffer <https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-good/html/gst-plugins-good-plugins-rtpjitterbuffer.html>`__.
 
-This jitter buffer gets full when network packets arrive faster than what Kurento is able to process. If this happens, then PlayerEndpoint will start dropping packets, which will show up as video stuttering on the output streams, while triggering a warning in Kurento logs:
-
-.. code-block:: text
-
-   WARNING  kmsutils  discont_detection_probe() <kmsagnosticbin0:sink>  Stream discontinuity detected on non-keyframe
+This jitter buffer gets full when network packets arrive faster than what Kurento is able to process. If this happens, then PlayerEndpoint will start dropping packets, showing up as video stuttering on the output.
 
 You can check if this problem is affecting you by running with DEBUG :ref:`logging level <logging-levels>` enabled for the *rtpjitterbuffer* component, and searching for a specific message:
 
@@ -747,10 +809,6 @@ You can check if this problem is affecting you by running with DEBUG :ref:`loggi
    /usr/bin/kurento-media-server 2>&1 | grep -P 'rtpjitterbuffer.*(Received packet|Queue full)'
 
 With this command, a new line will get printed for each single *Received packet*, plus an extra line will appear informing about *Queue full* whenever a packet is dropped.
-
-There is not much you can fine tune in KMS to solve this problem; the most practical solution is to reduce the amount of data, mostly by decreasing either video resolution or video bitrate.
-
-Kurento Media Server is known to work well receiving videos of up to **720p** resolution (1280x720) at **30fps** and around **2Mbps**. If you are using values beyond those, there is a chance that KMS will be unable to process all incoming data on time, and this will cause that buffers fill up and frames get dropped. Try reducing the resolution of your input videos to see if this helps solving the issue.
 
 
 
@@ -790,7 +848,7 @@ Kurento will just record whatever arrives as input, so if your recordings have l
 
 In most situations, the real cause of this issue is the web browser encoding and sending a low bitrate or a low resolution video. Keep in mind that some browsers (Chrome, as of this writing) are able to dynamically adjust the output resolution; this means that the real size of the video coming out from Chrome will vary over time. Normally it starts small, and after some time it improves, when the browser detects that the available network bandwidth allows for it.
 
-Check this section to get some advice about how to investigate low quality issues: :ref:`troubleshooting-low-quality`.
+Check this section to get some advice about how to investigate low quality issues: :ref:`troubleshooting-video-quality`.
 
 
 
