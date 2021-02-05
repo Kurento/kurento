@@ -236,26 +236,6 @@ Autoplay:
 
 
 
-H.264 encoding/decoding profile
-===============================
-
-By default, Chrome uses this line in the SDP Offer for an H.264 media:
-
-.. code-block:: text
-
-   a=fmtp:100 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f
-
-`profile-level-id` is an SDP attribute, defined in [RFC 6184] as the hexadecimal representation of the *Sequence Parameter Set* (SPS) from the H.264 Specification. The value **42e01f** decomposes as the following parameters:
-- `profile_idc` = 0x42 = 66
-- `profile-iop` = 0xE0 = 1110_0000
-- `level_idc` = 0x1F = 31
-
-:rfc:`6184`.
-
-These values translate into the **Constrained Baseline Profile, Level 3.1**.
-
-
-
 Command-line
 ============
 
@@ -336,15 +316,54 @@ WebRTC **bandwidth estimation (BWE)** was implemented first with *Google REMB*, 
 
 
 
+.. _browser-video:
+
 Video Encoding
 ==============
 
-The WebRTC **maximum video bitrate** is limited by a simple calculation based on its **width** and **height**:
+Video Bitrate
+-------------
+
+Web browsers will adapt their output video quality according to what they detect is the network quality. Most browsers will adapt the **video bitrate**; in addition, Chrome also adapts the **video resolution**.
+
+The **maximum video bitrate** is calculated by the WebRTC stack, by following a simple rule based on the video dimensions:
 
 * 600 kbps if ``width * height <= 320 * 240``.
 * 1700 kbps if ``width * height <= 640 * 480``.
 * 2000 kbps (2 Mbps) if ``width * height <= 960 * 540``.
 * 2500 kbps (2.5 Mbps) for bigger video sizes.
-* Even for bigger sizes, bitrate max is 1200 kbps if video is a screen capture.
+* 1200 kbps in any case, if the video is a screen capture.
 
-`libwebrtc source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/webrtc_video_engine.cc#231>`__ (``GetMaxDefaultVideoBitrateKbps``).
+Source: The ``GetMaxDefaultVideoBitrateKbps()`` function in `libwebrtc source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/webrtc_video_engine.cc#231>`__.
+
+Browsers offer internal stats through a special web address that you can use to verify what is really being sent by their WebRTC stack.
+
+For example, to check the outbound stats in Chrome:
+
+#. Open this URL: ``chrome://webrtc-internals/``.
+#. Look for the stat name "*Stats graphs for RTCOutboundRTPVideoStream (outbound-rtp)*".
+#. You will find the effective output video bitrate in ``[bytesSent_in_bits/s]``, and the output resolution in ``frameWidth`` and ``frameHeight``.
+
+You can also check what is the network bandwidth estimation in Chrome:
+
+#. Look for the stat name "*Stats graphs for RTCIceCandidatePair (candidate-pair)*". Note that there might be several of these, but only one will be active.
+#. Find the output network bandwidth estimation in ``availableOutgoingBitrate``. Chrome will try to slowly increase its output bitrate, until it reaches this estimation.
+
+
+
+H.264 profile
+-------------
+
+By default, Chrome uses this line in the SDP Offer for an H.264 media:
+
+.. code-block:: text
+
+   a=fmtp:100 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f
+
+`profile-level-id` is an SDP attribute, defined in :rfc:`6184` as the hexadecimal representation of the *Sequence Parameter Set* (SPS) from the H.264 Specification. The value **42e01f** decomposes as the following parameters:
+
+* `profile_idc` = 0x42 = 66
+* `profile-iop` = 0xE0 = 1110_0000
+* `level_idc` = 0x1F = 31
+
+These values translate into the **Constrained Baseline Profile, Level 3.1**.
