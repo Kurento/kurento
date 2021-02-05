@@ -160,9 +160,10 @@
   original stream.
 </p>
 <p>
-  The default bandwidth range of the endpoint is
-  <strong>[100 kbps, 500 kbps]</strong>, but it can be changed separately for
-  input/output directions and for audio/video streams.
+  Note that the default <strong>VideoSendBandwidth</strong> range of the
+  endpoint is a VERY conservative one, and leads to a low maximum video quality.
+  Most applications will probably want to increase this to higher values such as
+  2000 kbps (2 mbps).
 </p>
 <p>
   <strong>
@@ -173,34 +174,36 @@
 </p>
 <ul>
   <li>
-    Input bandwidth: Configuration value used to inform remote peers about the
-    bitrate that can be pushed into this endpoint.
+    Input bandwidth: Values used to inform remote peers about the bitrate that
+    can be sent to this endpoint.
     <ul>
       <li>
-        <strong>{get,set}MinVideoRecvBandwidth</strong>: Minimum bitrate
-        requested on the received video stream.
+        <strong>MinVideoRecvBandwidth</strong>: Minimum input bitrate, requested
+        from WebRTC senders with REMB (Default: 30 Kbps).
       </li>
       <li>
-        <strong>{get,set}Max{Audio,Video}RecvBandwidth</strong>: Maximum bitrate
-        expected for the received stream.
+        <strong>MaxAudioRecvBandwidth</strong> and
+        <strong>MaxVideoRecvBandwidth</strong>: Maximum input bitrate, signaled
+        in SDP Offers to WebRTC and RTP senders (Default: unlimited).
       </li>
     </ul>
   </li>
   <li>
-    Output bandwidth: Configuration values used to control bitrate of the output
-    video stream sent to remote peers. It is important to keep in mind that
-    pushed bitrate depends on network and remote peer capabilities. Remote peers
-    can also announce bandwidth limitation in their SDPs (through the
-    <code>b={modifier}:{value}</code> tag). Kurento will always enforce bitrate
-    limitations specified by the remote peer over internal configurations.
+    Output bandwidth: Values used to control bitrate of the video streams sent
+    to remote peers. It is important to keep in mind that pushed bitrate depends
+    on network and remote peer capabilities. Remote peers can also announce
+    bandwidth limitation in their SDPs (through the
+    <code>b={modifier}:{value}</code> attribute). Kurento will always enforce
+    bitrate limitations specified by the remote peer over internal
+    configurations.
     <ul>
       <li>
-        <strong>{get,set}MinVideoSendBandwidth</strong>: Minimum video bitrate
-        sent to remote peer.
+        <strong>MinVideoSendBandwidth</strong>: REMB override of minimum bitrate
+        sent to WebRTC receivers (Default: 100 Kbps).
       </li>
       <li>
-        <strong>{get,set}MaxVideoSendBandwidth</strong>: Maximum video bitrate
-        sent to remote peer.
+        <strong>MaxVideoSendBandwidth</strong>: REMB override of maximum bitrate
+        sent to WebRTC receivers (Default: 500 Kbps).
       </li>
       <li>
         <strong>RembParams.rembOnConnect</strong>: Initial local REMB bandwidth
@@ -223,12 +226,8 @@
   WebRtcElement. DataChannels can be configured to provide the following:
 </p>
 <ul>
-  <li>
-    Reliable or partially reliable delivery of sent messages
-  </li>
-  <li>
-    In-order or out-of-order delivery of sent messages
-  </li>
+  <li>Reliable or partially reliable delivery of sent messages</li>
+  <li>In-order or out-of-order delivery of sent messages</li>
 </ul>
 <p>
   Unreliable, out-of-order delivery is equivalent to raw UDP semantics. The
