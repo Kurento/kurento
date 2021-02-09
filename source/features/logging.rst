@@ -95,7 +95,7 @@ RecorderEndpoint
 
 .. code-block:: shell
 
-   export GST_DEBUG="${GST_DEBUG:-2},KurentoRecorderEndpointImpl:4,recorderendpoint:5,basemediamuxer:5,qtmux:5,curl*:5"
+   export GST_DEBUG="${GST_DEBUG:-2},KurentoRecorderEndpointImpl:5,recorderendpoint:5,basemediamuxer:5,qtmux:5,curl*:5"
 
 
 
