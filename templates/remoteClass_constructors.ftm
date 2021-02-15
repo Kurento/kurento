@@ -51,6 +51,7 @@
     var count = EventEmitter.listenerCount(this, event);
     if(count) return;
 
+    if (!subscriptions.hasOwnProperty(event)) return;
     var token = subscriptions[event];
 
     var params =
