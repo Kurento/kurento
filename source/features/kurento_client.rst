@@ -31,3 +31,10 @@ Kurento Js Utils
 
 `kurento-utils-js <https://github.com/Kurento/kurento-utils-js>`__ is a browser library that can be used to simplify creation and handling of `RTCPeerConnection <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection>`__ objects, to control the browser's `WebRTC API <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API>`__.
 
+.. warning::
+
+   This library is not actively maintained. It was written to simplify the :doc:`Kurento Tutorials </user/tutorials>` and has several shortcomings for more advanced uses.
+
+   For real-world applications we recommend to **avoid using this library**  and instead to write your JavaScript code directly against the browser's WebRTC API.
+
+* **Reference**: `kurento-utils-js JsDoc <../_static/utils-jsdoc/index.html>`__.
