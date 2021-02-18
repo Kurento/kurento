@@ -88,7 +88,8 @@ the dropdown list at the top of the tests page.
 ### Node.js
 
 To exec test in Node.js, you only need to exec ```npm test```, that will launch
-all the tests automatically using [QUnit-cli].
+all the tests automatically using [QUnit-cli]. Note that a Kurento Media Server
+instance must be also up, in order to have all tests run against it.
 
 At this moment, the default WebSocket endpoint can not be changed due to limits
 of the current implementation of NPM. If you need to use a different WebSocket
