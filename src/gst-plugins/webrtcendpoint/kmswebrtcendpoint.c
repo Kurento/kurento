@@ -58,6 +58,7 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
 #define DEFAULT_EXTERNAL_ADDRESS NULL
 #define DEFAULT_EXTERNAL_IPV4 NULL
 #define DEFAULT_EXTERNAL_IPV6 NULL
+#define DEFAULT_ICE_TCP TRUE
 
 enum
 {
@@ -70,6 +71,7 @@ enum
   PROP_EXTERNAL_ADDRESS,
   PROP_EXTERNAL_IPV4,
   PROP_EXTERNAL_IPV6,
+  PROP_ICE_TCP,
   N_PROPERTIES
 };
 
@@ -105,6 +107,7 @@ struct _KmsWebrtcEndpointPrivate
   gchar *external_address;
   gchar *external_ipv4;
   gchar *external_ipv6;
+  gboolean ice_tcp;
 };
 
 /* Internal session management begin */
@@ -341,6 +344,8 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       webrtc_sess, "external-ipv4", G_BINDING_DEFAULT);
   g_object_bind_property (self, "external-ipv6",
       webrtc_sess, "external-ipv6", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "ice-tcp",
+      webrtc_sess, "ice-tcp", G_BINDING_DEFAULT);
 
   g_object_set (webrtc_sess, "stun-server", self->priv->stun_server_ip,
       "stun-server-port", self->priv->stun_server_port,
@@ -349,7 +354,9 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       "network-interfaces", self->priv->network_interfaces,
       "external-address", self->priv->external_address,
       "external-ipv4", self->priv->external_ipv4,
-      "external-ipv6", self->priv->external_ipv6, NULL);
+      "external-ipv6", self->priv->external_ipv6,
+      "ice-tcp", self->priv->ice_tcp,
+      NULL);
 
   g_signal_connect (webrtc_sess, "on-ice-candidate",
       G_CALLBACK (on_ice_candidate), self);
@@ -535,6 +542,9 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
       g_free (self->priv->external_ipv6);
       self->priv->external_ipv6 = g_value_dup_string (value);
       break;
+    case PROP_ICE_TCP:
+      self->priv->ice_tcp = g_value_get_boolean (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -575,6 +585,9 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
       break;
     case PROP_EXTERNAL_IPV6:
       g_value_set_string (value, self->priv->external_ipv6);
+      break;
+    case PROP_ICE_TCP:
+      g_value_set_boolean (value, self->priv->ice_tcp);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -815,6 +828,12 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "External (public) IPv6 address of the media server",
           DEFAULT_EXTERNAL_IPV6, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (gobject_class, PROP_ICE_TCP,
+      g_param_spec_boolean ("ice-tcp",
+        "iceTcp",
+        "Enable ICE-TCP candidate gathering",
+        DEFAULT_ICE_TCP, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   /**
   * KmsWebrtcEndpoint::on-ice-candidate:
   * @self: the object which received the signal
@@ -951,6 +970,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv->external_address = DEFAULT_EXTERNAL_ADDRESS;
   self->priv->external_ipv4 = DEFAULT_EXTERNAL_IPV4;
   self->priv->external_ipv6 = DEFAULT_EXTERNAL_IPV6;
+  self->priv->ice_tcp = DEFAULT_ICE_TCP;
 
   self->priv->loop = kms_loop_new ();
   g_object_get (self->priv->loop, "context", &self->priv->context, NULL);

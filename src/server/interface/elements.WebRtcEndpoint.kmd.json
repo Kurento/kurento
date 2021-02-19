@@ -304,6 +304,22 @@
           "type": "String"
         },
         {
+          "name": "iceTcp",
+          "doc": "Enable ICE-TCP candidate gathering.
+<p>
+  This setting enables or disables using TCP for ICE candidate gathering in the
+  underlying libnice library:
+  https://libnice.freedesktop.org/libnice/NiceAgent.html#NiceAgent--ice-tcp
+</p>
+<p>
+  You might want to disable ICE-TCP to potentially speed up ICE gathering by
+  avoiding TCP candidates in scenarios where they are not needed.
+</p>
+<p><code>iceTcp</code> is either 1 (ON) or 0 (OFF). Default: 1 (ON).</p>
+          ",
+          "type": "boolean"
+        },
+        {
           "name": "stunServerAddress",
           "doc": "STUN server IP address.
 <p>The ICE process uses STUN to punch holes through NAT firewalls.</p>
