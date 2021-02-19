@@ -14,6 +14,19 @@ set(KMS_RECORDERENDPOINT_HEADERS
   kmsrecorderendpoint.h
 )
 
+set(KMS_RECORDERENDPOINT_ENUM_HEADERS
+  kmsrecordergapsfixmethod.h
+)
+
+list(APPEND KMS_RECORDERENDPOINT_HEADERS ${KMS_RECORDERENDPOINT_ENUM_HEADERS})
+add_glib_enumtypes(
+  KMS_RECORDERENDPOINT_SOURCES
+  KMS_RECORDERENDPOINT_HEADERS
+  kms-recorder-enumtypes
+  KMS
+  ${KMS_RECORDERENDPOINT_ENUM_HEADERS}
+)
+
 add_library(recorderendpoint MODULE ${KMS_RECORDERENDPOINT_SOURCES} ${KMS_RECORDERENDPOINT_HEADERS})
 if(SANITIZERS_ENABLED)
   add_sanitizers(recorderendpoint)
@@ -21,6 +34,8 @@ endif()
 
 set_property (TARGET recorderendpoint
   PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${gstreamer-1.5_INCLUDE_DIRS}
     ${KmsGstCommons_INCLUDE_DIRS}

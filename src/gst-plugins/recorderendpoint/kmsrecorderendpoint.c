@@ -41,11 +41,15 @@
 #include "kmsavmuxer.h"
 #include "kmsksrmuxer.h"
 
+#include "kmsrecordergapsfixmethod.h"
+#include "kms-recorder-enumtypes.h"
+
 #define PLUGIN_NAME "recorderendpoint"
 
 #define RECORDER_DEFAULT_SUFFIX "_default"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_NONE
+#define DEFAULT_GAPS_FIX KMS_RECORDER_GAPS_FIX_NONE
 
 #define KMS_BASE_TIME_KEY "base-time-key"
 G_DEFINE_QUARK (KMS_BASE_TIME_KEY, base_time_key);
@@ -92,6 +96,7 @@ enum
   PROP_0,
   PROP_DVR,
   PROP_PROFILE,
+  PROP_GAPS_FIX,
   N_PROPERTIES
 };
 
@@ -133,6 +138,7 @@ typedef struct _KmsRecorderStats
 struct _KmsRecorderEndpointPrivate
 {
   KmsRecordingProfile profile;
+  KmsRecorderGapsFixMethod gaps_fix;
   GstClockTime paused_time;
   GstClockTime paused_start;
   gboolean use_dvr;
@@ -373,10 +379,18 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     // The 'paused_time' doesn't account exactly for all the time, it is missing
     // some milliseconds. Maybe due to latency in upstream elements?
 
+    GstClockTime common_offset = self->priv->paused_time;
+
+    if (self->priv->gaps_fix == KMS_RECORDER_GAPS_FIX_GENPTS) {
+      // In GenPTS mode, add the total time that has been lost in the form
+      // of gaps, typically caused by packet loss from an RTP source.
+      common_offset += base_time->audio_gaps;
+    }
+
     if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
         && GST_BUFFER_PTS_IS_VALID (buffer)) {
-      const GstClockTime offset =
-          base_time->pts + base_time->audio_gaps + self->priv->paused_time;
+      const GstClockTime offset = common_offset + base_time->pts;
+
       // PTS -= offset, but preventing underflows.
       if (GST_BUFFER_PTS (buffer) > offset) {
         GST_BUFFER_PTS (buffer) -= offset;
@@ -387,8 +401,8 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 
     if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
         && GST_BUFFER_DTS_IS_VALID (buffer)) {
-      const GstClockTime offset =
-          base_time->dts + base_time->audio_gaps + self->priv->paused_time;
+      const GstClockTime offset = common_offset + base_time->dts;
+
       // DTS -= offset, but preventing underflows.
       if (GST_BUFFER_DTS (buffer) > offset) {
         GST_BUFFER_DTS (buffer) -= offset;
@@ -1438,6 +1452,9 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
 
       break;
     }
+    case PROP_GAPS_FIX:
+      self->priv->gaps_fix = g_value_get_enum (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -1458,6 +1475,10 @@ kms_recorder_endpoint_get_property (GObject * object, guint property_id,
       break;
     case PROP_PROFILE:{
       g_value_set_enum (value, self->priv->profile);
+      break;
+    }
+    case PROP_GAPS_FIX:{
+      g_value_set_enum (value, self->priv->gaps_fix);
       break;
     }
     default:
@@ -1956,6 +1977,10 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
       "The profile used for encapsulating the media",
       KMS_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
+  obj_properties[PROP_GAPS_FIX] = g_param_spec_enum ("gaps-fix",
+      "Gaps fix method", "The method used to fix gaps in the stream",
+      KMS_TYPE_RECORDER_GAPS_FIX_METHOD, DEFAULT_GAPS_FIX, G_PARAM_READWRITE);
+
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
 
@@ -2088,6 +2113,7 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
       g_object_unref);
 
   self->priv->profile = DEFAULT_RECORDING_PROFILE;
+  self->priv->gaps_fix = DEFAULT_GAPS_FIX;
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;
