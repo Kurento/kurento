@@ -74,7 +74,7 @@ Stability tests have been also created using Java, and they are contained in the
 Tutorials
 ---------
 
-The documentation of Kurento includes a number of tutorials `tutorials <https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html>`_ which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in the project `kurento-tutorial-test <https://github.com/Kurento/kurento-tutorial-test/>`_. In order to run these tests, Maven should be used:
+The documentation of Kurento includes a number of :doc:`tutorials </user/tutorials>` which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in the project `kurento-tutorial-test <https://github.com/Kurento/kurento-tutorial-test/>`_. In order to run these tests, Maven should be used:
 
 .. code-block:: shell
 
