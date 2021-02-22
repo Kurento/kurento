@@ -86,7 +86,7 @@ PlayerEndpoint
 
 .. code-block:: shell
 
-   export GST_DEBUG="${GST_DEBUG:-2},KurentoUriEndpointImpl:5,playerendpoint:5,kmselement:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:5,souphttpsrc:5,*CAPS*:3"
+   export GST_DEBUG="${GST_DEBUG:-2},KurentoUriEndpointImpl:5,uriendpoint:5,playerendpoint:5,kmselement:5,appsrc:4,agnosticbin*:5,uridecodebin:6,rtspsrc:6,souphttpsrc:5,GST_URI:6,*CAPS*:3"
 
 
 
@@ -95,7 +95,7 @@ RecorderEndpoint
 
 .. code-block:: shell
 
-   export GST_DEBUG="${GST_DEBUG:-2},KurentoRecorderEndpointImpl:5,recorderendpoint:5,basemediamuxer:5,qtmux:5,curl*:5"
+   export GST_DEBUG="${GST_DEBUG:-2},KurentoUriEndpointImpl:5,uriendpoint:5,GST_URI:6,KurentoRecorderEndpointImpl:5,recorderendpoint:5,basemediamuxer:5,qtmux:5,curl*:6"
 
 
 
