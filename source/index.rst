@@ -46,8 +46,8 @@ Information about *development of Kurento itself* is also available:
    :maxdepth: 2
    :caption: Feature Documentation
 
-   /features/kurento_modules
    /features/kurento_client
+   /features/kurento_modules
    /features/kurento_protocol
    /features/kurento_utils_js
    /features/security
