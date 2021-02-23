@@ -160,7 +160,6 @@ PointerDetectorFilterImpl::PointerDetectorFilterImpl (const
   g_object_get (G_OBJECT (element), "filter", &pointerDetector, NULL);
 
   if (pointerDetector == NULL) {
-    g_object_unref (bus);
     throw KurentoException (MEDIA_OBJECT_NOT_AVAILABLE,
                             "Media Object not available");
   }
