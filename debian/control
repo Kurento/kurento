@@ -27,7 +27,7 @@ Depends: ${shlibs:Depends},
  gstreamer1.5-plugins-good,
  kms-core (>= 6.15.1),
  kms-elements (>= 6.15.1),
- kms-filters (>= 6.7.0)
+ kms-filters (>= 6.15.1)
 Breaks: kms-platedetector-6.0
 Replaces: kms-platedetector-6.0
 Description: Kurento Plate Detector filter
