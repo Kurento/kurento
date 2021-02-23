@@ -22,7 +22,7 @@ Depends: ${shlibs:Depends},
  ${misc:Depends},
  kms-core (>= 6.15.1),
  kms-elements (>= 6.15.1),
- kms-filters (>= 6.7.0)
+ kms-filters (>= 6.15.1)
 Breaks: kms-markerdetector-6.0
 Replaces: kms-markerdetector-6.0
 Description: Kurento Augmented Reality marker detector
