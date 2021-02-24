@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 
 # This tool is intended to build Docker images
 #
@@ -49,10 +49,26 @@
 #     A suffix to be appended to the image name.
 #     Optional. Default: None.
 
-[[ -z "$PUSH_IMAGES" ]] && PUSH_IMAGES="no"
-[[ -z "$TAG_COMMIT" ]] && TAG_COMMIT="yes"
 
-if [[ -z "$DOCKERFILE" ]]; then
+
+# Shell setup
+# -----------
+
+BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# shellcheck source=bash.conf.sh
+source "$BASEPATH/bash.conf.sh" || exit 1
+
+log "==================== BEGIN ===================="
+
+# Trace all commands
+set -o xtrace
+
+
+
+[[ -z "${PUSH_IMAGES:-}" ]] && PUSH_IMAGES="no"
+[[ -z "${TAG_COMMIT:-}" ]] && TAG_COMMIT="yes"
+
+if [[ -n "${DOCKERFILE:-}" ]]; then
     FOLDER="$(dirname "$DOCKERFILE")"
 else
     FOLDER="$PWD"
@@ -63,13 +79,12 @@ fi
 eval $(parse_yaml "$FOLDER/version.yml" "")
 commit="$(git rev-parse --short HEAD)"
 
-[[ -z "$DOCKERFILE" ]] && DOCKERFILE="Dockerfile"
-[[ -z "$IMAGE_NAME" ]] && IMAGE_NAME="${image_name:-}"
-[[ -z "$IMAGE_NAMESPACE" ]] && IMAGE_NAMESPACE="${image_namespace:-}"
-[[ -z "$IMAGE_AUTHORS" ]] && IMAGE_AUTHORS="${image_authors:-}"
-[[ -z "$TAG" ]] && TAG="${image_version:-}"
-echo "Extra tags in version.yml: ${image_extra_tags[*]}"
-[[ -z "$EXTRA_TAGS" ]] && EXTRA_TAGS="${image_extra_tags[*]}"
+[[ -z "${DOCKERFILE:-}" ]] && DOCKERFILE="Dockerfile"
+[[ -z "${IMAGE_NAME:-}" ]] && IMAGE_NAME="${image_name:-}"
+[[ -z "${IMAGE_NAMESPACE:-}" ]] && IMAGE_NAMESPACE="${image_namespace:-}"
+[[ -z "${IMAGE_AUTHORS:-}" ]] && IMAGE_AUTHORS="${image_authors:-}"
+[[ -z "${TAG:-}" ]] && TAG="${image_version:-}"
+[[ -z "${EXTRA_TAGS:-}" ]] && EXTRA_TAGS="${image_extra_tags[*]+"${image_extra_tags[*]}"}"
 
 IMAGE_NAME="${IMAGE_NAME_PREFIX:-}${IMAGE_NAME}${IMAGE_NAME_SUFFIX:-}"
 
@@ -78,7 +93,7 @@ BUILD_NAME="$(echo "$IMAGE_NAME" | cut -d/ -f2)"
 # If there's a generate.sh script, assume we need to dynamically generate the Dockerfile using it
 # This is the case of selenium images
 if [[ -f generate.sh ]]; then
-    echo "Generating Dockerfile..."
+    log "Generating Dockerfile..."
     [[ -z "${image_parent_version}" ]] && image_parent_version="$TAG"
     [[ -z "${image_namespace}" ]] && image_namespace="kurento"
     [[ -z "${image_authors}" ]] && image_authors="Kurento Team"
@@ -88,7 +103,7 @@ fi
 # If there's a kurento-generate.sh script, assume we need to fix the FROM line inside the Dockerfie
 # in order to use our own generates Docker Images
 if [[ -f kurento-generate.sh ]]; then
-    echo "Applying Kurento customization..."
+    log "Applying Kurento customization..."
     if [[ $FOLDER == *"Debug"* ]]; then
         ./kurento-generate.sh "${image_parent_version}" "${image_namespace}" "${image_authors}"
     else
@@ -102,7 +117,7 @@ for BUILD_ARG in ${BUILD_ARGS:-}; do
 done
 
 docker build --pull --rm "${build_args[@]}" -t "$BUILD_NAME" -f "$DOCKERFILE" "$FOLDER" || {
-    echo "ERROR: Command failed: docker build"
+    log "ERROR: Command failed: docker build"
     exit 1
 }
 
@@ -115,15 +130,15 @@ if [[ "$TAG_COMMIT" == "yes" ]]; then
 fi
 
 # Apply any additional tags
-echo "Extra tags: $EXTRA_TAGS"
+log "Extra tags: $EXTRA_TAGS"
 for EXTRA_TAG in ${EXTRA_TAGS}; do
     docker tag "$BUILD_NAME" "${IMAGE_NAME}:${EXTRA_TAG}"
 done
 
-echo "### DOCKER IMAGES"
+log "### DOCKER IMAGES"
 docker images | grep "$IMAGE_NAME"
 
-echo "#### SPACE AVAILABLE"
+log "#### SPACE AVAILABLE"
 df -h
 
 # Push
@@ -147,3 +162,7 @@ fi
 if [ "$(docker images -f "dangling=true" -q | wc -l)" -ne 0 ]; then
     docker rmi "$(docker images -f "dangling=true" -q)" || exit 0
 fi
+
+
+
+log "==================== END ===================="
