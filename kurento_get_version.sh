@@ -23,7 +23,9 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
 source "$BASEPATH/bash.conf.sh" || exit 1
 
-# Trace all commands (to stderr).
+log "==================== BEGIN ====================" >&2
+
+# Trace all commands
 set -o xtrace
 
 
@@ -101,10 +103,14 @@ else
   exit 1
 fi
 
-if [ "${PROJECT_VERSION}x" = "x" ]; then
-  log "PROJECT_VERSION not defined" >&2
+if [ -z "${PROJECT_VERSION:-}" ]; then
+  log "ERROR: Couldn't get PROJECT_VERSION from the current project" >&2
   exit 1
 fi
 
-#echo "PROJECT_VERSION: <${PROJECT_VERSION}>" # Useful for debugging stdout of this script
+#log "PROJECT_VERSION: <${PROJECT_VERSION}>" # Useful for debugging stdout of this script
 echo "${PROJECT_VERSION}"
+
+
+
+log "==================== END ====================" >&2
