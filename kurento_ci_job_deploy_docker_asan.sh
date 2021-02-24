@@ -99,12 +99,21 @@ else
     DOCKER_SOURCE_TAG="${KMS_VERSION}-${JOB_TIMESTAMP}"
 fi
 
+# Best effort to check if the given source tag does actually exist.
+DOCKER_KMS_IMAGE="kurento/kurento-media-server${DOCKER_NAME_SUFFIX}:${DOCKER_SOURCE_TAG}"
+if docker manifest >/dev/null 2>&1; then
+    # The experimental command `docker manifest` is available.
+    if ! docker manifest inspect "$DOCKER_KMS_IMAGE" >/dev/null 2>&1; then
+        # The given image tag does not exist. Revert to the default tag.
+        DOCKER_KMS_IMAGE="kurento/kurento-media-server${DOCKER_NAME_SUFFIX}"
+    fi
+fi
+
 pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
-export BUILD_ARGS="UBUNTU_CODENAME=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION"
-export BUILD_ARGS="$BUILD_ARGS KMS_IMAGE=kurento/kurento-media-server${DOCKER_NAME_SUFFIX}:${DOCKER_SOURCE_TAG}"
+export BUILD_ARGS="UBUNTU_CODENAME=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION KMS_IMAGE=$DOCKER_KMS_IMAGE"
 export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
@@ -117,7 +126,7 @@ elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     export TAG="${JOB_DEPLOY_NAME}-asan"
     export EXTRA_TAGS=""
 else
-    # Main tag: "1.2.3-20191231235959"
+    # Main tag: "1.2.3-20191231235959-asan"
     # Moving tag: "latest-asan"
     export TAG="${KMS_VERSION}-${JOB_TIMESTAMP}-asan"
     export EXTRA_TAGS="latest-asan"
