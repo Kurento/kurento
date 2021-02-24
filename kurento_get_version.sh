@@ -52,14 +52,16 @@ then
 elif [ -f pom.xml ]
 then
   log "Getting version from pom.xml" >&2
-  MAVEN_CMD="mvn --batch-mode --non-recursive exec:exec -Dexec.executable=echo -Dexec.args='\${project.version}'"
+  MAVEN_CMD=(mvn --batch-mode --non-recursive exec:exec -Dexec.executable=echo -Dexec.args="\${project.version}")
   if [ -n "${MAVEN_SETTINGS:-}" ]; then
-    MAVEN_CMD="$MAVEN_CMD --settings $MAVEN_SETTINGS"
+    MAVEN_CMD+=(--settings "$MAVEN_SETTINGS")
   fi
-  PROJECT_VERSION="$(eval $MAVEN_CMD --quiet)" || {
+  # First run, to log all downloading of dependencies.
+  "${MAVEN_CMD[@]}" >&2
+  # Second run, suppressing Maven logs to get just the result.
+  MAVEN_CMD+=(--quiet)
+  PROJECT_VERSION="$("${MAVEN_CMD[@]}")" || {
     log "ERROR: Command failed: mvn echo \${project.version}" >&2
-    log "Running again to print the whole output:" >&2
-    eval "$MAVEN_CMD" # This is just to print all output from Maven, eases debugging
     exit 1
   }
 elif [ -f configure.ac ]
@@ -108,7 +110,7 @@ if [ -z "${PROJECT_VERSION:-}" ]; then
   exit 1
 fi
 
-#log "PROJECT_VERSION: <${PROJECT_VERSION}>" # Useful for debugging stdout of this script
+# log "PROJECT_VERSION: <${PROJECT_VERSION}>" # Useful for debugging stdout of this script
 echo "${PROJECT_VERSION}"
 
 
