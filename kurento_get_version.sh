@@ -40,7 +40,7 @@ then
   TEMPDIR="$(mktemp --directory --tmpdir="$PWD")"
   cd "$TEMPDIR" || exit 1
   echo "@PROJECT_VERSION@" >version.txt.in
-  echo 'configure_file(${CMAKE_BINARY_DIR}/version.txt.in version.txt)' >>../CMakeLists.txt
+  echo "configure_file(\${CMAKE_BINARY_DIR}/version.txt.in version.txt)" >>../CMakeLists.txt
   cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE >/dev/null || {
     log "ERROR: Command failed: cmake" >&2
     exit 1
@@ -79,8 +79,9 @@ then
 elif [ -f VERSIONS.conf.sh ]
 then
   log "Getting version from VERSIONS.conf.sh" >&2
-  # shellcheck source=VERSIONS.conf.sh
+  # shellcheck disable=SC1091
   source VERSIONS.conf.sh
+  # shellcheck disable=SC2153
   PROJECT_VERSION="${PROJECT_VERSIONS[VERSION_DOC]}"
 elif [ -f VERSION ]
 then
