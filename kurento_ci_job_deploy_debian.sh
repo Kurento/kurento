@@ -134,7 +134,7 @@ fi
 cat "$KEY_PUB" >secret.pem
 chmod 0400 secret.pem
 
-docker run --rm -i \
+docker run --pull always --rm -i \
     --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
     buildpack-deps:xenial-scm /bin/bash <<DOCKERCOMMANDS
@@ -189,7 +189,7 @@ rm secret.pem
 # And the "Install debug symbols" instructions:
 # https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#install-debug-symbols
 
-docker run --rm -i "ubuntu:$JOB_DISTRO" /bin/bash <<DOCKERCOMMANDS
+docker run --pull always --rm -i "ubuntu:$JOB_DISTRO" /bin/bash <<DOCKERCOMMANDS
 
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset

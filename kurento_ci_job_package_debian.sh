@@ -80,9 +80,6 @@ fi
 # Build
 # -----
 
-CONTAINER_IMAGE="kurento/kurento-buildpackage:${JOB_DISTRO}"
-docker pull "$CONTAINER_IMAGE"
-
 # Environment variables passed to the container:
 # * CMake:
 #   - ARGS: Used to pass arguments to CTest (controls running of all tests).
@@ -114,7 +111,7 @@ docker pull "$CONTAINER_IMAGE"
 #     pass G_DEBUG="fatal-warnings", to enable breaking on code assertions.
 #   - G_MESSAGES_DEBUG: To set GLib logging categories. Used for libnice logs.
 
-docker run --rm \
+docker run --pull always --rm \
     --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
     --env ARGS \
@@ -126,7 +123,7 @@ docker run --rm \
     --env GST_DEBUG \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \
-    "$CONTAINER_IMAGE" \
+    "kurento/kurento-buildpackage:${JOB_DISTRO}" \
         --install-files . \
         --apt-proxy 'http://proxy.openvidu.io:3142' \
         --timestamp "$JOB_TIMESTAMP" \

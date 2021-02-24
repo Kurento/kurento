@@ -93,7 +93,7 @@ fi
 # * Build from sources: https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#build-from-sources
 
 # In-place Docker container commands BEGIN
-docker run --rm -i \
+docker run --pull always --rm -i \
     --env DOCKER_KMS_VERSION="$DOCKER_KMS_VERSION" \
     "ubuntu:$JOB_DISTRO" /bin/bash <<'DOCKERCOMMANDS'
 

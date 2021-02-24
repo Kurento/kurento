@@ -141,7 +141,7 @@ elif [[ -f "$HOME/.config/git/config" ]]; then
 fi
 
 # Update test files
-docker run \
+docker run --pull always \
   --rm \
   --name $BUILD_TAG-TEST-FILES-$(date +"%s") \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
@@ -156,7 +156,7 @@ docker run \
 
 # Start a KMS container if the job requires it
 if [[ "$START_KMS_CONTAINER" == "true" ]]; then
-    KMS_CONTAINER_ID="$(docker run -d --name "$BUILD_TAG-KMS-$(date +"%s")" \
+    KMS_CONTAINER_ID="$(docker run --pull always -d --name "$BUILD_TAG-KMS-$(date +"%s")" \
         kurento/kurento-media-server-dev:latest)" \
     || {
         echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run"
@@ -189,8 +189,7 @@ if [[ -z "$TEST_CONTAINER_NAME" ]]; then
 fi
 
 # Create main container
-docker pull "$CONTAINER_IMAGE"
-docker run \
+docker run --pull always \
   --name "$TEST_CONTAINER_NAME" \
   $([ "$DETACHED" = "true" ] && echo "-d" || echo "--rm") \
   -v /var/run/docker.sock:/var/run/docker.sock \

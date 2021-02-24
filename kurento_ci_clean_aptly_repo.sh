@@ -3,7 +3,7 @@
 #/ CI - Clean repositories from Aptly.
 #/
 #/ This script will clean/remove all package from the repository provides.
-#/ During day to day operations dev repositories tend to grow a lot and 
+#/ During day to day operations dev repositories tend to grow a lot and
 #/ is necesary a purge to avoid strange conflicts and behaviours.
 #/
 #/ The script is meant to run in the remote server that hosts Aptly repos. It
@@ -132,7 +132,7 @@ EOF
 cat "$KEY_PUB" >secret.pem
 chmod 0400 secret.pem
 
-docker run --rm -i \
+docker run --pull always --rm -i \
     --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
     buildpack-deps:xenial-scm /bin/bash <<EOF

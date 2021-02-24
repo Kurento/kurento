@@ -57,7 +57,7 @@ User jenkins
 IdentityFile /root/.ssh/id_rsa
 EOL
 
-docker run \
+docker run --pull always \
     --name "$BUILD_TAG" \
     --rm \
     -v "$WORKSPACE":/opt/kurento \

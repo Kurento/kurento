@@ -98,10 +98,10 @@ fi
 
 # Build using a tag composed of the original tag and the short commit id
 for BUILD_ARG in ${BUILD_ARGS:-}; do
-    build_args+=("--build-arg $BUILD_ARG")
+    build_args+=(--build-arg "$BUILD_ARG")
 done
 
-docker build --no-cache --rm=true ${build_args[@]} -t "$BUILD_NAME" -f "$DOCKERFILE" "$FOLDER" || {
+docker build --pull --rm "${build_args[@]}" -t "$BUILD_NAME" -f "$DOCKERFILE" "$FOLDER" || {
     echo "ERROR: Command failed: docker build"
     exit 1
 }
