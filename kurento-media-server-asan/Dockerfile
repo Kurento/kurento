@@ -50,7 +50,7 @@ ARG KMS_IMAGE="kurento/kurento-media-server-dev:latest"
 
 FROM ubuntu:${UBUNTU_CODENAME} AS builder
 
-ARG UBUNTU_CODENAME="xenial"
+ARG UBUNTU_CODENAME
 ARG KMS_VERSION="dev"
 ARG GCC_VERSION="9"
 
