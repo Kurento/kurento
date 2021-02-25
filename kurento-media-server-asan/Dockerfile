@@ -103,6 +103,8 @@ RUN /build.sh
 # Final Docker stage with only the final files
 FROM ${KMS_IMAGE}
 
+ARG UBUNTU_CODENAME
+
 # Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial")
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         gnupg \
