@@ -113,7 +113,11 @@ pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
-export BUILD_ARGS="UBUNTU_CODENAME=$JOB_DISTRO KMS_VERSION=$DOCKER_KMS_VERSION KMS_IMAGE=$DOCKER_KMS_IMAGE"
+BUILD_ARGS="UBUNTU_CODENAME=$JOB_DISTRO"
+BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
+BUILD_ARGS+=" KMS_IMAGE=$DOCKER_KMS_IMAGE"
+BUILD_ARGS+=" APT_ARGS=-oAcquire::http::Proxy=http://proxy.openvidu.io:3142"
+export BUILD_ARGS
 export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
