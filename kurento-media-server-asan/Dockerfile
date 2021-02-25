@@ -61,14 +61,13 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     LANG="C.UTF-8"
 
 # Install required tools:
-# * git: For `git clone`
+# * git: For `git clone` in build.sh
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
-# * software-properties-common: For `add-apt-repository`
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         git \
         gnupg \
-        software-properties-common \
- && echo "deb http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME kms6" >/etc/apt/sources.list.d/kurento.list \
+ && echo "deb http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME kms6" \
+        >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
  && apt-get -q update && apt-get -q install --no-install-recommends --yes \
         build-essential \
@@ -79,13 +78,17 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 # Install latest GCC (GCC 9 in Ubuntu 16.04 "Xenial")
 # This is done to use the latest AddressSanitizer, which is always a good idea
 # because it will have better detection capabilities and bugs resolved
-RUN add-apt-repository --yes ppa:ubuntu-toolchain-r/test \
+RUN echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
+        >/etc/apt/sources.list.d/ubuntu-toolchain.list \
+ && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
  && apt-get -q update && apt-get -q install --no-install-recommends --yes \
         "gcc-${GCC_VERSION}" \
         "g++-${GCC_VERSION}" \
         "cpp-${GCC_VERSION}" \
- && rm -rf /var/lib/apt/lists/* \
- && update-alternatives --remove-all gcc || true \
+ && rm -rf /var/lib/apt/lists/*
+
+# Configure GCC version
+RUN update-alternatives --remove-all gcc || true \
  && update-alternatives --remove-all g++ || true \
  && update-alternatives --remove-all cpp || true \
  && update-alternatives --install /usr/bin/gcc gcc "/usr/bin/gcc-${GCC_VERSION}" 60 \
@@ -101,9 +104,12 @@ RUN /build.sh
 FROM ${KMS_IMAGE}
 
 # Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial")
-COPY --from=builder /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-*.list /etc/apt/sources.list.d/
-COPY --from=builder /etc/apt/trusted.gpg.d/ubuntu-toolchain-r_ubuntu_test.gpg /etc/apt/trusted.gpg.d/
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        gnupg \
+ && echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
+        >/etc/apt/sources.list.d/ubuntu-toolchain.list \
+ && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
+ && apt-get -q update && apt-get -q install --no-install-recommends --yes \
         libgcc1 \
         libstdc++6 \
  && rm -rf /var/lib/apt/lists/*
