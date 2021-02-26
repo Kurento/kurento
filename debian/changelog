@@ -1,8 +1,9 @@
-kms-jsonrpc (6.15.1-0kurento1) UNRELEASED; urgency=medium
+kms-jsonrpc (6.16.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
+  * Prepare release 6.16.0-0kurento1
+  * Update all dependency versions to 6.15.1
 
- -- Juan Navarro <juan.navarro@gmx.es>  Fri, 06 Nov 2020 11:55:55 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:37 +0100
 
 kms-jsonrpc (6.15.0-0kurento1) testing; urgency=medium
 
