@@ -41,9 +41,6 @@ is hosted, install it and run it:
     cd kurento-tutorial-node/kurento-hello-world
     git checkout |VERSION_TUTORIAL_NODE|
     npm install
-    cd static
-    bower install --allow-root
-    cd ..
     npm start
 
 If you have problems installing any of the dependencies, please remove them and

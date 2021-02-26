@@ -41,6 +41,7 @@ is hosted, install it and run it:
     cd kurento-tutorial-node/kurento-crowddetector
     git checkout |VERSION_TUTORIAL_NODE|
     npm install
+    npm start
 
 If you have problems installing any of the dependencies, please remove them and
 clean the npm cache, and try to install them again:
