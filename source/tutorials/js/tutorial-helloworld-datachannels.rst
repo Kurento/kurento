@@ -256,5 +256,5 @@ They are managed using `Bower`:term:.
 
 .. note::
 
-   We are in active development. You can find the latest version of
+   You can find the latest version of
    Kurento JavaScript Client at `Bower <https://bower.io/search/?q=kurento-client>`_.

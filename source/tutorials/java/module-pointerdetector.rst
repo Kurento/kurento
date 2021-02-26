@@ -273,7 +273,7 @@ client-side. Other client libraries are managed with
 
 .. note::
 
-   We are in active development. You can find the latest version of
+   You can find the latest version of
    Kurento Java Client at `Maven Central <https://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
 
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to

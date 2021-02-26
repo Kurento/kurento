@@ -529,6 +529,6 @@ file and pay attention to the following section:
 
 .. note::
 
-   We are in active development. You can find the latest version of
+   You can find the latest version of
    Kurento JavaScript Client at `npm <https://npmsearch.com/?q=kurento-client>`_
    and `Bower <https://bower.io/search/?q=kurento-client>`_.

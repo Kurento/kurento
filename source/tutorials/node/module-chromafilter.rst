@@ -274,5 +274,5 @@ file and pay attention to the following section:
 
 .. note::
 
-   We are in active development. You can find the latest versions at
+   You can find the latest versions at
    `npm <https://npmsearch.com/>`_ and `Bower <https://bower.io/search/>`_.

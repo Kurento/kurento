@@ -320,4 +320,4 @@ To get these dependencies, just run the following shell command:
 
 .. note::
 
-   We are in active development. You can find the latest versions at `Bower <https://bower.io/search/>`_.
+   You can find the latest versions at `Bower <https://bower.io/search/>`_.
