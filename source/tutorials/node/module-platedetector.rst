@@ -29,14 +29,13 @@ be also installed:
    always accurate. Consider this if you are planning to use this
    module in a production environment.
 
-Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
-an Ubuntu machine, you can install both as follows:
+Be sure to have installed `Node.js`:term: in your system. In
+an Ubuntu machine, you can install it as follows:
 
 .. sourcecode:: bash
 
    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
    sudo apt-get install -y nodejs
-   sudo npm install -g bower
 
 To launch the application, you need to clone the GitHub project where this demo
 is hosted, install it and run it:
