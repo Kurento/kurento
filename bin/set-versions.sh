@@ -187,8 +187,8 @@ VERSION_PKG="${CFG_VERSION}-${CFG_DEBIAN}"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     COMMIT_MSG="Prepare release $VERSION_PKG"
 
-    VERSION_C="${CFG_VERSION}"
-    VERSION_JAVA="${CFG_VERSION}"
+    VERSION_C="$CFG_VERSION"
+    VERSION_JAVA="$CFG_VERSION"
 else
     if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
@@ -244,22 +244,43 @@ update_debian_changelog() {
 
 # Edits debian/control to set all Kurento dependencies to the given version.
 update_debian_control() {
+    # Regex translation:
+    # ^         : Start of the line.
+    # \s+       : 1 or more spaces.
+    # (kms-|kurento-) : Initial name of the package.
+    # \S+       : 1 or more non-space characters (could be underlines, dots, etc).
+    # \([<=>]+  : An open paren, followed by any of '<', '=', '>'.
+    # \K        : Discard everything before here from the actual regex match.
+    # \d\S*     : A number followed by any non-space characters.
+    #             This is the version number that will be matched and replaced.
+    # (?=\))    : Positive lookahead for a close paren.
+    #             This ensures a close paren is present, but doesn't match it.
+    #
+    # The final match of this regex is just the version number. This match is
+    # then replaced with the provided value `${CFG_VERSION}`.
     perl -i -pe \
-        "s/^\s+(kms-|kurento-)\S+ \([<=>]+ \K\d\S*(?=\),)/${CFG_VERSION}/" \
+        "s/^\s+(kms-|kurento-)\S+ \([<=>]+ \K\d\S*(?=\))/${CFG_VERSION}/" \
         debian/control
 
     git add debian/control
 }
 
+# Creates a commit with the given files, and tags the commit.
+# This function can be called multiple times over the same contents.
 commit_and_tag() {
     [[ $# -eq 0 ]] && return 1
 
     if [[ "$CFG_COMMIT" == "true" ]]; then
-        git add "$@"
-        git commit -m "$COMMIT_MSG"
+        git add -- "$@"
 
-        if [[ "$CFG_TAG" == "true" ]]; then
-            git tag -a -m "$COMMIT_MSG" "$CFG_VERSION"
+        # If there are new staged changes ready to be committed:
+        if ! git diff --staged --quiet -- "$@"; then
+            git commit -m "$COMMIT_MSG"
+
+            if [[ "$CFG_TAG" == "true" ]]; then
+                # --force: Replace tag if it exists (instead of failing).
+                git tag --force -a -m "$COMMIT_MSG" "$CFG_VERSION"
+            fi
         fi
     fi
 }
@@ -279,17 +300,19 @@ commit_and_tag() {
 #
 # (?=pattern)
 #     Zero-width positive lookahead assertion.
-#     Require the stuff left of the (?=), but don't include it in the match.
+#     Require the stuff inside the (?=), but don't include it in the match.
 #     (?=\") looks for a double quote after the regex match.
 #
 # \S
 #     Match a non-whitespace character.
 #     \S* matches all consecutive non-whitespace character.
 
+
+
 pushd kurento-module-creator/
 TEMP="$(mktemp)"
 FILE="pom.xml"
-xmlstarlet edit -S --update "/_:project/_:version" --value "${VERSION_JAVA}" "$FILE" \
+xmlstarlet edit -S --update "/_:project/_:version" --value "$VERSION_JAVA" "$FILE" \
     >"$TEMP" && mv "$TEMP" "$FILE"
 update_debian_changelog
 update_debian_control
@@ -302,11 +325,11 @@ pushd kurento-maven-plugin/
 FILE="pom.xml"
 xmlstarlet edit -S --inplace \
     --update "/_:project/_:version" \
-    --value "${VERSION_JAVA}" \
+    --value "$VERSION_JAVA" \
     "$FILE"
 xmlstarlet edit -S --inplace \
     --update "/_:project/_:dependencies/_:dependency[_:artifactId='kurento-module-creator']/_:version" \
-    --value "${VERSION_JAVA}" \
+    --value "$VERSION_JAVA" \
     "$FILE"
 commit_and_tag "$FILE"
 popd
@@ -315,8 +338,8 @@ popd
 
 pushd kms-cmake-utils/
 FILE="CMakeLists.txt"
-sed -i \
-    "s/get_git_version(PROJECT_VERSION .*)/get_git_version(PROJECT_VERSION ${VERSION_C})/" \
+perl -i -pe \
+    "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -327,8 +350,8 @@ popd
 
 pushd kms-jsonrpc/
 FILE="CMakeLists.txt"
-sed -i \
-    "s/get_git_version(PROJECT_VERSION .*)/get_git_version(PROJECT_VERSION ${VERSION_C})/" \
+perl -i -pe \
+    "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -340,7 +363,7 @@ popd
 pushd kms-core/
 FILE="src/server/interface/core.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -352,11 +375,11 @@ popd
 pushd kms-elements/
 FILE="src/server/interface/elements.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
@@ -369,11 +392,11 @@ popd
 pushd kms-filters/
 FILE="src/server/interface/filters.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
@@ -385,8 +408,11 @@ popd
 
 pushd kurento-media-server/
 FILE="CMakeLists.txt"
-sed -i \
-    "s/get_git_version(PROJECT_VERSION .*)/get_git_version(PROJECT_VERSION ${VERSION_C})/" \
+perl -i -pe \
+    "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
+    "$FILE"
+perl -i -pe \
+    "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
     "$FILE"
 update_debian_changelog
 update_debian_control
@@ -398,11 +424,11 @@ popd
 pushd module/kms-chroma/
 FILE="src/server/interface/chroma.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
@@ -415,11 +441,11 @@ popd
 pushd module/kms-crowddetector/
 FILE="src/server/interface/crowddetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
@@ -432,11 +458,11 @@ popd
 pushd module/kms-datachannelexample/
 FILE="src/server/interface/kmsdatachannelexample.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
@@ -449,11 +475,11 @@ popd
 pushd module/kms-markerdetector/
 FILE="src/server/interface/armarkerdetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
@@ -466,11 +492,11 @@ popd
 pushd module/kms-platedetector/
 FILE="src/server/interface/platedetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
@@ -483,14 +509,39 @@ popd
 pushd module/kms-pointerdetector/
 FILE="src/server/interface/pointerdetector.kmd.json"
 perl -i -pe \
-    "s/^\s+\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
+    "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
     "$FILE"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
-        "s/^\s+\"kurentoVersion\": \"\K\S*(?=\")/\^${VERSION_C}/" \
+        "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
         "$FILE"
 fi
 update_debian_changelog
 update_debian_control
 commit_and_tag "$FILE"
 popd
+
+
+
+# Changes for kms-omni-build itself
+FILE="CMakeLists.txt"
+perl -i -pe \
+    "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?=\))/^${VERSION_C}/" \
+    "$FILE"
+commit_and_tag "$FILE" \
+    kurento-module-creator \
+    kurento-maven-plugin \
+    kms-cmake-utils \
+    kms-jsonrpc \
+    kms-core \
+    kms-elements \
+    kms-filters \
+    kurento-media-server \
+    module/kms-chroma \
+    module/kms-crowddetector \
+    module/kms-datachannelexample \
+    module/kms-markerdetector \
+    module/kms-opencv-plugin-sample \
+    module/kms-platedetector \
+    module/kms-plugin-sample \
+    module/kms-pointerdetector
