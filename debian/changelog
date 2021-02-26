@@ -1,8 +1,10 @@
-kms-platedetector (6.15.1-0kurento1) UNRELEASED; urgency=medium
+kms-platedetector (6.16.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
+  * Prepare release 6.16.0-0kurento1
+  * Update all dependency versions to 6.15.1
+  * debian/control: fix dependency version for kms-filters
 
- -- Juan Navarro <juan.navarro@gmx.es>  Fri, 06 Nov 2020 16:44:38 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:42 +0100
 
 kms-platedetector (6.15.0-0kurento1) testing; urgency=medium
 
