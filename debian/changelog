@@ -1,8 +1,8 @@
-kms-datachannelexample (6.15.1-0kurento1) UNRELEASED; urgency=medium
+kms-datachannelexample (6.16.0-0kurento1) testing; urgency=medium
 
-  * UNRELEASED
+  * Prepare release 6.16.0-0kurento1
 
- -- Juan Navarro <juan.navarro@gmx.es>  Fri, 06 Nov 2020 16:44:37 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:41 +0100
 
 kms-datachannelexample (6.15.0-0kurento1) testing; urgency=medium
 
