@@ -79,6 +79,11 @@ MVN_GOALS=(
 )
 
 # The deploy goal is always the last one.
+# NOTE: The latest version of this plugin (3.0.0-M1) has a bug that breaks
+# auth: https://issues.apache.org/jira/browse/MDEPLOY-244
+# This comment provides a work around:
+# https://issues.apache.org/jira/browse/MDEPLOY-244?focusedCommentId=16648217&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-16648217
+# But the better option would be to avoid upgrading until the bug is fixed.
 MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy"
 
 PROJECT_VERSION="$(kurento_get_version.sh)" || {
