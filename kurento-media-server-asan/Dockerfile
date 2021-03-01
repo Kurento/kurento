@@ -89,11 +89,11 @@ ARG APT_ARGS=""
 RUN touch /etc/profile \
  && touch "$HOME"/.bash_profile \
  && printf "\
-apt-get() {\n\
+apt-get-install() {\n\
     (\n\
         export DEBIAN_FRONTEND=noninteractive\n\
         /usr/bin/apt-get --quiet $APT_ARGS update \\\\\\n\
-        && /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false $APT_ARGS \"\$@\"\n\
+        && /usr/bin/apt-get --quiet --yes -oAPT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
     )\n\
     local RC=\$?\n\
     rm -rf /var/lib/apt/lists/*\n\
@@ -121,13 +121,13 @@ ENV LANG="C.UTF-8"
 # Install required tools:
 # * git: For `git clone` in build.sh
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
-RUN apt-get install \
+RUN apt-get-install \
         git \
         gnupg \
  && echo "deb http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME kms6" \
         >/etc/apt/sources.list.d/kurento.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
- && apt-get install \
+ && apt-get-install \
         build-essential \
         kurento-media-server-dev \
         maven-debian-helper
@@ -138,7 +138,7 @@ RUN apt-get install \
 RUN echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
         >/etc/apt/sources.list.d/ubuntu-toolchain.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
- && apt-get install \
+ && apt-get-install \
         "gcc-${GCC_VERSION}" \
         "g++-${GCC_VERSION}" \
         "cpp-${GCC_VERSION}"
@@ -166,12 +166,12 @@ FROM ${KMS_IMAGE}
 ARG UBUNTU_CODENAME
 
 # Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial")
-RUN apt-get install \
+RUN apt-get-install \
         gnupg \
  && echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
         >/etc/apt/sources.list.d/ubuntu-toolchain.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
- && apt-get install \
+ && apt-get-install \
         libgcc1 \
         libstdc++6
 

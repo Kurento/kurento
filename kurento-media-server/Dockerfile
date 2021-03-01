@@ -78,11 +78,11 @@ ARG APT_ARGS=""
 RUN touch /etc/profile \
  && touch "$HOME"/.bash_profile \
  && printf "\
-apt-get() {\n\
+apt-get-install() {\n\
     (\n\
         export DEBIAN_FRONTEND=noninteractive\n\
         /usr/bin/apt-get --quiet $APT_ARGS update \\\\\\n\
-        && /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false $APT_ARGS \"\$@\"\n\
+        && /usr/bin/apt-get --quiet --yes -oAPT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
     )\n\
     local RC=\$?\n\
     rm -rf /var/lib/apt/lists/*\n\
@@ -112,7 +112,7 @@ ENV LANG="C.UTF-8"
 # * curl: For `healthchecker.sh`
 # * dnsutils: For `dig` in `getmyip.sh`
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
-RUN apt-get install \
+RUN apt-get-install \
         curl \
         dnsutils \
         gnupg
@@ -124,15 +124,16 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
  && echo "$APT_LIST" >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server
-RUN apt-get install kurento-media-server
+RUN apt-get-install kurento-media-server
 
 # Install additional modules
 # These might not be available, so allow errors
-RUN apt-get install \
+RUN apt-get-install \
         kms-chroma \
         kms-crowddetector \
         kms-platedetector \
-        kms-pointerdetector
+        kms-pointerdetector \
+    || true
 
 # Install debug symbols
 RUN apt-key adv \
@@ -140,7 +141,7 @@ RUN apt-key adv \
         --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
- && apt-get install kurento-dbg
+ && apt-get-install kurento-dbg
 
 # Configure environment for KMS. All of these can be overriden with `docker run`.
 # * Disable color in debug logs
