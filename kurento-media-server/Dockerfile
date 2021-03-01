@@ -89,6 +89,19 @@ apt-get-install() {\n\
     return \$RC\n\
 }\n" >>/etc/profile
 
+# FIXME: Workaround for the network errors introduced by our OpenStack CI.
+RUN printf "\
+apt-get-install-fix() {\n\
+    (\n\
+        export DEBIAN_FRONTEND=noninteractive\n\
+        /usr/bin/apt-get --quiet update \\\\\\n\
+        && until /usr/bin/apt-get --quiet --yes -oAPT::Install-Recommends=false install \"\$@\"; do echo FIXME RETRY; done\n\
+    )\n\
+    local RC=\$?\n\
+    rm -rf /var/lib/apt/lists/*\n\
+    return \$RC\n\
+}\n" >>/etc/profile
+
 SHELL ["/bin/bash", "--login", "-x", "-c"]
 
 
@@ -124,7 +137,10 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
  && echo "$APT_LIST" >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server
-RUN apt-get-install kurento-media-server
+#RUN apt-get-install kurento-media-server
+#
+# FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
+RUN apt-get-install-fix kurento-media-server
 
 # Install additional modules
 # These might not be available, so allow errors
@@ -141,7 +157,9 @@ RUN apt-key adv \
         --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
- && apt-get-install kurento-dbg
+ && apt-get-install-fix kurento-dbg
+#
+# FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
 
 # Configure environment for KMS. All of these can be overriden with `docker run`.
 # * Disable color in debug logs
