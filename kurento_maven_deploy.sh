@@ -43,6 +43,8 @@ PATH="${BASEPATH}:${PATH}"
 }
 [[ -n "${3:-}" ]] && SIGN_ARTIFACTS="$3"
 
+MVN_ARGS=()
+
 # Validate parameters
 log "Validate parameters"
 if [[ -n "$MAVEN_SETTINGS" ]]; then
@@ -50,7 +52,9 @@ if [[ -n "$MAVEN_SETTINGS" ]]; then
         log "ERROR: Cannot read file: $MAVEN_SETTINGS"
         exit 1
     }
-    PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
+    MVN_ARGS+=(
+        --settings "$MAVEN_SETTINGS"
+    )
 fi
 [[ -z "${SIGN_ARTIFACTS:-}" ]] && SIGN_ARTIFACTS="true"
 
@@ -58,8 +62,24 @@ fi
 export AWS_ACCESS_KEY_ID="$UBUNTU_PRIV_S3_ACCESS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID"
 
-# Maven options
-OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
+# Maven arguments that are common to all commands.
+MVN_ARGS+=(
+    --batch-mode
+    -U
+    -Dmaven.test.skip=true
+    -Dmaven.wagon.http.ssl.insecure=true
+    -Dmaven.wagon.http.ssl.allowall=true
+    -Pdeploy
+)
+
+# Maven goals that are common to all commands.
+MVN_GOALS=(
+    clean
+    package
+)
+
+# The deploy goal is always the last one.
+MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy"
 
 PROJECT_VERSION="$(kurento_get_version.sh)" || {
   log "ERROR: Command failed: kurento_get_version"
@@ -69,28 +89,38 @@ log "Build and deploy version: $PROJECT_VERSION"
 
 if [[ $PROJECT_VERSION == *-SNAPSHOT ]] && [[ -n "$SNAPSHOT_REPOSITORY" ]]; then
     log "Version to deploy is SNAPSHOT"
-    mvn --batch-mode -U $PARAM_MAVEN_SETTINGS clean package \
-        org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
-        -Pdefault -Pdeploy \
-        $OPTS \
-        -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY" || {
-            log "ERROR: Command failed: mvn deploy (snapshot)"
-            exit 1
-        }
+    MVN_ARGS+=(
+        -Pdefault
+        -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
+    )
+    mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
+        log "ERROR: Command failed: mvn deploy (snapshot)"
+        exit 1
+    }
 elif [[ $PROJECT_VERSION != *-SNAPSHOT ]] && [[ -n "$RELEASE_REPOSITORY" ]]; then
     log "Version to deploy is RELEASE"
-    OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
+    MVN_ARGS+=(
+        -Pkurento-release
+        -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY"
+    )
+    MVN_GOALS+=(
+        javadoc:jar
+        source:jar
+    )
+
     if [[ $SIGN_ARTIFACTS == "true" ]]; then
         log "Artifact signing on deploy is ENABLED"
         # Deploy signing artifacts
-        mvn --batch-mode -U $PARAM_MAVEN_SETTINGS clean package \
-            javadoc:jar source:jar gpg:sign \
-            org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
-            $OPTS \
-            -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY" || {
-                log "ERROR: Command failed: mvn deploy (signed release)"
-                exit 1
-            }
+        MVN_ARGS+=(
+            -Pgpg-sign
+        )
+        MVN_GOALS+=(
+            gpg:sign
+        )
+        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
+            log "ERROR: Command failed: mvn deploy (signed release)"
+            exit 1
+        }
 
         #Verify signed files (if any)
         SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
@@ -107,18 +137,13 @@ elif [[ $PROJECT_VERSION != *-SNAPSHOT ]] && [[ -n "$RELEASE_REPOSITORY" ]]; the
                 exit 1
             }
         done
-
     else
         log "Artifact signing on deploy is DISABLED"
         # Deploy without signing artifacts
-        mvn --batch-mode -U $PARAM_MAVEN_SETTINGS clean package \
-            javadoc:jar source:jar \
-            org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy \
-            $OPTS \
-            -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY" || {
-                log "ERROR: Command failed: mvn deploy (unsigned release)"
-                exit 1
-            }
+        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
+            log "ERROR: Command failed: mvn deploy (unsigned release)"
+            exit 1
+        }
     fi
 fi
 
