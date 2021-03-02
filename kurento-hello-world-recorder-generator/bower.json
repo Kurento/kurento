@@ -62,7 +62,7 @@
     "tests"
   ],
   "dependencies": {
-    "webrtc-adapter": "v6.4.0",
+    "webrtc-adapter": "v7.4.0",
     "bootstrap": "~3.3.0",
     "co": "~3.0.7",
     "demo-console": "1.5.1",

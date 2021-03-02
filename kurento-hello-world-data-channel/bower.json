@@ -64,7 +64,7 @@
   "dependencies": {
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.2.3",
-    "webrtc-adapter": "v6.4.0",
+    "webrtc-adapter": "v7.4.0",
     "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
     "kurento-utils": "git+https://github.com/Kurento/kurento-utils-js.git"
   }
