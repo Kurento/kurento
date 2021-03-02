@@ -7,7 +7,7 @@
 #/
 #/
 #/ Arguments
-#/ ---------
+#/ =========
 #/
 #/ <Version>
 #/
@@ -22,82 +22,48 @@
 #/   Use version numbers intended for Release builds, such as "1.2.3". If this
 #/   option is not given, a nightly/snapshot indicator is appended: "-dev".
 #/
-#/   If '--commit' is also present, this option uses the commit message
-#/   "Prepare release <Version>". The convention is to use this message to
-#/   make a new final release.
-#/
 #/   Optional. Default: Disabled.
 #/
-#/ --new-development
+#/ --git-add
 #/
-#/   Mark the start of a new development iteration.
-#/
-#/   If '--commit' is also present, this option uses the commit message
-#/   "Prepare for next development iteration". The convention is to use this
-#/   message to start development on a new project version after a release.
-#/
-#/   If neither '--release' nor '--new-development' are given, the commit
-#/   message will be "Bump development version to <Version>", because this
-#/   script doesn't know if you are changing the version number after a release,
-#/   or just as part of normal development (e.g. according to SemVer, after
-#/   adding a new feature you should bump the Minor version number).
-#/
-#/   Optional. Default: Disabled.
-#/
-#/ --commit
-#/
-#/   Commit to Git the version changes. This will commit only the changed files.
-#/
-#/   Optional. Default: Disabled.
-#/
-#/ --tag
-#/
-#/   Create Git annotated tags with the results of the version change. This
-#/   requires that '--commit' is used too. Also, to avoid mistakes, this can
-#/   only be used together with '--release'.
+#/   Add changes to the Git stage area. Useful to leave everything ready for a
+#/   commit.
 #/
 #/   Optional. Default: Disabled.
 
 
 
 # Shell setup
-# -----------
+# ===========
 
-# Bash options for strict error checking
+# Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
 
-# Check requirements
+# Check dependencies.
 command -v jq >/dev/null || {
-    echo "ERROR: 'jq' is not installed; please install it"
+    echo "ERROR: Dependency 'jq' is not installed; please install it"
     exit 1
 }
 
+# Trace all commands.
 set -o xtrace
 
 
 
 # Parse call arguments
-# --------------------
+# ====================
 
 CFG_VERSION=""
 CFG_RELEASE="false"
-CFG_NEWDEVELOPMENT="false"
-CFG_COMMIT="false"
-CFG_TAG="false"
+CFG_GIT_ADD="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --release)
             CFG_RELEASE="true"
             ;;
-        --new-development)
-            CFG_NEWDEVELOPMENT="true"
-            ;;
-        --commit)
-            CFG_COMMIT="true"
-            ;;
-        --tag)
-            CFG_TAG="true"
+        --git-add)
+            CFG_GIT_ADD="true"
             ;;
         *)
             CFG_VERSION="$1"
@@ -108,19 +74,8 @@ done
 
 
 
-# Apply config restrictions
-# -------------------------
-
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    CFG_NEWDEVELOPMENT="false"
-fi
-
-if [[ "$CFG_TAG" == "true" ]]; then
-    if [[ "$CFG_RELEASE" != "true" || "$CFG_COMMIT" != "true" ]]; then
-        echo "WARNING: Ignoring '--tag': Requires '--release' and '--commit'"
-        CFG_TAG="false"
-    fi
-fi
+# Config restrictions
+# ===================
 
 if [[ -z "$CFG_VERSION" ]]; then
     echo "ERROR: Missing <Version>"
@@ -135,284 +90,137 @@ REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
 
 echo "CFG_VERSION=$CFG_VERSION"
 echo "CFG_RELEASE=$CFG_RELEASE"
-echo "CFG_NEWDEVELOPMENT=$CFG_NEWDEVELOPMENT"
-echo "CFG_COMMIT=$CFG_COMMIT"
-echo "CFG_TAG=$CFG_TAG"
+echo "CFG_GIT_ADD=$CFG_GIT_ADD"
 
 
 
-# Init internal variables
-# -----------------------
+# Internal variables
+# ==================
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    COMMIT_MSG="Prepare release $CFG_VERSION"
-
-    VERSION_JS="$CFG_VERSION"
+    VERSION="$CFG_VERSION"
 else
-    if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
-        COMMIT_MSG="Prepare for next development iteration"
-    else
-        COMMIT_MSG="Update version to $CFG_VERSION"
-    fi
-
-    VERSION_JS="${CFG_VERSION}-dev"
+    VERSION="${CFG_VERSION}-dev"
 fi
 
 
 
 # Helper functions
-# ----------------
+# ================
 
 # Run jq, which doesn't have "in-place" mode like other UNIX tools.
 function run_jq() {
+    [[ $# -ge 2 ]] || {
+        echo "ERROR [run_jq]: Missing argument(s): <filter> <file>"
+        return 1
+    }
     local FILTER="$1"
     local FILE="$2"
-    local TEMP="$(mktemp)"
+
+    local TEMP
+    TEMP="$(mktemp)"
+
     /usr/bin/jq "$FILTER" "$FILE" >"$TEMP" && mv "$TEMP" "$FILE"
 }
 
-# Adds the given file(s) to the Git stage area.
+# Add the given file(s) to the Git stage area.
 function git_add() {
-    [[ $# -eq 0 ]] && { echo "ERROR: file(s) expected"; return 1; }
+    [[ $# -ge 1 ]] || {
+        echo "ERROR [git_add]: Missing argument(s): <file1> [<file2> ...]"
+        return 1
+    }
 
-    if [[ "$CFG_COMMIT" == "true" ]]; then
+    if [[ "$CFG_GIT_ADD" == "true" ]]; then
         git add -- "$@"
     fi
 }
 
-# Creates a commit and tags it.
-function git_commit_and_tag() {
-    [[ $# -ne 0 ]] && { echo "ERROR: No args expected"; return 1; }
 
-    if [[ "$CFG_COMMIT" == "true" ]]; then
-        # If there are new staged changes ready to be committed:
-        if ! git diff --staged --quiet; then
-            git commit -m "$COMMIT_MSG"
 
-            if [[ "$CFG_TAG" == "true" ]]; then
-                # --force: Replace tag if it exists (instead of failing).
-                git tag --force -a -m "$COMMIT_MSG" "$CFG_VERSION"
-            fi
-        fi
+# Apply version
+# =============
+
+# Dirs that contain common dependencies (kurento-client and kurento-utils).
+DIRS_COMMON=(
+    kurento-chroma
+    kurento-crowddetector
+    kurento-hello-world
+    kurento-magic-mirror
+    kurento-one2many-call
+    kurento-one2one-call
+    kurento-platedetector
+    kurento-pointerdetector
+)
+
+# Dirs that contain module dependencies.
+MODULES=(
+    chroma
+    crowddetector
+    platedetector
+    pointerdetector
+)
+
+for DIR in "${DIRS_COMMON[@]}"; do
+    pushd "$DIR"
+    run_jq ".version = \"$VERSION\"" package.json
+    if [[ "$CFG_RELEASE" == "true" ]]; then
+        run_jq "
+            .dependencies.\"kurento-client\" = \"$VERSION\"
+        " package.json
+        run_jq "
+            .dependencies.\"kurento-utils\" = \"$VERSION\"
+        " static/bower.json
+    else
+        run_jq "
+            .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
+        " package.json
+        run_jq "
+            .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
+        " static/bower.json
     fi
-}
+    git_add \
+        package.json \
+        static/bower.json
+    popd
+done
 
+for MODULE in "${MODULES[@]}"; do
+    pushd "kurento-${MODULE}"
+    if [[ "$CFG_RELEASE" == "true" ]]; then
+        run_jq "
+            .dependencies.\"kurento-module-${MODULE}\" = \"$VERSION\"
+        " package.json
+    else
+        run_jq "
+            .dependencies.\"kurento-module-${MODULE}\" = \"git+https://github.com/Kurento/kurento-module-${MODULE}-js.git\"
+        " package.json
+    fi
+    git_add \
+        package.json
+    popd
+done
 
-
-# Apply versions
-# --------------
-
-pushd kurento-chroma/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
+pushd kurento-module-tests-api/
+run_jq ".version = \"$VERSION\"" package.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-        | .dependencies.\"kurento-module-chroma\" = \"$VERSION_JS\"
+        .dependencies.\"kurento-client\" = \"$VERSION\"
+        | .dependencies.\"kurento-module-chroma\" = \"$VERSION\"
+        | .dependencies.\"kurento-module-crowddetector\" = \"$VERSION\"
+        | .dependencies.\"kurento-module-platedetector\" = \"$VERSION\"
+        | .dependencies.\"kurento-module-pointerdetector\" = \"$VERSION\"
     " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
 else
     run_jq "
         .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
         | .dependencies.\"kurento-module-chroma\" = \"git+https://github.com/Kurento/kurento-module-chroma-js.git\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
-fi
-git_add \
-    package.json \
-    static/bower.json
-popd
-
-
-
-pushd kurento-crowddetector/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-        | .dependencies.\"kurento-module-crowddetector\" = \"$VERSION_JS\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
-else
-    run_jq "
-        .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
         | .dependencies.\"kurento-module-crowddetector\" = \"git+https://github.com/Kurento/kurento-module-crowddetector-js.git\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
-fi
-git_add \
-    package.json \
-    static/bower.json
-popd
-
-
-
-pushd kurento-hello-world/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
-else
-    run_jq "
-        .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
-fi
-git_add \
-    package.json \
-    static/bower.json
-popd
-
-
-
-pushd kurento-magic-mirror/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
-else
-    run_jq "
-        .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
-fi
-git_add \
-    package.json \
-    static/bower.json
-popd
-
-
-
-pushd kurento-one2many-call/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
-else
-    run_jq "
-        .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
-fi
-git_add \
-    package.json \
-    static/bower.json
-popd
-
-
-
-pushd kurento-one2one-call/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
-else
-    run_jq "
-        .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
-fi
-git_add \
-    package.json \
-    static/bower.json
-popd
-
-
-
-pushd kurento-platedetector/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-        | .dependencies.\"kurento-module-platedetector\" = \"$VERSION_JS\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
-else
-    run_jq "
-        .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
         | .dependencies.\"kurento-module-platedetector\" = \"git+https://github.com/Kurento/kurento-module-platedetector-js.git\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
-fi
-git_add \
-    package.json \
-    static/bower.json
-popd
-
-
-
-pushd kurento-pointerdetector/
-TEMP="$(mktemp)"
-run_jq ".version = \"$VERSION_JS\"" package.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    run_jq "
-        .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-        | .dependencies.\"kurento-module-pointerdetector\" = \"$VERSION_JS\"
-    " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-    " static/bower.json
-else
-    run_jq "
-        .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
         | .dependencies.\"kurento-module-pointerdetector\" = \"git+https://github.com/Kurento/kurento-module-pointerdetector-js.git\"
     " package.json
-    run_jq "
-        .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-    " static/bower.json
 fi
 git_add \
-    package.json \
-    static/bower.json
+    package.json
 popd
-
-
-
-# Commit all changes that have been staged until this point.
-git_commit_and_tag
-
-
 
 echo "Done!"
