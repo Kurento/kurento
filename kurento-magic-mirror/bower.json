@@ -1,6 +1,6 @@
 {
   "name": "kurento-magic-mirror",
-  "version": "6.15.1-dev",
+  "version": "6.16.0",
   "description": "Kurento Browser JavaScript Tutorial: Magic Mirror",
   "keywords": [
     "kurento",
@@ -66,7 +66,7 @@
     "bootstrap": "~3.3.0",
     "demo-console": "1.5.1",
     "ekko-lightbox": "~3.3.0",
-    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
-    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-js.git"
+    "kurento-client": "6.16.0",
+    "kurento-utils": "6.16.0"
   }
 }
