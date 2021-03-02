@@ -1,6 +1,6 @@
 {
   "name": "kurento-platedetector",
-  "version": "6.15.1-dev",
+  "version": "6.16.0",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"
@@ -11,8 +11,8 @@
     "express-session": "^1.17.0",
     "minimist": "^1.1.1",
     "ws": "^7.1.0",
-    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
-    "kurento-module-platedetector": "git+https://github.com/Kurento/kurento-module-platedetector-js.git"
+    "kurento-client": "6.16.0",
+    "kurento-module-platedetector": "6.16.0"
   },
   "devDependencies": {
     "bower": "^1.4.1"
