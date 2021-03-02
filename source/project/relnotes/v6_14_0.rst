@@ -56,6 +56,10 @@ There were other changes and fixes contributed by users, who merit our sincere a
 * `@alexnum <https://github.com/alexnum>`__ (Alessandro) for `Kurento/doc-kurento#4 <https://github.com/Kurento/doc-kurento/pull/4>`__ (*Handling self-signed certificates in nodeJs*).
 * `@piyushwadhwani <https://github.com/piyushwadhwani>`__ for `Kurento/doc-kurento#5 <https://github.com/Kurento/doc-kurento/pull/5>`__ (*adapting to newer version of spring boot*).
 
+**kms-core**
+
+* `@pmlocek <https://github.com/pmlocek>`__ for `Kurento/kms-core@2f144b5 <https://github.com/Kurento/kms-core/commit/2f144b59765822ec49f72a0a2a95b0011da2774c>`__ (*fix: segfault in KmsIRtpSessionManager*).
+
 **kurento-jsonrpc-js**
 
 * `@JoseGoncalves <https://github.com/JoseGoncalves>`__ (José Miguel Gonçalves) for `Kurento/kurento-jsonrpc-js#6 <https://github.com/Kurento/kurento-jsonrpc-js/pull/6>`__ (*Fix transportMessage*).

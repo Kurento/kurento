@@ -21,7 +21,7 @@ Added
 
   Use this parameter if you know beforehand what will be the external or public IP address of the media server (e.g. because your deployment has an static IP), although keep in mind that some types of networks will still need you to install a TURN server. Best thing to do is to try with this option enabled, and if WebRTC fails, then default to the standard method of installing and configuring Coturn.
 
-  Kurento Client API docs: `Java <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalAddress-java.lang.String->`__, `JavaScript <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalAddress>`__.
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalAddress-java.lang.String->`__, `JavaScript <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalAddress>`__.
 
 * **WebRTC**: Add ``networkInterfaces`` to WebRtcEndpoint config & client API.
 
@@ -35,13 +35,13 @@ Added
 
   More rationale for this feature can be found here: `Kurento/bugtracker#278 <https://github.com/Kurento/bugtracker/issues/278>`__ (*RFC: Add WebRtcEndpoint.externalIPs configuration parameter*).
 
-  Kurento Client API docs: `Java <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__, `JavaScript <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__.
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__, `JavaScript <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__.
 
 * **WebRTC** / **RTP**: Add ``mtu`` to BaseRtpEndpoint config & client API.
 
   Allows configuring the network MTU that Kurento will use for RTP transmissions, in both RtpEndpoint and WebRtcEndpoint. This parameter ends up configured in the GStreamer RTP payloader (``rtpvp8pay``, ``rtph264pay``).
 
-  Kurento Client API docs: `Java <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.
 
 * **RTP**: Add support for ``a=rtcp:{Port}`` in SDP messages.
 
@@ -81,7 +81,7 @@ Added
      log.info("CPU USAGE: {}", sm.getUsedCpu(1000)); // Average CPU usage over 1 second
      log.info("RAM USAGE: {}", sm.getUsedMemory()); // Resident memory used by the Kurento process
 
-  Kurento Client API docs: `Java <../_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedCpu-int->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedCpu>`__.
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedCpu-int->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedCpu>`__.
 
 
 
@@ -102,7 +102,7 @@ Changed
 
   It doesn't make much sense that Kurento purposely limits the incoming bitrate to such a low value. Better leave it to negotiate the best bitrate by using congestion control (REMB).
 
-  Kurento Client API docs: `Java <../_static/client-javadoc/org/kurento/client/SdpEndpoint.html#setMaxVideoRecvBandwidth-int->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.SdpEndpoint.html#setMaxVideoRecvBandwidth>`__.
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/SdpEndpoint.html#setMaxVideoRecvBandwidth-int->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.SdpEndpoint.html#setMaxVideoRecvBandwidth>`__.
 
 * **ServerManager**: The client API method ``getUsedMemory()`` now returns **resident (RSS)** instead of **virtual (VSZ)** memory.
 
@@ -110,9 +110,9 @@ Changed
 
   RSS gives a good view about how many MB are being used by KMS at any given time. This is also what users check on ``htop`` or ``top`` so see how much memory is used by KMS. However, keep in mind that if you are trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; `Valgrind <https://valgrind.org/>`__ is.
 
-  Kurento Client API docs: `Java <../_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedMemory-->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedMemory>`__.
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedMemory-->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedMemory>`__.
 
-* **Documentation**: Rewritten all the ``{Min,Max}`` bandwidth / bitrate texts for `BaseRtpEndpoint <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__ and `WebRtcEndpoint <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__.
+* **Documentation**: Rewritten all the ``{Min,Max}`` bandwidth / bitrate texts for `BaseRtpEndpoint <../../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__ and `WebRtcEndpoint <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__.
 
   Kurento defaults to a very conservative maximum bitrate for outgoing streams; most applications will want to raise this value, but API documentation was not very clear so these sections needed a good review.
 
