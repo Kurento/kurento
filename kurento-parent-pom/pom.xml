@@ -1,6 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- Maven coordinates -->
@@ -10,10 +9,10 @@
 		<version>6.15.0</version>
 
 		<!-- lookup parent from repository -->
-		<relativePath />
+		<relativePath/>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.15.1-SNAPSHOT</version>
+	<version>6.16.0</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -71,9 +70,9 @@
 		It's not critical that these versions coincide with the latest available,
 		but whenever an API update is done in those files and released,
 		these version numbers should get updated accordingly. -->
-		<version.kms-api-core>6.15.1-SNAPSHOT</version.kms-api-core>
-		<version.kms-api-elements>6.15.1-SNAPSHOT</version.kms-api-elements>
-		<version.kms-api-filters>6.15.1-SNAPSHOT</version.kms-api-filters>
+		<version.kms-api-core>6.16.0</version.kms-api-core>
+		<version.kms-api-elements>6.16.0</version.kms-api-elements>
+		<version.kms-api-filters>6.16.0</version.kms-api-filters>
 
 		<!-- Kurento extra modules -->
 		<version.kurento-chroma>6.15.0</version.kurento-chroma>
@@ -1188,7 +1187,7 @@
 						</goals>
 						<configuration>
 							<rules>
-								<banCircularDependencies />
+								<banCircularDependencies/>
 							</rules>
 							<fail>true</fail>
 						</configuration>
@@ -1419,7 +1418,7 @@
 												</goals>
 											</pluginExecutionFilter>
 											<action>
-												<execute />
+												<execute/>
 											</action>
 										</pluginExecution>
 										<!-- Configure m2e to ignore the Maven enforcer plugin -->
@@ -1433,7 +1432,7 @@
 												</goals>
 											</pluginExecutionFilter>
 											<action>
-												<ignore />
+												<ignore/>
 											</action>
 										</pluginExecution>
 										<pluginExecution>
@@ -1446,7 +1445,7 @@
 												</goals>
 											</pluginExecutionFilter>
 											<action>
-												<ignore />
+												<ignore/>
 											</action>
 										</pluginExecution>
 										<!-- Configure m2e to ignore the buildnumber-maven-plugin -->
@@ -1461,7 +1460,7 @@
 												</goals>
 											</pluginExecutionFilter>
 											<action>
-												<ignore />
+												<ignore/>
 											</action>
 										</pluginExecution>
 									</pluginExecutions>
