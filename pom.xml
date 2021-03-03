@@ -4,7 +4,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-module-creator</artifactId>
-	<version>6.16.0</version>
+	<version>6.16.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<!-- Project-level information -->
