@@ -115,13 +115,15 @@ elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy to experimental feature repo"
 
     KMS_VERSION="$JOB_DEPLOY_NAME"
+
     ARGS="$ARGS --repo-name kurento-labs-${JOB_DISTRO}-${KMS_VERSION}"
     ARGS="$ARGS --publish-name ${KMS_VERSION}"
 else
     log "Deploy to nightly packages repo"
 
     KMS_VERSION="dev"
-    ARGS="$ARGS --repo-name kurento-openvidu-${JOB_DISTRO}-${KMS_VERSION}"
+
+    ARGS="$ARGS --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
     ARGS="$ARGS --publish-name ${KMS_VERSION}"
 fi
 

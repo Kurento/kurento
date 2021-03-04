@@ -65,7 +65,7 @@ done
 
 
 # Feed the variables
-CFG_REPO_NAME="kurento-openvidu-${CFG_DISTRO_NAME}-dev"
+CFG_REPO_NAME="kurento-${CFG_DISTRO_NAME}-dev"
 CFG_PUBLISH_NAME="dev"
 
 
