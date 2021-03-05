@@ -64,8 +64,8 @@
           url-encoded.
         </strong>
         This means that colons (<code>:</code>) should be replaced with
-        <code>%3A</code>, and 'at' signs (<code>@</code>) should be replaced
-        with <code>%40</code>.
+        '<code>%3A</code>', and 'at' signs (<code>@</code>) should be replaced
+        with '<code>%40</code>'.
       </li>
     </ul>
   </li>
@@ -269,20 +269,28 @@
       "typeFormat": "ENUM",
       "doc": "How to fix gaps when they are found in the recorded stream.
 <p>
-  Gaps are typically caused by packet loss in the input streams, such as when an
-  RTP or WebRTC media flow suffers from network congestion and some packets
-  don't arrive at the media server.
+Gaps are typically caused by packet loss in the input streams, such as when an
+RTP or WebRTC media flow suffers from network congestion and some packets don't
+arrive at the media server.
 </p>
 <p>Different ways of handling gaps have different tradeoffs:</p>
 <ul>
   <li>
-    <strong>NONE</strong>: Do not fix gaps. This means that the
-    resulting files will contain gaps in the timestamps. Some players are clever
-    enough to adapt to this during playback, so that the gaps are reduced to a
-    minimum and no problems are perceived by the user; other players are not so
-    sophisticated, and will struggle trying to decode a file that contains gaps.
-    For example, trying to play such a file directly with Chrome will cause
-    lipsync issues (audio and video out of sync).
+    <strong>NONE</strong>: Do not fix gaps.
+    <p>
+      Leave the stream as-is, and store it with any gaps that the stream might
+      have. Some players are clever enough to adapt to this during playback, so
+      that the gaps are reduced to a minimum and no problems are perceived by
+      the user; other players are not so sophisticated, and will struggle trying
+      to decode a file that contains gaps. For example, trying to play such a
+      file directly with Chrome will cause lipsync issues (audio and video will
+      fall out of sync).
+    </p>
+    <p>
+      This is the best choice if you need consistent durations across multiple
+      simultaneous recordings, or if you are anyway going to post-process the
+      recordings (e.g. with an extra FFmpeg step).
+    </p>
     <p>
       For example, assume a session length of 15 seconds: packets arrive
       correctly during the first 5 seconds, then there is a gap, then data
@@ -310,11 +318,16 @@
     </p>
   </li>
   <li>
-    <strong>GENPTS</strong>: Replace timestamps of all frames arriving
-    after a gap. With this method, the length of each gap will be taken into
-    account, to be subtracted from the timestamp of all following frames. This
-    provides for a continuous, gap-less recording, at the expense of reducing
-    the total apparent length of each file.
+    <strong>GENPTS</strong>: Adjust timestamps to generate a smooth progression
+    over all frames.
+    <p>
+      This technique rewrites the timestamp of all frames, so that gaps are
+      suppressed. It provides the best playback experience for recordings that
+      need to be played as-is (i.e. they won't be post-processed). However,
+      fixing timestamps might cause a change in the total duration of a file. So
+      different recordings from the same session might end up with slightly
+      different durations.
+    </p>
     <p>
       In our example, the RecorderEndpoint will change all timestamps that
       follow a gap in the stream, and store each frame as follows:
@@ -339,7 +352,7 @@
     </p>
   </li>
   <li>
-    <strong>FILL_IF_TRANSCODING</strong>: NOT IMPLEMENTED.
+    <strong>FILL_IF_TRANSCODING</strong>: (NOT IMPLEMENTED YET).
     <p>This is a proposal for future improvement of the RecorderEndpoint.</p>
     <p>
       It is possible to perform a dynamic adaptation of audio rate and add frame
