@@ -175,7 +175,7 @@ Open a terminal and run these commands:
       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
       # Get Ubuntu version definitions
-      source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+      source /etc/lsb-release
 
       # Add the repository to Apt
       sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF

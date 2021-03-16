@@ -194,7 +194,7 @@ Run these commands to add the Kurento repository to your system configuration:
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
    # Get Ubuntu version definitions
-   source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+   source /etc/lsb-release
 
    # Add the repository to Apt
    sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
@@ -317,7 +317,7 @@ After having :doc:`installed Kurento </user/installation>`, first thing to do is
        --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
    # Get Ubuntu version definitions
-   source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+   source /etc/lsb-release
 
    # Add the repository to Apt
    sudo tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
