@@ -416,3 +416,15 @@ Which participant corresponds to which Endpoint?
 ------------------------------------------------
 
 The Kurento API offers no way to get application-level semantic attributes stored in a Media Element. However, the application developer can maintain a HashMap or equivalent data structure, storing the Endpoint identifiers (which are plain strings) to whatever application information is desired, such as the names of the participants.
+
+
+
+How to retrieve known objects from the Media Server?
+----------------------------------------------------
+
+The usual workflow for an Application Server is to connect with the Media Server, and use RPC methods to *create* new MediaPipelines and Endpoints inside it. However, if you want to connect your Application Server with objects that *already exist* in the Media Server (as opposed to creating new ones), you can achieve it by querying by their ID. This is done with the "*describe*" method of the JSON-RPC API, as described in :doc:`/features/kurento_protocol`.
+
+Client API:
+
+* Java: `KurentoClient.getById <../_static/client-javadoc/org/kurento/client/KurentoClient.html#getById-java.lang.String-java.lang.Class->`__.
+* JavaScript: `KurentoClient.getMediaobjectById <../_static/client-jsdoc/module-kurentoClient.KurentoClient.html#getMediaobjectById>`__.
