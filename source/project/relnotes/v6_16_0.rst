@@ -27,9 +27,9 @@ Thanks to `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for `
 Packet loss correction in Recorder
 ----------------------------------
 
-*RecorderEndpoint* has gained **a new configuration file**: ``/etc/kurento/modules/kurento/RecorderEndpoint.conf.ini``, where static settings can be written in the same manner that they were available for other modules, such as *PlayerEndpoint* or *WebRtcEndpoint*.
+*RecorderEndpoint* has gained **a new configuration file**: ``/etc/kurento/modules/kurento/RecorderEndpoint.conf.ini``, where static settings can be written in the same manner than for other modules, such as *PlayerEndpoint* or *WebRtcEndpoint*.
 
-This file contains a single parameter for now: ``gapsFix`` allows users to decide which of the packet loss correction techniques they want to use for the recordings. Packet loss causes gaps in the input streams, and this can happen for example when an RTP or WebRTC media flow suffers from network congestion and some packets don't arrive at the media server.
+For now, this file contains a single parameter: ``gapsFix``, allowing users to decide which of the packet loss correction techniques they want to use for the recordings. Packet loss causes gaps in the input streams, and this can happen for example when an RTP or WebRTC media flow suffers from network congestion and some packets don't arrive at the media server.
 
 Currently there are two of such techniques implemented:
 
@@ -57,9 +57,9 @@ ErrorEvent Type
 
 Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/ErrorEvent.html>`__, `JavaScript <../../_static/client-jsdoc/module-core.html#event:Error>`__.
 
-The ``ErrorEvent`` can be emitted from any of the Kurento *MediaElement* objects (see :doc:`/features/kurento_modules` for more details). This Event has a ``Type`` string field that contains an error identifier, but until now it was mostly unused and all errors were identified as ``UNEXPECTED_ELEMENT_ERROR``. On top of this, most errors were actually not being handled at all by the *MediaElement* where they occurred, so they would end up in the general handler of the *MediaPipeline*, with the *Type* identifier set to ``UNEXPECTED_PIPELINE_ERROR``.
+The ``ErrorEvent`` can be emitted from any of the Kurento *MediaElement* objects (see :doc:`/features/kurento_modules` for more details). This Event has a **Type** string field that contains an error identifier, but until now it was mostly unused and all errors were identified as ``UNEXPECTED_ELEMENT_ERROR``. On top of this, most errors were actually not being handled at all by the *MediaElement* where they occurred, so they would end up in the general handler of the *MediaPipeline*, with the *Type* identifier set to ``UNEXPECTED_PIPELINE_ERROR``.
 
-This now changes to provided better and more informational errors, so when possible the *ErrorEvent* will be emitted from the actual *MediaElement* where the error is taking place. Existing applications will continue to work, but the general recommendation holds that **Applications should subscribe to the Error event from all of Kurento objects**.
+This now changes to provide better and more informational errors, so when possible the *ErrorEvent* will be emitted from the actual *MediaElement* where the error is taking place. Existing applications will continue to work, but the general recommendation holds that **Applications should subscribe to the Error event from all of Kurento objects**.
 
 Some new *Type* identifiers have been added to the Error event:
 
@@ -71,7 +71,7 @@ Some new *Type* identifiers have been added to the Error event:
 
 * ``STREAM_ERROR_DECODE``: This error tends to happen when the sending side has transmitted an invalid encoded stream, and Kurento Media Server is trying to decode it but the underlying GStreamer library is unable to do so. This could happen, for example, when using a *PlayerEndpoint* (which by default decodes the input stream), or when *Transcoding* has been enabled due to incompatible codecs negotiated by different *WebRtcEndpoints*. When getting this error, you should review the settings of the sender, because there might be something wrong with its encoder configuration.
 
-* ``STREAM_ERROR_FAILED``: A generic error that is originated from the underlying GStreamer library when any data flow issue occurs. KMS debug logs should be checked because there are chances that more descriptive information has been printed in there.
+* ``STREAM_ERROR_FAILED``: A generic error that is originated from the underlying GStreamer library when any data flow issue occurs. KMS debug logs should be checked because chances are that more descriptive information has been printed in there.
 
 
 
