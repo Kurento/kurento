@@ -111,11 +111,12 @@ Before issuing commands, the Kurento Client requires establishing a WebSocket co
 Once the WebSocket has been established, the Kurento Protocol offers different types of request/response messages:
 
 - **ping**: Keep-alive method between client and Kurento Media Server.
-- **create**: Instantiates a new media object, that is, a pipeline or media element.
-- **invoke**: Calls a method of an existing media object.
+- **create**: Creates a new media object, i.e. a Media Pipeline, an Endpoint, or any other Media Element.
+- **describe**: Retrieves an already existing object.
+- **invoke**: Calls a method on an existing object.
 - **subscribe**: Subscribes to some specific event, to receive notifications when it gets emitted by a media object.
 - **unsubscribe**: Removes an existing subscription to an event.
-- **release**: Deletes the object and releases resources used by it.
+- **release**: Marks a media object for garbage collection and release of the resources used by it.
 
 The Kurento Protocol allows that Kurento Media Server sends requests to clients:
 
@@ -229,6 +230,106 @@ The response to this request message is as follows:
 
 
 
+Describe
+--------
+
+This message retrieves the information of an already existing object in the Media Server. This can be useful for cases there a newly started Application Server does already know the IDs of all objects it wants to manage, so it just needs to get a reference to them from the Media Server, instead of creating new ones. The *object* parameter contains the ID of the desired object that should be retrieved.
+
+This example shows how to get a reference to a Media Pipeline that had been created earlier:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 4,
+     "method": "describe",
+     "params": {
+       "object": "55c16267-2395-40af-af50-8555adc78f9c_kurento.MediaPipeline",
+       "sessionId": "0cd20d0e-451f-4fd9-b3d4-dff33f90d328"
+     }
+   }
+
+The response to this request message is as follows:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 4,
+     "result": {
+       "hierarchy": ["kurento.MediaObject"],
+       "qualifiedType": "kurento.MediaPipeline",
+       "sessionId": "0cd20d0e-451f-4fd9-b3d4-dff33f90d328",
+       "type": "MediaPipeline"
+     }
+   }
+
+The response message contains the type information of the object that has just been retrieved. Other fields such as *id* and *sessionId* are those corresponding to the current RPC session.
+
+The following example shows the retrieval of an already existing *PlayerEndpoint*; the mechanics are mostly the same, but in this case the response contains more details pertaining the class hierarchy of the Endpoint:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 5,
+     "method": "describe",
+     "params": {
+       "object": "e9cbc8c2-d283-4e62-bb13-d34546d5cdf8_kurento.MediaPipeline/3a2abe27-6f9e-4e08-9ac6-3a456b7979e7_kurento.PlayerEndpoint",
+       "sessionId": "4b3c8344-5b47-4f40-bc2d-a2a0f82723d0"
+     }
+   }
+
+The response to this request message is as follows:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 5,
+     "result": {
+       "hierarchy": [
+         "kurento.UriEndpoint",
+         "kurento.Endpoint",
+         "kurento.MediaElement",
+         "kurento.MediaObject"
+      ],
+      "qualifiedType": "kurento.PlayerEndpoint",
+      "sessionId": "4b3c8344-5b47-4f40-bc2d-a2a0f82723d0",
+      "type": "PlayerEndpoint"
+     }
+   }
+
+Lastly, this is what happens when trying to retrieve an object that does not exist in the server:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 5,
+     "method": "describe",
+     "params": {
+       "object": "1234567890",
+       "sessionId": "20587cfe-76aa-4451-ac73-55e33ae6ca2a"
+     }
+   }
+
+An error response will be returned:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 5,
+     "error": {
+       "code": 40101,
+       "data": { "type": "MEDIA_OBJECT_NOT_FOUND" },
+       "message": "Object '1234567890' not found"
+     }
+   }
+
+
+
 Invoke
 ------
 
@@ -240,7 +341,7 @@ The following example shows a request message for the invocation of the operatio
 
    {
      "jsonrpc": "2.0",
-     "id": 5,
+     "id": 6,
      "method": "invoke",
      "params": {
        "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/76dcb8d7-5655-445b-8cb7-cf5dc91643bc_kurento.PlayerEndpoint",
@@ -260,7 +361,7 @@ This is the typical response while invoking the operation *connect* (that doesn'
 
    {
      "jsonrpc": "2.0",
-     "id": 5,
+     "id": 6,
      "result": {
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
@@ -277,7 +378,7 @@ This message requests releasing the resources of the specified object. The param
 
    {
      "jsonrpc": "2.0",
-     "id": 36,
+     "id": 7,
      "method": "release",
      "params": {
        "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline",
@@ -291,7 +392,7 @@ The response message only contains the *sessionId*:
 
    {
      "jsonrpc": "2.0",
-     "id": 36,
+     "id": 7,
      "result": {
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
@@ -310,7 +411,7 @@ The following example shows a request message requesting the subscription of the
 
    {
      "jsonrpc": "2.0",
-     "id": 11,
+     "id": 8,
      "method": "subscribe",
      "params": {
        "type": "EndOfStream",
@@ -327,7 +428,7 @@ This is  the response of the subscription request. The  *value* attribute contai
 
    {
      "jsonrpc": "2.0",
-     "id": 11,
+     "id": 8,
      "result": {
        "value": "052061c1-0d87-4fbd-9cc9-66b57c3e1280",
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
@@ -347,7 +448,7 @@ The following example shows a request message requesting the cancellation of the
 
    {
      "jsonrpc": "2.0",
-     "id": 38,
+     "id": 9,
      "method": "unsubscribe",
      "params": {
        "subscription": "052061c1-0d87-4fbd-9cc9-66b57c3e1280",
@@ -362,7 +463,7 @@ The response message only contains the *sessionId*:
 
    {
      "jsonrpc": "2.0",
-     "id": 38,
+     "id": 9,
      "result": {
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
@@ -421,7 +522,7 @@ For this, there is a special kind of message with the format shown below. This m
 
    {
      "jsonrpc": "2.0",
-     "id": 7,
+     "id": 10,
      "method": "connect",
      "params": {
        "sessionId": "4f5255d5-5695-4e1c-aa2b-722e82db5260"
@@ -434,7 +535,7 @@ If KMS replies as follows ...
 
    {
      "jsonrpc": "2.0",
-     "id": 7,
+     "id": 10,
      "result": {
        "sessionId": "4f5255d5-5695-4e1c-aa2b-722e82db5260"
      }
@@ -446,7 +547,7 @@ If KMS replies as follows ...
 
    {
      "jsonrpc": "2.0",
-     "id": 7,
+     "id": 10,
      "error": {
        "code": 40007,
        "message": "Invalid session",
@@ -462,7 +563,7 @@ In this case, the client is supposed to invoke the *connect* primitive once agai
 
    {
      "jsonrpc": "2.0",
-     "id": 7,
+     "id": 10,
      "method": "connect"
    }
 
