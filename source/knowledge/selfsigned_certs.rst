@@ -51,17 +51,29 @@ This command already includes some useful things:
 Using a local domain
 ====================
 
-You can take advantage of a domain wildcard such the ``*.test.local`` we propose, by simply adding a new entry to the ``/etc/hosts`` file in the secondary computer where you'll be accessing the main machine's services that you are developing.
+With the Hosts file
+-------------------
 
-For example, you could add this line to your *hosts* file:
+You can take advantage of a domain wildcard such as ``*.test.local``, by adding a new entry to the *Hosts file* in client computers that will connect to your main development machine.
+
+For example, on Linux and macOS you could add this line to your ``/etc/hosts`` file:
 
 .. code-block:: text
 
    192.168.1.50  dev.test.local
 
-With this, you can open a Firefox or Chrome browser, put ``dev.test.local`` in the address bar, and access your main development machine at 192.168.1.50.
+After editing the Hosts file like in this example, you can open a Firefox or Chrome browser, put ``dev.test.local`` in the address bar, and access your main development machine at 192.168.1.50.
 
-Alternatively you could publish your main machine's IP as a **Zeroconf address**. This technique is very handy, because practically all modern platforms include an mDNS client to resolve Zeroconf addresses. For example, if your development machine uses Ubuntu you can run this:
+On Windows you can do the same; the Hosts file is located at ``%SystemRoot%\System32\drivers\etc\hosts``. Different systems have this file in different locations, so check here for a more complete list: :wikipedia:`Hosts_(file)#Location_in_the_file_system`.
+
+
+
+With Zeroconf
+-------------
+
+If editing the Hosts file is not an option, or you would like a more flexible solution, another possibility is to publish your server IP address as a temporary domain name in your LAN. You could do this with a full-fledged DNS server, but a simpler solution is to assign your machine a **discoverable Zeroconf address**.
+
+This technique is very handy, because practically all modern platforms include an mDNS client to discover Zeroconf addresses. For example, if your development machine uses Ubuntu, you can run this:
 
 .. code-block:: shell
 
@@ -71,7 +83,7 @@ Alternatively you could publish your main machine's IP as a **Zeroconf address**
 
 .. note::
 
-   As of this writing, Android seems to be the only major platform unable to resolve local Zeroconf addresses. All other systems support them in one way or another:
+   As of this writing, Android seems to be the only major platform unable to resolve Zeroconf addresses. All other systems support them in one way or another:
 
    * Windows: `mDNS and DNS-SD slowly making their way into Windows 10 <https://www.ctrl.blog/entry/windows-mdns-dnssd.html>`__.
    * Mac and iOS include mDNS natively.
