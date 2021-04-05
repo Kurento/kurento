@@ -2,7 +2,7 @@
 1.22.3 (UNRELEASED)
 ===================
 
-<Short description>
+This is a template for changes that are being added to the next release.
 
 To install Kurento Media Server: :doc:`/user/installation`.
 
