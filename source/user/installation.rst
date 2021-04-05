@@ -321,6 +321,89 @@ If you need to automate this, you could write a script similar to `healthchecker
 
 
 
+Checking RTP port connectivity
+------------------------------
+
+This section explains how you can verify that Kurento Media Server can be reached from a remote client machine, in scenarios where **the media server is not behind a NAT**.
+
+You will take the role of an end user application, such as a web browser, wanting to send audio and video to the media server. For that, we'll use either of *Netcat* in the server, and either the same or `Ncat <https://nmap.org/ncat/>`__ in the client (because Ncat has more installation choices).
+
+The check proposed here will not work if the media server sits behind a NAT, because we are not punching holes in it (e.g. with STUN, see :ref:`faq-stun-needed`); doing so is outside of the scope for this section, but you could also do it by hand if needed (like shown in :ref:`nat-diy-holepunch`).
+
+**First part: Server**
+
+Follow these steps on the machine where Kurento Media Server is running.
+
+* First, install Netcat, which is available for most Linux distributions. For example:
+
+  .. code-block:: shell
+
+     # For Debian/Ubuntu:
+     sudo apt-get update && sudo apt-get install --yes netcat-openbsd
+
+* Then, start a Netcat server, listening on any port of your choice:
+
+  .. code-block:: shell
+
+     # To test a TCP port:
+     nc -vnl SERVER_PORT
+
+     # To test an UDP port:
+     nc -vnul SERVER_PORT
+
+**Second part: Client**
+
+Now move to a client machine, and follow the next steps.
+
+* Install either of Netcat or Ncat. On Linux, Netcat is probably available as a package. On MacOS and Windows, it might be easier to download a prebuilt installer from the `Ncat downloads page <https://nmap.org/download.html>`__.
+
+* Now, run Netcat or Ncat to connect with the server and send some test data. These examples use ``ncat``, but the options are the same if you use ``nc``:
+
+  .. code-block:: shell
+
+     # Linux, MacOS:
+     ncat -vn  -p CLIENT_PORT SERVER_IP SERVER_PORT  # TCP
+     ncat -vnu -p CLIENT_PORT SERVER_IP SERVER_PORT  # UDP
+
+     # Windows:
+     ncat.exe -vn  -p CLIENT_PORT SERVER_IP SERVER_PORT  # TCP
+     ncat.exe -vnu -p CLIENT_PORT SERVER_IP SERVER_PORT  # UDP
+
+  .. note::
+
+     The ``-p CLIENT_PORT`` is optional. We're using it here so the source port is well known, allowing us to expect it on the server's Ncat output, or in the IP packet headers if packet analysis is being done (e.g. with *Wireshark* or *tcpdump*). Otherwise, the O.S. would assign a random source port for our client.
+
+* When the connection has been established, try typing some words and press Return or Enter. If you see the text appearing on the server side of the connection, **the test has been successful**.
+
+* If the test is successful, you will see the client's source port in the server output. If this number is *different* than the CLIENT_PORT you used, this means that the client is behind a :ref:`Symmetric NAT <nat-symmetric>`, and **a TURN relay will be required for WebRTC**.
+
+* If the test data is not reaching the server, or the client command fails with a message such as ``Ncat: Connection refused``, it means the connection has failed. You should review the network configuration to make sure that a firewall or some other filtering device is not blocking the connection. This is an indication that there are some issues in the network, which gives you a head start to troubleshoot missing media in your application.
+
+For example: Assume you want to connect from the port *3000* of a client whose public IP is *198.51.100.2*, to the port *55000* of your server at *203.0.113.2*. This is what both client and server terminals could look like:
+
+.. code-block:: shell-session
+   :emphasize-lines: 4
+
+   # CLIENT
+
+   $ ncat -vn -p 3000 203.0.113.2 55000
+   Ncat: Connected to 203.0.113.2:55000
+   (input) THIS IS SOME TEST DATA
+
+.. code-block:: shell-session
+   :emphasize-lines: 5
+
+   # SERVER
+
+   $ nc -vnl 55000
+   Listening on 0.0.0.0 55000
+   Connection received on 198.51.100.2 3000
+   (output) THIS IS SOME TEST DATA
+
+Notice how the server claims to have received a connection from the client's IP (*198.51.100.2*) and port (*3000*). This means that the client's NAT, if any, does not alter the source port of its outbound packets. If we saw here a different port, it would mean that the client's NAT is Symmetric, which usually requires using a TURN relay for WebRTC.
+
+
+
 .. Links
 
 .. _Amazon Web Services: https://aws.amazon.com

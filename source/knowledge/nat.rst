@@ -214,6 +214,8 @@ In order to tell one host when it has to perform an outbound transmission to ano
 
 
 
+.. _nat-diy-holepunch:
+
 Do-It-Yourself hole punching
 ----------------------------
 
