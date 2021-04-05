@@ -21,7 +21,7 @@ Basic Concepts
 Transport Address
 -----------------
 
-A Transport Address is the combination of a host's IP address and a port. When talking about transmission of packets between hosts, we'll refer to them in terms of the transport addresses of both the source and the destination.
+A *Transport Address* is the combination of a host's IP address and a port. When talking about transmission of packets between hosts, we'll refer to them in terms of the transport addresses of both the source and the destination.
 
 
 
@@ -219,45 +219,45 @@ Do-It-Yourself hole punching
 
 It is very easy to test the NAT capabilities in a local network. To do this, you need access to two hosts:
 
-A. One sitting behind a NAT. We'll call this the host **A**.
-B. One directly connected to the internet, with no firewall. This is host **B**.
+A. One sitting behind a NAT. We'll call this the host **[A]**.
+B. One outside the NAT (e.g. by directly connecting it to the internet, with no firewall). This is host **[B]**.
 
 Set some helper variables: the *public* IP address of each host, and their listening ports:
 
 .. code-block:: shell
 
-   A_IP="198.51.100.1" # Public IP address of the NAT which hides the host A
-   A_PORT="1111"       # Listening port on the host A
-   B_IP="203.0.113.2"  # Public IP address of the host B
-   B_PORT="2222"       # Listening port of the host B
+   A_IP="198.51.100.1" # Public IP address of the NAT which hides the host [A]
+   A_PORT="1111"       # Listening port on the host [A]
+   B_IP="203.0.113.2"  # Public IP address of the host [B]
+   B_PORT="2222"       # Listening port of the host [B]
 
-1. **A** starts listening for data. Leave this running in A:
+1. **[A]** starts listening for data. Leave this running in [A]:
 
    .. code-block:: shell
 
       nc -4nul "$A_PORT"
 
-2. **B** tries to send data, but the NAT in front of **A** will discard the packets. Run in B:
+2. **[B]** tries to send data, but the NAT in front of **[A]** will discard the packets. Run in [B]:
 
    .. code-block:: shell
 
       echo "TEST" | nc -4nu -q 1 -p "$B_PORT" "$A_IP" "$A_PORT"
 
-3. **A** performs a hole punch, forcing its NAT to create a new inbound rule. **B** awaits for the UDP packet, for verification purposes.
+3. **[A]** performs a hole punch, forcing its NAT to create a new inbound rule. **[B]** awaits for the UDP packet, for verification purposes.
 
-   Run in B:
+   Run in [B]:
 
    .. code-block:: shell
 
       sudo tcpdump -n -i eth0 "src host $A_IP and udp dst port $B_PORT"
 
-   Run in A:
+   Run in [A]:
 
    .. code-block:: shell
 
       sudo hping3 --count 1 --udp --baseport "$A_PORT" --keep --destport "$B_PORT" "$B_IP"
 
-4. **B** tries to send data again. Run in B:
+4. **[B]** tries to send data again. Run in [B]:
 
    .. code-block:: shell
 
@@ -265,11 +265,11 @@ Set some helper variables: the *public* IP address of each host, and their liste
 
 .. note::
 
-   - The difference between a Cone NAT and a Symmetric NAT can be detected during step 3. If the *tcpdump* command on **B** shows a source port equal to *$A_PORT*, then the NAT is respecting the source port chosen by the application, which means that it is one of the Cone NAT types. However, if *tcpdump* shows that the source port is different from *$A_PORT*, then the NAT is changing the source port during outbound mapping, which means that it is a Symmetric NAT.
+   - The difference between a Cone NAT and a Symmetric NAT can be detected during step 3. If the *tcpdump* command on **[B]** shows a source port equal to *$A_PORT*, then the NAT is respecting the source port chosen by the application, which means that it is one of the Cone NAT types. However, if *tcpdump* shows that the source port is different from *$A_PORT*, then the NAT is changing the source port during outbound mapping, which means that it is a Symmetric NAT.
 
-   - In the case of a Cone NAT, the data sent from **B** should arrive correctly at **A** after step 4.
+   - In the case of a Cone NAT, the data sent from **[B]** should arrive correctly at **[A]** after step 4.
 
-   - In the case of a Symmetric NAT, the data sent from **B** won't arrive at **A** after step 4, because *$A_PORT* is the wrong destination port. If you write the correct port (as discovered in step 3) instead of *$A_PORT*, then the data should arrive at **A**.
+   - In the case of a Symmetric NAT, the data sent from **[B]** won't arrive at **[A]** after step 4, because *$A_PORT* is the wrong destination port. If you write the correct port (as discovered in step 3) instead of *$A_PORT*, then the data should arrive at **[A]**.
 
 
 
