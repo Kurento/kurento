@@ -146,6 +146,30 @@ These settings are only provided for advanced users who know what they are doing
 
 
 
+ICE-TCP
+-------
+
+`ICE-TCP <https://tools.ietf.org/html/rfc6544>`__ is what allows WebRTC endpoints to exchange ICE candidates that use the TCP protocol; in other words, the feature of using TCP instead of UDP for WebRTC communications.
+
+If you have a well known scenario and you are 100% sure that UDP will work, then disabling TCP provides slightly faster times when establishing WebRTC sessions. I.e., with ICE-TCP disabled, the time between joining a call and actually seeing the video will be shorter.
+
+Of course, if you cannot guarantee that UDP will work in your network, then **you should leave this setting enabled**, which is the default. Otherwise, UDP might fail and there would be no TCP fallback for WebRTC to work.
+
+**Local install**
+
+* Set value ``iceTcp`` to 1 (ON) or 0 (OFF) in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``.
+
+**Docker**
+
+* Set environment variable ``KMS_ICE_TCP`` to 1 (ON) or 0 (OFF).
+
+**Client API**
+
+* Java: `setIceTcp <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setIceTcp-boolean->`__.
+* JavaScript: `setIceTcp <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setIceTcp>`__.
+
+
+
 External IP address
 -------------------
 

@@ -22,6 +22,19 @@ Of course, if you cannot guarantee that UDP will work in your network, then **yo
 
 Thanks to `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for `Kurento/kms-elements#26 <https://github.com/Kurento/kms-elements/pull/26>`__ (*Add niceAgentIceTcp configuration option and API methods for it*).
 
+**Local install**
+
+* Set value ``iceTcp`` to 1 (ON) or 0 (OFF) in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``.
+
+**Docker**
+
+* Set environment variable ``KMS_ICE_TCP`` to 1 (ON) or 0 (OFF).
+
+**Client API**
+
+* Java: `setIceTcp <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setIceTcp-boolean->`__.
+* JavaScript: `setIceTcp <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setIceTcp>`__.
+
 
 
 Packet loss correction in Recorder
