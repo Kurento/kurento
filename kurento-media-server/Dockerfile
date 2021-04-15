@@ -161,19 +161,9 @@ RUN apt-key adv \
 #
 # FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
 
-# Configure environment for KMS. All of these can be overriden with `docker run`.
-# * Disable color in debug logs
-# * Provide default empty values for all environment variables supported by
-#   the entrypoint script. This acts more as documentation than really a need.
-ENV GST_DEBUG_NO_COLOR=1 \
-    GST_DEBUG="" \
-    KMS_MTU="" \
-    KMS_EXTERNAL_IPV4="" \
-    KMS_EXTERNAL_IPV6="" \
-    KMS_NETWORK_INTERFACES="" \
-    KMS_STUN_IP="" \
-    KMS_STUN_PORT="" \
-    KMS_TURN_URL=""
+# Configure environment for KMS.
+# * Disable color in debug logs.
+ENV GST_DEBUG_NO_COLOR=1
 
 # Expose default Kurento RPC control port
 EXPOSE 8888
