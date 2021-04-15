@@ -367,9 +367,6 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
 
         # Prevent GStreamer from forking on startup
         "GST_REGISTRY_FORK='no'"
-
-        # Enable deletion of MediaSet objects in KMS, to avoid leak reports
-        "DEBUG_MEDIASET='1'"
     )
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
@@ -399,9 +396,6 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
         # NOTE: "detect_stack_use_after_return=1" breaks Kurento execution (more study needed to see why)
         # NOTE: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled
         "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_odr_violation=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1'"
-
-        # Enable deletion of MediaSet objects in KMS, to avoid leak reports
-        "DEBUG_MEDIASET='1'"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
