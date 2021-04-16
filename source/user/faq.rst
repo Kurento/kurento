@@ -22,11 +22,10 @@ These are very important concepts that developers must understand well to work w
   - :term:`What is TURN <TURN>`?
   - :ref:`faq-turn-works`
 
-* Installing and configuring a STUN/TURN server:
+* Installing a STUN/TURN server (Coturn):
 
   - :ref:`faq-coturn-install`
   - :ref:`faq-stun-test`
-  - :ref:`faq-stun-configure`
 
 * Troubleshooting :ref:`troubleshooting-webrtc`
 * Advanced knowledge: :doc:`/knowledge/nat`
@@ -42,7 +41,7 @@ When are STUN and TURN needed?
 
 The STUN server uses a single port for client connections (3478 by default), so this port should be opened up for the public in the server's network configuration or *Security Group*. If using TURN relay, then the whole range of TURN ports (49152 to 65535 by default) should be opened up too, besides the client port. Depending on the features of the STUN/TURN server, these might be only UDP or both UDP and TCP ports. For example, *Coturn* uses both UDP and TCP in its default configuration.
 
-If you are installing Kurento in a NAT environment (e.g. if your media server is behind a NAT firewall), you also need to configure an external STUN server, in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` (check :ref:`faq-stun-configure` for more details). Similarly, all browser clients that are behind a NAT need to use the STUN server through the *iceServers* field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
+If you are installing Kurento in a NAT environment (e.g. if your media server is behind a NAT firewall), you also need to configure an external STUN server, in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Similarly, all browser clients that are behind a NAT need to use the STUN server through the *iceServers* field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
 
 **Example:**
 
@@ -106,7 +105,7 @@ Coturn can be installed directly from the Ubuntu package repositories:
 
 To configure it for WebRTC, follow these steps:
 
-1. Edit ``/etc/turnserver.conf``.
+#. Edit ``/etc/turnserver.conf``.
 
    This example configuration is a good baseline; it contains the minimum setup required for using Coturn with Kurento Media Server for WebRTC:
 
@@ -125,7 +124,7 @@ To configure it for WebRTC, follow these steps:
       #min-port=49152
       #max-port=65535
 
-      # Uncomment to run server in 'normal' 'moderate' verbose mode.
+      # Uncomment to enable moderately verbose logs.
       # Default: verbose mode OFF.
       #verbose
 
@@ -135,30 +134,30 @@ To configure it for WebRTC, follow these steps:
       # TURN long-term credential mechanism.
       lt-cred-mech
 
-      # TURN realm used for the long-term credential mechanism.
-      realm=kurento.org
-
       # TURN static user account for long-term credential mechanism.
       user=<TurnUser>:<TurnPassword>
 
+      # TURN realm used for the long-term credential mechanism.
+      realm=kurento.org
+
       # Set the log file name.
       # The log file can be reset sending a SIGHUP signal to the turnserver process.
-      log-file=/var/log/turnserver/turnserver.log
+      log-file=/var/log/turn.log
 
       # Disable log file rollover and use log file name as-is.
       simple-log
 
    .. note::
 
-      * The *external-ip* is necessary in cloud providers which use internal NATs, such as **Amazon EC2** (AWS). Write your server's **public** IP address, like *198.51.100.1*, in the field *<CoturnIp>*. **It must be an IP address, not a domain name**.
-
-      * This example uses the "*long-term credential*" mechanism of Coturn with a static password, which is good enough for showcasing the setup. You write the desired user name and password in the fields *<TurnUser>* and *<TurnPassword>*, and provide them to KMS as static parameters.
-
-        However, for real-world scenarios you might want to use dynamic passwords. Coturn can be integrated with external sources, such as PostgreSQL (`psql-userdb <https://github.com/coturn/coturn/blob/ae2ee1f4e4f4f4119425e3d890a7f6ca44b57d0b/examples/etc/turnserver.conf#L299>`__), MySQL (`mysql-userdb <https://github.com/coturn/coturn/blob/ae2ee1f4e4f4f4119425e3d890a7f6ca44b57d0b/examples/etc/turnserver.conf#L313>`__), MongoDB (`mongo-userdb <https://github.com/coturn/coturn/blob/ae2ee1f4e4f4f4119425e3d890a7f6ca44b57d0b/examples/etc/turnserver.conf#L331>`__), or Redis (`redis-userdb <https://github.com/coturn/coturn/blob/ae2ee1f4e4f4f4119425e3d890a7f6ca44b57d0b/examples/etc/turnserver.conf#L339>`__). You would handle this from your :doc:`Application Server </user/writing_applications>`, and then use the Kurento API to dynamically provide each individual WebRtcEndpoint with the correct parameters.
-
-        Read :ref:`faq-stun-configure` for info about static and dynamic parameter configuration.
+      * The *external-ip* is necessary in cloud providers that use internal NATs, such as AWS (Amazon EC2). Write the machine's public IP address in the field *<CoturnIp>*. **It must be an IP address, not a domain name**.
 
       * Comment out (or delete) all the TURN parameters if you only want Coturn acting as a STUN server.
+
+      * Create the destination log file, otherwise Coturn will not have permissions to create the file by itself:
+
+        .. code-block:: text
+
+           sudo install -o turnserver -g turnserver -m 644 /dev/null /var/log/turn.log
 
       * Other settings can be tuned as needed. For more information, check the Coturn help pages:
 
@@ -166,15 +165,41 @@ To configure it for WebRTC, follow these steps:
         - Fully commented configuration file: https://github.com/coturn/coturn/blob/master/examples/etc/turnserver.conf
         - Additional docs on configuration: https://github.com/coturn/coturn/wiki/CoturnConfig
 
-2. Edit the file ``/etc/default/coturn`` and set
+   .. warning::
+
+      This example configures TURN authentication with the "*long-term credential*" method, where you write a static username and password in the fields *<TurnUser>* and *<TurnPassword>*.
+
+      While that is good enough for showcasing the Coturn setup here, for real-world scenarios you might want to use dynamically-generated passwords. This is more secure, because each individual participant can be provided with an exclusive one-time username and password.
+
+      Coturn can be integrated with external sources, such as PostgreSQL (`psql-userdb <https://github.com/coturn/coturn/blob/4.5.2/examples/etc/turnserver.conf#L299>`__), MySQL (`mysql-userdb <https://github.com/coturn/coturn/blob/4.5.2/examples/etc/turnserver.conf#L313>`__), MongoDB (`mongo-userdb <https://github.com/coturn/coturn/blob/4.5.2/examples/etc/turnserver.conf#L331>`__), or Redis (`redis-userdb <https://github.com/coturn/coturn/blob/4.5.2/examples/etc/turnserver.conf#L339>`__), and it even provides a `REST API <https://tools.ietf.org/html/draft-uberti-behave-turn-rest-00>`__ for time-limited credentials (`use-auth-secret <https://github.com/coturn/coturn/blob/4.5.2/examples/etc/turnserver.conf#L236>`__). You can handle any of these methods from your :doc:`Application Server </user/writing_applications>`, then use the :ref:`Kurento API <configuration-stun-turn>` to dynamically provide each individual WebRtcEndpoint with the correct parameters.
+
+#. Edit the file ``/etc/default/coturn`` and uncomment or add this line:
 
    .. code-block:: shell
 
       TURNSERVER_ENABLED=1
 
-   so the server starts automatically as a system service daemon.
+#. Start the Coturn system service:
 
-3. Follow with the next sections to test that Coturn is working, and then set it up as your STUN/TURN server in both Kurento Media Server and the WebRTC clients.
+   .. code-block:: shell
+
+      sudo service coturn restart
+
+#. The following ports should be open in your firewall / NAT / cloud provider's *Security Group*:
+
+   * **listening-port** (default: 3478) UDP & TCP. You can skip opening one of the protocols if you disable either UDP or TCP in Coturn (for example, with ``no-tcp``).
+
+   * All the range from **min-port** to **max-port** (default: 49152 to 65535). As per :rfc:`8656`, this is the port range that Coturn will use by default for TURN relay. Again, you can disable either of TCP or UDP (for example, with ``no-tcp-relay``).
+
+   .. note::
+
+      **Port ranges do NOT need to match between Coturn and Kurento Media Server**.
+
+      If you happen to deploy both Coturn and KMS in the same machine, we recommend that their port ranges do not overlap.
+
+#. Configure the STUN or TURN parameters in both Kurento Media Server and all WebRTC clients (like web browsers). Check :ref:`STUN/TURN Server Configuration <configuration-stun-turn>` for ways to configure KMS with these parameters.
+
+#. Check that your Coturn server is working. For that, follow the steps given in the next section.
 
 
 
@@ -208,85 +233,6 @@ To test if your :term:`STUN`/:term:`TURN` server is functioning properly, open t
 4. Click on *Gather candidates*. **Verify** that you get candidates of type *srflx* if you are testing STUN. Likewise, you should get candidates of type *srflx* *and* type *relay* if you are testing TURN.
 
    If you are missing any of the expected candidate types, *your STUN/TURN server is not working well* and WebRTC will fail. Check your server configuration, and your cloud provider's network settings.
-
-
-
-.. _faq-stun-configure:
-
-How to configure STUN/TURN in Kurento?
---------------------------------------
-
-To configure a :term:`STUN` server or :term:`TURN` relay with Kurento Media Server, you may use either of two methods:
-
-* **Static config**. If the STUN or TURN parameters are well know and will not change over time, write them into the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``.
-
-  To only use STUN server (TURN relay will not be used):
-
-  .. code-block:: text
-
-     stunServerAddress=<StunServerIp>
-     stunServerPort=<StunServerPort>
-
-  *<StunServerIp>* should be the public IP address of the STUN server. **It must be an IP address, not a domain name**. For example:
-
-  .. code-block:: text
-
-     stunServerAddress=198.51.100.1
-     stunServerPort=3478
-
-  To use both STUN server and TURN relay:
-
-  .. code-block:: text
-
-     turnURL=<TurnUser>:<TurnPassword>@<TurnServerIp>:<TurnServerPort>
-
-  *<TurnServerIp>* should be the public IP address of the TURN relay. **It must be an IP address, not a domain name**. For example:
-
-  .. code-block:: text
-
-     turnURL=myuser:mypassword@198.51.100.1:3478
-
-* **Dynamic config**. If the STUN or TURN parameters are not known beforehand (for example, if your TURN credentials are dynamically generated during run-time), use the Kurento API methods to set them.
-
-  To only use STUN server (TURN relay will not be used):
-
-  .. code-block:: text
-
-     webRtcEndpoint.setStunServerAddress("<StunServerIp>");
-     webRtcEndpoint.setStunServerPort(<StunServerPort>);
-
-  To use both STUN server and TURN relay:
-
-  .. code-block:: text
-
-     webRtcEndpoint.setTurnUrl("<TurnUser>:<TurnPassword>@<TurnServerIp>:<TurnServerPort>");
-
-  Client API:
-
-  * Java: `setStunServerAddress <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__, `setStunServerPort <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort-int->`__, `setTurnUrl <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__.
-  * JavaScript: `setStunServerAddress <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerAddress>`__, `setStunServerPort <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerPort>`__, `setTurnUrl <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__.
-
-.. note::
-
-   **You don't need to configure both STUN and TURN**, because TURN already includes STUN functionality.
-
-The following ports should be open in the firewall or your cloud provider *Security Group*:
-
-- **<CoturnPort>** (Default: 3478) UDP & TCP, unless you disable either UDP or TCP in Coturn (for example, with ``no-tcp``).
-- **49152 to 65535** UDP & TCP: As per :rfc:`8656`, this port range will be used by a TURN relay to exchange media by default. These ports can be changed using Coturn's ``min-port`` and ``max-port`` settings. Again, you can disable using either TCP or UDP for the relay port range (for example, with ``no-tcp-relay``).
-
-.. note::
-
-   **Port ranges do NOT need to match between Coturn and Kurento Media Server**.
-
-   If you happen to deploy both Coturn and KMS in the same machine, we recommend that their port ranges do not overlap.
-
-When you are done, (re)start both Coturn and Kurento servers:
-
-.. code-block:: shell
-
-   sudo service coturn restart
-   sudo service kurento-media-server restart
 
 
 
@@ -419,8 +365,8 @@ The Kurento API offers no way to get application-level semantic attributes store
 
 
 
-How to retrieve known objects from the Media Server?
-----------------------------------------------------
+How to get existing objects from the Media Server?
+--------------------------------------------------
 
 The usual workflow for an Application Server is to connect with the Media Server, and use RPC methods to *create* new MediaPipelines and Endpoints inside it. However, if you want to connect your Application Server with objects that *already exist* in the Media Server (as opposed to creating new ones), you can achieve it by querying by their ID. This is done with the "*describe*" method of the JSON-RPC API, as described in :doc:`/features/kurento_protocol`.
 

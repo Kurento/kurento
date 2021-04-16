@@ -573,7 +573,7 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 
 * Test if your :term:`STUN`/:term:`TURN` server is working correctly: :ref:`faq-stun-test`.
 
-* Configure your :term:`STUN`/:term:`TURN` server in Kurento Media Server: :ref:`faq-stun-configure`.
+* Configure your :term:`STUN`/:term:`TURN` server in Kurento Media Server: :ref:`configuration-stun-turn`.
 
 * Check the debug logs of your :term:`STUN`/:term:`TURN` server. Maybe the server is failing and some useful error messages are being printed in there.
 

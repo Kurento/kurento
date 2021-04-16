@@ -270,9 +270,9 @@ Kurento Media Server, just like any WebRTC endpoint, will work fine on its own, 
 
 These links contain the information needed to finish configuring your Kurento Media Server with a STUN/TURN server:
 
+- :doc:`/user/configuration`
 - :ref:`faq-coturn-install`
 - :ref:`faq-stun-test`
-- :ref:`faq-stun-configure`
 
 
 
