@@ -15,7 +15,7 @@
 #/   be used as-is; otherwise, a nightly/snapshot indicator will be appended.
 #/
 #/   <Version> should be in a format compatible with Semantic Versioning,
-#/   such as "1.2.3" or, in general terms, "<Major>.<Minor>.<Patch>".
+#/   such as "1.0.0" or, in general terms, "MAJOR.MINOR.PATCH".
 #/
 #/ --debian <DebianVersion>
 #/
@@ -36,15 +36,13 @@
 #/
 #/ --release
 #/
-#/   Use version numbers intended for Release builds, such as "1.2.3" instead
-#/   of "1.2.3-SNAPSHOT" or "1.2.3-dev".
+#/   Use version numbers intended for Release builds, such as "1.0.0". If this
+#/   option is not given, a nightly/snapshot indicator is appended: "-dev" for
+#/   C/C++ and JS projects, or "-SNAPSHOT" for Java projects.
 #/
-#/   This option uses the standard commit message "Prepare release <Version>"
-#/   if '--commit' is also present. The convention is to use this message to
+#/   If '--commit' is also present, this option uses the commit message
+#/   "Prepare release <Version>". The convention is to use this message to
 #/   make a new final release.
-#/
-#/   If this option is not given, a nightly/snapshot indicator is appended:
-#/   "-dev" for C/C++ projects, and "-SNAPSHOT" for Java projects.
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -52,10 +50,9 @@
 #/
 #/   Mark the start of a new development iteration.
 #/
-#/   This option only has the effect of using the standard commit message
-#/   "Prepare for next development iteration" if '--commit' is also present. The
-#/   convention is to use this message to start development on a new project
-#/   version after having finished a release.
+#/   If '--commit' is also present, this option uses the commit message
+#/   "Prepare for next development iteration". The convention is to use this
+#/   message to start development on a new project version after a release.
 #/
 #/   If neither '--release' nor '--new-development' are given, the commit
 #/   message will be "Bump development version to <Version>", because this
@@ -104,8 +101,7 @@ set -o xtrace
 # Parse call arguments
 # --------------------
 
-CFG_VERSION_DEFAULT="0.0.0"
-CFG_VERSION="$CFG_VERSION_DEFAULT"
+CFG_VERSION=""
 CFG_DEBIAN="0kurento1"
 CFG_RELEASE="false"
 CFG_NEWDEVELOPMENT="false"
@@ -159,7 +155,7 @@ if [[ "$CFG_TAG" == "true" ]]; then
     fi
 fi
 
-if [[ "$CFG_VERSION" == "$CFG_VERSION_DEFAULT" ]]; then
+if [[ -z "$CFG_VERSION" ]]; then
     log "ERROR: Missing <Version>"
     exit 1
 fi
@@ -311,224 +307,231 @@ commit_and_tag() {
 
 pushd kurento-module-creator/
 TEMP="$(mktemp)"
-FILE="pom.xml"
-xmlstarlet edit -S --update "/_:project/_:version" --value "$VERSION_JAVA" "$FILE" \
-    >"$TEMP" && mv "$TEMP" "$FILE"
+xmlstarlet edit -S --update "/_:project/_:version" --value "$VERSION_JAVA" pom.xml \
+    >"$TEMP" && mv "$TEMP" pom.xml
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE" src/main/templates/maven/model_pom_xml.ftl
+commit_and_tag \
+    pom.xml \
+    src/main/templates/maven/model_pom_xml.ftl
 popd
 
 
 
 pushd kurento-maven-plugin/
-FILE="pom.xml"
 xmlstarlet edit -S --inplace \
     --update "/_:project/_:version" \
     --value "$VERSION_JAVA" \
-    "$FILE"
+    pom.xml
 xmlstarlet edit -S --inplace \
     --update "/_:project/_:dependencies/_:dependency[_:artifactId='kurento-module-creator']/_:version" \
     --value "$VERSION_JAVA" \
-    "$FILE"
-commit_and_tag "$FILE"
+    pom.xml
+commit_and_tag \
+    pom.xml
 popd
 
 
 
 pushd kms-cmake-utils/
-FILE="CMakeLists.txt"
 perl -i -pe \
     "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
-    "$FILE"
+    CMakeLists.txt
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    CMakeLists.txt
 popd
 
 
 
 pushd kms-jsonrpc/
-FILE="CMakeLists.txt"
 perl -i -pe \
     "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
-    "$FILE"
+    CMakeLists.txt
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    CMakeLists.txt
 popd
 
 
 
 pushd kms-core/
-FILE="src/server/interface/core.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/core.kmd.json
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    perl -i -pe \
+        "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
+        CMake/CodeGenerator.cmake
+fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/core.kmd.json \
+    CMake/CodeGenerator.cmake
 popd
 
 
 
 pushd kms-elements/
-FILE="src/server/interface/elements.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/elements.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/elements.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/elements.kmd.json
 popd
 
 
 
 pushd kms-filters/
-FILE="src/server/interface/filters.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/filters.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/filters.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/filters.kmd.json
 popd
 
 
 
 pushd kurento-media-server/
-FILE="CMakeLists.txt"
 perl -i -pe \
     "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
-    "$FILE"
+    CMakeLists.txt
 perl -i -pe \
     "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-    "$FILE"
+    CMakeLists.txt
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    CMakeLists.txt
 popd
 
 
 
 pushd module/kms-chroma/
-FILE="src/server/interface/chroma.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/chroma.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/chroma.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/chroma.kmd.json
 popd
 
 
 
 pushd module/kms-crowddetector/
-FILE="src/server/interface/crowddetector.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/crowddetector.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/crowddetector.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/crowddetector.kmd.json
 popd
 
 
 
 pushd module/kms-datachannelexample/
-FILE="src/server/interface/kmsdatachannelexample.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/kmsdatachannelexample.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/kmsdatachannelexample.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/kmsdatachannelexample.kmd.json
 popd
 
 
 
 pushd module/kms-markerdetector/
-FILE="src/server/interface/armarkerdetector.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/armarkerdetector.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/armarkerdetector.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/armarkerdetector.kmd.json
 popd
 
 
 
 pushd module/kms-platedetector/
-FILE="src/server/interface/platedetector.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/platedetector.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/platedetector.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/platedetector.kmd.json
 popd
 
 
 
 pushd module/kms-pointerdetector/
-FILE="src/server/interface/pointerdetector.kmd.json"
 perl -i -pe \
     "s/\"version\": \"\K\S*(?=\")/${VERSION_C}/" \
-    "$FILE"
+    src/server/interface/pointerdetector.kmd.json
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/\"kurentoVersion\": \"\K\S*(?=\")/^${VERSION_C}/" \
-        "$FILE"
+        src/server/interface/pointerdetector.kmd.json
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag "$FILE"
+commit_and_tag \
+    src/server/interface/pointerdetector.kmd.json
 popd
 
 
 
 # Changes for kms-omni-build itself
-FILE="CMakeLists.txt"
 perl -i -pe \
     "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?=\))/^${VERSION_C}/" \
-    "$FILE"
-commit_and_tag "$FILE" \
+    CMakeLists.txt
+commit_and_tag \
+    CMakeLists.txt \
     kurento-module-creator \
     kurento-maven-plugin \
     kms-cmake-utils \
