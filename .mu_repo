@@ -1,3 +1,4 @@
+repo=.
 repo=kurento-module-creator
 repo=kurento-maven-plugin
 repo=kms-cmake-utils
