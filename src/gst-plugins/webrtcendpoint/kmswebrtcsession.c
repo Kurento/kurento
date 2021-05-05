@@ -799,7 +799,7 @@ kms_webrtc_session_set_network_ifs_info (KmsWebrtcSession * self,
     return;
   }
 
-  GST_DEBUG_OBJECT (self, "Use network interfaces: %s",
+  GST_DEBUG_OBJECT (self, "Using network interfaces: %s",
       self->network_interfaces);
 
   kms_webrtc_base_connection_set_network_ifs_info (conn,
@@ -818,10 +818,15 @@ kms_webrtc_session_set_stun_server_info (KmsWebrtcSession * self,
     KmsWebRtcBaseConnection * conn)
 {
   if (self->stun_server_ip == NULL) {
+    if (self->turn_address == NULL) {
+      GST_WARNING_OBJECT (self,
+          "STUN server not configured! NAT traversal requires STUN or TURN");
+    }
+
     return;
   }
 
-  GST_DEBUG_OBJECT (self, "Use STUN server: %s:%u", self->stun_server_ip,
+  GST_INFO_OBJECT (self, "Using STUN server: %s:%u", self->stun_server_ip,
       self->stun_server_port);
 
   kms_webrtc_base_connection_set_stun_server_info (conn, self->stun_server_ip,
@@ -833,10 +838,15 @@ kms_webrtc_session_set_relay_info (KmsWebrtcSession * self,
     KmsWebRtcBaseConnection * conn)
 {
   if (self->turn_address == NULL) {
+    if (self->stun_server_ip == NULL) {
+      GST_WARNING_OBJECT (self,
+          "TURN relay server not configured! NAT traversal requires STUN or TURN");
+    }
+
     return;
   }
 
-  GST_DEBUG_OBJECT (self, "Use TURN server: %s:%u", self->turn_address,
+  GST_INFO_OBJECT (self, "Using TURN relay server: %s:%u", self->turn_address,
       self->turn_port);
 
   kms_webrtc_base_connection_set_relay_info (conn, self->turn_address,

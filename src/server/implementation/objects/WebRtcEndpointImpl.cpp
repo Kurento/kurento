@@ -567,29 +567,26 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
     g_object_set (G_OBJECT (element), PROP_ICE_TCP, iceTcp, NULL);
   } else {
     GST_DEBUG ("ICE-TCP option not found in config;"
-               " you can set one or default to 1 (TRUE)");
+               " you can set it or default to 1 (TRUE)");
   }
 
   uint stunPort = 0;
-
   if (!getConfigValue <uint, WebRtcEndpoint> (&stunPort, "stunServerPort",
       DEFAULT_STUN_PORT) ) {
-    GST_INFO ("STUN port not found in config;"
-              " using default value: %d", DEFAULT_STUN_PORT);
+    GST_DEBUG ("STUN port not found in config;"
+               " using default value: %d", DEFAULT_STUN_PORT);
   }
 
   std::string stunAddress;
-
-  if (!getConfigValue <std::string, WebRtcEndpoint> (&stunAddress,
-      "stunServerAddress") ) {
-    GST_INFO ("STUN server not found in config;"
-              " remember that NAT traversal requires STUN or TURN");
-  } else {
-    GST_INFO ("Using STUN reflexive server: %s:%d", stunAddress.c_str(),
-              stunPort);
+  if (getConfigValue<std::string, WebRtcEndpoint> (&stunAddress,
+      "stunServerAddress")) {
+    GST_INFO ("Predefined STUN server: %s:%d", stunAddress.c_str (), stunPort);
 
     g_object_set (G_OBJECT (element), "stun-server-port", stunPort, NULL);
-    g_object_set (G_OBJECT (element), "stun-server", stunAddress.c_str(), NULL);
+    g_object_set (G_OBJECT (element), "stun-server", stunAddress.c_str (),
+        NULL);
+  } else {
+    GST_DEBUG ("STUN server not found in config");
   }
 
   std::string turnURL;
@@ -601,12 +598,11 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
     } else {
       safeURL.append(turnURL.substr(separatorPos));
     }
-    GST_INFO ("Using TURN relay server: %s", safeURL.c_str());
+    GST_INFO ("Predefined TURN relay server: %s", safeURL.c_str());
 
     g_object_set (G_OBJECT (element), "turn-url", turnURL.c_str(), NULL);
   } else {
-    GST_INFO ("TURN server not found in config;"
-              " remember that NAT traversal requires STUN or TURN");
+    GST_DEBUG ("TURN relay server not found in config");
   }
 
   switch (certificateKeyType->getValue () ) {
