@@ -72,71 +72,128 @@ kms_ice_nice_agent_create_candidate_from_nice (NiceAgent * nice_agent,
   return candidate;
 }
 
+// ----------------------------------------------------------------------------
+
+// FIXME: Avoid emitting the signal directly from the callback, because
+// because libnice doesn't seem to use our provided GMainContext to emit all
+// of its signals from the same thread.
+// More info: https://lists.freedesktop.org/archives/nice/2021-May/001493.html
+
+typedef struct {
+  KmsIceNiceAgent *self;
+  KmsIceCandidate *kms_candidate;
+} OnIceCandidateData;
+
+static void
+on_ice_candidate_data_free (OnIceCandidateData *data)
+{
+  g_object_unref (data->self);
+  g_object_unref (data->kms_candidate);
+  g_free (data);
+}
+
+static gboolean
+kms_ice_nice_agent_new_candidate_full_emit (OnIceCandidateData *data)
+{
+  // This function should be called only from our GMainContext's thread.
+  g_assert (g_main_context_is_owner (data->self->priv->context));
+
+  g_signal_emit_by_name (KMS_ICE_BASE_AGENT (data->self), "on-ice-candidate",
+      data->kms_candidate);
+
+  return FALSE;
+}
+
 static void
 kms_ice_nice_agent_new_candidate_full (NiceAgent * agent,
     NiceCandidate * candidate, KmsIceNiceAgent * self)
 {
-  KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
-  const guint stream_id = candidate->stream_id;
-  const guint component_id = candidate->component_id;
-
-  gchar *stream_id_str = g_strdup_printf ("%u", stream_id);
+  gchar *stream_id_str = g_strdup_printf ("%u", candidate->stream_id);
   KmsIceCandidate *kms_candidate =
       kms_ice_nice_agent_create_candidate_from_nice (agent, candidate,
-      stream_id_str);
-  g_free (stream_id_str);
+          stream_id_str);
 
   GST_LOG_OBJECT (self,
       "[IceCandidateFound] local: '%s', stream_id: %u, component_id: %u",
-      kms_ice_candidate_get_candidate (kms_candidate),
-      stream_id, component_id);
+      kms_ice_candidate_get_candidate (kms_candidate), candidate->stream_id,
+      candidate->component_id);
 
-  g_signal_emit_by_name (parent, "on-ice-candidate", kms_candidate);
+  OnIceCandidateData *data = g_new0 (OnIceCandidateData, 1);
+  data->self = g_object_ref (self);
+  data->kms_candidate = g_object_ref (kms_candidate);
+  g_main_context_invoke_full (self->priv->context, G_PRIORITY_DEFAULT,
+      (GSourceFunc)kms_ice_nice_agent_new_candidate_full_emit, data,
+      (GDestroyNotify)on_ice_candidate_data_free);
+
+  g_free (stream_id_str);
   g_object_unref (kms_candidate);
 }
+
+// ----------------------------------------------------------------------------
 
 static void
 kms_ice_nice_agent_new_remote_candidate_full (NiceAgent * agent,
     NiceCandidate * candidate, KmsIceNiceAgent * self)
 {
-  KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
-  const guint stream_id = candidate->stream_id;
-
-  gchar *stream_id_str = g_strdup_printf ("%u", stream_id);
-
+  gchar *stream_id_str = g_strdup_printf ("%u", candidate->stream_id);
   KmsIceCandidate *kms_candidate =
       kms_ice_nice_agent_create_candidate_from_nice (agent, candidate,
-      stream_id_str);
+          stream_id_str);
 
   GST_DEBUG_OBJECT (self,
       "[AddIceCandidate] Found peer-reflexive remote: '%s'",
       kms_ice_candidate_get_candidate (kms_candidate));
 
-  kms_ice_nice_agent_add_ice_candidate (parent, kms_candidate, stream_id_str);
+  kms_ice_nice_agent_add_ice_candidate (KMS_ICE_BASE_AGENT (self),
+      kms_candidate, stream_id_str);
 
   g_free (stream_id_str);
   g_object_unref (kms_candidate);
+}
+
+// ----------------------------------------------------------------------------
+
+typedef struct {
+  KmsIceNiceAgent *self;
+  char *stream_id;
+} OnGatheringDoneData;
+
+static void
+on_gathering_done_data_free (OnGatheringDoneData *data)
+{
+  g_object_unref (data->self);
+  g_free (data->stream_id);
+  g_free (data);
+}
+
+static gboolean
+kms_ice_nice_agent_gathering_done_emit (OnGatheringDoneData *data)
+{
+  // This function should be called only from our GMainContext's thread.
+  g_assert (g_main_context_is_owner (data->self->priv->context));
+
+  g_signal_emit_by_name (KMS_ICE_BASE_AGENT (data->self),
+      "on-ice-gathering-done", data->stream_id);
+
+  return FALSE;
 }
 
 static void
 kms_ice_nice_agent_gathering_done (NiceAgent * agent, guint stream_id,
     KmsIceNiceAgent * self)
 {
-  KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
-  char buff[33];
-  char *ret;
-
   GST_LOG_OBJECT (self, "[IceGatheringDone] stream_id: %u", stream_id);
 
-  //convert id to char*
-  g_snprintf (buff, 32, "%u", stream_id);
+  OnGatheringDoneData *data = g_new0 (OnGatheringDoneData, 1);
+  data->self = g_object_ref (self);
+  data->stream_id = g_strdup_printf ("%u", stream_id);
 
-  ret = g_strdup (buff);
-
-  g_signal_emit_by_name (parent, "on-ice-gathering-done", ret);
-
-  g_free (ret);
+  g_main_context_invoke_full (self->priv->context, G_PRIORITY_DEFAULT,
+      (GSourceFunc)kms_ice_nice_agent_gathering_done_emit, data,
+      (GDestroyNotify)on_gathering_done_data_free);
 }
+
+// ----------------------------------------------------------------------------
 
 static IceState
 kms_ice_nice_agent_nice_to_ice_state (NiceComponentState state)
@@ -159,28 +216,84 @@ kms_ice_nice_agent_nice_to_ice_state (NiceComponentState state)
   }
 }
 
+// ----------------------------------------------------------------------------
+
+typedef struct {
+  KmsIceNiceAgent *self;
+  char *stream_id;
+  guint component_id;
+  IceState ice_state;
+} OnComponentStateChangedData;
+
+static void
+on_component_state_changed_data_free (OnComponentStateChangedData *data)
+{
+  g_object_unref (data->self);
+  g_free (data->stream_id);
+  g_free (data);
+}
+
+static gboolean
+kms_ice_nice_agent_component_state_change_emit (OnComponentStateChangedData *data)
+{
+  // This function should be called only from our GMainContext's thread.
+  g_assert (g_main_context_is_owner (data->self->priv->context));
+
+  g_signal_emit_by_name (KMS_ICE_BASE_AGENT (data->self),
+      "on-ice-component-state-changed", data->stream_id, data->component_id,
+      data->ice_state);
+
+  return FALSE;
+}
+
 static void
 kms_ice_nice_agent_component_state_change (NiceAgent * agent, guint stream_id,
     guint component_id, NiceComponentState state, KmsIceNiceAgent * self)
 {
-  KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
-  IceState state_;
-  char buff[33];
-  char *ret;
+  IceState ice_state = kms_ice_nice_agent_nice_to_ice_state (state);
 
-  //convert id to char*
-  g_snprintf (buff, 32, "%u", stream_id);
+  OnComponentStateChangedData *data = g_new0 (OnComponentStateChangedData, 1);
+  data->self = g_object_ref (self);
+  data->stream_id = g_strdup_printf ("%u", stream_id);
+  data->component_id = component_id;
+  data->ice_state = ice_state;
 
-  ret = g_strdup (buff);
-  state_ = kms_ice_nice_agent_nice_to_ice_state (state);
+  g_main_context_invoke_full (self->priv->context, G_PRIORITY_DEFAULT,
+      (GSourceFunc)kms_ice_nice_agent_component_state_change_emit, data,
+      (GDestroyNotify)on_component_state_changed_data_free);
+}
 
-  GST_LOG_OBJECT (self,
-      "[IceComponentStateChanged] state: %s, stream_id: %u, component_id: %u",
-      nice_component_state_to_string (state), stream_id, component_id);
+// ----------------------------------------------------------------------------
 
-  g_signal_emit_by_name (parent, "on-ice-component-state-changed", ret,
-      component_id, state_);
-  g_free (ret);
+typedef struct {
+  KmsIceNiceAgent *self;
+  char *stream_id;
+  guint component_id;
+  KmsIceCandidate *local_candidate;
+  KmsIceCandidate *remote_candidate;
+} OnNewSelectedPairData;
+
+static void
+on_new_selected_pair_data_free (OnNewSelectedPairData *data)
+{
+  g_object_unref (data->self);
+  g_free (data->stream_id);
+  g_object_unref (data->local_candidate);
+  g_object_unref (data->remote_candidate);
+  g_free (data);
+}
+
+static gboolean
+kms_ice_nice_agent_new_selected_pair_full_emit (OnNewSelectedPairData *data)
+{
+  // This function should be called only from our GMainContext's thread.
+  g_assert (g_main_context_is_owner (data->self->priv->context));
+
+  g_signal_emit_by_name (KMS_ICE_BASE_AGENT (data->self),
+      "new-selected-pair-full", data->stream_id, data->component_id,
+      data->local_candidate, data->remote_candidate);
+
+  return FALSE;
 }
 
 void
@@ -190,14 +303,15 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
     NiceCandidate * lcandidate,
     NiceCandidate * rcandidate, KmsIceNiceAgent * self)
 {
-  KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
-  gchar *stream_id_str;
-  KmsIceCandidate *local_candidate = NULL, *remote_candidate = NULL;
 
-  stream_id_str = g_strdup_printf ("%u", stream_id);
+  KmsIceCandidate *local_candidate = NULL;
+  KmsIceCandidate *remote_candidate = NULL;
+
+  gchar *stream_id_str = g_strdup_printf ("%u", stream_id);
 
   local_candidate = kms_ice_nice_agent_create_candidate_from_nice (agent,
       lcandidate, stream_id_str);
+
   if (!local_candidate) {
     gchar *cand_str =
         kms_ice_nice_agent_get_candidate_sdp_string (agent, lcandidate);
@@ -210,6 +324,7 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
 
   remote_candidate = kms_ice_nice_agent_create_candidate_from_nice (agent,
       rcandidate, stream_id_str);
+
   if (!remote_candidate) {
     gchar *cand_str =
         kms_ice_nice_agent_get_candidate_sdp_string (agent, rcandidate);
@@ -227,14 +342,24 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
       kms_ice_candidate_get_candidate (remote_candidate),
       stream_id, component_id);
 
-  g_signal_emit_by_name (parent, "new-selected-pair-full", stream_id_str,
-      component_id, local_candidate, remote_candidate);
+  OnNewSelectedPairData *data = g_new0 (OnNewSelectedPairData, 1);
+  data->self = g_object_ref (self);
+  data->stream_id = g_strdup (stream_id_str);
+  data->component_id = component_id;
+  data->local_candidate = g_object_ref (local_candidate);
+  data->remote_candidate = g_object_ref (remote_candidate);
+
+  g_main_context_invoke_full (self->priv->context, G_PRIORITY_DEFAULT,
+      (GSourceFunc)kms_ice_nice_agent_new_selected_pair_full_emit, data,
+      (GDestroyNotify)on_new_selected_pair_data_free);
 
 end:
   g_free (stream_id_str);
   if (local_candidate) { g_object_unref (local_candidate); }
   if (remote_candidate) { g_object_unref (remote_candidate); }
 }
+
+// ----------------------------------------------------------------------------
 
 KmsIceNiceAgent *
 kms_ice_nice_agent_new (GMainContext * context)
@@ -293,16 +418,6 @@ kms_ice_nice_agent_init (KmsIceNiceAgent * self)
   self->priv = KMS_ICE_NICE_AGENT_GET_PRIVATE (self);
 }
 
-// TODO Ask in libnice mail lists if attaching a callback function is really needed
-//static void
-//kms_ice_nice_agent_recv_cb (NiceAgent *agent, guint stream_id,
-//    guint component_id, guint len, gchar *buf, gpointer user_data)
-//{
-////  ((void)0); // Nothing to do, noop
-//  KmsIceBaseAgent *self = user_data;
-//  GST_DEBUG_OBJECT (self, "Callback data received");
-//}
-
 static char *
 kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
     guint16 min_port, guint16 max_port)
@@ -327,12 +442,10 @@ kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
         max_port);
   }
 
-// TODO Ask in libnice mail lists if attaching a callback function is really needed
-//  GST_DEBUG_OBJECT (self, "Attach recv callback to mainloop");
-//  for (i = 1; i <= KMS_NICE_N_COMPONENTS; i++) {
-//    nice_agent_attach_recv (nice_agent->priv->agent, id, i,
-//        nice_agent->priv->context, kms_ice_nice_agent_recv_cb, self);
-//  }
+  // NOTE: Docs say [0] that an I/O callback must be registered in order to receive
+  // data through the ICE transport. We don't need to do that here, because it
+  // is already done inside the GStreamer's plugin (gstnicesrc).
+  // [0]: https://libnice.freedesktop.org/libnice/NiceAgent.html#NiceAgent.description
 
   return g_strdup_printf ("%u", id);
 }
