@@ -147,9 +147,9 @@
 # Shell setup
 # -----------
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+SELF_PATH="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
 # shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+source "$SELF_PATH/bash.conf.sh" || exit 1
 
 
 
