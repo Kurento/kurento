@@ -361,6 +361,7 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
         "G_DEBUG='gc-friendly'"
+
         #"G_SLICE='always-malloc'"
         #"G_SLICE='debug-blocks'"
         "G_SLICE='all'"
@@ -382,11 +383,12 @@ elif [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     if [[ "$CFG_CLANG" == "true" ]]; then
         CLANG_VERSION="$(clang --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
-        CLANG_VERSION_MAJ="$(echo "$CLANG_VERSION" | head -c1)"
+        CLANG_VERSION_MAJ="${CLANG_VERSION%%.*}"
         LIBSAN="/usr/lib/llvm-${CLANG_VERSION_MAJ}/lib/clang/${CLANG_VERSION}/lib/linux/libclang_rt.asan-x86_64.so"
     else
-        GCC_VERSION="$(gcc -dumpversion | head -c1)"
-        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION}/libasan.so"
+        GCC_VERSION="$(gcc -dumpversion)"
+        GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
+        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libasan.so"
     fi
 
     RUN_VARS+=(
@@ -399,9 +401,11 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    GCC_VERSION="$(gcc -dumpversion | head -c1)"
-    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/libtsan.so"
+    GCC_VERSION="$(gcc -dumpversion)"
+    GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
+    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libtsan.so"
     RUN_VARS+=(
+        "G_SLICE='all'"
         "LD_PRELOAD='$LIBSAN'"
         "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
     )
