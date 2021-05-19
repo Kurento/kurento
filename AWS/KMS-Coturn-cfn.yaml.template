@@ -181,8 +181,8 @@ Resources:
 
           # TURN lower and upper bounds of the UDP relay ports.
           # Default: 49152, 65535.
-          #min-port=49152
-          #max-port=65535
+          min-port=57001
+          max-port=65535
 
           # Uncomment to enable moderately verbose logs.
           # Default: verbose mode OFF.
@@ -247,6 +247,8 @@ Resources:
           systemctl restart coturn
 
           # Config for Kurento Media Server.
+          set_parameter /etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini "minPort" "40000" ";"
+          set_parameter /etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini "maxPort" "57000" ";"
           set_parameter /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini "turnURL" "${TurnUser}:${TurnPassword}@\${!PUBLIC_IP}:3478" ";"
           systemctl restart kurento-media-server
           EOF
@@ -283,11 +285,12 @@ Resources:
           ToPort: 22
         - CidrIp: 0.0.0.0/0
           IpProtocol: tcp
-          FromPort: 0
+          FromPort: 40000
+          ToPort: 57000
           ToPort: 65535
         - CidrIp: 0.0.0.0/0
           IpProtocol: udp
-          FromPort: 0
+          FromPort: 57001
           ToPort: 65535
 
   WaitCondition:
