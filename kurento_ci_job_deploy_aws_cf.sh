@@ -78,7 +78,7 @@ set -o errexit -o errtrace -o pipefail -o nounset
 set -o xtrace
 
 cd ./AWS/
-sed "s/RELEASE/$KMS_VERSION/" KMS-Coturn-cfn.yaml.template \
+sed "s/|RELEASE|/$KMS_VERSION/" KMS-Coturn-cfn.yaml.template \
     >"$AWS_CF_TEMPLATE_FILE"
 aws s3 cp "$AWS_CF_TEMPLATE_FILE" "s3://aws.kurento.org" --acl public-read
 EOF

@@ -1,21 +1,13 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Kurento Media Server CloudFormation template.
+Description: "Kurento Media Server CloudFormation template"
 
 Parameters:
   KeyName:
-    Description: Name of an existing EC2 key pair for SSH access to the EC2 instance.
-    Type: AWS::EC2::KeyPair::KeyName
-  SSHLocation:
-    Description: The IP address range that can be used to SSH to the EC2 instances
-    Type: String
-    MinLength: "9"
-    MaxLength: "18"
-    Default: 0.0.0.0/0
-    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
-    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Description: "Name of an existing EC2 KeyPair for SSH access to the EC2 instance"
+    Type: "AWS::EC2::KeyPair::KeyName"
   InstanceType:
-    Description: Kurento Media Server EC2 instance type
+    Description: "EC2 instance type used for Kurento Media Server"
     Type: String
     Default: t2.large
     AllowedValues:
@@ -75,13 +67,13 @@ Parameters:
         cc2.8xlarge,
         cg1.4xlarge,
       ]
-    ConstraintDescription: must be a valid EC2 instance type
+    ConstraintDescription: "Must be a valid EC2 instance type"
   TurnUser:
-    Description: User for turn server
+    Description: "Username for the static TURN credentials"
     Type: String
     Default: kurento
   TurnPassword:
-    Description: Password for turn user
+    Description: "Password for the static TURN credentials"
     Type: String
     Default: kurento
     NoEcho: True
@@ -157,109 +149,188 @@ Resources:
         - Key: Name
           Value: !Ref AWS::StackName
       UserData:
-        "Fn::Base64": !Sub |
-          #!/bin/bash -xe
-          sudo apt-get update
-          # install coturn
-          apt-get install -y coturn
-          # install kms
-          sudo apt-get update
-          sudo echo "deb [arch=amd64] http://ubuntu.openvidu.io/RELEASE xenial kms6" >/etc/apt/sources.list.d/kurento.list
+        Fn::Base64: !Sub |
+          #!/usr/bin/env bash
+
+          # Bash options for strict error checking.
+          set -o errexit -o errtrace -o pipefail -o nounset
+          shopt -s inherit_errexit 2>/dev/null || true
+
+          # Kurento Media Server
+          # ====================
+
+          # Make sure that GnuPG is installed (needed for `apt-key adv`).
+          sudo apt-get update && sudo apt-get install --yes gnupg
+
+          # Import the Kurento repository signing key.
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
-          sudo apt-get update
-          sudo apt-get install -y kurento-media-server
+
+          # Get Ubuntu version definitions.
+          source /etc/lsb-release
+
+          # Add the repository to Apt.
+          sudo tee /etc/apt/sources.list.d/kurento.list >/dev/null <<EOF
+          # Kurento Media Server - Release packages
+          deb [arch=amd64] http://ubuntu.openvidu.io/|RELEASE| ${!DISTRIB_CODENAME} kms6
+          EOF
+
+          # Install.
+          sudo apt-get update && sudo apt-get install --yes kurento-media-server
+
+          # Enable system service.
           systemctl enable kurento-media-server
-          # enable coturn
-          sudo echo TURNSERVER_ENABLED=1 > /etc/default/coturn
-          # turn config file
-          sudo cat >/etc/turnserver.conf<<EOF
-          external-ip=PUBLIC_IP
+
+          # Coturn
+          # ======
+
+          # Install.
+          sudo apt-get update && sudo apt-get install --yes coturn kurento-media-server
+
+          # Enable system service.
+          sudo tee /etc/default/coturn >/dev/null <<EOF
+          TURNSERVER_ENABLED=1
+          EOF
+
+          # Configure.
+          # shellcheck disable=2154
+          sudo tee /etc/turnserver.conf >/dev/null <<EOF
+          # The external IP address of this server, if Coturn is behind a NAT.
+          # It must be an IP address, not a domain name.
+          #external-ip=<CoturnIp>
+
+          # STUN listener port for UDP and TCP.
+          # Default: 3478.
+          #listening-port=3478
+
+          # TURN lower and upper bounds of the UDP relay ports.
+          # Default: 49152, 65535.
+          #min-port=49152
+          #max-port=65535
+
+          # Uncomment to enable moderately verbose logs.
+          # Default: verbose mode OFF.
+          #verbose
+
+          # TURN fingerprints in messages.
           fingerprint
-          user=${TurnUser}:${TurnPassword}
+
+          # TURN long-term credential mechanism.
           lt-cred-mech
+
+          # TURN static user account for long-term credential mechanism.
+          user=${TurnUser}:${TurnPassword}
+
+          # TURN realm used for the long-term credential mechanism.
           realm=kurento.org
-          log-file=/var/log/turnserver/turnserver.log
+
+          # Set the log file name.
+          # The log file can be reset sending a SIGHUP signal to the turnserver process.
+          log-file=/var/log/turn.log
+
+          # Disable log file rollover and use log file name as-is.
           simple-log
           EOF
-          # install aws tools
-          sudo apt-get update
-          sudo apt-get -y install python-setuptools
-          sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-          # creating launching script
-          sudo cat >/usr/local/bin/launch-kms.sh<<EOF
-          #!/bin/bash
 
-          PUBLIC_IP=\$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-          TURN_USER=${TurnUser}
-          TURN_PASSWORD=${TurnPassword}
+          # Create the log file, with correct permissions.
+          sudo install -o turnserver -g turnserver -m 644 /dev/null /var/log/turn.log
 
-          systemctl stop kurento-media-server
-          systemctl stop coturn
-          sleep 5
-          cat /etc/turnserver.conf | grep -v external-ip >/tmp/turnserver.conf
-          echo "external-ip=\$PUBLIC_IP" >> /tmp/turnserver.conf
-          mv /tmp/turnserver.conf /etc/turnserver.conf
-          echo "turnURL=\$TURN_USER:\$TURN_PASSWORD@\$PUBLIC_IP:3478" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-          sleep 5
-          systemctl start coturn
-          systemctl start kurento-media-server
+          # Launch script
+          # =============
+
+          sudo tee /usr/local/bin/launch-kms.sh >/dev/null <<EOF
+          #!/usr/bin/env bash
+
+          # Bash options for strict error checking.
+          set -o errexit -o errtrace -o pipefail -o nounset
+          shopt -s inherit_errexit 2>/dev/null || true
+
+          # Settings.
+          # Uses the AWS link-local address to retrieve instance metadata:
+          # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
+          PUBLIC_IP="\$(curl http://169.254.169.254/latest/meta-data/public-ipv4)"
+
+          # Aux function: set value to a given parameter.
+          function set_parameter {
+              local FILE="\$1"         # File path to be edited.
+              local PARAM="\$2"        # Parameter to be set.
+              local VALUE="\$3"        # Value to be set into PARAM.
+              local COMMENT="\${!4:-;}" # (Optional) Character used for commented-out lines.
+
+              local REGEX="^\${!COMMENT}?\s*\${!PARAM}=.*"
+
+              if grep --extended-regexp -q "\${!REGEX}" "\${!FILE}"; then
+                  sed --regexp-extended -i "s/\${!REGEX}/\${!PARAM}=\${!VALUE}/" "\${!FILE}"
+              else
+                  echo "\${!PARAM}=\${!VALUE}" >>"\${!FILE}"
+              fi
+          }
+
+          # Config for Coturn.
+          set_parameter /etc/turnserver.conf "external-ip" "\${!PUBLIC_IP}" "#"
+          systemctl restart coturn
+
+          # Config for Kurento Media Server.
+          set_parameter /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini "turnURL" "${TurnUser}:${TurnPassword}@\${!PUBLIC_IP}:3478" ";"
+          systemctl restart kurento-media-server
           EOF
           sudo chmod 755 /usr/local/bin/launch-kms.sh
-          # Preparing after reboot script
-          sudo cat >/etc/rc.local<<EOF
+
+          # System startup script.
+          sudo tee /etc/rc.local >/dev/null <<EOF
           #!/bin/sh -e
           /usr/local/bin/launch-kms.sh
           exit 0
           EOF
+
           echo "Launching Media Server..."
           sudo /usr/local/bin/launch-kms.sh
-          # Start cfn-init
-          sudo /usr/local/bin/cfn-init -s ${AWS::StackId} -r KurentoMediaServer --region ${AWS::Region}
-          sudo /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource WaitCondition --region ${AWS::Region}
+
+          # AWS
+          # ===
+
+          sudo apt-get update && sudo apt-get install --yes python python-setuptools
+          sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+
+          sudo /usr/local/bin/cfn-init -s "${AWS::StackId}" -r KurentoMediaServer --region "${AWS::Region}"
+          sudo /usr/local/bin/cfn-signal -e $? --stack "${AWS::StackId}" --resource WaitCondition --region "${AWS::Region}"
 
   KurentoMediaServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub "KurentoSecurityGroup ${AWS::StackName}"
-      GroupDescription: "Full Open + SSH access from specific location"
+      GroupDescription: "SSH and Kurento + Coturn WebRTC ports"
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
-          FromPort: "0"
-          ToPort: "65535"
           IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
         - CidrIp: 0.0.0.0/0
-          FromPort: "0"
-          ToPort: "65535"
-          IpProtocol: udp
-        - CidrIp: !Ref SSHLocation
-          FromPort: "22"
           IpProtocol: tcp
-          ToPort: "22"
+          FromPort: 0
+          ToPort: 65535
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: udp
+          FromPort: 0
+          ToPort: 65535
 
   WaitCondition:
     Type: AWS::CloudFormation::WaitCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT5M
+        Timeout: PT10M
         Count: 1
 
 Outputs:
   InstanceId:
-    Description: The instance ID of the Media Server
+    Description: "EC2 instance ID of the Media Server"
     Value:
       Ref: KurentoMediaServer
   KurentoURL:
     Value: !Sub "ws://${KurentoMediaServer.PublicIp}:8888/kurento"
-    Description: URL for newly created Kurento Media Server stack
+    Description: "URL of the Kurento Media Server JSON-RPC API endpoint"
   PublicDnsName:
-    Description: Instance public DNS name
+    Description: "EC2 instance public DNS name"
     Value: !GetAtt KurentoMediaServer.PublicDnsName
   PublicIP:
-    Description: Public IP address of the Media Server
+    Description: "EC2 instance public IP address"
     Value: !GetAtt KurentoMediaServer.PublicIp
-  TurnUserOutput:
-    Description: Turn user
-    Value: !Ref TurnUser
-  TurnPasswordOutput:
-    Description: Turn Password
-    Value: !Ref TurnPassword
