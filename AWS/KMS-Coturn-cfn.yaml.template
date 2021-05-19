@@ -9,23 +9,72 @@ Parameters:
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
     Type: String
-    MinLength: '9'
-    MaxLength: '18'
+    MinLength: "9"
+    MaxLength: "18"
     Default: 0.0.0.0/0
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
-  InstanceType: 
+  InstanceType:
     Description: Kurento Media Server EC2 instance type
     Type: String
     Default: t2.large
-    AllowedValues: [t1.micro, t2.nano, t2.micro, t2.small, t2.medium, t2.large, m1.small,
-      m1.medium, m1.large, m1.xlarge, m2.xlarge, m2.2xlarge, m2.4xlarge, m3.medium,
-      m3.large, m3.xlarge, m3.2xlarge, m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge,
-      m4.10xlarge, c1.medium, c1.xlarge, c3.large, c3.xlarge, c3.2xlarge, c3.4xlarge,
-      c3.8xlarge, c4.large, c4.xlarge, c4.2xlarge, c4.4xlarge, c4.8xlarge, g2.2xlarge,
-      g2.8xlarge, r3.large, r3.xlarge, r3.2xlarge, r3.4xlarge, r3.8xlarge, i2.xlarge,
-      i2.2xlarge, i2.4xlarge, i2.8xlarge, d2.xlarge, d2.2xlarge, d2.4xlarge, d2.8xlarge,
-      hi1.4xlarge, hs1.8xlarge, cr1.8xlarge, cc2.8xlarge, cg1.4xlarge]
+    AllowedValues:
+      [
+        t1.micro,
+        t2.nano,
+        t2.micro,
+        t2.small,
+        t2.medium,
+        t2.large,
+        m1.small,
+        m1.medium,
+        m1.large,
+        m1.xlarge,
+        m2.xlarge,
+        m2.2xlarge,
+        m2.4xlarge,
+        m3.medium,
+        m3.large,
+        m3.xlarge,
+        m3.2xlarge,
+        m4.large,
+        m4.xlarge,
+        m4.2xlarge,
+        m4.4xlarge,
+        m4.10xlarge,
+        c1.medium,
+        c1.xlarge,
+        c3.large,
+        c3.xlarge,
+        c3.2xlarge,
+        c3.4xlarge,
+        c3.8xlarge,
+        c4.large,
+        c4.xlarge,
+        c4.2xlarge,
+        c4.4xlarge,
+        c4.8xlarge,
+        g2.2xlarge,
+        g2.8xlarge,
+        r3.large,
+        r3.xlarge,
+        r3.2xlarge,
+        r3.4xlarge,
+        r3.8xlarge,
+        i2.xlarge,
+        i2.2xlarge,
+        i2.4xlarge,
+        i2.8xlarge,
+        d2.xlarge,
+        d2.2xlarge,
+        d2.4xlarge,
+        d2.8xlarge,
+        hi1.4xlarge,
+        hs1.8xlarge,
+        cr1.8xlarge,
+        cc2.8xlarge,
+        cg1.4xlarge,
+      ]
     ConstraintDescription: must be a valid EC2 instance type
   TurnUser:
     Description: User for turn server
@@ -108,86 +157,85 @@ Resources:
         - Key: Name
           Value: !Ref AWS::StackName
       UserData:
-        "Fn::Base64": 
-          !Sub |
-            #!/bin/bash -xe
-            sudo apt-get update
-            # install coturn
-            apt-get install -y coturn
-            # install kms
-            sudo apt-get update
-            sudo echo "deb [arch=amd64] http://ubuntu.openvidu.io/RELEASE xenial kms6" >/etc/apt/sources.list.d/kurento.list
-            sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
-            sudo apt-get update 
-            sudo apt-get install -y kurento-media-server
-            systemctl enable kurento-media-server
-            # enable coturn
-            sudo echo TURNSERVER_ENABLED=1 > /etc/default/coturn
-            # turn config file
-            sudo cat >/etc/turnserver.conf<<EOF
-            external-ip=PUBLIC_IP
-            fingerprint
-            user=${TurnUser}:${TurnPassword}
-            lt-cred-mech
-            realm=kurento.org
-            log-file=/var/log/turnserver/turnserver.log
-            simple-log
-            EOF
-            # install aws tools
-            sudo apt-get update
-            sudo apt-get -y install python-setuptools
-            sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-            # creating launching script 
-            sudo cat >/usr/local/bin/launch-kms.sh<<EOF
-            #!/bin/bash
+        "Fn::Base64": !Sub |
+          #!/bin/bash -xe
+          sudo apt-get update
+          # install coturn
+          apt-get install -y coturn
+          # install kms
+          sudo apt-get update
+          sudo echo "deb [arch=amd64] http://ubuntu.openvidu.io/RELEASE xenial kms6" >/etc/apt/sources.list.d/kurento.list
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+          sudo apt-get update
+          sudo apt-get install -y kurento-media-server
+          systemctl enable kurento-media-server
+          # enable coturn
+          sudo echo TURNSERVER_ENABLED=1 > /etc/default/coturn
+          # turn config file
+          sudo cat >/etc/turnserver.conf<<EOF
+          external-ip=PUBLIC_IP
+          fingerprint
+          user=${TurnUser}:${TurnPassword}
+          lt-cred-mech
+          realm=kurento.org
+          log-file=/var/log/turnserver/turnserver.log
+          simple-log
+          EOF
+          # install aws tools
+          sudo apt-get update
+          sudo apt-get -y install python-setuptools
+          sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+          # creating launching script
+          sudo cat >/usr/local/bin/launch-kms.sh<<EOF
+          #!/bin/bash
 
-            PUBLIC_IP=\$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-            TURN_USER=${TurnUser}
-            TURN_PASSWORD=${TurnPassword}
+          PUBLIC_IP=\$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+          TURN_USER=${TurnUser}
+          TURN_PASSWORD=${TurnPassword}
 
-            systemctl stop kurento-media-server
-            systemctl stop coturn
-            sleep 5
-            cat /etc/turnserver.conf | grep -v external-ip >/tmp/turnserver.conf
-            echo "external-ip=\$PUBLIC_IP" >> /tmp/turnserver.conf
-            mv /tmp/turnserver.conf /etc/turnserver.conf
-            echo "turnURL=\$TURN_USER:\$TURN_PASSWORD@\$PUBLIC_IP:3478" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-            sleep 5
-            systemctl start coturn
-            systemctl start kurento-media-server
-            EOF
-            sudo chmod 755 /usr/local/bin/launch-kms.sh
-            # Preparing after reboot script
-            sudo cat >/etc/rc.local<<EOF
-            #!/bin/sh -e
-            /usr/local/bin/launch-kms.sh
-            exit 0
-            EOF
-            echo "Launching Media Server..."
-            sudo /usr/local/bin/launch-kms.sh
-            # Start cfn-init
-            sudo /usr/local/bin/cfn-init -s ${AWS::StackId} -r KurentoMediaServer --region ${AWS::Region}
-            sudo /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource WaitCondition --region ${AWS::Region}
+          systemctl stop kurento-media-server
+          systemctl stop coturn
+          sleep 5
+          cat /etc/turnserver.conf | grep -v external-ip >/tmp/turnserver.conf
+          echo "external-ip=\$PUBLIC_IP" >> /tmp/turnserver.conf
+          mv /tmp/turnserver.conf /etc/turnserver.conf
+          echo "turnURL=\$TURN_USER:\$TURN_PASSWORD@\$PUBLIC_IP:3478" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
+          sleep 5
+          systemctl start coturn
+          systemctl start kurento-media-server
+          EOF
+          sudo chmod 755 /usr/local/bin/launch-kms.sh
+          # Preparing after reboot script
+          sudo cat >/etc/rc.local<<EOF
+          #!/bin/sh -e
+          /usr/local/bin/launch-kms.sh
+          exit 0
+          EOF
+          echo "Launching Media Server..."
+          sudo /usr/local/bin/launch-kms.sh
+          # Start cfn-init
+          sudo /usr/local/bin/cfn-init -s ${AWS::StackId} -r KurentoMediaServer --region ${AWS::Region}
+          sudo /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource WaitCondition --region ${AWS::Region}
 
   KurentoMediaServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub 'KurentoSecurityGroup ${AWS::StackName}'
+      GroupName: !Sub "KurentoSecurityGroup ${AWS::StackName}"
       GroupDescription: "Full Open + SSH access from specific location"
       SecurityGroupIngress:
-      - CidrIp: 0.0.0.0/0
-        FromPort: '0'
-        ToPort: '65535'
-        IpProtocol: tcp
-      - CidrIp: 0.0.0.0/0
-        FromPort: '0'
-        ToPort: '65535'
-        IpProtocol: udp
-      - CidrIp: !Ref SSHLocation
-        FromPort: '22'
-        IpProtocol: tcp
-        ToPort: '22'
-  
+        - CidrIp: 0.0.0.0/0
+          FromPort: "0"
+          ToPort: "65535"
+          IpProtocol: tcp
+        - CidrIp: 0.0.0.0/0
+          FromPort: "0"
+          ToPort: "65535"
+          IpProtocol: udp
+        - CidrIp: !Ref SSHLocation
+          FromPort: "22"
+          IpProtocol: tcp
+          ToPort: "22"
+
   WaitCondition:
     Type: AWS::CloudFormation::WaitCondition
     CreationPolicy:
@@ -201,18 +249,16 @@ Outputs:
     Value:
       Ref: KurentoMediaServer
   KurentoURL:
-    Value:
-      !Sub 'ws://${KurentoMediaServer.PublicIp}:8888/kurento'
+    Value: !Sub "ws://${KurentoMediaServer.PublicIp}:8888/kurento"
     Description: URL for newly created Kurento Media Server stack
   PublicDnsName:
     Description: Instance public DNS name
     Value: !GetAtt KurentoMediaServer.PublicDnsName
   PublicIP:
     Description: Public IP address of the Media Server
-    Value:
-      !GetAtt KurentoMediaServer.PublicIp
+    Value: !GetAtt KurentoMediaServer.PublicIp
   TurnUserOutput:
-    Description: Turn user 
+    Description: Turn user
     Value: !Ref TurnUser
   TurnPasswordOutput:
     Description: Turn Password
