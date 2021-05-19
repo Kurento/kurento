@@ -280,15 +280,42 @@ Resources:
       GroupDescription: "SSH and Kurento + Coturn WebRTC ports"
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
+          Description: "Allow SSH (IPv4)"
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIpv6: ::/0
+          Description: "Allow SSH (IPv6)"
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
         - CidrIp: 0.0.0.0/0
+          Description: "WebRTC port range for Kurento Media Server (IPv4 TCP)"
           IpProtocol: tcp
           FromPort: 40000
           ToPort: 57000
-          ToPort: 65535
+        - CidrIpv6: ::/0
+          Description: "WebRTC port range for Kurento Media Server (IPv6 TCP)"
+          IpProtocol: tcp
+          FromPort: 40000
+          ToPort: 57000
         - CidrIp: 0.0.0.0/0
+          Description: "WebRTC port range for Kurento Media Server (IPv4 UDP)"
+          IpProtocol: udp
+          FromPort: 40000
+          ToPort: 57000
+        - CidrIpv6: ::/0
+          Description: "WebRTC port range for Kurento Media Server (IPv6 UDP)"
+          IpProtocol: udp
+          FromPort: 40000
+          ToPort: 57000
+        - CidrIp: 0.0.0.0/0
+          Description: "TURN UDP relay port range for Coturn (IPv4)"
+          IpProtocol: udp
+          FromPort: 57001
+          ToPort: 65535
+        - CidrIpv6: ::/0
+          Description: "TURN UDP relay port range for Coturn (IPv6)"
           IpProtocol: udp
           FromPort: 57001
           ToPort: 65535
