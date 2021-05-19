@@ -267,8 +267,8 @@ Resources:
           # AWS
           # ===
 
-          sudo apt-get update && sudo apt-get install --yes python python-setuptools
-          sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+          sudo apt-get update && sudo apt-get install --yes python python-pip
+          sudo pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
 
           sudo /usr/local/bin/cfn-init -s "${AWS::StackId}" -r KurentoMediaServer --region "${AWS::Region}"
           sudo /usr/local/bin/cfn-signal -e $? --stack "${AWS::StackId}" --resource WaitCondition --region "${AWS::Region}"
