@@ -16,13 +16,13 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 Kurento Utils for Node.js and Browsers
 ======================================
 
-*kurento-utils-js* is a browser library that can be used to simplify creation and handling of [RTCPeerConnection](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection) objects, to control the browser’s [WebRTC API](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API).
-
 > :warning: **Warning**
 >
 > This library is not actively maintained. It was written to simplify the [Kurento Tutorials](https://doc-kurento.readthedocs.io/en/latest/user/tutorials.html) and has several shortcomings for more advanced uses.
 >
 > For real-world applications we recommend to **avoid using this library** and instead to write your JavaScript code directly against the browser’s WebRTC API.
+
+*kurento-utils-js* is a browser library that can be used to simplify creation and handling of [RTCPeerConnection](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection) objects, to control the browser’s [WebRTC API](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API).
 
 
 
