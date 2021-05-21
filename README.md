@@ -58,10 +58,6 @@ Docker image to build Kurento Media Server.
 
 Build: https://ci.openvidu.io/jenkins/job/Development/job/adm_container_kurento_dev_media_server_merged
 
-* docker
-
-Install Kurento Media server in a container. This was created to test if our APT Repositories work properly. It's now deprecated.
-
 * kurento-media-server
 
 Official Docker Image for Kurento Media Server.
