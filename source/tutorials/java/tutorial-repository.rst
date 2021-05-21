@@ -2,6 +2,12 @@
 Java - Repository
 %%%%%%%%%%%%%%%%%
 
+.. warning::
+
+   This tutorial is not actively maintained. It was written to showcase the use of `Kurento Repository Server <https://github.com/Kurento/kurento-java/tree/master/kurento-repository/kurento-repository-server>`__, which itself if not maintained either.
+
+   All content here is available for legacy reasons, but no support is provided at all, and you'll be on your own if you decide to use it.
+
 This web application extends :doc:`Hello World <./tutorial-helloworld>` adding
 recording capabilities by means of the
 `Kurento Repository <https://doc-kurento-repository.readthedocs.io/>`_.
