@@ -10,13 +10,19 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-repository-internal
 ===========================
 
+> :warning: **Warning**
+>
+> This module is not actively maintained.
+>
+> All content here is available for legacy reasons, but no support is provided at all, and you'll be on your own if you decide to use it.
+
 The internal library of Kurento Repository provides an API that can
 be used to manage media repositories based on filesystem or MongoDB.
 
-The chosen transport for the media is the HTTP protocol. The repository 
-API will provide managed URIs which the application or Kurento Media 
+The chosen transport for the media is the HTTP protocol. The repository
+API will provide managed URIs which the application or Kurento Media
 Server can use to upload or download media. This API can be configured
-and instantiated as a [Spring] bean. 
+and instantiated as a [Spring] bean.
 
 What is Kurento
 ---------------

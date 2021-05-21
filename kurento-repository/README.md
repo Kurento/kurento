@@ -10,22 +10,28 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-repository
 ==================
 
+> :warning: **Warning**
+>
+> This module is not actively maintained.
+>
+> All content here is available for legacy reasons, but no support is provided at all, and you'll be on your own if you decide to use it.
+
 Kurento Repository project allows clients to manage media repositories based
 on filesystem or [MongoDB][mongo].
 
 This project is organized into several modules:
 
-  * `kurento-repository-internal`: core Java library of repository. 
+  * `kurento-repository-internal`: core Java library of repository.
     Plain Java mostly, but with [Spring][Spring] dependencies.
-  * `kurento-repository-server`: Wrapper for the library, 
-    offering a simpler Java API and a Http REST API. Contains a 
+  * `kurento-repository-server`: Wrapper for the library,
+    offering a simpler Java API and a Http REST API. Contains a
     [Spring Boot][SpringBoot] application, very easy to setup and run.
 
-Instructions on running the server and the required dependencies are found 
+Instructions on running the server and the required dependencies are found
 in its own [README][server-readme].
 
-There is a Kurento Java [tutorial application][helloworld-repository] that 
-connects to a running instance of the **repository server** to record and play 
+There is a Kurento Java [tutorial application][helloworld-repository] that
+connects to a running instance of the **repository server** to record and play
 media over HTTP using the capabilities of the Kurento Media Server.
 
 What is Kurento

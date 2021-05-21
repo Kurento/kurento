@@ -10,6 +10,12 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-repository-test
 =======================
 
+> :warning: **Warning**
+>
+> This module is not actively maintained.
+>
+> All content here is available for legacy reasons, but no support is provided at all, and you'll be on your own if you decide to use it.
+
 Integration tests for the `kurento-repository-internal` library.
 
 What is Kurento

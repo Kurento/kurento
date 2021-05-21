@@ -10,16 +10,22 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-repository-server
 =========================
 
-The server module of Kurento Repository is a [Spring Boot][SpringBoot] 
-application which exposes the configured media repository through an 
+> :warning: **Warning**
+>
+> This module is not actively maintained.
+>
+> All content here is available for legacy reasons, but no support is provided at all, and you'll be on your own if you decide to use it.
+
+The server module of Kurento Repository is a [Spring Boot][SpringBoot]
+application which exposes the configured media repository through an
 easy-to-use Http REST API.
 
 This module can also be integrated into existing applications instead
 of a standalone execution. The application will have access to a Java
 API which wraps around the repository internal library.
 
-There is a Kurento Java [tutorial application][helloworld-repository] that 
-employs a running instance of this server to record and play media over HTTP 
+There is a Kurento Java [tutorial application][helloworld-repository] that
+employs a running instance of this server to record and play media over HTTP
 using the capabilities of the Kurento Media Server.
 
 Table of Contents
@@ -54,23 +60,23 @@ Running the server
   * Ubuntu 14.04 LTS
   * [Java JDK][Java] version 7 or 8
   * [MongoDB][mongo] (we provide an install [guide](#installation-over-mongodb))
-  * Kurento Media Server or connection with a running instance 
+  * Kurento Media Server or connection with a running instance
     (to install follow the [official guide][kurento-install])
 
 ### Binaries
 
 To build the installation binaries from the source code you'll need
-to have installed on your machine [Git][Git], [Java JDK][Java] 
+to have installed on your machine [Git][Git], [Java JDK][Java]
 and [Maven][Maven].
 
-Clone the parent project, `kurento-java` from its 
+Clone the parent project, `kurento-java` from its
 [GitHub Repository][GitHub Kurento Java].
 
 ```
 $ git clone git@github.com:Kurento/kurento-java.git
 ```
 
-Then build the `kurento-repository-server` project together 
+Then build the `kurento-repository-server` project together
 with its required modules:
 
 ```
@@ -79,7 +85,7 @@ $ mvn clean package -DskipTests -Pdefault -am \
     -pl kurento-repository/kurento-repository-server
 ```
 
-Now unzip the generated install binaries (where `x.y.z` is the current 
+Now unzip the generated install binaries (where `x.y.z` is the current
 version and could include the `-SNAPSHOT` suffix):
 
 ```
@@ -91,7 +97,7 @@ $ unzip kurento-repository-server-x.y.z.zip
 
 The configuration file, `kurento-repo.conf.json` is located in the `config`
 folder inside the uncompressed installation binaries. When installing the
-repository as a system service, the configuration files will be located 
+repository as a system service, the configuration files will be located
 after the installation inside `/etc/kurento`.
 
 ```
@@ -106,10 +112,10 @@ The default contents of the configuration file:
   "repository": {
     "port": 7676,
     "hostname": "127.0.0.1",
-    
+
     //mongodb or filesystem
     "type": "mongodb",
-    
+
     "mongodb": {
       "dbName": "kurento",
       "gridName": "kfs",
@@ -124,10 +130,10 @@ The default contents of the configuration file:
 
 These properties and their values will configure the repository application.
 
-  * `port` and `hostname` are where the HTTP repository servlet will be 
+  * `port` and `hostname` are where the HTTP repository servlet will be
     listening for incoming connections (REST API).
-  * `type` indicates the storage type. The repository that stores media served 
-    by KMS can be backed by GridFS on MongoDB or it can use file storage 
+  * `type` indicates the storage type. The repository that stores media served
+    by KMS can be backed by GridFS on MongoDB or it can use file storage
     directly on the system’s disks (regular filesystem).
   * `mongodb` configuration:
     * `dbname` is the database name
@@ -138,7 +144,7 @@ These properties and their values will configure the repository application.
 
 #### Logging configuration
 
-The logging configuration is specified by the file 
+The logging configuration is specified by the file
 `kurento-repo-log4j.properties`, also found in the `config` folder.
 
 ```
@@ -146,11 +152,11 @@ $ cd kurento-repository-server-x.y.z
 $ vim config/kurento-repo-log4j.properties
 ```
 
-In it, the location of the server's output log file can be set up, the default 
+In it, the location of the server's output log file can be set up, the default
 location will be `kurento-repository-server-x.y.z/logs/` (or
 `/var/log/kurento/` for system-wide installations).
 
-To change it, replace the `${kurento-repo.log.file}` variable for an 
+To change it, replace the `${kurento-repo.log.file}` variable for an
 absolute path on your system:
 
 ```
@@ -161,21 +167,21 @@ log4j.appender.file.File=${kurento-repo.log.file}
 
 There are two options for running the server:
 
-  * user-level execution - doesn’t need additional installation steps, can be 
+  * user-level execution - doesn’t need additional installation steps, can be
     done right after uncompressing the installer
-  * system-level execution - requires installation of the repository 
-    application as a system service, which enables automatic startup after 
+  * system-level execution - requires installation of the repository
+    application as a system service, which enables automatic startup after
     system reboots
 
-In both cases, as the application uses the [Spring Boot][SpringBoot] 
-framework, it executes inside an embedded Tomcat container instance, so 
-there’s no need for extra deployment actions (like using a third-party 
-servlet container). If required, the project's build configuration could 
+In both cases, as the application uses the [Spring Boot][SpringBoot]
+framework, it executes inside an embedded Tomcat container instance, so
+there’s no need for extra deployment actions (like using a third-party
+servlet container). If required, the project's build configuration could
 be modified in order to generate a *WAR* instead of a *JAR*.
 
 #### Run at user-level
 
-After having [configured](#configuration) the server instance just execute the start 
+After having [configured](#configuration) the server instance just execute the start
 script:
 
 ```
@@ -195,7 +201,7 @@ $ sudo ./bin/install.sh
 
 The service **kurento-repo** will be automatically started.
 
-Now, you can configure the repository as stated in the 
+Now, you can configure the repository as stated in the
 [previous section](#configuration) and restart the service.
 
 ```
@@ -204,13 +210,13 @@ $ sudo service kurento-repo {start|stop|status|restart|reload}
 
 ### Version upgrade
 
-To update to a newer version, it suffices to follow once again the 
+To update to a newer version, it suffices to follow once again the
 installation procedures.
 
 ### Installation over MongoDB
 
-For the sake of testing *kurento-repository* on Ubuntu (*14.04 LTS 64 bits*), 
-the default installation of MongoDB is enough. 
+For the sake of testing *kurento-repository* on Ubuntu (*14.04 LTS 64 bits*),
+the default installation of MongoDB is enough.
 Execute the following commands (from MongoDB [webpage][mongo-install]):
 
 ```
@@ -225,14 +231,14 @@ $ sudo apt-get install -y mongodb-org
 Http REST API
 -------------
 
-Primitives provided by the repository server, can be used to control items from 
+Primitives provided by the repository server, can be used to control items from
 the respository (*add*, *delete*, *search*, *update*, *get download URL*).
 
 ### Create repository item
 
 **Description**
 
-Creates a new repository item with the provided metadata and its associated 
+Creates a new repository item with the provided metadata and its associated
 recorder endpoint.
 
 **Request method and URL**
@@ -249,9 +255,9 @@ application/json
 
 **Request parameters**
 
-Pairs of key-value Strings in JSON format (a representation of the Java object 
+Pairs of key-value Strings in JSON format (a representation of the Java object
 `Map<String, String>`).
-  
+
 |Parameter|Type|Description|
 |---------|----|-----------|
 |`keyN`  |O   |Metadata associated to `keyN`|
@@ -270,7 +276,7 @@ Pairs of key-value Strings in JSON format (a representation of the Java object
 
 Returns an entity of type `application/json` including a POJO of type
 `RepositoryItemRecorder` with the following information:
-  
+
 |Element|Type|Description|
 |-------|----|-----------|
 |`id`   |M   |Public ID of the newly created item|
@@ -312,7 +318,7 @@ NONE
 **Request parameters**
 
 The item’s ID is coded in the URL’s path info.
-  
+
 |Parameter|Type|Description|
 |---------|----|-----------|
 |`itemId`|M   |Repository item’s identifier|
@@ -353,7 +359,7 @@ NONE
 **Request parameters**
 
 The item’s ID is coded in the URL’s path info.
-  
+
 |Parameter|Type|Description|
 |---------|----|-----------|
 |`itemId`|M   |Repository item’s identifier|
@@ -361,9 +367,9 @@ The item’s ID is coded in the URL’s path info.
 > *M=Mandatory, O=Optional*
 
 **Response elements**
-Returns an entity of type `application/json` including a POJO of type 
+Returns an entity of type `application/json` including a POJO of type
 `RepositoryItemPlayer` with the following information:
-  
+
 |Element|Type|Description|
 |-------|----|-----------|
 |`id`   |M   |Public ID of the newly created item|
@@ -405,9 +411,9 @@ application/json
 
 **Request parameters**
 
-Pairs of key-value Strings in JSON format (a representation of the Java object 
+Pairs of key-value Strings in JSON format (a representation of the Java object
 `Map<String, String>`).
-  
+
 |Parameter|Type|Description|
 |---------|----|-----------|
 |`searchKeyN`|M   |Metadata associated to `searchKeyN`|
@@ -424,9 +430,9 @@ Pairs of key-value Strings in JSON format (a representation of the Java object
 
 **Response elements**
 
-Returns an entity of type `application/json` including a POJO of type 
+Returns an entity of type `application/json` including a POJO of type
 `Set<String>` with the following information:
-  
+
 |Element|Type|Description|
 |-------|----|-----------|
 |`idN`  |O   |Id of the N-th repository item whose metadata matches one of the search terms|
@@ -447,8 +453,8 @@ Returns an entity of type `application/json` including a POJO of type
 
 **Description**
 
-Searches for repository items by each pair of attributes and their values which 
-can represent a regular expression (Perl compatible regular expressions - 
+Searches for repository items by each pair of attributes and their values which
+can represent a regular expression (Perl compatible regular expressions -
 [PCRE]).
 
 **Request method and URL**
@@ -465,9 +471,9 @@ application/json
 
 **Request parameters**
 
-Pairs of key-value Strings in JSON format (a representation of the Java object 
+Pairs of key-value Strings in JSON format (a representation of the Java object
 `Map<String, String>`).
-  
+
 |Parameter|Type|Description|
 |---------|----|-----------|
 |`searchKeyN`|M   |Regex for metadata associated to  `searchKeyN`|
@@ -484,9 +490,9 @@ Pairs of key-value Strings in JSON format (a representation of the Java object
 
 **Response elements**
 
-Returns an entity of type `application/json` including a POJO of type 
+Returns an entity of type `application/json` including a POJO of type
 `Set<String>` with the following information:
-  
+
 |Element|Type|Description|
 |-------|----|-----------|
 |`idN`  |O   |Id of the N-th repository item whose metadata matches one of the search terms|
@@ -524,7 +530,7 @@ NONE
 **Request parameters**
 
 The item’s ID is coded in the URL’s path info.
-  
+
 |Parameter|Type|Description|
 |---------|----|-----------|
 |`itemId`|M   |Repository item’s identifier|
@@ -533,9 +539,9 @@ The item’s ID is coded in the URL’s path info.
 
 **Response elements**
 
-Returns an entity of type `application/json` including a POJO of type 
+Returns an entity of type `application/json` including a POJO of type
 `Map<String, String>` with the following information:
-  
+
 |Element|Type|Description|
 |-------|----|-----------|
 |`keyN` |O   |Metadata associated to `keyN`|
@@ -561,7 +567,7 @@ Returns an entity of type `application/json` including a POJO of type
 
 **Description**
 
-Replaces the metadata of a repository item with the provided values from the 
+Replaces the metadata of a repository item with the provided values from the
 request’s body.
 
 **Request method and URL**
@@ -578,10 +584,10 @@ application/json
 
 **Request parameters**
 
-The item’s ID is coded in the URL’s path info and the request’s body contains 
-key-value Strings in JSON format (a representation of the Java object 
+The item’s ID is coded in the URL’s path info and the request’s body contains
+key-value Strings in JSON format (a representation of the Java object
 `Map<String, String>`).
-  
+
 |Parameter|Type|Description|
 |---------|----|-----------|
 |`itemId`|M   |Repository item’s identifier|
@@ -605,10 +611,10 @@ NONE
 Repository Rest Java API
 ------------------------
 
-This API is used directly by the REST interface layer, so the Java primitives 
+This API is used directly by the REST interface layer, so the Java primitives
 mirror the REST ones.
 
-The only difference is that to use this API, it is required to include a 
+The only difference is that to use this API, it is required to include a
 dependency on `kurento-repository-server` and to use the [Spring] framework.
 
 What is Kurento

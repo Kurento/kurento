@@ -10,19 +10,25 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-repository-client
 ===========================
 
+> :warning: **Warning**
+>
+> This module is not actively maintained.
+>
+> All content here is available for legacy reasons, but no support is provided at all, and you'll be on your own if you decide to use it.
+
 The client library of Kurento Repository provides a Java API that can
-be used to manage media repositories through a running instance of the Kurento 
+be used to manage media repositories through a running instance of the Kurento
 Repository Server.
 
 Usage
 -----
 
-This library can be imported as a Maven dependency and then instances of 
-`RepositoryClient` can be created in order to interact with the repository 
+This library can be imported as a Maven dependency and then instances of
+`RepositoryClient` can be created in order to interact with the repository
 server.
 
-We provide a Kurento Java tutorial, [kurento-hello-world-repository], which uses this 
-library to save the streamed media from a web browser using a repository server 
+We provide a Kurento Java tutorial, [kurento-hello-world-repository], which uses this
+library to save the streamed media from a web browser using a repository server
 instance.
 
 
