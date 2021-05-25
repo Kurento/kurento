@@ -5,7 +5,7 @@
 #/
 #/ This shell script prepares the sources for building. The main work done here
 #/ is replacing all placeholder variables with their actual values, as defined
-#/ in 'VERSIONS.conf.sh'.
+#/ in 'VERSIONS.env'.
 #/
 #/ Arguments: None.
 
@@ -37,12 +37,12 @@ log() { echo "[$BASENAME] $*"; }
 # ---- Load VERSIONS file ----
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-CONF_FILE="$BASEPATH/VERSIONS.conf.sh"
+CONF_FILE="$BASEPATH/VERSIONS.env"
 [[ -f "$CONF_FILE" ]] || {
     log "ERROR: Shell config file not found: $CONF_FILE"
     exit 1
 }
-# shellcheck source=VERSIONS.conf.sh
+# shellcheck source=VERSIONS.env
 source "$CONF_FILE"
 
 

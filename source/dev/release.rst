@@ -927,7 +927,7 @@ For this reason, the documentation must be built only after all the other module
 
    Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at Read the Docs`_.
 
-#. Edit `VERSIONS.conf.sh`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries.
+#. Edit `VERSIONS.env`_ to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries.
 
    These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency. Check each one of the Kurento repositories to verify what is the latest version of each one, and put it in the corresponding variable:
 
@@ -940,7 +940,7 @@ For this reason, the documentation must be built only after all the other module
    - ``[VERSION_TUTORIAL_JS]``: Repo `kurento-tutorial-js`_.
    - ``[VERSION_TUTORIAL_NODE]``: Repo `kurento-tutorial-node`_.
 
-#. In *VERSIONS.conf.sh*, set *VERSION_RELEASE* to **true**. Remember to set it again to *false* after the release, when starting a new development iteration.
+#. In *VERSIONS.env*, set *VERSION_RELEASE* to **true**. Remember to set it again to *false* after the release, when starting a new development iteration.
 
 #. Test the build locally, check everything works.
 
@@ -956,7 +956,7 @@ For this reason, the documentation must be built only after all the other module
 
       # `--all` to include possibly deleted files.
       git add --all \
-          VERSIONS.conf.sh \
+          VERSIONS.env \
           source/project/relnotes/ \
       && git commit -m "$COMMIT_MSG" \
       && git push \
@@ -985,12 +985,12 @@ For this reason, the documentation must be built only after all the other module
           local COMMIT_MSG="Prepare for next development iteration"
 
           # Set [VERSION_RELEASE]="false"
-          sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="false"/' VERSIONS.conf.sh \
+          sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="false"/' VERSIONS.env \
           || { echo "ERROR: Command failed: sed"; return 1; }
 
           # Set [VERSION_DOC]
           local VERSION_DOC="${NEW_VERSION}-dev"
-          sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.conf.sh \
+          sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
           || { echo "ERROR: Command failed: sed"; return 2; }
 
           # Add a new Release Notes document
@@ -1004,7 +1004,7 @@ For this reason, the documentation must be built only after all the other module
           || { echo "ERROR: Command failed: sed"; return 3; }
 
           git add \
-              VERSIONS.conf.sh \
+              VERSIONS.env \
               source/project/relnotes/ \
           && git commit -m "$COMMIT_MSG" \
           && git push \
@@ -1029,7 +1029,7 @@ For this reason, the documentation must be built only after all the other module
 .. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
 .. _doc-kurento: https://github.com/Kurento/doc-kurento
 .. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs
-.. _VERSIONS.conf.sh: https://github.com/Kurento/doc-kurento/blob/e021a6c98bcea4db351faf423e90b64b8aa977f6/VERSIONS.conf.sh
+.. _VERSIONS.env: https://github.com/Kurento/doc-kurento/blob/0e80f4c3aef3db6e46205ebf0075c00d2f20596b/VERSIONS.env
 
 
 
