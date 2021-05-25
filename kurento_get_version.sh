@@ -76,11 +76,11 @@ elif [ -f package.json ]
 then
   log "Getting version from package.json" >&2
   PROJECT_VERSION="$(grep version package.json | cut -d ":" -f 2 | cut -d "\"" -f 2)"
-elif [ -f VERSIONS.conf.sh ]
+elif [ -f VERSIONS.env ]
 then
-  log "Getting version from VERSIONS.conf.sh" >&2
+  log "Getting version from VERSIONS.env" >&2
   # shellcheck disable=SC1091
-  source VERSIONS.conf.sh
+  source VERSIONS.env
   # shellcheck disable=SC2153
   PROJECT_VERSION="${PROJECT_VERSIONS[VERSION_DOC]}"
 elif [ -f VERSION ]
