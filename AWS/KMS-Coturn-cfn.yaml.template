@@ -116,6 +116,20 @@ Resources:
             mode: "000400"
             owner: "root"
             group: "root"
+        config:
+          files:
+            "/opt/cfn-setup.sh":
+              source: "https://raw.githubusercontent.com/Kurento/adm-scripts/master/AWS/cfn-setup.sh"
+              context:
+                KmsVersion: "|RELEASE|"
+                TurnUser: !Ref "TurnUser"
+                TurnPassword: !Ref "TurnPassword"
+              mode: "000555"
+              owner: "root"
+              group: "root"
+          commands:
+            setup:
+              command: "/opt/cfn-setup.sh"
     Properties:
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       InstanceType: !Ref InstanceType
@@ -125,6 +139,11 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
+
+      # Pass a shell script to the Ubuntu AMI's user data (for `cloud-init`).
+      # Note that `sudo` is not needed: `cloud-init` already runs as root.
+      # Log file for debug: /var/log/cloud-init-output.log
+      # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-shell-scripts
       UserData:
         Fn::Base64: !Sub |
           #!/usr/bin/env bash
@@ -133,145 +152,19 @@ Resources:
           set -o errexit -o errtrace -o pipefail -o nounset
           shopt -s inherit_errexit 2>/dev/null || true
 
-          # Kurento Media Server
-          # ====================
+          # Trace all commands (to stderr).
+          set -o xtrace
 
-          # Make sure that GnuPG is installed (needed for `apt-key adv`).
-          sudo apt-get update && sudo apt-get install --yes gnupg
+          # Install and run the CloudFormation helper scripts.
+          # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
+          apt-get update && apt-get install --yes python python-pip
+          pip install "https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz"
 
-          # Import the Kurento repository signing key.
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+          # Trigger the CloudFormation init helper.
+          /usr/local/bin/cfn-init --verbose --stack "${AWS::StackId}" --resource "KurentoMediaServer" --region "${AWS::Region}"
 
-          # Get Ubuntu version definitions.
-          source /etc/lsb-release
-
-          # Add the repository to Apt.
-          sudo tee /etc/apt/sources.list.d/kurento.list >/dev/null <<EOF
-          # Kurento Media Server - Release packages
-          deb [arch=amd64] http://ubuntu.openvidu.io/|RELEASE| ${!DISTRIB_CODENAME} kms6
-          EOF
-
-          # Install.
-          sudo apt-get update && sudo apt-get install --yes kurento-media-server
-
-          # Enable system service.
-          systemctl enable kurento-media-server
-
-          # Coturn
-          # ======
-
-          # Install.
-          sudo apt-get update && sudo apt-get install --yes coturn kurento-media-server
-
-          # Enable system service.
-          sudo tee /etc/default/coturn >/dev/null <<EOF
-          TURNSERVER_ENABLED=1
-          EOF
-
-          # Configure.
-          # shellcheck disable=2154
-          sudo tee /etc/turnserver.conf >/dev/null <<EOF
-          # The external IP address of this server, if Coturn is behind a NAT.
-          # It must be an IP address, not a domain name.
-          #external-ip=<CoturnIp>
-
-          # STUN listener port for UDP and TCP.
-          # Default: 3478.
-          #listening-port=3478
-
-          # TURN lower and upper bounds of the UDP relay ports.
-          # Default: 49152, 65535.
-          min-port=57001
-          max-port=65535
-
-          # Uncomment to enable moderately verbose logs.
-          # Default: verbose mode OFF.
-          #verbose
-
-          # TURN fingerprints in messages.
-          fingerprint
-
-          # TURN long-term credential mechanism.
-          lt-cred-mech
-
-          # TURN static user account for long-term credential mechanism.
-          user=${TurnUser}:${TurnPassword}
-
-          # TURN realm used for the long-term credential mechanism.
-          realm=kurento.org
-
-          # Set the log file name.
-          # The log file can be reset sending a SIGHUP signal to the turnserver process.
-          log-file=/var/log/turn.log
-
-          # Disable log file rollover and use log file name as-is.
-          simple-log
-          EOF
-
-          # Create the log file, with correct permissions.
-          sudo install -o turnserver -g turnserver -m 644 /dev/null /var/log/turn.log
-
-          # Launch script
-          # =============
-
-          sudo tee /usr/local/bin/launch-kms.sh >/dev/null <<EOF
-          #!/usr/bin/env bash
-
-          # Bash options for strict error checking.
-          set -o errexit -o errtrace -o pipefail -o nounset
-          shopt -s inherit_errexit 2>/dev/null || true
-
-          # Settings.
-          # Uses the AWS link-local address to retrieve instance metadata:
-          # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
-          PUBLIC_IP="\$(curl http://169.254.169.254/latest/meta-data/public-ipv4)"
-
-          # Aux function: set value to a given parameter.
-          function set_parameter {
-              local FILE="\$1"         # File path to be edited.
-              local PARAM="\$2"        # Parameter to be set.
-              local VALUE="\$3"        # Value to be set into PARAM.
-              local COMMENT="\${!4:-;}" # (Optional) Character used for commented-out lines.
-
-              local REGEX="^\${!COMMENT}?\s*\${!PARAM}=.*"
-
-              if grep --extended-regexp -q "\${!REGEX}" "\${!FILE}"; then
-                  sed --regexp-extended -i "s/\${!REGEX}/\${!PARAM}=\${!VALUE}/" "\${!FILE}"
-              else
-                  echo "\${!PARAM}=\${!VALUE}" >>"\${!FILE}"
-              fi
-          }
-
-          # Config for Coturn.
-          set_parameter /etc/turnserver.conf "external-ip" "\${!PUBLIC_IP}" "#"
-          systemctl restart coturn
-
-          # Config for Kurento Media Server.
-          set_parameter /etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini "minPort" "40000" ";"
-          set_parameter /etc/kurento/modules/kurento/BaseRtpEndpoint.conf.ini "maxPort" "57000" ";"
-          set_parameter /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini "turnURL" "${TurnUser}:${TurnPassword}@\${!PUBLIC_IP}:3478" ";"
-          systemctl restart kurento-media-server
-          EOF
-          sudo chmod 755 /usr/local/bin/launch-kms.sh
-
-          # System startup script.
-          sudo tee /etc/rc.local >/dev/null <<EOF
-          #!/bin/sh -e
-          /usr/local/bin/launch-kms.sh
-          exit 0
-          EOF
-
-          echo "Launching Media Server..."
-          sudo /usr/local/bin/launch-kms.sh
-
-          # AWS
-          # ===
-
-          sudo apt-get update && sudo apt-get install --yes python python-pip
-          sudo pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-
-          sudo /usr/local/bin/cfn-init -s "${AWS::StackId}" -r KurentoMediaServer --region "${AWS::Region}"
-          sudo /usr/local/bin/cfn-signal -e $? --stack "${AWS::StackId}" --resource WaitCondition --region "${AWS::Region}"
+          # Signal the WaitCondition resource with the return code from `cfn-init`.
+          /usr/local/bin/cfn-signal --exit-code $? --stack "${AWS::StackId}" --resource "WaitCondition" --region "${AWS::Region}"
 
   KurentoMediaServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
