@@ -1,11 +1,12 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: "Kurento Media Server CloudFormation template"
+Description: "Kurento Media Server template for AWS CloudFormation"
 
 Parameters:
   KeyName:
     Description: "Name of an existing EC2 KeyPair for SSH access to the EC2 instance"
     Type: "AWS::EC2::KeyPair::KeyName"
+
   InstanceType:
     Description: "EC2 instance type used for Kurento Media Server"
     Type: String
@@ -45,14 +46,16 @@ Parameters:
       - c5.18xlarge
       - c5.24xlarge
     ConstraintDescription: "Must be a valid EC2 instance type"
+
   TurnUser:
     Description: "Username for the static TURN credentials"
     Type: String
-    Default: kurento
+    Default: "kurento"
+
   TurnPassword:
     Description: "Password for the static TURN credentials"
     Type: String
-    Default: kurento
+    Default: "kurento"
     NoEcho: True
 
 # AMI IDs obtanied from the Ubuntu Cloud Image Finder
@@ -112,7 +115,7 @@ Mappings:
 
 Resources:
   KurentoMediaServer:
-    Type: AWS::EC2::Instance
+    Type: "AWS::EC2::Instance"
     Metadata:
       Comment: Install and configure KMS
       AWS::CloudFormation::Init:
@@ -130,15 +133,16 @@ Resources:
           commands:
             setup:
               command: "/opt/cfn-setup.sh"
+
     Properties:
-      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
-      InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyName
+      ImageId: !FindInMap ["RegionMap", !Ref "AWS::Region", "AMI"]
+      InstanceType: !Ref "InstanceType"
+      KeyName: !Ref "KeyName"
       SecurityGroups:
-        - !Ref KurentoMediaServerSecurityGroup
+        - !Ref "KurentoMediaServerSecurityGroup"
       Tags:
-        - Key: Name
-          Value: !Ref AWS::StackName
+        - Key: "Name"
+          Value: !Ref "AWS::StackName"
 
       # Pass a shell script to the Ubuntu AMI's user data (for `cloud-init`).
       # Note that `sudo` is not needed: `cloud-init` already runs as root.
@@ -167,7 +171,7 @@ Resources:
           /usr/local/bin/cfn-signal --exit-code $? --stack "${AWS::StackId}" --resource "WaitCondition" --region "${AWS::Region}"
 
   KurentoMediaServerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+    Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupName: !Sub "KurentoSecurityGroup ${AWS::StackName}"
       GroupDescription: "SSH and Kurento + Coturn WebRTC ports"
@@ -214,7 +218,7 @@ Resources:
           ToPort: 65535
 
   WaitCondition:
-    Type: AWS::CloudFormation::WaitCondition
+    Type: "AWS::CloudFormation::WaitCondition"
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
@@ -222,15 +226,18 @@ Resources:
 
 Outputs:
   InstanceId:
-    Description: "EC2 instance ID of the Media Server"
+    Description: "ID of the EC2 instance"
     Value:
       Ref: KurentoMediaServer
+
   KurentoURL:
     Value: !Sub "ws://${KurentoMediaServer.PublicIp}:8888/kurento"
     Description: "URL of the Kurento Media Server JSON-RPC API endpoint"
+
   PublicDnsName:
-    Description: "EC2 instance public DNS name"
-    Value: !GetAtt KurentoMediaServer.PublicDnsName
-  PublicIP:
-    Description: "EC2 instance public IP address"
-    Value: !GetAtt KurentoMediaServer.PublicIp
+    Description: "Public DNS name of the EC2 instance"
+    Value: !GetAtt "KurentoMediaServer.PublicDnsName"
+
+  PublicIp:
+    Description: "Public IP address of the EC2 instance"
+    Value: !GetAtt "KurentoMediaServer.PublicIp"
