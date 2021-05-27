@@ -55,40 +55,60 @@ Parameters:
     Default: kurento
     NoEcho: True
 
+# AMI IDs obtanied from the Ubuntu Cloud Image Finder
+# https://cloud-images.ubuntu.com/locator/
+#
+# Parameters:
+# * Cloud: Amazon AWS
+# * Version: 16.04 (Ubuntu Xenial)
+# * Arch: amd64
+# * Instance Type: hvm-ssd
+#
+# Last update: Release 20210429
 Mappings:
   RegionMap:
-    eu-north-1:
-      AMI: ami-4bd45f35
-    ap-south-1:
-      AMI: ami-03dcedc81ea3e7e27
-    eu-west-3:
-      AMI: ami-080d4d4c37b0aa206
-    eu-west-2:
-      AMI: ami-0cbe2951c7cd54704
-    eu-west-1:
-      AMI: ami-03746875d916becc0
-    ap-northeast-2:
-      AMI: ami-0a25005e83c56767a
+    af-south-1:
+      AMI: ami-0becdd21957bf5764
+    ap-east-1:
+      AMI: ami-013f864ad81b818d1
     ap-northeast-1:
-      AMI: ami-096c57cee908da809
-    sa-east-1:
-      AMI: ami-09beb384ba644b754
-    ca-central-1:
-      AMI: ami-0eb3e12d3927c36ef
+      AMI: ami-0d53808c8c345ed07
+    ap-northeast-2:
+      AMI: ami-08508144e576d5b64
+    ap-northeast-3:
+      AMI: ami-0eab055d8530dd456
+    ap-south-1:
+      AMI: ami-0860c9429baba6ad2
     ap-southeast-1:
-      AMI: ami-04613ff1fdcd2eab1
+      AMI: ami-0f9d733050c9f5365
     ap-southeast-2:
-      AMI: ami-000c2343cf03d7fd7
+      AMI: ami-09b1eb4f62e1813d0
+    ca-central-1:
+      AMI: ami-0d833a36f4aa82e6b
     eu-central-1:
-      AMI: ami-0085d4f8878cddc81
+      AMI: ami-0a86f18b52e547759
+    eu-north-1:
+      AMI: ami-06a87e44ba65501d1
+    eu-south-1:
+      AMI: ami-063c648dab7687f2b
+    eu-west-1:
+      AMI: ami-038d7b856fe7557b3
+    eu-west-2:
+      AMI: ami-066ca69d74f59fe1d
+    eu-west-3:
+      AMI: ami-08be160f24365b105
+    me-south-1:
+      AMI: ami-091a3b1243690debd
+    sa-east-1:
+      AMI: ami-08c8994979459a12a
     us-east-1:
-      AMI: ami-0cfee17793b08a293
+      AMI: ami-0ee02acd56a52998e
     us-east-2:
-      AMI: ami-0f93b5fd8f220e428
+      AMI: ami-0d563aeddd4be7fff
     us-west-1:
-      AMI: ami-09eb5e8a83c7aa890
+      AMI: ami-0ce448b1704085256
     us-west-2:
-      AMI: ami-0b37e9efc396e4c38
+      AMI: ami-0dd273d94ed0540c0
 
 Resources:
   KurentoMediaServer:
