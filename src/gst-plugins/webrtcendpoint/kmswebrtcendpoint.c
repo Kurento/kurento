@@ -787,7 +787,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       g_param_spec_uint ("stun-server-port",
           "StunServerPort",
           "Stun Server Port",
-          1, G_MAXUINT16, DEFAULT_STUN_SERVER_PORT,
+          1, 65535, DEFAULT_STUN_SERVER_PORT,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_TURN_URL,
