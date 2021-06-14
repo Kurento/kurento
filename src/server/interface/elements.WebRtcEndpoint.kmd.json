@@ -126,7 +126,7 @@
     unusable.
   </li>
   <li>
-    <code>IceGatheringDone</code>: Raised when the ICE harvesting process is
+    <code>IceGatheringDone</code>: Raised when the ICE gathering process is
     completed. This means that all candidates have already been discovered.
   </li>
   <li>
@@ -511,12 +511,29 @@
       "methods": [
         {
           "name": "gatherCandidates",
-          "doc": "Start the gathering of ICE candidates.
+          "doc": "Start the ICE candidate gathering.
 <p>
-  It must be called after <code>SdpEndpoint::generateOffer</code> or
-  <code>SdpEndpoint::processOffer</code> for <strong>Trickle ICE</strong>. If
-  invoked before generating or processing an SDP offer, the candidates gathered
-  will be added to the SDP processed.
+  This method triggers the asynchronous discovery of ICE candidates (as per the
+  Trickle ICE mechanism), and returns immediately. Every newly trickled
+  candidate is reported to the application by means of an
+  <code>IceCandidateFound</code> event. Finally, when all candidates have been
+  gathered, the <code>IceGatheringDone</code> event is emitted.
+</p>
+<p>
+  Normally, you would call this method as soon as possible after calling
+  <code>SdpEndpoint::generateOffer</code> or
+  <code>SdpEndpoint::processOffer</code>, to quickly start discovering
+  candidates and sending them to the remote peer.
+</p>
+<p>
+  You can also call this method <em>before</em> calling
+  <code>generateOffer</code> or <code>processOffer</code>. Doing so will include
+  any already gathered candidates into the resulting SDP. You can leverage this
+  behavior to implement fully traditional ICE (without Trickle): first call
+  <code>gatherCandidates</code>, then only handle the SDP messages after the
+  <code>IceGatheringDone</code> event has been received. This way, you're making
+  sure that all candidates have indeed been gathered, so the resulting SDP will
+  include all of them.
 </p>
           ",
           "params": []
