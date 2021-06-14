@@ -113,11 +113,11 @@ To configure it for WebRTC, follow these steps:
 
       # The external IP address of this server, if Coturn is behind a NAT.
       # It must be an IP address, not a domain name.
-      external-ip=<CoturnIp>
+      #external-ip=<CoturnIp>
 
       # STUN listener port for UDP and TCP.
       # Default: 3478.
-      #listening-port=<CoturnPort>
+      #listening-port=3478
 
       # TURN lower and upper bounds of the UDP relay ports.
       # Default: 49152, 65535.
@@ -149,7 +149,7 @@ To configure it for WebRTC, follow these steps:
 
    .. note::
 
-      * The *external-ip* is necessary in cloud providers that use internal NATs, such as AWS (Amazon EC2). Write the machine's public IP address in the field *<CoturnIp>*. **It must be an IP address, not a domain name**.
+      * The *external-ip* is necessary in cloud providers that use internal NATs, such as AWS (Amazon EC2). Uncomment this line and write the machine's public IP address in the field *<CoturnIp>*. **It must be an IP address, not a domain name**.
 
       * Comment out (or delete) all the TURN parameters if you only want Coturn acting as a STUN server.
 
