@@ -107,25 +107,11 @@ kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp,
     return FALSE;
   }
 
-  /* Minimum port that a normal user can open */
-  if (min_port <= 1024) {
-    min_port = 1025;
-  }
-
-  if (max_port == 0) {
-    max_port = G_MAXUINT16;
-  }
-
-  if (min_port + 1 > max_port) {
-    return FALSE;
-  }
-
   start_port = (guint16) g_random_int_range (min_port, max_port + 1);
 
   for (port1 = start_port; !all_checked;
-      port1 =
-      inc_port (port1, min_port, max_port, start_port, &max_reached,
-          &all_checked)) {
+       port1 = inc_port (
+           port1, min_port, max_port, start_port, &max_reached, &all_checked)) {
     GSocket *s1, *s2;
 
     s1 = kms_socket_open (port1, socket_family);
