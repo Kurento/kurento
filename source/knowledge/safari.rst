@@ -45,7 +45,7 @@ A video tag that includes all these suggestions would be like this:
 
 .. code-block:: html
 
-   <video id="myVideo" playsinline autoplay muted></video>
+   <video id="myVideo" autoplay muted playsinline></video>
 
 Sources for this section:
 
@@ -81,7 +81,7 @@ Most browsers assume that a video should be played from inside the specific area
 
 .. code-block:: html
 
-   <video id="myVideo" width="480px" height="360px"></video>
+   <video id="myVideo" style="width: 320px"></video>
 
 will play the video in an area that is 480x360 pixels.
 
@@ -89,6 +89,6 @@ That is not the case for *iOS Safari*, where all videos play full screen by defa
 
 .. code-block:: html
 
-   <video id="myVideo" width="480px" height="360px" playsinline></video>
+   <video id="myVideo" style="width: 320px" playsinline></video>
 
 With this, videos will play in *iOS Safari* as they do in any other browser, as inline videos inside their corresponding area.
