@@ -122,19 +122,23 @@ then KMS is hitting resource limits imposed by the Kernel. The 2 most common rea
 ``GStreamer-CRITICAL`` messages in the log
 ------------------------------------------
 
-GLib and GStreamer are libraries that use a lot of internal ``assert()`` functions to check for valid conditions whenever a function is called. Normally, these are meant to catch programming bugs in their own source code; when (if) any of these checks fail, a warning message is printed to the logs. The media server won't be brought down in this situation, but a bug in any of Kurento's underlying 3rd-party libraries will have an adverse effect on Kurento itself sooner or later. So, it's in our best interest to watch out for these. Report them to us if you see any! ;-)
+GLib and GStreamer use a lot of internal ``assert()`` calls, to catch bugs in their own source code. When an assertion fails, a warning message is printed to the logs and the program continues running. Not crashing is good, of course, but Kurento hitting bugs of an underlying library will cause problems, sooner or later.
+
+So, it's in our best interest to watch out for these warnings. Report them to us if you see any in your logs! ;-)
 
 Here are a couple examples of such messages:
 
 .. code-block:: text
 
-   (kurento-media-server:4619): GStreamer-CRITICAL **: gst_element_query: assertion 'GST_IS_ELEMENT (element)' failed
+   (kurento-media-server:4619): GStreamer-CRITICAL **:
+       gst_element_query: assertion 'GST_IS_ELEMENT (element)' failed
 
 .. code-block:: text
 
-   (kurento-media-server:15636): GLib-CRITICAL **: g_error_free: assertion 'error != NULL' failed
+   (kurento-media-server:15636): GLib-CRITICAL **:
+       g_error_free: assertion 'error != NULL' failed
 
-The problem of these messages is that they don't really provide much information about *how* the error happens, of *where*. To find out, we'll need you to run KMS under a debug session. Please, follow the instructions here :ref:`dev-gdb`, to get a **backtrace** from the *GStreamer-CRITICAL* error.
+These warnings don't really provide much debug information. To find out more, we'll need you to run KMS under a debug session. Please, follow the instructions here :ref:`dev-gdb`, to get a **backtrace** from the "*GStreamer-CRITICAL*" error.
 
 
 
