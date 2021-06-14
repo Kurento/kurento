@@ -129,7 +129,9 @@ Besides that, you have several ways to override the default settings for variabl
 RTP Ports
 =========
 
-You can configure the minimum and maximum ports that Kurento Media Server will open (bind to) in order to receive RTP packets from remote peers. This affects the operation of both RtpEndpoint and WebRtcEndpoint.
+These two parameters define the minimum and maximum ports that Kurento Media Server will bind to (listen) in order to receive remote RTP packets. This affects the operation of both RtpEndpoint and WebRtcEndpoint.
+
+Plain RTP (RtpEndpoint) needs 2 ports for each media kind: an even port is used for RTP, and the next odd port is used for RTCP. WebRTC (WebRtcEndpoint) uses RTCP Multiplexing (rtcp-mux) when possible, so it only uses 1 port for each media kind.
 
 **Local install**
 
