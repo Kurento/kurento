@@ -89,7 +89,7 @@ This technique is very handy, because practically all modern platforms include a
    * Mac and iOS include mDNS natively.
    * Linux systems support mDNS if the appropriate Avahi packages are installed.
 
-   If you want to push for the addition of mDNS in Android, go ahead and `add a STAR to this issue <https://issuetracker.google.com/issues/140786115>`__ (requires login; any Google account will do).
+   If you want to push for the addition of mDNS in Android, go ahead and add a STAR to this issue: `#140786115 Add .local mDNS resolving to Android <https://issuetracker.google.com/140786115>`__ (requires login; any Google account will do). **Please refrain from commenting "+1"**, which is generally regarded as rude because it sends a useless email to all other users that are following the issue; adding a star is already the best way to signal interest in getting the issue resolved.
 
 
 
