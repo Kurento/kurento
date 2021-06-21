@@ -44,8 +44,6 @@ import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
-
 public class ParamsFlattener {
 
   private static final String MODULE_PROPERTY = "__module__";
@@ -449,7 +447,7 @@ public class ParamsFlattener {
     Class<?>[] parameterTypes = constructor.getParameterTypes();
     Type[] parameterGenericTypes = constructor.getGenericParameterTypes();
     for (int i = 0; i < parameterGenericTypes.length; i++) {
-    	if (parameterGenericTypes[i] instanceof ParameterizedTypeImpl) {
+    	if (parameterGenericTypes[i] instanceof java.lang.reflect.ParameterizedType) {
     		// This is a class with a generic type
     		// (for example, a java.util.List<java.lang.String>)
     		constClasses.add(parameterGenericTypes[i]);
