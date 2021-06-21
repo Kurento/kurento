@@ -90,66 +90,71 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
     Transaction tx = null;
     List<String> paramNames = Collections.emptyList();
 
-	if (proxy instanceof GenericMediaElement) {
-		switch(method.getName()) {
-		case "invoke":
-			return genericMediaElementInvoke(args);
-		case "addEventListener":
-			return genericSubscribeEventListener((String) args[0], proxy, args, cont, tx);
-		case "removeEventListener":
-			return unsubscribeEventListener(null, args, null, null, cont, tx);
-		}
-	}
+    switch (method.getName()) {
+    case "invoke":
+        return genericMediaElementInvoke(args);
+    case "addEventListener":
+        return genericSubscribeEventListener((String) args[0], proxy, args, cont, tx);
+    case "removeEventListener":
+        return unsubscribeEventListener(null, args, null, null, cont, tx);
+    default:
+        log.trace("Invoking method {} on object {}", method, proxy);
 
-    log.trace("Invoking method {} on object {}", method, proxy);
+        if (args != null && args.length > 0) {
 
-    if (args != null && args.length > 0) {
+            paramNames = ParamAnnotationUtils.getParamNames(method);
 
-      paramNames = ParamAnnotationUtils.getParamNames(method);
+            if (args[args.length - 1] instanceof Continuation) {
 
-      if (args[args.length - 1] instanceof Continuation) {
+                cont = (Continuation<?>) args[args.length - 1];
+                args = Arrays.copyOf(args, args.length - 1);
+                paramNames = paramNames.subList(0, paramNames.size() - 1);
 
-        cont = (Continuation<?>) args[args.length - 1];
-        args = Arrays.copyOf(args, args.length - 1);
-        paramNames = paramNames.subList(0, paramNames.size() - 1);
+            } else if (args != null && args.length > 0 && args[0] instanceof Transaction) {
 
-      } else if (args != null && args.length > 0 && args[0] instanceof Transaction) {
+                tx = (Transaction) args[0];
+                args = Arrays.copyOfRange(args, 1, args.length);
+                paramNames = paramNames.subList(1, paramNames.size());
+            }
+        }
 
-        tx = (Transaction) args[0];
-        args = Arrays.copyOfRange(args, 1, args.length);
-        paramNames = paramNames.subList(1, paramNames.size());
-      }
-    }
+        if (methodName.equals("release")) {
 
-    if (methodName.equals("release")) {
+            return release(cont, tx);
 
-      return release(cont, tx);
+        } else if (method.getAnnotation(EventSubscription.class) != null) {
 
-    } else if (method.getAnnotation(EventSubscription.class) != null) {
+            EventSubscription eventSubscription = method.getAnnotation(EventSubscription.class);
 
-      EventSubscription eventSubscription = method.getAnnotation(EventSubscription.class);
+            if (methodName.startsWith("add")) {
+                return subscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont, tx);
+            } else if (methodName.startsWith("remove")) {
+                return unsubscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont, tx);
+            } else {
+                throw new IllegalStateException("Method " + methodName + " undefined for events");
+            }
 
-      if (methodName.startsWith("add")) {
-        return subscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont, tx);
-      } else if (methodName.startsWith("remove")) {
-        return unsubscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont, tx);
-      } else {
-        throw new IllegalStateException("Method " + methodName + " undefined for events");
-      }
+        } else {
 
-    } else {
-
-      return invoke(method, paramNames, args, cont, tx);
+            return invoke(method, paramNames, args, cont, tx);
+        }
     }
   }
 
   private Object genericMediaElementInvoke(Object[] args) {
+    // args[0] is the method name
+    // args[1] is the Props object
+    // args[2] is the return type
     String methodName = (String) args[0];
     Props props = null;
     if (args.length > 1) {
-      props = (Props) args[1];
+        props = (Props) args[1];
     }
-    return remoteObject.invoke(methodName, props, JsonElement.class);
+    Type type = JsonElement.class;
+    if (args.length > 2) {
+        type = (Type) args[2];
+    }
+    return remoteObject.invoke(methodName, props, type);
   }
 
   private Object invoke(Method method, List<String> paramNames, Object[] args, Continuation<?> cont,
@@ -227,7 +232,11 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 		RemoteObjectEventListener listener = new RemoteObjectEventListener() {
 			@Override
 			public void onEvent(String eventType, Props data) {
-				propagateEventTo(proxy, GenericMediaEvent.class, data, (EventListener<?>) args[1]);
+				Class<? extends Event> realEventType = GenericMediaEvent.class;
+				if (args.length > 1) {
+					realEventType = (Class<Event>) args[2];
+				}
+				propagateEventTo(proxy, realEventType, data, (EventListener<?>) args[1]);
 			}
 		};
 	

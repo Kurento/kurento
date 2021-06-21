@@ -17,37 +17,47 @@
 
 package org.kurento.client;
 
+import java.lang.reflect.Type;
 import java.util.concurrent.Executor;
+
+import org.kurento.jsonrpc.Props;
 
 public interface KurentoObject {
 
-  boolean isCommited();
+	boolean isCommited();
 
-  void waitCommited() throws InterruptedException;
+	void waitCommited() throws InterruptedException;
 
-  void whenCommited(Continuation<?> continuation);
+	void whenCommited(Continuation<?> continuation);
 
-  void whenCommited(Continuation<?> continuation, Executor executor);
+	void whenCommited(Continuation<?> continuation, Executor executor);
 
-  /**
-   * Explicitly release a media object form memory. All of its children will also be released.
-   *
-   **/
-  void release();
+	/**
+	 * Explicitly release a media object form memory. All of its children will also
+	 * be released.
+	 *
+	 **/
+	void release();
 
-  /**
-   * Explicitly release a media object form memory. All of its children will also be released.
-   * Asynchronous call.
-   *
-   * @param continuation
-   *          {@link #onSuccess(void)} will be called when the actions complete. {@link #onError}
-   *          will be called if there is an exception.
-   *
-   **/
-  void release(Continuation<Void> continuation);
+	/**
+	 * Explicitly release a media object form memory. All of its children will also
+	 * be released. Asynchronous call.
+	 *
+	 * @param continuation {@link #onSuccess(void)} will be called when the actions
+	 *                     complete. {@link #onError} will be called if there is an
+	 *                     exception.
+	 *
+	 **/
+	void release(Continuation<Void> continuation);
 
-  void release(Transaction tx);
+	void release(Transaction tx);
 
-  String getId();
+	String getId();
+
+	Object invoke(String method, Props params, Type returnType);
+
+	<T extends Event> ListenerSubscription addEventListener(String type, EventListener<T> listener, Class<T> eventType);
+
+	void removeEventListener(ListenerSubscription listener);
 
 }

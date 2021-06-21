@@ -1,7 +1,5 @@
 package org.kurento.client;
 
-import org.kurento.jsonrpc.Props;
-
 public interface GenericMediaElement extends MediaElement {
 
 	public class Builder extends AbstractBuilder<GenericMediaElement> {
@@ -26,9 +24,4 @@ public interface GenericMediaElement extends MediaElement {
 		}
 	}
 
-	public Object invoke(String method, Props params);
-
-	public ListenerSubscription addEventListener(String type, EventListener<GenericMediaEvent> listener);
-
-	public void removeEventListener(ListenerSubscription listener);
 }
