@@ -135,6 +135,7 @@ else
     MVN_ALLOW_SNAPSHOTS="true"
 fi
 
+# kurento-parent-pom
 {
     pushd kurento-parent-pom/
 
@@ -169,6 +170,7 @@ fi
     popd
 }
 
+# All except kurento-parent-pom
 {
     # Parent version: Update to latest available.
     #
@@ -205,7 +207,6 @@ fi
         kurento-commons
         kurento-integration-tests
         kurento-jsonrpc
-        kurento-parent-pom
         kurento-repository
     )
     for CHILD in "${CHILDREN[@]}"; do
