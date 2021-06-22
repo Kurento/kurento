@@ -151,6 +151,15 @@ RUN apt-get-install \
         kms-pointerdetector \
     || true
 
+# Install additional tools that are indirectly used by some GStreamer plugins:
+# * gstreamer1.5-tools: Allows running the command `gst-inspect-1.5`.
+#   Useful for troubleshooting and debugging installed GStreamer plugins.
+# * gstreamer1.5-x: Video rendering plugins for X11 and Pango.
+#   Needed by some overlay elements like "textoverlay".
+RUN apt-get-install \
+        gstreamer1.5-tools \
+        gstreamer1.5-x
+
 # Install debug symbols
 RUN apt-key adv \
         --keyserver keyserver.ubuntu.com \
