@@ -847,7 +847,7 @@ New Development
 .. code-block:: shell
 
    # Change here.
-   NEW_VERSION="<NextVersion>-SNAPSHOT" # Eg.: 1.0.1
+   NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
 
    function do_release {
        local COMMIT_MSG="Prepare for next development iteration"
