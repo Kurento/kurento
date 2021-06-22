@@ -24,6 +24,6 @@
     "draggabilly": "~1.2.4",
     "demo-console": "1.5.1",
     "ekko-lightbox": "~3.3.0",
-    "kurento-utils": "6.16.0"
+    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git"
   }
 }
