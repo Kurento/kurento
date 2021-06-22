@@ -101,6 +101,8 @@ The **FaceOverlayFilter** filter detects faces in a video stream and overlaid it
 .. image:: /images/toolbox/GStreamerFilter.png
    :align:  center
 
+Note that usage of some popular GStreamer elements requires installation of additional packages. For example, overlay elements such as *timeoverlay* or *textoverlay* require installation of the **gstreamer1.5-x** package, which will also install the *Pango* rendering library.
+
 The following class diagram shows the relationships of the main filter classes:
 
 .. graphviz:: /images/graphs/filters.dot
