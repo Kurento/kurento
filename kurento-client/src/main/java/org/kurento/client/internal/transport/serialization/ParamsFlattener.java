@@ -436,7 +436,8 @@ public class ParamsFlattener {
         || clazz == Float.class
         || clazz == float.class
         || clazz == Double.class
-        || clazz == double.class;
+        || clazz == double.class
+        || clazz == Number.class;
   }
 
   private Object unflattedComplexType(Class<?> clazz, Props props, ObjectRefsManager manager) {
