@@ -101,9 +101,6 @@ kms_face_detector_initialize_classifiers (KmsFaceDetector * facedetector)
   GST_DEBUG ("Loading classifier: %s",
       HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
 
-//  facedetector->priv->pCascadeFace = (CvHaarClassifierCascade *)
-//      cvLoad ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE), 0, 0, 0);
-
   if (facedetector->priv->haar_detector) {
 	  facedetector->priv->pCascadeFace = init_classifier ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE));
   } else {
@@ -114,10 +111,6 @@ kms_face_detector_initialize_classifiers (KmsFaceDetector * facedetector)
 	    GST_ERROR ("Failed loading classifier: %s",
 	        HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
   }
-//  if (!facedetector->priv->pCascadeFace.load ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE))) {
-//    GST_ERROR ("Failed loading classifier: %s",
-//        HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
-//  }
 }
 
 static void
@@ -284,9 +277,6 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
   g_mutex_unlock (&facedetector->priv->mutex);
 
   cvClearSeq (facedetector->priv->pFaceRectSeq);
-  // According to https://docs.opencv.org/3.4/d2/df8/group__core__c.html#gae08497cc7695fdc8599011a85aa27068
-  // cvClearMemStorage prevents reusing the sequence
-  //cvClearMemStorage (facedetector->priv->pStorageFace);
   classify_image (facedetector->priv->pCascadeFace
 		  ,facedetector->priv->cvResizedImage,
 		  facedetector->priv->pFaceRectSeq);
