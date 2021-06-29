@@ -15,31 +15,40 @@
  *
  */
 
-#include "classifier.h"
+#include <string>
 
-#define FACE_CASCADE "/usr/share/opencv/lbpcascades/lbpcascade_frontalface.xml"
+#include "classifier.h"
 
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace cv;
-class Classifier
+class _Classifier
 {
 public:
-  Classifier ();
-  ~Classifier() = default;
+  _Classifier (const std::string &filename);
+  ~_Classifier() = default;
+
+  bool is_loaded ();
 
   CascadeClassifier face_cascade;
+  std::string filename;
 };
 
-Classifier::Classifier()
+
+_Classifier::_Classifier(const std::string &filename)
 {
-  face_cascade.load ( FACE_CASCADE );
+  if (face_cascade.load ( filename )) {
+	  this->filename = filename;
+  }
 }
 
-static Classifier lbpClassifier = Classifier ();
+bool _Classifier::is_loaded ()
+{
+	return !face_cascade.empty();
+}
 
-void classify_image (IplImage *img, CvSeq *facesList)
+void classify_image (Classifier* classifier, IplImage *img, CvSeq *facesList)
 {
   std::vector<Rect> faces;
   Mat frame (cv::cvarrToMat(img));
@@ -48,7 +57,7 @@ void classify_image (IplImage *img, CvSeq *facesList)
   cvtColor ( frame, frame_gray, COLOR_BGR2GRAY );
   equalizeHist ( frame_gray, frame_gray );
 
-  lbpClassifier.face_cascade.detectMultiScale ( frame_gray, faces, 1.2, 3, 0,
+  classifier->face_cascade.detectMultiScale ( frame_gray, faces, 1.2, 3, 0,
       Size (frame.cols / 20, frame.rows / 20),
       Size (frame.cols / 2, frame.rows / 2) );
 
@@ -59,3 +68,33 @@ void classify_image (IplImage *img, CvSeq *facesList)
 
   faces.clear();
 }
+
+
+Classifier* init_classifier (char* classifier_file)
+{
+	Classifier *pClassifier = new Classifier (classifier_file);
+
+	if (pClassifier != NULL) {
+		if (pClassifier->is_loaded())
+			return pClassifier;
+		else
+			delete pClassifier;
+
+	}
+
+	return NULL;
+}
+
+bool is_inited (Classifier* classifier)
+{
+	if (classifier->is_loaded())
+		return true;
+	return false;
+}
+
+
+void delete_classifier (Classifier* classifier)
+{
+	delete classifier;
+}
+

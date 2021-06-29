@@ -24,7 +24,19 @@
 
 G_BEGIN_DECLS
 
-void classify_image (IplImage* img, CvSeq* facesList);
+typedef struct _Classifier Classifier;
+
+
+// Changed classify_image and added some lifecycle managing objects
+// to be able to handle Haar Classifier in non "C" API, as it is outdated
+
+void classify_image (Classifier* classifier, IplImage* img, CvSeq* facesList);
+
+Classifier* init_classifier (char* classifier_file);
+
+bool is_inited (Classifier* classifier);
+
+void delete_classifier (Classifier* clasifier);
 
 G_END_DECLS
 
