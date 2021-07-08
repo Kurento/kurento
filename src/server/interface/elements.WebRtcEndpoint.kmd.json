@@ -849,13 +849,13 @@ This could also happen in the middle of a session, though not likely.
       "doc": "The ICE candidate pair used by the ice library, for a certain stream.",
       "properties": [
         {
-          "name": "streamID",
           "doc": "Stream ID of the ice connection",
+          "name": "streamId",
           "type": "String"
         },
         {
-          "name": "componentID",
           "doc": "Component ID of the ice connection",
+          "name": "componentId",
           "type": "int"
         },
         {
