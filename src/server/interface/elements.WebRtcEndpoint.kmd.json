@@ -458,7 +458,7 @@
         },
         {
           "name": "ICECandidatePairs",
-          "doc": "the ICE candidate pair (local and remote candidates) used by the ice library for each stream.",
+          "doc": "the ICE candidate pair (local and remote candidates) used by the ICE library for each stream.",
           "type": "IceCandidatePair[]",
           "readOnly": true
         },
@@ -846,26 +846,26 @@ This could also happen in the middle of a session, though not likely.
     {
       "typeFormat": "REGISTER",
       "name": "IceCandidatePair",
-      "doc": "The ICE candidate pair used by the ice library, for a certain stream.",
+      "doc": "The ICE candidate pair used by the ICE library, for a certain stream.",
       "properties": [
         {
-          "doc": "Stream ID of the ice connection",
           "name": "streamId",
+          "doc": "Stream ID of the ICE connection",
           "type": "String"
         },
         {
-          "doc": "Component ID of the ice connection",
           "name": "componentId",
+          "doc": "Component ID of the ICE connection",
           "type": "int"
         },
         {
           "name": "localCandidate",
-          "doc": "The local candidate used by the ice library.",
+          "doc": "The local candidate used by the ICE library.",
           "type": "String"
         },
         {
           "name": "remoteCandidate",
-          "doc": "The remote candidate used by the ice library.",
+          "doc": "The remote candidate used by the ICE library.",
           "type": "String"
         }
       ]
