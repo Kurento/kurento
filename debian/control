@@ -28,8 +28,6 @@ Depends: ${shlibs:Depends},
  kms-core (>= 6.16.1),
  kms-elements (>= 6.16.1),
  kms-filters (>= 6.16.1)
-Breaks: kms-chroma-6.0
-Replaces: kms-chroma-6.0
 Description: Kurento Chroma filter
 
 Package: kms-chroma-dev
@@ -39,14 +37,10 @@ Depends: kms-chroma (= ${binary:Version}),
  kms-core-dev,
  kms-elements-dev,
  kms-filters-dev
-Breaks: kms-chroma-6.0-dev
-Replaces: kms-chroma-6.0-dev
 Description: Kurento Chroma filter - Development files
 
 Package: kms-chroma-dbg
 Architecture: any
 Section: debug
 Depends: kms-chroma (= ${binary:Version})
-Breaks: kms-chroma-6.0-dbg
-Replaces: kms-chroma-6.0-dbg
 Description: Kurento Chroma filter - Debugging symbols
