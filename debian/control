@@ -28,8 +28,6 @@ Depends: ${shlibs:Depends},
  kms-core (>= 6.16.1),
  kms-elements (>= 6.16.1),
  kms-filters (>= 6.16.1)
-Breaks: kms-pointerdetector-6.0
-Replaces: kms-pointerdetector-6.0
 Description: Kurento Pointer Detector filter
 
 Package: kms-pointerdetector-dev
@@ -41,14 +39,10 @@ Depends: kms-pointerdetector (= ${binary:Version}),
  kms-filters-dev,
  libopencv-dev,
  libsoup2.4-dev
-Breaks: kms-pointerdetector-6.0-dev
-Replaces: kms-pointerdetector-6.0-dev
 Description: Kurento Pointer Detector filter - Development files
 
 Package: kms-pointerdetector-dbg
 Architecture: any
 Section: debug
 Depends: kms-pointerdetector (= ${binary:Version})
-Breaks: kms-pointerdetector-6.0-dbg
-Replaces: kms-pointerdetector-6.0-dbg
 Description: Kurento Pointer Detector filter - Debug symbols
