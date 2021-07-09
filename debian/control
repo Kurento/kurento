@@ -18,8 +18,6 @@ Package: kms-jsonrpc
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Breaks: kms-jsonrpc-1.0
-Replaces: kms-jsonrpc-1.0
 Description: Kurento JSON-RPC library
  C++ implementation of the JSON-RPC Kurento Protocol.
 
@@ -30,8 +28,6 @@ Depends: kms-jsonrpc (= ${binary:Version}),
  kmsjsoncpp-dev,
  libboost-dev,
  libboost-test-dev
-Breaks: kms-jsonrpc-1.0-dev
-Replaces: kms-jsonrpc-1.0-dev
 Description: Kurento JSON-RPC library
  C++ implementation of the JSON-RPC Kurento Protocol - Development files.
 
@@ -39,7 +35,5 @@ Package: kms-jsonrpc-dbg
 Architecture: any
 Section: debug
 Depends: kms-jsonrpc (= ${binary:Version})
-Breaks: kms-jsonrpc-1.0-dbg
-Replaces: kms-jsonrpc-1.0-dbg
 Description: Kurento JSON-RPC library
  C++ implementation of the JSON-RPC Kurento Protocol - Debugging symbols.
