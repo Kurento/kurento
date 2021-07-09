@@ -5,7 +5,7 @@ set(FACEOVERLAY_SOURCES
 
 add_library(kmsfaceoverlay MODULE ${FACEOVERLAY_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(faceoverlay)
+  add_sanitizers(kmsfaceoverlay)
 endif()
 
 add_dependencies(kmsfaceoverlay kmsimageoverlay kmsfacedetector)

@@ -5,7 +5,7 @@ set(MOVEMENTDETECTOR_SOURCES
 
 add_library(kmsmovementdetector MODULE ${MOVEMENTDETECTOR_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(movementdetector)
+  add_sanitizers(kmsmovementdetector)
 endif()
 
 target_link_libraries(kmsmovementdetector

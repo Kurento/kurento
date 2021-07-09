@@ -5,7 +5,7 @@ set(IMAGEOVERLAY_SOURCES
 
 add_library(kmsimageoverlay MODULE ${IMAGEOVERLAY_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(imageoverlay)
+  add_sanitizers(kmsimageoverlay)
 endif()
 
 target_link_libraries(kmsimageoverlay

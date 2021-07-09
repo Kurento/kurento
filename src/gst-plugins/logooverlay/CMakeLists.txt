@@ -5,7 +5,7 @@ set(LOGOOVERLAY_SOURCES
 
 add_library(kmslogooverlay MODULE ${LOGOOVERLAY_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(logooverlay)
+  add_sanitizers(kmslogooverlay)
 endif()
 
 target_link_libraries(kmslogooverlay

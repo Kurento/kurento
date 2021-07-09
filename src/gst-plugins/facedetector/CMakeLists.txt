@@ -6,7 +6,7 @@ set(FACEDETECTOR_SOURCES
 
 add_library(kmsfacedetector MODULE ${FACEDETECTOR_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(facedetector)
+  add_sanitizers(kmsfacedetector)
 endif()
 
 target_link_libraries(kmsfacedetector

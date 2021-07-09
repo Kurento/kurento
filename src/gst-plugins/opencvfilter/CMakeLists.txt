@@ -5,7 +5,7 @@ set(OPENCV_FILTER_SOURCES
 
 add_library(kmsopencvfilter MODULE ${OPENCV_FILTER_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(opencvfilter)
+  add_sanitizers(kmsopencvfilter)
 endif()
 
 target_link_libraries(kmsopencvfilter
