@@ -28,8 +28,6 @@ Depends: ${shlibs:Depends},
  kms-core (>= 6.16.1),
  kms-elements (>= 6.16.1),
  kms-filters (>= 6.16.1)
-Breaks: kms-platedetector-6.0
-Replaces: kms-platedetector-6.0
 Description: Kurento Plate Detector filter
 
 Package: kms-platedetector-dev
@@ -41,14 +39,10 @@ Depends: kms-platedetector (= ${binary:Version}),
  kms-filters-dev (>= 6.16.1),
  libopencv-dev,
  libtesseract-dev
-Breaks: kms-platedetector-6.0-dev
-Replaces: kms-platedetector-6.0-dev
 Description: Kurento Plate Detector filter - Development files
 
 Package: kms-platedetector-dbg
 Architecture: any
 Section: debug
 Depends: kms-platedetector (= ${binary:Version})
-Breaks: kms-platedetector-6.0-dbg
-Replaces: kms-platedetector-6.0-dbg
 Description: Kurento Plate Detector filter - Debug symbols
