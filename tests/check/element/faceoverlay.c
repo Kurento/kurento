@@ -98,9 +98,9 @@ bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
       gchar *dbg_info = NULL;
 
       gst_message_parse_error (msg, &err, &dbg_info);
-      GST_ERROR ("Pipeline '%s': Bus error %d: %s",
-          GST_ELEMENT_NAME (pipeline), err->code, err->message);
-      GST_ERROR ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+      GST_ERROR ("Pipeline '%s': Bus error %d: %s", GST_ELEMENT_NAME (pipeline),
+          err->code, GST_STR_NULL (err->message));
+      GST_ERROR ("Debugging info: %s", GST_STR_NULL (dbg_info));
       g_error_free (err);
       g_free (dbg_info);
 
@@ -117,8 +117,8 @@ bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
 
       gst_message_parse_error (msg, &err, &dbg_info);
       GST_WARNING ("Pipeline '%s': Bus warning %d: %s",
-          GST_ELEMENT_NAME (pipeline), err->code, err->message);
-      GST_WARNING ("Debugging info: %s", (dbg_info) ? dbg_info : "None");
+          GST_ELEMENT_NAME (pipeline), err->code, GST_STR_NULL (err->message));
+      GST_WARNING ("Debugging info: %s", GST_STR_NULL (dbg_info));
       g_error_free (err);
       g_free (dbg_info);
 

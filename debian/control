@@ -6,10 +6,10 @@ Build-Depends: debhelper (>= 9),
  cmake,
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-good,
- kms-cmake-utils,
- kms-core-dev,
- kms-elements-dev,
- kurento-module-creator,
+ kms-cmake-utils (>= 7.0.0),
+ kms-core-dev (>= 7.0.0),
+ kms-elements-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-system-dev,
  libglibmm-2.4-dev,
@@ -27,7 +27,7 @@ Package: kms-filters
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
- kms-elements,
+ kms-elements (>= 7.0.0),
  opencv-data
 Description: Kurento Filters module
  Kurento Filters module - Binary libraries.
@@ -36,10 +36,10 @@ Package: kms-filters-dev
 Architecture: any
 Section: libdevel
 Depends: kms-filters (= ${binary:Version}),
- kms-cmake-utils,
- kms-core-dev,
- kms-elements-dev,
- kurento-module-creator,
+ kms-cmake-utils (>= 7.0.0),
+ kms-core-dev (>= 7.0.0),
+ kms-elements-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-system-dev,
  libglibmm-2.4-dev,

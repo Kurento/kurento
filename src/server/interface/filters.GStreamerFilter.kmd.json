@@ -3,10 +3,20 @@
     {
       "name": "GStreamerFilter",
       "extends": "Filter",
-      "doc": "A generic filter interface that allows injecting any GStreamer element.
-      <p>
-      Note however that the current implementation of GStreamerFilter only allows single elements to be injected; one cannot indicate more than one at the same time; use several GStreamerFilters if you need to inject more than one element at the same time.
-      </p>
+      "doc": "A generic filter that allows injecting a single GStreamer element.
+<p>
+  The current implementation of GStreamerFilter only allows single elements to
+  be injected; one cannot indicate more than one at the same time; use several
+  GStreamerFilters if you need to inject more than one element into the
+  pipeline.
+</p>
+<p>
+  Note that usage of some popular GStreamer elements requires installation of
+  additional packages. For example, overlay elements such as
+  <em>timeoverlay</em> or <em>textoverlay</em> require installation of the
+  <strong>gstreamer1.5-x</strong> package, which will also install the
+  <em>Pango</em> rendering library.
+</p>
       ",
       "constructor": {
         "doc": "Create a :rom:cls:`GStreamerFilter`.",
