@@ -23,8 +23,6 @@ Depends: ${shlibs:Depends},
  kms-core (>= 6.16.1),
  kms-elements (>= 6.16.1),
  kms-filters (>= 6.16.1)
-Breaks: kms-markerdetector-6.0
-Replaces: kms-markerdetector-6.0
 Description: Kurento Augmented Reality marker detector
 
 Package: kms-markerdetector-dev
@@ -37,6 +35,4 @@ Depends: kms-markerdetector (= ${binary:Version}),
  libopencv-dev,
  libsoup2.4-dev,
  libtinyxml-dev
-Breaks: kms-markerdetector-6.0-dev
-Replaces: kms-markerdetector-6.0-dev
 Description: Kurento Augmented Reality marker detector - Development files
