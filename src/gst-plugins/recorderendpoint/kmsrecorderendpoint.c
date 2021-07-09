@@ -41,11 +41,15 @@
 #include "kmsavmuxer.h"
 #include "kmsksrmuxer.h"
 
+#include "kmsrecordergapsfixmethod.h"
+#include "kms-recorder-enumtypes.h"
+
 #define PLUGIN_NAME "recorderendpoint"
 
 #define RECORDER_DEFAULT_SUFFIX "_default"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_NONE
+#define DEFAULT_GAPS_FIX KMS_RECORDER_GAPS_FIX_NONE
 
 #define KMS_BASE_TIME_KEY "base-time-key"
 G_DEFINE_QUARK (KMS_BASE_TIME_KEY, base_time_key);
@@ -92,6 +96,7 @@ enum
   PROP_0,
   PROP_DVR,
   PROP_PROFILE,
+  PROP_GAPS_FIX,
   N_PROPERTIES
 };
 
@@ -133,6 +138,7 @@ typedef struct _KmsRecorderStats
 struct _KmsRecorderEndpointPrivate
 {
   KmsRecordingProfile profile;
+  KmsRecorderGapsFixMethod gaps_fix;
   GstClockTime paused_time;
   GstClockTime paused_start;
   gboolean use_dvr;
@@ -254,6 +260,7 @@ typedef struct _BaseTimeType
 {
   GstClockTime pts;
   GstClockTime dts;
+  GstClockTime audio_gaps;
 } BaseTimeType;
 
 static void
@@ -262,35 +269,35 @@ release_base_time_type (gpointer data)
   g_slice_free (BaseTimeType, data);
 }
 
+// Adjust timestamps to avoid gaps created by paused recordings.
 static GstFlowReturn
 recv_sample (GstAppSink * appsink, gpointer user_data)
 {
   KmsRecorderEndpoint *self =
       KMS_RECORDER_ENDPOINT (GST_OBJECT_PARENT (appsink));
-  KmsUriEndpointState state;
-  GstAppSrc *appsrc;
-  GstFlowReturn ret;
-  GstSample *sample;
-  GstSegment *segment;
-  GstBuffer *buffer;
-  BaseTimeType *base_time;
-  GstClockTime offset;
-  GstCaps *caps;
-  gboolean unlock_element = TRUE;
+  KmsUriEndpointState state = KMS_URI_ENDPOINT_STATE_STOP;
+  BaseTimeType *base_time = NULL;
+  GstCaps *caps = NULL;
 
-  appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
+  gboolean unlock_element = FALSE;
+  GstSample *sample = NULL;
+  GstFlowReturn ret = GST_FLOW_OK;
 
+  GstAppSrc *appsrc =
+      g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
   if (appsrc == NULL) {
     GST_ERROR_OBJECT (appsink, "No appsrc attached");
-    return GST_FLOW_NOT_LINKED;
+    ret = GST_FLOW_NOT_LINKED;
+    goto end;
   }
 
   sample = gst_app_sink_pull_sample (appsink);
   if (sample == NULL) {
-    return GST_FLOW_OK;
+    ret = GST_FLOW_OK;
+    goto end;
   }
 
-  buffer = gst_sample_get_buffer (sample);
+  GstBuffer *buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
     if (gst_sample_get_buffer_list (sample) != NULL) {
       GST_ERROR_OBJECT (appsink,
@@ -301,16 +308,18 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     goto end;
   }
 
-  segment = gst_sample_get_segment (sample);
+  const GstSegment *segment = gst_sample_get_segment (sample);
 
+  unlock_element = TRUE;
   KMS_ELEMENT_LOCK (self);
+
   state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (!((state == KMS_URI_ENDPOINT_STATE_START &&
               self->priv->transition == KMS_RECORDER_ENDPOINT_COMPLETED) ||
           self->priv->transition == KMS_RECORDER_ENDPOINT_STARTING)) {
     GST_LOG_OBJECT (appsink,
-        "Not recording, dropping buffer %" GST_PTR_FORMAT, buffer);
+        "Not recording, drop buffer %" GST_PTR_FORMAT, buffer);
     ret = GST_FLOW_OK;
     goto end;
   }
@@ -318,51 +327,83 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  if (GST_BUFFER_PTS_IS_VALID (buffer))
-    GST_BUFFER_PTS (buffer) =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME,
-        GST_BUFFER_PTS (buffer));
-  if (GST_BUFFER_DTS_IS_VALID (buffer))
-    GST_BUFFER_DTS (buffer) =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME,
-        GST_BUFFER_DTS (buffer));
+  // Ensure that PTS/DTS are measured from 00:00:00. Do this by replacing each
+  // one by their GStreamer running time, which always starts from 0 wrt. its
+  // containing segment.
+  {
+    if (GST_BUFFER_PTS_IS_VALID (buffer)) {
+      GST_BUFFER_PTS (buffer) = gst_segment_to_running_time (
+          segment, GST_FORMAT_TIME, GST_BUFFER_PTS (buffer));
+    }
+
+    if (GST_BUFFER_DTS_IS_VALID (buffer)) {
+      GST_BUFFER_DTS (buffer) = gst_segment_to_running_time (
+          segment, GST_FORMAT_TIME, GST_BUFFER_DTS (buffer));
+    }
+  }
 
   BASE_TIME_LOCK (self);
 
-  base_time = g_object_get_qdata (G_OBJECT (self), base_time_key_quark ());
+  // First time this runs, create a new BaseTime storage.
+  {
+    base_time = g_object_get_qdata (G_OBJECT (self), base_time_key_quark ());
+    if (base_time == NULL) {
+      base_time = g_slice_new0 (BaseTimeType);
+      base_time->pts = GST_CLOCK_TIME_NONE;
+      base_time->dts = GST_CLOCK_TIME_NONE;
+      base_time->audio_gaps = 0;
 
-  if (base_time == NULL) {
-    base_time = g_slice_new0 (BaseTimeType);
-    base_time->pts = GST_BUFFER_PTS (buffer);
-    base_time->dts = GST_BUFFER_DTS (buffer);
-    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
-        base_time->pts);
-    g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (), base_time,
-        release_base_time_type);
+      g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (),
+          base_time, release_base_time_type);
+    }
+
+    if (!GST_CLOCK_TIME_IS_VALID (base_time->pts)
+        && GST_BUFFER_PTS_IS_VALID (buffer)) {
+      base_time->pts = GST_BUFFER_PTS (buffer);
+      GST_DEBUG_OBJECT (self, "Setting PTS base time to %" GST_TIME_FORMAT,
+          GST_TIME_ARGS (base_time->pts));
+    }
+
+    if (!GST_CLOCK_TIME_IS_VALID (base_time->dts)
+        && GST_BUFFER_DTS_IS_VALID (buffer)) {
+      base_time->dts = GST_BUFFER_DTS (buffer);
+      GST_DEBUG_OBJECT (self, "Setting DTS base time to %" GST_TIME_FORMAT,
+          GST_TIME_ARGS (base_time->dts));
+    }
   }
 
-  if (!GST_CLOCK_TIME_IS_VALID (base_time->pts)
-      && GST_BUFFER_PTS_IS_VALID (buffer)) {
-    base_time->pts = GST_BUFFER_PTS (buffer);
-    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
-        base_time->pts);
-    base_time->dts = GST_BUFFER_DTS (buffer);
-  }
+  // Adjust PTS/DTS of all buffers, so recordings are always created with an
+  // initial timestamp of 0 (0:00:00.000).
+  {
+    // FIXME: There is some skew introduced each time the recording is paused.
+    // The 'paused_time' doesn't account exactly for all the time, it is missing
+    // some milliseconds. Maybe due to latency in upstream elements?
 
-  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)) {
-    if (GST_BUFFER_PTS_IS_VALID (buffer)) {
-      offset = base_time->pts + self->priv->paused_time;
+    GstClockTime common_offset = self->priv->paused_time;
+
+    if (self->priv->gaps_fix == KMS_RECORDER_GAPS_FIX_GENPTS) {
+      // In GenPTS mode, add the total time that has been lost in the form
+      // of gaps, typically caused by packet loss from an RTP source.
+      common_offset += base_time->audio_gaps;
+    }
+
+    if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
+        && GST_BUFFER_PTS_IS_VALID (buffer)) {
+      const GstClockTime offset = common_offset + base_time->pts;
+
+      // PTS -= offset, but preventing underflows.
       if (GST_BUFFER_PTS (buffer) > offset) {
         GST_BUFFER_PTS (buffer) -= offset;
       } else {
         GST_BUFFER_PTS (buffer) = 0;
       }
     }
-  }
 
-  if (GST_CLOCK_TIME_IS_VALID (base_time->dts)) {
-    if (GST_BUFFER_DTS_IS_VALID (buffer)) {
-      offset = base_time->dts + self->priv->paused_time;
+    if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
+        && GST_BUFFER_DTS_IS_VALID (buffer)) {
+      const GstClockTime offset = common_offset + base_time->dts;
+
+      // DTS -= offset, but preventing underflows.
       if (GST_BUFFER_DTS (buffer) > offset) {
         GST_BUFFER_DTS (buffer) -= offset;
       } else {
@@ -371,29 +412,26 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     }
   }
 
-  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
+  BASE_TIME_UNLOCK (self);
 
+  // Set some flags to make sure the buffer is appropriately handled downstream.
   GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_LIVE);
-
-  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER))
+  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER)) {
     GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+  unlock_element = FALSE;
 
   caps = gst_app_src_get_caps (appsrc);
-
   if (caps == NULL) {
     GST_ERROR_OBJECT (appsrc, "Trying to push buffer without setting caps");
   } else {
     gst_caps_unref (caps);
   }
-
-  KMS_ELEMENT_UNLOCK (self);
-
-  unlock_element = FALSE;
-
   ret = gst_app_src_push_buffer (appsrc, buffer);
 
   if (ret != GST_FLOW_OK) {
-    /* something wrong */
     GST_ERROR_OBJECT (self, "Could not send buffer to appsrc %s. Cause: %s",
         GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
     ret = GST_FLOW_CUSTOM_SUCCESS;
@@ -753,19 +791,18 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj, GError ** error)
   state = kms_uri_endpoint_get_state (KMS_URI_ENDPOINT (self));
 
   if (self->priv->stopped) {
-    g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
-        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopped");
-    GST_ERROR_OBJECT (self, "No stop");
-    return FALSE;
+    GST_WARNING_OBJECT (self,
+        "Stop requested, but recorder is already stopped");
+    return TRUE;
   } else if (state == KMS_URI_ENDPOINT_STATE_STOP ||
       self->priv->transition == KMS_RECORDER_ENDPOINT_STOPPING) {
     g_set_error_literal (error, KMS_URI_ENDPOINT_ERROR,
-        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Recorder is stopping");
+        KMS_URI_ENDPOINT_INVALID_TRANSITION, "Stop requested, but recorder is already stopping");
     return FALSE;
   } else if (self->priv->transition != KMS_RECORDER_ENDPOINT_COMPLETED) {
     g_set_error (error, KMS_URI_ENDPOINT_ERROR,
         KMS_URI_ENDPOINT_INVALID_TRANSITION,
-        "Can not go to stop. Recorder is %s",
+        "Cannot stop. Recorder status is '%s'",
         transition[self->priv->transition]);
     return FALSE;
   }
@@ -990,47 +1027,80 @@ end:
 }
 
 static GstPadProbeReturn
-configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
+appsink_event_probe (GstPad * pad, GstPadProbeInfo * info,
     gpointer user_data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
   GstEvent *event = gst_pad_probe_info_get_event (info);
-  GstElement *appsrc, *appsink;
-  GstCaps *caps;
+  GstCaps *caps = NULL;
+  GstPadProbeReturn ret = GST_PAD_PROBE_OK;
 
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
-    return GST_PAD_PROBE_OK;
+  if (GST_EVENT_TYPE (event) == GST_EVENT_CAPS) {
+    gst_event_parse_caps (event, &caps);
 
-  gst_event_parse_caps (event, &caps);
+    if (gst_caps_get_size (caps) == 0) {
+      GST_ERROR_OBJECT (pad, "Invalid CAPS event %" GST_PTR_FORMAT, event);
+      return GST_PAD_PROBE_OK;
+    }
 
-  GST_DEBUG_OBJECT (pad, "Processing caps event %" GST_PTR_FORMAT, caps);
+    GST_DEBUG_OBJECT (pad, "Processing CAPS event %" GST_PTR_FORMAT, caps);
 
-  if (gst_caps_get_size (caps) == 0) {
-    GST_ERROR_OBJECT (pad, "Invalid event %" GST_PTR_FORMAT, event);
+    if (!gst_caps_is_fixed (caps)) {
+      GST_WARNING_OBJECT (
+          pad, "Not fixed caps in CAPS event %" GST_PTR_FORMAT, event);
+    }
 
-    return GST_PAD_PROBE_OK;
+    GstElement *appsink = gst_pad_get_parent_element (pad);
+    GST_DEBUG_OBJECT (appsink, "Setting caps: %" GST_PTR_FORMAT, caps);
+    set_appsink_caps (appsink, caps, self->priv->profile);
+
+    GstElement *appsrc =
+        g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
+    if (appsrc != NULL) {
+      set_appsrc_caps (appsrc, caps);
+    } else {
+      GST_ERROR_OBJECT (pad, "No appsrc attached");
+    }
+
+    g_object_unref (appsink);
+  } else if (GST_EVENT_TYPE (event) == GST_EVENT_GAP) {
+    /*
+    This event could arrive from upstream if, for example, the RtpBin inside a
+    WebRtcEndpoint detects missing audio frames and generates a GAP event
+    (technicaly, the RtpJitterBuffer generates a CUSTOM_DOWNSTREAM event
+    named "GstRTPPacketLost", and the RTP depayloader converts it into a GAP
+    event).
+
+    The GAP event for video streams is handled at the output of the
+    RtpJitterBuffer (see gap_detection_probe in kmsutils), but the audio one
+    isn't, so it will reach downstream elements such as this one.
+    */
+
+    // Get the RecorderEndpoint base timings, if any yet.
+    BaseTimeType *base_time =
+        g_object_get_qdata (G_OBJECT (self), base_time_key_quark ());
+
+    // Get the current appsink caps to see if this is applies to the audio.
+    GstAppSink *appsink = GST_APP_SINK (gst_pad_get_parent_element (pad));
+    caps = gst_app_sink_get_caps (appsink);
+
+    if (base_time != NULL && kms_utils_caps_is_audio (caps)) {
+      GstClockTime gap_pts;
+      GstClockTime gap_duration;
+      gst_event_parse_gap (event, &gap_pts, &gap_duration);
+
+      // This will later be used to adjust timestamp of audio buffers.
+      base_time->audio_gaps += gap_duration;
+
+      // The GAP event has been handled here, so no need to pass it downstream.
+      ret = GST_PAD_PROBE_DROP;
+    }
+
+    gst_caps_unref (caps);
+    g_object_unref (appsink);
   }
 
-  if (!gst_caps_is_fixed (caps)) {
-    GST_WARNING_OBJECT (pad, "Not fixed caps in event %" GST_PTR_FORMAT, event);
-  }
-
-  appsink = gst_pad_get_parent_element (pad);
-  GST_DEBUG_OBJECT (appsink, "Setting caps: %" GST_PTR_FORMAT, caps);
-
-  set_appsink_caps (appsink, caps, self->priv->profile);
-
-  appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
-
-  if (appsrc != NULL) {
-    set_appsrc_caps (appsrc, caps);
-  } else {
-    GST_ERROR_OBJECT (pad, "No appsrc attached");
-  }
-
-  g_object_unref (appsink);
-
-  return GST_PAD_PROBE_OK;
+  return ret;
 }
 
 static GstPadLinkReturn
@@ -1168,12 +1238,12 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   GstPad *sinkpad;
 
   if (g_hash_table_contains (self->priv->sink_pad_data, name)) {
-    GST_WARNING_OBJECT (self, "Sink %s already added", name);
+    GST_WARNING_OBJECT (self, "Sink '%s' already added", name);
     return;
   }
 
   if (type != KMS_ELEMENT_PAD_TYPE_AUDIO && type != KMS_ELEMENT_PAD_TYPE_VIDEO) {
-    GST_WARNING_OBJECT (self, "Unsupported pad type %u", type);
+    GST_WARNING_OBJECT (self, "Unsupported pad type: %u", type);
     return;
   }
 
@@ -1193,7 +1263,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
       g_strdup (name), g_free);
 
   gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      configure_pipeline_capabilities, self, NULL);
+      appsink_event_probe, self, NULL);
 
   g_object_unref (sinkpad);
 
@@ -1382,6 +1452,9 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
 
       break;
     }
+    case PROP_GAPS_FIX:
+      self->priv->gaps_fix = g_value_get_enum (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -1402,6 +1475,10 @@ kms_recorder_endpoint_get_property (GObject * object, guint property_id,
       break;
     case PROP_PROFILE:{
       g_value_set_enum (value, self->priv->profile);
+      break;
+    }
+    case PROP_GAPS_FIX:{
+      g_value_set_enum (value, self->priv->gaps_fix);
       break;
     }
     default:
@@ -1638,7 +1715,10 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
     ret = gst_pad_peer_query_accept_caps (srcpad, accept);
     gst_object_unref (srcpad);
   } else {
-    GST_ERROR_OBJECT (self, "Incompatbile caps %" GST_PTR_FORMAT, caps);
+    GST_ERROR_OBJECT (self,
+        "Input caps (%" GST_PTR_FORMAT
+        ") doesn't match profile caps (%" GST_PTR_FORMAT ")",
+        accept, caps);
   }
 
 end:
@@ -1897,6 +1977,10 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
       "The profile used for encapsulating the media",
       KMS_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
+  obj_properties[PROP_GAPS_FIX] = g_param_spec_enum ("gaps-fix",
+      "Gaps fix method", "The method used to fix gaps in the stream",
+      KMS_TYPE_RECORDER_GAPS_FIX_METHOD, DEFAULT_GAPS_FIX, G_PARAM_READWRITE);
+
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
 
@@ -1955,52 +2039,59 @@ kms_recorder_endpoint_on_eos_message (gpointer data)
 }
 
 static GstBusSyncReply
-bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
+bus_sync_signal_handler (GstBus *bus, GstMessage *msg, gpointer data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
 
-  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
-    ErrorData *data;
+  switch (GST_MESSAGE_TYPE (msg)) {
+  case GST_MESSAGE_ERROR:
+  case GST_MESSAGE_WARNING: {
+    ErrorData *data = create_error_data (self, msg);
+    gst_task_pool_push (
+        self->priv->pool, kms_recorder_endpoint_post_error, data, NULL);
 
-    GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (self),
-        GST_DEBUG_GRAPH_SHOW_ALL, GST_ELEMENT_NAME (self));
+    // Generate a DOT file from the element's internal pipeline.
+    gchar *dot_name = g_strdup_printf ("%s_bus_msg", GST_OBJECT_NAME (self));
+    GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (
+        GST_BIN (self), GST_DEBUG_GRAPH_SHOW_ALL, dot_name);
+    g_free (dot_name);
     kms_base_media_muxer_dot_file (self->priv->mux);
 
-    GST_ERROR_OBJECT (self, "Message %" GST_PTR_FORMAT, msg);
+    break;
+  }
+  case GST_MESSAGE_EOS:
+    gst_task_pool_push (
+        self->priv->pool, kms_recorder_endpoint_on_eos_message, self, NULL);
+    break;
+  case GST_MESSAGE_STATE_CHANGED:
+    if (GST_OBJECT_CAST (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self->priv->mux))
+        == GST_MESSAGE_SRC (msg)) {
+      GstState new_state, pending;
 
-    data = create_error_data (self, msg);
+      gst_message_parse_state_changed (msg, NULL, &new_state, &pending);
 
-    GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
-
-    gst_task_pool_push (self->priv->pool, kms_recorder_endpoint_post_error,
-        data, NULL);
-  } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
-    gst_task_pool_push (self->priv->pool, kms_recorder_endpoint_on_eos_message,
-        self, NULL);
-  } else if ((GST_MESSAGE_TYPE (msg) == GST_MESSAGE_STATE_CHANGED)
-      && (GST_OBJECT_CAST (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self->
-                  priv->mux)) == GST_MESSAGE_SRC (msg))) {
-    GstState new_state, pending;
-
-    gst_message_parse_state_changed (msg, NULL, &new_state, &pending);
-
-    if (pending == GST_STATE_VOID_PENDING || (pending == GST_STATE_NULL
-            && new_state == GST_STATE_READY)) {
-      switch (new_state) {
+      if (pending == GST_STATE_VOID_PENDING
+          || (pending == GST_STATE_NULL && new_state == GST_STATE_READY)) {
+        switch (new_state) {
         case GST_STATE_PLAYING:
-          kms_recorder_endpoint_async_state_changed (self,
-              KMS_URI_ENDPOINT_STATE_START);
+          kms_recorder_endpoint_async_state_changed (
+              self, KMS_URI_ENDPOINT_STATE_START);
           break;
         case GST_STATE_READY:
-          kms_recorder_endpoint_async_state_changed (self,
-              KMS_URI_ENDPOINT_STATE_STOP);
+          kms_recorder_endpoint_async_state_changed (
+              self, KMS_URI_ENDPOINT_STATE_STOP);
           break;
         default:
           GST_DEBUG_OBJECT (self, "Not raising event");
           break;
+        }
       }
     }
+    break;
+  default:
+    break;
   }
+
   return GST_BUS_PASS;
 }
 
@@ -2022,6 +2113,7 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
       g_object_unref);
 
   self->priv->profile = DEFAULT_RECORDING_PROFILE;
+  self->priv->gaps_fix = DEFAULT_GAPS_FIX;
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;

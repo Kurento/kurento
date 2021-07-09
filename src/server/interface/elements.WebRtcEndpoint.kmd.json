@@ -126,7 +126,7 @@
     unusable.
   </li>
   <li>
-    <code>IceGatheringDone</code>: Raised when the ICE harvesting process is
+    <code>IceGatheringDone</code>: Raised when the ICE gathering process is
     completed. This means that all candidates have already been discovered.
   </li>
   <li>
@@ -160,9 +160,10 @@
   original stream.
 </p>
 <p>
-  The default bandwidth range of the endpoint is
-  <strong>[100 kbps, 500 kbps]</strong>, but it can be changed separately for
-  input/output directions and for audio/video streams.
+  Note that the default <strong>VideoSendBandwidth</strong> range of the
+  endpoint is a VERY conservative one, and leads to a low maximum video quality.
+  Most applications will probably want to increase this to higher values such as
+  2000 kbps (2 mbps).
 </p>
 <p>
   <strong>
@@ -173,34 +174,36 @@
 </p>
 <ul>
   <li>
-    Input bandwidth: Configuration value used to inform remote peers about the
-    bitrate that can be pushed into this endpoint.
+    Input bandwidth: Values used to inform remote peers about the bitrate that
+    can be sent to this endpoint.
     <ul>
       <li>
-        <strong>{get,set}MinVideoRecvBandwidth</strong>: Minimum bitrate
-        requested on the received video stream.
+        <strong>MinVideoRecvBandwidth</strong>: Minimum input bitrate, requested
+        from WebRTC senders with REMB (Default: 30 Kbps).
       </li>
       <li>
-        <strong>{get,set}Max{Audio,Video}RecvBandwidth</strong>: Maximum bitrate
-        expected for the received stream.
+        <strong>MaxAudioRecvBandwidth</strong> and
+        <strong>MaxVideoRecvBandwidth</strong>: Maximum input bitrate, signaled
+        in SDP Offers to WebRTC and RTP senders (Default: unlimited).
       </li>
     </ul>
   </li>
   <li>
-    Output bandwidth: Configuration values used to control bitrate of the output
-    video stream sent to remote peers. It is important to keep in mind that
-    pushed bitrate depends on network and remote peer capabilities. Remote peers
-    can also announce bandwidth limitation in their SDPs (through the
-    <code>b={modifier}:{value}</code> tag). Kurento will always enforce bitrate
-    limitations specified by the remote peer over internal configurations.
+    Output bandwidth: Values used to control bitrate of the video streams sent
+    to remote peers. It is important to keep in mind that pushed bitrate depends
+    on network and remote peer capabilities. Remote peers can also announce
+    bandwidth limitation in their SDPs (through the
+    <code>b={modifier}:{value}</code> attribute). Kurento will always enforce
+    bitrate limitations specified by the remote peer over internal
+    configurations.
     <ul>
       <li>
-        <strong>{get,set}MinVideoSendBandwidth</strong>: Minimum video bitrate
-        sent to remote peer.
+        <strong>MinVideoSendBandwidth</strong>: REMB override of minimum bitrate
+        sent to WebRTC receivers (Default: 100 Kbps).
       </li>
       <li>
-        <strong>{get,set}MaxVideoSendBandwidth</strong>: Maximum video bitrate
-        sent to remote peer.
+        <strong>MaxVideoSendBandwidth</strong>: REMB override of maximum bitrate
+        sent to WebRTC receivers (Default: 500 Kbps).
       </li>
       <li>
         <strong>RembParams.rembOnConnect</strong>: Initial local REMB bandwidth
@@ -223,12 +226,8 @@
   WebRtcElement. DataChannels can be configured to provide the following:
 </p>
 <ul>
-  <li>
-    Reliable or partially reliable delivery of sent messages
-  </li>
-  <li>
-    In-order or out-of-order delivery of sent messages
-  </li>
+  <li>Reliable or partially reliable delivery of sent messages</li>
+  <li>In-order or out-of-order delivery of sent messages</li>
 </ul>
 <p>
   Unreliable, out-of-order delivery is equivalent to raw UDP semantics. The
@@ -272,37 +271,6 @@
       ",
       "properties": [
         {
-          "name": "externalAddress",
-          "doc": "External (public) IP address of the media server.
-<p>
-  If you know what will be the external or public IP address of the media server
-  (e.g. because your deployment has an static IP), you can specify it here.
-  Doing so has the advantage of not needing to configure STUN/TURN for the media
-  server.
-</p>
-<p>
-  STUN/TURN are needed only when the media server sits behind a NAT and needs to
-  find out its own external IP address. However, if you set a static external IP
-  address with this parameter, then there is no need for the STUN/TURN
-  auto-discovery.
-</p>
-<p>
-  The effect of this parameter is that ALL local ICE candidates that are
-  gathered (for WebRTC) will contain the provided external IP address instead of
-  the local one.
-</p>
-<p>
-  <code>externalAddress</code> is an IPv4 or IPv6 address.
-</p>
-<p>Examples:</p>
-<ul>
-  <li><code>externalAddress=10.70.35.2</code></li>
-  <li><code>externalAddress=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
-</ul>
-          ",
-          "type": "String"
-        },
-        {
           "name": "networkInterfaces",
           "doc": "Local network interfaces used for ICE gathering.
 <p>
@@ -334,6 +302,22 @@
 </ul>
           ",
           "type": "String"
+        },
+        {
+          "name": "iceTcp",
+          "doc": "Enable ICE-TCP candidate gathering.
+<p>
+  This setting enables or disables using TCP for ICE candidate gathering in the
+  underlying libnice library:
+  https://libnice.freedesktop.org/libnice/NiceAgent.html#NiceAgent--ice-tcp
+</p>
+<p>
+  You might want to disable ICE-TCP to potentially speed up ICE gathering by
+  avoiding TCP candidates in scenarios where they are not needed.
+</p>
+<p><code>iceTcp</code> is either 1 (ON) or 0 (OFF). Default: 1 (ON).</p>
+          ",
+          "type": "boolean"
         },
         {
           "name": "stunServerAddress",
@@ -389,8 +373,92 @@
           "type": "String"
         },
         {
+          "name": "externalIPv4",
+          "doc": "External IPv4 address of the media server.
+<p>
+  Forces all local IPv4 ICE candidates to have the given address. This is really
+  nothing more than a hack, but it's very effective to force a public IP address
+  when one is known in advance for the media server. In doing so, KMS will not
+  need a STUN or TURN server, but remote peers will still be able to contact it.
+</p>
+<p>
+  You can try using this setting if KMS is deployed on a publicly accessible
+  server, without NAT, and with a static public IP address. But if it doesn't
+  work for you, just go back to configuring a STUN or TURN server for ICE.
+</p>
+<p>
+  Only set this parameter if you know what you're doing, and you understand 100%
+  WHY you need it. For the majority of cases, you should just prefer to
+  configure a STUN or TURN server.
+</p>
+<p><code>externalIPv4</code> is a single IPv4 address.</p>
+<p>Example:</p>
+<ul>
+  <li><code>externalIPv4=198.51.100.1</code></li>
+</ul>
+          ",
+          "type": "String"
+        },
+        {
+          "name": "externalIPv6",
+          "doc": "External IPv6 address of the media server.
+<p>
+  Forces all local IPv6 ICE candidates to have the given address. This is really
+  nothing more than a hack, but it's very effective to force a public IP address
+  when one is known in advance for the media server. In doing so, KMS will not
+  need a STUN or TURN server, but remote peers will still be able to contact it.
+</p>
+<p>
+  You can try using this setting if KMS is deployed on a publicly accessible
+  server, without NAT, and with a static public IP address. But if it doesn't
+  work for you, just go back to configuring a STUN or TURN server for ICE.
+</p>
+<p>
+  Only set this parameter if you know what you're doing, and you understand 100%
+  WHY you need it. For the majority of cases, you should just prefer to
+  configure a STUN or TURN server.
+</p>
+<p><code>externalIPv6</code> is a single IPv6 address.</p>
+<p>Example:</p>
+<ul>
+  <li><code>externalIPv6=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
+</ul>
+          ",
+          "type": "String"
+        },
+        {
+          "name": "externalAddress",
+          "doc": "External IP address of the media server.
+<p>
+  Forces all local IPv4 and IPv6 ICE candidates to have the given address. This
+  is really nothing more than a hack, but it's very effective to force a public
+  IP address when one is known in advance for the media server. In doing so, KMS
+  will not need a STUN or TURN server, but remote peers will still be able to
+  contact it.
+</p>
+<p>
+  You can try using this setting if KMS is deployed on a publicly accessible
+  server, without NAT, and with a static public IP address. But if it doesn't
+  work for you, just go back to configuring a STUN or TURN server for ICE.
+</p>
+<p>
+  Only set this parameter if you know what you're doing, and you understand 100%
+  WHY you need it. For the majority of cases, you should just prefer to
+  configure a STUN or TURN server.
+</p>
+<p><code>externalAddress</code> is a single IPv4 or IPv6 address.</p>
+<p>Examples:</p>
+<ul>
+  <li><code>externalAddress=198.51.100.1</code></li>
+  <li><code>externalAddress=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
+</ul>
+@deprecated Use <code>externalIPv4</code> and/or <code>externalIPv6</code> instead.
+          ",
+          "type": "String"
+        },
+        {
           "name": "ICECandidatePairs",
-          "doc": "the ICE candidate pair (local and remote candidates) used by the ice library for each stream.",
+          "doc": "the ICE candidate pair (local and remote candidates) used by the ICE library for each stream.",
           "type": "IceCandidatePair[]",
           "readOnly": true
         },
@@ -443,12 +511,29 @@
       "methods": [
         {
           "name": "gatherCandidates",
-          "doc": "Start the gathering of ICE candidates.
+          "doc": "Start the ICE candidate gathering.
 <p>
-  It must be called after <code>SdpEndpoint::generateOffer</code> or
-  <code>SdpEndpoint::processOffer</code> for <strong>Trickle ICE</strong>. If
-  invoked before generating or processing an SDP offer, the candidates gathered
-  will be added to the SDP processed.
+  This method triggers the asynchronous discovery of ICE candidates (as per the
+  Trickle ICE mechanism), and returns immediately. Every newly trickled
+  candidate is reported to the application by means of an
+  <code>IceCandidateFound</code> event. Finally, when all candidates have been
+  gathered, the <code>IceGatheringDone</code> event is emitted.
+</p>
+<p>
+  Normally, you would call this method as soon as possible after calling
+  <code>SdpEndpoint::generateOffer</code> or
+  <code>SdpEndpoint::processOffer</code>, to quickly start discovering
+  candidates and sending them to the remote peer.
+</p>
+<p>
+  You can also call this method <em>before</em> calling
+  <code>generateOffer</code> or <code>processOffer</code>. Doing so will include
+  any already gathered candidates into the resulting SDP. You can leverage this
+  behavior to implement fully traditional ICE (without Trickle): first call
+  <code>gatherCandidates</code>, then only handle the SDP messages after the
+  <code>IceGatheringDone</code> event has been received. This way, you're making
+  sure that all candidates have indeed been gathered, so the resulting SDP will
+  include all of them.
 </p>
           ",
           "params": []
@@ -761,26 +846,26 @@ This could also happen in the middle of a session, though not likely.
     {
       "typeFormat": "REGISTER",
       "name": "IceCandidatePair",
-      "doc": "The ICE candidate pair used by the ice library, for a certain stream.",
+      "doc": "The ICE candidate pair used by the ICE library, for a certain stream.",
       "properties": [
         {
-          "name": "streamID",
-          "doc": "Stream ID of the ice connection",
+          "name": "streamId",
+          "doc": "Stream ID of the ICE connection",
           "type": "String"
         },
         {
-          "name": "componentID",
-          "doc": "Component ID of the ice connection",
+          "name": "componentId",
+          "doc": "Component ID of the ICE connection",
           "type": "int"
         },
         {
           "name": "localCandidate",
-          "doc": "The local candidate used by the ice library.",
+          "doc": "The local candidate used by the ICE library.",
           "type": "String"
         },
         {
           "name": "remoteCandidate",
-          "doc": "The remote candidate used by the ice library.",
+          "doc": "The remote candidate used by the ICE library.",
           "type": "String"
         }
       ]

@@ -29,7 +29,8 @@ common_buildflags_set()
 # Development: Add here exceptions to the "Warnings are Errors" rule.
 # Also, DOCUMENT WHY and always remove them as soon as the problem is fixed.
 # For example:
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-variable")
 
 # FIXME Disable error when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered
 include(CheckCXXCompilerFlag)
@@ -82,13 +83,6 @@ generic_find(LIBNAME openssl REQUIRED)
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
 
 enable_testing()
-
-# Used by test "webrtcendpoint" and kmsiceniceagent
-# Enabled if the system has libnice >=0.1.14
-if(NOT nice_VERSION VERSION_LESS "0.1.14")
-  message(STATUS "libnice version >= 0.1.14, enable specific tests")
-  add_definitions(-DHAVE_LIBNICE_0_1_14)
-endif()
 
 add_subdirectory(src)
 add_subdirectory(tests)

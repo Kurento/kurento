@@ -56,6 +56,9 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
 #define DEFAULT_PEM_CERTIFICATE NULL
 #define DEFAULT_NETWORK_INTERFACES NULL
 #define DEFAULT_EXTERNAL_ADDRESS NULL
+#define DEFAULT_EXTERNAL_IPV4 NULL
+#define DEFAULT_EXTERNAL_IPV6 NULL
+#define DEFAULT_ICE_TCP TRUE
 
 enum
 {
@@ -66,6 +69,9 @@ enum
   PROP_PEM_CERTIFICATE,
   PROP_NETWORK_INTERFACES,
   PROP_EXTERNAL_ADDRESS,
+  PROP_EXTERNAL_IPV4,
+  PROP_EXTERNAL_IPV6,
+  PROP_ICE_TCP,
   N_PROPERTIES
 };
 
@@ -99,6 +105,9 @@ struct _KmsWebrtcEndpointPrivate
   gchar *pem_certificate;
   gchar *network_interfaces;
   gchar *external_address;
+  gchar *external_ipv4;
+  gchar *external_ipv6;
+  gboolean ice_tcp;
 };
 
 /* Internal session management begin */
@@ -108,6 +117,14 @@ on_ice_candidate (KmsWebrtcSession * sess, KmsIceCandidate * candidate,
     KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  GST_DEBUG_OBJECT (self,
+      "[IceCandidateFound] local: '%s', stream_id: %s, component_id: %d, sdpMid: '%s', sdpMLineIndex: %u",
+      kms_ice_candidate_get_candidate (candidate),
+      kms_ice_candidate_get_stream_id (candidate),
+      kms_ice_candidate_get_component (candidate),
+      kms_ice_candidate_get_sdp_mid (candidate),
+      kms_ice_candidate_get_sdp_m_line_index (candidate));
 
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_CANDIDATE], 0,
@@ -119,6 +136,8 @@ on_ice_gathering_done (KmsWebrtcSession * sess, KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
+  GST_DEBUG_OBJECT (self, "[IceGatheringDone] session: '%s'", sdp_sess->id_str);
+
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0,
       sdp_sess->id_str);
@@ -129,6 +148,10 @@ on_ice_component_state_change (KmsWebrtcSession * sess, const gchar * stream_id,
     guint component_id, IceState state, KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  GST_LOG_OBJECT (self,
+      "[IceComponentStateChanged] state: %s, stream_id: %s, component_id: %u",
+      kms_ice_base_agent_state_to_string (state), stream_id, component_id);
 
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
@@ -189,7 +212,7 @@ kms_webrtc_endpoint_add_data_sink_pad (KmsWebrtcEndpoint * self,
     return FALSE;
   }
 
-  GST_DEBUG_OBJECT (self, "Added pad %" GST_PTR_FORMAT, pad);
+  GST_TRACE_OBJECT (self, "Added pad %" GST_PTR_FORMAT, pad);
 
   return TRUE;
 }
@@ -260,7 +283,7 @@ kms_webrtc_endpoint_remove_pad (KmsWebrtcSession * session, GstPad * pad,
     return FALSE;
   }
 
-  GST_DEBUG_OBJECT (self, "Remove sink pad %" GST_PTR_FORMAT, pad);
+  GST_TRACE_OBJECT (self, "Remove sink pad %" GST_PTR_FORMAT, pad);
 
   kms_element_remove_sink_by_type_full (KMS_ELEMENT (self), type, description);
 
@@ -276,9 +299,9 @@ new_selected_pair_full (KmsWebrtcSession * sess,
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
-  GST_INFO_OBJECT (self,
-      "New candidate pair selected, local: '%s', remote: '%s'"
-      ", stream_id: '%s', component_id: %d",
+  GST_DEBUG_OBJECT (self,
+      "[NewCandidatePairSelected] local: '%s', remote: '%s'"
+      ", stream_id: %s, component_id: %u",
       kms_ice_candidate_get_candidate (lcandidate),
       kms_ice_candidate_get_candidate (rcandidate),
       stream_id, component_id);
@@ -317,13 +340,23 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       webrtc_sess, "network-interfaces", G_BINDING_DEFAULT);
   g_object_bind_property (self, "external-address",
       webrtc_sess, "external-address", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "external-ipv4",
+      webrtc_sess, "external-ipv4", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "external-ipv6",
+      webrtc_sess, "external-ipv6", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "ice-tcp",
+      webrtc_sess, "ice-tcp", G_BINDING_DEFAULT);
 
   g_object_set (webrtc_sess, "stun-server", self->priv->stun_server_ip,
       "stun-server-port", self->priv->stun_server_port,
       "turn-url", self->priv->turn_url,
       "pem-certificate", self->priv->pem_certificate,
       "network-interfaces", self->priv->network_interfaces,
-      "external-address", self->priv->external_address, NULL);
+      "external-address", self->priv->external_address,
+      "external-ipv4", self->priv->external_ipv4,
+      "external-ipv6", self->priv->external_ipv6,
+      "ice-tcp", self->priv->ice_tcp,
+      NULL);
 
   g_signal_connect (webrtc_sess, "on-ice-candidate",
       G_CALLBACK (on_ice_candidate), self);
@@ -424,13 +457,13 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
   KmsWebrtcSession *webrtc_sess;
   gboolean ret = TRUE;
 
-  GST_INFO_OBJECT (self, "Gather candidates for session '%s'", sess_id);
-
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "[IceGatheringStarted] No session: '%s'", sess_id);
     return FALSE;
   }
+
+  GST_DEBUG_OBJECT (self, "[IceGatheringStarted] session: '%s'", sess_id);
 
   webrtc_sess = KMS_WEBRTC_SESSION (sess);
   g_signal_emit_by_name (webrtc_sess, "gather-candidates", &ret);
@@ -447,14 +480,19 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
   KmsWebrtcSession *webrtc_sess;
   gboolean ret;
 
-  GST_INFO_OBJECT (self, "Add remote candidate '%s' for session '%s'",
-      kms_ice_candidate_get_candidate (candidate), sess_id);
-
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "[AddIceCandidate] No session: '%s'", sess_id);
     return FALSE;
   }
+
+  // Remote candidates haven't been assigned a stream_id yet, so don't print it
+  GST_DEBUG_OBJECT (self,
+      "[AddIceCandidate] remote: '%s', component_id: %d, sdpMid: '%s', sdpMLineIndex: %u",
+      kms_ice_candidate_get_candidate (candidate),
+      kms_ice_candidate_get_component (candidate),
+      kms_ice_candidate_get_sdp_mid (candidate),
+      kms_ice_candidate_get_sdp_m_line_index (candidate));
 
   webrtc_sess = KMS_WEBRTC_SESSION (sess);
   g_signal_emit_by_name (webrtc_sess, "add-ice-candidate", candidate, &ret);
@@ -496,6 +534,17 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
       g_free (self->priv->external_address);
       self->priv->external_address = g_value_dup_string (value);
       break;
+    case PROP_EXTERNAL_IPV4:
+      g_free (self->priv->external_ipv4);
+      self->priv->external_ipv4 = g_value_dup_string (value);
+      break;
+    case PROP_EXTERNAL_IPV6:
+      g_free (self->priv->external_ipv6);
+      self->priv->external_ipv6 = g_value_dup_string (value);
+      break;
+    case PROP_ICE_TCP:
+      self->priv->ice_tcp = g_value_get_boolean (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -531,6 +580,15 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
     case PROP_EXTERNAL_ADDRESS:
       g_value_set_string (value, self->priv->external_address);
       break;
+    case PROP_EXTERNAL_IPV4:
+      g_value_set_string (value, self->priv->external_ipv4);
+      break;
+    case PROP_EXTERNAL_IPV6:
+      g_value_set_string (value, self->priv->external_ipv6);
+      break;
+    case PROP_ICE_TCP:
+      g_value_set_boolean (value, self->priv->ice_tcp);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -544,7 +602,7 @@ kms_webrtc_endpoint_dispose (GObject * object)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
 
-  GST_DEBUG_OBJECT (self, "dispose");
+  GST_LOG_OBJECT (self, "dispose");
 
   KMS_ELEMENT_LOCK (self);
 
@@ -561,13 +619,15 @@ kms_webrtc_endpoint_finalize (GObject * object)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
 
-  GST_DEBUG_OBJECT (self, "finalize");
+  GST_LOG_OBJECT (self, "finalize");
 
   g_free (self->priv->stun_server_ip);
   g_free (self->priv->turn_url);
   g_free (self->priv->pem_certificate);
   g_free (self->priv->network_interfaces);
   g_free (self->priv->external_address);
+  g_free (self->priv->external_ipv4);
+  g_free (self->priv->external_ipv6);
 
   g_main_context_unref (self->priv->context);
 
@@ -587,7 +647,7 @@ kms_webrtc_endpoint_create_data_channel (KmsWebrtcEndpoint * self,
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "No session: '%s'", sess_id);
     return -1;
   }
 
@@ -608,7 +668,7 @@ kms_webrtc_endpoint_destroy_data_channel (KmsWebrtcEndpoint * self,
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "No session: '%s'", sess_id);
     return;
   }
 
@@ -627,7 +687,7 @@ kms_webrtc_endpoint_get_data_channel_supported (KmsWebrtcEndpoint * self,
 
   sess = kms_base_sdp_endpoint_get_session (base_sdp_ep, sess_id);
   if (sess == NULL) {
-    GST_ERROR_OBJECT (self, "There is not session '%s'", sess_id);
+    GST_ERROR_OBJECT (self, "No session: '%s'", sess_id);
     return FALSE;
   }
 
@@ -727,7 +787,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       g_param_spec_uint ("stun-server-port",
           "StunServerPort",
           "Stun Server Port",
-          1, G_MAXUINT16, DEFAULT_STUN_SERVER_PORT,
+          1, 65535, DEFAULT_STUN_SERVER_PORT,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_TURN_URL,
@@ -755,6 +815,24 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "externalAddress",
           "External (public) IP address of the media server",
           DEFAULT_EXTERNAL_ADDRESS, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_EXTERNAL_IPV4,
+      g_param_spec_string ("external-ipv4",
+          "externalIPv4",
+          "External (public) IPv4 address of the media server",
+          DEFAULT_EXTERNAL_IPV4, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_EXTERNAL_IPV6,
+      g_param_spec_string ("external-ipv6",
+          "externalIPv6",
+          "External (public) IPv6 address of the media server",
+          DEFAULT_EXTERNAL_IPV6, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_ICE_TCP,
+      g_param_spec_boolean ("ice-tcp",
+        "iceTcp",
+        "Enable ICE-TCP candidate gathering",
+        DEFAULT_ICE_TCP, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   /**
   * KmsWebrtcEndpoint::on-ice-candidate:
@@ -890,6 +968,9 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv->pem_certificate = DEFAULT_PEM_CERTIFICATE;
   self->priv->network_interfaces = DEFAULT_NETWORK_INTERFACES;
   self->priv->external_address = DEFAULT_EXTERNAL_ADDRESS;
+  self->priv->external_ipv4 = DEFAULT_EXTERNAL_IPV4;
+  self->priv->external_ipv6 = DEFAULT_EXTERNAL_IPV6;
+  self->priv->ice_tcp = DEFAULT_ICE_TCP;
 
   self->priv->loop = kms_loop_new ();
   g_object_get (self->priv->loop, "context", &self->priv->context, NULL);

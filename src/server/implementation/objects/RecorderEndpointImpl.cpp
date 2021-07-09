@@ -18,6 +18,7 @@
 #include "MediaType.hpp"
 #include "MediaPipeline.hpp"
 #include "MediaProfileSpecType.hpp"
+#include "GapsFixMethod.hpp"
 #include <RecorderEndpointImplFactory.hpp>
 #include "RecorderEndpointImpl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
@@ -38,6 +39,9 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoRecorderEndpointImpl"
 
 #define FACTORY_NAME "recorderendpoint"
+
+#define PARAM_GAPS_FIX "gapsFix"
+#define PROP_GAPS_FIX "gaps-fix"
 
 #define TIMEOUT 4 /* seconds */
 
@@ -144,6 +148,15 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_KSR, NULL);
     GST_INFO ("Set KSR profile");
     break;
+  }
+
+  GapsFixMethod gapsFix;
+  if (getConfigValue<GapsFixMethod, RecorderEndpoint> (
+          &gapsFix, PARAM_GAPS_FIX)) {
+    GST_INFO ("Set RecorderEndpoint gaps fix mode: %s",
+        gapsFix.getString ().c_str ());
+    g_object_set (getGstreamerElement (),
+        PROP_GAPS_FIX, gapsFix.getValue (), NULL);
   }
 }
 

@@ -46,11 +46,20 @@ public:
 
   ~WebRtcEndpointImpl () override;
 
+  std::string getExternalIPv6 () override;
+  void setExternalIPv6 (const std::string &externalIPv6) override;
+
+  std::string getExternalIPv4() override;
+  void setExternalIPv4 (const std::string &externalIPv4) override;
+
   std::string getExternalAddress () override;
   void setExternalAddress (const std::string &externalAddress) override;
 
   std::string getNetworkInterfaces () override;
   void setNetworkInterfaces (const std::string &networkInterfaces) override;
+
+  bool getIceTcp () override;
+  void setIceTcp (bool iceTcp) override;
 
   std::string getStunServerAddress () override;
   void setStunServerAddress (const std::string &stunServerAddress) override;

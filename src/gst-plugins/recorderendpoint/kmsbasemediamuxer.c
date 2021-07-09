@@ -68,7 +68,7 @@ kms_base_media_muxer_finalize (GObject * object)
 {
   KmsBaseMediaMuxer *self = KMS_BASE_MEDIA_MUXER (object);
 
-  GST_DEBUG_OBJECT (self, "finalize");
+  GST_LOG_OBJECT (self, "finalize");
 
   gst_element_set_state (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self),
       GST_STATE_NULL);
@@ -134,7 +134,7 @@ kms_base_media_muxer_get_sink_fallback (KmsBaseMediaMuxer * self,
       || (g_strcmp0 (prot, HTTPS_PROTO) == 0)) {
 
     if (kms_is_valid_uri (uri)) {
-      /* We use souphttpclientsink */
+      /* We use the GStreamer CURL plugin */
       sink = gst_element_factory_make ("curlhttpsink", NULL);
       if (sink != NULL) {
         g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE,
@@ -182,6 +182,8 @@ kms_base_media_muxer_get_sink (KmsBaseMediaMuxer * self, const gchar * uri)
     g_clear_error (&err);
   }
 
+  GST_DEBUG_OBJECT (sink, "Muxer sink created for URI '%s'", uri);
+
   /* Try to configure the sink element */
   sink_class = G_OBJECT_GET_CLASS (sink);
 
@@ -192,11 +194,9 @@ kms_base_media_muxer_get_sink (KmsBaseMediaMuxer * self, const gchar * uri)
       /* Work around for filesink elements */
       gchar *location = gst_uri_get_location (uri);
 
-      GST_DEBUG_OBJECT (sink, "filesink location=%s", location);
       g_object_set (sink, "location", location, NULL);
       g_free (location);
     } else {
-      GST_DEBUG_OBJECT (sink, "configuring location=%s", uri);
       g_object_set (sink, "location", uri, NULL);
     }
   }
@@ -210,7 +210,7 @@ no_uri:
   }
 invalid_uri:
   {
-    GST_ERROR_OBJECT (self, "Invalid URI \"%s\".", uri);
+    GST_ERROR_OBJECT (self, "Invalid URI: '%s'", uri);
     g_clear_error (&err);
     goto end;
   }
@@ -225,7 +225,7 @@ no_sink:
       if (prot == NULL)
         goto invalid_uri;
 
-      GST_ERROR_OBJECT (self, "No URI handler implemented for \"%s\".", prot);
+      GST_ERROR_OBJECT (self, "No URI handler implemented for '%s'", prot);
 
       g_free (prot);
     } else {

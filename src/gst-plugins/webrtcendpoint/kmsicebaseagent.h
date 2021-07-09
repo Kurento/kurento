@@ -34,11 +34,6 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_ICE_BASE_AGENT))
 #define KMS_ICE_BASE_AGENT_CAST(obj) ((KmsIceBaseAgent*)(obj))
 
-#define KMS_ICE_BASE_AGENT_LOCK(conn) \
-  (g_rec_mutex_lock (&KMS_ICE_BASE_AGENT_CAST ((conn))->mutex))
-#define KMS_ICE_BASE_AGENT_UNLOCK(conn) \
-  (g_rec_mutex_unlock (&KMS_ICE_BASE_AGENT_CAST ((conn))->mutex))
-
 typedef enum TurnProtocol
 {
   TURN_PROTOCOL_UDP,
@@ -201,4 +196,3 @@ GType kms_ice_base_agent_get_type (void);
 
 G_END_DECLS
 #endif /* __KMS_ICE_BASE_AGENT_H__ */
-

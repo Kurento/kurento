@@ -20,7 +20,9 @@
 #include <webrtcendpoint/kmsicecandidate.h>
 
 #include <commons/kmselementpadtype.h>
+#include <commons/kmsutils.h>
 
+#include <nice/address.h>
 #include <nice/interfaces.h>
 
 #define KMS_VIDEO_PREFIX "video_src_"
@@ -1297,193 +1299,6 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_free (answerer_sess_id);
 }
 
-#ifdef HAVE_LIBNICE_0_1_14
-/*
-// This function is reduced to the minimum required to test the
-// state change bug in libnice. Use it to test whenever a new
-// libnice release fixes the issue.
-static void
-test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps audio_expected_caps, gchar * audio_codec,
-    const gchar * video_enc_name, GstStaticCaps video_expected_caps,
-    gchar * video_codec, gboolean bundle)
-{
-  // TODO These lines are commented out to minimize the test case,
-  // once libnice bug gets fixed, remove this function
-
-  GArray *audio_codecs_array, *video_codecs_array;
-  gchar *audio_codecs[] = { audio_codec, NULL };
-  gchar *video_codecs[] = { video_codec, NULL };
-//  HandOffData *hod;
-  GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  gchar *offerer_sess_id, *answerer_sess_id;
-  OnIceCandidateData offerer_cand_data, answerer_cand_data;
-  GstSDPMessage *offer, *answer;
-  GstElement *pipeline = gst_pipeline_new (NULL);
-
-//  GstElement *videotestsrc_offerer =
-//      gst_element_factory_make ("videotestsrc", NULL);
-//  GstElement *videotestsrc_answerer =
-//      gst_element_factory_make ("videotestsrc", NULL);
-//  GstElement *video_enc_offerer =
-//      gst_element_factory_make (video_enc_name, NULL);
-//  GstElement *video_enc_answerer =
-//      gst_element_factory_make (video_enc_name, NULL);
-
-  GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
-  GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
-
-//  GstElement *video_fakesink_offerer =
-//      gst_element_factory_make ("fakesink", NULL);
-//  GstElement *video_fakesink_answerer =
-//      gst_element_factory_make ("fakesink", NULL);
-
-  gchar *sdp_str = NULL;
-  gboolean ret;
-  gboolean answer_ok;
-
-//  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-
-//  gst_bus_add_signal_watch (bus);
-//  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-
-  audio_codecs_array = create_codecs_array (audio_codecs);
-  video_codecs_array = create_codecs_array (video_codecs);
-
-  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
-      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
-      g_array_ref (video_codecs_array), "bundle", bundle,
-      "min-port", 50000, "max-port", 55000, NULL);
-
-  // Answerer only supports video
-  g_object_set (answerer, "num-audio-medias", 0, "num-video-medias", 1,
-      "video-codecs", g_array_ref (video_codecs_array), "bundle", bundle,
-      "min-port", 50000, "max-port", 55000, NULL);
-
-  g_array_unref (audio_codecs_array);
-  g_array_unref (video_codecs_array);
-
-  // Session creation
-  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
-  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
-  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
-  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
-
-  // Trickle ICE management
-  offerer_cand_data.peer = answerer;
-  offerer_cand_data.peer_sess_id = answerer_sess_id;
-  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), &offerer_cand_data);
-
-  answerer_cand_data.peer = offerer;
-  answerer_cand_data.peer_sess_id = offerer_sess_id;
-  g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), &answerer_cand_data);
-
-//  hod = g_slice_new0 (HandOffData);
-//  hod->expected_caps = video_expected_caps;
-//  hod->loop = loop;
-
-//  g_object_set (G_OBJECT (video_fakesink_offerer), "signal-handoffs", TRUE,
-//      NULL);
-//  g_signal_connect (G_OBJECT (video_fakesink_offerer), "handoff",
-//      G_CALLBACK (receiver_1_fakesink_hand_off), hod);
-//  g_object_set (G_OBJECT (video_fakesink_answerer), "signal-handoffs", TRUE,
-//      NULL);
-//  g_signal_connect (G_OBJECT (video_fakesink_answerer), "handoff",
-//      G_CALLBACK (receiver_2_fakesink_hand_off), hod);
-
-  // Add elements
-  gst_bin_add (GST_BIN (pipeline), offerer);
-//  connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
-//      pipeline, SINK_VIDEO_STREAM);
-
-  gst_bin_add (GST_BIN (pipeline), answerer);
-//  connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
-//      pipeline, SINK_VIDEO_STREAM);
-
-  gst_element_set_state (pipeline, GST_STATE_PLAYING);
-
-  // SDP negotiation
-  mark_point ();
-  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
-  fail_unless (offer != NULL);
-  GST_DEBUG_OBJECT (offerer, "Offer:\n%s", (sdp_str =
-          gst_sdp_message_as_text (offer)));
-  g_free (sdp_str);
-  sdp_str = NULL;
-
-  mark_point ();
-  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
-      &answer);
-  fail_unless (answer != NULL);
-  GST_DEBUG_OBJECT (answerer, "Answer:\n%s", (sdp_str =
-          gst_sdp_message_as_text (answer)));
-  g_free (sdp_str);
-  sdp_str = NULL;
-
-  mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
-      &answer_ok);
-  fail_unless (answer_ok);
-  gst_sdp_message_free (offer);
-  gst_sdp_message_free (answer);
-
-  GST_DEBUG_OBJECT (offerer, "============ Offerer gather candidates BEGIN");
-  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
-  GST_DEBUG_OBJECT (offerer, "============ Offerer gather candidates END");
-  fail_unless (ret);
-
-  GST_DEBUG_OBJECT (answerer, "============ Answerer gather candidates BEGIN");
-  g_signal_emit_by_name (answerer, "gather-candidates", answerer_sess_id, &ret);
-  GST_DEBUG_OBJECT (answerer, "============ Answerer gather candidates END");
-  fail_unless (ret);
-
-//  g_signal_connect (offerer, "pad-added",
-//      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-//  g_signal_connect (answerer, "pad-added",
-//      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-
-//  fail_unless (kms_element_request_srcpad (offerer,
-//          KMS_ELEMENT_PAD_TYPE_AUDIO));
-//  fail_unless (kms_element_request_srcpad (answerer,
-//          KMS_ELEMENT_PAD_TYPE_AUDIO));
-
-//  gst_bin_add_many (GST_BIN (pipeline), video_fakesink_offerer,
-//      video_fakesink_answerer, NULL);
-
-//  g_object_set_qdata (G_OBJECT (offerer), video_sink_quark (),
-//      video_fakesink_offerer);
-//  fail_unless (kms_element_request_srcpad (offerer,
-//          KMS_ELEMENT_PAD_TYPE_VIDEO));
-//  g_object_set_qdata (G_OBJECT (answerer), video_sink_quark (),
-//      video_fakesink_answerer);
-//  fail_unless (kms_element_request_srcpad (answerer,
-//          KMS_ELEMENT_PAD_TYPE_VIDEO));
-
-//  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-//      GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_before_entering_loop");
-
-  mark_point ();
-  GST_INFO ("============ Main loop BEGIN");
-  g_main_loop_run (loop);
-  GST_INFO ("============ Main loop END");
-  mark_point ();
-
-//  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-//      GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_end");
-
-  gst_element_set_state (pipeline, GST_STATE_NULL);
-//  gst_bus_remove_signal_watch (bus);
-//  g_object_unref (bus);
-  g_object_unref (pipeline);
-  g_main_loop_unref (loop);
-//  g_slice_free (HandOffData, hod);
-  g_free (offerer_sess_id);
-  g_free (answerer_sess_id);
-}
-*/
-#else // HAVE_LIBNICE_0_1_14
 static void
 test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
     GstStaticCaps audio_expected_caps, gchar * audio_codec,
@@ -1534,7 +1349,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
       g_array_ref (video_codecs_array), "bundle", bundle,
       "min-port", 50000, "max-port", 55000, NULL);
 
-  /* Answerer only supports video */
+  // Answerer only supports video
   g_object_set (answerer, "num-audio-medias", 0, "num-video-medias", 1,
       "video-codecs", g_array_ref (video_codecs_array), "bundle", bundle,
       "min-port", 50000, "max-port", 55000, NULL);
@@ -1542,13 +1357,13 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
-  /* Session creation */
+  // Session creation
   g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
   GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
   g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
   GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
 
-  /* Trickle ICE management */
+  // Trickle ICE management
   offerer_cand_data.peer = answerer;
   offerer_cand_data.peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
@@ -1572,7 +1387,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (video_fakesink_answerer), "handoff",
       G_CALLBACK (receiver_2_fakesink_hand_off), hod);
 
-  /* Add elements */
+  // Add elements
   gst_bin_add (GST_BIN (pipeline), offerer);
   connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
       pipeline, SINK_VIDEO_STREAM);
@@ -1583,7 +1398,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  /* SDP negotiation */
+  // SDP negotiation
   mark_point ();
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
@@ -1661,7 +1476,6 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_free (offerer_sess_id);
   g_free (answerer_sess_id);
 }
-#endif // HAVE_LIBNICE_0_1_14
 
 #define TEST_MESSAGE "Hello world!"
 
@@ -2089,7 +1903,6 @@ GST_START_TEST (test_pcmu_vp8_sendrecv)
 }
 GST_END_TEST
 
-#ifndef HAVE_LIBNICE_0_1_14
 GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
 {
   test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
@@ -2100,7 +1913,6 @@ GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
       TRUE);
 }
 GST_END_TEST
-#endif // HAVE_LIBNICE_0_1_14
 
 GST_START_TEST (test_remb_params)
 {
@@ -2294,26 +2106,51 @@ GST_START_TEST (test_port_range)
 }
 GST_END_TEST
 
+// ----------------------------------------------------------------------------
+
+// not_enough_ports
+// ----------------
+
+typedef struct {
+  GHashTable *tcp;
+  GHashTable *udp;
+} GatheringData;
+
 static void
-not_enough_ports_on_ice_candidate (GstElement * self, gchar * sess_id,
-    KmsIceCandidate * candidate, gpointer offerer_num_pt)
+not_enough_ports_on_ice_candidate (GstElement *self, gchar *sess_id,
+    KmsIceCandidate *candidate, GatheringData *gatheringData)
 {
-  const guint offerer_num = GPOINTER_TO_UINT (offerer_num_pt);
-  const KmsIceComponent component = kms_ice_candidate_get_component (candidate);
-  const KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
   const KmsIceTcpCandidateType tcp_type =
       kms_ice_candidate_get_candidate_tcp_type (candidate);
+  const KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
 
-  if (offerer_num == 2 && component == KMS_ICE_COMPONENT_RTCP) {
-    fail_if (proto != KMS_ICE_PROTOCOL_TCP);
-    fail_if (tcp_type != KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE);
+  GST_DEBUG_OBJECT (self, "SessionId: '%s', candidate: '%s'", sess_id,
+      kms_ice_candidate_get_candidate (candidate));
+
+  if (tcp_type == KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE) {
+    return;
+  }
+
+  // Check that this candidate doesn't contain a repeated address
+  NiceAddress *address = nice_address_new ();
+  gboolean ok = nice_address_set_from_string (
+      address, kms_ice_candidate_get_address (candidate));
+  fail_unless (ok);
+  nice_address_set_port (address, kms_ice_candidate_get_port (candidate));
+
+  if (proto == KMS_ICE_PROTOCOL_TCP) {
+    fail_if (g_hash_table_contains (gatheringData->tcp, address));
+    g_hash_table_add (gatheringData->tcp, address);
+  } else {
+    fail_if (g_hash_table_contains (gatheringData->udp, address));
+    g_hash_table_add (gatheringData->udp, address);
   }
 }
 
 GST_START_TEST (test_not_enough_ports)
 {
   GArray *codecs_array;
-  gchar *codecs[] = { "VP8/90000", NULL };
+  gchar *codecs[] = {"VP8/90000", NULL};
   gchar *offerer_sess_id, *second_offerer_sess_id;
   GstSDPMessage *offer, *second_offer;
   gchar *sdp_str = NULL;
@@ -2321,10 +2158,17 @@ GST_START_TEST (test_not_enough_ports)
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *second_offerer =
       gst_element_factory_make ("webrtcendpoint", NULL);
-  CandidateRangeData offerer_cand_data;
 
+  CandidateRangeData offerer_cand_data;
   offerer_cand_data.min_port = 55000;
   offerer_cand_data.max_port = 55002;
+
+  GatheringData gatheringData = {
+      .tcp = g_hash_table_new_full (NULL, (GEqualFunc) &nice_address_equal,
+          (GDestroyNotify) &nice_address_free, NULL),
+      .udp = g_hash_table_new_full (NULL, (GEqualFunc) &nice_address_equal,
+          (GDestroyNotify) &nice_address_free, NULL),
+  };
 
   codecs_array = create_codecs_array (codecs);
   g_object_set (offerer, "num-video-medias", 1, "video-codecs",
@@ -2339,16 +2183,16 @@ GST_START_TEST (test_not_enough_ports)
   g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
   GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
 
-  g_signal_emit_by_name (second_offerer, "create-session",
-      &second_offerer_sess_id);
-  GST_DEBUG_OBJECT (second_offerer, "Created session with id '%s'",
-      second_offerer_sess_id);
+  g_signal_emit_by_name (
+      second_offerer, "create-session", &second_offerer_sess_id);
+  GST_DEBUG_OBJECT (
+      second_offerer, "Created session with id '%s'", second_offerer_sess_id);
 
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), GUINT_TO_POINTER (1));
+      G_CALLBACK (not_enough_ports_on_ice_candidate), &gatheringData);
 
   g_signal_connect (G_OBJECT (second_offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), GUINT_TO_POINTER (2));
+      G_CALLBACK (not_enough_ports_on_ice_candidate), &gatheringData);
 
   /* SDP negotiation */
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
@@ -2357,44 +2201,30 @@ GST_START_TEST (test_not_enough_ports)
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (second_offerer, "generate-offer",
-      second_offerer_sess_id, &second_offer);
+  g_signal_emit_by_name (
+      second_offerer, "generate-offer", second_offerer_sess_id, &second_offer);
   fail_unless (second_offer != NULL);
-  GST_DEBUG ("Second offer:\n%s", (sdp_str =
-          gst_sdp_message_as_text (second_offer)));
+  GST_DEBUG (
+      "Second offer:\n%s", (sdp_str = gst_sdp_message_as_text (second_offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
   fail_unless (ret);
 
-  /* libnice 0.1.13 should fail here because the second offerer cannot get
-   * two UDP ports for its two components.
+  /* Since libnice 0.1.18, the next call should fail because there are not
+   * enough available ports for the seconds WebRtcEndpoint to gather its
+   * candidates.
    *
-   * libnice 0.1.14 was improved in this regard, and shouldn't fail because
-   * even if it doesn't find UDP candidates, it should be able to find
-   * TCP-ACTIVE type ones for the second component of the second offerer.
+   * Ports 55000-55002 UDP/TCP combinations are all used up by both components
+   * 1 (RTP) and 2 (RTCP) from the first WebRtcEndpoint, and libnice fails with
+   * this message:
    *
-   * Example list of candidate gathering (from libnice-0.1.14 debug log):
-   * Component 1:
-   * UDP local candidate : [192.168.56.5]:55000 for s1/c1
-   * TCP-ACT local candidate : [192.168.56.5]:0 for s1/c1
-   * TCP-PASS local candidate : [192.168.56.5]:55000 for s1/c1
-   * UDP local candidate : [192.168.1.2]:55000 for s1/c1
-   * TCP-ACT local candidate : [192.168.1.2]:0 for s1/c1
-   * TCP-PASS local candidate : [192.168.1.2]:55002 for s1/c1
-   * Component 2:
-   * TCP-ACT local candidate : [192.168.56.5]:0 for s1/c2
-   * TCP-ACT local candidate : [192.168.1.2]:0 for s1/c2
+   * Agent 0x55d0e51021e0: Unable to add local host 192.168.1.2 candidate tcp-pass for s1:2. Every port is duplicated
    */
-
-  g_signal_emit_by_name (second_offerer, "gather-candidates",
-      second_offerer_sess_id, &ret);
-#ifdef HAVE_LIBNICE_0_1_14
-  fail_unless (ret);
-#else
+  g_signal_emit_by_name (
+      second_offerer, "gather-candidates", second_offerer_sess_id, &ret);
   fail_if (ret);
-#endif
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (second_offer);
@@ -2403,8 +2233,13 @@ GST_START_TEST (test_not_enough_ports)
   g_object_unref (second_offerer);
   g_free (offerer_sess_id);
   g_free (second_offerer_sess_id);
+
+  g_hash_table_unref (gatheringData.tcp);
+  g_hash_table_unref (gatheringData.udp);
 }
 GST_END_TEST
+
+// ----------------------------------------------------------------------------
 
 static void
 on_ice_candidate_check_mid (GstElement * self, gchar * sess_id,
@@ -2513,9 +2348,12 @@ static void
 on_ice_candidate_check_ip (GstElement * self, gchar * sess_id,
     KmsIceCandidate * candidate, const gchar * expected_ip)
 {
-  gchar *candidate_ip = kms_ice_candidate_get_address (candidate);
-  assert_equals_string (candidate_ip, expected_ip);
-  g_free (candidate_ip);
+  if (kms_ice_candidate_get_ip_version (candidate)
+      == kms_utils_get_ip_version (expected_ip)) {
+    gchar *candidate_ip = kms_ice_candidate_get_address (candidate);
+    assert_equals_string (candidate_ip, expected_ip);
+    g_free (candidate_ip);
+  }
 }
 
 /**
@@ -2573,7 +2411,7 @@ GST_START_TEST (set_network_interfaces_test)
 GST_END_TEST
 
 /**
- * Test setting local network interface to limit ICE candidate gathering.
+ * Test mangling of ICE candidates to set a custom IP address.
  */
 GST_START_TEST (set_external_address_test)
 {
@@ -2586,9 +2424,10 @@ GST_START_TEST (set_external_address_test)
   GstSDPMessage *offer = NULL, *answer = NULL;
   gboolean ret;
 
-  // Check that candidates only include the localhost IP
-  g_object_set (webrtcendpoint, "external-address", "10.20.30.40", NULL);
+  g_object_set (webrtcendpoint, "external-address", "198.51.100.1", NULL);
 
+  // No "ice-ufrag" and "ice-pwd" will cause a warning message "Cannot set
+  // remote media credentials", which can be ignored.
   static const gchar *offer_str = "v=0\r\n"
       "o=mozilla...THIS_IS_SDPARTA-43.0 4115481872190049086 0 IN IP4 0.0.0.0\r\n"
       "a=ice-options:trickle\r\n"
@@ -2609,7 +2448,7 @@ GST_START_TEST (set_external_address_test)
   g_array_unref (video_codecs_array);
 
   g_signal_connect (G_OBJECT (webrtcendpoint), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate_check_ip), "10.20.30.40");
+      G_CALLBACK (on_ice_candidate_check_ip), "198.51.100.1");
 
   fail_unless (gst_sdp_message_new (&offer) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
@@ -2617,6 +2456,118 @@ GST_START_TEST (set_external_address_test)
   g_signal_emit_by_name (webrtcendpoint, "create-session", &sess_id);
   g_signal_emit_by_name (webrtcendpoint, "process-offer", sess_id, offer,
       &answer);
+  g_signal_emit_by_name (webrtcendpoint, "gather-candidates", sess_id, &ret);
+  fail_unless (ret);
+  g_object_unref (webrtcendpoint);
+  g_free (sess_id);
+}
+GST_END_TEST
+
+/**
+ * Test mangling of ICE candidates to set a custom IPv4 address.
+ */
+GST_START_TEST (set_external_ipv4_test)
+{
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = {"opus/48000/1", NULL};
+  gchar *video_codecs[] = {"VP8/90000", NULL};
+  GstElement *webrtcendpoint =
+      gst_element_factory_make ("webrtcendpoint", NULL);
+  gchar *sess_id;
+  GstSDPMessage *offer = NULL, *answer = NULL;
+  gboolean ret;
+
+  g_object_set (webrtcendpoint, "external-ipv4", "198.51.100.1", NULL);
+
+  // No "ice-ufrag" and "ice-pwd" will cause a warning message "Cannot set
+  // remote media credentials", which can be ignored.
+  static const gchar *offer_str =
+      "v=0\r\n"
+      "o=mozilla...THIS_IS_SDPARTA-43.0 4115481872190049086 0 IN IP4 0.0.0.0\r\n"
+      "a=ice-options:trickle\r\n"
+      "a=msid-semantic:WMS *\r\n"
+      "m=video 9 UDP/TLS/RTP/SAVPF 120\r\n"
+      "c=IN IP4 0.0.0.0\r\n"
+      "a=sendrecv\r\n"
+      "a=mid:sdparta_0\r\n"
+      "a=rtpmap:120 VP8/90000\r\n";
+
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (webrtcendpoint, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
+
+  g_signal_connect (G_OBJECT (webrtcendpoint), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate_check_ip), "198.51.100.1");
+
+  fail_unless (gst_sdp_message_new (&offer) == GST_SDP_OK);
+  fail_unless (
+      gst_sdp_message_parse_buffer ((const guint8 *) offer_str, -1, offer)
+      == GST_SDP_OK);
+  g_signal_emit_by_name (webrtcendpoint, "create-session", &sess_id);
+  g_signal_emit_by_name (
+      webrtcendpoint, "process-offer", sess_id, offer, &answer);
+  g_signal_emit_by_name (webrtcendpoint, "gather-candidates", sess_id, &ret);
+  fail_unless (ret);
+  g_object_unref (webrtcendpoint);
+  g_free (sess_id);
+}
+GST_END_TEST
+
+/**
+ * Test mangling of ICE candidates to set a custom IPv6 address.
+ */
+GST_START_TEST (set_external_ipv6_test)
+{
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = {"opus/48000/1", NULL};
+  gchar *video_codecs[] = {"VP8/90000", NULL};
+  GstElement *webrtcendpoint =
+      gst_element_factory_make ("webrtcendpoint", NULL);
+  gchar *sess_id;
+  GstSDPMessage *offer = NULL, *answer = NULL;
+  gboolean ret;
+
+  g_object_set (webrtcendpoint, "external-ipv6",
+      "2001:0db8:85a3:0000:0000:8a2e:0370:7334", NULL);
+
+  // No "ice-ufrag" and "ice-pwd" will cause a warning message "Cannot set
+  // remote media credentials", which can be ignored.
+  static const gchar *offer_str =
+      "v=0\r\n"
+      "o=mozilla...THIS_IS_SDPARTA-43.0 4115481872190049086 0 IN IP4 0.0.0.0\r\n"
+      "a=ice-options:trickle\r\n"
+      "a=msid-semantic:WMS *\r\n"
+      "m=video 9 UDP/TLS/RTP/SAVPF 120\r\n"
+      "c=IN IP4 0.0.0.0\r\n"
+      "a=sendrecv\r\n"
+      "a=mid:sdparta_0\r\n"
+      "a=rtpmap:120 VP8/90000\r\n";
+
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (webrtcendpoint, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
+
+  g_signal_connect (G_OBJECT (webrtcendpoint), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate_check_ip),
+      "2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+
+  fail_unless (gst_sdp_message_new (&offer) == GST_SDP_OK);
+  fail_unless (
+      gst_sdp_message_parse_buffer ((const guint8 *) offer_str, -1, offer)
+      == GST_SDP_OK);
+  g_signal_emit_by_name (webrtcendpoint, "create-session", &sess_id);
+  g_signal_emit_by_name (
+      webrtcendpoint, "process-offer", sess_id, offer, &answer);
   g_signal_emit_by_name (webrtcendpoint, "gather-candidates", sess_id, &ret);
   fail_unless (ret);
   g_object_unref (webrtcendpoint);
@@ -2635,40 +2586,29 @@ webrtcendpoint_test_suite (void)
 
   suite_add_tcase (s, tc_chain);
 
-  // FIXME fails with libnice 0.1.15 on trusty-dev (segmentation fault)
-  //tcase_add_test (tc_chain, test_pcmu_sendrecv);
-  //tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
-  //tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
-  //tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_rsa);
-  //tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_ecdsa);
-  //tcase_add_test (tc_chain, test_vp8_sendrecv);
-
-  /* FIXME Upstream libnice has a bug which keeps the NiceAgent state as
-   * 'DISCONNECTED', even when the ICE Gathering has been started.
-   * This test relies on that state being correctly updated,
-   * so for now, only our custom version of libnice does the job.
-   * See: https://lists.freedesktop.org/archives/nice/2017-September/001394.html
-   */
-#ifndef HAVE_LIBNICE_0_1_14
+  tcase_add_test (tc_chain, test_pcmu_sendrecv);
+  tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_rsa);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_ecdsa);
+  tcase_add_test (tc_chain, test_vp8_sendrecv);
   tcase_add_test (tc_chain, test_offerer_pcmu_vp8_answerer_vp8_sendrecv);
-#endif // HAVE_LIBNICE_0_1_14
-
-  // FIXME fails with libnice 0.1.15 on trusty-dev (segmentation fault)
-  //tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
-  //tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
+  tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
 
   tcase_add_test (tc_chain, test_remb_params);
-
   tcase_add_test (tc_chain, test_session_creation);
   tcase_add_test (tc_chain, test_port_range);
   tcase_add_test (tc_chain, test_not_enough_ports);
 
-  // FIXME fails with libnice 0.1.13 on trusty (timeout)
-  //tcase_add_test (tc_chain, test_webrtc_data_channel);
+  tcase_add_test (tc_chain, test_webrtc_data_channel);
 
   tcase_add_test (tc_chain, process_mid_no_bundle_offer);
   tcase_add_test (tc_chain, set_network_interfaces_test);
+
   tcase_add_test (tc_chain, set_external_address_test);
+  tcase_add_test (tc_chain, set_external_ipv4_test);
+  tcase_add_test (tc_chain, set_external_ipv6_test);
 
   return s;
 }

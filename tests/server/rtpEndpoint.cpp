@@ -250,7 +250,10 @@ connection_state_changes_ipv6 ()
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
-  test_suite *test = BOOST_TEST_SUITE ( "WebRtcEndpoint" );
+  test_suite *test = BOOST_TEST_SUITE ( "RtpEndpoint" );
+
+  // Prevents getting stuck for the default 4 minutes when IPv6 is not available.
+  MediaSet::setCollectorInterval(std::chrono::seconds (5));
 
   test->add (BOOST_TEST_CASE ( &media_state_changes ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &connection_state_changes ), 0, /* timeout */ 15);

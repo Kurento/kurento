@@ -129,7 +129,7 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
   } else if (g_strcmp0 (tmp, "2") == 0) {
     self->priv->component = KMS_ICE_COMPONENT_RTCP;
   } else {
-    GST_ERROR_OBJECT (self, "Unsupported ice candidate component %s", tmp);
+    GST_ERROR_OBJECT (self, "Unsupported ICE candidate component %s", tmp);
     goto end;
   }
   g_free (tmp);
@@ -155,7 +155,7 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
   } else if (g_strcmp0 (tmp, "relay") == 0) {
     self->priv->type = KMS_ICE_CANDIDATE_TYPE_RELAY;
   } else {
-    GST_ERROR_OBJECT (self, "Unsupported ice candidate type %s", tmp);
+    GST_ERROR_OBJECT (self, "Unsupported ICE candidate type %s", tmp);
     goto end;
   }
   g_free (tmp);
@@ -201,7 +201,7 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
 
     if (err) {
       GST_DEBUG_OBJECT (self, "Ignore foreign mDNS candidate: %s",
-          (err->message ? err->message : ""));
+          GST_STR_NULL (err->message));
       g_clear_error (&err);
       goto end;
     }

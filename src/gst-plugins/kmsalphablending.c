@@ -204,28 +204,14 @@ configure_port (KmsAlphaBlendingData * port_data)
       int top = 0;
       int bottom = 0;
 
-      if (_relative_x > 0) {
-        int width_size =
-            (mixer->priv->output_width - (mixer->priv->output_width -
-                _relative_x));
-        if (_relative_width > width_size) {
-          right = (_relative_width - width_size);
-        }
-      } else {
+      if (_relative_x <= 0) {
         left = -1 * _relative_x;
         if ((_relative_width - left) > mixer->priv->output_width) {
           right = (_relative_width - left) - mixer->priv->output_width;
         }
       }
 
-      if (_relative_y > 0) {
-        int height_size =
-            (mixer->priv->output_height - (mixer->priv->output_height -
-                _relative_y));
-        if (_relative_height > height_size) {
-          bottom = (_relative_height - height_size);
-        }
-      } else {
+      if (_relative_y <= 0) {
         top = -1 * _relative_y;
         if ((_relative_height - top) > mixer->priv->output_height) {
           bottom = (_relative_height - top) - mixer->priv->output_height;
@@ -479,7 +465,7 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info,
   KmsAlphaBlending *self = port_data->mixer;
   GstEvent *event;
 
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_EOS) {
+  if (GST_EVENT_TYPE (gst_pad_probe_info_get_event (info)) != GST_EVENT_EOS) {
     return GST_PAD_PROBE_OK;
   }
 
@@ -621,7 +607,7 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
   GstPadTemplate *sink_pad_template;
   KmsAlphaBlending *mixer = data->mixer;
 
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_CAPS) {
+  if (GST_EVENT_TYPE (gst_pad_probe_info_get_event (info)) != GST_EVENT_CAPS) {
     return GST_PAD_PROBE_PASS;
   }
 

@@ -655,7 +655,7 @@ appsink_eos_cb (GstAppSink * appsink, gpointer user_data)
 static GstPadProbeReturn
 appsrc_query_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 {
-  GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstQuery *query = gst_pad_probe_info_get_query (info);
   GstQueryType type = GST_QUERY_TYPE (query);
   GstElement *appsink = GST_ELEMENT (element);
 
@@ -764,7 +764,7 @@ static GstPadProbeReturn
 appsink_probe_set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info,
     gpointer element)
 {
-  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+  GstEvent *event = gst_pad_probe_info_get_event (info);
   GstElement *appsrc = GST_ELEMENT (element);
   GstCaps *caps;
 
@@ -788,7 +788,7 @@ static GstPadProbeReturn
 appsink_probe_query_appsrc_caps (GstPad * pad, GstPadProbeInfo * info,
     gpointer element)
 {
-  GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstQuery *query = gst_pad_probe_info_get_query (info);
   GstQueryType type = GST_QUERY_TYPE (query);
   GstElement *appsrc = GST_ELEMENT (element);
 
@@ -900,12 +900,12 @@ kms_player_endpoint_uridecodebin_pad_removed (GstElement * element,
   appsink = g_object_steal_qdata (G_OBJECT (pad), appsink_quark ());
   appsrc = g_object_steal_qdata (G_OBJECT (pad), appsrc_quark ());
 
-  // remove appsrc before appsink to avoid segment fault 
+  // remove appsrc before appsink to avoid segment fault
   // caused by invalid appsink in appsrc_query_probe
   if (appsrc != NULL) {
     kms_utils_bin_remove (GST_BIN (self), appsrc);
   }
-  
+
   if (appsink != NULL) {
     kms_utils_bin_remove (GST_BIN (self->priv->pipeline), appsink);
   }
@@ -1334,11 +1334,11 @@ process_bus_message (GstBus * bus, GstMessage * msg, KmsPlayerEndpoint * self)
 
   GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
       "Error code %d: '%s', element: %s, parent: %s", err_code,
-      (err_msg ? err_msg : "(None)"), GST_MESSAGE_SRC_NAME (msg),
+      GST_STR_NULL (err_msg), GST_MESSAGE_SRC_NAME (msg),
       GST_ELEMENT_NAME (parent));
 
-  GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self,
-      "Debugging info: %s", (dbg_info ? dbg_info : "(None)"));
+  GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, log_level, self, "Debugging info: %s",
+      GST_STR_NULL (dbg_info));
 
   gchar *dot_name = g_strdup_printf ("%s_bus_%d", GST_OBJECT_NAME (self),
       err_code);

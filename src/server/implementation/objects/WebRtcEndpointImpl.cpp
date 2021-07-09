@@ -53,10 +53,16 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define DEFAULT_PATH "/etc/kurento"
 
 #define PARAM_EXTERNAL_ADDRESS "externalAddress"
+#define PARAM_EXTERNAL_IPV4 "externalIPv4"
+#define PARAM_EXTERNAL_IPV6 "externalIPv6"
 #define PARAM_NETWORK_INTERFACES "networkInterfaces"
+#define PARAM_ICE_TCP "iceTcp"
 
 #define PROP_EXTERNAL_ADDRESS "external-address"
+#define PROP_EXTERNAL_IPV4 "external-ipv4"
+#define PROP_EXTERNAL_IPV6 "external-ipv6"
 #define PROP_NETWORK_INTERFACES "network-interfaces"
+#define PROP_ICE_TCP "ice-tcp"
 
 namespace kurento
 {
@@ -510,6 +516,28 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   //set properties
 
+  std::string externalIPv4;
+  if (getConfigValue <std::string, WebRtcEndpoint> (&externalIPv4,
+      PARAM_EXTERNAL_IPV4)) {
+    GST_INFO ("Predefined external IPv4 address: %s", externalIPv4.c_str());
+    g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV4,
+        externalIPv4.c_str(), NULL);
+  } else {
+    GST_DEBUG ("No predefined external IPv4 address found in config;"
+               " you can set one or default to STUN automatic discovery");
+  }
+
+  std::string externalIPv6;
+  if (getConfigValue <std::string, WebRtcEndpoint> (&externalIPv6,
+      PARAM_EXTERNAL_IPV6)) {
+    GST_INFO ("Predefined external IPv6 address: %s", externalIPv6.c_str());
+    g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV6,
+        externalIPv6.c_str(), NULL);
+  } else {
+    GST_DEBUG ("No predefined external IPv6 address found in config;"
+               " you can set one or default to STUN automatic discovery");
+  }
+
   std::string externalAddress;
   if (getConfigValue <std::string, WebRtcEndpoint> (&externalAddress,
       PARAM_EXTERNAL_ADDRESS)) {
@@ -517,8 +545,8 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
     g_object_set (G_OBJECT (element), PROP_EXTERNAL_ADDRESS,
         externalAddress.c_str(), NULL);
   } else {
-    GST_INFO ("No predefined external IP address found in config;"
-              " you can set one or default to STUN automatic discovery");
+    GST_DEBUG ("No predefined external IP address found in config;"
+               " you can set one or default to STUN automatic discovery");
   }
 
   std::string networkInterfaces;
@@ -528,28 +556,37 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
     g_object_set (G_OBJECT (element), PROP_NETWORK_INTERFACES,
         networkInterfaces.c_str(), NULL);
   } else {
-    GST_INFO ("No predefined network interfaces found in config;"
-              " you can set one or default to ICE automatic discovery");
+    GST_DEBUG ("No predefined network interfaces found in config;"
+               " you can set one or default to ICE automatic discovery");
+  }
+
+  gboolean iceTcp;
+  if (getConfigValue<gboolean, WebRtcEndpoint> (&iceTcp, PARAM_ICE_TCP)) {
+    GST_INFO ("ICE-TCP candidate gathering is %s",
+        iceTcp ? "ENABLED" : "DISABLED");
+    g_object_set (G_OBJECT (element), PROP_ICE_TCP, iceTcp, NULL);
+  } else {
+    GST_DEBUG ("ICE-TCP option not found in config;"
+               " you can set it or default to 1 (TRUE)");
   }
 
   uint stunPort = 0;
   if (!getConfigValue <uint, WebRtcEndpoint> (&stunPort, "stunServerPort",
-      DEFAULT_STUN_PORT)) {
-    GST_INFO ("STUN port not found in config;"
-              " using default value: %d", DEFAULT_STUN_PORT);
-  } else {
-    std::string stunAddress;
-    if (!getConfigValue <std::string, WebRtcEndpoint> (&stunAddress,
-        "stunServerAddress")) {
-      GST_INFO ("STUN server not found in config;"
-                " remember that NAT traversal requires STUN or TURN");
-    } else {
-      GST_INFO ("Using STUN reflexive server: %s:%d", stunAddress.c_str(),
-          stunPort);
+      DEFAULT_STUN_PORT) ) {
+    GST_DEBUG ("STUN port not found in config;"
+               " using default value: %d", DEFAULT_STUN_PORT);
+  }
 
-      g_object_set (G_OBJECT (element), "stun-server-port", stunPort, NULL);
-      g_object_set (G_OBJECT (element), "stun-server", stunAddress.c_str(), NULL);
-    }
+  std::string stunAddress;
+  if (getConfigValue<std::string, WebRtcEndpoint> (&stunAddress,
+      "stunServerAddress")) {
+    GST_INFO ("Predefined STUN server: %s:%d", stunAddress.c_str (), stunPort);
+
+    g_object_set (G_OBJECT (element), "stun-server-port", stunPort, NULL);
+    g_object_set (G_OBJECT (element), "stun-server", stunAddress.c_str (),
+        NULL);
+  } else {
+    GST_DEBUG ("STUN server not found in config");
   }
 
   std::string turnURL;
@@ -561,12 +598,11 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
     } else {
       safeURL.append(turnURL.substr(separatorPos));
     }
-    GST_INFO ("Using TURN relay server: %s", safeURL.c_str());
+    GST_INFO ("Predefined TURN relay server: %s", safeURL.c_str());
 
     g_object_set (G_OBJECT (element), "turn-url", turnURL.c_str(), NULL);
   } else {
-    GST_INFO ("TURN server not found in config;"
-              " remember that NAT traversal requires STUN or TURN");
+    GST_DEBUG ("TURN relay server not found in config");
   }
 
   switch (certificateKeyType->getValue () ) {
@@ -623,6 +659,54 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
 }
 
 std::string
+WebRtcEndpointImpl::getExternalIPv4 ()
+{
+  std::string externalIPv4;
+  gchar *ret;
+
+  g_object_get (G_OBJECT (element), PROP_EXTERNAL_IPV4, &ret, NULL);
+
+  if (ret != nullptr) {
+    externalIPv4 = std::string (ret);
+    g_free (ret);
+  }
+
+  return externalIPv4;
+}
+
+void
+WebRtcEndpointImpl::setExternalIPv4 (const std::string &externalIPv4)
+{
+  GST_INFO ("Set external IPv4 address: %s", externalIPv4.c_str());
+  g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV4,
+      externalIPv4.c_str(), NULL);
+}
+
+std::string
+WebRtcEndpointImpl::getExternalIPv6 ()
+{
+  std::string externalIPv6;
+  gchar *ret;
+
+  g_object_get (G_OBJECT (element), PROP_EXTERNAL_IPV6, &ret, NULL);
+
+  if (ret != nullptr) {
+    externalIPv6 = std::string (ret);
+    g_free (ret);
+  }
+
+  return externalIPv6;
+}
+
+void
+WebRtcEndpointImpl::setExternalIPv6 (const std::string &externalIPv6)
+{
+  GST_INFO ("Set external IPv6 address: %s", externalIPv6.c_str());
+  g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV6,
+      externalIPv6.c_str(), NULL);
+}
+
+std::string
 WebRtcEndpointImpl::getExternalAddress ()
 {
   std::string externalAddress;
@@ -668,6 +752,22 @@ WebRtcEndpointImpl::setNetworkInterfaces (const std::string &networkInterfaces)
   GST_INFO ("Set network interfaces: %s", networkInterfaces.c_str());
   g_object_set (G_OBJECT (element), PROP_NETWORK_INTERFACES,
       networkInterfaces.c_str(), NULL);
+}
+
+bool
+WebRtcEndpointImpl::getIceTcp ()
+{
+  bool ret;
+
+  g_object_get (G_OBJECT (element), "ice-tcp", &ret, NULL);
+
+  return ret;
+}
+
+void
+WebRtcEndpointImpl::setIceTcp (bool iceTcp)
+{
+  g_object_set (G_OBJECT (element), "ice-tcp", iceTcp, NULL);
 }
 
 std::string

@@ -264,7 +264,7 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   KmsCompositeMixer *self = port_data->mixer;
   GstEvent *event;
 
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_EOS) {
+  if (GST_EVENT_TYPE (gst_pad_probe_info_get_event (info)) != GST_EVENT_EOS) {
     return GST_PAD_PROBE_OK;
   }
 
@@ -429,7 +429,7 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
   KmsCompositeMixer *mixer;
   GstPad *tee_src;
 
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) !=
+  if (GST_EVENT_TYPE (gst_pad_probe_info_get_event (info)) !=
       GST_EVENT_STREAM_START) {
     return GST_PAD_PROBE_PASS;
   }
