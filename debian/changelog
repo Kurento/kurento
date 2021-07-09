@@ -2,7 +2,25 @@ kurento-module-creator (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Jun 2019 11:12:33 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 03 Mar 2021 12:26:46 +0100
+
+kurento-module-creator (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:37 +0100
+
+kurento-module-creator (6.15.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.15.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 03 Nov 2020 18:04:20 +0100
+
+kurento-module-creator (6.14.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.14.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 16 Jun 2020 17:48:02 +0200
 
 kurento-module-creator (6.13.0-0kurento1) testing; urgency=medium
 

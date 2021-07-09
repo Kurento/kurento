@@ -33,14 +33,16 @@ ${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::pt
      <#lt><#list remoteClass.constructor.params as param><#rt>
         <#lt>, <#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
-     <#lt></#list>)<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))> : OpenCVFilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
-<#else> <#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if> </#if>
+     <#lt></#list>)<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))> : OpenCVFilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline))
+<#else> <#if remoteClass.extends??>
+    : ${remoteClass.extends.name}Impl (/* TO-DO: Add parent class constructor params here; for example: (config, std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline)) */)</#if> </#if>
 <#else>
-${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config)<#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if>
+${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config)<#if remoteClass.extends??>
+    : ${remoteClass.extends.name}Impl (/* TO-DO: Add parent class constructor params here */)</#if>
 </#if>
 {
 <#if ! ((remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter")))>
-  // FIXME: Implement this
+  // TO-DO: Add implementation here
 </#if>
 }
 <#list remoteClass.properties as property>
@@ -50,7 +52,7 @@ ${getCppObjectType (property.type, false)} ${remoteClass.name}Impl::get${propert
 <#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
   return ${remoteClass.name}OpenCVImpl::get${property.name?cap_first} ();
 <#else>
-  // FIXME: Implement this
+  // TO-DO: Add implementation here
   throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::get${property.name}: Not implemented");
 </#if>
 }
@@ -61,7 +63,7 @@ void ${remoteClass.name}Impl::set${property.name?cap_first} (${getCppObjectType 
 <#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
   ${remoteClass.name}OpenCVImpl::set${property.name?cap_first} (${property.name});
 <#else>
-  // FIXME: Implement this
+  // TO-DO: Add implementation here
   throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::set${property.name}: Not implemented");
 </#if>
 }
@@ -76,7 +78,7 @@ ${getCppObjectType(method.return,false)} ${remoteClass.name}Impl::${method.name}
   ${remoteClass.name}OpenCVImpl::${method.name} (<#rt>
     <#lt><#list method.params as param>${param.name}<#if param_has_next>, </#if></#list>);
 <#else>
-  // FIXME: Implement this
+  // TO-DO: Add implementation here
   throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::${method.name}: Not implemented");
 </#if>
 }
