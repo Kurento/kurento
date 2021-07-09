@@ -34,6 +34,9 @@
 #define HAAR_CASCADES_DIR_OPENCV_PREFIX "/usr/share/opencv/haarcascades/"
 
 #define FACE_HAAR_FILE "haarcascade_frontalface_default.xml"
+#define FACE_CASCADE "lbpcascade_frontalface.xml"
+
+
 
 #define MIN_FPS 5
 #define MIN_TIME ((float)(1.0/7.0))
@@ -64,7 +67,8 @@ struct _KmsFaceDetectorPrivate
   gboolean haar_detector;
   GMutex mutex;
 
-  CvHaarClassifierCascade *pCascadeFace;
+  // Changed old style C API Haar classifier to more modern and maintained C++ using CascadeClassifier
+  Classifier *pCascadeFace;
   CvMemStorage *pStorageFace;
   CvSeq *pFaceRectSeq;
 };
@@ -97,12 +101,15 @@ kms_face_detector_initialize_classifiers (KmsFaceDetector * facedetector)
   GST_DEBUG ("Loading classifier: %s",
       HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
 
-  facedetector->priv->pCascadeFace = (CvHaarClassifierCascade *)
-      cvLoad ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE), 0, 0, 0);
+  if (facedetector->priv->haar_detector) {
+	  facedetector->priv->pCascadeFace = init_classifier ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE));
+  } else {
+	  facedetector->priv->pCascadeFace = init_classifier ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_CASCADE));
+  }
 
-  if (facedetector->priv->pCascadeFace == NULL) {
-    GST_ERROR ("Failed loading classifier: %s",
-        HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
+  if (!is_inited (facedetector->priv->pCascadeFace)) {
+	    GST_ERROR ("Failed loading classifier: %s",
+	        HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
   }
 }
 
@@ -111,13 +118,23 @@ kms_face_detector_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
   KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (object);
+  gboolean filter_version;
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
       facedetector->priv->show_debug_info = g_value_get_boolean (value);
       break;
     case PROP_FILTER_VERSION:
-      facedetector->priv->haar_detector = g_value_get_boolean (value);
+      filter_version = g_value_get_boolean (value);
+
+      g_mutex_lock (&facedetector->priv->mutex);
+      g_mutex_unlock (&facedetector->priv->mutex);
+      if (filter_version != facedetector->priv->haar_detector) {
+		  delete_classifier (facedetector->priv->pCascadeFace);
+    	  facedetector->priv->haar_detector = filter_version;
+		  kms_face_detector_initialize_classifiers (facedetector);
+      }
+      g_mutex_unlock (&facedetector->priv->mutex);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -236,7 +253,7 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
   GstMapInfo info;
 
   if ((facedetector->priv->haar_detector)
-      && (facedetector->priv->pCascadeFace == NULL)) {
+      && (!is_inited (facedetector->priv->pCascadeFace))) {
     return GST_FLOW_OK;
   }
 
@@ -260,21 +277,9 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
   g_mutex_unlock (&facedetector->priv->mutex);
 
   cvClearSeq (facedetector->priv->pFaceRectSeq);
-  cvClearMemStorage (facedetector->priv->pStorageFace);
-  if (facedetector->priv->haar_detector) {
-    facedetector->priv->pFaceRectSeq =
-        cvHaarDetectObjects (facedetector->priv->cvResizedImage,
-        facedetector->priv->pCascadeFace, facedetector->priv->pStorageFace, 1.2,
-        3, CV_HAAR_DO_CANNY_PRUNING,
-        cvSize (facedetector->priv->cvResizedImage->width / 20,
-            facedetector->priv->cvResizedImage->height / 20),
-        cvSize (facedetector->priv->cvResizedImage->width / 2,
-            facedetector->priv->cvResizedImage->height / 2));
-
-  } else {
-    classify_image (facedetector->priv->cvResizedImage,
-        facedetector->priv->pFaceRectSeq);
-  }
+  classify_image (facedetector->priv->pCascadeFace
+		  ,facedetector->priv->cvResizedImage,
+		  facedetector->priv->pFaceRectSeq);
 
 send:
   if (facedetector->priv->pFaceRectSeq->total != 0) {
@@ -300,7 +305,7 @@ kms_face_detector_finalize (GObject * object)
     cvClearSeq (facedetector->priv->pFaceRectSeq);
 
   cvReleaseMemStorage (&facedetector->priv->pStorageFace);
-  cvReleaseHaarClassifierCascade (&facedetector->priv->pCascadeFace);
+  delete_classifier (facedetector->priv->pCascadeFace);
 
   g_mutex_clear (&facedetector->priv->mutex);
 
