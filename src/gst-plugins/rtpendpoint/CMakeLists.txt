@@ -25,7 +25,7 @@ add_glib_enumtypes(KMS_RTPENDPOINT_SOURCES KMS_RTPENDPOINT_HEADERS kms-rtp-enumt
 
 add_library(kmsrtpendpoint MODULE ${KMS_RTPENDPOINT_SOURCES} ${KMS_RTPENDPOINT_HEADERS})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(rtpendpoint)
+  add_sanitizers(kmsrtpendpoint)
 endif()
 
 add_dependencies(kmsrtpendpoint rtcpdemux)
