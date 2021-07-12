@@ -1,7 +1,7 @@
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
-  ${gstreamer-1.5_INCLUDE_DIRS}
-  ${gstreamer-video-1.5_INCLUDE_DIRS}
+  ${gstreamer-1.0_INCLUDE_DIRS}
+  ${gstreamer-video-1.0_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${opencv_INCLUDE_DIRS}
 )
@@ -22,8 +22,8 @@ add_library(kmsdatachannelexample MODULE ${KMS_DATA_CHANNEL_EXAMPLE_SOURCES})
 
 target_link_libraries(kmsdatachannelexample
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.5_LIBRARIES}
-  ${gstreamer-video-1.5_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-video-1.0_LIBRARIES}
   ${opencv_LIBRARIES}
 )
 

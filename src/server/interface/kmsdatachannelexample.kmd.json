@@ -1,5 +1,5 @@
 {
   "name": "datachannelexample",
-  "version": "6.16.1-dev",
-  "kurentoVersion": "^6.16.0"
+  "version": "7.0.0-dev",
+  "kurentoVersion": "^7.0.0"
 }
