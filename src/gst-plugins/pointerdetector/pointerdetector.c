@@ -30,6 +30,6 @@ init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmspointerdetector,
+    pointerdetector,
     "Kurento pointer detector",
     init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "http://kurento.com/")
