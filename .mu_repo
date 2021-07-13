@@ -1,4 +1,3 @@
-repo=.
 repo=kurento-module-creator
 repo=kurento-maven-plugin
 repo=kms-cmake-utils
@@ -15,4 +14,5 @@ repo=module/kms-opencv-plugin-sample
 repo=module/kms-platedetector
 repo=module/kms-plugin-sample
 repo=module/kms-pointerdetector
+repo=.
 serial=False
