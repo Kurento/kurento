@@ -1,8 +1,8 @@
-kms-markerdetector (6.16.1-0kurento1) UNRELEASED; urgency=medium
+kms-markerdetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 03 Mar 2021 12:26:49 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:52 +0200
 
 kms-markerdetector (6.16.0-0kurento1) testing; urgency=medium
 
