@@ -1,8 +1,9 @@
-kms-pointerdetector (6.16.1-0kurento1) UNRELEASED; urgency=medium
+kms-pointerdetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
-  * UNRELEASED
+  [ Saul Pablo Labajo Izquierdo ]
+  * switch to gstreamer from bionic
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 03 Mar 2021 12:26:50 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:53 +0200
 
 kms-pointerdetector (6.16.0-0kurento1) testing; urgency=medium
 
