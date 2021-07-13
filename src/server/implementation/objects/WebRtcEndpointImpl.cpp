@@ -334,8 +334,8 @@ void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
       kms_ice_candidate_get_candidate (remoteCandidate),
       streamId, componentId);
 
-  candidatePair = std::make_shared< IceCandidatePair > (streamId,
-                  componentId,
+  candidatePair = std::make_shared< IceCandidatePair > (streamId, streamId,
+                  componentId, componentId,
                   kms_ice_candidate_get_candidate (localCandidate),
                   kms_ice_candidate_get_candidate (remoteCandidate) );
   key = std::string (streamId) + "_" + std::to_string (componentId);
