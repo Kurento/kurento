@@ -80,6 +80,8 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         libglib2.0-dev \
  && rm -rf /var/lib/apt/lists/*
 
+# Install dependencies of the `kurento-buildpackage` build script
+# (listed in the script header).
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         python3 python3-pip python3-setuptools python3-wheel \
         devscripts \
