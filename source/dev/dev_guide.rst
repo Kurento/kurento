@@ -101,7 +101,7 @@ There are several repositories that contain sample code for developers that use 
 - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
 - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
 
-A KMS developer must know how to work with KMS Fork and Main repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at theK MS Main repositories, while it's unusual to make changes in Fork repositories except for updating their upstream versions.
+A KMS developer must know how to work with KMS Fork and Main repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at the KMS Main repositories, while it's unusual to make changes in Fork repositories except for updating their upstream versions.
 
 
 

@@ -18,7 +18,9 @@ Added
 Big addition name
 -----------------
 
-Full description, with images, code samples, external links, etc. Some useful syntax examples:
+Full description, with images, code samples, external links, etc.
+
+Some useful syntax examples:
 
 * Documentation section: :doc:`/user/tutorials`.
 

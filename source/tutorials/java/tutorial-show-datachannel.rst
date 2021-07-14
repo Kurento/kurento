@@ -18,6 +18,16 @@ You need to have installed the Kurento Media Server before running this example.
 Read the :doc:`installation guide </user/installation>` for further
 information.
 
+.. note::
+
+   This demo needs the kms-datachannelexample module installed in the media server. That module is
+   available in the Kurento repositories, so it is possible to install it with:
+
+
+   .. sourcecode:: bash
+
+      sudo apt-get install kms-datachannelexample
+
 To launch the application, you need to clone the GitHub project where this demo
 is hosted, and then run the main class:
 
@@ -43,16 +53,6 @@ capable browser (Chrome, Firefox).
       mvn -U clean spring-boot:run \
           -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
 
-.. note::
-
-   This demo needs the kms-datachannelexample module installed in the media server. That module is
-   available in the Kurento repositories, so it is possible to install it with:
-
-
-   .. sourcecode:: bash
-
-      sudo apt-get install kms-datachannelexample
-
 Understanding this example
 ==========================
 
@@ -60,6 +60,10 @@ This tutorial creates a `Media Pipeline`:term: consisting of media elements:
 **WebRtcEndpoint** and **KmsSendData**. Any text inserted in the textbox is
 sent from Kurento Media Server (**KmsSendData**) back to browser
 (**WebRtcEndpoint**) and shown with loopback video.
+
+The additional Kurento module *datachannelexample* (installed with the package
+"*kms-datachannelexample*") uses a ``textoverlay`` GStreamer filter in order to
+print text on top of the remote video.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.

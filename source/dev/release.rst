@@ -819,9 +819,9 @@ When all repos have been released, and CI jobs have finished successfully:
   - kurento-jsonrpc-client-jetty
   - kurento-jsonrpc-server
   - kurento-parent-pom
-  - kurento-repository (ABANDONED)
-  - kurento-repository-client (ABANDONED)
-  - kurento-repository-internal (ABANDONED)
+  - kurento-repository (UNMAINTAINED)
+  - kurento-repository-client (UNMAINTAINED)
+  - kurento-repository-internal (UNMAINTAINED)
   - kurento-test
   - All of them must appear in the correct version, ``$NEW_VERSION``.
 
