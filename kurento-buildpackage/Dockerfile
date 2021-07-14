@@ -73,8 +73,13 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         zip unzip \
  && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies of 'kurento-buildpackage'
-# (listed in the tool's help/header)
+# Install an extra set of packages.
+# These are basic build dependencies that end up beind required by most jobs.
+RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+        build-essential \
+        libglib2.0-dev \
+ && rm -rf /var/lib/apt/lists/*
+
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         python3 python3-pip python3-setuptools python3-wheel \
         devscripts \
