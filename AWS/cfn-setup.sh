@@ -43,6 +43,8 @@ apt-get update && apt-get install --yes kurento-media-server
 # Enable system service.
 systemctl enable kurento-media-server
 
+
+
 # Coturn
 # ======
 
@@ -96,6 +98,8 @@ EOF
 
 # Create the log file, with correct permissions.
 install -o turnserver -g turnserver -m 644 /dev/null /var/log/turn.log
+
+
 
 # Launch script
 # =============

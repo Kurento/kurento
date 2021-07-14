@@ -45,7 +45,7 @@ set -o xtrace
 
 # Check optional parameters
 if [[ "$JOB_RELEASE" != "true" ]]; then
-    log "Not a release buid; nothing to do"
+    log "Not a release build; nothing to do"
     exit 0
 fi
 

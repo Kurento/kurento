@@ -92,6 +92,24 @@ echo "CFG_REPO_NAME=$CFG_REPO_NAME"
 echo "CFG_PUBLISH_NAME=$CFG_PUBLISH_NAME"
 
 
+# Original instructions from Fede:
+
+# Unpublish
+# https://www.aptly.info/doc/aptly/publish/
+# aptly publish drop ${DISTRIBUTION} s3:ubuntu:${DISTRIBUTION}
+# E.g.:
+# aptly publish drop bionic s3:ubuntu:agnostic-caps-intersect
+
+# Probably, snapshots should be dropped too before repos
+# https://www.aptly.info/doc/aptly/snapshot/
+# aptly snapshot drop ...
+# E.g.:
+# aptly snapshot drop snap-kurento-trusty-6.7.0
+
+# https://www.aptly.info/doc/aptly/repo/
+# aptly repo drop kurento-experimental-${DISTRIBUTION}
+# aptly db cleanup
+
 
 # Build the script which will be run in proxy
 cat >run.sh<<EOF
