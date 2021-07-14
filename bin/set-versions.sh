@@ -261,7 +261,7 @@ update_debian_control() {
     git add debian/control
 }
 
-# Creates a commit with the given files, and tags the commit.
+# Creates a commit with the already staged files + any extra provided ones.
 # This function can be called multiple times over the same contents.
 commit_and_tag() {
     [[ $# -eq 0 ]] && return 1
@@ -270,7 +270,7 @@ commit_and_tag() {
         git add -- "$@"
 
         # If there are new staged changes ready to be committed:
-        if ! git diff --staged --quiet -- "$@"; then
+        if ! git diff --staged --quiet; then
             git commit -m "$COMMIT_MSG"
 
             if [[ "$CFG_TAG" == "true" ]]; then
