@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
-		<version>6.16.1-SNAPSHOT</version>
+		<version>6.16.1</version>
 	</parent>
 	<artifactId>kurento-benchmark</artifactId>
 	<packaging>jar</packaging>
