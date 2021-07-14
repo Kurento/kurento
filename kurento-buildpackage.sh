@@ -323,10 +323,7 @@ log "CFG_APT_PROXY_URL=$CFG_APT_PROXY_URL"
 # Get Ubuntu version definitions. This brings variables such as:
 #     DISTRIB_CODENAME="bionic"
 #     DISTRIB_RELEASE="18.04"
-#
-# The file is "/etc/lsb-release" in vanilla Ubuntu installations, but
-# "/etc/upstream-release/lsb-release" in Ubuntu-derived distributions
-source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+source /etc/lsb-release
 
 # Extra options for all apt-get invocations
 APT_ARGS=()
