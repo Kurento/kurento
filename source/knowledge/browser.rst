@@ -13,6 +13,18 @@ Example commands are written for a Linux shell, because that's what Kurento deve
 Firefox
 =======
 
+Security sandboxes
+------------------
+
+Firefox has several sandboxes that can affect the logging output. For troubleshooting and development, it is recommended that you learn which sandbox might be getting in the way of the logs you need, and disable it:
+
+For example:
+
+* To get logs from ``MOZ_LOG="signaling:5"``, first set ``security.sandbox.content.level`` to *0*.
+* To inspect audio issues, disable the audio sandbox by setting ``media.cubeb.sandbox`` to *false*.
+
+
+
 Test instance
 -------------
 
@@ -43,12 +55,12 @@ Debug logging can be enabled with the parameters *MOZ_LOG* and *MOZ_LOG_FILE*. T
 
 In Firefox 54 and later, you can use ``about:networking``, and select the Logging option, to change *MOZ_LOG* / *MOZ_LOG_FILE* options on the fly (without restarting the browser).
 
-Lastly, you can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*"). The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special boolean prefs *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
+Lastly, you can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*"). The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special booleans *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
 
 - **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
 - **timestamp**: Insert timestamp at start of each log line.
 
-These are the Mozilla Logging Levels:
+Logging Levels:
 
 - **(0) DISABLED**: Indicates logging is disabled. This should not be used directly in code.
 - **(1) ERROR**: An error occurred, generally something you would consider asserting in a debug build.
@@ -57,7 +69,44 @@ These are the Mozilla Logging Levels:
 - **(4) DEBUG**: A debug message, useful for debugging but too verbose to be turned on normally.
 - **(5) VERBOSE**: A message that will be printed a lot, useful for debugging program flow and will probably impact performance.
 
-Some examples:
+Log categories:
+
+* Multimedia:
+
+  - AudioStream:5
+  - MediaCapabilities:5
+  - MediaControl:5
+  - MediaEncoder:5
+  - MediaManager:5
+  - MediaRecorder:5
+  - MediaStream:5
+  - MediaStreamTrack:5
+  - MediaTimer:5
+  - MediaTrackGraph:5
+  - Muxer:5
+  - PlatformDecoderModule:5
+  - PlatformEncoderModule:5
+  - TrackEncoder:5
+  - VP8TrackEncoder:5
+  - VideoEngine:5
+  - VideoFrameConverter:5
+  - cubeb:5
+
+* WebRTC:
+
+  - Autoplay:5
+  - GetUserMedia:5
+  - webrtc_trace:5
+  - signaling:5
+  - MediaPipeline:5
+  - RtpLogger:5
+  - RTCRtpReceiver:5
+  - sdp:5
+
+
+
+Examples
+~~~~~~~~
 
 Linux:
 
@@ -67,12 +116,20 @@ Linux:
    export MOZ_LOG_FILE=/tmp/firefox.log
    /usr/bin/firefox
 
+Linux with *MOZ_LOG* passed as command line arguments:
+
+.. code-block:: shell
+
+   /usr/bin/firefox \
+       -MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5 \
+       -MOZ_LOG_FILE=/tmp/firefox.log
+
 Mac:
 
 .. code-block:: shell
 
    export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
-   export MOZ_LOG_FILE=~/Desktop/firefox.log
+   export MOZ_LOG_FILE=/tmp/firefox.log
    /Applications/Firefox.app/Contents/MacOS/firefox-bin
 
 Windows:
@@ -83,15 +140,7 @@ Windows:
    set MOZ_LOG_FILE=%TEMP%\firefox.log
    "C:\Program Files\Mozilla Firefox\firefox.exe"
 
-With command line arguments:
-
-.. code-block:: shell
-
-   /usr/bin/firefox \
-       -MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5 \
-       -MOZ_LOG_FILE=/tmp/firefox.log
-
-Log :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
+:term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
 
 .. code-block:: shell
 
@@ -117,43 +166,7 @@ WebRTC dump example (see https://blog.mozilla.org/webrtc/debugging-encrypted-rtp
        | cut -d ' ' -f 5- \
        | text2pcap -D -n -l 1 -i 17 -u 1234,1235 -t '%H:%M:%S.' - firefox-rtp.pcap
 
-Other log categories:
-
-Multimedia:
-
-* AudioStream:5
-* MediaCapabilities:5
-* MediaControl:5
-* MediaEncoder:5
-* MediaManager:5
-* MediaRecorder:5
-* MediaStream:5
-* MediaStreamTrack:5
-* MediaTimer:5
-* MediaTrackGraph:5
-* Muxer:5
-* PlatformDecoderModule:5
-* PlatformEncoderModule:5
-* TrackEncoder:5
-* VP8TrackEncoder:5
-* VideoEngine:5
-* VideoFrameConverter:5
-* cubeb:5
-
-WebRTC:
-
-* Autoplay:5
-* GetUserMedia:5
-* webrtc_trace:5
-* signaling:5
-* MediaPipeline:5
-* RtpLogger:5
-* RTCRtpReceiver:5
-* sdp:5
-
-Notes:
-
-* The audio sandbox can be enabled or disabled with the user preference *media.cubeb.sandbox*.
+Media decoding (audio sandbox can be enabled or disabled with the user preference ``media.cubeb.sandbox``):
 
 .. code-block:: shell
 
@@ -161,13 +174,6 @@ Notes:
 
    /usr/bin/firefox -no-remote -profile "$(mktemp --directory)" \
        "https://localhost:8443/"
-
-   # Equivalent code for Selenium:
-   # firefoxOptions.addPreference("media.cubeb.sandbox", true);
-   # firefoxOptions.addPreference("logging.config.add_timestamp", true);
-   # firefoxOptions.addPreference("logging.config.sync", true);
-   # firefoxOptions.addPreference("logging.cubeb", 5);
-   # firefoxOptions.addPreference("logging.MediaTrackGraph", 5);
 
 
 
@@ -201,25 +207,48 @@ Debug logging
 
 Sources:
 
-* https://webrtc.org/web-apis/chrome/
 * https://www.chromium.org/for-testers/enable-logging
+* https://www.chromium.org/developers/how-tos/run-chromium-with-flags
+* https://peter.sh/experiments/chromium-command-line-switches/
+* https://webrtc.org/web-apis/chrome/
+
+# LINUX:
+TEST_BROWSER="/usr/bin/chromium-browser"
+TEST_BROWSER="/usr/bin/google-chrome"
+#
+TEST_PROFILE="/tmp/chrome-profile"
+#
+{
+    "$TEST_BROWSER" \
+        --user-data-dir="$TEST_PROFILE" \
+        --use-fake-ui-for-media-stream \
+        --use-fake-device-for-media-stream \
+        --enable-logging=stderr \
+        --log-level=0 \
+        --vmodule='*/webrtc/*=2,*/libjingle/*=2,*=-2' \
+        --v=0 \
+        "https://localhost:8443/" \
+        >chrome_debug.log 2>&1 &
+
+    # Other flags:
+    # --use-file-for-fake-audio-capture="${HOME}/test.wav" \
+
+    tail -f chrome_debug.log
+}
+
+# MAC:
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+    --enable-logging=stderr \
+    --vmodule=*/webrtc/*=2,*/libjingle/*=2,*=-2
 
 
-.. code-block:: shell
 
-   /usr/bin/google-chrome --user-data-dir="$(mktemp --directory)" \
-       --enable-logging=stderr \
-       --log-level=0 \
-       --v=0 \
-       --vmodule='*/webrtc/*=2,*/libjingle/*=2,*=-2' \
-       "https://localhost:8443/"
+Packet Loss
+-----------
 
-Other options:
+A command line for 3% sent packet loss and 5% received packet loss is:
+--force-fieldtrials=WebRTCFakeNetworkSendLossPercent/3/WebRTCFakeNetworkReceiveLossPercent/5/
 
-.. code-block:: text
-
-   --use-fake-device-for-media-stream \
-   --use-file-for-fake-audio-capture="${HOME}/test.wav" \
 
 
 H.264 codec
