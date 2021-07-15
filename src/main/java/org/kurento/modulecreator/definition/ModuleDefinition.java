@@ -381,7 +381,7 @@ public class ModuleDefinition {
               dependencyModule.getVersion())) {
 
             log.info("[WARNING] Dependency on module '" + importEntry.getName() + "' version '"
-                + importEntry.getVersion() + "' is satisfied with version '"
+                + importEntry.getVersion() + "' is satisfied with _development_ version '"
                 + dependencyModule.getVersion() + "'");
           } else {
 
