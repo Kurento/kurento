@@ -32,9 +32,7 @@
 
 #define PLUGIN_NAME "facedetectormetadata"
 
-#define HAAR_CASCADES_DIR_OPENCV_PREFIX "/usr/share/opencv/haarcascades/"
-
-#define FACE_HAAR_FILE "haarcascade_frontalface_default.xml"
+#define FACE_HAAR_FILE "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml"
 
 #define MIN_FPS 5
 #define MIN_TIME ((float)(1.0/7.0))
@@ -96,10 +94,9 @@ static void
 kms_face_detector_metadata_initialize_classifiers (KmsFaceDetectorMetadata *
     facedetector)
 {
-  GST_DEBUG ("Loading classifier: %s",
-      HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
-  facedetector->priv->pCascadeFace = (CvHaarClassifierCascade *)
-      cvLoad ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE), 0, 0, 0);
+  GST_INFO("Loading classifier: %s", FACE_HAAR_FILE);
+  facedetector->priv->pCascadeFace =
+      (CvHaarClassifierCascade *)cvLoad(FACE_HAAR_FILE, 0, 0, 0);
 }
 
 static void
