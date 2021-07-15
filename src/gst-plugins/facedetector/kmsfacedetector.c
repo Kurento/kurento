@@ -31,10 +31,8 @@
 
 #define PLUGIN_NAME "facedetector"
 
-#define HAAR_CASCADES_DIR_OPENCV_PREFIX "/usr/share/opencv/haarcascades/"
-
-#define FACE_HAAR_FILE "haarcascade_frontalface_default.xml"
-#define FACE_CASCADE "lbpcascade_frontalface.xml"
+#define FACE_HAAR_FILE "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml"
+#define FACE_CASCADE "/usr/share/opencv/lbpcascades/lbpcascade_frontalface.xml"
 
 
 
@@ -98,18 +96,16 @@ G_DEFINE_TYPE_WITH_CODE (KmsFaceDetector, kms_face_detector,
 static void
 kms_face_detector_initialize_classifiers (KmsFaceDetector * facedetector)
 {
-  GST_DEBUG ("Loading classifier: %s",
-      HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
-
   if (facedetector->priv->haar_detector) {
-	  facedetector->priv->pCascadeFace = init_classifier ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE));
+    GST_INFO ("Loading classifier: %s", FACE_HAAR_FILE);
+	  facedetector->priv->pCascadeFace = init_classifier (FACE_HAAR_FILE);
   } else {
-	  facedetector->priv->pCascadeFace = init_classifier ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_CASCADE));
+    GST_INFO ("Loading classifier: %s", FACE_CASCADE);
+	  facedetector->priv->pCascadeFace = init_classifier (FACE_CASCADE);
   }
 
   if (!is_inited (facedetector->priv->pCascadeFace)) {
-	    GST_ERROR ("Failed loading classifier: %s",
-	        HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
+	    GST_ERROR ("Failed loading classifier");
   }
 }
 
