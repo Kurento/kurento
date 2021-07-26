@@ -38,6 +38,10 @@ if(HAS_WARNING_DATE_TIME)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=date-time")
 endif()
 
+# FIXME Disable error from deprecated function gst_element_get_request_pad(),
+#       should use gst_element_request_pad_simple() instead.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
+
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
