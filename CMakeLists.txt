@@ -40,7 +40,10 @@ if(HAS_WARNING_DATE_TIME)
 endif()
 
 # FIXME Disable error from deprecated function RSA_generate_key()
-# in src/server/implementation/CertificateManager.cpp:188
+#       in src/server/implementation/CertificateManager.cpp:188
+# FIXME Disable error from deprecated function gst_element_get_request_pad(),
+#       should use gst_element_request_pad_simple() instead.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 
 # Generate file "config.h"
