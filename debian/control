@@ -26,6 +26,7 @@ Package: kms-filters
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
+ ca-certificates,
  kms-elements (>= 6.16.1),
  opencv-data
 Breaks: kms-filters-6.0
