@@ -143,13 +143,13 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
 RUN apt-get-install-fix kurento-media-server
 
 # Install additional modules
-# These might not be available, so allow errors
-RUN apt-get-install \
-        kms-chroma \
-        kms-crowddetector \
-        kms-platedetector \
-        kms-pointerdetector \
-    || true
+# These might not be all available, so install separately and allow errors
+RUN apt-get-install kms-chroma || true
+RUN apt-get-install kms-crowddetector || true
+RUN apt-get-install kms-datachannelexample || true
+RUN apt-get-install kms-markerdetector || true
+RUN apt-get-install kms-platedetector || true
+RUN apt-get-install kms-pointerdetector || true
 
 # Install additional tools that are indirectly used by some GStreamer plugins:
 # * gstreamer1.5-tools: Allows running the command `gst-inspect-1.5`.
