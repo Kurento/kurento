@@ -116,11 +116,14 @@ Other less commonly used logging levels are:
 
      export GST_DEBUG="${GST_DEBUG:-2},kmsutils:5,rtpsynchronizer:5,rtpsynccontext:5,basertpendpoint:5"
 
-* **JSON-RPC** API server calls:
+* **JSON-RPC** API server:
 
   .. code-block:: shell
 
-     export GST_DEBUG="${GST_DEBUG:-2},KurentoWebSocket*:5"
+     export GST_DEBUG="${GST_DEBUG:-2},KurentoServerMethods:5,KurentoWebSocket*:5"
+
+  * "KurentoServerMethods:5" shows WebSocket Ping/Pong messages. Use "KurentoServerMethods:6" for even more details about server session management such as caching of requests.
+  * "KurentoWebSocket*:5" shows all JSON-RPC messages that are sent and received, including Client/Server Keep-Alives.
 
 * **Unit tests**:
 
