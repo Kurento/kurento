@@ -1,4 +1,9 @@
-# pip3 install -r requirements.txt
+# Pip Requirements File
+# https://pip.pypa.io/en/latest/user_guide/#requirements-files
+#
+# Usage:
+#     $ pip3 install --upgrade -r requirements.txt
+#     $ export PATH="$HOME/.local/bin:$PATH"
 
-sphinx == 3.3.0
-sphinx-rtd-theme == 0.5.0
+Sphinx~=3.5.4
+sphinx-rtd-theme~=0.5.2
