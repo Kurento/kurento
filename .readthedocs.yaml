@@ -1,0 +1,24 @@
+# Read the Docs Configuration File.
+# https://docs.readthedocs.io/en/stable/config-file/v2.html
+#
+# This replaces the "Default settings" in the RTD website:
+# https://readthedocs.org/dashboard/doc-kurento/advanced/
+
+version: 2
+
+# Use Sphinx to build HTML documentation.
+sphinx:
+  builder: html
+  configuration: source/conf.py
+  fail_on_warning: false
+
+# Use this Python version and dependencies.
+python:
+  version: "3"
+  install:
+    - requirements: requirements.txt
+
+# Sphinx additional build formats: EPUB, PDF.
+formats:
+  - epub
+  - pdf
