@@ -70,6 +70,109 @@ Then, please provide us with information about the crash:
 
 
 
+.. _troubleshooting-video-quality:
+
+Corrupted Video
+===============
+
+**Problem**
+
+* Video image seems fine, but playback suffers from a lot of stuttering (i.e. it is not smooth, constantly "jumps" around). See here: :ref:`troubleshooting-video-stuttering`.
+
+* Video playback is smooth (no color issues, no macroblocks, no excessive stuttering), but the perceived quality of the details is very poor.
+
+* Video contains green or pink patches in some areas:
+
+  .. figure:: ../images/packet-loss-green.jpg
+     :align:  center
+     :alt:    Green patches covering part of the picture
+
+     *Green patches covering part of the picture.*
+
+* Video contains huge blocks (aka. "*macroblocks*") that are dragged around through the video:
+
+  .. figure:: ../images/packet-loss-macroblocks.jpg
+     :align:  center
+     :alt:    Macroblocks distorting the picture
+
+     *Macroblocks distorting the picture.*
+
+* KMS logs contain lots of these messages (in bursts of several per second):
+
+  .. code-block:: text
+
+     WARN rtpsource [...] duplicate or reordered packet (seqnr 32462, expected 32464)
+
+     WARN kmsutils [...] GAP of 3 ms at PTS=0:01:54.187106448 (packet loss?); will request a new keyframe
+
+     WARN kmsutils [...] DISCONTINUITY at non-keyframe; will drop until keyframe
+
+**Reason**
+
+* **Network congestion** or an otherwise weak network link is causing a high rate of **packet loss** and, in the case of WebRTC, an automatic degradation of video quality on the sender side. Most web browsers will automatically reduce their video output quality if they detect that the network is congested.
+
+* Too much data is sent to Kurento's *PlayerEndpoint*, which is not able to process it all on time, causing it to drop parts of the video.
+
+* A badly configured H.264 encoder in the sender side, especially when using a *PlayerEndpoint* to consume the video stream of an IP camera.
+
+**Solution**
+
+* For decoding errors (color issues, macroblocks) the most effective change you can do is to reduce the video resolution and/or quality (bitrate, framerate) at the sender. This will make the video smaller, helping it to travel through congested networks.
+
+* Getting a stronger network link on both sender and receiver sides will always help. For example, moving closer to the Wifi access points, using Ethernet cables when possible, or moving to a better data coverage area.
+
+* Configure your sender encoder with correct parameters. See the next section about video encoding.
+
+* When the network link is not an issue, remember to change the default maximum bitrate of **500 Kbps** that Kurento uses to send WebRTC.
+
+  See also:
+
+  - :ref:`Configuring WebRTC bitrate <configuration-bitrate>`.
+  - WebRtcEndpoint API docs: `Java <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__, `JavaScript <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html>`__.
+
+
+
+About sender video encoding
+---------------------------
+
+The maximum bitrate for WebRTC video (used by web browsers such as Chrome) is **2 Mbps for perfect conditions**, so you should probably avoid pushing more than that in your application.
+
+Regarding the video encoder at the sender side, keep in mind that the most compatible H.264 setting is the **Constrained Baseline Profile, Level 3.1**.
+
+Lastly, note that Chrome not only adapts its own video sending bitrate according to network conditions, but also the resolution of the video. If you see a much lower resolution than expected, you should check the sender WebRTC stats, to see if it isn't because of Chrome deciding to do so.
+
+See also:
+
+* :ref:`Notes on browser video encoding <browser-video>`.
+
+WebRTC will detect the bandwidth available on the network, and will adapt the video bitrate on the fly (and, in some cases such as the Chrome web browser, the resolution will change too). This adaptation is influenced by some properties of the network, such as **jitter**, **latency**, and **packet loss**. If your WebRTC video plays back smoothly but with a very poor quality, this mostly means that the network link itself is poor.
+
+See also:
+
+* :doc:`/knowledge/congestion_rmcat`.
+* :term:`REMB`.
+
+
+
+About H.264 & VP8 color encoding
+--------------------------------
+
+The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video codecs use a color encoding system called `YCbCr <https://en.wikipedia.org/wiki/YCbCr>`__ (sometimes also written as *YCrCb*), which the decoder has to convert into the well known `RGB <https://en.wikipedia.org/wiki/RGB_color_model>`__ ("*Red-Green-Blue*") model that is used by computer screens.
+
+When there is data loss, the decoder will assume that all missing values are *0* (zero). It just turns out that a YCbCr value of *(0,0,0)* is equivalent to the **green** color in RGB.
+
+Kurento detects that packets have been lost in the network, and sends retransmission requests to the source of the WebRTC or RTP stream. However, if packet loses are too high due to a weak or congested network, enough losses will build up until the video decoding gets negatively affected.
+
+Cisco has also a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__ (`archive <https://web.archive.org/web/20170506091043/http://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__):
+
+    **Why do I see pink or green patches in my video stream [...]?**
+
+    *Pink and green patches or lines seen in decoded video are often the result of packet loss or incorrect data in the video stream. Many video codecs (including H.261, H.263 and H.264) use the Y'CbCr system to represent color space, where Y' is the 'luma' (brightness) component and Cb and Cr are the blue and red chroma components respectively. For many Y'CbCr values there is no equivalent RGB value and the colour seen on the display depends on the details of the algorithm used. A Y'CbCr value of (0,0,0) is often converted into the green color while a Y'CbCr value of (255,255,255) leads to a pink color.*
+
+    *If you encounter the symptoms described above, follow normal packet loss and network troubleshooting procedures.*
+
+
+
 Other Media Server issues
 =========================
 
@@ -284,89 +387,6 @@ Missing audio or video streams
 ------------------------------
 
 If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a :term:`STUN` server or a :term:`TURN` relay, to traverse through the :term:`NAT` of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <faq-coturn-install>`.
-
-
-
-.. _troubleshooting-video-quality:
-
-Video quality issues
---------------------
-
-**Problem**
-
-* Video contains green or pink patches in some areas.
-
-* Video contains huge blocks (aka. "*macroblocks*") that are dragged around while the video goes on.
-
-* Video image seems fine, but playback suffers from a lot of stuttering (i.e. it is not smooth, constantly "jumps" around). See here: :ref:`troubleshooting-video-stuttering`.
-
-* Video playback is smooth (no color issues, no macroblocks, no excessive stuttering), but the perceived quality of the details is very poor.
-
-* KMS logs contain one or more of these messages:
-
-  .. code-block:: text
-
-     WARN rtpsource [...] duplicate or reordered packet (seqnr 32462, expected 32464)
-
-     WARN kmsutils [...] GAP of 3 ms at PTS=0:01:54.187106448 (packet loss?); will request a new keyframe
-
-     WARN kmsutils [...] DISCONTINUITY at non-keyframe; will drop until keyframe
-
-**Reason**
-
-* Network congestion, or a weak network link, is causing a high rate of packet loss and (in the case of *WebRtcEndpoint*) an automatic degradation of WebRTC video quality.
-
-* Too much data is sent to Kurento's *PlayerEndpoint*, which is not able to process it all on time.
-
-* Less commonly, a badly configured H.264 encoder in the sender side (this especially applies when using a *PlayerEndpoint* to consume the video stream of an IP camera).
-
-**Solution**
-
-* For decoding errors (color issues, macroblocks) the most effective change you can do is to reduce the video resolution and/or quality (bitrate, framerate) at the sender.
-
-* In all cases, getting a stronger network link on both sender and receiver sides will always help. For example, moving closer to the Wifi access points, using Ethernet cables when possible, or moving to a better data coverage area.
-
-* When the network link is not an issue, remember to change the default maximum bitrate of **500 Kbps** that Kurento uses to send WebRTC.
-
-  See also:
-
-  - :ref:`Configuring WebRTC bitrate <configuration-bitrate>`.
-  - WebRtcEndpoint API docs: `Java <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__, `JavaScript <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html>`__.
-
-**Notes about video encoding**
-
-The maximum bitrate for WebRTC video (used by browsers such as Chrome) is **2 Mbps for perfect conditions**, so you should probably avoid pushing more than that in your application.
-
-Regarding the video encoder at the sender side, keep in mind that the most compatible H.264 setting is the **Constrained Baseline Profile, Level 3.1**.
-
-Lastly, note that Chrome not only adapts its own video sending bitrate according to network conditions, but also the resolution of the video. If you see a much lower resolution than expected, you should check if it isn't because of a Chrome sender deciding to do so.
-
-See also:
-
-* :ref:`Notes on browser video encoding <browser-video>`.
-
-**Background on WebRTC low quality**
-
-WebRTC will detect the bandwidth available on the network, and will adapt the video bitrate on the fly (and, in some cases such as the Chrome web browser, the resolution will change too). This adaptation is influenced by some properties of the network, such as **jitter**, **latency**, and **packet loss**. If your WebRTC video plays back smoothly but with a very poor quality, this mostly means that the network link itself is poor.
-
-See also:
-
-* :doc:`/knowledge/congestion_rmcat`.
-* :term:`REMB`.
-
-**Background on H.264 & VP8 color encoding**
-
-The *H.264* and `VP8 <https://tools.ietf.org/html/rfc6386#section-9.2>`__ video codecs use a color encoding system called `YCbCr <https://en.wikipedia.org/wiki/YCbCr>`__ (sometimes also written as *YCrCb*), which the decoder has to convert into the well known `RGB <https://en.wikipedia.org/wiki/RGB_color_model>`__ ("*Red-Green-Blue*") model that is used by computer screens. When there is data loss, the decoder will assume that all missing values are *0* (zero). It just turns out that a YCbCr value of *(0,0,0)* is equivalent to the **green** color in RGB.
-
-Whenever Kurento detects that packets have been lost in the network, it sends retransmission requests to the source of the WebRTC or RTP stream. However, if packet loses are too high due to a weak or congested network, enough losses will build up until the video decoding gets negatively affected.
-
-Cisco has also a nice paragraph covering this in their Knowledge Base: `Pink and green patches in a video stream <https://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__ (`archive <https://web.archive.org/web/20170506091043/http://www.cisco.com/c/en/us/td/docs/telepresence/infrastructure/articles/cisco_telepresence_pink_green_patches_video_stream_kb_136.html>`__):
-
-    **Why do I see pink or green patches in my video stream [...]?**
-
-    *Pink and green patches or lines seen in decoded video are often the result of packet loss or incorrect data in the video stream. Many video codecs (including H.261, H.263 and H.264) use the Y'CbCr system to represent color space, where Y' is the 'luma' (brightness) component and Cb and Cr are the blue and red chroma components respectively. For many Y'CbCr values there is no equivalent RGB value and the colour seen on the display depends on the details of the algorithm used. A Y'CbCr value of (0,0,0) is often converted into the green color while a Y'CbCr value of (255,255,255) leads to a pink color.*
-
-    *If you encounter the symptoms described above, follow normal packet loss and network troubleshooting procedures.*
 
 
 
