@@ -39,7 +39,7 @@ function set_parameter() {
     local REGEX="^${COMMENT}?\s*${PARAM}=.*"
 
     if grep --extended-regexp -q "$REGEX" "$FILE"; then
-        sed --regexp-extended -i "s/${REGEX}/${PARAM}=${VALUE}/" "$FILE"
+        sed --regexp-extended -i "s|${REGEX}|${PARAM}=${VALUE}|" "$FILE"
     else
         echo "${PARAM}=${VALUE}" >>"$FILE"
     fi
@@ -88,7 +88,12 @@ fi
 if [[ -n "${KMS_TURN_URL:-}" ]]; then
     set_parameter "$WEBRTC_FILE" "turnURL" "$KMS_TURN_URL"
 fi
-
+if [[ -n "${KMS_PEM_CERTIFICATE_RSA:-}" ]]; then
+    set_parameter "$WEBRTC_FILE" "pemCertificateRSA" "$KMS_PEM_CERTIFICATE_RSA"
+fi
+if [[ -n "${KMS_PEM_CERTIFICATE_ECDSA:-}" ]]; then
+    set_parameter "$WEBRTC_FILE" "pemCertificateECDSA" "$KMS_PEM_CERTIFICATE_ECDSA"
+fi
 # Remove the IPv6 loopback until IPv6 is well supported in KMS.
 # Notes:
 # - `cat /etc/hosts | sed | tee` because `sed -i /etc/hosts` won't work inside a
