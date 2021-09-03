@@ -77,7 +77,7 @@ You can also see messages about the :term:`REMB` congestion control algorithm fo
 
 .. code-block:: shell
 
-   export GST_DEBUG="${GST_DEBUG:-2},kmsremb:5"
+   export GST_DEBUG="${GST_DEBUG:-2},KurentoBaseRtpEndpointImpl:5,basertpendpoint:5,kmsremb:5"
 
 
 
