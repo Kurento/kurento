@@ -63,7 +63,8 @@ And finally, perform the installation:
 .. code-block:: shell
 
    # Install Sphinx and the Read the Docs theme
-   sudo -H pip3 install --upgrade -r requirements.txt
+   pip3 install --upgrade -r requirements.txt
+   export PATH="$HOME/.local/bin:$PATH"
 
 Now just run ``make html`` inside the documentation directory, and open the newly built files with a web browser:
 
