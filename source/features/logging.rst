@@ -56,28 +56,39 @@ Transcoding of media
 WebRtcEndpoint and RtpEndpoint
 ------------------------------
 
-.. code-block:: shell
+* To show all state changes (*MediaFlowIn*, *MediaFlowOut*, *MediaTranscoding*, etc):
 
-   export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,KurentoWebSocket*:4"
-   export GST_DEBUG="${GST_DEBUG:-2},kmssdpsession:5"
-   export GST_DEBUG="${GST_DEBUG:-2},sdp*:5"
-   export GST_DEBUG="${GST_DEBUG:-2},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
+  .. code-block:: shell
 
-* "Kurento*:5" shows all state changes (*MediaFlowIn*, *MediaFlowOut*, *MediaTranscoding*, etc). Use "KurentoWebSocket*:4" to avoid getting all verbose logs about the WebSocket communications.
-* "kmssdpsession:5" prints the SDP messages (SDP Offer/Answer negotiation) processed by KMS.
-* "sdp*:5" shows internal messages related to the construction of SDP messages and media handlers.
+     export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,KurentoWebSocket*:4"
 
-* "webrtcendpoint:5", "kmswebrtcsession:5", and "kmsiceniceagent:5" all contain the logic that governs ICE gathering and ICE candidate selection for WebRTC.
+* To show high-level debug messages of SDP processing in KMS (SDP Offer/Answer negotiation). In most situations this is the level you want to enable for troubleshooting issues with SDP:
+
+  .. code-block:: shell
+
+     export GST_DEBUG="${GST_DEBUG:-2},kmssdpsession:5"
+
+* For more verbose, low-level information about all SDP handling. Usually this is not needed except for the most advanced analysis of SDP issues:
+
+  .. code-block:: shell
+
+     export GST_DEBUG="${GST_DEBUG:-2},sdp*:5,basesdpendpoint:5"
+
+* To show the logic that governs ICE gathering and ICE candidate selection for WebRTC:
+
+  .. code-block:: shell
+
+     export GST_DEBUG="${GST_DEBUG:-2},webrtcendpoint:5,kmswebrtcsession:5,kmsiceniceagent:5"
 
   .. note::
 
      See also :ref:`logging-libnice` to enable advanced :term:`ICE` logging for WebRTC.
 
-You can also see messages about the :term:`REMB` congestion control algorithm for WebRTC. However these will constantly be filling the log, so you shouldn't enable them unless explicitly working out an issue with REMB:
+* Lastly, to see messages about the :term:`REMB` congestion control algorithm (adaptive video bitrate) for WebRTC. These will constantly be filling the log, so you shouldn't enable them unless explicitly working out an issue with REMB:
 
-.. code-block:: shell
+  .. code-block:: shell
 
-   export GST_DEBUG="${GST_DEBUG:-2},KurentoBaseRtpEndpointImpl:5,basertpendpoint:5,kmsremb:5"
+     export GST_DEBUG="${GST_DEBUG:-2},KurentoBaseRtpEndpointImpl:5,basertpendpoint:5,kmsremb:5"
 
 
 
