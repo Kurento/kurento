@@ -170,10 +170,6 @@ RUN apt-key adv \
 #
 # FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
 
-# Configure environment for KMS.
-# * Disable color in debug logs.
-ENV GST_DEBUG_NO_COLOR=1
-
 # Expose default Kurento RPC control port
 EXPOSE 8888
 

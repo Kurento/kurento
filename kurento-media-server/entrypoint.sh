@@ -104,6 +104,13 @@ if [[ -z "${GST_DEBUG:-}" ]]; then
     export GST_DEBUG="2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4"
 fi
 
+# Disable output colors when running without a terminal.
+# This prevents terminal control codes from ending up in Docker log storage.
+if [ ! -t 1 ]; then
+    # This shell is not attached to a TTY.
+    export GST_DEBUG_NO_COLOR=1
+fi
+
 # Run Kurento Media Server, changing to requested user (if any)
 RUN_UID="$(id -u)"
 if [[ -n "${KMS_UID:-}" && "$KMS_UID" != "$RUN_UID" ]]; then
