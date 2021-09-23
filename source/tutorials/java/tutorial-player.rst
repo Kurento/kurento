@@ -2,8 +2,8 @@
 Java - Player
 %%%%%%%%%%%%%
 
-This tutorial opens a URL and plays its content to WebRTC where it is possible
-to choose if it plays video and audio, only video or only audio.
+This tutorial reads a file from disk or from any URL, and plays the video to WebRTC.
+It is possible to choose if it plays video and audio, only video, or only audio.
 
 .. note::
 

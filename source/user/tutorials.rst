@@ -145,7 +145,7 @@ This tutorial detects and draws faces present in the webcam video. It connects f
 WebRTC Media Player
 ===================
 
-This tutorial reads a file from disk and plays the video to WebRTC.
+This tutorial reads a file from disk or from any URL, and plays the video to WebRTC.
 
 .. toctree::
    :maxdepth: 1
