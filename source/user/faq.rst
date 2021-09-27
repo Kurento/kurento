@@ -100,7 +100,7 @@ Coturn can be installed directly from the Ubuntu package repositories:
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+   sudo apt-get update && sudo apt-get install --no-install-recommends \
        coturn
 
 To configure it for WebRTC, follow these steps:

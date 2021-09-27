@@ -296,7 +296,7 @@ Test the KMS API Java module generation (local check).
 
 .. code-block:: shell
 
-   apt-get update && apt-get install --no-install-recommends --yes \
+   apt-get update && apt-get install --no-install-recommends \
        kurento-module-creator \
        kms-cmake-utils \
        kms-jsonrpc-dev \

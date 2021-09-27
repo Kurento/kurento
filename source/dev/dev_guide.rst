@@ -174,7 +174,7 @@ This command will install the basic set of tools that are needed for the next st
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+   sudo apt-get update && sudo apt-get install --no-install-recommends \
        build-essential \
        ca-certificates \
        cmake \
@@ -213,7 +213,7 @@ Run:
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+   sudo apt-get update && sudo apt-get install --no-install-recommends \
        kurento-media-server-dev
 
 
@@ -265,7 +265,9 @@ You can set the logging level of specific categories by exporting the environmen
 Clean up your system
 --------------------
 
-To leave the system in a clean state, remove all KMS packages and related development libraries. Run this command and, for each prompted question, visualize the packages that are going to be uninstalled and press Enter if you agree. This command is used on a daily basis by the development team at Kurento with the option ``--yes`` (which makes the process automatic and unattended), so it should be fairly safe to use. However we don't know what is the configuration of your particular system, and running in manual mode is the safest bet in order to avoid uninstalling any unexpected package.
+To leave the system in a clean state, remove all KMS packages and related development libraries.
+
+This command should be fairly safe to use; it works perfectly fine for us on a daily basis (we even use it with the option ``--yes``, which makes the process automatic and unattended). Still, please carefully review the list of packages marked for uninstalling.
 
 Run:
 
@@ -330,7 +332,7 @@ Now, install all debug symbols that are relevant to KMS:
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+   sudo apt-get update && sudo apt-get install --no-install-recommends \
        kurento-dbg
 
 

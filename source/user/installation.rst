@@ -162,7 +162,7 @@ Open a terminal and run these commands:
 
    .. code-block:: shell
 
-      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+      sudo apt-get update && sudo apt-get install --no-install-recommends \
           gnupg
 
 2. Add the Kurento repository to your system configuration.
@@ -191,7 +191,7 @@ Open a terminal and run these commands:
 
    .. code-block:: shell
 
-      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+      sudo apt-get update && sudo apt-get install --no-install-recommends \
           kurento-media-server
 
    This will install the release version of Kurento Media Server.
@@ -237,7 +237,7 @@ B. **Uninstall the old Kurento version**, before installing the new one.
 
       sudo aptitude remove '?installed?version(kurento)'
 
-      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+      sudo apt-get update && sudo apt-get install --no-install-recommends \
           kurento-media-server
 
 .. note::
@@ -339,7 +339,7 @@ Follow these steps on the machine where Kurento Media Server is running.
   .. code-block:: shell
 
      # For Debian/Ubuntu:
-     sudo apt-get update && sudo apt-get install --yes netcat-openbsd
+     sudo apt-get update && sudo apt-get install netcat-openbsd
 
 * Then, start a Netcat server, listening on any port of your choice:
 

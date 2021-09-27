@@ -676,8 +676,8 @@ If not, try fully reinstalling the package *libnss-mdns*:
 
 .. code-block:: shell
 
-   sudo apt-get purge --yes libnss-mdns
-   sudo apt-get update && sudo apt-get install --yes libnss-mdns
+   sudo apt-get purge libnss-mdns
+   sudo apt-get update && sudo apt-get install libnss-mdns
 
 Installing this package does automatically edit the config file in an appropriate way. Now the *mdns4_minimal* module should appear listed in the hosts line.
 

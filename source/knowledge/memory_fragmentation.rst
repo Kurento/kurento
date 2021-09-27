@@ -41,7 +41,7 @@ First install it on your system. For the versions of Ubuntu that are explicitly 
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --yes libjemalloc1
+   sudo apt-get update && sudo apt-get install libjemalloc1
 
 Jemalloc is installed as a standalone library. To actually use it, you need to preload it when launching KMS:
 

@@ -73,7 +73,7 @@ If you want to run this tutorial from a **remote web server**, then you have to 
 
    .. code-block:: shell
 
-      sudo apt-get update && sudo apt-get install --yes kms-platedetector
+      sudo apt-get update && sudo apt-get install kms-platedetector
 
 
 Understanding this example

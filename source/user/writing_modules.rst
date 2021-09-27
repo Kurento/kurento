@@ -19,7 +19,7 @@ The starting point to develop a filter is to create a basic structure for the so
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+   sudo apt-get update && sudo apt-get install --no-install-recommends \
        kurento-media-server-dev
 
 Now use the scaffold tool to generate code for your new module. For example:
@@ -157,7 +157,7 @@ To build a Debian package file, you can either use the **kurento-buildpackage** 
 .. code-block:: shell
 
    # Install dpkg-buildpackage, the Debian package builder
-   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+   sudo apt-get update && sudo apt-get install --no-install-recommends \
        dpkg-dev
 
    # Run dpkg-buildpackage to build Debian packages

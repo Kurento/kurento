@@ -41,7 +41,7 @@ Open a terminal and run these commands:
 
    .. code-block:: shell
 
-      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+      sudo apt-get update && sudo apt-get install --no-install-recommends \
           gnupg
 
 2. Add the Kurento repository to your system configuration.
@@ -70,7 +70,7 @@ Open a terminal and run these commands:
 
    .. code-block:: shell
 
-      sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+      sudo apt-get update && sudo apt-get install --no-install-recommends \
           kurento-media-server
 
    This will install the nightly version of Kurento Media Server.

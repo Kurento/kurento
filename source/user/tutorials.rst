@@ -21,7 +21,7 @@ These tutorials come in three flavors:
 
   .. code-block:: shell
 
-     sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
+     sudo apt-get update && sudo apt-get install --no-install-recommends \
          git \
          default-jdk \
          maven
