@@ -2,8 +2,12 @@
 # https://pip.pypa.io/en/latest/user_guide/#requirements-files
 #
 # Usage:
-#     $ pip3 install --upgrade -r requirements.txt
-#     $ export PATH="$HOME/.local/bin:$PATH"
+#     # Create and load the Python virtual environment
+#     python3 -m venv python_modules
+#     source python_modules/bin/activate
+#
+#     # Install Sphinx and the Read the Docs theme
+#     python -m pip install --upgrade -r requirements.txt
 
 Sphinx~=3.5.4
 sphinx-rtd-theme~=0.5.2

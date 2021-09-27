@@ -6,3 +6,4 @@
 .settings
 npm-debug.log
 build/
+python_modules/

@@ -18,6 +18,8 @@ doc-kurento
 
 Kurento Documentation. Made with [Sphinx] and [Read the Docs].
 
+To learn the style conventions and how to build these docs, read here: [Writing this documentation](https://doc-kurento.readthedocs.io/en/latest/dev/writing_documentation.html).
+
 [Sphinx]: https://www.sphinx-doc.org/
 [Read the Docs]: https://docs.readthedocs.io
 
