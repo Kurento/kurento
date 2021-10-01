@@ -122,10 +122,12 @@ ARG KMS_VERSION="dev"
 ENV LANG="C.UTF-8"
 
 # Install required tools:
+# * ca-certificates: For HTTPS requests (e.g. with PlayerEndpoint)
 # * curl: For `healthchecker.sh`
 # * dnsutils: For `dig` in `getmyip.sh`
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
 RUN apt-get-install \
+        ca-certificates \
         curl \
         dnsutils \
         gnupg
