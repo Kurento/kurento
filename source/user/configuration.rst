@@ -146,7 +146,7 @@ Plain RTP (RtpEndpoint) needs 2 ports for each media kind: an even port is used 
 Advanced Settings
 =================
 
-These settings are only provided for advanced users who know what they are doing and why they need them. For most cases, it's better to leave these settings on their default values.
+These settings are only provided for advanced users who know what they are doing and why they need them. For most cases, the default values are good enough for most users.
 
 
 
@@ -214,3 +214,27 @@ For the vast majority of use cases it is better to use the default MTU value of 
 
 * Java: `setMtu <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__.
 * JavaScript: `setMtu <../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.
+
+
+
+.. _configuration-dtls:
+
+WebRTC DTLS certificates
+------------------------
+
+By default, Kurento uses a different self-signed certificate for every WebRtcEndpoint (see :ref:`features-security-kms-dtls`). If you want or need to use the same cert for every endpoint, first join both your certificate (chain) file(s) and the private key with a command such as this one:
+
+.. code-block:: shell
+
+   # Make a single file to be used with Kurento Media Server.
+   cat cert.pem key.pem > cert+key.pem
+
+Then, configure the path to ``cert+key.pem``:
+
+**Local install**
+
+* Set either of ``pemCertificateRSA`` or ``pemCertificateECDSA`` with the path to your certificate file in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``.
+
+**Docker**
+
+* Pass environment variables ``KMS_PEM_CERTIFICATE_RSA`` or ``KMS_PEM_CERTIFICATE_ECDSA``.

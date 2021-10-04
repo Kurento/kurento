@@ -222,11 +222,20 @@ Make sure your application uses a WebSocket URL that starts with ``wss://`` inst
 
 
 
+.. _features-security-kms-dtls:
+
 Media Plane security (DTLS)
 ---------------------------
 
-WebRTC uses :wikipedia:`DTLS <Datagram_Transport_Layer_Security>` for media data authentication. By default, if no certificate is provided for this, Kurento Media Server will auto-generate its own self-signed certificate for every WebRtcEndpoint instance, but it is also possible to provide an already existing certificate to be used for all endpoints.
+WebRTC uses :wikipedia:`DTLS <Datagram_Transport_Layer_Security>` for media data authentication. By default, if no certificate is provided for this, Kurento Media Server will auto-generate a new self-signed certificate for every WebRtcEndpoint instance.
 
-To do so, edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set either *pemCertificateRSA* or *pemCertificateECDSA* with a file containing the concatenation of your certificate (chain) file(s) and the private key.
+Alternatively, an already existing certificate can be provided to be used for all endpoints. For this, edit the file ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini`` and set either *pemCertificateRSA* or *pemCertificateECDSA* with a file containing both your certificate (chain) file(s) and the private key. You can generate such file with the ``cat`` command:
+
+.. code-block:: shell
+
+   # Make a single file to be used with Kurento Media Server.
+   cat cert.pem key.pem > cert+key.pem
+
+Then, :ref:`configure <configuration-dtls>` the path to ``cert+key.pem``.
 
 Setting a custom certificate for DTLS is needed, for example, for situations where you have to manage multiple media servers and want to make sure that all of them use the same certificate for their connections. Some browsers, such as Firefox, require this in order to allow multiple WebRTC connections from the same tab to different KMS instances.
