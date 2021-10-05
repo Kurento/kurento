@@ -8,8 +8,8 @@ Frequently Asked Questions
 
 .. _faq-nat-ice-stun-turn:
 
-About NAT, ICE, STUN, TURN
-==========================
+NAT, ICE, STUN, TURN
+====================
 
 These are very important concepts that developers must understand well to work with WebRTC. Here is a collection of all Kurento material talking about these acronyms:
 
@@ -238,66 +238,42 @@ To test if your :term:`STUN`/:term:`TURN` server is functioning properly, open t
 
 .. _faq-docker:
 
-About using Kurento with Docker
-===============================
+Kurento in Docker
+=================
 
-Docker is the recommended method of deploying Kurento Media Server, because it makes it easy to bundle all of the different modules and dependencies into a single, manageable unit. This makes installation and upgrades a trivial operation. However, due to the nature of containers, it also makes configuration slightly more inconvenient, so in this section we'll provide a heads up in Docker concepts that could be very useful for users of `Kurento Docker images <https://hub.docker.com/r/kurento/kurento-media-server>`__.
+Deploying Kurento Media Server in a container is the easiest install method, because it bundles all of the different modules and dependencies into a single, manageable unit. This makes installation and upgrades a trivial operation.
+
+However, due to the nature of containers, it also makes configuration slightly more inconvenient, so in this section we'll provide a heads up in Docker concepts that could be very useful for users of `Kurento Docker images <https://hub.docker.com/r/kurento/kurento-media-server>`__.
 
 
 
-How to provide configuration files?
------------------------------------
+How to change config files?
+---------------------------
 
-To edit the configuration files that Kurento will use from within a Docker container, the first thing you'll need are the actual files; run these commands to get the default ones from a temporary container:
+To edit the configuration files used in your containers, first you'll need the actual files; run these commands to get default ones from a temporary container:
 
 .. code-block:: shell
 
-   CONTAINER="$(docker create kurento/kurento-media-server:latest)"
-   docker cp "$CONTAINER":/etc/kurento/. ./etc-kurento
-   docker rm "$CONTAINER"
+   docker create --name temp kurento/kurento-media-server:latest
+   docker cp temp:/etc/kurento/ ./kurento-files/
+   docker rm temp
 
-After editing these files as needed, provide them to newly created Kurento Docker containers, with any of the mechanisms offered by Docker. Here we show examples for two of them:
-
-
-
-FROM image
-~~~~~~~~~~
-
-Creating a custom Docker image is a good choice for changing Kurento configuration files when you don't have direct control of the host environment. The `FROM <https://docs.docker.com/engine/reference/builder/#from>`__ feature of *Dockerfiles* can be used to derive directly from the official `Kurento Docker image <https://hub.docker.com/r/kurento/kurento-media-server>`__ and create your own fully customized image.
-
-A ``Dockerfile`` such as this one would be a good enough starting point:
-
-.. code-block:: docker
-
-   FROM kurento/kurento-media-server:latest
-   COPY etc-kurento/* /etc/kurento/
-
-Now, build the new image:
-
-.. code-block:: shell-session
-
-   $ docker build --tag kms-with-my-config:latest .
-   Step 1/2 : FROM kurento/kurento-media-server:latest
-   Step 2/2 : COPY etc-kurento/* /etc/kurento/
-   Successfully built 3d2bedb31a9d
-   Successfully tagged kms-with-my-config:latest
-
-And use the new image "*kms-with-my-config:latest*" in place of the original one.
+After editing these files as needed, provide them to newly created containers. Next sections below show examples of how to do it.
 
 
 
 Bind mount
 ~~~~~~~~~~
 
-A `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ will replace the default set of config files inside the official Kurento Docker image, with the ones you provide from the host filesystem. This method can be used if you are in control of the host system:
+A `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ will "inject" your files from the host machine into the Kurento container. This method is the simplest one to use if you are in control of the host system:
 
 .. code-block:: shell
 
    docker run -d --name kms --network host \
-       --mount type=bind,src="$PWD/etc-kurento",dst=/etc/kurento \
+       --mount type=bind,src="$PWD/kurento-files/",dst=/etc/kurento/ \
        kurento/kurento-media-server:latest
 
-The equivalent definition for Docker Compose would look like this:
+The equivalent Docker Compose file would look like this:
 
 .. code-block:: yaml
 
@@ -308,8 +284,73 @@ The equivalent definition for Docker Compose would look like this:
        network_mode: host
        volumes:
          - type: bind
-           source: ./etc-kurento
-           target: /etc/kurento
+           source: ./kurento-files/
+           target: /etc/kurento/
+
+
+
+Docker volume
+~~~~~~~~~~~~~
+
+A `volume <https://docs.docker.com/storage/volumes/>`__ is a storage module that can be attached to containers. This has the benefit of not depending on the host filesystem, as everything is managed by Docker.
+
+First, use an ephemeral container to create a new volume and populate it with your config files:
+
+.. code-block:: shell
+
+   docker create --name temp \
+       --mount type=volume,src=kurento-volume,dst=/etc/kurento/ \
+       busybox
+   docker cp ./kurento-files/. temp:/etc/kurento/
+   docker rm temp
+
+Then run your container as usual, mounting the volume in the appropriate path:
+
+.. code-block:: shell
+
+   docker run -d --name kms --network host \
+       --mount type=volume,src=kurento-volume,dst=/etc/kurento/ \
+       kurento/kurento-media-server:latest
+
+The equivalent Docker Compose file would look like this:
+
+.. code-block:: yaml
+
+   version: "3.8"
+   services:
+     kms:
+       image: kurento/kurento-media-server:latest
+       network_mode: host
+       volumes:
+         - type: volume
+           source: kurento-volume
+           target: /etc/kurento/
+
+
+
+FROM image
+~~~~~~~~~~
+
+Creating your own fully customized, self-contained image is a good choice to avoid that your containers depend on files stored in the host machine: The `FROM <https://docs.docker.com/engine/reference/builder/#from>`__ feature of *Dockerfiles* can be used to derive directly from the official `Kurento Docker image <https://hub.docker.com/r/kurento/kurento-media-server>`__.
+
+A ``Dockerfile`` such as this one would be a good enough starting point:
+
+.. code-block:: docker
+
+   FROM kurento/kurento-media-server:latest
+   COPY ./kurento-files /etc/kurento
+
+Now, build the new image:
+
+.. code-block:: shell-session
+
+   $ docker build --tag kurento-media-server-custom .
+   Step 1/2 : FROM kurento/kurento-media-server:latest
+   Step 2/2 : COPY ./kurento-files /etc/kurento
+   Successfully built 3d2bedb31a9d
+   Successfully tagged kurento-media-server-custom
+
+And use your new image "*kurento-media-server-custom*" in place of the original one.
 
 
 
@@ -322,8 +363,8 @@ In general, running a Docker container **won't modify your host system** and **w
 
 
 
-About Kurento Media Pipelines
-=============================
+Media Pipeline
+==============
 
 These questions relate to the concept of :term:`Media Pipeline` in Kurento, touching topics about architecture or performance.
 

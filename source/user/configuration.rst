@@ -237,4 +237,4 @@ Then, configure the path to ``cert+key.pem``:
 
 **Docker**
 
-* Pass environment variables ``KMS_PEM_CERTIFICATE_RSA`` or ``KMS_PEM_CERTIFICATE_ECDSA``.
+* Pass environment variables ``KMS_PEM_CERTIFICATE_RSA`` or ``KMS_PEM_CERTIFICATE_ECDSA`` with the path *inside the container*. Also, make sure the file is actually found in that path; normally you would do that with a bind-mount, a Docker volume, or a custom Docker image. For more information and examples, check :ref:`faq-docker`.
