@@ -268,13 +268,6 @@ if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
             "CFLAGS='${CFLAGS:-} -shared-libasan'"
             "CXXFLAGS='${CXXFLAGS:-} -shared-libasan'"
         )
-    else
-        BUILD_VARS+=(
-            # Use flag recommended for aggressive diagnostics:
-            # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
-            "CFLAGS='${CFLAGS:-} -fsanitize-address-use-after-scope'"
-            "CXXFLAGS='${CXXFLAGS:-} -fsanitize-address-use-after-scope'"
-        )
     fi
 fi
 
