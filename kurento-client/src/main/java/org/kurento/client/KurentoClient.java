@@ -76,6 +76,8 @@ public class KurentoClient {
   private static KmsUrlLoader kmsUrlLoader;
 
   private String label;
+  
+  private boolean destroyed = false;
 
   public static synchronized String getKmsUrl(String id, Properties properties) {
 
@@ -320,6 +322,7 @@ public class KurentoClient {
 
   @PreDestroy
   public void destroy() {
+	this.destroyed = true;
     if (isClosed()) {
       log.debug("{} KurentoClient already closed", label);
       return;
@@ -338,6 +341,10 @@ public class KurentoClient {
 
   public boolean isClosed() {
     return manager.getRomClient().isClosed();
+  }
+
+  public boolean isDestroyed() {
+    return this.destroyed;
   }
 
   public static KurentoClient createFromJsonRpcClient(JsonRpcClient jsonRpcClient) {
