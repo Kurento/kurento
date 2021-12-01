@@ -70,9 +70,9 @@
 		It's not critical that these versions coincide with the latest available,
 		but whenever an API update is done in those files and released,
 		these version numbers should get updated accordingly. -->
-		<version.kms-api-core>6.16.2-SNAPSHOT</version.kms-api-core>
-		<version.kms-api-elements>6.16.2-SNAPSHOT</version.kms-api-elements>
-		<version.kms-api-filters>6.16.2-SNAPSHOT</version.kms-api-filters>
+		<version.kms-api-core>6.16.1-SNAPSHOT</version.kms-api-core>
+		<version.kms-api-elements>6.16.1-SNAPSHOT</version.kms-api-elements>
+		<version.kms-api-filters>6.16.1-SNAPSHOT</version.kms-api-filters>
 
 		<!-- Kurento extra modules -->
 		<version.kurento-chroma>6.15.0</version.kurento-chroma>
