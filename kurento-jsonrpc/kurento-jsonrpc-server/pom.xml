@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-jsonrpc</artifactId>
-		<version>6.16.2</version>
+		<version>6.16.3-SNAPSHOT</version>
 	</parent>
 	<artifactId>kurento-jsonrpc-server</artifactId>
 	<packaging>jar</packaging>
