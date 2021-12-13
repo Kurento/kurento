@@ -9,20 +9,32 @@
 #/ Arguments
 #/ =========
 #/
-#/ <Version>
+#/ <BaseVersion>
 #/
-#/   Base version number to set. When '--release' is used, this version will
-#/   be used as-is; otherwise, a nightly/snapshot indicator will be appended.
+#/   Base version number to use. When '--release' is used, this string will
+#/   be set as-is; otherwise, a nightly/snapshot suffix is added.
 #/
-#/   <Version> should be in a format compatible with Semantic Versioning,
-#/   such as "1.2.3" or, in general terms, "<Major>.<Minor>.<Patch>".
+#/   <BaseVersion> must be in the Semantic Versioning format, such as "1.2.3"
+#/   ("<Major>.<Minor>.<Patch>").
 #/
 #/ --release
 #/
-#/   Use version numbers intended for Release builds, such as "1.2.3". If this
-#/   option is not given, a nightly/snapshot indicator is appended: "-dev".
+#/   Do not add nightly/snapshot suffix to the base version number.
+#/   The resulting value will be valid for a Release build.
 #/
 #/   Optional. Default: Disabled.
+#/
+#/ --kms-api <KmsVersion>
+#/
+#/   Use this exact version of the Kurento Media Server Java API packages.
+#/
+#/   This argument allows changing the version number of the Kurento Java
+#/   packages, without having to release also a new version of the whole Media
+#/   Server. Normally the versions will differ when publishing a patch release.
+#/
+#/   <KmsVersion> is a full Maven version, such as "6.16.0" or "6.16.1-SNAPSHOT".
+#/
+#/   Optional. Default: None.
 #/
 #/ --git-add
 #/
@@ -59,12 +71,23 @@ set -o xtrace
 
 CFG_VERSION=""
 CFG_RELEASE="false"
+CFG_KMS_API=""
 CFG_GIT_ADD="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --release)
             CFG_RELEASE="true"
+            ;;
+        --kms-api)
+            if [[ -n "${2-}" ]]; then
+                CFG_KMS_API="$2"
+                shift
+            else
+                log "ERROR: --kms-api expects <KmsVersion>"
+                log "Run with '--help' to read usage details"
+                exit 1
+            fi
             ;;
         --git-add)
             CFG_GIT_ADD="true"
@@ -94,6 +117,7 @@ REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
 
 echo "CFG_VERSION=$CFG_VERSION"
 echo "CFG_RELEASE=$CFG_RELEASE"
+echo "CFG_KMS_API=$CFG_KMS_API"
 echo "CFG_GIT_ADD=$CFG_GIT_ADD"
 
 
@@ -102,10 +126,12 @@ echo "CFG_GIT_ADD=$CFG_GIT_ADD"
 # ==================
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    VERSION="$CFG_VERSION"
+    VERSION_JAVA="$CFG_VERSION"
 else
-    VERSION="${CFG_VERSION}-SNAPSHOT"
+    VERSION_JAVA="${CFG_VERSION}-SNAPSHOT"
 fi
+
+VERSION_KMS="$CFG_KMS_API"
 
 
 
@@ -148,20 +174,22 @@ fi
     mvn versions:set \
         -DgenerateBackupPoms=false \
         -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS" \
-        -DnewVersion="$VERSION"
+        -DnewVersion="$VERSION_JAVA"
 
     # API dependencies: Set new version.
-    MODULES=(
-        kms-api-core
-        kms-api-elements
-        kms-api-filters
-    )
-    for MODULE in "${MODULES[@]}"; do
-        mvn versions:set-property \
-            -DgenerateBackupPoms=false \
-            -Dproperty="version.${MODULE}" \
-            -DnewVersion="$VERSION"
-    done
+    if [[ -n "$CFG_KMS_API" ]]; then
+        MODULES=(
+            kms-api-core
+            kms-api-elements
+            kms-api-filters
+        )
+        for MODULE in "${MODULES[@]}"; do
+            mvn versions:set-property \
+                -DgenerateBackupPoms=false \
+                -Dproperty="version.${MODULE}" \
+                -DnewVersion="$VERSION_KMS"
+        done
+    fi
 
     # Install the project into local cache.
     # This allows the following project(s) to update their parent.
@@ -181,11 +209,11 @@ fi
     # mvn versions:update-parent \
     #     -DgenerateBackupPoms=false \
     #     -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS" \
-    #     -DparentVersion="[$VERSION]"
+    #     -DparentVersion="[$VERSION_JAVA]"
     #
     xmlstarlet edit -S --inplace \
         --update "/_:project/_:parent/_:version" \
-        --value "$VERSION" \
+        --value "$VERSION_JAVA" \
         pom.xml
 
     # Project version: Inherited from parent.
@@ -213,7 +241,7 @@ fi
         find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \
             xmlstarlet edit -S --inplace \
                 --update "/_:project/_:parent/_:version" \
-                --value "$VERSION"
+                --value "$VERSION_JAVA"
     done
 }
 
