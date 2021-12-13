@@ -227,7 +227,7 @@ By default, Kurento uses a different self-signed certificate for every WebRtcEnd
 .. code-block:: shell
 
    # Make a single file to be used with Kurento Media Server.
-   cat cert.pem key.pem > cert+key.pem
+   cat cert.pem key.pem >cert+key.pem
 
 Then, configure the path to ``cert+key.pem``:
 

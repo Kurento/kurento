@@ -234,7 +234,7 @@ Alternatively, an already existing certificate can be provided to be used for al
 .. code-block:: shell
 
    # Make a single file to be used with Kurento Media Server.
-   cat cert.pem key.pem > cert+key.pem
+   cat cert.pem key.pem >cert+key.pem
 
 Then, :ref:`configure <configuration-dtls>` the path to ``cert+key.pem``.
 
