@@ -520,8 +520,7 @@ Release steps
            || { echo "ERROR: Uncommitted files not allowed!"; return 1; }
 
            # Check latest changes from the main branch.
-           # FIXME UPGRADE 16.04: Newer versions of git allow running `git pull --rebase --autostash`.
-           git fetch && git rebase --autostash \
+           git pull --rebase --autostash \
            || { echo "ERROR: Command failed: git pull"; return 1; }
 
            # Set the new version.
@@ -748,8 +747,7 @@ Release steps
            || { echo "ERROR: Uncommitted files not allowed!"; return 1; }
 
            # Check latest changes from the main branch.
-           # FIXME UPGRADE 16.04: Newer versions of git allow running `git pull --rebase --autostash`.
-           git fetch && git rebase --autostash \
+           git pull --rebase --autostash \
            || { echo "ERROR: Command failed: git pull"; return 1; }
 
            # Set the new version.
