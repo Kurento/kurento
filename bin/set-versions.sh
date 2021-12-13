@@ -45,7 +45,7 @@ command -v mvn >/dev/null || {
     exit 1
 }
 command -v xmlstarlet >/dev/null || {
-    log "ERROR: 'xmlstarlet' is not installed; please install it"
+    echo "ERROR: 'xmlstarlet' is not installed; please install it"
     exit 1
 }
 
