@@ -222,12 +222,19 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<excludes>
-						<exclude>org/kurento/test/base/RepositoryFunctionalTest.java</exclude>
-						<exclude>org/kurento/test/base/RepositoryMongoTest.java</exclude>
+						<exclude>org/kurento/test/base/repository/RepositoryFunctionalTest.java</exclude>
+						<exclude>org/kurento/test/base/repository/RepositoryMongoTest.java</exclude>
 					</excludes>
 					<testExcludes>
 						<exclude>org/kurento/test/functional/repository/RepositoryRecorderTest.java</exclude>
 					</testExcludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<excludePackageNames>org.kurento.test.base.repository</excludePackageNames>
 				</configuration>
 			</plugin>
 		</plugins>

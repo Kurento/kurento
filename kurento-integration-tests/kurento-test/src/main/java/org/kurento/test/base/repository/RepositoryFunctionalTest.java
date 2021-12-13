@@ -15,7 +15,7 @@
  *
  */
 
-package org.kurento.test.base;
+package org.kurento.test.base.repository;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;

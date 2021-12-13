@@ -34,7 +34,7 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.test.base.RepositoryFunctionalTest;
+import org.kurento.test.base.repository.RepositoryFunctionalTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;

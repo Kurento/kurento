@@ -15,7 +15,7 @@
  *
  */
 
-package org.kurento.test.base;
+package org.kurento.test.base.repository;
 
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
