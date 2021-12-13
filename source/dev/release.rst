@@ -751,7 +751,7 @@ Release steps
            || { echo "ERROR: Command failed: git pull"; return 1; }
 
            # Set the new version.
-           ./bin/set-versions.sh "$NEW_VERSION" --release --git-add \
+           ./bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION" --release --git-add \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
            # Check there are no development versions in any of the dependencies.
@@ -866,7 +866,7 @@ New Development
            pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           ./bin/set-versions.sh "$NEW_VERSION" --git-add \
+           ./bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION-SNAPSHOT" --git-add \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
            # Install the project.
