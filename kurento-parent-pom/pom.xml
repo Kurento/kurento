@@ -1505,4 +1505,12 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+	<distributionManagement>
+		<repository>
+			<id>kurento-github</id>
+			<name>Kurento GitHub Maven packages</name>
+			<url>https://maven.pkg.github.com/kurento/kurento-java</url>
+		</repository>
+	</distributionManagement>
+
 </project>
