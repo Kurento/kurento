@@ -94,9 +94,6 @@ log "Build and deploy version: $PROJECT_VERSION"
 
 if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     log "Version to deploy is SNAPSHOT"
-    MVN_ARGS+=(
-        -Pdefault
-    )
     if [[ -n "${SNAPSHOT_REPOSITORY:-}" ]]; then
         MVN_ARGS+=(
             -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
