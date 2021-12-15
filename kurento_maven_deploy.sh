@@ -20,12 +20,12 @@ set -o xtrace
 #   Path to settings.xml file used by maven
 #
 # SNAPSHOT_REPOSITORY url
-#   Repository used to deploy snapshot artifacts. Deployment is cancelled when
-#   not provided
+#   Repository used to deploy snapshot artifacts.
+#   If empty, will use Maven settings from `<distributionManagement>`.
 #
 # RELEASE_REPOSITORY url
-#   Repository used to deploy release artifacts. Depployment is cancelled when
-#   not provided
+#   Repository used to deploy release artifacts.
+#   If empty, will use Maven settings from `<distributionManagement>`.
 #
 # SIGN_ARTIFACTS true | false
 #   Wheter to sign artifacts before deployment. Default value is true
@@ -92,22 +92,30 @@ PROJECT_VERSION="$(kurento_get_version.sh)" || {
 }
 log "Build and deploy version: $PROJECT_VERSION"
 
-if [[ $PROJECT_VERSION == *-SNAPSHOT ]] && [[ -n "$SNAPSHOT_REPOSITORY" ]]; then
+if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     log "Version to deploy is SNAPSHOT"
     MVN_ARGS+=(
         -Pdefault
-        -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
     )
+    if [[ -n "${SNAPSHOT_REPOSITORY:-}" ]]; then
+        MVN_ARGS+=(
+            -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
+        )
+    fi
     mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
         log "ERROR: Command failed: mvn deploy (snapshot)"
         exit 1
     }
-elif [[ $PROJECT_VERSION != *-SNAPSHOT ]] && [[ -n "$RELEASE_REPOSITORY" ]]; then
+elif [[ $PROJECT_VERSION != *-SNAPSHOT ]]; then
     log "Version to deploy is RELEASE"
     MVN_ARGS+=(
         -Pkurento-release
-        -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY"
     )
+    if [[ -n "${RELEASE_REPOSITORY:-}" ]]; then
+        MVN_ARGS+=(
+            -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY"
+        )
+    fi
     MVN_GOALS+=(
         javadoc:jar
         source:jar
