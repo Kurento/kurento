@@ -1053,7 +1053,7 @@
 					<version>${version.source.plugin}</version>
 					<executions>
 						<execution>
-							<id>bundle-sources</id>
+							<id>attach-sources</id>
 							<phase>package</phase>
 							<goals>
 								<!-- produce source artifact for main project sources -->
@@ -1239,14 +1239,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 
