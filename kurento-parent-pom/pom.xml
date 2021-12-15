@@ -1473,4 +1473,30 @@
 		</profile>
 	</profiles>
 
+	<!--
+	A "kurento-github" <server> entry should exist with required credentials,
+	for the running Maven instance.
+	On Kurento CI, this is done by Jenkins injecting our own `settings.xml`.
+	-->
+	<repositories>
+		<repository>
+			<id>kurento-github</id>
+			<name>Kurento GitHub Maven packages</name>
+			<url>https://maven.pkg.github.com/kurento/kurento-java</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<distributionManagement>
+		<repository>
+			<id>kurento-github</id>
+			<name>Kurento GitHub Maven packages</name>
+			<url>https://maven.pkg.github.com/kurento/kurento-java</url>
+		</repository>
+	</distributionManagement>
+
 </project>
