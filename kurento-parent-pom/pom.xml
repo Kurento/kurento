@@ -229,10 +229,6 @@
 		<kurento-java.scm.developerConnection>scm:git:git@github.com:Kurento/kurento-java.git</kurento-java.scm.developerConnection>
 	</properties>
 
-	<prerequisites>
-		<maven>${maven.min.version}</maven>
-	</prerequisites>
-
 	<dependencyManagement>
 		<dependencies>
 
