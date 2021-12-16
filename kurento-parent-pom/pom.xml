@@ -203,6 +203,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- maven-compiler-plugin -->
+		<!-- REVIEW: Starting from Java-9, change to use the new <release> parameter. -->
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
 
@@ -878,10 +879,8 @@
 					<configuration>
 						<showDeprecation>true</showDeprecation>
 						<showWarnings>true</showWarnings>
-						<compilerArguments>
-							<source>${maven.compiler.argument.source}</source>
-							<target>${maven.compiler.argument.target}</target>
-						</compilerArguments>
+						<source>${maven.compiler.argument.source}</source>
+						<target>${maven.compiler.argument.target}</target>
 					</configuration>
 				</plugin>
 				<plugin>
