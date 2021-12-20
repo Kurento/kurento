@@ -1463,28 +1463,6 @@
 		</profile>
 	</profiles>
 
-	<!-- Repositories used to download packages. -->
-	<repositories>
-		<repository>
-			<id>kurento-github-public</id>
-			<name>Kurento GitHub Maven packages (public access)</name>
-			<!--
-			Basic auth via Access Token with the `read:packages` scope.
-			Generated with `docker run ghcr.io/jcansdale/gpr encode <PAT>`.
-			This is provided to work around the GitHub limitation of not allowing
-			anonymous downloads from their Maven package registry.
-			https://github.community/t/download-from-github-package-registry-without-authentication/14407/111
-			-->
-			<url>https://public:&#103;hp_tVGPgYo5cjzCrFfTyYwsEDZESKCyDF2WP6Ak@maven.pkg.github.com/kurento/*</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
 	<!-- Repositories used to upload packages. -->
 	<distributionManagement>
 		<repository>
