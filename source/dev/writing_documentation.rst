@@ -181,6 +181,19 @@ Header conventions
 
 
 
+Comments
+--------
+
+It is possible to include hidden comments, which work just like commented-out lines in any programming language. For this, use two dots in a single line, followed by indented text. For example:
+
+.. code-block:: text
+
+   ..
+      These lines are commented out, and won't appear in the final output.
+      You can put here some notes about the text itself.
+
+
+
 Sphinx documentation generator
 ==============================
 
