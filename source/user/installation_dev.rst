@@ -80,14 +80,13 @@ Open a terminal and run these commands:
 Kurento Java Client
 ===================
 
-The development builds of the Kurento Java Client are made available for Maven in https://maven.openvidu.io/
-To use these, you need to add first this repository to your Maven configuration.
+Development builds of Kurento Java packages are uploaded to the `GitHub Maven Repository <https://github.com/orgs/Kurento/packages>`__.
 
-Adding a repository to Maven can be done at three scope levels:
+You need to add this repository to your Maven configuration. This can be done at the **Project**, **User**, or **System** levels:
 
 - **Project level**.
 
-  This will add access to development builds only for the project where the configuration is done. Open the project's *pom.xml* and include this:
+  This adds access to development builds only for a single project. Open the project's ``pom.xml`` and include this:
 
   .. code-block:: xml
 
@@ -95,9 +94,9 @@ Adding a repository to Maven can be done at three scope levels:
        ...
        <repositories>
          <repository>
-           <id>kurento-snapshots</id>
-           <name>Kurento Snapshots</name>
-           <url>https://maven.openvidu.io/repository/snapshots/</url>
+           <id>kurento-github-public</id>
+           <name>Kurento GitHub Maven packages (public access)</name>
+           <url>https://public:&#103;hp_tVGPgYo5cjzCrFfTyYwsEDZESKCyDF2WP6Ak@maven.pkg.github.com/kurento/*</url>
            <releases>
              <enabled>false</enabled>
            </releases>
@@ -106,44 +105,27 @@ Adding a repository to Maven can be done at three scope levels:
            </snapshots>
          </repository>
        </repositories>
-       <pluginRepositories>
-         <pluginRepository>
-           <id>kurento-snapshots</id>
-           <name>Kurento Snapshots</name>
-           <url>https://maven.openvidu.io/repository/snapshots/</url>
-           <releases>
-             <enabled>false</enabled>
-           </releases>
-           <snapshots>
-             <enabled>true</enabled>
-           </snapshots>
-         </pluginRepository>
-       </pluginRepositories>
        ...
      </project>
 
-  After this is included, there are two ways to use the updated versions:
+  Afterwards, in the same ``pom.xml``, look for the desired dependency and change its version to a snapshot one. For example:
 
-  1. In the same *pom.xml*, look for the desired *<dependency>* and change its version. For example:
+  .. code-block:: xml
 
-     .. code-block:: xml
-
-        <dependency>
-          <groupId>org.kurento</groupId>
-          <artifactId>kurento-client</artifactId>
-          <version>|VERSION_CLIENT_JAVA|-SNAPSHOT</version>
-        </dependency>
-
-  2. If you have not specified a dependency version, use the ``-U`` switch in your next Maven run to force updating all dependencies.
+     <dependency>
+       <groupId>org.kurento</groupId>
+       <artifactId>kurento-client</artifactId>
+       <version>|VERSION_CLIENT_JAVA|-SNAPSHOT</version>
+     </dependency>
 
 - **User and System levels**.
 
-  The file *settings.xml* provides configuration for all projects, but its contents have a different reach depending on where it is located:
+  Add the snapshots repository to either of your *User* or *System* ``settings.xml`` file:
 
-  - At ``$HOME/.m2/settings.xml``, it defines the settings that will be applied for a single user.
-  - At ``/etc/maven/settings.xml``, it defines the settings that will be applied for all Maven users on a machine.
+  - At ``$HOME/.m2/settings.xml``, the configuration applies only to the current user.
+  - At ``/etc/maven/settings.xml``, the configuration applies to all users on the machine.
 
-  To use this method, first edit the settings file at one of the mentioned locations, and include this:
+  Edit one of the mentioned settings files, and include this:
 
   .. code-block:: xml
 
@@ -151,12 +133,12 @@ Adding a repository to Maven can be done at three scope levels:
        ...
        <profiles>
          <profile>
-           <id>kurento</id>
+           <id>snapshots</id>
            <repositories>
              <repository>
-               <id>kurento-snapshots</id>
-               <name>Kurento Snapshots</name>
-               <url>https://maven.openvidu.io/repository/snapshots/</url>
+               <id>kurento-github-public</id>
+               <name>Kurento GitHub Maven packages (public access)</name>
+               <url>https://public:&#103;hp_tVGPgYo5cjzCrFfTyYwsEDZESKCyDF2WP6Ak@maven.pkg.github.com/kurento/*</url>
                <releases>
                  <enabled>false</enabled>
                </releases>
@@ -165,27 +147,26 @@ Adding a repository to Maven can be done at three scope levels:
                </snapshots>
              </repository>
            </repositories>
-           <pluginRepositories>
-             <pluginRepository>
-               <id>kurento-snapshots</id>
-               <name>Kurento Snapshots</name>
-               <url>https://maven.openvidu.io/repository/snapshots/</url>
-               <releases>
-                 <enabled>false</enabled>
-               </releases>
-               <snapshots>
-                 <enabled>true</enabled>
-               </snapshots>
-             </pluginRepository>
-           </pluginRepositories>
          </profile>
        </profiles>
        ...
      </settings>
 
-  After this is included, use the ``-Pkurento`` switch in your next Maven run to enable the new profile, so all artifacts get downloaded into you local repository. Once in your local repository, Maven can successfully resolve the dependencies and the profile no longer needs to be activated in future runs.
+  ..
+     NOTE FOR EDITORS:
+     The <url> does basic auth via GitHub Access Token with the `read:packages` scope.
+     Generated with `docker run ghcr.io/jcansdale/gpr encode <Token>`.
+     This is provided to work around the GitHub limitation of not allowing
+     anonymous downloads from their Maven package registry.
+     More details here: https://github.community/t/download-from-github-package-registry-without-authentication/14407/111
 
-For more information about adding snapshot repositories to Maven, check their official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`__.
+  Then use the ``-Psnapshots`` argument in your next Maven run, to enable the new profile. For example:
+
+  .. code-block:: shell
+
+     mvn -Psnapshots clean package
+
+For more information about adding a snapshots repository to Maven, check the official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`__.
 
 
 
