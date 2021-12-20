@@ -31,8 +31,8 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<modules>
-				<module>kurento-commons</module>
 				<module>kurento-parent-pom</module>
+				<module>kurento-commons</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-client</module>
 				<module>kurento-assembly</module>
@@ -61,8 +61,8 @@
 		<profile>
 			<id>deploy</id>
 			<modules>
-				<module>kurento-commons</module>
 				<module>kurento-parent-pom</module>
+				<module>kurento-commons</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-client</module>
 				<module>kurento-integration-tests</module>
