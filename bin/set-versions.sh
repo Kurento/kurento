@@ -26,11 +26,11 @@
 #/
 #/ --kms-api <KmsVersion>
 #/
-#/   Use this exact version of the Kurento Media Server Java API packages.
+#/   Also change version of the Kurento Media Server Java API packages.
 #/
-#/   This argument allows changing the version number of the Kurento Java
-#/   packages, without having to release also a new version of the whole Media
-#/   Server. Normally the versions will differ when publishing a patch release.
+#/   This argument is used when a new version of the Media Server has been
+#/   released, and the Java packages should be made to depend on the new API
+#/   definition ones (which get published as part of the Media Server release).
 #/
 #/   <KmsVersion> is a full Maven version, such as "6.16.0" or "6.16.1-SNAPSHOT".
 #/
@@ -84,8 +84,7 @@ while [[ $# -gt 0 ]]; do
                 CFG_KMS_API="$2"
                 shift
             else
-                log "ERROR: --kms-api expects <KmsVersion>"
-                log "Run with '--help' to read usage details"
+                echo "ERROR: --kms-api expects <KmsVersion>"
                 exit 1
             fi
             ;;
@@ -111,7 +110,7 @@ fi
 
 REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
 [[ "$CFG_VERSION" =~ $REGEX ]] || {
-    echo "ERROR: '$CFG_VERSION' must be compatible with Semantic Versioning: <Major>.<Minor>.<Patch>"
+    echo "ERROR: '$CFG_VERSION' is not SemVer (<Major>.<Minor>.<Patch>)"
     exit 1
 }
 
