@@ -1465,17 +1465,20 @@
 
 	<!-- Repositories used to upload packages. -->
 	<distributionManagement>
+		<!--
+		<server> entries should exist with required credentials for each repo.
+		On CI, Jenkins injects them into settings.xml.
+		-->
 		<repository>
-			<!--
-			A "kurento-github" <server> entry should exist with required credentials,
-			for the running Maven instance.
-			On Kurento CI, this is done by Jenkins injecting a <server> entry
-			into its `settings.xml`, with an Access Token with the `write:packages` scope.
-			-->
+			<id>sonatype-nexus</id>
+			<name>Sonatype Nexus (Maven Central)</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
 			<id>kurento-github</id>
 			<name>Kurento GitHub Maven packages</name>
 			<url>https://maven.pkg.github.com/kurento/kurento-java</url>
-		</repository>
+		</snapshotRepository>
 	</distributionManagement>
 
 </project>
