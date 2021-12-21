@@ -3,7 +3,7 @@
 
 
 # Shell setup
-# -----------
+# ===========
 
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # shellcheck source=bash.conf.sh
@@ -11,7 +11,7 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
 
-# Trace all commands
+# Trace all commands.
 set -o xtrace
 
 
@@ -28,7 +28,7 @@ set -o xtrace
 #   If empty, will use Maven settings from `<distributionManagement>`.
 #
 # SIGN_ARTIFACTS true | false
-#   Wheter to sign artifacts before deployment. Default value is true
+#   Whether to sign artifacts before deployment. Default value is true
 #
 
 # Path information
@@ -52,9 +52,7 @@ if [[ -n "$MAVEN_SETTINGS" ]]; then
         log "ERROR: Cannot read file: $MAVEN_SETTINGS"
         exit 1
     }
-    MVN_ARGS+=(
-        --settings "$MAVEN_SETTINGS"
-    )
+    MVN_ARGS+=(--settings "$MAVEN_SETTINGS")
 fi
 [[ -z "${SIGN_ARTIFACTS:-}" ]] && SIGN_ARTIFACTS="true"
 
@@ -65,27 +63,14 @@ fi
 # Maven arguments that are common to all commands.
 MVN_ARGS+=(
     --batch-mode
-    -U
     -Dmaven.test.skip=true
     # -Dmaven.wagon.http.ssl.insecure=true
     # -Dmaven.wagon.http.ssl.allowall=true
     -Pdeploy
 )
 
-# Maven goals that are common to all commands.
-MVN_GOALS=(
-    clean
-    package
-)
-
-# The deploy goal is always the last one.
-# NOTE: The latest version of this plugin (3.0.0-M1) has a bug that breaks
-# auth: https://issues.apache.org/jira/browse/MDEPLOY-244
-# This comment provides a work around:
-# https://issues.apache.org/jira/browse/MDEPLOY-244?focusedCommentId=16648217&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-16648217
-# But the better option would be to avoid upgrading until the bug is fixed.
-# MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy"
-MVN_GOAL_DEPLOY="deploy"
+# Intermediate Maven goals that should run before `deploy`.
+MVN_GOALS=(clean)
 
 PROJECT_VERSION="$(kurento_get_version.sh)" || {
   log "ERROR: Command failed: kurento_get_version"
@@ -95,44 +80,43 @@ log "Build and deploy version: $PROJECT_VERSION"
 
 if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     log "Version to deploy is SNAPSHOT"
+
     # if [[ -n "${SNAPSHOT_REPOSITORY:-}" ]]; then
     #     MVN_ARGS+=(
     #         -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
     #     )
     # fi
+
     MVN_CMD=(mvn)
     MVN_CMD+=("${MVN_ARGS[@]}")
     MVN_CMD+=("${MVN_GOALS[@]}")
-    MVN_CMD+=("$MVN_GOAL_DEPLOY")
+    MVN_CMD+=(deploy)
+
     kurento_maven_deploy_github.sh "${MVN_CMD[@]}" || {
         log "ERROR: Command failed: kurento_maven_deploy_github"
         exit 1
     }
 else
     log "Version to deploy is RELEASE"
-    MVN_ARGS+=(
-        -Pkurento-release
-    )
+
+    MVN_ARGS+=(-Pkurento-release)
+
     # if [[ -n "${RELEASE_REPOSITORY:-}" ]]; then
     #     MVN_ARGS+=(
     #         -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY"
     #     )
     # fi
-    MVN_GOALS+=(
-        javadoc:jar
-        source:jar
-    )
+
+    MVN_GOALS+=(javadoc:jar source:jar)
 
     if [[ $SIGN_ARTIFACTS == "true" ]]; then
         log "Artifact signing on deploy is ENABLED"
-        # Deploy signing artifacts
-        MVN_ARGS+=(
-            -Pgpg-sign
-        )
-        MVN_GOALS+=(
-            gpg:sign
-        )
-        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
+
+        MVN_ARGS+=(-Pgpg-sign)
+
+        MVN_GOALS+=(gpg:sign)
+
+        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" deploy || {
             log "ERROR: Command failed: mvn deploy (signed release)"
             exit 1
         }
@@ -141,8 +125,8 @@ else
         SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
 
         [[ -z "$SIGNED_FILES" ]] && {
-          log "Exit: No signed files found"
-          exit 0
+            log "Exit: No signed files found"
+            exit 0
         }
 
         for FILE in $SIGNED_FILES; do
@@ -154,8 +138,8 @@ else
         done
     else
         log "Artifact signing on deploy is DISABLED"
-        # Deploy without signing artifacts
-        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
+
+        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" deploy || {
             log "ERROR: Command failed: mvn deploy (unsigned release)"
             exit 1
         }
