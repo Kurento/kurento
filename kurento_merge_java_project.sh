@@ -131,9 +131,15 @@ kurento_check_version.sh false || {
 # --------------
 
 # Kurento repositories
-export SNAPSHOT_REPOSITORY="$MAVEN_S3_KURENTO_SNAPSHOTS"
-export RELEASE_REPOSITORY="$MAVEN_S3_KURENTO_RELEASES"
-kurento_maven_deploy.sh
+#
+# TODO: For now, this is commented out as we're migrating to GitHub Repo.
+# If all goes well, this can be deleted and all of MAVEN_S3_KURENTO_SNAPSHOTS,
+# MAVEN_S3_KURENTO_RELEASES, and MAVEN_SONATYPE_NEXUS_STAGING can be deleted
+# from these scripts and from CI config.
+#
+# export SNAPSHOT_REPOSITORY="$MAVEN_S3_KURENTO_SNAPSHOTS"
+# export RELEASE_REPOSITORY="$MAVEN_S3_KURENTO_RELEASES"
+# kurento_maven_deploy.sh
 
 # Maven Central (only releases)
 export SNAPSHOT_REPOSITORY=""
