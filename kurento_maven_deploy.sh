@@ -32,16 +32,16 @@ set -o xtrace
 #
 
 # Path information
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-PATH="${BASEPATH}:${PATH}"
+# BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# PATH="${BASEPATH}:${PATH}"
 
 # Get command line parameters for backward compatibility
-[[ -n "${1:-}" ]] && MAVEN_SETTINGS="$1"
-[[ -n "${2:-}" ]] && {
-    SNAPSHOT_REPOSITORY="$2"
-    RELEASE_REPOSITORY="$2"
-}
-[[ -n "${3:-}" ]] && SIGN_ARTIFACTS="$3"
+# [[ -n "${1:-}" ]] && MAVEN_SETTINGS="$1"
+# [[ -n "${2:-}" ]] && {
+#     SNAPSHOT_REPOSITORY="$2"
+#     RELEASE_REPOSITORY="$2"
+# }
+# [[ -n "${3:-}" ]] && SIGN_ARTIFACTS="$3"
 
 MVN_ARGS=()
 
@@ -59,16 +59,16 @@ fi
 [[ -z "${SIGN_ARTIFACTS:-}" ]] && SIGN_ARTIFACTS="true"
 
 # needed env vars
-export AWS_ACCESS_KEY_ID="$UBUNTU_PRIV_S3_ACCESS_KEY_ID"
-export AWS_SECRET_ACCESS_KEY="$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID"
+# export AWS_ACCESS_KEY_ID="$UBUNTU_PRIV_S3_ACCESS_KEY_ID"
+# export AWS_SECRET_ACCESS_KEY="$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID"
 
 # Maven arguments that are common to all commands.
 MVN_ARGS+=(
     --batch-mode
     -U
     -Dmaven.test.skip=true
-    -Dmaven.wagon.http.ssl.insecure=true
-    -Dmaven.wagon.http.ssl.allowall=true
+    # -Dmaven.wagon.http.ssl.insecure=true
+    # -Dmaven.wagon.http.ssl.allowall=true
     -Pdeploy
 )
 
@@ -84,7 +84,8 @@ MVN_GOALS=(
 # This comment provides a work around:
 # https://issues.apache.org/jira/browse/MDEPLOY-244?focusedCommentId=16648217&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-16648217
 # But the better option would be to avoid upgrading until the bug is fixed.
-MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy"
+# MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy"
+MVN_GOAL_DEPLOY="deploy"
 
 PROJECT_VERSION="$(kurento_get_version.sh)" || {
   log "ERROR: Command failed: kurento_get_version"
@@ -94,25 +95,29 @@ log "Build and deploy version: $PROJECT_VERSION"
 
 if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     log "Version to deploy is SNAPSHOT"
-    if [[ -n "${SNAPSHOT_REPOSITORY:-}" ]]; then
-        MVN_ARGS+=(
-            -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
-        )
-    fi
-    mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
-        log "ERROR: Command failed: mvn deploy (snapshot)"
+    # if [[ -n "${SNAPSHOT_REPOSITORY:-}" ]]; then
+    #     MVN_ARGS+=(
+    #         -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
+    #     )
+    # fi
+    MVN_CMD=(mvn)
+    MVN_CMD+=("${MVN_ARGS[@]}")
+    MVN_CMD+=("${MVN_GOALS[@]}")
+    MVN_CMD+=("$MVN_GOAL_DEPLOY")
+    kurento_maven_deploy_github.sh "${MVN_CMD[@]}" || {
+        log "ERROR: Command failed: kurento_maven_deploy_github"
         exit 1
     }
-elif [[ $PROJECT_VERSION != *-SNAPSHOT ]]; then
+else
     log "Version to deploy is RELEASE"
     MVN_ARGS+=(
         -Pkurento-release
     )
-    if [[ -n "${RELEASE_REPOSITORY:-}" ]]; then
-        MVN_ARGS+=(
-            -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY"
-        )
-    fi
+    # if [[ -n "${RELEASE_REPOSITORY:-}" ]]; then
+    #     MVN_ARGS+=(
+    #         -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY"
+    #     )
+    # fi
     MVN_GOALS+=(
         javadoc:jar
         source:jar
