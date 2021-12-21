@@ -41,6 +41,8 @@ MVN_COMMAND=("$@")
 # Helper functions
 # ================
 
+# Requires $GITHUB_TOKEN with `read:packages` and `delete:packages` scopes.
+
 function delete_github_version {
     local PROJECT_NAME; PROJECT_NAME="$(
         mvn --batch-mode --quiet --non-recursive \
@@ -56,7 +58,7 @@ function delete_github_version {
     local API_VERSIONS_JSON; API_VERSIONS_JSON="$(
         curl -sS \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token $GITHUB_TOKEN_READ_DELETE" \
+            -H "Authorization: token $GITHUB_TOKEN" \
             "https://api.github.com/orgs/kurento/packages/maven/$PROJECT_NAME/versions"
     )"
 
@@ -69,7 +71,7 @@ function delete_github_version {
     curl -sS \
         -X DELETE \
         -H "Accept: application/vnd.github.v3+json" \
-        -H "Authorization: token $GITHUB_TOKEN_READ_DELETE" \
+        -H "Authorization: token $GITHUB_TOKEN" \
         "https://api.github.com/orgs/kurento/packages/maven/$PROJECT_NAME/versions/$API_VERSION_ID"
 
     log "INFO: Successfully deleted version '${PROJECT_NAME}:${PROJECT_VERSION}' from GitHub."
