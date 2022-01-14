@@ -62,7 +62,7 @@ function delete_github_version {
             "https://api.github.com/orgs/kurento/packages/maven/$PROJECT_NAME/versions"
     )"
 
-    local API_VERSION_ID; API_VERSION_ID="$(echo "$API_VERSIONS_JSON" | jq ".[] | select(.name==\"$PROJECT_VERSION\") | .id")"
+    local API_VERSION_ID; API_VERSION_ID="$(echo "$API_VERSIONS_JSON" | jq ".[] | select(.name==\"$PROJECT_VERSION\")? | .id")"
     [[ -n "$API_VERSION_ID" ]] || {
         log "WARNING: Version '${PROJECT_NAME}:${PROJECT_VERSION}' not found in GitHub. Nothing to delete."
         return
