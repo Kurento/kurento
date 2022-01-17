@@ -285,6 +285,18 @@ If *kurento-maven-plugin* is going to get also a new release, then edit the file
    -  <version>1.0.0</version>
    +  <version>1.1.0</version>
 
+If *kurento-parent-pom* (from kurento-java) has changed and the Java API artifacts should depend on newer versions, then edit the file ``kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl`` to update the parent version in the auto-generation template:
+
+.. code-block:: xml
+
+      <!-- Maven coordinates -->
+      <parent>
+          <groupId>org.kurento</groupId>
+          <artifactId>kurento-parent-pom</artifactId>
+   -      <version>1.0.0</version>
+   +      <version>1.1.0</version>
+      </parent>
+
 Then proceed with the normal release.
 
 
@@ -320,7 +332,7 @@ Test the KMS API Java module generation (local check).
            && cd build \
            && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE \
            && cd java \
-           && mvn clean install -Dmaven.test.skip=false \
+           && mvn clean install -DskipTests=false \
            || { echo "ERROR: Command failed"; return 1; }
 
            popd
@@ -403,7 +415,7 @@ When all repos have been released, and CI jobs have finished successfully:
 * Wait a bit.
 * **Refresh**.
 * **Release** repository.
-* Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
+* Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
 
 * Also, check that the JavaScript modules have been published by CI:
 
@@ -596,7 +608,7 @@ When all repos have been released, and CI jobs have finished successfully:
 * Wait a bit.
 * **Refresh**.
 * **Release** repository.
-* Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
+* Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
 
 
 
@@ -764,7 +776,7 @@ Release steps
            # * Build and run tests.
            # * Do not use `-U` because for each project we want Maven to find
            #   the locally installed artifacts from previous $PROJECT.
-           mvn clean install -Dmaven.test.skip=false -Pkurento-release \
+           mvn clean install -DskipTests=false -Pkurento-release \
            || { echo "ERROR: Command failed: mvn clean install"; return 1; }
 
            popd
@@ -827,7 +839,7 @@ When all repos have been released, and CI jobs have finished successfully:
 * Wait a bit.
 * **Refresh**.
 * **Release** repository.
-* Maven artifacts will be available `after 10 minutes <https://central.sonatype.org/pages/ossrh-guide.html#releasing-to-central>`__.
+* Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
 
 
 
@@ -866,14 +878,14 @@ New Development
            pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           ./bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION-SNAPSHOT" --git-add \
+           ./bin/set-versions.sh "$NEW_VERSION" --kms-api "${NEW_VERSION}-SNAPSHOT" --git-add \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
            # Install the project.
-           # * Skip building and running tests.
+           # * Skip running the tests.
            # * Do not use `-U` because for each project we want Maven to find
            #   the locally installed artifacts from previous $PROJECT.
-           mvn clean install -Dmaven.test.skip=true \
+           mvn clean install -DskipTests=true \
            || { echo "ERROR: Command failed: mvn clean install"; return 1; }
 
            popd
