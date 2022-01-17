@@ -533,11 +533,3 @@ client-side. Other client libraries are managed with
 
    You can find the latest version of
    Kurento Java Client at `Maven Central <https://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
-
-Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
-include the following properties in your pom:
-
-.. sourcecode:: xml
-
-   <maven.compiler.target>1.7</maven.compiler.target>
-   <maven.compiler.source>1.7</maven.compiler.source>
