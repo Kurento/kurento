@@ -21,7 +21,7 @@
 		Parent POM for all Kurento Java projects.
 		Provides default properties, version numbers, and build configurations.
 	</description>
-	<url>https://www.kurento.org/docs/${project.version}</url>
+	<url>https://www.kurento.org/docs/${version.kurento-java}</url>
 	<scm>
 		<url>${kurento-java.scm.url}</url>
 		<connection>${kurento-java.scm.connection}</connection>
@@ -86,7 +86,7 @@
 		<version.kurento-maven-plugin>6.15.0</version.kurento-maven-plugin>
 
 		<!-- Kurento Java modules -->
-		<version.kurento-java>${project.version}</version.kurento-java>
+		<version.kurento-java>${project.parent.version}</version.kurento-java>
 
 		<!-- External versions -->
 		<webjars-locator.version>0.40</webjars-locator.version>
@@ -970,8 +970,8 @@
 						<notimestamp>true</notimestamp>
 						<doctitle>${project.name} API</doctitle>
 						<windowtitle>${project.name} API</windowtitle>
-						<header><![CDATA[<b>${project.name} ${project.version}</b>]]></header>
-						<footer><![CDATA[<b>${project.name} ${project.version}</b>]]></footer>
+						<header><![CDATA[<b>${project.name} ${version.kurento-java}</b>]]></header>
+						<footer><![CDATA[<b>${project.name} ${version.kurento-java}</b>]]></footer>
 						<archive>
 							<index>true</index>
 							<manifest>
