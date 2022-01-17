@@ -82,7 +82,7 @@ Kurento Java Client
 
 Development builds of Kurento Java packages are uploaded to the `GitHub Maven Repository <https://github.com/orgs/Kurento/packages>`__.
 
-You need to add this repository to your Maven configuration. This can be done at the **Project**, **User**, or **System** levels:
+This repository can be added to the Maven configuration at the **Project**, **User**, or **System** levels, or be used directly within Maven commands.
 
 - **Project level**.
 
@@ -165,6 +165,16 @@ You need to add this repository to your Maven configuration. This can be done at
   .. code-block:: shell
 
      mvn -Psnapshots clean package
+
+- **Maven commands**.
+
+  To use the snapshots repository in ad-hoc Maven commands, you can use the un-encoded GitHub Token, which has read-only permissions to download artifacts. This shows an usage example for the Maven `dependency:get <https://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html>`__ plugin:
+
+  .. code-block:: shell
+
+     mvn dependency:get \
+         -DremoteRepositories='https://public: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@maven.pkg.github.com/kurento/*' \
+         -Dartifact='org.kurento:kurento-client:6.16.4-SNAPSHOT'
 
 For more information about adding a snapshots repository to Maven, check the official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`__.
 
