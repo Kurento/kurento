@@ -8,7 +8,7 @@ pom.xml
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>6.16.3</version>
+		<version>6.16.4</version>
 	</parent>
 <#if module.code.kmd?? >
 	<groupId>${module.code.kmd.java.mavenGroupId}</groupId>
