@@ -82,101 +82,101 @@ Kurento Java Client
 
 Development builds of Kurento Java packages are uploaded to the `GitHub Maven Repository <https://github.com/orgs/Kurento/packages>`__.
 
-This repository can be added to the Maven configuration at the **Project**, **User**, or **System** levels, or be used directly within Maven commands.
-
-- **Project level**.
-
-  This adds access to development builds only for a single project. Open the project's ``pom.xml`` and include this:
-
-  .. code-block:: xml
-
-     <project>
-       ...
-       <repositories>
-         <repository>
-           <id>kurento-github-public</id>
-           <name>Kurento GitHub Maven packages (public access)</name>
-           <url>https://public:&#103;hp_tVGPgYo5cjzCrFfTyYwsEDZESKCyDF2WP6Ak@maven.pkg.github.com/kurento/*</url>
-           <releases>
-             <enabled>false</enabled>
-           </releases>
-           <snapshots>
-             <enabled>true</enabled>
-           </snapshots>
-         </repository>
-       </repositories>
-       ...
-     </project>
-
-  Afterwards, in the same ``pom.xml``, look for the desired dependency and change its version to a snapshot one. For example:
-
-  .. code-block:: xml
-
-     <dependency>
-       <groupId>org.kurento</groupId>
-       <artifactId>kurento-client</artifactId>
-       <version>|VERSION_CLIENT_JAVA|-SNAPSHOT</version>
-     </dependency>
-
-- **User and System levels**.
-
-  Add the snapshots repository to either of your *User* or *System* ``settings.xml`` file:
-
-  - At ``$HOME/.m2/settings.xml``, the configuration applies only to the current user.
-  - At ``/etc/maven/settings.xml``, the configuration applies to all users on the machine.
-
-  Edit one of the mentioned settings files, and include this:
-
-  .. code-block:: xml
-
-     <settings>
-       ...
-       <profiles>
-         <profile>
-           <id>snapshots</id>
-           <repositories>
-             <repository>
-               <id>kurento-github-public</id>
-               <name>Kurento GitHub Maven packages (public access)</name>
-               <url>https://public:&#103;hp_tVGPgYo5cjzCrFfTyYwsEDZESKCyDF2WP6Ak@maven.pkg.github.com/kurento/*</url>
-               <releases>
-                 <enabled>false</enabled>
-               </releases>
-               <snapshots>
-                 <enabled>true</enabled>
-               </snapshots>
-             </repository>
-           </repositories>
-         </profile>
-       </profiles>
-       ...
-     </settings>
-
-  ..
-     NOTE FOR EDITORS:
-     The <url> does basic auth via GitHub Access Token with the `read:packages` scope.
-     Generated with `docker run ghcr.io/jcansdale/gpr encode <Token>`.
-     This is provided to work around the GitHub limitation of not allowing
-     anonymous downloads from their Maven package registry.
-     More details here: https://github.community/t/download-from-github-package-registry-without-authentication/14407/111
-
-  Then use the ``-Psnapshots`` argument in your next Maven run, to enable the new profile. For example:
-
-  .. code-block:: shell
-
-     mvn -Psnapshots clean package
-
-- **Maven commands**.
-
-  To use the snapshots repository in ad-hoc Maven commands, you can use the un-encoded GitHub Token, which has read-only permissions to download artifacts. This shows an usage example for the Maven `dependency:get <https://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html>`__ plugin:
-
-  .. code-block:: shell
-
-     mvn dependency:get \
-         -DremoteRepositories='https://public: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@maven.pkg.github.com/kurento/*' \
-         -Dartifact='org.kurento:kurento-client:6.16.4-SNAPSHOT'
+This repository can be added to the Maven configuration at the **Project**, **User**, or **System** levels.
 
 For more information about adding a snapshots repository to Maven, check the official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`__.
+
+
+
+Project level
+-------------
+
+This adds access to development builds only for a single project. Open the project's ``pom.xml`` and include this:
+
+.. code-block:: xml
+
+   <project>
+     ...
+     <repositories>
+       <repository>
+         <id>kurento-github-public</id>
+         <name>Kurento GitHub Maven packages (public access)</name>
+         <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+         <releases>
+           <enabled>false</enabled>
+         </releases>
+         <snapshots>
+           <enabled>true</enabled>
+         </snapshots>
+       </repository>
+     </repositories>
+     ...
+   </project>
+
+Afterwards, in the same ``pom.xml``, look for the desired dependency and change its version to a snapshot one. For example:
+
+.. code-block:: xml
+
+   <dependency>
+     <groupId>org.kurento</groupId>
+     <artifactId>kurento-client</artifactId>
+     <version>|VERSION_CLIENT_JAVA|-SNAPSHOT</version>
+   </dependency>
+
+
+
+User and System levels
+----------------------
+
+Add the snapshots repository to either of your *User* or *System* ``settings.xml`` file:
+
+- At ``$HOME/.m2/settings.xml``, the configuration applies only to the current user.
+- At ``/etc/maven/settings.xml``, the configuration applies to all users on the machine.
+
+Edit one of the mentioned settings files, and include this:
+
+.. code-block:: xml
+
+   <settings>
+     ...
+     <profiles>
+       <profile>
+         <id>snapshots</id>
+         <repositories>
+           <repository>
+             <id>kurento-github-public</id>
+             <name>Kurento GitHub Maven packages (public access)</name>
+             <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+             <releases>
+               <enabled>false</enabled>
+             </releases>
+             <snapshots>
+               <enabled>true</enabled>
+             </snapshots>
+           </repository>
+         </repositories>
+       </profile>
+     </profiles>
+     ...
+   </settings>
+
+..
+   NOTE FOR EDITORS:
+   The <url> does basic auth via GitHub Access Token with the `read:packages` scope.
+   Generated with `docker run ghcr.io/jcansdale/gpr encode <Token>`.
+   This is provided to work around the GitHub limitation of not allowing
+   anonymous downloads from their Maven package registry.
+   More details here: https://github.community/t/download-from-github-package-registry-without-authentication/14407/111
+
+Then use the ``-Psnapshots`` argument in your next Maven run, to enable the new profile. For example:
+
+.. code-block:: shell
+
+   mvn -Psnapshots clean package
+
+.. code-block:: shell
+
+   mvn dependency:get -Psnapshots -Dartifact='org.kurento:kurento-client:6.16.4-SNAPSHOT'
 
 
 
