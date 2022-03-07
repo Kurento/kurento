@@ -36,8 +36,8 @@ To run a new Firefox instance with a clean profile:
 
 Other options:
 
-* ``[-url] <URL>``: Open URL in a new tab or window.
 * ``-jsconsole``: Start Firefox with the `Browser Console <https://developer.mozilla.org/en-US/docs/Tools/Browser_Console>`__.
+* ``[-url] <URL>``: Open URL in a new tab or window.
 
 
 
@@ -53,9 +53,11 @@ Sources:
 
 Debug logging can be enabled with the parameters *MOZ_LOG* and *MOZ_LOG_FILE*. These are controlled either with environment variables, or command-line flags.
 
-In Firefox 54 and later, you can use ``about:networking``, and select the Logging option, to change *MOZ_LOG* / *MOZ_LOG_FILE* options on the fly (without restarting the browser).
+In Firefox >= 54, you can use ``about:networking``, and select the Logging option, to change *MOZ_LOG* / *MOZ_LOG_FILE* options on the fly (without restarting the browser).
 
-Lastly, you can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*"). The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special booleans *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
+You can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*").
+
+The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special booleans *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
 
 - **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
 - **timestamp**: Insert timestamp at start of each log line.
@@ -114,6 +116,7 @@ Linux:
 
    export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    export MOZ_LOG_FILE=/tmp/firefox.log
+
    /usr/bin/firefox
 
 Linux with *MOZ_LOG* passed as command line arguments:
@@ -130,6 +133,7 @@ Mac:
 
    export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    export MOZ_LOG_FILE=/tmp/firefox.log
+
    /Applications/Firefox.app/Contents/MacOS/firefox-bin
 
 Windows:
@@ -138,6 +142,7 @@ Windows:
 
    set MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
    set MOZ_LOG_FILE=%TEMP%\firefox.log
+
    "C:\Program Files\Mozilla Firefox\firefox.exe"
 
 :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
@@ -213,7 +218,7 @@ Sources:
 * https://webrtc.org/web-apis/chrome/
 
 # LINUX:
-TEST_BROWSER="/usr/bin/chromium-browser"
+TEST_BROWSER="/usr/bin/chromium"
 TEST_BROWSER="/usr/bin/google-chrome"
 #
 TEST_PROFILE="/tmp/chrome-profile"
@@ -231,7 +236,8 @@ TEST_PROFILE="/tmp/chrome-profile"
         >chrome_debug.log 2>&1 &
 
     # Other flags:
-    # --use-file-for-fake-audio-capture="${HOME}/test.wav" \
+    # --use-file-for-fake-audio-capture="/path/to/audio.wav" \
+    # --use-file-for-fake-video-capture="/path/to/video.y4m" \
 
     tail -f chrome_debug.log
 }
