@@ -18,7 +18,27 @@ This is the base interface used to manage capabilities common to all Kurento ele
 Error
 -----
 
-Some error has occurred. Check the event parameters (such as *description*, *errorCode*, and *type*) to get information about what happened.
+Kurento Client API docs: `Java <../_static/client-javadoc/org/kurento/client/ErrorEvent.html>`__, `JavaScript <../_static/client-jsdoc/module-core.html#event:Error>`__.
+
+Some error has occurred on a Kurento *MediaObject* instance. Check the event parameters (such as *description*, *errorCode*, and *type*) to get information about what happened.
+
+The ``ErrorEvent`` can be emitted from any child of the Kurento  (see :doc:`/features/kurento_modules` for more details). This Event has a **type** string field that contains an error identifier. **Applications should subscribe to the Error event from all Kurento objects**, this way you'll know when something goes wrong.
+
+Only a handful of errors have their type encoded into a well defined string:
+
+* ``"RESOURCE_ERROR_OPEN"``: Indicates that there was a problem when trying to open a local file or resource. This will typically happen when, for example, the *PlayerEndpoint* tries to open a file for which it does not have read permissions from the filesystem, or when *RecorderEndpoint* doesn't have write permissions for the destination path.
+
+* ``"RESOURCE_ERROR_WRITE"``: Indicates an storage error while a write operation was ongoing. This error might be seen if the disk fails while *RecorderEndpoint* is writing an output file.
+
+* ``"RESOURCE_ERROR_NO_SPACE_LEFT"``: This error will mostly happen when the disk becomes full while a *RecorderEndpoint* is doing its job. This is a common thing to happen if you don't have free space monitoring on your servers, so you should listen for this error from the *RecorderEndpoint* if you use it in any of your applications.
+
+* ``"STREAM_ERROR_DECODE"``: This error tends to happen when the sending side has transmitted an invalid encoded stream, and Kurento Media Server is trying to decode it but the underlying GStreamer library is unable to do so. This could happen, for example, when using a *PlayerEndpoint* (which by default decodes the input stream), or when *Transcoding* has been enabled due to incompatible codecs negotiated by different *WebRtcEndpoints*. When getting this error, you should review the settings of the sender, because there might be something wrong with its encoder configuration.
+
+* ``"STREAM_ERROR_FAILED"``: A generic error that is originated from the underlying GStreamer library when any data flow issue occurs. KMS debug logs should be checked because chances are that more descriptive information has been printed in there.
+
+* ``"UNEXPECTED_ELEMENT_ERROR"``: Unclassified error.
+
+On top of this, some errors are actually not being handled by the *MediaObject* where they occurred, so they will end up in the error handler of *MediaPipeline*, with the *type* field set to ``"UNEXPECTED_PIPELINE_ERROR"``.
 
 
 
