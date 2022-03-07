@@ -509,6 +509,13 @@ Notice that this message has no *id* field due to the fact that no response is r
 
 
 
+closeSession
+------------
+
+If you inspect the JSON traffic between any of the Kurento clients and Kurento Media Server itself, you might notice that clients send a ``closeSession`` request. This is an undocumented command that was added for development purposes in the past, and was kept in the implementation. However, it does nothing in practice. You can safely ignore this method if you are implementing the Kurento Protocol on your own SDK.
+
+
+
 Network issues
 ==============
 
