@@ -22,10 +22,10 @@ Request
 
 An *RPC call* is represented by sending a *request* message to a server. The *request* message has the following members:
 
-- **jsonrpc**: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
-- **id**: A unique identifier established by the client that contains a string or number. The server must reply with the same value in the *response* message. This member is used to correlate the context between both messages.
-- **method**: A string containing the name of the method to be invoked.
-- **params**: A structured value that holds the parameter values to be used during the invocation of the method.
+- ``jsonrpc``: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
+- ``id``: A unique identifier established by the client that contains a string or number. The server must reply with the same value in the *response* message. This member is used to correlate the context between both messages.
+- ``method``: A string containing the name of the method to be invoked.
+- ``params``: A structured value that holds the parameter values to be used during the invocation of the method.
 
 The following JSON shows a sample request for the creation of a `PlayerEndpoint` Media Element:
 
@@ -52,9 +52,9 @@ Successful Response
 
 When an *RPC call* is made, the server replies with a *response* message. In case of a successful response, the *response* message will contain the following members:
 
-- **jsonrpc**: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
-- **id**: Must match the value of the *id* member in the *request* message.
-- **result**: Its value is determined by the method invoked on the server.
+- ``jsonrpc``: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
+- ``id``: Must match the value of the *id* member in the *request* message.
+- ``result``: Its value is determined by the method invoked on the server.
 - In case the connection is rejected, the response includes a message with a *rejected* attribute containing a message with a *code* and *message* attributes with the reason why the session was not accepted, and no *sessionId* is defined.
 
 The following example shows a typical successful response:
@@ -78,13 +78,13 @@ Error Response
 When an *RPC call* is made, the server replies with a *response* message. In case of an error response, the *response* message will contain the following
 members:
 
-- **jsonrpc**: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
-- **id**: Must match the value of the *id* member in the *request* message. If there was an error in detecting the *id* in the *request* message (e.g. *Parse Error/Invalid Request*), *id* is *null*.
-- **error**: A message describing the error through the following members:
+- ``jsonrpc``: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
+- ``id``: Must match the value of the *id* member in the *request* message. If there was an error in detecting the *id* in the *request* message (e.g. *Parse Error/Invalid Request*), *id* is *null*.
+- ``error``: A message describing the error through the following members:
 
-  - **code**: An integer number that indicates the error type that occurred.
-  - **message**: A string providing a short description of the error.
-  - **data**: A primitive or structured value that contains additional information about the error. It may be omitted. The value of this member is defined by the server.
+  - ``code``: An integer number that indicates the error type that occurred.
+  - ``message``: A string providing a short description of the error.
+  - ``data``: A primitive or structured value that contains additional information about the error. It may be omitted. The value of this member is defined by the server.
 
 The following example shows a typical error response:
 
@@ -110,23 +110,23 @@ Before issuing commands, the Kurento Client requires establishing a WebSocket co
 
 Once the WebSocket has been established, the Kurento Protocol offers different types of request/response messages:
 
-- **ping**: Keep-alive method between client and Kurento Media Server.
-- **create**: Creates a new media object, i.e. a Media Pipeline, an Endpoint, or any other Media Element.
-- **describe**: Retrieves an already existing object.
-- **invoke**: Calls a method on an existing object.
-- **subscribe**: Subscribes to some specific event, to receive notifications when it gets emitted by a media object.
-- **unsubscribe**: Removes an existing subscription to an event.
-- **release**: Marks a media object for garbage collection and release of the resources used by it.
+- ``ping``: Keep-alive method between client and Kurento Media Server.
+- ``create``: Creates a new media object, i.e. a Media Pipeline, an Endpoint, or any other Media Element.
+- ``describe``: Retrieves an already existing object.
+- ``invoke``: Calls a method on an existing object.
+- ``subscribe``: Subscribes to some specific event, to receive notifications when it gets emitted by a media object.
+- ``unsubscribe``: Removes an existing subscription to an event.
+- ``release``: Marks a media object for garbage collection and release of the resources used by it.
 
 The Kurento Protocol allows that Kurento Media Server sends requests to clients:
 
-- **onEvent**: This request is sent from Kurento Media server to subscribed clients when an event occurs.
+- ``onEvent``: This request is sent from Kurento Media server to subscribed clients when an event occurs.
 
 
 
 .. _protocol-ping:
 
-Ping
+ping
 ----
 
 In order to warrant the WebSocket connectivity between the client and the Kurento Media Server, a *keep-alive* method is implemented. This method is based on a *ping* method sent by the client, which must be replied with a *pong* message from the server. If no response is obtained in a time interval, the client will assume that the connectivity with the media server has been lost. The *interval* parameter is the time available to receive the *pong* message from the server, in milliseconds. By default this value is `240000`_ (**4 minutes**).
@@ -160,7 +160,7 @@ The response to a *ping* request must contain a *result* object with the paramet
 
 
 
-Create
+create
 ------
 
 This message requests the creation of an object from the Kurento API (Media Pipelines and Media Elements). The parameter *type* specifies the type of the object to be created. The parameter *constructorParams* contains all the information needed to create the object. Each message needs different *constructorParams* to create the object. These parameters are defined :doc:`per-module </features/kurento_modules>`.
@@ -230,7 +230,7 @@ The response to this request message is as follows:
 
 
 
-Describe
+describe
 --------
 
 This message retrieves the information of an already existing object in the Media Server. This can be useful for cases there a newly started Application Server does already know the IDs of all objects it wants to manage, so it just needs to get a reference to them from the Media Server, instead of creating new ones. The *object* parameter contains the ID of the desired object that should be retrieved.
@@ -330,7 +330,7 @@ An error response will be returned:
 
 
 
-Invoke
+invoke
 ------
 
 This message requests the invocation of an operation in the specified object. The parameter *object* indicates the *id* of the object in which the operation will be invoked. The parameter *operation* carries the name of the operation to be executed. Finally, the parameter *operationParams* has the parameters needed to execute the operation.
@@ -369,7 +369,7 @@ This is the typical response while invoking the operation *connect* (that doesn'
 
 
 
-Release
+release
 -------
 
 This message requests releasing the resources of the specified object. The parameter *object* indicates the *id* of the object to be released:
@@ -400,7 +400,7 @@ The response message only contains the *sessionId*:
 
 
 
-Subscribe
+subscribe
 ---------
 
 This message requests the subscription to a certain kind of events in the specified object. The parameter *object* indicates the *id* of the object to subscribe for events. The parameter *type* specifies the type of the events. If a client is subscribed for a certain type of events in an object, each time an event is fired in this object a request with method *onEvent* is sent from Kurento Media Server to the client. This kind of request is described few sections later.
@@ -437,7 +437,7 @@ This is  the response of the subscription request. The  *value* attribute contai
 
 
 
-Unsubscribe
+unsubscribe
 -----------
 
 This message requests the cancellation of a previous event subscription. The parameter *subscription* contains the subscription *id* received from the server when the subscription was created.
@@ -471,7 +471,7 @@ The response message only contains the *sessionId*:
 
 
 
-OnEvent
+onEvent
 -------
 
 When a client is subscribed to some events from an object, the server sends an *onEvent* request each time an event of that type is fired in the object. This is possible because the Kurento Protocol is implemented with WebSockets and there is a full duplex channel between client and server. The request that server sends to client has all the information about the event:
