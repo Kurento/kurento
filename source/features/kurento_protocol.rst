@@ -474,13 +474,17 @@ The response message only contains the *sessionId*:
 onEvent
 -------
 
-When a client is subscribed to some events from an object, the server sends an *onEvent* request each time an event of that type is fired in the object. This is possible because the Kurento Protocol is implemented with WebSockets and there is a full duplex channel between client and server. The request that server sends to client has all the information about the event:
+When a client is subscribed to some events from an object, the server sends an *onEvent* request each time an event of that type is fired in the object. This is possible because the Kurento Protocol is implemented with WebSockets and there is a full duplex channel between client and server.
 
-- **source**: The object source of the event.
-- **type**: The type of the event.
-- **timestamp**: [**DEPRECATED**: Use timestampMillis] The timestamp associated with this event: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
-- **timestampMillis**: The timestamp associated with this event: Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
-- **tags**: Media elements can be labeled using the methods *setSendTagsInEvents* and *addTag*, present in each element. These tags are key-value metadata that can be used by developers for custom purposes. Tags are returned with each event by the media server in this field.
+The ``data`` field contents are dependent on the type of event, but it generally contains these values:
+
+- ``source``: The object source of the event.
+- ``type``: The type of the event.
+- ``timestamp``: [**DEPRECATED**: Use timestampMillis] The timestamp associated with this event: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
+- ``timestampMillis``: The timestamp associated with this event: Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
+- ``tags``: Media elements can be labeled using the methods *setSendTagsInEvents* and *addTag*, present in each element. These tags are key-value metadata that can be used by developers for custom purposes. Tags are returned with each event by the media server in this field.
+
+This message has no *id* field due to the fact that no response is required.
 
 The following example shows a notification sent from server to client, notifying of an event *EndOfStream* for a *PlayerEndpoint* object:
 
@@ -504,8 +508,31 @@ The following example shows a notification sent from server to client, notifying
      }
    }
 
+Here, an example Error event is sent to notify about permission errors while trying to access the file system:
 
-Notice that this message has no *id* field due to the fact that no response is required.
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "method": "onEvent",
+     "params": {
+       "value": {
+         "data": {
+           "description": "Error code 6: Could not open file \"/tmp/invalid/path/test.webm\" for writing., [...] system error: Permission denied",
+           "errorCode": 6,
+           "source": "bdd15b54-9cfa-4036-8a1a-a17db06b78bc_kurento.MediaPipeline/5dd21f63-643f-4562-a5d5-0ea0b6fd4a48_kurento.RecorderEndpoint",
+           "tags": [],
+           "timestamp": "1646657831",
+           "timestampMillis": "1646657831138",
+           "type": "RESOURCE_ERROR_OPEN"
+         },
+         "object": "bdd15b54-9cfa-4036-8a1a-a17db06b78bc_kurento.MediaPipeline/5dd21f63-643f-4562-a5d5-0ea0b6fd4a48_kurento.RecorderEndpoint",
+         "type": "Error"
+       }
+     }
+   }
+
+For more info about Kurento events, check :doc:`/features/events.rst`.
 
 
 
