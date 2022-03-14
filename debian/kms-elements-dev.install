@@ -1,5 +1,6 @@
 usr/include/kurento/modules/*/*.hpp
 usr/include/kurento/webrtcendpoint/*.h
+usr/include/kurento/rtpendpoint/*.h
 usr/lib/*/*.so
 usr/lib/*/pkgconfig/*.pc
 usr/share/kurento/modules/*.kmd.json
