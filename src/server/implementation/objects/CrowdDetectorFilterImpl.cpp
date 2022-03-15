@@ -146,7 +146,7 @@ void CrowdDetectorFilterImpl::busMessage (GstMessage *message)
       CrowdDetectorFluidity event (shared_from_this(),
                                    CrowdDetectorFluidity::getName(),
                                    fluidity_percentage, fluidity_level,
-                                   roiIDStr);
+                                   roiIDStr, roiIDStr);
       signalCrowdDetectorFluidity (event);
     } catch (std::bad_weak_ptr &e) {
     }
@@ -171,7 +171,7 @@ void CrowdDetectorFilterImpl::busMessage (GstMessage *message)
       CrowdDetectorOccupancy event (shared_from_this(),
                                     CrowdDetectorOccupancy::getName(),
                                     occupancy_percentage, occupancy_level,
-                                    roiIDStr);
+                                    roiIDStr, roiIDStr);
       signalCrowdDetectorOccupancy (event);
     } catch (std::bad_weak_ptr &e) {
     }
@@ -188,7 +188,7 @@ void CrowdDetectorFilterImpl::busMessage (GstMessage *message)
     try {
       CrowdDetectorDirection event ( shared_from_this(),
                                      CrowdDetectorDirection::getName(),
-                                     direction_angle, roiIDStr);
+                                     direction_angle, roiIDStr, roiIDStr);
       signalCrowdDetectorDirection (event);
     } catch (std::bad_weak_ptr &e) {
     }
