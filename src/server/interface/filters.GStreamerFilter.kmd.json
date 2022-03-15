@@ -14,7 +14,7 @@
   Note that usage of some popular GStreamer elements requires installation of
   additional packages. For example, overlay elements such as
   <em>timeoverlay</em> or <em>textoverlay</em> require installation of the
-  <strong>gstreamer1.5-x</strong> package, which will also install the
+  <strong>gstreamer1.0-x</strong> package, which will also install the
   <em>Pango</em> rendering library.
 </p>
       ",
