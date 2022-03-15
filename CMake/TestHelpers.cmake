@@ -83,6 +83,10 @@ function(add_test_program test_name sources)
     endforeach()
   endif()
 
+  # Enable test logging to stdout.
+  # https://libcheck.github.io/check/doc/check_html/check_4.html#Test-Logging
+  list(APPEND TEST_VARIABLES "CK_LOG_FILE_NAME=-")
+
   add_custom_target(${test_name}.check
     COMMAND ${TEST_VARIABLES} ${CMAKE_CURRENT_BINARY_DIR}/${test_name} \${ARGS}
     DEPENDS ${test_name})
