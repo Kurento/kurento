@@ -16,7 +16,6 @@
  */
 
 #include "kmssrtpconnection.h"
-#include "kmssocketutils.h"
 
 #define GST_CAT_DEFAULT kmsrtpconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -54,26 +53,9 @@ static guint obj_signals[LAST_SIGNAL] = { 0 };
 
 struct _KmsSrtpConnectionPrivate
 {
-  GSocket *rtp_socket;
-  GstElement *rtp_udpsink;
-  GstElement *rtp_udpsrc;
-
-  GSocket *rtcp_socket;
-  GstElement *rtcp_udpsink;
-  GstElement *rtcp_udpsrc;
-
-  GstElement *srtpenc;
-  GstElement *srtpdec;
-
   gboolean added;
   gboolean connected;
   gboolean is_client;
-
-  gchar *r_key;
-  guint r_auth;
-  guint r_cipher;
-  gboolean r_updated;
-  gboolean r_key_set;
 };
 
 static void
@@ -101,7 +83,7 @@ kms_srtp_connection_get_rtp_port (KmsRtpBaseConnection * base_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_conn);
 
-  return kms_socket_get_port (self->priv->rtp_socket);
+  return kms_socket_get_port (self->rtp_socket);
 }
 
 static guint
@@ -109,7 +91,7 @@ kms_srtp_connection_get_rtcp_port (KmsRtpBaseConnection * base_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_conn);
 
-  return kms_socket_get_port (self->priv->rtcp_socket);
+  return kms_socket_get_port (self->rtcp_socket);
 }
 
 static void
@@ -117,13 +99,12 @@ kms_srtp_connection_set_remote_info (KmsRtpBaseConnection * base_conn,
     const gchar * host, gint rtp_port, gint rtcp_port)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_conn);
-  KmsSrtpConnectionPrivate *priv = self->priv;
 
   GST_INFO_OBJECT (self, "Set remote host: %s, RTP: %d, RTCP: %d",
       host, rtp_port, rtcp_port);
 
-  g_signal_emit_by_name (priv->rtp_udpsink, "add", host, rtp_port, NULL);
-  g_signal_emit_by_name (priv->rtcp_udpsink, "add", host, rtcp_port, NULL);
+  g_signal_emit_by_name (self->rtp_udpsink, "add", host, rtp_port, NULL);
+  g_signal_emit_by_name (self->rtcp_udpsink, "add", host, rtcp_port, NULL);
 }
 
 static void
@@ -131,18 +112,17 @@ kms_srtp_connection_add (KmsIRtpConnection * base_rtp_conn, GstBin * bin,
     gboolean active)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
-  KmsSrtpConnectionPrivate *priv = self->priv;
 
   self->priv->is_client = active;
 
-  gst_bin_add_many (bin, g_object_ref (priv->rtp_udpsink),
-      g_object_ref (priv->rtp_udpsrc),
-      g_object_ref (priv->rtcp_udpsink),
-      g_object_ref (priv->rtcp_udpsrc),
-      g_object_ref (priv->srtpenc), g_object_ref (priv->srtpdec), NULL);
+  gst_bin_add_many (bin, g_object_ref (self->rtp_udpsink),
+      g_object_ref (self->rtp_udpsrc),
+      g_object_ref (self->rtcp_udpsink),
+      g_object_ref (self->rtcp_udpsrc),
+      g_object_ref (self->srtpenc), g_object_ref (self->srtpdec), NULL);
 
-  gst_element_link_pads (priv->rtp_udpsrc, "src", priv->srtpdec, "rtp_sink");
-  gst_element_link_pads (priv->rtcp_udpsrc, "src", priv->srtpdec, "rtcp_sink");
+  gst_element_link_pads (self->rtp_udpsrc, "src", self->srtpdec, "rtp_sink");
+  gst_element_link_pads (self->rtcp_udpsrc, "src", self->srtpdec, "rtcp_sink");
 }
 
 static void
@@ -150,11 +130,10 @@ kms_srtp_connection_src_sync_state_with_parent (KmsIRtpConnection *
     base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
-  KmsSrtpConnectionPrivate *priv = self->priv;
 
-  gst_element_sync_state_with_parent (priv->srtpdec);
-  gst_element_sync_state_with_parent (priv->rtp_udpsrc);
-  gst_element_sync_state_with_parent (priv->rtcp_udpsrc);
+  gst_element_sync_state_with_parent (self->srtpdec);
+  gst_element_sync_state_with_parent (self->rtp_udpsrc);
+  gst_element_sync_state_with_parent (self->rtcp_udpsrc);
 }
 
 static void
@@ -162,11 +141,10 @@ kms_srtp_connection_sink_sync_state_with_parent (KmsIRtpConnection *
     base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
-  KmsSrtpConnectionPrivate *priv = self->priv;
 
-  gst_element_sync_state_with_parent (priv->srtpenc);
-  gst_element_sync_state_with_parent (priv->rtp_udpsink);
-  gst_element_sync_state_with_parent (priv->rtcp_udpsink);
+  gst_element_sync_state_with_parent (self->srtpenc);
+  gst_element_sync_state_with_parent (self->rtp_udpsink);
+  gst_element_sync_state_with_parent (self->rtcp_udpsink);
 }
 
 static GstPad *
@@ -174,7 +152,7 @@ kms_srtp_connection_request_rtp_sink (KmsIRtpConnection * base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_request_pad (self->priv->srtpenc, "rtp_sink_0");
+  return gst_element_get_request_pad (self->srtpenc, "rtp_sink_0");
 }
 
 static GstPad *
@@ -182,7 +160,7 @@ kms_srtp_connection_request_rtp_src (KmsIRtpConnection * base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_static_pad (self->priv->srtpdec, "rtp_src");
+  return gst_element_get_static_pad (self->srtpdec, "rtp_src");
 }
 
 static GstPad *
@@ -190,7 +168,7 @@ kms_srtp_connection_request_rtcp_sink (KmsIRtpConnection * base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_request_pad (self->priv->srtpenc, "rtcp_sink_0");
+  return gst_element_get_request_pad (self->srtpenc, "rtcp_sink_0");
 }
 
 static GstPad *
@@ -198,7 +176,7 @@ kms_srtp_connection_request_rtcp_src (KmsIRtpConnection * base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_static_pad (self->priv->srtpdec, "rtcp_src");
+  return gst_element_get_static_pad (self->srtpdec, "rtcp_src");
 }
 
 static void
@@ -264,10 +242,10 @@ kms_srtp_connection_new_pad_cb (GstElement * element, GstPad * pad,
   templ = gst_pad_get_pad_template (pad);
 
   if (g_strcmp0 (GST_PAD_TEMPLATE_NAME_TEMPLATE (templ), "rtp_src_%u") == 0) {
-    sinkpad = gst_element_get_static_pad (conn->priv->rtp_udpsink, "sink");
+    sinkpad = gst_element_get_static_pad (conn->rtp_udpsink, "sink");
   } else if (g_strcmp0 (GST_PAD_TEMPLATE_NAME_TEMPLATE (templ),
           "rtcp_src_%u") == 0) {
-    sinkpad = gst_element_get_static_pad (conn->priv->rtcp_udpsink, "sink");
+    sinkpad = gst_element_get_static_pad (conn->rtcp_udpsink, "sink");
   } else {
     goto end;
   }
@@ -342,20 +320,20 @@ kms_srtp_connection_request_remote_key_cb (GstElement * srtpdec, guint ssrc,
 
   KMS_RTP_BASE_CONNECTION_LOCK (conn);
 
-  if (!conn->priv->r_key_set) {
+  if (!conn->r_key_set) {
     GST_DEBUG_OBJECT (conn, "key is not yet set");
     goto end;
   }
 
-  if (!conn->priv->r_updated) {
+  if (!conn->r_updated) {
     GST_DEBUG_OBJECT (conn, "Key is not yet updated");
   } else {
     GST_DEBUG_OBJECT (conn, "Using new key");
-    conn->priv->r_updated = FALSE;
+    conn->r_updated = FALSE;
   }
 
-  caps = create_key_caps (ssrc, conn->priv->r_key, conn->priv->r_auth,
-      conn->priv->r_cipher);
+  caps = create_key_caps (ssrc, conn->r_key, conn->r_auth,
+      conn->r_cipher);
 
   GST_DEBUG_OBJECT (srtpdec, "Key Caps: %" GST_PTR_FORMAT, caps);
 
@@ -382,12 +360,10 @@ kms_srtp_connection_new (guint16 min_port, guint16 max_port, gboolean use_ipv6)
 {
   GObject *obj;
   KmsSrtpConnection *conn;
-  KmsSrtpConnectionPrivate *priv;
   GSocketFamily socket_family;
 
   obj = g_object_new (KMS_TYPE_SRTP_CONNECTION, NULL);
   conn = KMS_SRTP_CONNECTION (obj);
-  priv = conn->priv;
 
   if (use_ipv6) {
     socket_family = G_SOCKET_FAMILY_IPV6;
@@ -396,37 +372,37 @@ kms_srtp_connection_new (guint16 min_port, guint16 max_port, gboolean use_ipv6)
   }
 
   if (!kms_rtp_connection_get_rtp_rtcp_sockets
-      (&priv->rtp_socket, &priv->rtcp_socket, min_port, max_port,
+      (&conn->rtp_socket, &conn->rtcp_socket, min_port, max_port,
           socket_family)) {
     GST_ERROR_OBJECT (obj, "Cannot get ports");
     g_object_unref (obj);
     return NULL;
   }
 
-  priv->r_updated = FALSE;
-  priv->r_key_set = FALSE;
+  conn->r_updated = FALSE;
+  conn->r_key_set = FALSE;
 
-  priv->srtpenc = gst_element_factory_make ("srtpenc", NULL);
-  priv->srtpdec = gst_element_factory_make ("srtpdec", NULL);
-  g_signal_connect (priv->srtpenc, "pad-added",
+  conn->srtpenc = gst_element_factory_make ("srtpenc", NULL);
+  conn->srtpdec = gst_element_factory_make ("srtpdec", NULL);
+  g_signal_connect (conn->srtpenc, "pad-added",
       G_CALLBACK (kms_srtp_connection_new_pad_cb), obj);
-  g_signal_connect (priv->srtpdec, "request-key",
+  g_signal_connect (conn->srtpdec, "request-key",
       G_CALLBACK (kms_srtp_connection_request_remote_key_cb), obj);
-  g_signal_connect (priv->srtpdec, "soft-limit",
+  g_signal_connect (conn->srtpdec, "soft-limit",
       G_CALLBACK (kms_srtp_connection_soft_key_limit_cb), obj);
 
-  priv->rtp_udpsink = gst_element_factory_make ("multiudpsink", NULL);
-  priv->rtp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
-  g_object_set (priv->rtp_udpsink, "socket", priv->rtp_socket,
+  conn->rtp_udpsink = gst_element_factory_make ("multiudpsink", NULL);
+  conn->rtp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
+  g_object_set (conn->rtp_udpsink, "socket", conn->rtp_socket,
       "sync", FALSE, "async", FALSE, NULL);
-  g_object_set (priv->rtp_udpsrc, "socket", priv->rtp_socket, "auto-multicast",
+  g_object_set (conn->rtp_udpsrc, "socket", conn->rtp_socket, "auto-multicast",
       FALSE, NULL);
 
-  priv->rtcp_udpsink = gst_element_factory_make ("multiudpsink", NULL);
-  priv->rtcp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
-  g_object_set (priv->rtcp_udpsink, "socket", priv->rtcp_socket,
+  conn->rtcp_udpsink = gst_element_factory_make ("multiudpsink", NULL);
+  conn->rtcp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
+  g_object_set (conn->rtcp_udpsink, "socket", conn->rtcp_socket,
       "sync", FALSE, "async", FALSE, NULL);
-  g_object_set (priv->rtcp_udpsrc, "socket", priv->rtcp_socket,
+  g_object_set (conn->rtcp_udpsrc, "socket", conn->rtcp_socket,
       "auto-multicast", FALSE, NULL);
 
   kms_i_rtp_connection_connected_signal (KMS_I_RTP_CONNECTION (conn));
@@ -440,16 +416,16 @@ kms_srtp_connection_enable_latency_stats (KmsRtpBaseConnection * base)
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base);
   GstPad *pad;
 
-  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsrc, "src",
+  kms_rtp_base_connection_remove_probe (base, self->rtp_udpsrc, "src",
       base->src_probe);
-  pad = gst_element_get_static_pad (self->priv->rtp_udpsrc, "src");
+  pad = gst_element_get_static_pad (self->rtp_udpsrc, "src");
   base->src_probe = kms_stats_add_buffer_latency_meta_probe (pad, FALSE,
       0 /* No matter type at this point */ );
   g_object_unref (pad);
 
-  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsink, "sink",
+  kms_rtp_base_connection_remove_probe (base, self->rtp_udpsink, "sink",
       base->sink_probe);
-  pad = gst_element_get_static_pad (self->priv->rtp_udpsink, "sink");
+  pad = gst_element_get_static_pad (self->rtp_udpsink, "sink");
   base->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad,
       base->cb, TRUE /* Lock the data */ , base->user_data, NULL);
   g_object_unref (pad);
@@ -460,11 +436,11 @@ kms_srtp_transport_disable_latency_notification (KmsRtpBaseConnection * base)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base);
 
-  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsrc, "src",
+  kms_rtp_base_connection_remove_probe (base, self->rtp_udpsrc, "src",
       base->src_probe);
   base->src_probe = 0UL;
 
-  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsink, "sink",
+  kms_rtp_base_connection_remove_probe (base, self->rtp_udpsink, "sink",
       base->sink_probe);
   base->sink_probe = 0UL;
 }
@@ -492,26 +468,25 @@ static void
 kms_srtp_connection_finalize (GObject * object)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (object);
-  KmsSrtpConnectionPrivate *priv = self->priv;
 
   GST_DEBUG_OBJECT (self, "finalize");
 
   kms_srtp_transport_disable_latency_notification (KMS_RTP_BASE_CONNECTION
       (self));
 
-  g_clear_object (&priv->rtp_udpsink);
-  g_clear_object (&priv->rtp_udpsrc);
+  g_clear_object (&self->rtp_udpsink);
+  g_clear_object (&self->rtp_udpsrc);
 
-  g_clear_object (&priv->rtcp_udpsink);
-  g_clear_object (&priv->rtcp_udpsrc);
+  g_clear_object (&self->rtcp_udpsink);
+  g_clear_object (&self->rtcp_udpsrc);
 
-  g_clear_object (&priv->srtpenc);
-  g_clear_object (&priv->srtpdec);
+  g_clear_object (&self->srtpenc);
+  g_clear_object (&self->srtpdec);
 
-  kms_socket_finalize (&self->priv->rtp_socket);
-  kms_socket_finalize (&self->priv->rtcp_socket);
+  kms_socket_finalize (&self->rtp_socket);
+  kms_socket_finalize (&self->rtcp_socket);
 
-  g_free (priv->r_key);
+  g_free (self->r_key);
 
   /* chain up */
   G_OBJECT_CLASS (parent_class)->finalize (object);
@@ -573,7 +548,7 @@ kms_srtp_connection_set_key (KmsSrtpConnection * conn, const gchar * key,
     bin_buff = g_base64_decode (key, &len);
     buff_key = gst_buffer_new_wrapped (bin_buff, len);
 
-    g_object_set (conn->priv->srtpenc, "key", buff_key, "rtp-cipher", cipher,
+    g_object_set (conn->srtpenc, "key", buff_key, "rtp-cipher", cipher,
         "rtcp-cipher", cipher, "rtp-auth", auth, "rtcp-auth", auth, NULL);
     gst_buffer_unref (buff_key);
   } else {
@@ -581,16 +556,16 @@ kms_srtp_connection_set_key (KmsSrtpConnection * conn, const gchar * key,
 
     KMS_RTP_BASE_CONNECTION_LOCK (conn);
 
-    changed = !conn->priv->r_key_set || g_strcmp0 (key, conn->priv->r_key) != 0
-        || conn->priv->r_auth != auth || conn->priv->r_cipher != cipher;
+    changed = !conn->r_key_set || g_strcmp0 (key, conn->r_key) != 0
+        || conn->r_auth != auth || conn->r_cipher != cipher;
 
     if (changed) {
-      g_free (conn->priv->r_key);
-      conn->priv->r_key = g_strdup (key);
-      conn->priv->r_auth = auth;
-      conn->priv->r_cipher = cipher;
-      conn->priv->r_updated = TRUE;
-      conn->priv->r_key_set = TRUE;
+      g_free (conn->r_key);
+      conn->r_key = g_strdup (key);
+      conn->r_auth = auth;
+      conn->r_cipher = cipher;
+      conn->r_updated = TRUE;
+      conn->r_key_set = TRUE;
     }
 
     KMS_RTP_BASE_CONNECTION_UNLOCK (conn);

@@ -19,6 +19,8 @@
 #define __KMS_SRTP_CONNECTION_H__
 
 #include "kmsrtpbaseconnection.h"
+#include "kmssocketutils.h"
+
 
 G_BEGIN_DECLS
 
@@ -41,6 +43,23 @@ typedef struct _KmsSrtpConnectionClass KmsSrtpConnectionClass;
 struct _KmsSrtpConnection
 {
   KmsRtpBaseConnection parent;
+
+  GSocket *rtp_socket;
+  GstElement *rtp_udpsink;
+  GstElement *rtp_udpsrc;
+
+  GSocket *rtcp_socket;
+  GstElement *rtcp_udpsink;
+  GstElement *rtcp_udpsrc;
+
+  GstElement *srtpenc;
+  GstElement *srtpdec;
+
+  gchar *r_key;
+  guint r_auth;
+  guint r_cipher;
+  gboolean r_updated;
+  gboolean r_key_set;
 
   KmsSrtpConnectionPrivate *priv;
 };

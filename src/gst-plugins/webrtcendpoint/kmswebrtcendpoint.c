@@ -149,7 +149,7 @@ on_ice_component_state_change (KmsWebrtcSession * sess, const gchar * stream_id,
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
-  GST_LOG_OBJECT (self,
+  GST_DEBUG_OBJECT (self,
       "[IceComponentStateChanged] state: %s, stream_id: %s, component_id: %u",
       kms_ice_base_agent_state_to_string (state), stream_id, component_id);
 

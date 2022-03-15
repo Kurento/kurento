@@ -139,8 +139,8 @@
 </p>
 <p>
   <strong>Recording must be stopped</strong> when no more data should be stored.
-  This can be with the <code>stopAndWait</code> method, which blocks and returns
-  only after all the information was stored correctly.
+  This is done with the <code>stopAndWait</code> method, which blocks and
+  returns only after all the information was stored correctly.
 </p>
 <p>
   <strong>

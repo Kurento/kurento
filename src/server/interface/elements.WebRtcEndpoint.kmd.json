@@ -849,9 +849,23 @@ This could also happen in the middle of a session, though not likely.
       "doc": "The ICE candidate pair used by the ICE library, for a certain stream.",
       "properties": [
         {
+          "name": "streamID",
+          "doc": "Stream ID of the ICE connection.
+@deprecated Use <code>streamId</code> instead.
+          ",
+          "type": "String"
+        },
+        {
           "name": "streamId",
           "doc": "Stream ID of the ICE connection",
           "type": "String"
+        },
+        {
+          "name": "componentID",
+          "doc": "Component ID of the ICE connection
+@deprecated Use <code>componentId</code> instead.
+          ",
+          "type": "int"
         },
         {
           "name": "componentId",
