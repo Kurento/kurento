@@ -297,7 +297,7 @@ check_handoff_audio (gpointer user_data)
   if (buffer_audio && buffer_video) {
     GMainLoop *loop = (GMainLoop *) user_data;
 
-    g_main_quit (loop);
+    g_main_loop_quit (loop);
   }
 
   return FALSE;
@@ -311,7 +311,7 @@ check_handoff_video (gpointer user_data)
   if (buffer_audio && buffer_video) {
     GMainLoop *loop = (GMainLoop *) user_data;
 
-    g_main_quit (loop);
+    g_main_loop_quit (loop);
   }
 
   return FALSE;
