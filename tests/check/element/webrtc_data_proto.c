@@ -139,13 +139,13 @@ GST_START_TEST (connection)
   g_object_set (udpsink1, "host", "127.0.0.1", "port", 5555, "sync", FALSE,
       "async", FALSE, NULL);
   g_object_set (udpsrc1, "port", 6666, NULL);
-  g_object_set (session1, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+  g_object_set (session1, "sctp-local-port", 9991, "sctp-remote-port", 9992,
       NULL);
 
   g_object_set (udpsink2, "host", "127.0.0.1", "port", 6666, "sync", FALSE,
       "async", FALSE, NULL);
   g_object_set (udpsrc2, "port", 5555, NULL);
-  g_object_set (session2, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+  g_object_set (session2, "sctp-local-port", 9992, "sctp-remote-port", 9991,
       NULL);
 
   gst_bin_add_many (GST_BIN (pipeline), session1, session2, udpsink1, udpsrc1,
@@ -211,13 +211,13 @@ GST_START_TEST (data_session_established)
   g_object_set (udpsink1, "host", "127.0.0.1", "port", 5555, "sync", FALSE,
       "async", FALSE, NULL);
   g_object_set (udpsrc1, "port", 6666, NULL);
-  g_object_set (session1, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+  g_object_set (session1, "sctp-local-port", 9991, "sctp-remote-port", 9992,
       NULL);
 
   g_object_set (udpsink2, "host", "127.0.0.1", "port", 6666, "sync", FALSE,
       "async", FALSE, NULL);
   g_object_set (udpsrc2, "port", 5555, NULL);
-  g_object_set (session2, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+  g_object_set (session2, "sctp-local-port", 9992, "sctp-remote-port", 9991,
       NULL);
 
   gst_bin_add_many (GST_BIN (pipeline), session1, session2, udpsink1, udpsrc1,
@@ -319,13 +319,13 @@ GST_START_TEST (destroy_channels)
   g_object_set (udpsink1, "host", "127.0.0.1", "port", 5555, "sync", FALSE,
       "async", FALSE, NULL);
   g_object_set (udpsrc1, "port", 6666, NULL);
-  g_object_set (session1, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+  g_object_set (session1, "sctp-local-port", 9991, "sctp-remote-port", 9992,
       NULL);
 
   g_object_set (udpsink2, "host", "127.0.0.1", "port", 6666, "sync", FALSE,
       "async", FALSE, NULL);
   g_object_set (udpsrc2, "port", 5555, NULL);
-  g_object_set (session2, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+  g_object_set (session2, "sctp-local-port", 9992, "sctp-remote-port", 9991,
       NULL);
 
   gst_bin_add_many (GST_BIN (pipeline), session1, session2, udpsink1, udpsrc1,
