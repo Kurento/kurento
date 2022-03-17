@@ -25,8 +25,13 @@
 #include <kmstestutils.h>
 
 #define VIDEO_PATH BINARY_LOCATION "/video/filter/fiwarecut.webm"
+#define VIDEO_LENGTH 30
+
 #define VIDEO_PATH2 BINARY_LOCATION "/video/format/sintel.webm"
+#define VIDEO_LENGTH2 52
+
 #define VIDEO_PATH3 BINARY_LOCATION "/video/format/small.webm"
+#define VIDEO_LENGTH3 6
 
 #define KMS_ELEMENT_PAD_TYPE_DATA 0
 #define KMS_ELEMENT_PAD_TYPE_AUDIO 1
@@ -292,7 +297,7 @@ GST_START_TEST (check_states)
 
   transite (loop);
 
-  g_timeout_add_seconds (4, print_timedout_pipeline, NULL);
+  g_timeout_add_seconds (VIDEO_LENGTH + 3, print_timedout_pipeline, NULL);
   g_main_loop_run (loop);
 
   fail_unless (start_buffer == TRUE);
@@ -446,7 +451,7 @@ GST_START_TEST (check_live_stream)
   /* Set player to start state */
   g_object_set (G_OBJECT (player), "state", KMS_URI_ENDPOINT_STATE_START, NULL);
 
-  g_timeout_add_seconds (4, print_timedout_pipeline, NULL);
+  g_timeout_add_seconds (VIDEO_LENGTH2 + 3, print_timedout_pipeline, NULL);
   g_main_loop_run (loop);
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
@@ -505,7 +510,7 @@ GST_START_TEST (check_eos)
   /* Set player to start state */
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  g_timeout_add_seconds (4, print_timedout_pipeline, NULL);
+  g_timeout_add_seconds (VIDEO_LENGTH3 + 3, print_timedout_pipeline, NULL);
   g_main_loop_run (loop);
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
