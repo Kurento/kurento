@@ -52,6 +52,17 @@ static const KmsUriEndpointState trasnsitions[] = {
   KMS_URI_ENDPOINT_STATE_STOP
 };
 
+static guint
+g_idle_add_loop (GMainLoop *loop, GSourceFunc function, gpointer user_data)
+{
+  GSource *source = g_idle_source_new ();
+  g_source_set_callback (source, function, user_data, NULL);
+  guint id = g_source_attach (source, g_main_loop_get_context (loop));
+  g_source_unref (source);
+
+  return id;
+}
+
 static gchar *
 state2string (KmsUriEndpointState state)
 {
@@ -79,6 +90,8 @@ print_timedout_pipeline (gpointer data)
 {
   gchar *pipeline_name;
   gchar *name;
+
+  GST_ERROR ("Test timed out; generating DOT file...");
 
   pipeline_name = gst_element_get_name (pipeline);
   name = g_strdup_printf ("%s_timedout", pipeline_name);
@@ -138,21 +151,23 @@ bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
 static gboolean transite_cb (gpointer);
 
 static void
-transite ()
+transite (gpointer user_data)
 {
   if (state < G_N_ELEMENTS (trasnsitions)) {
     change_state (trasnsitions[state]);
   } else {
+    GMainLoop *loop = (GMainLoop *) user_data;
+
     GST_DEBUG ("All transitions done. Finishing player check states suit");
     g_main_loop_quit (loop);
   }
 }
 
 static gboolean
-transite_cb (gpointer data)
+transite_cb (gpointer user_data)
 {
   state++;
-  transite ();
+  transite (user_data);
   return FALSE;
 }
 
@@ -163,7 +178,7 @@ data_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
 
-  g_idle_add (transite_cb, NULL);
+  g_idle_add_loop (loop, transite_cb, NULL);
 
   return GST_PAD_PROBE_OK;
 }
@@ -192,7 +207,7 @@ state_changed_cb (GstElement * player, KmsUriEndpointState newState,
     }
     case KMS_URI_ENDPOINT_STATE_PAUSE:
     case KMS_URI_ENDPOINT_STATE_STOP:
-      g_idle_add (transite_cb, loop);
+      g_idle_add_loop (loop, transite_cb, loop);
       break;
   }
 }
@@ -206,7 +221,7 @@ handoff (GstElement * object, GstBuffer * arg0,
   if (!start_buffer) {
     start_buffer = TRUE;
     /* First buffer received, start transitions */
-    g_idle_add (transite_cb, NULL);
+    g_idle_add_loop (loop, transite_cb, NULL);
   }
 
   G_UNLOCK (handoff_lock);
@@ -239,7 +254,12 @@ GST_START_TEST (check_states)
   gchar *padname;
   GstBus *bus;
 
-  loop = g_main_loop_new (NULL, FALSE);
+  {
+    GMainContext *context = g_main_context_new ();
+    loop = g_main_loop_new (context, FALSE);
+    g_clear_pointer (&context, g_main_context_unref);
+  }
+
   pipeline = gst_pipeline_new (__FUNCTION__);
   player = gst_element_factory_make ("playerendpoint", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
@@ -270,7 +290,7 @@ GST_START_TEST (check_states)
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  transite ();
+  transite (loop);
 
   g_timeout_add_seconds (4, print_timedout_pipeline, NULL);
   g_main_loop_run (loop);
@@ -280,7 +300,7 @@ GST_START_TEST (check_states)
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
   g_source_remove (bus_watch_id);
-  g_main_loop_unref (loop);
+  g_clear_pointer (&loop, g_main_loop_unref);
   g_free (padname);
 }
 
@@ -324,8 +344,7 @@ handoff_audio (GstElement * object, GstBuffer * arg0,
   GMainLoop *loop = (GMainLoop *) user_data;
 
   GST_TRACE ("handoff_audio");
-  g_idle_add ((GSourceFunc) check_handoff_audio, loop);
-
+  g_idle_add_loop (loop, (GSourceFunc) check_handoff_audio, loop);
 }
 
 static void
@@ -334,15 +353,15 @@ handoff_video (GstElement * object, GstBuffer * arg0,
 {
   GMainLoop *loop = (GMainLoop *) user_data;
 
-  buffer_video = TRUE;
   GST_TRACE ("handoff_video");
-  g_idle_add ((GSourceFunc) check_handoff_video, loop);
+  g_idle_add_loop (loop, (GSourceFunc) check_handoff_video, loop);
 }
 
 static void
-connect_sink_on_srcpad_added (GstElement * playerep, GstPad * new_pad,
+check_live_stream_on_pad_added (GstElement * playerep, GstPad * new_pad,
     gpointer user_data)
 {
+  GMainLoop *loop = (GMainLoop *) user_data;
   GstElement *sink;
   gchar *padname;
   GCallback func;
@@ -366,6 +385,7 @@ connect_sink_on_srcpad_added (GstElement * playerep, GstPad * new_pad,
   sink = gst_element_factory_make ("fakesink", NULL);
   g_object_set (G_OBJECT (sink), "async", FALSE, "sync", FALSE,
       "signal-handoffs", TRUE, NULL);
+
   g_signal_connect (sink, "handoff", func, loop);
 
   gst_bin_add (GST_BIN (pipeline), sink);
@@ -385,7 +405,12 @@ GST_START_TEST (check_live_stream)
   gchar *padname;
   GstBus *bus;
 
-  loop = g_main_loop_new (NULL, FALSE);
+  {
+    GMainContext *context = g_main_context_new ();
+    loop = g_main_loop_new (context, FALSE);
+    g_clear_pointer (&context, g_main_context_unref);
+  }
+
   pipeline = gst_pipeline_new (__FUNCTION__);
   player = gst_element_factory_make ("playerendpoint", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -395,8 +420,9 @@ GST_START_TEST (check_live_stream)
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH2, NULL);
+
   g_signal_connect (player, "pad-added",
-      G_CALLBACK (connect_sink_on_srcpad_added), loop);
+      G_CALLBACK (check_live_stream_on_pad_added), loop);
 
   gst_bin_add (GST_BIN (pipeline), player);
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
@@ -426,18 +452,17 @@ GST_START_TEST (check_live_stream)
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
   g_source_remove (bus_watch_id);
-  g_main_loop_unref (loop);
-
+  g_clear_pointer (&loop, g_main_loop_unref);
 }
-
 GST_END_TEST
+
 /* check_eos */
 static gboolean
-quit_main_loop_idle (gpointer data)
+quit_main_loop_idle (gpointer user_data)
 {
-  GMainLoop *loop = data;
+  GMainLoop *loop = (GMainLoop *) user_data;
 
-  GST_DEBUG ("Test finished exiting main loop");
+  GST_DEBUG ("Test finished; exiting main loop");
   g_main_loop_quit (loop);
   return FALSE;
 }
@@ -445,8 +470,8 @@ quit_main_loop_idle (gpointer data)
 static void
 player_eos (GstElement * player, GMainLoop * loop)
 {
-  GST_DEBUG ("Eos received");
-  g_idle_add (quit_main_loop_idle, loop);
+  GST_DEBUG ("EOS received");
+  g_idle_add_loop (loop, quit_main_loop_idle, loop);
 }
 
 /* EOS test */
@@ -455,7 +480,12 @@ GST_START_TEST (check_eos)
   guint bus_watch_id;
   GstBus *bus;
 
-  loop = g_main_loop_new (NULL, FALSE);
+  {
+    GMainContext *context = g_main_context_new ();
+    loop = g_main_loop_new (context, FALSE);
+    g_clear_pointer (&context, g_main_context_unref);
+  }
+
   pipeline = gst_pipeline_new (__FUNCTION__);
   player = gst_element_factory_make ("playerendpoint", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -481,8 +511,7 @@ GST_START_TEST (check_eos)
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
   g_source_remove (bus_watch_id);
-  g_main_loop_unref (loop);
-
+  g_clear_pointer (&loop, g_main_loop_unref);
 }
 
 GST_END_TEST
@@ -496,7 +525,12 @@ GST_START_TEST (check_set_encoded_media)
   GMainLoop *loop;
   GstBus *bus;
 
-  loop = g_main_loop_new (NULL, FALSE);
+  {
+    GMainContext *context = g_main_context_new ();
+    loop = g_main_loop_new (context, FALSE);
+    g_clear_pointer (&context, g_main_context_unref);
+  }
+
   pipeline = gst_pipeline_new ("pipeline_live_stream");
   player = gst_element_factory_make ("playerendpoint", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -529,8 +563,7 @@ GST_START_TEST (check_set_encoded_media)
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
   g_source_remove (bus_watch_id);
-  g_main_loop_unref (loop);
-
+  g_clear_pointer (&loop, g_main_loop_unref);
 }
 
 GST_END_TEST;
