@@ -52,7 +52,7 @@ target_include_directories(test_rtpendpoint PRIVATE
                            ${gstreamer-1.0_INCLUDE_DIRS}
                            ${gstreamer-check-1.0_INCLUDE_DIRS})
 target_link_libraries(test_rtpendpoint
-	                    kmsrtpendpointlib
+                      kmsrtpendpointlib
                       ${gstreamer-1.0_LIBRARIES}
                       ${gstreamer-sdp-1.0_LIBRARIES}
                       ${gstreamer-check-1.0_LIBRARIES}
@@ -66,7 +66,7 @@ target_include_directories(test_rtpendpoint_audio PRIVATE
                            ${gstreamer-1.0_INCLUDE_DIRS}
                            ${gstreamer-check-1.0_INCLUDE_DIRS})
 target_link_libraries(test_rtpendpoint_audio
-	                    kmsrtpendpointlib
+                      kmsrtpendpointlib
                       ${gstreamer-1.0_LIBRARIES}
                       ${gstreamer-sdp-1.0_LIBRARIES}
                       ${gstreamer-check-1.0_LIBRARIES}

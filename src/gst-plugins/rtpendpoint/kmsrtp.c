@@ -20,7 +20,7 @@
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmsrtpendpoint,
+    rtpendpoint,
     "Kurento rtp endpoint",
     kms_rtp_endpoint_plugin_init, VERSION, GST_LICENSE_UNKNOWN,
-    "Kurento Elements", "http://kurento.com/")
+    "Kurento Elements", "http://kurento.org/")

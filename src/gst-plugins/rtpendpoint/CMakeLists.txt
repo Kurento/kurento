@@ -99,8 +99,9 @@ target_link_libraries(rtpendpoint
 )
 
 install(
-  TARGETS kmsrtpendpoint
+  TARGETS rtpendpoint
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+

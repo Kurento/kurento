@@ -44,7 +44,7 @@ if(SANITIZERS_ENABLED)
   add_sanitizers(${LIBRARY_NAME})
 endif()
 
-add_dependencies(${LIBRARY_NAME} webrtcendpoint kmsrtpendpoint kmsrecorderendpoint)
+add_dependencies(${LIBRARY_NAME} webrtcendpoint rtpendpoint kmsrecorderendpoint)
 
 set_property (TARGET ${LIBRARY_NAME}
   PROPERTY INCLUDE_DIRECTORIES
