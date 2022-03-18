@@ -95,7 +95,10 @@ main (int argc, char **argv)
 
   moduleManager.loadModule ("../../src/server/libkmsfiltersmodule.so");
 
-  testFaceOverlay (moduleManager, mediaPipeline);
+  // FIXME: Modules disabled because they were written for the C API of OpenCV 2.0
+  // (Ubuntu 14.04, 16.04), which was maintained for backwards compatibility on
+  // OpenCV 3.0 (Ubuntu 18.04), but has been finally dropped on OpenCV 4.0 (20.04).
+  //testFaceOverlay (moduleManager, mediaPipeline);
   testGStreamerFilter (moduleManager, mediaPipeline);
   testZBarFilter (moduleManager, mediaPipeline);
 
