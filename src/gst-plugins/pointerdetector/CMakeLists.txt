@@ -18,7 +18,7 @@ target_link_libraries(pointerdetector
   kmsgstcommons
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
-  ${OPENCV_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   ${SOUP_LIBRARIES}
 )
 

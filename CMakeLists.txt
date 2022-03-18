@@ -55,9 +55,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(GST_REQUIRED ^1.0.0)
-set(GLIB_REQUIRED 2.38)
-set(OPENCV_REQUIRED 3.2.0)
 set(SOUP_REQUIRED 2.40)
+set(OPENCV_REQUIRED <5.0.0)
 
 find_package(PkgConfig)
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
@@ -66,8 +65,10 @@ pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
 pkg_check_modules(KMSCORE REQUIRED kmscore)
 pkg_check_modules(KMSGSTCOMMONS REQUIRED kmsgstcommons)
-pkg_check_modules(OPENCV REQUIRED opencv>=${OPENCV_REQUIRED})
 pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
+
+include(GenericFind)
+generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
 
