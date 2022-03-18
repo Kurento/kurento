@@ -30,6 +30,7 @@ Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
  ca-certificates,
  kms-elements (>= 7.0.0),
+ libsoup2.4-1,
  opencv-data
 Description: Kurento Filters module
  Kurento Filters module - Binary libraries.
