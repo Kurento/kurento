@@ -112,7 +112,8 @@ apt-get update && apt-get install --no-install-recommends --yes \
     ca-certificates \
     cmake \
     git \
-    gnupg
+    gnupg \
+    pkg-config
 
 # Add Kurento repository
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
