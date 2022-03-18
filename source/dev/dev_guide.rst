@@ -179,7 +179,8 @@ This command will install the basic set of tools that are needed for the next st
        ca-certificates \
        cmake \
        git \
-       gnupg
+       gnupg \
+       pkg-config
 
 
 
