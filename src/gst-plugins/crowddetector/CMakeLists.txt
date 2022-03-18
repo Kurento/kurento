@@ -16,7 +16,7 @@ add_library(crowddetector MODULE ${CROWDDETECTOR_SOURCES})
 target_link_libraries(crowddetector
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
-  ${OPENCV_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )
 
 install(
