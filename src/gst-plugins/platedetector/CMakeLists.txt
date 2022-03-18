@@ -19,7 +19,7 @@ target_compile_definitions(platedetector PRIVATE _POSIX_C_SOURCE=200112L)
 target_link_libraries(platedetector
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
-  ${OPENCV_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   ${TESSERACT_LIBRARIES}
 )
 
