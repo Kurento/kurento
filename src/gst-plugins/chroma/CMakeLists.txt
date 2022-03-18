@@ -16,7 +16,7 @@ add_library(chroma MODULE ${CHROMA_SOURCES})
 target_link_libraries(chroma
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
-  ${OPENCV_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   ${SOUP_LIBRARIES}
 )
 
