@@ -44,8 +44,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(GST_REQUIRED ^1.0.0)
-set(GLIB_REQUIRED ^2.42)
-set(OPENCV_REQUIRED <4.0.0)
+set(OPENCV_REQUIRED <5.0.0)
 
 include(GenericFind)
 generic_find(LIBNAME gstreamer-1.0 VERSION ${GST_REQUIRED} REQUIRED)
@@ -53,7 +52,9 @@ generic_find(LIBNAME gstreamer-base-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-video-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-check-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME KmsGstCommons REQUIRED)
-generic_find(LIBNAME opencv VERSION ${OPENCV_REQUIRED} REQUIRED)
+
+include(GenericFind)
+generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
 
