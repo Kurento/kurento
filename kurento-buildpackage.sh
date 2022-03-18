@@ -344,7 +344,7 @@ APT_ARGS=()
 # cannot be installed at the same time...
 # In order to build the Kurento projects on Ubuntu Bionic, we depend on libcurl3
 # and install a custom dummy libcurl4 package to satisfy CMake's dependency.
-if [[ ${DISTRIB_RELEASE%%.*} -ge 18 ]]; then
+if [[ ${DISTRIB_RELEASE%%.*} -eq 18 ]]; then
     apt-get update
     pushd /tmp
 
