@@ -109,6 +109,22 @@ if docker manifest >/dev/null 2>&1; then
     fi
 fi
 
+# Select the GCC version to install, based on what is available for the system.
+# Source: https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test
+if [[ "$JOB_DISTRO" == "xenial" ]]; then
+    DOCKER_GCC_VERSION="9"
+    log "Ubuntu 16.04 (Xenial) --> Use GCC $DOCKER_GCC_VERSION"
+elif [[ "$JOB_DISTRO" == "bionic" ]]; then
+    DOCKER_GCC_VERSION="11"
+    log "Ubuntu 18.04 (Bionic) --> Use GCC $DOCKER_GCC_VERSION"
+elif [[ "$JOB_DISTRO" == "focal" ]]; then
+    DOCKER_GCC_VERSION="11"
+    log "Ubuntu 20.04 (Focal) --> Use GCC $DOCKER_GCC_VERSION"
+else
+    DOCKER_GCC_VERSION="9"
+    log "WARNING: Unknown system version --> Use GCC $DOCKER_GCC_VERSION"
+fi
+
 pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
 
 # Run the Docker image builder
@@ -116,6 +132,7 @@ export PUSH_IMAGES="yes"
 BUILD_ARGS="UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
 BUILD_ARGS+=" KMS_IMAGE=$DOCKER_KMS_IMAGE"
+BUILD_ARGS+=" GCC_VERSION=$DOCKER_GCC_VERSION"
 BUILD_ARGS+=" APT_ARGS=-oAcquire::http::Proxy=http://proxy.openvidu.io:3142"
 export BUILD_ARGS
 export TAG_COMMIT="no"
