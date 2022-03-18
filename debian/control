@@ -17,6 +17,7 @@ Build-Depends: debhelper (>= 9),
  libboost-test-dev,
  libglibmm-2.4-dev,
  libgstreamer1.0-dev,
+ libgstreamer-plugins-bad1.0-dev,
  libgstreamer-plugins-base1.0-dev,
  libnice-dev,
  libsigc++-2.0-dev,
@@ -36,6 +37,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  kms-core (>= 7.0.0),
  openh264-gst-plugin,
  openwebrtc-gst-plugins
+ libgstreamer-plugins-bad1.0-0,
 Description: Kurento Elements module
  Kurento Elements module - Binary libraries.
 
@@ -51,6 +53,7 @@ Depends: kms-elements (= ${binary:Version}),
  libboost-test-dev,
  libglibmm-2.4-dev,
  libgstreamer1.0-dev,
+ libgstreamer-plugins-bad1.0-dev,
  libgstreamer-plugins-base1.0-dev,
  libnice-dev,
  libsigc++-2.0-dev,
