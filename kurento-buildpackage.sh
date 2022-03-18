@@ -507,6 +507,12 @@ apt-get update \
 
 PACKAGE_VERSION="$(dpkg-parsechangelog --show-field Version)"
 
+# debchange (dch) requires an email being set on the system.
+if [[ -z "${EMAIL:-}${DEBEMAIL:-}" ]]; then
+    export DEBFULLNAME="Kurento"
+    export DEBEMAIL="info@kurento.org"
+fi
+
 if [[ "$CFG_RELEASE" == "true" ]]; then
     log "Update debian/changelog for a RELEASE version build"
     gbp dch \
