@@ -149,17 +149,16 @@
 #/ Dependency install
 #/ ------------------
 #/
-#/ apt-get update && apt-get install --yes \
-#/   python3 python3-pip python3-setuptools python3-wheel \
-#/   devscripts \
-#/   dpkg-dev \
-#/   lintian \
-#/   git \
-#/   openssh-client \
-#/   equivs \
-#/   coreutils
-#/ pip3 install --upgrade gbp
-
+#/ sudo apt-get update && sudo apt-get install --no-install-recommends \
+#/     python3 python3-pip python3-setuptools python3-wheel \
+#/     devscripts \
+#/     dpkg-dev \
+#/     lintian \
+#/     git \
+#/     openssh-client \
+#/     equivs \
+#/     coreutils \
+#/ && sudo pip3 install --upgrade gbp
 
 
 # Shell setup
