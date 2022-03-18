@@ -13,14 +13,14 @@ add_dependencies(kmsfaceoverlay kmsimageoverlay kmsfacedetector)
 target_link_libraries(kmsfaceoverlay
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-video-1.0_LIBRARIES}
-  ${opencv_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )
 
 set_property(TARGET kmsfaceoverlay
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${gstreamer-1.0_INCLUDE_DIRS}
-    ${opencv_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
 install(

@@ -11,7 +11,7 @@ endif()
 target_link_libraries(kmslogooverlay
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-video-1.0_LIBRARIES}
-  ${opencv_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   ${libsoup-2.4_LIBRARIES}
 )
 
@@ -19,7 +19,7 @@ set_property(TARGET kmslogooverlay
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${gstreamer-1.0_INCLUDE_DIRS}
-    ${opencv_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
     ${libsoup-2.4_INCLUDE_DIRS}
 )
 

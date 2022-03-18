@@ -11,7 +11,7 @@ endif()
 target_link_libraries(kmsopencvfilter
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-video-1.0_LIBRARIES}
-  ${opencv_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   kmsfiltersimpl
 )
 
@@ -20,7 +20,7 @@ set_property(TARGET kmsopencvfilter
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../server/implementation/objects/
     ${gstreamer-1.0_INCLUDE_DIRS}
-    ${opencv_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
     ${KMSCORE_INCLUDE_DIRS}
 )
 
