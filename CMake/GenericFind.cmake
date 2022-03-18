@@ -69,7 +69,7 @@ function(generic_find)
       endif ()
     endif ()
 
-    set (FORCE_GENERIC_FIND FALSE CACHE BOOLEAN "Force search of libraries each time cmake is executed")
+    set (FORCE_GENERIC_FIND FALSE CACHE BOOL "Force search of libraries each time cmake is executed")
 
     if (NOT SEARCH_AGAIN AND NOT FORCE_GENERIC_FIND)
       message (STATUS "${GF_LIBNAME} Already found")
@@ -89,6 +89,14 @@ function(generic_find)
   if (DEFINED ${GF_LIBNAME}_EXECUTABLE)
     unset (${GF_LIBNAME}_EXECUTABLE CACHE)
   endif()
+
+  # Before searching, configure FindBoost.cmake module.
+  # Boost >= 1.70 started to provide a CMake package configuration file for use
+  # with `find_package()`. This defaults to imported targets, which is actually
+  # the modern CMake way to use packages.
+  # However, Kurento was written for earlier versions, and expects full paths to
+  # boost libraries instead of just the target aliases (such as "Boost::regex").
+  set(Boost_NO_BOOST_CMAKE ON)
 
   if (DEFINED GF_COMPONENTS)
     foreach (COMP ${GF_COMPONENTS})
@@ -144,7 +152,7 @@ function(generic_find)
     message (STATUS "Found ${GF_LIBNAME}")
   endif ()
 
-  set (${GF_LIBNAME}_VERSION ${${GF_LIBNAME}_VERSION} CACHE PATH "${GF_LIBNAME} Version" FORCE)
+  set (${GF_LIBNAME}_VERSION ${${GF_LIBNAME}_VERSION} CACHE STRING "${GF_LIBNAME} Version" FORCE)
 
   set (${GF_LIBNAME}_LIBRARIES ${${GF_LIBNAME}_LIBRARIES} PARENT_SCOPE)
   set (${GF_LIBNAME}_LIBRARIES ${${GF_LIBNAME}_LIBRARIES} CACHE PATH "${GF_LIBNAME}_LIBRARIES" FORCE)
