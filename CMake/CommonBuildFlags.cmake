@@ -62,6 +62,11 @@ function(common_buildflags_set)
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=gnu11   -Wall -pthread ${DPKG_CFLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -Wall -pthread ${DPKG_CXXFLAGS}")
 
+  # Kurento code was written to target GLib version 2.48
+  # Avoid deprecation messages from newer versions
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_48")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_48")
+
   # Disable 'old-style-cast' warning
   # All code is C-based and old style casts are widespread
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-old-style-cast")
