@@ -58,9 +58,9 @@ macro(add_glib_enumtypes outsources outheaders name includeguard)
     COMMAND ${GLIB-MKENUMS_EXECUTABLE}
         --fhead \"\#include \\"${name}.h\\"\\n${HEADERS}\"
         --fprod \"\\n/* enumerations from \\"@filename@\\" */\"
-        --vhead \"GType\\n@enum_name@_get_type \(void\)\\n{\\n"  "static volatile gsize g_define_type_id__volatile = 0\;\\n"  "if \(g_once_init_enter \(&g_define_type_id__volatile\)\) {\\n"    "static const G@Type@Value values[] = {\"
+        --vhead \"GType\\n@enum_name@_get_type \(void\)\\n{\\n"  "static GType initialization_value = 0\;\\n"  "if \(g_once_init_enter \(&initialization_value\)\) {\\n"    "static const G@Type@Value values[] = {\"
         --vprod \""      "{ @VALUENAME@, \\"@VALUENAME@\\", \\"@valuenick@\\" },\"
-        --vtail \""      "{ 0, NULL, NULL }\\n"    "}\;\\n"    "GType g_define_type_id = g_\@type\@_register_static \(\\"@EnumName@\\", values\)\;\\n"    "g_once_init_leave \(&g_define_type_id__volatile, g_define_type_id\)\;\\n"  "}\\n"  "return g_define_type_id__volatile\;\\n}\\n\"
+        --vtail \""      "{ 0, NULL, NULL }\\n"    "}\;\\n"    "GType type = g_\@type\@_register_static \(\\"@EnumName@\\", values\)\;\\n"    "g_once_init_leave \(&initialization_value, type\)\;\\n"  "}\\n"  "return initialization_value\;\\n}\\n\"
             ${ARGN} > "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS ${ARGN}
