@@ -41,8 +41,8 @@ file(APPEND ${ctemplate} "
 GType
 @enum_name@_get_type (void)
 {
-  static volatile gsize g_define_type_id__volatile = 0;
-  if (g_once_init_enter (&g_define_type_id__volatile)) {
+  static GType initialization_value = 0;
+  if (g_once_init_enter (&initialization_value)) {
     static const G@Type@Value values[] = {
 /*** END value-header ***/
 /*** BEGIN value-production ***/
@@ -51,10 +51,10 @@ GType
 /*** BEGIN value-tail ***/
 { 0, NULL, NULL }
     };
-    GType g_define_type_id = g_@type@_register_static (\"@EnumName@\", values);
-    g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    GType type = g_@type@_register_static (\"@EnumName@\", values);
+    g_once_init_leave (&initialization_value, type);
   }
-  return g_define_type_id__volatile;
+  return initialization_value;
 }
 
 /*** END value-tail ***/
