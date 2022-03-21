@@ -3,12 +3,12 @@ Priority: optional
 Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
  cmake,
+ pkg-config,
  kms-core-dev,
  kms-elements-dev,
  kms-filters-dev,
  libgstreamer-plugins-base1.0-dev,
- libopencv-dev,
- pkg-config
+ libopencv-dev
 Standards-Version: 4.0.0
 Vcs-Git: https://github.com/Kurento/kms-datachannelexample.git
 Vcs-Browser: https://github.com/Kurento/kms-datachannelexample
