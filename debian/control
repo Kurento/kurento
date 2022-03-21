@@ -4,11 +4,11 @@ Maintainer: Kurento <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 9),
  build-essential,
  cmake,
+ pkg-config,
  kms-cmake-utils (>= 7.0.0),
  kmsjsoncpp-dev,
  libboost-dev,
- libboost-test-dev,
- pkg-config
+ libboost-test-dev
 Standards-Version: 4.0.0
 Vcs-Git: https://github.com/Kurento/kms-jsonrpc.git
 Vcs-Browser: https://github.com/Kurento/kms-jsonrpc
