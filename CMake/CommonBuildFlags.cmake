@@ -67,6 +67,10 @@ function(common_buildflags_set)
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_48")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_48")
 
+  # Kurento code was written to target Boost version 1.58
+  # Avoid deprecation messages from newer versions
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_BIND_GLOBAL_PLACEHOLDERS")
+
   # Disable 'old-style-cast' warning
   # All code is C-based and old style casts are widespread
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-old-style-cast")
