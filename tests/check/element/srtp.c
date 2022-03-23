@@ -362,7 +362,7 @@ GST_END_TEST
 static char *srtp_key = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234";
 
 static GstCaps *
-srtpdec_request_key (void)
+srtpdec_request_key (GstElement *gstsrtpdec, guint ssrc, GstHarness *h_dec)
 {
   GstBuffer *key = gst_buffer_new_wrapped (g_strdup (srtp_key),
       strlen (srtp_key));
@@ -376,6 +376,9 @@ srtpdec_request_key (void)
       "srtcp-auth", G_TYPE_STRING, "hmac-sha1-80",
       NULL);
   gst_buffer_unref (key);
+
+  gst_harness_set_src_caps (h_dec, gst_caps_ref (caps));
+
   return caps;
 }
 
@@ -389,6 +392,15 @@ srtpdec_request_key (void)
  *
  * in libsrtp (from libsrtp/include/srtp.h).
  *
+ * Newer versions (seen with GStreamer 1.20) might silently drop packets.
+ * Check by setting:
+ *
+ *     export GST_DEBUG="3,srtpdec:5"
+ *
+ * And seeing this log:
+ *
+ *     DEBUG srtpdec Dropping replayed packet, probably retransmission
+ *
  * However, with Kurento's fork of libsrtp, the srtp_err_status_replay_fail
  * error on the receiver side should be ignored, similarly to how
  * 'allow-repeat-tx = true' allows repeated packets on the transmitter side.
@@ -397,33 +409,35 @@ GST_START_TEST (test_replay_rx_with_libsrtp_fork)
 {
   GstElement *srtpenc = gst_element_factory_make ("srtpenc", NULL);
   GstElement *srtpdec = gst_element_factory_make ("srtpdec", NULL);
-  GstHarness *src_h;
-  GstHarness *h;
+  GstHarness *h_enc;
+  GstHarness *h_dec;
   GstBuffer *in_buf;
   GstBuffer *out_buf;
   GstFlowReturn ret;
 
-  // Prepare srtp enc and dec
+  // Prepare srtpenc
   GstBuffer *key = gst_buffer_new_wrapped (g_strdup (srtp_key),
       strlen (srtp_key));
   g_object_set (srtpenc, "key", key, "allow-repeat-tx", TRUE, NULL);
   gst_buffer_unref (key);
-  g_signal_connect (srtpdec, "request-key", G_CALLBACK (srtpdec_request_key),
-      NULL);
 
   // Prepare test harness
-  src_h = gst_harness_new_with_element (srtpenc, "rtp_sink_0", "rtp_src_0");
-  h = gst_harness_new_with_element (srtpdec, "rtp_sink", "rtp_src");
-  gst_harness_set_src_caps (src_h, generate_caps ());
-  gst_harness_add_src_harness (h, src_h, FALSE);
+  h_enc = gst_harness_new_with_element (srtpenc, "rtp_sink_0", "rtp_src_0");
+  gst_harness_set_src_caps (h_enc, generate_caps ());
+  h_dec = gst_harness_new_with_element (srtpdec, "rtp_sink", "rtp_src");
+  gst_harness_add_sink_harness (h_enc, h_dec);
+
+  // Prepare srtpdec
+  g_signal_connect (srtpdec, "request-key", G_CALLBACK (srtpdec_request_key),
+      h_dec);
 
   // First run: Send normal packet
   in_buf = generate_test_buffer (15);
-  ret = gst_harness_push (src_h, gst_buffer_copy (in_buf));
+  ret = gst_harness_push (h_enc, gst_buffer_copy (in_buf));
   fail_unless (ret == GST_FLOW_OK);
-  ret = gst_harness_push_from_src (h);
+  ret = gst_harness_push_to_sink (h_enc);
   fail_unless (ret == GST_FLOW_OK);
-  out_buf = gst_harness_try_pull (h);
+  out_buf = gst_harness_try_pull (h_dec);
   fail_unless (out_buf != NULL);
   fail_unless (compare_test_buffers (in_buf, out_buf));
   gst_buffer_unref (in_buf);
@@ -432,17 +446,17 @@ GST_START_TEST (test_replay_rx_with_libsrtp_fork)
   // Second run: Repeat sequence number; should raise 'srtp_err_status_replay_fail'
   // but the Kurento fork should allow it to be processed (not dropped)
   in_buf = generate_test_buffer (15);
-  ret = gst_harness_push (src_h, gst_buffer_copy (in_buf));
+  ret = gst_harness_push (h_enc, gst_buffer_copy (in_buf));
   fail_unless (ret == GST_FLOW_OK);
-  ret = gst_harness_push_from_src (h);
+  ret = gst_harness_push_to_sink (h_enc);
   fail_unless (ret == GST_FLOW_OK);
-  out_buf = gst_harness_try_pull (h);
+  out_buf = gst_harness_try_pull (h_dec);
   fail_unless (out_buf != NULL);
   fail_unless (compare_test_buffers (in_buf, out_buf));
   gst_buffer_unref (in_buf);
   gst_buffer_unref (out_buf);
 
-  gst_harness_teardown (h);
+  gst_harness_teardown (h_dec);
   g_object_unref (srtpdec);
   g_object_unref (srtpenc);
 }
