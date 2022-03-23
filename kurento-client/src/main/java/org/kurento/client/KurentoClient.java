@@ -241,10 +241,16 @@ public class KurentoClient {
   }
 
   protected KurentoClient(JsonRpcClient client) {
+	  this(client, true);
+  }
+
+  protected KurentoClient(JsonRpcClient client, boolean overrideClientTimeouts) {
     this.client = client;
     this.manager = new RomManager(new RomClientJsonRpcClient(client));
-    client.setRequestTimeout(requesTimeout);
-    client.setConnectionTimeout((int) connectionTimeout);
+    if (overrideClientTimeouts) {
+      client.setRequestTimeout(requesTimeout);
+      client.setConnectionTimeout((int) connectionTimeout);
+    }
     if (client instanceof AbstractJsonRpcClientWebSocket) {
       ((AbstractJsonRpcClientWebSocket) client).enableHeartbeat(KEEPALIVE_TIME);
     }
@@ -349,6 +355,10 @@ public class KurentoClient {
 
   public static KurentoClient createFromJsonRpcClient(JsonRpcClient jsonRpcClient) {
     return new KurentoClient(jsonRpcClient);
+  }
+
+  public static KurentoClient createFromJsonRpcClientHonoringClientTimeouts(JsonRpcClient jsonRpcClient) {
+    return new KurentoClient(jsonRpcClient, false);
   }
 
   public Transaction beginTransaction() {
