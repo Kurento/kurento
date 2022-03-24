@@ -87,6 +87,20 @@
 #/   Optional. Default: Disabled.
 #/   Implies '--release'.
 #/
+#/ --valgrind-callgrind
+#/
+#/   Build and run with Valgrind's Callgrind performance profiler.
+#/   Valgrind should be available in the PATH.
+#/
+#/   Callgrind gathers profiling information, which then can be loaded with
+#/   the `KCachegrind` tool to visualize and interpret it.
+#/
+#/   See:
+#/   * Callgrind manual: http://valgrind.org/docs/manual/cl-manual.html
+#/
+#/   Optional. Default: Disabled.
+#/   Implies '--release'.
+#/
 #/ --address-sanitizer
 #/
 #/   Build and run with the instrumentation provided by the compiler's
@@ -133,9 +147,9 @@
 # Shell setup
 # -----------
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+SELF_PATH="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
 # shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+source "$SELF_PATH/bash.conf.sh" || exit 1
 
 
 
@@ -149,9 +163,11 @@ CFG_CLANG="false"
 CFG_VERBOSE="false"
 CFG_VALGRIND_MEMCHECK="false"
 CFG_VALGRIND_MASSIF="false"
+CFG_VALGRIND_CALLGRIND="false"
 CFG_ADDRESS_SANITIZER="false"
 CFG_THREAD_SANITIZER="false"
 CFG_UNDEFINED_SANITIZER="false"
+CFG_KMS_ARGS=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -162,13 +178,13 @@ while [[ $# -gt 0 ]]; do
         --verbose) CFG_VERBOSE="true" ;;
         --valgrind-memcheck) CFG_VALGRIND_MEMCHECK="true" ;;
         --valgrind-massif) CFG_VALGRIND_MASSIF="true" ;;
+        --valgrind-callgrind) CFG_VALGRIND_CALLGRIND="true" ;;
         --address-sanitizer) CFG_ADDRESS_SANITIZER="true" ;;
         --thread-sanitizer) CFG_THREAD_SANITIZER="true" ;;
         --undefined-sanitizer) CFG_UNDEFINED_SANITIZER="true" ;;
         *)
-            log "ERROR: Unknown argument '${1-}'"
-            log "Run with '--help' to read usage details"
-            exit 1
+            log "Argument '${1-}' will be passed to KMS"
+            CFG_KMS_ARGS+=" ${1-}"
             ;;
     esac
     shift
@@ -187,6 +203,10 @@ if [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     CFG_RELEASE="true"
 fi
 
+if [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
+    CFG_RELEASE="true"
+fi
+
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
 fi
@@ -202,6 +222,7 @@ log "CFG_CLANG=$CFG_CLANG"
 log "CFG_VERBOSE=$CFG_VERBOSE"
 log "CFG_VALGRIND_MEMCHECK=$CFG_VALGRIND_MEMCHECK"
 log "CFG_VALGRIND_MASSIF=$CFG_VALGRIND_MASSIF"
+log "CFG_VALGRIND_CALLGRIND=$CFG_VALGRIND_CALLGRIND"
 log "CFG_ADDRESS_SANITIZER=$CFG_ADDRESS_SANITIZER"
 log "CFG_THREAD_SANITIZER=$CFG_THREAD_SANITIZER"
 log "CFG_UNDEFINED_SANITIZER=$CFG_UNDEFINED_SANITIZER"
@@ -247,13 +268,6 @@ if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
             "CFLAGS='${CFLAGS:-} -shared-libasan'"
             "CXXFLAGS='${CXXFLAGS:-} -shared-libasan'"
         )
-    else
-        BUILD_VARS+=(
-            # Use flag recommended for aggressive diagnostics:
-            # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
-            "CFLAGS='${CFLAGS:-} -fsanitize-address-use-after-scope'"
-            "CXXFLAGS='${CXXFLAGS:-} -fsanitize-address-use-after-scope'"
-        )
     fi
 fi
 
@@ -266,8 +280,7 @@ if [[ "$CFG_UNDEFINED_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-ubsan"
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_UNDEFINED=ON"
 
-    # FIXME
-    # A bug in the `ld` linker (package "binutils") in Ubuntu 16.04 "Xenial"
+    # FIXME: A bug in the `ld` linker (package "binutils") in Ubuntu 16.04 "Xenial"
     # makes the CMake test for UBSan compatibility to fail.
     # A simple workaround is to use `gold` instead of `ld`.
     # Clang doesn't need this, because it uses `lld`, the LLVM linker.
@@ -305,7 +318,7 @@ if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; the
     COMMAND="$COMMAND cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON $CMAKE_ARGS .."
 
     log "Run command: $COMMAND"
-    eval $COMMAND
+    eval "$COMMAND"
 
     popd || exit 1  # Exit $BUILD_DIR
 fi
@@ -325,34 +338,50 @@ RUN_VARS=()
 RUN_WRAPPER=""
 
 if [[ "$CFG_GDB" == "true" ]]; then
+    # RUN_WRAPPER="gdb -ex 'run' --args"
     RUN_WRAPPER="gdb --args"
-    RUN_VARS+=("G_DEBUG='fatal-warnings'")
+    RUN_VARS+=(
+        "G_DEBUG='fatal-warnings'"
+
+        # Prevent GStreamer from forking on startup
+        "GST_REGISTRY_FORK='no'"
+    )
 fi
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
     source "$BASEPATH/valgrind.conf.sh" || exit 1
-    RUN_WRAPPER="valgrind --tool=memcheck --log-file=valgrind-memcheck-%p.log $VALGRIND_ARGS"
+    RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
         "G_DEBUG='gc-friendly'"
+
         #"G_SLICE='always-malloc'"
         #"G_SLICE='debug-blocks'"
         "G_SLICE='all'"
+
+        # Prevent GStreamer from forking on startup
+        "GST_REGISTRY_FORK='no'"
     )
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
     source "$BASEPATH/valgrind.conf.sh" || exit 1
-    RUN_WRAPPER="valgrind --tool=massif --log-file=valgrind-massif-%p.log --massif-out-file=valgrind-massif-%p.out $VALGRIND_ARGS"
+    RUN_WRAPPER="valgrind --tool=massif --log-file='valgrind-massif-%p.log' --massif-out-file='valgrind-massif-%p.out' ${VALGRIND_ARGS[*]}"
+
+elif [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
+    # shellcheck source=valgrind.conf.sh
+    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    RUN_WRAPPER="valgrind --tool=callgrind --log-file='valgrind-callgrind-%p.log' --callgrind-out-file='valgrind-callgrind-%p.out' ${VALGRIND_ARGS[*]}"
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     if [[ "$CFG_CLANG" == "true" ]]; then
         CLANG_VERSION="$(clang --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
-        CLANG_VERSION_MAJ="$(echo "$CLANG_VERSION" | head -c1)"
+        CLANG_VERSION_MAJ="${CLANG_VERSION%%.*}"
         LIBSAN="/usr/lib/llvm-${CLANG_VERSION_MAJ}/lib/clang/${CLANG_VERSION}/lib/linux/libclang_rt.asan-x86_64.so"
     else
-        GCC_VERSION="$(gcc -dumpversion | head -c1)"
-        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION}/libasan.so"
+        GCC_VERSION="$(gcc -dumpversion)"
+        GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
+        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libasan.so"
     fi
 
     RUN_VARS+=(
@@ -365,9 +394,11 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    GCC_VERSION="$(gcc -dumpversion | head -c1)"
-    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/libtsan.so"
+    GCC_VERSION="$(gcc -dumpversion)"
+    GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
+    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libtsan.so"
     RUN_VARS+=(
+        "G_SLICE='all'"
         "LD_PRELOAD='$LIBSAN'"
         "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
     )
@@ -380,13 +411,15 @@ if [[ -n "${GST_DEBUG:-}" ]]; then
     )
 else
     RUN_VARS+=(
-        "GST_DEBUG='3,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
+        "GST_DEBUG='2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
     )
 fi
 
 # (Optional) Extra GST_DEBUG categories
-# export GST_DEBUG="${GST_DEBUG:-3},aggregator:5,compositor:5,compositemixer:5"
-# export GST_DEBUG="${GST_DEBUG:-3},baseparse:6,h264parse:6"
+# export GST_DEBUG="${GST_DEBUG:-2},aggregator:5,compositor:5,compositemixer:5"
+# export GST_DEBUG="${GST_DEBUG:-2},baseparse:6,h264parse:6"
+# export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,agnosticbin*:5"
+# export GST_DEBUG="${GST_DEBUG:-2},kmswebrtcsession:6"
 
 
 
@@ -403,31 +436,35 @@ if [[ "$CFG_BUILD_ONLY" == "true" ]]; then
     exit 0
 fi
 
-# Run in a subshell so the exported variables don't pollute parent environment
-(
-    # Enable kernel core dump
-    ulimit -c unlimited
+# System limits: Set maximum open file descriptors
+# Maximum limit value allowed by Ubuntu: 2^20 = 1048576
+ulimit -n 1048576
 
-    #KERNEL_CORE_PATH="${PWD}/core_%e_%p_%u_%t"
-    #log "Set kernel core dump path: $KERNEL_CORE_PATH"
-    #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
+# System limits: Enable kernel core dump
+ulimit -c unlimited
 
-    # Prepare the final command
-    COMMAND=""
-    for RUN_VAR in "${RUN_VARS[@]:-}"; do
-        [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
-    done
+# System config: Set path for Kernel core dump files
+# NOTE: Requires root (runs with `sudo`)
+#KERNEL_CORE_PATH="${PWD}/core_%e_%p_%u_%t"
+#log "Set kernel core dump path: $KERNEL_CORE_PATH"
+#echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
 
-    COMMAND="$COMMAND $RUN_WRAPPER"
+# Prepare the final command
+COMMAND=""
+for RUN_VAR in "${RUN_VARS[@]:-}"; do
+    [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
+done
 
-    COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
-        --conf-file='$PWD/config/kurento.conf.json' \
-        --modules-config-path='$PWD/config' \
-        --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
-        --gst-plugin-path='$PWD'"
+COMMAND="$COMMAND $RUN_WRAPPER"
 
-    log "Run command: $COMMAND"
-    eval $COMMAND
-)
+COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
+    --conf-file='$PWD/config/kurento.conf.json' \
+    --modules-config-path='$PWD/config' \
+    --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
+    --gst-plugin-path='$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.5' \
+"
+
+log "Run command: $COMMAND"
+eval "$COMMAND" "$CFG_KMS_ARGS"
 
 popd || exit 1  # Exit $BUILD_DIR

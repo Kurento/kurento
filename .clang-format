@@ -1,0 +1,56 @@
+# Kurento coding style
+# ====================
+#
+# Written and tested for clang-format version 11.0.
+
+---
+BasedOnStyle: LLVM
+
+# Do not align continuations with previous lines.
+# Reason: Wastes horizontal space for no reason.
+AlignAfterOpenBracket: DontAlign
+
+# Pack arguments so that they use the least amount of space.
+# Reason: Follows Gnome, although going against other tools like Prettier or Rustfmt.
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackArguments: true
+BinPackParameters: false
+
+# Do not align continuations with previous lines.
+# Reason: Wastes horizontal space for no reason.
+AlignOperands: DontAlign
+
+# Put operators at the beginning of the line, not at the end.
+# Reason: Maths and Python are wiser than LLVM.
+# https://www.python.org/dev/peps/pep-0008/#should-a-line-break-before-or-after-a-binary-operator
+BreakBeforeBinaryOperators: NonAssignment
+
+# Where should braces go?
+# * Attach: Always attach braces to surrounding context.
+# * Linux: Like Attach, but break before braces on function, namespace and class definitions.
+BreakBeforeBraces: Linux
+
+# Where should function return types go?
+AlwaysBreakAfterReturnType: AllDefinitions
+
+# Do not break break user-visible strings.
+# Reason: It breaks "grep" and other code search tools.
+# https://www.kernel.org/doc/html/v4.10/process/coding-style.html#breaking-long-lines-and-strings
+BreakStringLiterals: false
+
+# Do not break comments.
+# Reason: Leave the developer choose the length and format of comments.
+ReflowComments: false
+# PenaltyBreakComment: 0
+# CommentPragmas: .*
+# PenaltyExcessCharacter: 0
+
+# Do not sort includes. Who the hell thought this could be a good default?
+# Reason: It can break the code itself, making builds fail.
+SortIncludes: false
+
+# Gnome C Coding Style
+SpaceBeforeParens: Always
+
+...
