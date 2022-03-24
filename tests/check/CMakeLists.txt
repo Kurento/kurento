@@ -1,5 +1,5 @@
-# Disable error when functions are unused. This allows commenting out calls to
-# `tcase_add_test()` to skip running certain tests during a debug session.
+# Disable error when functions are unused. This allows commenting out calls
+# to skip running certain tests during a debug session.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 
 set(KMS_TEST_UTILS_SOURCES
