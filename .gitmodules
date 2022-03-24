@@ -1,48 +1,64 @@
 [submodule "kurento-module-creator"]
 	path = kurento-module-creator
 	url = ../kurento-module-creator
+	branch = bionic-gstreamer
 [submodule "kurento-maven-plugin"]
 	path = kurento-maven-plugin
 	url = ../kurento-maven-plugin
+	branch = bionic-gstreamer
 [submodule "kms-cmake-utils"]
 	path = kms-cmake-utils
 	url = ../kms-cmake-utils
+	branch = bionic-gstreamer
 [submodule "kms-jsonrpc"]
 	path = kms-jsonrpc
 	url = ../kms-jsonrpc
+	branch = bionic-gstreamer
 [submodule "kms-core"]
 	path = kms-core
 	url = ../kms-core
+	branch = bionic-gstreamer
 [submodule "kms-elements"]
 	path = kms-elements
 	url = ../kms-elements
+	branch = bionic-gstreamer
 [submodule "kms-filters"]
 	path = kms-filters
 	url = ../kms-filters
+	branch = bionic-gstreamer
 [submodule "kurento-media-server"]
 	path = kurento-media-server
 	url = ../kurento-media-server
+	branch = bionic-gstreamer
 [submodule "module/kms-chroma"]
 	path = module/kms-chroma
 	url = ../kms-chroma
+	branch = bionic-gstreamer
 [submodule "module/kms-crowddetector"]
 	path = module/kms-crowddetector
 	url = ../kms-crowddetector
+	branch = bionic-gstreamer
 [submodule "module/kms-datachannelexample"]
 	path = module/kms-datachannelexample
 	url = ../kms-datachannelexample
+	branch = bionic-gstreamer
 [submodule "module/kms-markerdetector"]
 	path = module/kms-markerdetector
 	url = ../kms-markerdetector
+	branch = bionic-gstreamer
 [submodule "module/kms-opencv-plugin-sample"]
 	path = module/kms-opencv-plugin-sample
 	url = ../kms-opencv-plugin-sample
+	branch = bionic-gstreamer
 [submodule "module/kms-platedetector"]
 	path = module/kms-platedetector
 	url = ../kms-platedetector
+	branch = bionic-gstreamer
 [submodule "module/kms-plugin-sample"]
 	path = module/kms-plugin-sample
 	url = ../kms-plugin-sample
+	branch = bionic-gstreamer
 [submodule "module/kms-pointerdetector"]
 	path = module/kms-pointerdetector
 	url = ../kms-pointerdetector
+	branch = bionic-gstreamer
