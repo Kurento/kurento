@@ -1,3 +1,7 @@
+# Disable error when functions are unused. This allows commenting out calls
+# to skip running certain tests during a debug session.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=unused-function")
+
 set(TEST_VARIABLES
   "GST_PLUGIN_PATH=${CMAKE_BINARY_DIR}:$ENV{GST_PLUGIN_PATH}"
 )
