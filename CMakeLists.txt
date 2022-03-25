@@ -8,8 +8,10 @@ set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` 
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
-message("If KurentoHelpers is not found, you need to install 'kms-cmake-utils' from the Kurento repository")
-find_package(KurentoHelpers REQUIRED)
+find_package(KurentoUtils)
+if(NOT KurentoUtils_FOUND)
+  message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")
+endif()
 
 message("If CodeGenerator is not found, you need to install 'kms-core' from the Kurento repository")
 include(CodeGenerator)
@@ -41,7 +43,8 @@ set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+# Add CMake modules provided by the project.
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Kurento")
 
 set(GST_REQUIRED 1.0.0)
 set(OPENCV_REQUIRED <5.0.0)
