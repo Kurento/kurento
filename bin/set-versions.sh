@@ -368,13 +368,13 @@ perl -i -pe \
 if [[ "$CFG_RELEASE" == "true" ]]; then
     perl -i -pe \
         "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMake/CodeGenerator.cmake
+        cmake/Kurento/CodeGenerator.cmake
 fi
 update_debian_changelog
 update_debian_control
 commit_and_tag \
     src/server/interface/core.kmd.json \
-    CMake/CodeGenerator.cmake
+    cmake/Kurento/CodeGenerator.cmake
 popd
 
 
