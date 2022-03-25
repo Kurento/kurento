@@ -1,0 +1,18 @@
+# - Try to find KurentoUtils
+
+#=============================================================================
+# Copyright 2014 Kurento
+#
+#=============================================================================
+
+set(PACKAGE_VERSION "@PROJECT_VERSION@")
+set(KurentoUtils_VERSION ${PACKAGE_VERSION})
+set(KurentoUtils_FOUND 1)
+
+include (FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(KurentoUtils FOUND_VAR KurentoUtils_FOUND
+  REQUIRED_VARS KurentoUtils_VERSION
+  VERSION_VAR KurentoUtils_VERSION
+)
+mark_as_advanced(KurentoUtils_FOUND KurentoUtils_VERSION)
