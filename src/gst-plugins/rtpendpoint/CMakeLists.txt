@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
+include(GNUInstallDirs) # CMAKE_INSTALL_*
 
 set(CUSTOM_PREFIX "kurento")
 set(INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}/rtpendpoint")
-
 
 set(KMS_RTPENDPOINT_SOURCES
   kmsrtpbaseconnection.c
@@ -75,11 +75,14 @@ foreach (HEADER ${KMS_RTPENDPOINT_HEADERS})
   list (APPEND FIND_HEADERS rtpendpoint/${HEADER})
 endforeach ()
 
-configure_file(FindKmsRtpEndpointLib.cmake.in ${CMAKE_BINARY_DIR}/FindKmsRtpEndpointLib.cmake @ONLY)
-
-install(FILES
-	${CMAKE_BINARY_DIR}/FindKmsRtpEndpointLib.cmake
-  DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
+configure_file(
+  FindKmsRtpEndpointLib.cmake.in
+  ${CMAKE_BINARY_DIR}/FindKmsRtpEndpointLib.cmake
+  @ONLY
+)
+install(
+  FILES ${CMAKE_BINARY_DIR}/FindKmsRtpEndpointLib.cmake
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
 )
 
 add_library(rtpendpoint MODULE kmsrtp.c)
@@ -104,4 +107,3 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-

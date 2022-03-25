@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+include(GNUInstallDirs) # CMAKE_INSTALL_*
+
 set(CUSTOM_PREFIX "kurento")
 set(INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}/webrtcendpoint")
 
@@ -167,11 +169,14 @@ set (REQUIRED_LIBS
   "nice ${NICE_REQUIRED}"
 )
 
-configure_file(FindKmsWebRtcEndpointLib.cmake.in ${CMAKE_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake @ONLY)
-
-install(FILES
+configure_file(
+  FindKmsWebRtcEndpointLib.cmake.in
   ${CMAKE_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake
-  DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
+  @ONLY
+)
+install(
+  FILES ${CMAKE_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
 )
 
 add_library(webrtcendpoint MODULE kmswebrtc.c)
