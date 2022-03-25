@@ -30,8 +30,7 @@ install(
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-install ( FILES
-  tessdata/plateLanguage.traineddata
-
+install(
+  FILES tessdata/plateLanguage.traineddata
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE}/tessdata/
 )
