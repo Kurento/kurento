@@ -1,4 +1,4 @@
 usr/include/kurento/jsonrpc/*.hpp
 usr/lib/*/lib*.so
 usr/lib/*/pkgconfig/libjsonrpc.pc
-usr/share/cmake-*/Modules/*.cmake
+usr/share/cmake/Kurento/*.cmake
