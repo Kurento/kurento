@@ -2147,98 +2147,6 @@ not_enough_ports_on_ice_candidate (GstElement *self, gchar *sess_id,
   }
 }
 
-GST_START_TEST (test_not_enough_ports)
-{
-  GArray *codecs_array;
-  gchar *codecs[] = {"VP8/90000", NULL};
-  gchar *offerer_sess_id, *second_offerer_sess_id;
-  GstSDPMessage *offer, *second_offer;
-  gchar *sdp_str = NULL;
-  gboolean ret = FALSE;
-  GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
-  GstElement *second_offerer =
-      gst_element_factory_make ("webrtcendpoint", NULL);
-
-  CandidateRangeData offerer_cand_data;
-  offerer_cand_data.min_port = 55000;
-  offerer_cand_data.max_port = 55002;
-
-  GatheringData gatheringData = {
-      .tcp = g_hash_table_new_full (NULL, (GEqualFunc) &nice_address_equal,
-          (GDestroyNotify) &nice_address_free, NULL),
-      .udp = g_hash_table_new_full (NULL, (GEqualFunc) &nice_address_equal,
-          (GDestroyNotify) &nice_address_free, NULL),
-  };
-
-  codecs_array = create_codecs_array (codecs);
-  g_object_set (offerer, "num-video-medias", 1, "video-codecs",
-      g_array_ref (codecs_array), "min-port", offerer_cand_data.min_port,
-      "max-port", offerer_cand_data.max_port, NULL);
-  g_object_set (second_offerer, "num-video-medias", 1, "video-codecs",
-      g_array_ref (codecs_array), "min-port", offerer_cand_data.min_port,
-      "max-port", offerer_cand_data.max_port, NULL);
-  g_array_unref (codecs_array);
-
-  /* Session creation */
-  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
-  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
-
-  g_signal_emit_by_name (
-      second_offerer, "create-session", &second_offerer_sess_id);
-  GST_DEBUG_OBJECT (
-      second_offerer, "Created session with id '%s'", second_offerer_sess_id);
-
-  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), &gatheringData);
-
-  g_signal_connect (G_OBJECT (second_offerer), "on-ice-candidate",
-      G_CALLBACK (not_enough_ports_on_ice_candidate), &gatheringData);
-
-  /* SDP negotiation */
-  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
-  fail_unless (offer != NULL);
-  GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
-  g_free (sdp_str);
-  sdp_str = NULL;
-
-  g_signal_emit_by_name (
-      second_offerer, "generate-offer", second_offerer_sess_id, &second_offer);
-  fail_unless (second_offer != NULL);
-  GST_DEBUG (
-      "Second offer:\n%s", (sdp_str = gst_sdp_message_as_text (second_offer)));
-  g_free (sdp_str);
-  sdp_str = NULL;
-
-  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
-  fail_unless (ret);
-
-  /* Since libnice 0.1.18, the next call should fail because there are not
-   * enough available ports for the seconds WebRtcEndpoint to gather its
-   * candidates.
-   *
-   * Ports 55000-55002 UDP/TCP combinations are all used up by both components
-   * 1 (RTP) and 2 (RTCP) from the first WebRtcEndpoint, and libnice fails with
-   * this message:
-   *
-   * Agent 0x55d0e51021e0: Unable to add local host 192.168.1.2 candidate tcp-pass for s1:2. Every port is duplicated
-   */
-  g_signal_emit_by_name (
-      second_offerer, "gather-candidates", second_offerer_sess_id, &ret);
-  fail_if (ret);
-
-  gst_sdp_message_free (offer);
-  gst_sdp_message_free (second_offer);
-
-  g_object_unref (offerer);
-  g_object_unref (second_offerer);
-  g_free (offerer_sess_id);
-  g_free (second_offerer_sess_id);
-
-  g_hash_table_unref (gatheringData.tcp);
-  g_hash_table_unref (gatheringData.udp);
-}
-GST_END_TEST
-
 // ----------------------------------------------------------------------------
 
 static void
@@ -2599,7 +2507,6 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_remb_params);
   tcase_add_test (tc_chain, test_session_creation);
   tcase_add_test (tc_chain, test_port_range);
-  tcase_add_test (tc_chain, test_not_enough_ports);
 
   tcase_add_test (tc_chain, test_webrtc_data_channel);
 
