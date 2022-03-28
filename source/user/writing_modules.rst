@@ -285,15 +285,47 @@ Run this from the root directory of your module:
    mkdir build/ && cd build/
    cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
 
-This generates a ``build/java/`` directory, containing all the client code. You can now run ``make java`` (equivalent to *mvn package*) to build the Java code and package it, or ``make java_install`` (equivalent to *mvn install*) to build the package *and* install it into the local Maven repository (typically located at *$HOME/.m2/*). To use the module in your Maven project, you have to add the dependency to the *pom.xml* file:
+This generates a ``build/java/`` directory, containing all the client code. You can now run either of these commands:
+
+* ``make java`` (equivalent to *mvn package*) to build the Java code and package it.
+* ``make java_install`` (equivalent to *mvn install*) to build the package *and* install it into the local Maven repository (typically located at *$HOME/.m2/*).
+
+Finally, to actually use the module in your Maven project, you have to add the dependency to the *pom.xml* file:
 
 .. code-block:: xml
 
-   <dependency>
-     <groupId>org.kurento.module</groupId>
-     <artifactId>modulename</artifactId>
-     <version>0.0.1</version>
-   </dependency>
+   <project>
+     <dependencies>
+       <dependency>
+         <groupId>org.kurento.module</groupId>
+         <artifactId>{modulename}</artifactId>
+         <version>0.0.1-SNAPSHOT</version>
+       </dependency>
+     </dependencies>
+   </project>
+
+Notice that ``{modulename}`` is the name of your module in lowercase.
+
+Then you will be able to instantiate and use the new module in your Java code. For example, Kurento's `OpenCV plugin sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__ is used like this:
+
+.. code-block:: java
+
+   import org.kurento.module.opencvpluginsample.OpenCVPluginSample;
+   [...]
+   final OpenCVPluginSample myFilter =
+     new OpenCVPluginSample.Builder(pipeline).build();
+   myFilter.setFilterType(0);
+   [...]
+   myWebRtcEndpoint1.connect(myFilter);
+   myFilter.connect(myWebRtcEndpoint2);
+
+The result is, as expected, that the OpenCV plugin sample applies a :wikipedia:`Canny edge detector` to the original image:
+
+.. figure:: ../images/kms-opencv-plugin-sample.png
+   :align: center
+   :alt:   Kurento's OpenCV plugin sample, applying a Canny edge detector
+
+   *Kurento's OpenCV plugin sample, applying a Canny edge detector*
 
 
 
@@ -312,8 +344,10 @@ This generates a ``build/js/`` directory, containing all the client code. You ca
 .. code-block:: json
 
    "dependencies": {
-     "modulename": "0.0.1"
+     "{modulename}": "0.0.1"
    }
+
+Notice that ``{modulename}`` is the name of your module in lowercase.
 
 
 
