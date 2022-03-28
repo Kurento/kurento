@@ -1,4 +1,4 @@
-target/kurento-module-creator-jar-with-dependencies.jar usr/bin
 scripts/kurento-module-creator usr/bin
-target/classes/KurentoModuleCreatorConfig.cmake usr/share/cmake/KurentoModuleCreator
-target/classes/FindKurentoModuleCreator.cmake usr/share/cmake/KurentoModuleCreator
+target/classes/Kurento/FindKurentoModuleCreator.cmake usr/share/cmake/Kurento
+target/classes/KurentoModuleCreator/KurentoModuleCreatorConfig.cmake usr/share/cmake/KurentoModuleCreator
+target/kurento-module-creator-jar-with-dependencies.jar usr/bin
