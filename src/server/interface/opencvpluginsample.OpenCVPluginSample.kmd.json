@@ -1,24 +1,24 @@
 {
   "remoteClasses": [
     {
-      "name": "OpencvPluginSample",
+      "name": "OpenCVPluginSample",
       "extends": "OpenCVFilter",
-      "doc": "OpencvPluginSample interface. Documentation about the module",
+      "doc": "OpenCVPluginSample interface. Documentation about the module.",
       "constructor": {
-	"doc": "Create an element",
-	"params": [
-	  {
-	    "name": "mediaPipeline",
-	    "doc": "the parent :rom:cls:`MediaPipeline`",
-	    "type": "MediaPipeline",
-	    "final": true
-	  }
-	]
+        "doc": "Create an element.",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the parent :rom:cls:`MediaPipeline`.",
+            "type": "MediaPipeline",
+            "final": true
+          }
+        ]
       },
       "methods": [
         {
           "name": "setFilterType",
-          "doc": "Configures the type of filter. 0 - black and white, 1 - Edges filter.",
+          "doc": "Configures the type of filter. 0: Edges. 1: Black and White.",
           "params": [
             {
               "name": "filterType",
@@ -29,7 +29,7 @@
         },
         {
           "name": "setEdgeThreshold",
-          "doc": "Configures the edge threshold.",
+          "doc": "Configures the edge threshold (only for Edges filter type).",
           "params": [
             {
               "name": "edgeValue",
