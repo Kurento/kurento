@@ -22,21 +22,27 @@ The starting point to develop a filter is to create a basic structure for the so
    sudo apt-get update && sudo apt-get install --no-install-recommends \
        kurento-media-server-dev
 
-Now use the scaffold tool to generate code for your new module. For example:
+Now use the scaffold tool to generate code for your new module:
+
+.. code-block:: shell
+
+   kurento-module-scaffold <CamelCaseName> <SnakeCaseName> [IsOpenCV]
+
+For example:
 
 * For an OpenCV module:
 
   .. code-block:: shell
 
-     kurento-module-scaffold MyCvModule cv-module-dir true
+     kurento-module-scaffold MyOpenCVModule my-opencv-module true
 
 * For a GStreamer module:
 
   .. code-block:: shell
 
-     kurento-module-scaffold MyGstModule gst-module-dir
+     kurento-module-scaffold MyGstModule my-gst-module false
 
-The scaffolding tool generates a complete folder tree, with all the needed *CMakeLists.txt* files to build with CMake. You'll also find empty Kurento Module Descriptor files (*.kmd*), which must contain a complete description of the module: constructor, methods, properties, events, and the complex types defined by the developer.
+The scaffolding tool generates a complete folder tree, with all the needed *CMakeLists.txt* files to build with CMake. You'll also find empty Kurento Module Descriptor files (``*.kmd.json``), which must contain a complete description of the module: constructor, methods, properties, events, and the complex types defined by the developer.
 
 Once your *.kmd* files have been filled with a complete description of the module, it is time to generate the corresponding server stub code with *kurento-module-creator*. Run this from the root directory of your module:
 
@@ -57,14 +63,14 @@ There are several files in ``src/server/implementation/objects/``:
 
 .. code-block:: text
 
-   <ModuleName>Impl.cpp
-   <ModuleName>Impl.hpp
-   <ModuleName>OpenCVImpl.cpp
-   <ModuleName>OpenCVImpl.hpp
+   {ModuleName}Impl.cpp
+   {ModuleName}Impl.hpp
+   {ModuleName}OpenCVImpl.cpp
+   {ModuleName}OpenCVImpl.hpp
 
-The first two files contain the server-side implementation of the JSON-RPC API, and should not be modified. The last two files will contain the logic of your module.
+The first two files contain the server-side implementation of the JSON-RPC API, and normally you won't need to modify them. The last two files will contain the logic of your module.
 
-The file *<ModuleName>OpenCVImpl.cpp* contains functions to deal with the methods and the parameters (you must implement the logic). Also, this file contains a function called *process*. This function will be called with each new frame, thus you must implement the logic of your filter inside it.
+The file ``{ModuleName}OpenCVImpl.cpp`` contains functions to deal with the methods and the parameters (you must implement the logic). Also, this file contains a class method called **process**. This function will be called with each new frame, so you must implement the logic of your filter in there.
 
 
 
@@ -77,18 +83,18 @@ In this case, these are the files that you'll find under ``src/``:
 
   .. code-block:: text
 
-     gst<modulename>.cpp
-     gst<modulename>.h
-     <modulename>.c
+     gst{modulename}.cpp
+     gst{modulename}.h
+     {modulename}.c
 
 * ``src/server/implementation/objects/`` contains the server-side implementation of the JSON-RPC API:
 
   .. code-block:: text
 
-     <ModuleName>Impl.cpp
-     <ModuleName>Impl.hpp
+     {ModuleName}Impl.cpp
+     {ModuleName}Impl.hpp
 
-In the file ``<ModuleName>Impl.cpp`` you have to invoke the methods of your GStreamer element. The actual module logic should be implemented in the GStreamer Element.
+In the file ``{ModuleName}Impl.cpp`` you have to invoke the methods of your GStreamer element. The actual module logic should be implemented in the GStreamer Element.
 
 
 
@@ -125,9 +131,9 @@ The following parameters are available:
 
   .. code-block:: text
 
-     libname[<VersionRange>]
+     libname [VersionRange]
 
-  where *<VersionRange>* can use these symbols: ``AND``, ``OR``, ``<``, ``<=``, ``>``, ``>=``, ``^``, and ``~``.
+  where *[VersionRange]* can use these symbols: ``AND``, ``OR``, ``<``, ``<=``, ``>``, ``>=``, ``^``, and ``~``.
 
   .. note::
 
@@ -143,14 +149,14 @@ Before being able to use your new module, its binary files must be installed to 
 
 1. Install the module. This allows KMS to know about the module, and allows the media server to use it when clients attempt to instantiate a new object that is exported by the module code.
 
-2. Use the module from client applications. Technically this step is optional, but unless your application directly implements the :doc:`Kurento Protocol </features/kurento_protocol>`, you will want to use the client-side module API. This is done by using client code that gets automatically generated from the Kurento Module Descriptor files (*.kmd*).
+2. Use the module from client applications. Technically this step is optional, but unless your application directly implements the :doc:`Kurento Protocol </features/kurento_protocol>`, you will want to use the client-side module API. This is done by using client code that gets automatically generated from the Kurento Module Descriptor files (``*.kmd.json``).
 
 
 
 Installing locally
 ------------------
 
-The recommended way to distribute a module is to build it into a Debian package file (*.deb*). This is the easiest and most convenient method for end users of the module, as they will just have to perform a simple package installation on any system where KMS is already running. Besides, this doesn't require the user to know anything about plugin paths or how the module files must be laid out on disk.
+The recommended way to distribute a module is to build it into a Debian package file (``*.deb``). This is the easiest and most convenient method for end users of the module, as they will just have to perform a simple package installation on any system where KMS is already running. Besides, this doesn't require the user to know anything about plugin paths or how the module files must be laid out on disk.
 
 To build a Debian package file, you can either use the **kurento-buildpackage** tool as described in :ref:`dev-packages`, or do it manually by installing and running the appropriate tools:
 
@@ -181,7 +187,7 @@ Depending on the contents of the module project, the Debian package builder can 
 * *-doc* packages usually contain *manpages* and other documentation, if the module contained any.
 * *-dbg* and *-dbgsym* packages contain the debug symbols that have been extracted from the compilation process. It can be used by other developers to troubleshoot crashes and provide bug reports.
 
-Now copy and install the package(s) into any Debian- or Ubuntu-based system where KMS is already installed:
+Now copy and install the package(s) into any Debian or Ubuntu based system where KMS is already installed:
 
 .. code-block:: shell
 
@@ -196,8 +202,8 @@ For more information about the process of creating Debian packages, check these 
 
 .. code-block:: shell
 
-   KURENTO_MODULES_PATH+=" /path/to/module"
-   GST_PLUGIN_PATH+=" /path/to/module"
+   KURENTO_MODULES_PATH="$KURENTO_MODULES_PATH /path/to/module"
+   GST_PLUGIN_PATH="$GST_PLUGIN_PATH /path/to/module"
 
 KMS will then add these paths to the path lookup it performs at startup, when looking for all available plugins.
 
