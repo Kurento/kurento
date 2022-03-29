@@ -30,6 +30,14 @@
 	path = kurento-media-server
 	url = ../kurento-media-server
 	branch = bionic-gstreamer
+[submodule "module/kms-opencv-plugin-sample"]
+	path = module/kms-opencv-plugin-sample
+	url = ../kms-opencv-plugin-sample
+	branch = bionic-gstreamer
+[submodule "module/kms-gstreamer-plugin-sample"]
+	path = module/kms-gstreamer-plugin-sample
+	url = ../kms-gstreamer-plugin-sample
+	branch = bionic-gstreamer
 [submodule "module/kms-chroma"]
 	path = module/kms-chroma
 	url = ../kms-chroma
@@ -42,17 +50,9 @@
 	path = module/kms-datachannelexample
 	url = ../kms-datachannelexample
 	branch = bionic-gstreamer
-[submodule "module/kms-gstreamer-plugin-sample"]
-	path = module/kms-gstreamer-plugin-sample
-	url = ../kms-gstreamer-plugin-sample
-	branch = bionic-gstreamer
 [submodule "module/kms-markerdetector"]
 	path = module/kms-markerdetector
 	url = ../kms-markerdetector
-	branch = bionic-gstreamer
-[submodule "module/kms-opencv-plugin-sample"]
-	path = module/kms-opencv-plugin-sample
-	url = ../kms-opencv-plugin-sample
 	branch = bionic-gstreamer
 [submodule "module/kms-platedetector"]
 	path = module/kms-platedetector
