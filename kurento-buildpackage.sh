@@ -448,7 +448,7 @@ log "Install build dependencies"
 DEBIAN_FRONTEND=noninteractive \
 apt-get update \
 && mk-build-deps --install --remove \
-    --tool="apt-get ${APT_ARGS[*]+"${APT_ARGS[*]}"} -o Debug::pkgProblemResolver=yes --target-release '*-backports' --no-install-recommends --no-remove --yes" \
+    --tool="apt-get ${APT_ARGS[*]+"${APT_ARGS[*]}"} -o Debug::pkgProblemResolver=yes --target-release 'a=${DISTRIB_CODENAME}-backports' --no-install-recommends --no-remove --yes" \
     ./debian/control
 
 
