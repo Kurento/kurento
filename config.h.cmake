@@ -1,13 +1,16 @@
-#ifndef __KURENTO_SAMPLE_CONFIG_H__
-#define __KURENTO_SAMPLE_CONFIG_H__
+#ifndef __GSTREAMER_PLUGIN_SAMPLE_CONFIG_H__
+#define __GSTREAMER_PLUGIN_SAMPLE_CONFIG_H__
 
 /* Version */
 #cmakedefine VERSION "@VERSION@"
 
-/* Package name*/
+/* Package name */
 #cmakedefine PACKAGE "@PACKAGE@"
 
 /* The gettext domain name */
 #cmakedefine GETTEXT_PACKAGE "@GETTEXT_PACKAGE@"
 
-#endif /* __KURENTO_SAMPLE_CONFIG_H__ */
+/* Library installation directory */
+#cmakedefine KURENTO_MODULES_SO_DIR "@KURENTO_MODULES_SO_DIR@"
+
+#endif /* __GSTREAMER_PLUGIN_SAMPLE_CONFIG_H__ */

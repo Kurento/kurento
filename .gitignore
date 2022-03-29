@@ -1,8 +1,6 @@
-*.kdev*
-build
-*swp
-/nbproject/
-*~
-*orig
-obj-x86_64-linux-gnu
-debian/kurento
+build*/
+debian/kms-gstreamer-plugin-sample*
+debian/*debhelper*
+debian/files
+debian/tmp/
+obj-*/

@@ -1,33 +1,37 @@
-Source: kms-plugin-sample
-Section: utils
+Source: kms-gstreamer-plugin-sample
+Maintainer: Kurento <info@kurento.com>
 Priority: optional
-Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
-Build-Depends: debhelper (>= 8.0.0),
+Build-Depends: debhelper (>= 12),
+ build-essential,
  cmake,
  pkg-config,
- kms-core-6.0-dev (>= 6.0.0),
- kms-elements-6.0-dev (>= 6.0.0),
- kms-filters-6.0-dev (>= 6.0.0),
+ kms-cmake-utils,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libboost-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
  libopencv-dev
-Standards-Version: 3.9.4
-Homepage: http://kurento.org
-Vcs-Git: git://github.com/Kurento/kms-plugin-sample.git
-Vcs-Browser: https://github.com/Kurento/kms-plugin-sample.git
+Standards-Version: 4.4.0
+Homepage: https://www.kurento.org/
+Vcs-Browser: https://github.com/Kurento/kms-gstreamer-plugin-sample
+Vcs-Git: https://github.com/Kurento/kms-gstreamer-plugin-sample.git
 
-Package: kms-plugin-sample
+Package: kms-gstreamer-plugin-sample
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-Description: Kurento Plugin Sample
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Kurento GStreamer filter plugin sample
 
-Package: kms-plugin-sample-dev
+Package: kms-gstreamer-plugin-sample-dev
 Architecture: any
-Depends: kms-plugin-sample (= ${binary:Version}),
- kms-core-6.0-dev (>= 6.0.0),
- kms-elements-6.0-dev (>= 6.0.0),
- kms-filters-6.0-dev (>= 6.0.0),
-Description: Kurento Plugin Sample development files
-
-Package: kms-plugin-sample-dbg
-Architecture: any
-Depends: kms-plugin-sample (= ${binary:Version})
-Description: Kurento Plugin Sample debug symbols
+Section: libdevel
+Depends: kms-gstreamer-plugin-sample (= ${binary:Version}), ${misc:Depends},
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libboost-dev,
+ libgstreamer1.0-dev,
+ libopencv-dev
+Description: Kurento GStreamer filter plugin sample (development files)
