@@ -547,8 +547,8 @@ commit_and_tag \
     module/kms-chroma \
     module/kms-crowddetector \
     module/kms-datachannelexample \
+    module/kms-gstreamer-plugin-sample \
     module/kms-markerdetector \
     module/kms-opencv-plugin-sample \
     module/kms-platedetector \
-    module/kms-plugin-sample \
     module/kms-pointerdetector
