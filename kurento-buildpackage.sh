@@ -584,7 +584,8 @@ fi
 # ultimately to the corresponding tools when they run.
 GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
 
-# CMake: Print logs from failed tests
+# Print logs from tests
+export BOOST_TEST_LOG_LEVEL=test_suite
 export CTEST_OUTPUT_ON_FAILURE=1
 
 # GStreamer: Don't log with colors (avoid ANSI escape codes in test output)
