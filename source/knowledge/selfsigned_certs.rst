@@ -24,10 +24,11 @@ To generate new certificate files with *mkcert*, first install the program:
 
 .. code-block:: shell
 
-   sudo apt-get update \
-      && sudo apt-get install --yes ca-certificates libnss3-tools wget \
-      && sudo wget -O /usr/local/bin/mkcert 'https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64' \
-      && sudo chmod +x /usr/local/bin/mkcert
+   sudo apt-get update && sudo apt-get install --yes \
+       ca-certificates libnss3-tools wget
+
+   sudo wget -O /usr/local/bin/mkcert 'https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64'
+   sudo chmod +x /usr/local/bin/mkcert
 
 Then run it:
 
