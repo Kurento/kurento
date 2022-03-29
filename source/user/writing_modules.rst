@@ -52,6 +52,25 @@ Once your *.kmd* files have been filled with a complete description of the modul
    cmake ..
    make
 
+If working with a GStreamer module, now you can verify that the new module can be successfully loaded by GStreamer, with these commands:
+
+.. code-block:: shell
+
+   # To check if the plugin is found and loaded:
+   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" | grep -i {modulename}
+
+   # To inspect all metadata exported by the plugin:
+   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" {modulename}
+
+   # To test the plugin directly with some video input
+   # (this is just a sample for raw video; adapt as necessary!)
+   gst-launch-1.0 --gst-plugin-path="$PWD/src/gst-plugins" \
+       uridecodebin uri='file:///path/to/video.mp4' ! videoconvert \
+       ! {modulename} \
+       ! videoconvert ! autovideosink
+
+Note that ``{modulename}`` is the name of your module in all lowercase.
+
 The following sections detail how to create your module, depending on the filter type you chose (OpenCV or GStreamer).
 
 
@@ -304,7 +323,7 @@ Finally, to actually use the module in your Maven project, you have to add the d
      </dependencies>
    </project>
 
-Notice that ``{modulename}`` is the name of your module in lowercase.
+Note that ``{modulename}`` is the name of your module in all lowercase.
 
 Then you will be able to instantiate and use the new module in your Java code. For example, Kurento's `OpenCV plugin sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__ is used like this:
 
@@ -347,7 +366,7 @@ This generates a ``build/js/`` directory, containing all the client code. You ca
      "{modulename}": "0.0.1"
    }
 
-Notice that ``{modulename}`` is the name of your module in lowercase.
+Note that ``{modulename}`` is the name of your module in all lowercase.
 
 
 
@@ -356,8 +375,8 @@ Examples
 
 Simple examples for both kinds of modules are available in GitHub:
 
+* `GStreamer module <https://github.com/Kurento/kms-gstreamer-plugin-sample>`__.
 * `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample>`__.
-* `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`__.
 
 There are a lot of examples showing how to define methods, parameters or events in the "extra" modules that Kurento provides for demonstration purposes:
 
