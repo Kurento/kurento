@@ -94,9 +94,10 @@ Application Servers can be developed in Java, JavaScript with Node.js, or JavaSc
 
 There are several repositories that contain sample code for developers that use Kurento or want to develop a custom Kurento module. Currently these are:
 
-- `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`__
+- `kms-gstreamer-plugin-sample <https://github.com/Kurento/kms-gstreamer-plugin-sample>`__
 - `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__
-- `kms-plugin-sample <https://github.com/Kurento/kms-plugin-sample>`__
+- `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`__
+
 - `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__
 - `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
 - `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
@@ -202,8 +203,6 @@ Run these commands to add the Kurento repository to your system configuration:
    # Kurento Media Server - Nightly packages
    deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6
    EOF
-
-   sudo apt-get update
 
 
 
