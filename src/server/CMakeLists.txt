@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8)
-
 add_subdirectory(implementation/HttpServer)
 
 set(KMS_ELEMENTS_IMPL_SOURCES
