@@ -122,18 +122,18 @@ else
             exit 1
         }
 
-        #Verify signed files (if any)
-        SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
+        # Verify signed files (if any)
+        mapfile -t SIGNED_FILES < <(find ./target -type f -name '*.asc')
 
-        [[ -z "$SIGNED_FILES" ]] && {
+        if [[ ${#SIGNED_FILES[@]} -eq 0 ]]; then
             log "Exit: No signed files found"
             exit 0
-        }
+        fi
 
-        for FILE in $SIGNED_FILES; do
-            SIGNED_FILE="$(echo "$FILE" | sed 's/.asc\+$//')"
-            gpg --verify "$FILE" "$SIGNED_FILE" || {
-                log "ERROR: Command failed: gpg verify"
+        for SIGNED_FILE in "${SIGNED_FILES[@]}"; do
+            FILE="${SIGNED_FILE//.asc/}"
+            gpg --verify "$SIGNED_FILE" "$FILE" || {
+                log "ERROR: Command failed: gpg --verify '$SIGNED_FILE' '$FILE'"
                 exit 1
             }
         done
