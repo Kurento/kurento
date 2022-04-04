@@ -114,6 +114,7 @@ else
 
         MVN_ARGS+=(-Pgpg-sign)
 
+        MVN_GOALS+=(package) # "sign" requires an already packaged artifact.
         MVN_GOALS+=(gpg:sign)
 
         mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" deploy || {
