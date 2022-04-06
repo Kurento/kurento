@@ -26,7 +26,7 @@ To install KMS on this version of Ubuntu, just follow the usual :doc:`installati
    deb [arch=amd64] http://ubuntu.openvidu.io/|VERSION_KMS| $DISTRO kms6
    EOF
 
-   sudo apt-get update && sudo apt-get install kurento-media-server
+   sudo apt-get update ; sudo apt-get install kurento-media-server
 
 Mostly everything is already ported to Bionic and working properly, but **the port is not 100% finished yet**. You can track progress in this board: https://github.com/orgs/Kurento/projects/1
 

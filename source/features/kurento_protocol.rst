@@ -753,7 +753,7 @@ Kurento Module Creator can be installed in an Ubuntu machine using the  followin
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install kurento-module-creator
+   sudo apt-get update ; sudo apt-get install kurento-module-creator
 
 The aim of this tool is to generate the client code and also the glue code
 needed in the server-side. For code generation it uses `Freemarker <https://freemarker.apache.org/>`__ as the template engine. The typical way to use Kurento Module Creator is by running a command like this:

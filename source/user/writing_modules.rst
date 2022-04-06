@@ -19,7 +19,7 @@ The starting point to develop a filter is to create a basic structure for the so
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        kurento-media-server-dev
 
 Now use the scaffold tool to generate code for your new module:
@@ -48,7 +48,7 @@ Once your *.kmd* files have been filled with a complete description of the modul
 
 .. code-block:: shell
 
-   mkdir build/ && cd build/
+   mkdir build/ ; cd build/
    cmake ..
    make
 
@@ -182,7 +182,7 @@ To build a Debian package file, you can either use the **kurento-buildpackage** 
 .. code-block:: shell
 
    # Install dpkg-buildpackage, the Debian package builder
-   sudo apt-get update && sudo apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        dpkg-dev
 
    # Run dpkg-buildpackage to build Debian packages
@@ -301,7 +301,7 @@ Run this from the root directory of your module:
 
 .. code-block:: shell
 
-   mkdir build/ && cd build/
+   mkdir build/ ; cd build/
    cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
 
 This generates a ``build/java/`` directory, containing all the client code. You can now run either of these commands:
@@ -355,7 +355,7 @@ Run this from the root directory of your module:
 
 .. code-block:: shell
 
-   mkdir build/ && cd build/
+   mkdir build/ ; cd build/
    cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE
 
 This generates a ``build/js/`` directory, containing all the client code. You can now manually copy this code to your application. Alternatively, you can use :term:`Bower` (for *Browser JavaScript*) or :term:`NPM` (for *Node.js*). To do that, you should add your JavaScript module as a dependency in your *bower.json* or *package.json* file, respectively:

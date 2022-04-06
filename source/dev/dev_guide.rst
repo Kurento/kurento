@@ -175,7 +175,7 @@ This command will install the basic set of tools that are needed for the next st
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        build-essential \
        ca-certificates \
        cmake \
@@ -213,7 +213,7 @@ Run:
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        kurento-media-server-dev
 
 
@@ -332,7 +332,7 @@ Now, install all debug symbols that are relevant to KMS:
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        kurento-dbg
 
 
@@ -646,7 +646,7 @@ What to do when you are developing a new feature that spans across KMS and the p
 
       cd <module>  # E.g. kms-filters
       rm -rf build
-      mkdir build && cd build
+      mkdir build ; cd build
       cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
       cd java
       mvn clean install
