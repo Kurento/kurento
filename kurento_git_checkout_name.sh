@@ -2,7 +2,7 @@
 
 #/ Check out a given branch or tag name, if it exists.
 #/
-#/ This script will try to check out the provided name in the current Git
+#/ This script will try to switch to the provided name in the current Git
 #/ repository, and will revert back to the default branch if the desired one
 #/ does not exist.
 #/
@@ -89,6 +89,12 @@ log "CFG_FALLBACK=$CFG_FALLBACK"
 # Check out the given branch or tag
 # ---------------------------------
 
+# Before checkout: Deinit submodules.
+# Needed because submodule state is not carried over when switching branches.
+# TODO UPGRADE: Change when dropping support for Xenial.
+git submodule deinit . || true
+#git submodule deinit --all
+
 BRANCH_NAME="refs/remotes/origin/${CFG_NAME}"
 TAG_NAME="refs/tags/${CFG_NAME}"
 
@@ -99,7 +105,7 @@ elif git rev-parse --verify --quiet "$TAG_NAME"; then
 else
     # Use the fallback name
     case "$CFG_FALLBACK" in
-        xenial|bionic)
+        xenial|bionic|focal|jammy)
             BRANCH_NAME="refs/remotes/origin/ubuntu/${CFG_FALLBACK}"
             ;;
         *)
@@ -114,6 +120,9 @@ else
         git checkout "$GIT_DEFAULT"
     fi
 fi
+
+# After checkout: Re-init submodules.
+git submodule update --init --recursive
 
 
 
