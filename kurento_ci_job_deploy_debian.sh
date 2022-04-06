@@ -203,13 +203,13 @@ set -o xtrace
 export DEBIAN_FRONTEND=noninteractive
 
 # Local Installation
-apt-get update && apt-get install --no-install-recommends --yes \
+apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
 deb [arch=amd64] http://ubuntu.openvidu.io/$KMS_VERSION $JOB_DISTRO kms6
 EOF
-apt-get update && apt-get install --no-install-recommends --yes \
+apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server
 
 # Install debug symbols
@@ -220,7 +220,7 @@ tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
 deb http://ddebs.ubuntu.com ${JOB_DISTRO} main restricted universe multiverse
 deb http://ddebs.ubuntu.com ${JOB_DISTRO}-updates main restricted universe multiverse
 EOF
-apt-get update && apt-get install --no-install-recommends --yes \
+apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-dbg
 
 echo "KMS packages were installed successfully!"

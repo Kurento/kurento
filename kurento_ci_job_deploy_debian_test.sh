@@ -107,7 +107,7 @@ set -o xtrace
 export DEBIAN_FRONTEND=noninteractive
 
 # Install required tools
-apt-get update && apt-get install --no-install-recommends --yes \
+apt-get update ; apt-get install --no-install-recommends --yes \
     build-essential \
     ca-certificates \
     cmake \
@@ -123,7 +123,7 @@ deb [arch=amd64] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME
 EOF
 
 # Install KMS
-apt-get update && apt-get install --no-install-recommends --yes \
+apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server
 
 # Install debug symbols
@@ -139,7 +139,7 @@ apt-get update && apt-get install --no-install-recommends --yes \
     kurento-dbg
 
 # Install build dependencies
-apt-get update && apt-get install --no-install-recommends --yes \
+apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server-dev
 
 # Download KMS source code

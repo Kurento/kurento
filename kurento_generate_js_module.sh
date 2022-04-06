@@ -30,7 +30,7 @@ if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
 fi
 
 rm -rf build
-mkdir build && cd build
+mkdir build ; cd build
 cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
   log "ERROR: Command failed: cmake"
   exit 1

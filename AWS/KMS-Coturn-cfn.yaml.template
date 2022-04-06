@@ -161,7 +161,7 @@ Resources:
 
           # Install and run the CloudFormation helper scripts.
           # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
-          apt-get update && apt-get install --yes python python-pip
+          apt-get update ; apt-get install --yes python python-pip
           pip install "https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz"
 
           # Trigger the CloudFormation init helper.

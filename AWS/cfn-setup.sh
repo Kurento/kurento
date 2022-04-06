@@ -23,7 +23,7 @@ set -o xtrace
 # ====================
 
 # Make sure that GnuPG is installed (needed for `apt-key adv`).
-apt-get update && apt-get install --yes gnupg
+apt-get update ; apt-get install --yes gnupg
 
 # Import the Kurento repository signing key.
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
@@ -38,7 +38,7 @@ deb [arch=amd64] http://ubuntu.openvidu.io/{{KmsVersion}} ${DISTRIB_CODENAME} km
 EOF
 
 # Install.
-apt-get update && apt-get install --yes kurento-media-server
+apt-get update ; apt-get install --yes kurento-media-server
 
 # Enable system service.
 systemctl enable kurento-media-server
@@ -49,7 +49,7 @@ systemctl enable kurento-media-server
 # ======
 
 # Install.
-apt-get update && apt-get install --yes coturn kurento-media-server
+apt-get update ; apt-get install --yes coturn kurento-media-server
 
 # Enable system service.
 tee /etc/default/coturn >/dev/null <<'EOF'

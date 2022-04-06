@@ -149,7 +149,7 @@
 #/ Dependency install
 #/ ------------------
 #/
-#/ sudo apt-get update && sudo apt-get install --no-install-recommends \
+#/ sudo apt-get update ; sudo apt-get install --no-install-recommends \
 #/     python3 python3-pip python3-setuptools python3-wheel \
 #/     devscripts \
 #/     dpkg-dev \
@@ -157,8 +157,9 @@
 #/     git \
 #/     openssh-client \
 #/     equivs \
-#/     coreutils \
-#/ && sudo pip3 install --upgrade gbp
+#/     coreutils
+#/ sudo pip3 install --upgrade gbp
+
 
 
 # Shell setup
@@ -411,7 +412,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
         dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
             log "Try to install remaining dependencies"
-            apt-get update && apt-get ${APT_ARGS[@]+"${APT_ARGS[@]}"} install --fix-broken --no-remove --yes
+            apt-get update ; apt-get ${APT_ARGS[@]+"${APT_ARGS[@]}"} install --fix-broken --no-remove --yes
         }
     else
         log "No '.deb' package files are present!"
