@@ -226,7 +226,9 @@ Run:
 .. code-block:: shell
 
    git clone https://github.com/Kurento/kms-omni-build.git
-   cd kms-omni-build
+
+   cd kms-omni-build/
+
    git submodule update --init --recursive
    git submodule update --remote
 
@@ -234,15 +236,41 @@ Run:
 
    ``--recursive`` and ``--remote`` are not used together, because each individual submodule may have their own submodules that might be expected to check out some specific commit, and we don't want to update those.
 
-*OPTIONAL*: Change to the *master* branch of each submodule, if you will be working with the latest version of the code:
+(Optional) If you want to work and make commits on the submodules, switch them to the tip of their branch, to avoid being in a *detached HEAD*:
 
 .. code-block:: shell
 
-   REF=master
-   git checkout "$REF" || true
+   git submodule foreach "git checkout master"
+
+
+
+Switching branches on kms-omni-build
+------------------------------------
+
+(Optional)
+
+*kms-omni-build* is a git repo that contains submodules. As such, you must remember that **git submodule state is not carried over when switching branches**. So simply running ``git checkout`` or ``git switch`` on *kms-omni-build* won't have the intended effect.
+
+To switch to an already existing feature branch just on a single submodule, ``cd`` into it and use *git checkout* or *git switch*.
+
+To switch to a branch on *kms-omni-build* itself and all submodules, run this:
+
+.. code-block:: shell
+
+   REF=<BranchName>
+
+   # Before checkout: Deinit submodules.
+   # Needed because submodule state is not carried over when switching branches.
+   git submodule deinit --all
+
+   git checkout $REF || true
+
+   # After checkout: Re-init submodules.
+   git submodule update --init --recursive
+   git submodule update --remote
    git submodule foreach "git checkout $REF || true"
 
-You can also set *REF* to any other branch or tag, such as ``REF=6.12.0``. This will bring the code to the state it had in that version release.
+You can set *REF* to any git branch or tag. For example, ``REF=6.12.0`` will bring the code to the state it had in that version release.
 
 
 
