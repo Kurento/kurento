@@ -446,11 +446,13 @@ log "Install build dependencies"
 #   Doc: http://manpages.ubuntu.com/manpages/bionic/man5/apt.conf.5.html
 # * --target-release '*-backports': Prefer installing newer versions of packages
 #   from the backports repository.
-DEBIAN_FRONTEND=noninteractive \
-apt-get update \
-&& mk-build-deps --install --remove \
-    --tool="apt-get ${APT_ARGS[*]+"${APT_ARGS[*]}"} -o Debug::pkgProblemResolver=yes --target-release 'a=${DISTRIB_CODENAME}-backports' --no-install-recommends --no-remove --yes" \
-    ./debian/control
+(
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update ; mk-build-deps --install --remove \
+        --tool="apt-get ${APT_ARGS[*]+"${APT_ARGS[*]}"} -o Debug::pkgProblemResolver=yes --target-release 'a=${DISTRIB_CODENAME}-backports' --no-install-recommends --no-remove --yes" \
+        ./debian/control
+)
 
 
 
