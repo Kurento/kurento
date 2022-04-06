@@ -24,10 +24,12 @@ set -o xtrace
 # Download
 git clone https://github.com/Kurento/kms-omni-build.git
 pushd kms-omni-build/  # Enter kms-omni-build/
+if [[ "$KMS_VERSION" != "dev" ]]; then
+    git checkout "$KMS_VERSION" || true
+fi
 git submodule update --init --recursive
 git submodule update --remote
 if [[ "$KMS_VERSION" != "dev" ]]; then
-    git checkout "$KMS_VERSION" || true
     git submodule foreach "git checkout $KMS_VERSION || true"
 fi
 
