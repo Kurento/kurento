@@ -120,6 +120,9 @@ elif [[ "$JOB_DISTRO" == "bionic" ]]; then
 elif [[ "$JOB_DISTRO" == "focal" ]]; then
     DOCKER_GCC_VERSION="11"
     log "Ubuntu 20.04 (Focal) --> Use GCC $DOCKER_GCC_VERSION"
+elif [[ "$JOB_DISTRO" == "jammy" ]]; then
+    DOCKER_GCC_VERSION="11"
+    log "Ubuntu 22.04 (Jammy) --> Use GCC $DOCKER_GCC_VERSION"
 else
     DOCKER_GCC_VERSION="9"
     log "WARNING: Unknown system version --> Use GCC $DOCKER_GCC_VERSION"
