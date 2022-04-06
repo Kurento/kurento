@@ -295,7 +295,7 @@ PyNAT
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        python3 python3-pip
 
    sudo -H pip3 install --upgrade pynat

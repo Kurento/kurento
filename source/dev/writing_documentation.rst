@@ -51,7 +51,7 @@ You'll need these tools:
 
 .. code-block:: shell
 
-   sudo apt-get update && sudo apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        python3 python3-pip python3-venv \
        graphviz
 
