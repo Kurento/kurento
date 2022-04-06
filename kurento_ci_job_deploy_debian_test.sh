@@ -116,27 +116,36 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     pkg-config
 
 # Add Kurento repository
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
-source /etc/lsb-release
-tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+{
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+
+    source /etc/lsb-release
+
+    tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
 deb [arch=amd64] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME kms6
 EOF
+}
 
 # Install KMS
 apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server
 
 # Install debug symbols
-apt-key adv \
-    --keyserver keyserver.ubuntu.com \
-    --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
-source /etc/lsb-release
-tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
+{
+    apt-key adv \
+        --keyserver keyserver.ubuntu.com \
+        --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+
+    source /etc/lsb-release
+
+    tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
 deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
 deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
 EOF
-apt-get update && apt-get install --no-install-recommends --yes \
-    kurento-dbg
+
+    apt-get update ; apt-get install --no-install-recommends --yes \
+        kurento-dbg
+}
 
 # Install build dependencies
 apt-get update ; apt-get install --no-install-recommends --yes \
