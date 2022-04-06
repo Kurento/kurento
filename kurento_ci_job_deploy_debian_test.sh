@@ -152,24 +152,37 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server-dev
 
 # Download KMS source code
-git clone https://github.com/Kurento/kms-omni-build.git
-cd kms-omni-build/
-git submodule update --init --recursive
-git submodule update --remote
-if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
-    # Use the repo default branch.
-    REF="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD)"
-else
-    REF="$DOCKER_KMS_VERSION"
-fi
-git checkout "$REF" || true
-git submodule foreach "git checkout $REF || true"
+{
+    git clone https://github.com/Kurento/kms-omni-build.git
+
+    cd kms-omni-build/
+
+    if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
+        # Use the repo default branch.
+        REF="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD)"
+    else
+        REF="$DOCKER_KMS_VERSION"
+    fi
+
+    # Before checkout: Deinit submodules.
+    # Needed because submodule state is not carried over when switching branches.
+    # TODO UPGRADE: Change when dropping support for Xenial.
+    git submodule deinit . || true
+    #git submodule deinit --all
+
+    git checkout "$REF" || true
+
+    # After checkout: Re-init submodules.
+    git submodule update --init --recursive
+    git submodule update --remote
+    git submodule foreach "git checkout $REF || true"
+}
 
 # Build and run KMS
 export MAKEFLAGS="-j$(nproc)"
 ./bin/kms-build-run.sh --build-only
 
-echo "Everything got installed and built successfully!"
+echo "Done! Everything got installed and built successfully"
 
 DOCKERCOMMANDS
 # In-place Docker container commands END
