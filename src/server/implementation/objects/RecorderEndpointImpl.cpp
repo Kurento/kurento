@@ -148,6 +148,11 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_KSR, NULL);
     GST_INFO ("Set KSR profile");
     break;
+    
+  case MediaProfileSpecType::FLV:
+    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_FLV, NULL);
+    GST_INFO ("Set FLV profile");
+    break;
   }
 
   GapsFixMethod gapsFix;
