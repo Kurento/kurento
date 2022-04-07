@@ -58,7 +58,7 @@ set(NICE_REQUIRED ^0.1.13)
 set(GLIBMM_REQUIRED ^2.37)
 
 include(GenericFind)
-generic_find(LIBNAME Boost REQUIRED COMPONENTS unit_test_framework)
+generic_find(LIBNAME Boost REQUIRED COMPONENTS unit_test_framework system filesystem thread)
 generic_find(LIBNAME gstreamer-1.5 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-base-1.5 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-video-1.5 VERSION ${GST_REQUIRED} REQUIRED)
