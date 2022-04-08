@@ -87,27 +87,24 @@ function(common_buildflags_set)
 
   # ------------
 
-  # Build all targets with '-fPIC'/'-fPIE' by default, including static libs
+  # Build all targets with `-fPIC` / `-fPIE` and link with `-pie`.
   set(CMAKE_POSITION_INDEPENDENT_CODE ON PARENT_SCOPE)
 
-  # FIXME CMake doesn't link executables with '-pie', even if
-  #       CMAKE_POSITION_INDEPENDENT_CODE is ON.
-  #       See: CMake issue #14983 (https://gitlab.kitware.com/cmake/cmake/issues/14983)
-  #       Affects CMake 3.5.1 (Ubuntu 16.04 Xenial)
+  # FIXME: CMake < 3.14 doesn't link executables with '-pie', even if
+  # CMAKE_POSITION_INDEPENDENT_CODE is ON.
+  # See CMP0083: https://cmake.org/cmake/help/latest/policy/CMP0083.html
+  # Affects CMake < 3.14 (up to Ubuntu 18.04 "Bionic").
+  # Release 7.0: We're targeting Ubuntu 20.04 "Focal" (CMake 3.16), but still
+  # keeping this, to keep `cmake_minimum_required(VERSION 3.0)`.
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie" PARENT_SCOPE)
 
   # ------------
 
   # Build type: Debug
   # CMake appends CMAKE_{C,CXX}_FLAGS_DEBUG="-g" to CMAKE_{C,CXX}_FLAGS
-  # We want to ensure no optimization and "warnings are errors"
-  #
-  # FIXME Ideally we'd use '-Og' but a bug in GCC prevents this, causing
-  #       "may be used uninitialized" errors:
-  #       https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58455
-  #       Affects GCC 5.4.0 (Ubuntu 16.04 Xenial)
-  set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -Werror -O0" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -O0" PARENT_SCOPE)
+  # We want "warnings are errors" and optimization adequate for debugging.
+  set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -Werror -Og" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Og" PARENT_SCOPE)
 
   # Build type: RelWithDebInfo
   # CMake appends CMAKE_{C,CXX}_FLAGS_RELWITHDEBINFO="-O2 -g -DNDEBUG" to CMAKE_{C,CXX}_FLAGS
