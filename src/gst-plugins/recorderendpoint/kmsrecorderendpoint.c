@@ -469,7 +469,7 @@ kms_recorder_endpoint_change_state (KmsRecorderEndpoint * self,
 {
   // TODO: check stopping and wait until stopping is set to false
   if (self->priv->sent_eos) {
-    GST_WARNING_OBJECT (self, "Stopping is in progress, waif for it to finish");
+    GST_WARNING_OBJECT (self, "Stopping is in progress, wait for it to finish");
   }
 
   self->priv->transition = transition;

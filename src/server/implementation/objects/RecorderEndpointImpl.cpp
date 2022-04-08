@@ -230,7 +230,7 @@ void RecorderEndpointImpl::waitForStateChange (gint expectedState)
   std::unique_lock<std::mutex> lck (mtx);
 
   if (!cv.wait_for (lck, std::chrono::seconds (TIMEOUT), [&] {return expectedState == state;}) ) {
-    GST_ERROR_OBJECT (element, "STATE did not changed to %d in %d seconds",
+    GST_ERROR_OBJECT (element, "Recorder state change to %d timed out after %d seconds",
                       expectedState, TIMEOUT);
   }
 }
