@@ -61,6 +61,36 @@ Deprecated
 
 
 
+Removed
+=======
+
+Kurento has always included several Computer Vision plugins and extension modules, for demonstration purposes. These were used to showcase the powerful, dynamic plug-and-play capabilities of Kurento Pipelines, providing a very visual and somewhat fancy way to convey how easy it is to manipulate video images in real time, with Kurento and OpenCV.
+
+However, Kurento's OpenCV modules had been written against the old, C-based API of OpenCV 2.0. Over time, OpenCV 3.0 evolved into a more modern C++ based API, while keeping some backwards-compatibility with older C code. This was enough for us to keep publishing the Kurento demonstration plugins on Ubuntu 16.04 "Xenial" and Ubuntu 18.04 "Bionic". However, on 2020 the release of Ubuntu 20.04 "Focal", **OpenCV 4.0 marks the point where the Kurento plugin code doesn't compile and must be retired**.
+
+The list of retired code is as follows:
+
+* Plugins that came included in *kms-filters* module:
+
+  - facedetector
+  - faceoverlay
+  - imageoverlay
+  - logooverlay
+  - movementdetector
+
+* Plugins that were offered as additional installable modules:
+
+  - kms-chroma
+  - kms-crowddetector
+  - kms-datachannelexample
+  - kms-markerdetector
+  - kms-platedetector
+  - kms-pointerdetector
+
+Starting with support for OpenCV 4.0, the old OpenCV 2.0 based plugin code cannot be compiled any more. Kurento project maintainers do not have the time, knowledge, or scheduling bandwidth to migrate these plugins into modern OpenCV 4.0 style code, so they will get discontinued until/unless some open-source community members can offer some help with porting them. If you'd like to see these plugins alive again, and would be able to give us a hand, please contact us! :-)
+
+
+
 Fixed
 =====
 
