@@ -303,7 +303,7 @@ These functions are called in the ``start`` function, which is fired when the
                            return callback(error);
                        }
 
-                       webRtcEndpoint.on('OnIceCandidate', function(event) {
+                       webRtcEndpoint.on('IceCandidateFound', function(event) {
                            var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                            ws.send(JSON.stringify({
                                id : 'iceCandidate',
@@ -357,7 +357,7 @@ These functions are called in the ``start`` function, which is fired when the
 As of Kurento Media Server 6.0, the WebRTC negotiation is done by exchanging
 :term:`ICE` candidates between the WebRTC peers. To implement this protocol,
 the ``webRtcEndpoint`` receives candidates from the client in
-``OnIceCandidate`` function. These candidates are stored in a queue when the
+``IceCandidateFound`` function. These candidates are stored in a queue when the
 ``webRtcEndpoint`` is not available yet. Then these candidates are added to the
 media element by calling to the ``addIceCandidate`` method.
 

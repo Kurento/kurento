@@ -169,7 +169,7 @@ follows:
                            return callback(error);
                        }
 
-                       webRtcEndpoint.on('OnIceCandidate', function(event) {
+                       webRtcEndpoint.on('IceCandidateFound', function(event) {
                            var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                            ws.send(JSON.stringify({
                                id : 'iceCandidate',

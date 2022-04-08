@@ -480,7 +480,6 @@ The ``data`` field contents are dependent on the type of event, but it generally
 
 - ``source``: The object source of the event.
 - ``type``: The type of the event.
-- ``timestamp``: [**DEPRECATED**: Use timestampMillis] The timestamp associated with this event: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
 - ``timestampMillis``: The timestamp associated with this event: Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).
 - ``tags``: Media elements can be labeled using the methods *setSendTagsInEvents* and *addTag*, present in each element. These tags are key-value metadata that can be used by developers for custom purposes. Tags are returned with each event by the media server in this field.
 

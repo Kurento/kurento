@@ -177,14 +177,14 @@ For further reference, see the libnice's `Agent documentation <https://nice.free
 
 
 
-DataChannelClose
+DataChannelClosed
 ----------------
 
 [TODO - add contents]
 
 
 
-DataChannelOpen
+DataChannelOpened
 ---------------
 
 [TODO - add contents]
@@ -200,7 +200,7 @@ A new local candidate has been found, after the ICE Gathering process was starte
 
 .. _events-icecomponentstatechange:
 
-IceComponentStateChange
+IceComponentStateChanged
 -----------------------
 
 This event carries the state values from the signal `NiceAgent::"component-state-changed" <https://nice.freedesktop.org/libnice/NiceAgent.html#NiceAgent-component-state-changed>`__.

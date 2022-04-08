@@ -129,9 +129,7 @@ description. The most relevant statistics are listed below:
 - *roundTripTime*: Estimated round trip time (seconds) for this SSRC based
   on the RTCP timestamp.
 
-- *audioE2ELatency*: End-to-end audio latency measured in nano seconds.
-
-- *videoE2ELatency*: End-to-end video latency measured in nano seconds.
+- *E2ELatency*: Array of average latencies (``MediaLatencyStat[]``) for each media (audio, video), in nanoseconds.
 
 All in all, the process for gathering WebRTC statistics in the KMS can be
 summarized in two steps: 1) Enable WebRTC statistics; 2) Read WebRTC. This

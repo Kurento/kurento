@@ -210,8 +210,8 @@ The ``start()`` method performs the following actions:
       // Events specific to objects of class WebRtcEndpoint
       addIceCandidateFoundListener(
           new EventListener<IceCandidateFoundEvent>() { ... });
-      addIceComponentStateChangeListener(
-          new EventListener<IceComponentStateChangeEvent>() { ... });
+      addIceComponentStateChangedListener(
+          new EventListener<IceComponentStateChangedEvent>() { ... });
       addIceGatheringDoneListener(
           new EventListener<IceGatheringDoneEvent>() { ... });
       addNewCandidatePairSelectedListener(
