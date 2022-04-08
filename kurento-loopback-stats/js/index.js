@@ -220,7 +220,7 @@ function printStats() {
 
   getMediaElementStats(webRtcEndpoint, 'endpoint', 'VIDEO', function(error, stats){
     if(error) return console.log("Warning: could not gather webRtcEndpoint endpoint stats: " + error);
-    document.getElementById('e2eLatency').innerHTML = stats.videoE2ELatency / 1000000 + " milliseconds";
+    document.getElementById('e2eLatency').innerHTML = stats.E2ELatency[1] / 1000000 + " milliseconds";
   });
 }
 
