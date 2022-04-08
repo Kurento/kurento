@@ -181,13 +181,6 @@
           "type": "int"
         },
         {
-          "name": "roiID",
-          "doc": "Opaque String indicating the ID of the involved ROI.
-@deprecated Use <code>roiId</code> instead.
-          ",
-          "type": "String"
-        },
-        {
           "name": "roiId",
           "doc": "Opaque String indicating the ID of the involved ROI",
           "type": "String"
@@ -210,13 +203,6 @@
           "type": "int"
         },
         {
-          "name": "roiID",
-          "doc": "Opaque String indicating the ID of the involved ROI.
-@deprecated Use <code>roiId</code> instead.
-          ",
-          "type": "String"
-        },
-        {
           "name": "roiId",
           "doc": "Opaque String indicating the ID of the involved ROI",
           "type": "String"
@@ -232,13 +218,6 @@
           "name": "directionAngle",
           "doc": "Direction angle of the detected movement in the ROI",
           "type": "float"
-        },
-        {
-          "name": "roiID",
-          "doc": "Opaque String indicating the ID of the involved ROI.
-@deprecated Use <code>roiId</code> instead.
-          ",
-          "type": "String"
         },
         {
           "name": "roiId",
