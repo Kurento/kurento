@@ -55,7 +55,6 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 #define DEFAULT_DATA_CHANNELS_SUPPORTED FALSE
 #define DEFAULT_PEM_CERTIFICATE NULL
 #define DEFAULT_NETWORK_INTERFACES NULL
-#define DEFAULT_EXTERNAL_ADDRESS NULL
 #define DEFAULT_EXTERNAL_IPV4 NULL
 #define DEFAULT_EXTERNAL_IPV6 NULL
 #define DEFAULT_ICE_TCP TRUE
@@ -92,7 +91,6 @@ enum
   PROP_DATA_CHANNEL_SUPPORTED,
   PROP_PEM_CERTIFICATE,
   PROP_NETWORK_INTERFACES,
-  PROP_EXTERNAL_ADDRESS,
   PROP_EXTERNAL_IPV4,
   PROP_EXTERNAL_IPV6,
   PROP_ICE_TCP,
@@ -583,14 +581,7 @@ kms_webrtc_session_new_candidate (KmsIceBaseAgent * agent,
 
   gboolean is_candidate_ipv6 = kms_ice_candidate_get_ip_version (candidate) == IP_VERSION_6;
 
-  if (self->external_address != NULL
-      && kms_ice_candidate_get_candidate_type (candidate)
-          == KMS_ICE_CANDIDATE_TYPE_HOST) {
-    // DEPRECATED
-    kms_ice_candidate_set_address (candidate, self->external_address);
-    GST_DEBUG_OBJECT (self, "[IceCandidateFound] Mangled local: '%s'",
-        kms_ice_candidate_get_candidate (candidate));
-  } else if (self->external_ipv4 != NULL && is_candidate_ipv6 == FALSE) {
+  if (self->external_ipv4 != NULL && is_candidate_ipv6 == FALSE) {
     kms_ice_candidate_set_address (candidate, self->external_ipv4);
     GST_DEBUG_OBJECT (self,
         "[IceCandidateFound] Mangled local candidate with IPv4: '%s'",
@@ -1767,10 +1758,6 @@ kms_webrtc_session_set_property (GObject * object, guint prop_id,
       g_free (self->network_interfaces);
       self->network_interfaces = g_value_dup_string (value);
       break;
-    case PROP_EXTERNAL_ADDRESS:
-      g_free (self->external_address);
-      self->external_address = g_value_dup_string (value);
-      break;
     case PROP_EXTERNAL_IPV4:
       g_free (self->external_ipv4);
       self->external_ipv4 = g_value_dup_string (value);
@@ -1817,9 +1804,6 @@ kms_webrtc_session_get_property (GObject * object, guint prop_id,
     case PROP_NETWORK_INTERFACES:
       g_value_set_string (value, self->network_interfaces);
       break;
-    case PROP_EXTERNAL_ADDRESS:
-      g_value_set_string (value, self->external_address);
-      break;
     case PROP_EXTERNAL_IPV4:
       g_value_set_string (value, self->external_ipv4);
       break;
@@ -1855,7 +1839,6 @@ kms_webrtc_session_finalize (GObject * object)
   g_free (self->turn_address);
   g_free (self->pem_certificate);
   g_free (self->network_interfaces);
-  g_free (self->external_address);
   g_free (self->external_ipv4);
   g_free (self->external_ipv6);
 
@@ -1966,7 +1949,6 @@ kms_webrtc_session_init (KmsWebrtcSession * self)
   self->turn_url = DEFAULT_STUN_TURN_URL;
   self->pem_certificate = DEFAULT_PEM_CERTIFICATE;
   self->network_interfaces = DEFAULT_NETWORK_INTERFACES;
-  self->external_address = DEFAULT_EXTERNAL_ADDRESS;
   self->external_ipv4= DEFAULT_EXTERNAL_IPV4;
   self->external_ipv6 = DEFAULT_EXTERNAL_IPV6;
   self->ice_tcp = DEFAULT_ICE_TCP;
@@ -2068,12 +2050,6 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
           "networkInterfaces",
           "Local network interfaces used for ICE gathering",
           DEFAULT_NETWORK_INTERFACES, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
-  g_object_class_install_property (gobject_class, PROP_EXTERNAL_ADDRESS,
-      g_param_spec_string ("external-address",
-          "externalAddress",
-          "External (public) IP address of the media server",
-          DEFAULT_EXTERNAL_ADDRESS, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_EXTERNAL_IPV4,
       g_param_spec_string ("external-ipv4",

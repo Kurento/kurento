@@ -278,26 +278,11 @@ void RecorderEndpointImpl::stopAndWait ()
   waitForStateChange (KMS_URI_END_POINT_STATE_STOP);
 }
 
-static void
-setDeprecatedProperties (std::shared_ptr<EndpointStats> eStats)
-{
-  std::vector<std::shared_ptr<MediaLatencyStat>> inStats =
-        eStats->getE2ELatency();
-
-  for (auto &inStat : inStats) {
-    if (inStat->getName() == "sink_audio_default") {
-      eStats->setAudioE2ELatency(inStat->getAvg());
-    } else if (inStat->getName() == "sink_video_default") {
-      eStats->setVideoE2ELatency(inStat->getAvg());
-    }
-  }
-}
-
 void
 RecorderEndpointImpl::collectEndpointStats (std::map
     <std::string, std::shared_ptr<Stats>>
     &statsReport, std::string id, const GstStructure *stats,
-    double timestamp, int64_t timestampMillis)
+    int64_t timestampMillis)
 {
   std::shared_ptr<Stats> endpointStats;
   GstStructure *e2e_stats;
@@ -312,11 +297,8 @@ RecorderEndpointImpl::collectEndpointStats (std::map
   }
 
   endpointStats = std::make_shared <EndpointStats> (id,
-                  std::make_shared <StatsType> (StatsType::endpoint), timestamp,
-                  timestampMillis, 0.0, 0.0, inputStats, 0.0, 0.0, e2eStats);
-
-  setDeprecatedProperties (std::dynamic_pointer_cast <EndpointStats>
-                           (endpointStats) );
+                  std::make_shared <StatsType> (StatsType::endpoint),
+                  timestampMillis, inputStats, e2eStats);
 
   statsReport[id] = endpointStats;
 }
@@ -325,17 +307,17 @@ void
 RecorderEndpointImpl::fillStatsReport (std::map
                                        <std::string, std::shared_ptr<Stats>>
                                        &report, const GstStructure *stats,
-                                       double timestamp, int64_t timestampMillis)
+                                       int64_t timestampMillis)
 {
   const GstStructure *e_stats;
 
   e_stats = kms_utils_get_structure_by_name (stats, KMS_MEDIA_ELEMENT_FIELD);
 
   if (e_stats != nullptr) {
-    collectEndpointStats (report, getId (), e_stats, timestamp, timestampMillis);
+    collectEndpointStats (report, getId (), e_stats, timestampMillis);
   }
 
-  UriEndpointImpl::fillStatsReport (report, stats, timestamp, timestampMillis);
+  UriEndpointImpl::fillStatsReport (report, stats, timestampMillis);
 }
 
 MediaObjectImpl *

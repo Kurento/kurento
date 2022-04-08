@@ -80,7 +80,7 @@ GF::~GF()
 }
 
 static void
-exchange_candidate (OnIceCandidate event,
+exchange_candidate (IceCandidateFound event,
                     std::shared_ptr <WebRtcEndpointImpl> peer, bool useIpv6)
 {
   bool isIpv6 = event.getCandidate()->getCandidate().substr (
@@ -152,7 +152,7 @@ gathering_done ()
   std::unique_lock<std::mutex> lck (mtx);
   std::shared_ptr <WebRtcEndpointImpl> webRtcEp = createWebrtc();
 
-  webRtcEp->signalOnIceGatheringDone.connect ([&] (OnIceGatheringDone event) {
+  webRtcEp->signalIceGatheringDone.connect ([&] (IceGatheringDone event) {
     gathering_done = true;
     cv.notify_one();
   });
@@ -187,16 +187,16 @@ ice_state_changes (bool useIpv6)
   webRtcEpOfferer->setName ("offerer");
   webRtcEpAnswerer->setName ("answerer");
 
-  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpOfferer, useIpv6);
   });
 
-  webRtcEpOfferer->signalOnIceComponentStateChanged.connect ([&] (
-  OnIceComponentStateChanged event) {
+  webRtcEpOfferer->signalIceComponentStateChanged.connect ([&] (
+  IceComponentStateChanged event) {
     ice_state_changed = true;
     cv.notify_one();
   });
@@ -272,21 +272,21 @@ media_state_changes (bool useIpv6)
 
   src->connect (webRtcEpOfferer);
 
-  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpOfferer, useIpv6);
   });
 
-  webRtcEpOfferer->signalOnIceGatheringDone.connect ([&] (
-  OnIceGatheringDone event) {
+  webRtcEpOfferer->signalIceGatheringDone.connect ([&] (
+  IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Offerer: Gathering done");
   });
 
-  webRtcEpAnswerer->signalOnIceGatheringDone.connect ([&] (
-  OnIceGatheringDone event) {
+  webRtcEpAnswerer->signalIceGatheringDone.connect ([&] (
+  IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Answerer: Gathering done");
   });
 
@@ -344,21 +344,21 @@ connectWebrtcEndpoints (std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer,
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
 
-  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpOfferer, useIpv6);
   });
 
-  webRtcEpOfferer->signalOnIceGatheringDone.connect ([&] (
-  OnIceGatheringDone event) {
+  webRtcEpOfferer->signalIceGatheringDone.connect ([&] (
+  IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Offerer: Gathering done");
   });
 
-  webRtcEpAnswerer->signalOnIceGatheringDone.connect ([&] (
-  OnIceGatheringDone event) {
+  webRtcEpAnswerer->signalIceGatheringDone.connect ([&] (
+  IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Answerer: Gathering done");
   });
 
@@ -493,15 +493,15 @@ check_exchange_candidates_on_sdp ()
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
 
-  webRtcEpOfferer->signalOnIceGatheringDone.connect ([&] (
-  OnIceGatheringDone event) {
+  webRtcEpOfferer->signalIceGatheringDone.connect ([&] (
+  IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Offerer: Gathering done");
     offer_gathered = true;
     cv_offer_gathered.notify_one();
   });
 
-  webRtcEpAnswerer->signalOnIceGatheringDone.connect ([&] (
-  OnIceGatheringDone event) {
+  webRtcEpAnswerer->signalIceGatheringDone.connect ([&] (
+  IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Answerer: Gathering done");
     answer_gathered = true;
     cv_answer_gathered.notify_one();
@@ -649,8 +649,8 @@ check_data_channel ()
 
   connectWebrtcEndpoints (webRtcEpOfferer, webRtcEpAnswerer, false);
 
-  webRtcEpAnswerer->signalOnDataChannelOpened.connect ([&] (
-  OnDataChannelOpened event) {
+  webRtcEpAnswerer->signalDataChannelOpened.connect ([&] (
+  DataChannelOpened event) {
     BOOST_TEST_MESSAGE ("Data channel " << event.getChannelId() << " opened");
 
     if (chanId < 0) {
@@ -661,8 +661,8 @@ check_data_channel ()
     cv.notify_one();
   });
 
-  webRtcEpOfferer->signalOnDataChannelClosed.connect ([&] (
-  OnDataChannelClosed event) {
+  webRtcEpOfferer->signalDataChannelClosed.connect ([&] (
+  DataChannelClosed event) {
     BOOST_TEST_MESSAGE ("Data channel " << event.getChannelId() << " closed");
 
     if (chanId != event.getChannelId() ) {

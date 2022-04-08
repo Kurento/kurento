@@ -71,7 +71,6 @@ struct _KmsWebrtcSession
   TurnProtocol turn_transport;
   gchar *pem_certificate;
   gchar *network_interfaces;
-  gchar *external_address;
   gchar *external_ipv4;
   gchar *external_ipv6;
   gboolean ice_tcp;

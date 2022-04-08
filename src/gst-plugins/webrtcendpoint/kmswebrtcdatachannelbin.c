@@ -858,12 +858,12 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
       break;
     case KMS_DATA_CHANNEL_PPID_BINARY_PARTIAL:
       GST_WARNING_OBJECT (self,
-          "PPID: DATA_CHANNEL_PPID_BINARY_PARTIAL - Deprecated - Not supported");
+          "PPID: DATA_CHANNEL_PPID_BINARY_PARTIAL - Not supported");
       reset = TRUE;
       break;
     case KMS_DATA_CHANNEL_PPID_STRING_PARTIAL:
       GST_WARNING_OBJECT (self,
-          "PPID: DATA_CHANNEL_PPID_STRING_PARTIAL - Deprecated - Not supported");
+          "PPID: DATA_CHANNEL_PPID_STRING_PARTIAL - Not supported");
       reset = TRUE;
       break;
     case KMS_DATA_CHANNEL_PPID_STRING:

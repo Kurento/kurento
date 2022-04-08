@@ -52,9 +52,6 @@ public:
   std::string getExternalIPv4() override;
   void setExternalIPv4 (const std::string &externalIPv4) override;
 
-  std::string getExternalAddress () override;
-  void setExternalAddress (const std::string &externalAddress) override;
-
   std::string getNetworkInterfaces () override;
   void setNetworkInterfaces (const std::string &networkInterfaces) override;
 
@@ -94,18 +91,13 @@ public:
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler) override;
 
-  sigc::signal<void, OnIceCandidate> signalOnIceCandidate;
   sigc::signal<void, IceCandidateFound> signalIceCandidateFound;
-  sigc::signal<void, OnIceGatheringDone> signalOnIceGatheringDone;
   sigc::signal<void, IceGatheringDone> signalIceGatheringDone;
-  sigc::signal<void, OnIceComponentStateChanged> signalOnIceComponentStateChanged;
-  sigc::signal<void, IceComponentStateChange> signalIceComponentStateChange;
+  sigc::signal<void, IceComponentStateChanged> signalIceComponentStateChanged;
   sigc::signal<void, NewCandidatePairSelected> signalNewCandidatePairSelected;
 
-  sigc::signal<void, OnDataChannelOpened> signalOnDataChannelOpened;
-  sigc::signal<void, DataChannelOpen> signalDataChannelOpen;
-  sigc::signal<void, OnDataChannelClosed> signalOnDataChannelClosed;
-  sigc::signal<void, DataChannelClose> signalDataChannelClose;
+  sigc::signal<void, DataChannelOpened> signalDataChannelOpened;
+  sigc::signal<void, DataChannelClosed> signalDataChannelClosed;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
@@ -117,7 +109,7 @@ protected:
   virtual void postConstructor () override;
   virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
                                 &report, const GstStructure *stats,
-                                double timestamp, int64_t timestampMillis) override;
+                                int64_t timestampMillis) override;
 
 private:
 

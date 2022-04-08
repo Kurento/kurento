@@ -94,7 +94,7 @@
 </p>
 <ul>
   <li>
-    <code>IceComponentStateChange</code>: This event informs only about changes
+    <code>IceComponentStateChanged</code>: This event informs only about changes
     in the ICE connection state. Possible values are:
     <ul>
       <li><code>DISCONNECTED</code>: No activity scheduled</li>
@@ -135,8 +135,8 @@
     for a component. This event can be raised during a media session, if a new
     pair of candidates with higher priority in the link are found.
   </li>
-  <li><code>DataChannelOpen</code>: Raised when a data channel is open.</li>
-  <li><code>DataChannelClose</code>: Raised when a data channel is closed.</li>
+  <li><code>DataChannelOpened</code>: Raised when a data channel is open.</li>
+  <li><code>DataChannelClosed</code>: Raised when a data channel is closed.</li>
 </ul>
 <p>
   Registering to any of above events requires the application to provide a
@@ -427,36 +427,6 @@
           "type": "String"
         },
         {
-          "name": "externalAddress",
-          "doc": "External IP address of the media server.
-<p>
-  Forces all local IPv4 and IPv6 ICE candidates to have the given address. This
-  is really nothing more than a hack, but it's very effective to force a public
-  IP address when one is known in advance for the media server. In doing so, KMS
-  will not need a STUN or TURN server, but remote peers will still be able to
-  contact it.
-</p>
-<p>
-  You can try using this setting if KMS is deployed on a publicly accessible
-  server, without NAT, and with a static public IP address. But if it doesn't
-  work for you, just go back to configuring a STUN or TURN server for ICE.
-</p>
-<p>
-  Only set this parameter if you know what you're doing, and you understand 100%
-  WHY you need it. For the majority of cases, you should just prefer to
-  configure a STUN or TURN server.
-</p>
-<p><code>externalAddress</code> is a single IPv4 or IPv6 address.</p>
-<p>Examples:</p>
-<ul>
-  <li><code>externalAddress=198.51.100.1</code></li>
-  <li><code>externalAddress=2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
-</ul>
-@deprecated Use <code>externalIPv4</code> and/or <code>externalIPv6</code> instead.
-          ",
-          "type": "String"
-        },
-        {
           "name": "ICECandidatePairs",
           "doc": "the ICE candidate pair (local and remote candidates) used by the ICE library for each stream.",
           "type": "IceCandidatePair[]",
@@ -632,36 +602,16 @@ Note that this forces unreliable mode, even if <code>ordered</code> has been act
         }
       ],
       "events": [
-        "OnIceCandidate",
         "IceCandidateFound",
-        "OnIceGatheringDone",
         "IceGatheringDone",
-        "OnIceComponentStateChanged",
-        "IceComponentStateChange",
-        "OnDataChannelOpened",
-        "DataChannelOpen",
-        "OnDataChannelClosed",
-        "DataChannelClose",
+        "IceComponentStateChanged",
+        "DataChannelOpened",
+        "DataChannelClosed",
         "NewCandidatePairSelected"
       ]
     }
   ],
   "events": [
-    {
-      "name": "OnIceCandidate",
-      "extends": "Media",
-      "doc": "Notifies a new local candidate.
-These candidates should be sent to the remote peer, to complete the ICE negotiation process.
-@deprecated Use <code>IceCandidateFound</code> instead.
-      ",
-      "properties": [
-        {
-          "name": "candidate",
-          "doc": "New local candidate",
-          "type": "IceCandidate"
-        }
-      ]
-    },
     {
       "name": "IceCandidateFound",
       "extends": "Media",
@@ -677,46 +627,13 @@ These candidates should be sent to the remote peer, to complete the ICE negotiat
       ]
     },
     {
-      "name": "OnIceGatheringDone",
-      "extends": "Media",
-      "doc": "Event fired when al ICE candidates have been gathered.
-@deprecated Use <code>IceGatheringDone</code> instead.
-      ",
-      "properties": []
-    },
-    {
       "name": "IceGatheringDone",
       "extends": "Media",
       "doc": "Event fired when al ICE candidates have been gathered.",
       "properties": []
     },
     {
-      "name": "OnIceComponentStateChanged",
-      "extends": "Media",
-      "doc": "Event fired when and ICE component state changes.
-See :rom:cls:`IceComponentState` for a list of possible states.
-@deprecated Use <code>IceComponentStateChange</code> instead.
-      ",
-      "properties": [
-        {
-          "name": "streamId",
-          "doc": "The ID of the stream",
-          "type": "int"
-        },
-        {
-          "name": "componentId",
-          "doc": "The ID of the component",
-          "type": "int"
-        },
-        {
-          "name": "state",
-          "doc": "The state of the component",
-          "type": "IceComponentState"
-        }
-      ]
-    },
-    {
-      "name": "IceComponentStateChange",
+      "name": "IceComponentStateChanged",
       "extends": "Media",
       "doc": "Event fired when and ICE component state changes.
 See :rom:cls:`IceComponentState` for a list of possible states.
@@ -740,21 +657,7 @@ See :rom:cls:`IceComponentState` for a list of possible states.
       ]
     },
     {
-      "name": "OnDataChannelOpened",
-      "doc": "Event fired when a new data channel is created.
-@deprecated Use <code>DataChannelOpen</code> instead.
-      ",
-      "extends": "Media",
-      "properties": [
-        {
-          "name": "channelId",
-          "doc": "The channel identifier",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "DataChannelOpen",
+      "name": "DataChannelOpened",
       "doc": "Event fired when a new data channel is created.",
       "extends": "Media",
       "properties": [
@@ -766,21 +669,7 @@ See :rom:cls:`IceComponentState` for a list of possible states.
       ]
     },
     {
-      "name": "OnDataChannelClosed",
-      "doc": "Event fired when a data channel is closed.
-@deprecated Use <code>DataChannelClose</code> instead.
-      ",
-      "extends": "Media",
-      "properties": [
-        {
-          "name": "channelId",
-          "doc": "The channel identifier",
-          "type": "int"
-        }
-      ]
-    },
-    {
-      "name": "DataChannelClose",
+      "name": "DataChannelClosed",
       "doc": "Event fired when a data channel is closed.",
       "extends": "Media",
       "properties": [
@@ -849,23 +738,9 @@ This could also happen in the middle of a session, though not likely.
       "doc": "The ICE candidate pair used by the ICE library, for a certain stream.",
       "properties": [
         {
-          "name": "streamID",
-          "doc": "Stream ID of the ICE connection.
-@deprecated Use <code>streamId</code> instead.
-          ",
-          "type": "String"
-        },
-        {
           "name": "streamId",
           "doc": "Stream ID of the ICE connection",
           "type": "String"
-        },
-        {
-          "name": "componentID",
-          "doc": "Component ID of the ICE connection
-@deprecated Use <code>componentId</code> instead.
-          ",
-          "type": "int"
         },
         {
           "name": "componentId",

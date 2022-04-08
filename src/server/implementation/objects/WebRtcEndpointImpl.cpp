@@ -52,13 +52,11 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define CONFIG_PATH "configPath"
 #define DEFAULT_PATH "/etc/kurento"
 
-#define PARAM_EXTERNAL_ADDRESS "externalAddress"
 #define PARAM_EXTERNAL_IPV4 "externalIPv4"
 #define PARAM_EXTERNAL_IPV6 "externalIPv6"
 #define PARAM_NETWORK_INTERFACES "networkInterfaces"
 #define PARAM_ICE_TCP "iceTcp"
 
-#define PROP_EXTERNAL_ADDRESS "external-address"
 #define PROP_EXTERNAL_IPV4 "external-ipv4"
 #define PROP_EXTERNAL_IPV6 "external-ipv6"
 #define PROP_NETWORK_INTERFACES "network-interfaces"
@@ -155,15 +153,8 @@ WebRtcEndpointImpl::generateDefaultCertificates ()
       "pemCertificateRSA")) {
     defaultCertificateRSA = getCerficateFromFile (pemUriRSA);
   } else {
-    std::string pemUri;
-    if (getConfigValue <std::string, WebRtcEndpoint> (&pemUri,
-        "pemCertificate")) {
-      GST_WARNING ("pemCertificate is deprecated. Please use pemCertificateRSA instead");
-      defaultCertificateRSA = getCerficateFromFile (pemUri);
-    } else {
-      GST_INFO ("Unable to load the RSA certificate from file. Using the default certificate.");
-      defaultCertificateRSA = CertificateManager::generateRSACertificate ();
-    }
+    GST_INFO ("Unable to load the RSA certificate from file. Using the default certificate.");
+    defaultCertificateRSA = CertificateManager::generateRSACertificate ();
   }
 
   std::string pemUriECDSA;
@@ -200,16 +191,6 @@ void WebRtcEndpointImpl::onIceCandidate (gchar *sessId,
                                         (cand_str, mid_str, sdp_m_line_index) );
 
   try {
-    OnIceCandidate event (shared_from_this (), OnIceCandidate::getName (),
-        cand);
-    sigcSignalEmit(signalOnIceCandidate, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s", OnIceCandidate::getName ().c_str (),
-        e.what ());
-  }
-
-  try {
     IceCandidateFound event (shared_from_this(),
         IceCandidateFound::getName (), cand);
     sigcSignalEmit(signalIceCandidateFound, event);
@@ -222,16 +203,6 @@ void WebRtcEndpointImpl::onIceCandidate (gchar *sessId,
 
 void WebRtcEndpointImpl::onIceGatheringDone (gchar *sessId)
 {
-  try {
-    OnIceGatheringDone event (shared_from_this (),
-        OnIceGatheringDone::getName ());
-    sigcSignalEmit(signalOnIceGatheringDone, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s", OnIceGatheringDone::getName ().c_str (),
-        e.what ());
-  }
-
   try {
     IceGatheringDone event (shared_from_this (), IceGatheringDone::getName ());
     sigcSignalEmit(signalIceGatheringDone, event);
@@ -281,7 +252,6 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
     break;
   }
 
-  IceComponentState *componentState_event = new IceComponentState (type);
   IceComponentState *newComponentState_event = new IceComponentState (type);
   IceComponentState *componentState_property = new IceComponentState (type);
 
@@ -296,25 +266,14 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
                              <std::string, std::shared_ptr <IceConnection>> (key, connectionState) );
 
   try {
-    OnIceComponentStateChanged event (shared_from_this (),
-        OnIceComponentStateChanged::getName (), atoi (streamId), componentId,
-        std::shared_ptr<IceComponentState> (componentState_event));
-    sigcSignalEmit(signalOnIceComponentStateChanged, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s",
-        OnIceComponentStateChanged::getName ().c_str (), e.what ());
-  }
-
-  try {
-    IceComponentStateChange event (shared_from_this (),
-        IceComponentStateChange::getName (), atoi (streamId), componentId,
+    IceComponentStateChanged event (shared_from_this (),
+        IceComponentStateChanged::getName (), atoi (streamId), componentId,
         std::shared_ptr<IceComponentState> (newComponentState_event));
-    sigcSignalEmit(signalIceComponentStateChange, event);
+    sigcSignalEmit(signalIceComponentStateChanged, event);
   } catch (const std::bad_weak_ptr &e) {
     // shared_from_this()
     GST_ERROR ("BUG creating %s: %s",
-        IceComponentStateChange::getName ().c_str (), e.what ());
+        IceComponentStateChanged::getName ().c_str (), e.what ());
   }
 }
 
@@ -334,8 +293,7 @@ void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
       kms_ice_candidate_get_candidate (remoteCandidate),
       streamId, componentId);
 
-  candidatePair = std::make_shared< IceCandidatePair > (streamId, streamId,
-                  componentId, componentId,
+  candidatePair = std::make_shared< IceCandidatePair > (streamId, componentId,
                   kms_ice_candidate_get_candidate (localCandidate),
                   kms_ice_candidate_get_candidate (remoteCandidate) );
   key = std::string (streamId) + "_" + std::to_string (componentId);
@@ -364,22 +322,12 @@ void
 WebRtcEndpointImpl::onDataChannelOpened (gchar *sessId, guint stream_id)
 {
   try {
-    OnDataChannelOpened event (shared_from_this (),
-        OnDataChannelOpened::getName (), stream_id);
-    sigcSignalEmit(signalOnDataChannelOpened, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s", OnDataChannelOpened::getName ().c_str (),
-        e.what ());
-  }
-
-  try {
-    DataChannelOpen event (shared_from_this (), DataChannelOpen::getName (),
+    DataChannelOpened event (shared_from_this (), DataChannelOpened::getName (),
         stream_id);
-    sigcSignalEmit(signalDataChannelOpen, event);
+    sigcSignalEmit(signalDataChannelOpened, event);
   } catch (const std::bad_weak_ptr &e) {
     // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s", DataChannelOpen::getName ().c_str (),
+    GST_ERROR ("BUG creating %s: %s", DataChannelOpened::getName ().c_str (),
         e.what ());
   }
 }
@@ -388,22 +336,12 @@ void
 WebRtcEndpointImpl::onDataChannelClosed (gchar *sessId, guint stream_id)
 {
   try {
-    OnDataChannelClosed event (shared_from_this (),
-        OnDataChannelClosed::getName (), stream_id);
-    sigcSignalEmit(signalOnDataChannelClosed, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s", OnDataChannelClosed::getName ().c_str (),
-        e.what ());
-  }
-
-  try {
-    DataChannelClose event (shared_from_this (), DataChannelClose::getName (),
+    DataChannelClosed event (shared_from_this (), DataChannelClosed::getName (),
         stream_id);
-    sigcSignalEmit(signalDataChannelClose, event);
+    sigcSignalEmit(signalDataChannelClosed, event);
   } catch (const std::bad_weak_ptr &e) {
     // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s", DataChannelClose::getName ().c_str (),
+    GST_ERROR ("BUG creating %s: %s", DataChannelClosed::getName ().c_str (),
         e.what ());
   }
 }
@@ -535,17 +473,6 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
         externalIPv6.c_str(), NULL);
   } else {
     GST_DEBUG ("No predefined external IPv6 address found in config;"
-               " you can set one or default to STUN automatic discovery");
-  }
-
-  std::string externalAddress;
-  if (getConfigValue <std::string, WebRtcEndpoint> (&externalAddress,
-      PARAM_EXTERNAL_ADDRESS)) {
-    GST_INFO ("Predefined external IP address: %s", externalAddress.c_str());
-    g_object_set (G_OBJECT (element), PROP_EXTERNAL_ADDRESS,
-        externalAddress.c_str(), NULL);
-  } else {
-    GST_DEBUG ("No predefined external IP address found in config;"
                " you can set one or default to STUN automatic discovery");
   }
 
@@ -704,30 +631,6 @@ WebRtcEndpointImpl::setExternalIPv6 (const std::string &externalIPv6)
   GST_INFO ("Set external IPv6 address: %s", externalIPv6.c_str());
   g_object_set (G_OBJECT (element), PROP_EXTERNAL_IPV6,
       externalIPv6.c_str(), NULL);
-}
-
-std::string
-WebRtcEndpointImpl::getExternalAddress ()
-{
-  std::string externalAddress;
-  gchar *ret;
-
-  g_object_get (G_OBJECT (element), PROP_EXTERNAL_ADDRESS, &ret, NULL);
-
-  if (ret != nullptr) {
-    externalAddress = std::string (ret);
-    g_free (ret);
-  }
-
-  return externalAddress;
-}
-
-void
-WebRtcEndpointImpl::setExternalAddress (const std::string &externalAddress)
-{
-  GST_INFO ("Set external IP address: %s", externalAddress.c_str());
-  g_object_set (G_OBJECT (element), PROP_EXTERNAL_ADDRESS,
-      externalAddress.c_str(), NULL);
 }
 
 std::string
@@ -1060,7 +963,7 @@ createtRTCDataChannelStats (const GstStructure *stats)
 
   std::shared_ptr<RTCDataChannelStats> rtcDataStats =
     std::make_shared <RTCDataChannelStats> (id,
-        std::make_shared <StatsType> (StatsType::datachannel), 0.0, 0, label,
+        std::make_shared <StatsType> (StatsType::datachannel), 0, label,
         protocol, channelid, getRTCDataChannelState (state), messages_sent,
         bytes_sent, message_recv, bytes_recv);
 
@@ -1083,7 +986,7 @@ createtRTCPeerConnectionStats (const GstStructure *stats)
 
   std::shared_ptr<RTCPeerConnectionStats> peerConnStats =
     std::make_shared <RTCPeerConnectionStats> (id,
-        std::make_shared <StatsType> (StatsType::session), 0.0, 0, opened, closed);
+        std::make_shared <StatsType> (StatsType::session), 0, opened, closed);
   g_free (id);
 
   return peerConnStats;
@@ -1091,8 +994,8 @@ createtRTCPeerConnectionStats (const GstStructure *stats)
 
 static void
 collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
-                            &statsReport, double timestamp,
-                            int64_t timestampMillis, const GstStructure *stats)
+                            &statsReport, int64_t timestampMillis,
+                            const GstStructure *stats)
 {
   gint i, n;
 
@@ -1122,14 +1025,12 @@ collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
     }
 
     rtcDataStats = createtRTCDataChannelStats (gst_value_get_structure (value) );
-    rtcDataStats->setTimestamp (timestamp);
     rtcDataStats->setTimestampMillis (timestampMillis);
     statsReport[rtcDataStats->getId ()] = rtcDataStats;
   }
 
   std::shared_ptr<RTCPeerConnectionStats> peerConnStats =
     createtRTCPeerConnectionStats (stats);
-  peerConnStats->setTimestamp (timestamp);
   peerConnStats->setTimestampMillis (timestampMillis);
   statsReport[peerConnStats->getId ()] = peerConnStats;
 }
@@ -1138,19 +1039,17 @@ void
 WebRtcEndpointImpl::fillStatsReport (std::map
                                      <std::string, std::shared_ptr<Stats>>
                                      &report, const GstStructure *stats,
-                                     double timestamp, int64_t timestampMillis)
+                                     int64_t timestampMillis)
 {
   const GstStructure *data_stats = nullptr;
 
-  BaseRtpEndpointImpl::fillStatsReport (report, stats, timestamp,
-      timestampMillis);
+  BaseRtpEndpointImpl::fillStatsReport (report, stats, timestampMillis);
 
   data_stats = kms_utils_get_structure_by_name (stats,
                KMS_DATA_SESSION_STATISTICS_FIELD);
 
   if (data_stats != nullptr) {
-    return collectRTCDataChannelStats (report, timestamp, timestampMillis,
-        data_stats);
+    return collectRTCDataChannelStats (report, timestampMillis, data_stats);
   }
 }
 
