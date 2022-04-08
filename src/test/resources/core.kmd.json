@@ -49,8 +49,8 @@
           "final": true
         },
         {
-          "name": "childs",
-          "doc": "Childs of current object, all returned objects have parent set to current object",
+          "name": "children",
+          "doc": "Children of current object, all returned objects have parent set to current object",
           "type": "MediaObject[]",
           "readOnly": true
         },
@@ -567,17 +567,6 @@
           }
         },
         {
-          "name": "setOutputBitrate",
-          "doc": "@deprecated\nAllows change the target bitrate for the media output, if the media is encoded using VP8 or H264. This method only works if it is called before the media starts to flow.",
-          "params": [
-            {
-              "name": "bitrate",
-              "doc": "Configure the enconding media bitrate in bps",
-              "type": "int"
-            }
-          ]
-        },
-        {
           "name": "getStats",
           "doc": "Provides statistics collected for this endpoint",
           "params": [
@@ -596,12 +585,12 @@
       ],
       "properties": [
         {
-          "name": "minOuputBitrate",
+          "name": "minOutputBitrate",
           "doc": "Minimum video bandwidth for transcoding.\n  Unit: bps(bits per second).\n  Default value: 0",
           "type": "int"
         },
         {
-          "name": "maxOuputBitrate",
+          "name": "maxOutputBitrate",
           "doc": "Maximum video bandwidth for transcoding.\n  Unit: bps(bits per second).\n  Default value: MAXINT",
           "type": "int"
         }
@@ -874,11 +863,6 @@
           "type": "StatsType"
         },
         {
-          "name": "timestamp",
-          "doc": "[DEPRECATED: Use timestampMillis] The timestamp associated with this object: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).",
-          "type": "double"
-        },
-        {
           "name": "timestampMillis",
           "doc": "The timestamp associated with this event: Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).",
           "type": "int64"
@@ -892,14 +876,9 @@
       "extends" : "Stats",
       "properties": [
         {
-          "name": "inputAudioLatency",
-          "doc": "Audio average measured on the sink pad in nano seconds",
-          "type": "double"
-        },
-        {
-          "name": "inputVideoLatency",
-          "doc": "Video average measured on the sink pad in nano seconds",
-          "type": "double"
+          "name": "inputLatency",
+          "doc": "The average time that buffers take to get on the input pads of this element in nano seconds",
+          "type": "MediaLatencyStat[]"
         }
       ]
     },
@@ -910,14 +889,9 @@
       "extends" : "ElementStats",
       "properties": [
         {
-          "name": "audioE2ELatency",
-          "doc": "End-to-end audio latency measured in nano seconds",
-          "type": "double"
-        },
-        {
-          "name": "videoE2ELatency",
-          "doc": "End-to-end video latency measured in nano seconds",
-          "type": "double"
+          "name": "E2ELatency",
+          "doc": "The average end to end latency for each media stream measured in nano seconds",
+          "type": "MediaLatencyStat[]"
         }
       ]
     },
@@ -1554,11 +1528,6 @@
           "name": "source",
           "doc": "Object that raised the event",
           "type": "MediaObject"
-        },
-        {
-          "name": "timestamp",
-          "doc": "[DEPRECATED: Use timestampMillis] The timestamp associated with this object: Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC).",
-          "type": "String"
         },
         {
           "name": "timestampMillis",

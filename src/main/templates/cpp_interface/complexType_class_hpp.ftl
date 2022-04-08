@@ -34,12 +34,12 @@ namespace ${namespace}
 {
 </#list>
 <#list complexType.getChildren() as dependency>
-<#if childs??>
+<#if children??>
 
 </#if>
 <#if module.remoteClasses?seq_contains(dependency.type.type) ||
   module.complexTypes?seq_contains(dependency.type.type) ||
-  module.events?seq_contains(dependency.type.type)><#assign childs=true>
+  module.events?seq_contains(dependency.type.type)><#assign children=true>
 class ${dependency.type.name};
 </#if>
 </#list>

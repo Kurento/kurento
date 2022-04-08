@@ -20,14 +20,6 @@ namespace ${namespace}
 </#list>
 <#if event.name = "RaiseBase">
 static
-std::string getCurrentTime ()
-{
-  time_t timer;
-  time(&timer);
-  return std::to_string ((int)(timer));
-}
-
-static
 std::string getCurrentTimeMillis ()
 {
   const auto epoch = std::chrono::high_resolution_clock::now ()
@@ -56,7 +48,6 @@ ${event.name}::${event.name} (<#rt>
       </#if><#rt>
     </#if><#rt>
   <#lt></#list>
-  ${event.name}::setTimestamp (getCurrentTime ());
   ${event.name}::setTimestampMillis (getCurrentTimeMillis ());
   if (source != nullptr) {
     if (source->getSendTagsInEvents ()) {
