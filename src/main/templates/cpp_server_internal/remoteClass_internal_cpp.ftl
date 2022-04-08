@@ -80,7 +80,7 @@ ${remoteClass.name}Impl::invoke (std::shared_ptr<MediaObjectImpl> obj, const std
 <#if !property.final && !property.readOnly>
   if (methodName == "set${property.name?cap_first}") {
     kurento::JsonSerializer s (false);
-    ${getCppObjectType (property.type, false)} ${property.name};
+    ${getCppObjectType (property.type, false)} ${property.name}{};
     s.JsonValue = params;
 
 <#assign jsonData = getJsonCppTypeData(property.type)>
