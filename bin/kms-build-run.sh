@@ -279,21 +279,6 @@ fi
 if [[ "$CFG_UNDEFINED_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-ubsan"
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_UNDEFINED=ON"
-
-    # FIXME: A bug in the `ld` linker (package "binutils") in Ubuntu 16.04 "Xenial"
-    # makes the CMake test for UBSan compatibility to fail.
-    # A simple workaround is to use `gold` instead of `ld`.
-    # Clang doesn't need this, because it uses `lld`, the LLVM linker.
-    # See: https://stackoverflow.com/questions/50024731/ld-unrecognized-option-push-state-no-as-needed
-    #
-    # The bug is fixed in Ubuntu 18.04 "Bionic". So this workaround can be
-    # removed when Kurento drops support for Xenial.
-    if [[ "$CFG_CLANG" != "true" ]]; then
-        BUILD_VARS+=(
-            "CFLAGS='${CFLAGS:-} -fuse-ld=gold'"
-            "CXXFLAGS='${CXXFLAGS:-} -fuse-ld=gold'"
-        )
-    fi
 fi
 
 if [[ -f /.dockerenv ]]; then
