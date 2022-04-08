@@ -315,15 +315,15 @@ commit_and_tag() {
 
 
 
+# Edit files to set the new version
+# =================================
+
 pushd kurento-module-creator/
 TEMP="$(mktemp)"
 xmlstarlet edit -S --update "/_:project/_:version" --value "$VERSION_JAVA" pom.xml \
     >"$TEMP" && mv "$TEMP" pom.xml
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    pom.xml \
-    src/main/templates/maven/model_pom_xml.ftl
 popd
 
 
@@ -337,8 +337,6 @@ xmlstarlet edit -S --inplace \
     --update "/_:project/_:dependencies/_:dependency[_:artifactId='kurento-module-creator']/_:version" \
     --value "$VERSION_JAVA" \
     pom.xml
-commit_and_tag \
-    pom.xml
 popd
 
 
@@ -349,8 +347,6 @@ perl -i -pe \
     CMakeLists.txt
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    CMakeLists.txt
 popd
 
 
@@ -361,8 +357,6 @@ perl -i -pe \
     CMakeLists.txt
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    CMakeLists.txt
 popd
 
 
@@ -378,9 +372,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/core.kmd.json \
-    CMake/CodeGenerator.cmake
 popd
 
 
@@ -396,8 +387,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/elements.kmd.json
 popd
 
 
@@ -413,8 +402,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/filters.kmd.json
 popd
 
 
@@ -428,8 +415,6 @@ perl -i -pe \
     CMakeLists.txt
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    CMakeLists.txt
 popd
 
 
@@ -445,8 +430,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/chroma.kmd.json
 popd
 
 
@@ -462,8 +445,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/crowddetector.kmd.json
 popd
 
 
@@ -479,8 +460,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/kmsdatachannelexample.kmd.json
 popd
 
 
@@ -496,8 +475,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/armarkerdetector.kmd.json
 popd
 
 
@@ -513,8 +490,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/platedetector.kmd.json
 popd
 
 
@@ -530,8 +505,6 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 fi
 update_debian_changelog
 update_debian_control
-commit_and_tag \
-    src/server/interface/pointerdetector.kmd.json
 popd
 
 
@@ -540,6 +513,115 @@ popd
 perl -i -pe \
     "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?=\))/^${VERSION_C}/" \
     CMakeLists.txt
+
+
+
+# Commit changes
+# ==============
+
+echo "Everything seems OK; proceed to commit"
+
+pushd kurento-module-creator/
+commit_and_tag \
+    pom.xml \
+    src/main/templates/maven/model_pom_xml.ftl
+popd
+
+
+
+pushd kurento-maven-plugin/
+commit_and_tag \
+    pom.xml
+popd
+
+
+
+pushd kms-cmake-utils/
+commit_and_tag \
+    CMakeLists.txt
+popd
+
+
+
+pushd kms-jsonrpc/
+commit_and_tag \
+    CMakeLists.txt
+popd
+
+
+
+pushd kms-core/
+commit_and_tag \
+    src/server/interface/core.kmd.json \
+    CMake/CodeGenerator.cmake
+popd
+
+
+
+pushd kms-elements/
+commit_and_tag \
+    src/server/interface/elements.kmd.json
+popd
+
+
+
+pushd kms-filters/
+commit_and_tag \
+    src/server/interface/filters.kmd.json
+popd
+
+
+
+pushd kurento-media-server/
+commit_and_tag \
+    CMakeLists.txt
+popd
+
+
+
+pushd module/kms-chroma/
+commit_and_tag \
+    src/server/interface/chroma.kmd.json
+popd
+
+
+
+pushd module/kms-crowddetector/
+commit_and_tag \
+    src/server/interface/crowddetector.kmd.json
+popd
+
+
+
+pushd module/kms-datachannelexample/
+commit_and_tag \
+    src/server/interface/kmsdatachannelexample.kmd.json
+popd
+
+
+
+pushd module/kms-markerdetector/
+commit_and_tag \
+    src/server/interface/armarkerdetector.kmd.json
+popd
+
+
+
+pushd module/kms-platedetector/
+commit_and_tag \
+    src/server/interface/platedetector.kmd.json
+popd
+
+
+
+pushd module/kms-pointerdetector/
+commit_and_tag \
+    src/server/interface/pointerdetector.kmd.json
+popd
+
+
+
+# Changes for kms-omni-build itself
 commit_and_tag \
     CMakeLists.txt \
     kurento-module-creator \
@@ -558,3 +640,5 @@ commit_and_tag \
     module/kms-platedetector \
     module/kms-plugin-sample \
     module/kms-pointerdetector
+
+echo "Done!"
