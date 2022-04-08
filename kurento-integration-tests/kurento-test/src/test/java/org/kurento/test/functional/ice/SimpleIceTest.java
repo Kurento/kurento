@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.kurento.client.EventListener;
-import org.kurento.client.IceComponentStateChangeEvent;
+import org.kurento.client.IceComponentStateChangedEvent;
 import org.kurento.client.MediaFlowInStateChangeEvent;
 import org.kurento.client.MediaFlowOutStateChangeEvent;
 import org.kurento.client.MediaFlowState;
@@ -145,11 +145,11 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEndpoint
-        .addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
+        .addIceComponentStateChangedListener(new EventListener<IceComponentStateChangedEvent>() {
 
           @Override
-          public void onEvent(IceComponentStateChangeEvent event) {
-            log.debug("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+          public void onEvent(IceComponentStateChangedEvent event) {
+            log.debug("IceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
                 event.getState(), event.getSource(), event.getType(), event.getStreamId());
           }
         });
@@ -172,7 +172,7 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "SendRecv -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getStreamId(),
                 event.getCandidatePair().getLocalCandidate(),
                 event.getCandidatePair().getRemoteCandidate());
 
@@ -236,11 +236,11 @@ public class SimpleIceTest extends FunctionalPlayerTest {
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
-    webRtcEp.addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
+    webRtcEp.addIceComponentStateChangedListener(new EventListener<IceComponentStateChangedEvent>() {
 
       @Override
-      public void onEvent(IceComponentStateChangeEvent event) {
-        log.debug("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+      public void onEvent(IceComponentStateChangedEvent event) {
+        log.debug("IceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
             event.getState(), event.getSource(), event.getType(), event.getStreamId());
       }
     });
@@ -262,7 +262,7 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "RecvOnly -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getStreamId(),
                 event.getCandidatePair().getLocalCandidate(),
                 event.getCandidatePair().getRemoteCandidate());
 
@@ -330,12 +330,12 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEpSendOnly
-        .addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
+        .addIceComponentStateChangedListener(new EventListener<IceComponentStateChangedEvent>() {
 
           @Override
-          public void onEvent(IceComponentStateChangeEvent event) {
+          public void onEvent(IceComponentStateChangedEvent event) {
             log.debug(
-                "webRtcEpSendOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+                "webRtcEpSendOnly: IceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
                 event.getState(), event.getSource(), event.getType(), event.getStreamId());
           }
         });
@@ -347,19 +347,19 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "SendOnly (webRtcEpSendOnly) -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getStreamId(),
                 event.getCandidatePair().getLocalCandidate(),
                 event.getCandidatePair().getRemoteCandidate());
           }
         });
 
     webRtcEpRcvOnly
-        .addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
+        .addIceComponentStateChangedListener(new EventListener<IceComponentStateChangedEvent>() {
 
           @Override
-          public void onEvent(IceComponentStateChangeEvent event) {
+          public void onEvent(IceComponentStateChangedEvent event) {
             log.debug(
-                "webRtcEpRcvOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+                "webRtcEpRcvOnly: IceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
                 event.getState(), event.getSource(), event.getType(), event.getStreamId());
           }
         });
@@ -382,7 +382,7 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "SendOnly (webRtcEpRcvOnly) -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getStreamId(),
                 event.getCandidatePair().getLocalCandidate(),
                 event.getCandidatePair().getRemoteCandidate());
 

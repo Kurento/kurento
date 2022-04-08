@@ -28,7 +28,7 @@ import org.junit.Ignore;
 import org.kurento.client.EventListener;
 import org.kurento.client.IceCandidateFoundEvent;
 import org.kurento.client.IceComponentState;
-import org.kurento.client.IceComponentStateChangeEvent;
+import org.kurento.client.IceComponentStateChangedEvent;
 import org.kurento.client.ListenerSubscription;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.ObjectCreatedEvent;
@@ -176,12 +176,12 @@ public class PipelineStabilityCreateDestroyWebRtcAndEstablishConnectionTest exte
           final WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
           webRtcEndpoints.add(webRtcEp);
 
-          webRtcEp.addIceComponentStateChangeListener(
-              new EventListener<IceComponentStateChangeEvent>() {
+          webRtcEp.addIceComponentStateChangedListener(
+              new EventListener<IceComponentStateChangedEvent>() {
                 private boolean executed = false;
 
                 @Override
-                public void onEvent(IceComponentStateChangeEvent event) {
+                public void onEvent(IceComponentStateChangedEvent event) {
                   // Only executes once when the state is CONNECTED
                   if (!executed) {
                     if (event.getState().equals(IceComponentState.CONNECTED)) {

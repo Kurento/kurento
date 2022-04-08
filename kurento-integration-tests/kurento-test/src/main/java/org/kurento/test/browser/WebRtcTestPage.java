@@ -340,7 +340,7 @@ public class WebRtcTestPage extends WebPage {
       @Override
       public void onEvent(MediaStateChangedEvent event) {
         log.debug("MediaStateChangedEvent from {} to {} on {} at {}", event.getOldState(),
-            event.getNewState(), webRtcEndpoint.getId(), event.getTimestamp());
+            event.getNewState(), webRtcEndpoint.getId(), event.getTimestampMillis());
       }
     });
 
