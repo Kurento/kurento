@@ -206,6 +206,12 @@ update_debian_changelog() {
     local SNAPSHOT_ENTRY="* UNRELEASED"
     local RELEASE_ENTRY="* $COMMIT_MSG"
 
+    # debchange (dch) requires an email being set on the system.
+    if [[ -z "${EMAIL:-}${DEBEMAIL:-}" ]]; then
+        export DEBFULLNAME="Kurento"
+        export DEBEMAIL="info@kurento.org"
+    fi
+
     if [[ "$CFG_RELEASE" == "true" ]]; then
         gbp dch \
             --ignore-branch \
