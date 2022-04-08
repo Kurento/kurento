@@ -154,7 +154,9 @@ One of the nicest things about the Docker deployment method is that changing ver
 Local Installation
 ==================
 
-With this method, you will install Kurento Media Server from the native Ubuntu packages build by us. Kurento officially supports two Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits x86 only).
+With this method, you will install Kurento Media Server from the native Ubuntu packages built by us.
+
+Officially supported platforms: **Ubuntu 20.04 (Focal)** (64-bits).
 
 Open a terminal and run these commands:
 

@@ -15,11 +15,11 @@ Introduction
 
 This is an overview of the tools and technologies used by KMS:
 
+- Officially supported platforms: **Ubuntu 20.04 (Focal)** (64-bits).
 - The code is written in C and C++ languages.
 - The code style is heavily influenced by that of Gtk and GStreamer projects.
 - CMake is the build tool of choice, and is used to build all modules.
 - Source code is versioned in several GitHub repositories.
-- The officially supported platforms are Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
 - The GStreamer multimedia framework sits at the heart of Kurento Media Server.
 - In addition to GStreamer, KMS uses other libraries like boost, jsoncpp, libnice, etc.
 
@@ -545,7 +545,7 @@ This allows for the fastest development cycle, however the specific instructions
 Create Deb packages
 ===================
 
-You can easily create Debian packages (*.deb* files) for KMS itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/bionic/en/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/bionic/en/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/bionic/en/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
+You can easily create Debian packages (*.deb* files) for KMS itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/en/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/en/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/en/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
 
 
 
@@ -578,7 +578,7 @@ In an attempt to make it easier than ever to create Deb packages from Kurento re
 
 To use the `kurento-buildpackage Docker image <https://hub.docker.com/r/kurento/kurento-buildpackage>`__, you'll need to bind-mount the project directory onto the ``/hostdir`` path inside the container. All other options to *kurento-buildpackage* remain the same.
 
-For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0, for *Ubuntu 16.04 (Xenial)* systems. Run these commands:
+For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0, for *Ubuntu 20.04 (Focal)* systems. Run these commands:
 
 .. code-block:: shell
 
@@ -586,7 +586,7 @@ For example, say you want to build the current *kms-core* development branch aga
    cd kms-core/
    docker run --rm \
        --mount type=bind,src="$PWD",dst=/hostdir \
-       kurento/kurento-buildpackage:xenial \
+       kurento/kurento-buildpackage:focal \
            --install-kurento 6.12.0 \
            --apt-add-repo
 
