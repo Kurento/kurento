@@ -35,13 +35,16 @@ public class VersionManager {
 
   public static String convertToMavenImport(String version) {
 
+    boolean isDevelopment = false;
+
     if (isDevelopmentVersion(version)) {
-      return removeDevSuffix(version) + "-SNAPSHOT";
+      isDevelopment = true;
+      version = removeDevSuffix(version);
     }
 
     Expression expression = parseVersion(version);
 
-    String mavenVersion = convertToMavenExpression(expression);
+    String mavenVersion = convertToMavenExpression(expression, isDevelopment);
 
     if (mavenVersion == null) {
       throw new KurentoModuleCreatorException("Version '" + version + "' in import not supported");
@@ -50,18 +53,39 @@ public class VersionManager {
     return mavenVersion;
   }
 
-  private static String convertToMavenExpression(Expression expression) {
-
+  private static String convertToMavenExpression(Expression expression, boolean isDevelopment) {
     if (expression instanceof Equal) {
-      return ((Equal) expression).getParsedVersion().toString();
+      String mavenVersion = "" + ((Equal) expression).getParsedVersion();
+      if (isDevelopment) {
+        mavenVersion += "-SNAPSHOT";
+      }
+      return mavenVersion;
     } else if (expression instanceof Less) {
-      return "(," + ((Less) expression).getParsedVersion() + "-SNAPSHOT)";
+      String mavenVersion = "(," + ((Less) expression).getParsedVersion();
+      mavenVersion += "-SNAPSHOT"; // Unconditionally exclude snapshot.
+      mavenVersion += ")";
+      return mavenVersion;
     } else if (expression instanceof LessOrEqual) {
-      return "(," + ((LessOrEqual) expression).getParsedVersion() + "]";
+      String mavenVersion = "(," + ((LessOrEqual) expression).getParsedVersion();
+      if (isDevelopment) {
+        mavenVersion += "-SNAPSHOT";
+      }
+      mavenVersion += "]";
+      return mavenVersion;
     } else if (expression instanceof Greater) {
-      return "(" + ((Greater) expression).getParsedVersion() + ",)";
+      String mavenVersion = "(" + ((Greater) expression).getParsedVersion();
+      if (isDevelopment) {
+        mavenVersion += "-SNAPSHOT";
+      }
+      mavenVersion += ",)";
+      return mavenVersion;
     } else if (expression instanceof GreaterOrEqual) {
-      return "[" + ((GreaterOrEqual) expression).getParsedVersion() + ",)";
+      String mavenVersion = "[" + ((GreaterOrEqual) expression).getParsedVersion();
+      if (isDevelopment) {
+        mavenVersion += "-SNAPSHOT";
+      }
+      mavenVersion += ",)";
+      return mavenVersion;
     } else if (expression instanceof And) {
 
       And and = (And) expression;
@@ -84,7 +108,14 @@ public class VersionManager {
         mavenVersion.append("[");
         greaterVersion = ((GreaterOrEqual) greater).getParsedVersion();
       }
-      mavenVersion.append(greaterVersion).append(",");
+
+      mavenVersion.append(greaterVersion);
+
+      if (isDevelopment) {
+        mavenVersion.append("-SNAPSHOT");
+      }
+
+      mavenVersion.append(",");
 
       Version lessVersion = null;
       String postFix;
@@ -101,8 +132,8 @@ public class VersionManager {
       return mavenVersion.toString();
 
     } else if (expression instanceof Or) {
-      String left = convertToMavenExpression(((Or) expression).getLeft());
-      String right = convertToMavenExpression(((Or) expression).getRight());
+      String left = convertToMavenExpression(((Or) expression).getLeft(), isDevelopment);
+      String right = convertToMavenExpression(((Or) expression).getRight(), isDevelopment);
 
       if (left != null && right != null) {
         return left + "," + right;
@@ -295,7 +326,10 @@ public class VersionManager {
 
     if (isDevelopmentVersion(importVersion)) {
       importVersion = removeDevSuffix(importVersion);
-      importVersion = "^" + importVersion;
+
+      if (!importVersion.startsWith("^")) {
+        importVersion = "^" + importVersion;
+      }
     }
 
     if (isDevelopmentVersion(depVersion)) {
