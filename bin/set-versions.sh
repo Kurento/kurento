@@ -380,11 +380,9 @@ pushd kms-elements/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/elements.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/elements.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/elements.kmd.json
 update_debian_changelog
 update_debian_control
 popd
@@ -395,11 +393,9 @@ pushd kms-filters/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/filters.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/filters.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/filters.kmd.json
 update_debian_changelog
 update_debian_control
 popd
@@ -423,11 +419,9 @@ pushd module/kms-chroma/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/chroma.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/chroma.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/chroma.kmd.json
 update_debian_changelog
 update_debian_control
 popd
@@ -438,11 +432,9 @@ pushd module/kms-crowddetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/crowddetector.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/crowddetector.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/crowddetector.kmd.json
 update_debian_changelog
 update_debian_control
 popd
@@ -453,11 +445,9 @@ pushd module/kms-datachannelexample/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/kmsdatachannelexample.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/kmsdatachannelexample.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/kmsdatachannelexample.kmd.json
 update_debian_changelog
 update_debian_control
 popd
@@ -468,11 +458,9 @@ pushd module/kms-markerdetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/armarkerdetector.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/armarkerdetector.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/armarkerdetector.kmd.json
 update_debian_changelog
 update_debian_control
 popd
@@ -483,11 +471,9 @@ pushd module/kms-platedetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/platedetector.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/platedetector.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/platedetector.kmd.json
 update_debian_changelog
 update_debian_control
 popd
@@ -498,11 +484,9 @@ pushd module/kms-pointerdetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/pointerdetector.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/pointerdetector.kmd.json
-fi
+perl -i -pe \
+    "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
+    src/server/interface/pointerdetector.kmd.json
 update_debian_changelog
 update_debian_control
 popd
