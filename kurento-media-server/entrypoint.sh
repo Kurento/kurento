@@ -24,7 +24,7 @@ WEBRTC_FILE="/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini"
 # needs to edit root-owned files under "/etc".
 # Instead, run with `docker run -e KMS_UID=1234`.
 [[ "$(id -u)" -eq 0 ]] || {
-    echo "[Docker entrypoint] ERROR: Please run container as root user"
+    echo "[Docker entrypoint] ERROR: Please run container as root user. Use '-e KMS_UID=1234' instead of '--user=1234'."
     exit 1
 }
 
