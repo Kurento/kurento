@@ -316,6 +316,17 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
     GST_ERROR ("BUG creating %s: %s",
         IceComponentStateChange::getName ().c_str (), e.what ());
   }
+
+  try {
+    IceComponentStateChanged event (shared_from_this (),
+        IceComponentStateChanged::getName (), atoi (streamId), componentId,
+        std::shared_ptr<IceComponentState> (newComponentState_event));
+    sigcSignalEmit(signalIceComponentStateChanged, event);
+  } catch (const std::bad_weak_ptr &e) {
+    // shared_from_this()
+    GST_ERROR ("BUG creating %s: %s",
+        IceComponentStateChanged::getName ().c_str (), e.what ());
+  }
 }
 
 void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
@@ -382,6 +393,16 @@ WebRtcEndpointImpl::onDataChannelOpened (gchar *sessId, guint stream_id)
     GST_ERROR ("BUG creating %s: %s", DataChannelOpen::getName ().c_str (),
         e.what ());
   }
+
+  try {
+    DataChannelOpened event (shared_from_this (), DataChannelOpened::getName (),
+        stream_id);
+    sigcSignalEmit(signalDataChannelOpened, event);
+  } catch (const std::bad_weak_ptr &e) {
+    // shared_from_this()
+    GST_ERROR ("BUG creating %s: %s", DataChannelOpened::getName ().c_str (),
+        e.what ());
+  }
 }
 
 void
@@ -404,6 +425,16 @@ WebRtcEndpointImpl::onDataChannelClosed (gchar *sessId, guint stream_id)
   } catch (const std::bad_weak_ptr &e) {
     // shared_from_this()
     GST_ERROR ("BUG creating %s: %s", DataChannelClose::getName ().c_str (),
+        e.what ());
+  }
+
+  try {
+    DataChannelClosed event (shared_from_this (), DataChannelClosed::getName (),
+        stream_id);
+    sigcSignalEmit(signalDataChannelClosed, event);
+  } catch (const std::bad_weak_ptr &e) {
+    // shared_from_this()
+    GST_ERROR ("BUG creating %s: %s", DataChannelClosed::getName ().c_str (),
         e.what ());
   }
 }

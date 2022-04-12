@@ -638,10 +638,13 @@ Note that this forces unreliable mode, even if <code>ordered</code> has been act
         "IceGatheringDone",
         "OnIceComponentStateChanged",
         "IceComponentStateChange",
+        "IceComponentStateChanged",
         "OnDataChannelOpened",
         "DataChannelOpen",
+        "DataChannelOpened",
         "OnDataChannelClosed",
         "DataChannelClose",
+        "DataChannelClosed",
         "NewCandidatePairSelected"
       ]
     }
@@ -695,7 +698,7 @@ These candidates should be sent to the remote peer, to complete the ICE negotiat
       "extends": "Media",
       "doc": "Event fired when and ICE component state changes.
 See :rom:cls:`IceComponentState` for a list of possible states.
-@deprecated Use <code>IceComponentStateChange</code> instead.
+@deprecated Use <code>IceComponentStateChanged</code> instead.
       ",
       "properties": [
         {
@@ -717,6 +720,31 @@ See :rom:cls:`IceComponentState` for a list of possible states.
     },
     {
       "name": "IceComponentStateChange",
+      "extends": "Media",
+      "doc": "Event fired when and ICE component state changes.
+See :rom:cls:`IceComponentState` for a list of possible states.
+@deprecated Use <code>IceComponentStateChanged</code> instead.
+      ",
+      "properties": [
+        {
+          "name": "streamId",
+          "doc": "The ID of the stream",
+          "type": "int"
+        },
+        {
+          "name": "componentId",
+          "doc": "The ID of the component",
+          "type": "int"
+        },
+        {
+          "name": "state",
+          "doc": "The state of the component",
+          "type": "IceComponentState"
+        }
+      ]
+    },
+    {
+      "name": "IceComponentStateChanged",
       "extends": "Media",
       "doc": "Event fired when and ICE component state changes.
 See :rom:cls:`IceComponentState` for a list of possible states.
@@ -742,7 +770,7 @@ See :rom:cls:`IceComponentState` for a list of possible states.
     {
       "name": "OnDataChannelOpened",
       "doc": "Event fired when a new data channel is created.
-@deprecated Use <code>DataChannelOpen</code> instead.
+@deprecated Use <code>DataChannelOpened</code> instead.
       ",
       "extends": "Media",
       "properties": [
@@ -755,6 +783,20 @@ See :rom:cls:`IceComponentState` for a list of possible states.
     },
     {
       "name": "DataChannelOpen",
+      "doc": "Event fired when a new data channel is created.
+@deprecated Use <code>DataChannelOpened</code> instead.
+      ",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "channelId",
+          "doc": "The channel identifier",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "DataChannelOpened",
       "doc": "Event fired when a new data channel is created.",
       "extends": "Media",
       "properties": [
@@ -768,7 +810,7 @@ See :rom:cls:`IceComponentState` for a list of possible states.
     {
       "name": "OnDataChannelClosed",
       "doc": "Event fired when a data channel is closed.
-@deprecated Use <code>DataChannelClose</code> instead.
+@deprecated Use <code>DataChannelClosed</code> instead.
       ",
       "extends": "Media",
       "properties": [
@@ -781,6 +823,20 @@ See :rom:cls:`IceComponentState` for a list of possible states.
     },
     {
       "name": "DataChannelClose",
+      "doc": "Event fired when a data channel is closed.
+@deprecated Use <code>DataChannelClosed</code> instead.
+      ",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "channelId",
+          "doc": "The channel identifier",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "DataChannelClosed",
       "doc": "Event fired when a data channel is closed.",
       "extends": "Media",
       "properties": [

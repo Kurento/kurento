@@ -100,12 +100,15 @@ public:
   sigc::signal<void, IceGatheringDone> signalIceGatheringDone;
   sigc::signal<void, OnIceComponentStateChanged> signalOnIceComponentStateChanged;
   sigc::signal<void, IceComponentStateChange> signalIceComponentStateChange;
+  sigc::signal<void, IceComponentStateChanged> signalIceComponentStateChanged;
   sigc::signal<void, NewCandidatePairSelected> signalNewCandidatePairSelected;
 
   sigc::signal<void, OnDataChannelOpened> signalOnDataChannelOpened;
   sigc::signal<void, DataChannelOpen> signalDataChannelOpen;
+  sigc::signal<void, DataChannelOpened> signalDataChannelOpened;
   sigc::signal<void, OnDataChannelClosed> signalOnDataChannelClosed;
   sigc::signal<void, DataChannelClose> signalDataChannelClose;
+  sigc::signal<void, DataChannelClosed> signalDataChannelClosed;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
