@@ -73,13 +73,12 @@ foreach (HEADER ${KMS_RTPENDPOINT_HEADERS})
   list (APPEND FIND_HEADERS rtpendpoint/${HEADER})
 endforeach ()
 
-configure_file(
-  FindKmsRtpEndpointLib.cmake.in
-  ${CMAKE_BINARY_DIR}/FindKmsRtpEndpointLib.cmake
+configure_file(FindKmsRtpEndpointLib.cmake.in
+  ${PROJECT_BINARY_DIR}/FindKmsRtpEndpointLib.cmake
   @ONLY
 )
 install(
-  FILES ${CMAKE_BINARY_DIR}/FindKmsRtpEndpointLib.cmake
+  FILES ${PROJECT_BINARY_DIR}/FindKmsRtpEndpointLib.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
 )
 

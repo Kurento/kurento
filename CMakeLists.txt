@@ -11,6 +11,16 @@ set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the build
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 set(ENABLE_EXPERIMENTAL_TESTS OFF CACHE BOOL "Enable tests that are not yet stable")
 
+# Add CMake modules provided by this project.
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/src/server")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}") # find_package() search path for `FindKmsRtpEndpointLib.cmake`, `FindKmsWebRtcEndpointLib.cmake`.
+
+# Export search paths if this is not the top-level project.
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if(HAS_PARENT)
+  set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+endif()
+
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
   message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")

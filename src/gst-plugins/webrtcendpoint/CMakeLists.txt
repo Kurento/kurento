@@ -167,13 +167,12 @@ set (REQUIRED_LIBS
   "nice ${NICE_REQUIRED}"
 )
 
-configure_file(
-  FindKmsWebRtcEndpointLib.cmake.in
-  ${CMAKE_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake
+configure_file(FindKmsWebRtcEndpointLib.cmake.in
+  ${PROJECT_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake
   @ONLY
 )
 install(
-  FILES ${CMAKE_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake
+  FILES ${PROJECT_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
 )
 
