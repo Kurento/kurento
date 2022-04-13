@@ -10,8 +10,18 @@ set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` 
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
-# Add CMake modules provided by the project.
+# Add CMake modules provided by this project.
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Kurento")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/sanitizers-cmake/cmake")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}") # find_package() search path for `FindKurentoUtils.cmake`.
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/KurentoUtils") # find_package() search path for `KurentoUtilsConfig.cmake`.
+
+# Export search paths if this is not the top-level project.
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if(HAS_PARENT)
+  set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" PARENT_SCOPE)
+endif()
 
 include(KurentoGitHelpers)
 get_git_version(PROJECT_VERSION 7.0.0-dev)
@@ -39,13 +49,12 @@ install(
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
 )
 
-configure_file(
-  FindKurentoUtils.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/FindKurentoUtils.cmake
+configure_file(FindKurentoUtils.cmake.in
+  ${PROJECT_BINARY_DIR}/FindKurentoUtils.cmake
   @ONLY
 )
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/FindKurentoUtils.cmake
+  FILES ${PROJECT_BINARY_DIR}/FindKurentoUtils.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
 )
 
