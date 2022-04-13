@@ -12,7 +12,7 @@
 		<relativePath/>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.16.6-SNAPSHOT</version>
+	<version>6.18.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -70,20 +70,20 @@
 		It's not critical that these versions coincide with the latest available,
 		but whenever an API update is done in those files and released,
 		these version numbers should get updated accordingly. -->
-		<version.kms-api-core>6.16.0</version.kms-api-core>
-		<version.kms-api-elements>6.16.0</version.kms-api-elements>
-		<version.kms-api-filters>6.16.0</version.kms-api-filters>
+		<version.kms-api-core>6.18.0-SNAPSHOT</version.kms-api-core>
+		<version.kms-api-elements>6.18.0-SNAPSHOT</version.kms-api-elements>
+		<version.kms-api-filters>6.18.0-SNAPSHOT</version.kms-api-filters>
 
 		<!-- Kurento extra modules -->
-		<version.kurento-chroma>6.15.0</version.kurento-chroma>
-		<version.kurento-crowddetector>6.15.0</version.kurento-crowddetector>
-		<version.kurento-markerdetector>6.15.0</version.kurento-markerdetector>
-		<version.kurento-platedetector>6.15.0</version.kurento-platedetector>
-		<version.kurento-pointerdetector>6.15.0</version.kurento-pointerdetector>
+		<version.kurento-chroma>6.18.0-SNAPSHOT</version.kurento-chroma>
+		<version.kurento-crowddetector>6.18.0-SNAPSHOT</version.kurento-crowddetector>
+		<version.kurento-markerdetector>6.18.0-SNAPSHOT</version.kurento-markerdetector>
+		<version.kurento-platedetector>6.18.0-SNAPSHOT</version.kurento-platedetector>
+		<version.kurento-pointerdetector>6.18.0-SNAPSHOT</version.kurento-pointerdetector>
 
 		<!-- Kurento miscellaneous tools -->
-		<version.kurento-utils-js>6.15.0</version.kurento-utils-js>
-		<version.kurento-maven-plugin>6.15.0</version.kurento-maven-plugin>
+		<version.kurento-utils-js>6.18.0-SNAPSHOT</version.kurento-utils-js>
+		<version.kurento-maven-plugin>6.18.0-SNAPSHOT</version.kurento-maven-plugin>
 
 		<!-- Kurento Java modules -->
 		<version.kurento-java>${project.parent.version}</version.kurento-java>
