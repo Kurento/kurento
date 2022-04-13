@@ -42,7 +42,9 @@ struct _KmsRtcpDemuxClass
 {
   GstElementClass element_class;
 
-  /* private */
+  /* signals */
+  void (*new_ssrc_pad) (KmsRtcpDemux *demux, guint ssrc, GstPad *pad);
+
   /* actions */
   guint32 (*get_local_rr_ssrc_pair) (KmsRtcpDemux * self, guint32 remote_ssrc);
 };
