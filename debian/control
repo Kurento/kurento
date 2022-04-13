@@ -6,10 +6,10 @@ Build-Depends: debhelper (>= 9),
  cmake,
  gstreamer1.5-plugins-bad,
  gstreamer1.5-plugins-good,
- kms-cmake-utils (>= 6.17.0),
- kms-core-dev (>= 6.17.0),
- kms-elements-dev (>= 6.17.0),
- kurento-module-creator (>= 6.17.0),
+ kms-cmake-utils (>= 6.18.0),
+ kms-core-dev (>= 6.18.0),
+ kms-elements-dev (>= 6.18.0),
+ kurento-module-creator (>= 6.18.0),
  libboost-filesystem-dev,
  libboost-system-dev,
  libglibmm-2.4-dev,
@@ -27,7 +27,7 @@ Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
  ca-certificates,
- kms-elements (>= 6.17.0),
+ kms-elements (>= 6.18.0),
  opencv-data
 Breaks: kms-filters-6.0
 Replaces: kms-filters-6.0
@@ -38,10 +38,10 @@ Package: kms-filters-dev
 Architecture: any
 Section: libdevel
 Depends: kms-filters (= ${binary:Version}),
- kms-cmake-utils (>= 6.17.0),
- kms-core-dev (>= 6.17.0),
- kms-elements-dev (>= 6.17.0),
- kurento-module-creator (>= 6.17.0),
+ kms-cmake-utils (>= 6.18.0),
+ kms-core-dev (>= 6.18.0),
+ kms-elements-dev (>= 6.18.0),
+ kurento-module-creator (>= 6.18.0),
  libboost-filesystem-dev,
  libboost-system-dev,
  libglibmm-2.4-dev,
