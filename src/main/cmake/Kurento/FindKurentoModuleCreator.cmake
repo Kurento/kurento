@@ -15,10 +15,10 @@ find_program(KurentoModuleCreator_EXECUTABLE NAMES kurento-module-creator
     scripts
 )
 
-message (STATUS "Found ${KurentoModuleCreator_EXECUTABLE}")
+message (STATUS "[FindKurentoModuleCreator.cmake] Found ${KurentoModuleCreator_EXECUTABLE}")
 
 # handle the QUIETLY and REQUIRED options
-find_package_handle_standard_args (KurentoModuleCreator 
+find_package_handle_standard_args (KurentoModuleCreator
   FOUND_VAR KurentoModuleCreator_FOUND
   REQUIRED_VARS KurentoModuleCreator_VERSION KurentoModuleCreator_EXECUTABLE
   VERSION_VAR KurentoModuleCreator_VERSION
