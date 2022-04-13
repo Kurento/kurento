@@ -7,9 +7,9 @@ Build-Depends: debhelper (>= 9),
  gstreamer1.5-plugins-bad,
  gstreamer1.5-plugins-base,
  gstreamer1.5-plugins-good,
- kms-core-dev (>= 6.17.0),
- kms-elements-dev (>= 6.17.0),
- kms-filters-dev (>= 6.17.0),
+ kms-core-dev (>= 6.18.0),
+ kms-elements-dev (>= 6.18.0),
+ kms-filters-dev (>= 6.18.0),
  libopencv-dev,
  libtesseract-dev
 Standards-Version: 4.0.0
@@ -25,9 +25,9 @@ Depends: ${shlibs:Depends},
  gstreamer1.5-plugins-bad,
  gstreamer1.5-plugins-base,
  gstreamer1.5-plugins-good,
- kms-core (>= 6.17.0),
- kms-elements (>= 6.17.0),
- kms-filters (>= 6.17.0)
+ kms-core (>= 6.18.0),
+ kms-elements (>= 6.18.0),
+ kms-filters (>= 6.18.0)
 Breaks: kms-platedetector-6.0
 Replaces: kms-platedetector-6.0
 Description: Kurento Plate Detector filter
@@ -36,9 +36,9 @@ Package: kms-platedetector-dev
 Architecture: any
 Section: libdevel
 Depends: kms-platedetector (= ${binary:Version}),
- kms-core-dev (>= 6.17.0),
- kms-elements-dev (>= 6.17.0),
- kms-filters-dev (>= 6.17.0),
+ kms-core-dev (>= 6.18.0),
+ kms-elements-dev (>= 6.18.0),
+ kms-filters-dev (>= 6.18.0),
  libopencv-dev,
  libtesseract-dev
 Breaks: kms-platedetector-6.0-dev
