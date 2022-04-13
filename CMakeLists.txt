@@ -10,6 +10,15 @@ set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` 
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
+# Add CMake modules provided by this project.
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}") # find_package() search path for `FindKmsJsonRpc.cmake`.
+
+# Export search paths if this is not the top-level project.
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if(HAS_PARENT)
+  set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+endif()
+
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
   message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")
@@ -44,24 +53,21 @@ set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
 set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}")
 set(requires "kmsjsoncpp")
 
-configure_file(
-  libjsonrpc.pc.in
-  ${CMAKE_CURRENT_BINARY_DIR}/libjsonrpc.pc
+configure_file(libjsonrpc.pc.in
+  ${PROJECT_BINARY_DIR}/libjsonrpc.pc
   @ONLY
 )
-configure_file(
-  FindKmsJsonRpc.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/FindKmsJsonRpc.cmake
-  @ONLY
-)
-
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/libjsonrpc.pc
+  FILES ${PROJECT_BINARY_DIR}/libjsonrpc.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
+configure_file(FindKmsJsonRpc.cmake.in
+  ${PROJECT_BINARY_DIR}/FindKmsJsonRpc.cmake
+  @ONLY
+)
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/FindKmsJsonRpc.cmake
+  FILES ${PROJECT_BINARY_DIR}/FindKmsJsonRpc.cmake
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
 )
 
