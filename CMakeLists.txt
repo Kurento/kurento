@@ -19,18 +19,30 @@ file(GLOB SUPPRESSIONS
   LIST_DIRECTORIES false
   "${CMAKE_CURRENT_SOURCE_DIR}/bin/valgrind/*.supp")
 
+
+
+# kms-cmake-utils
+# ===============
+
 add_subdirectory(kms-cmake-utils)
 
-# Add CMake modules provided by the project.
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-cmake-utils")
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-cmake-utils/cmake/Kurento")
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-cmake-utils/3rdparty/sanitizers-cmake/cmake")
+# Make an initial call to `create_check_target()`, so the test targets belong to
+# the global Makefile and not to the first subproject that calls it.
+include(TestHelpers)
+create_check_target()
+
+
+
+# kms-jsonrpc
+# ===========
 
 add_subdirectory(kms-jsonrpc)
-
-# Add CMake modules provided by the project.
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-jsonrpc")
 set(JSON_CPP_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-jsonrpc" CACHE PATH "Path prefix used to look for binary files" FORCE)
+
+
+
+# kurento-module-creator
+# ======================
 
 include(GenericFind)
 
@@ -40,7 +52,7 @@ include(GenericFind)
 #generic_find(LIBNAME KurentoModuleCreator VERSION ^7.0.0)
 
 if(NOT KurentoModuleCreator_FOUND)
-  message(STATUS "Generating module creator")
+  message(STATUS "Building kurento-module-creator")
   execute_process(COMMAND mvn package -DskipTests
       -DbuildDirectory=${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/kurento-module-creator
@@ -83,9 +95,10 @@ add_custom_target(kurento-module-creator
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/kurento-module-creator
 )
 
-# Add CMake modules provided by the project.
-list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator")
+# Add CMake modules provided by kurento-module-creator.
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/classes/Kurento")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator/classes/KurentoModuleCreator") # find_package() search path for `KurentoModuleCreatorConfig.cmake`.
+list(INSERT CMAKE_PROGRAM_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kurento-module-creator") # find_program() search path for `kurento-module-creator` binary (launcher script).
 
 find_package(Sanitizers MODULE)
 if(DEFINED SANITIZE_LINK_STATIC)
@@ -96,28 +109,35 @@ if(SANITIZERS_ENABLED)
   sanitizer_add_blacklist_file("bin/sanitizers/blacklist.txt")
 endif()
 
+
+
+# kms-core
+# ========
+
 add_subdirectory(kms-core)
 
-# Add CMake modules provided by the project.
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}")
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-core/src/server")
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-core/cmake/Kurento")
-
+# Add CMake settings provided by kms-core.
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-core")
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-core")
+
 set(GST_COMMONS_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-core" CACHE PATH "Path prefix used to look for binary files" FORCE)
+
 set(KMSCORE_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}" CACHE PATH "Path prefix used to look for binary files" FORCE)
 set(KMSCORE_SOURCE_DIR_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path prefix used to look for source files" FORCE)
 
 set(KURENTO_MODULES_DIR ${CMAKE_CURRENT_BINARY_DIR}/kms-core/src/server/kmd CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
 
+
+
+# kms-elements
+# ============
+
 add_subdirectory(kms-elements)
 
-# Add CMake modules provided by the project.
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-elements/src/server")
-
+# Add CMake settings provided by kms-elements.
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-elements")
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-elements")
+
 set(KMSELEMENTS_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}" CACHE PATH "Path prefix used to look for binary files" FORCE)
 set(KMSELEMENTS_SOURCE_DIR_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path prefix used to look for source files" FORCE)
 
@@ -126,17 +146,26 @@ set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/kms-
 set(KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-elements" CACHE PATH "Path prefix used to look for binary files" FORCE)
 set(KMS_WEBRTC_ENDPOINT_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-elements" CACHE PATH "Path prefix used to look for binary files" FORCE)
 
+
+
+# kms-filters
+# ===========
+
 add_subdirectory(kms-filters)
 
-# Add CMake modules provided by the project.
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-filters/src/server")
-
+# Add CMake settings provided by kms-filters.
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-filters")
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-filters")
+
 set(KMSFILTERS_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}" CACHE PATH "Path prefix used to look for binary files" FORCE)
 set(KMSFILTERS_SOURCE_DIR_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path prefix used to look for source files" FORCE)
 
 set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/kms-filters/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
+
+
+
+# kurento-media-server
+# ====================
 
 add_subdirectory(kurento-media-server)
 
@@ -144,6 +173,11 @@ add_custom_target(kurento-media-server-run
   COMMAND ${CMAKE_COMMAND} -E env GST_DEBUG=Kurento*:5 env KURENTO_MODULES_PATH=${CMAKE_CURRENT_BINARY_DIR} env GST_PLUGIN_PATH=${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/kurento-media-server/server/kurento-media-server --modules-config-path=${CMAKE_BINARY_DIR}/config --conf-file=${CMAKE_SOURCE_DIR}/kurento-media-server/kurento.conf.json
   DEPENDS kurento-media-server
 )
+
+
+
+# module/kms-opencv-plugin-sample
+# ===============================
 
 add_subdirectory(module/kms-opencv-plugin-sample)
 
