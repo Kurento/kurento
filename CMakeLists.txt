@@ -3,10 +3,21 @@ cmake_minimum_required(VERSION 3.0)
 project("kms-filters")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
+include(GNUInstallDirs) # CMAKE_INSTALL_*
+
 # Test configuration
 set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
+
+# Add CMake modules provided by this project.
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/src/server")
+
+# Export search paths if this is not the top-level project.
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if(HAS_PARENT)
+  set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+endif()
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
@@ -50,7 +61,6 @@ set(PACKAGE ${PROJECT_NAME})
 set(GETTEXT_PACKAGE "kms-filters")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 set(BINARY_LOCATION "http://files.openvidu.io/" CACHE STRING "Storage with test files (as an URI, http:// or file:///)")
-include(GNUInstallDirs)
 set(KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")
