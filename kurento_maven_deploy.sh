@@ -88,6 +88,8 @@ if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     #     )
     # fi
 
+    MVN_ARGS+=(-Psnapshot)
+
     MVN_GOALS+=(
         clean
         package

@@ -87,6 +87,7 @@ MVN_ARGS=(
     --quiet
     -Dmaven.test.skip=true
     -Pdeploy
+    -Psnapshot # GitHub is only used for snapshots, so we know this is needed.
 )
 
 # Install packages into the local cache.
