@@ -52,7 +52,7 @@ then
 elif [ -f pom.xml ]
 then
   log "Getting version from pom.xml" >&2
-  MAVEN_CMD=(mvn --batch-mode --non-recursive exec:exec -Dexec.executable=echo -Dexec.args="\${project.version}")
+  MAVEN_CMD=(mvn --batch-mode help:evaluate -Dexpression=project.version -DforceStdout)
   if [ -n "${MAVEN_SETTINGS:-}" ]; then
     MAVEN_CMD+=(--settings "$MAVEN_SETTINGS")
   fi
