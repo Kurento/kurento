@@ -1465,22 +1465,13 @@
 		</profile>
 	</profiles>
 
-	<!-- Repositories used to upload packages. -->
-	<distributionManagement>
-		<!--
-		<server> entries should exist with required credentials for each repo.
-		On CI, Jenkins injects them into settings.xml.
-		-->
-		<repository>
-			<id>sonatype-nexus</id>
-			<name>Sonatype Nexus (Maven Central)</name>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-		<snapshotRepository>
-			<id>kurento-github</id>
-			<name>Kurento GitHub Maven packages</name>
-			<url>https://maven.pkg.github.com/kurento/kurento-java</url>
-		</snapshotRepository>
-	</distributionManagement>
+	<!--
+	Kurento projects don't define a <distributionManagement> section with the
+	repositories used for deployment. Instead, CI injects a `settings.xml` file
+	with a "deploy" profile that configures maven-deploy-plugin through properties
+	`altSnapshotDeploymentRepository` and `altReleaseDeploymentRepository`.
+	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
+	<distributionManagement></distributionManagement>
+	-->
 
 </project>
