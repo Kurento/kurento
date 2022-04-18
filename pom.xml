@@ -13,11 +13,11 @@
 		Tool that generates code for RPC between the Kurento Media Server
 		and remote libraries.
 	</description>
-	<url>https://www.kurento.org/docs/${project.version}</url>
+	<url>https://www.kurento.org/</url>
 	<scm>
 		<url>https://github.com/Kurento/kurento-module-creator</url>
-		<connection>scm:git:git://github.com/Kurento/kurento-module-creator.git</connection>
-		<developerConnection>scm:git:git@github.com:Kurento/kurento-module-creator.git</developerConnection>
+		<connection>scm:git:https://github.com/Kurento/kurento-module-creator.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-module-creator.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
