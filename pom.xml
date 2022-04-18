@@ -15,11 +15,11 @@
 		Quality Assurance pom for Kurento Java projects.
 		Provides a profile for quality assurance, to be used during maven builds.
 	</description>
-	<url>https://www.kurento.org/docs/${project.version}</url>
+	<url>https://www.kurento.org/</url>
 	<scm>
 		<url>https://github.com/Kurento/kurento-qa-pom</url>
-		<connection>scm:git:git://github.com/Kurento/kurento-qa-pom.git</connection>
-		<developerConnection>scm:git:git@github.com:Kurento/kurento-qa-pom.git</developerConnection>
+		<connection>scm:git:https://github.com/Kurento/kurento-qa-pom.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-qa-pom.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
