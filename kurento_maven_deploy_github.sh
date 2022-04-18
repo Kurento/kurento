@@ -82,21 +82,18 @@ function delete_github_version {
 # Deploy to GitHub
 # ================
 
-MVN_ARGS=(
-    --batch-mode
-    --quiet
-    -Dmaven.test.skip=true
-    -Pdeploy
-    -Psnapshot # GitHub is only used for snapshots, so we know this is needed.
-)
-
 # Install packages into the local cache.
 # We'll be deleting versions from the remote repository, so all dependencies
 # must be already available locally when Maven runs.
-mvn "${MVN_ARGS[@]}" clean install
+# This assumes that $MVN_COMMAND is a command like `mvn clean package deploy`,
+# so omitting the last component would run through the compilation phase.
+MVN_COMMAND_INSTALL=("${MVN_COMMAND[@]}")
+unset 'MVN_COMMAND_INSTALL[-1]' # Drop the last item.
+MVN_COMMAND_INSTALL+=(install) # Add the "install" phase instead.
+"${MVN_COMMAND_INSTALL[@]}" # Run the new command.
 
 # For each submodule, go into its path and delete the current GitHub version.
-MVN_DIRS=($(mvn "${MVN_ARGS[@]}" exec:exec -Dexec.executable=pwd))
+mapfile -t MVN_DIRS < <(mvn --batch-mode --quiet exec:exec -Dexec.executable=pwd)
 for MVN_DIR in "${MVN_DIRS[@]}"; do
     pushd "$MVN_DIR"
     delete_github_version
