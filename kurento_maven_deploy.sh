@@ -69,8 +69,12 @@ MVN_ARGS+=(
     -Pdeploy
 )
 
-# Intermediate Maven goals that should run before `deploy`.
+# Intermediate Maven goals that should run before the "deploy" goal.
 MVN_GOALS=(clean)
+
+# Fully-qualified goal name for the "deploy" plugin.
+# Needed so that we can use newer versions than the Maven default.
+MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M2:deploy"
 
 PROJECT_VERSION="$(kurento_get_version.sh)" || {
   log "ERROR: Command failed: kurento_get_version"
@@ -90,7 +94,7 @@ if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     MVN_CMD=(mvn)
     MVN_CMD+=("${MVN_ARGS[@]}")
     MVN_CMD+=("${MVN_GOALS[@]}")
-    MVN_CMD+=(deploy)
+    MVN_CMD+=("$MVN_GOAL_DEPLOY")
 
     kurento_maven_deploy_github.sh "${MVN_CMD[@]}" || {
         log "ERROR: Command failed: kurento_maven_deploy_github"
@@ -117,7 +121,7 @@ else
         MVN_GOALS+=(package) # "sign" requires an already packaged artifact.
         MVN_GOALS+=(gpg:sign)
 
-        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" deploy || {
+        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
             log "ERROR: Command failed: mvn deploy (signed release)"
             exit 1
         }
@@ -143,7 +147,7 @@ else
     else
         log "Artifact signing on deploy is DISABLED"
 
-        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" deploy || {
+        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" "$MVN_GOAL_DEPLOY" || {
             log "ERROR: Command failed: mvn deploy (unsigned release)"
             exit 1
         }
