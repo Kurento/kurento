@@ -118,8 +118,8 @@ cat >pom.xml <<EOF
   <url>https://www.kurento.org/docs/\${project.version}</url>
   <scm>
     <url>https://github.com/Kurento/${PROJECT_NAME}</url>
-    <connection>scm:git:git://github.com/Kurento/${PROJECT_NAME}.git</connection>
-    <developerConnection>scm:git:git@github.com:Kurento/${PROJECT_NAME}.git</developerConnection>
+    <connection>scm:git:https://github.com/Kurento/${PROJECT_NAME}.git</connection>
+    <developerConnection>scm:git:ssh://github.com/Kurento/${PROJECT_NAME}.git</developerConnection>
   </scm>
 
   <!-- Organization-level information -->
@@ -210,13 +210,6 @@ cat >pom.xml <<EOF
         </executions>
       </plugin>
     </plugins>
-    <extensions>
-      <extension>
-        <groupId>org.kuali.maven.wagons</groupId>
-        <artifactId>maven-s3-wagon</artifactId>
-        <version>1.2.1</version>
-      </extension>
-    </extensions>
   </build>
   <profiles>
     <!-- Kurento CI requires these profiles to exist -->
