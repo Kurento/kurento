@@ -162,19 +162,17 @@
 	</build>
 
 	<!--
-	Maven has the limitation that it doesn't allow to define new <extensions>
-	as part of a <profile>, which means that we cannot easily inject the
-	'maven-s3-wagon' extension when the profile 'deploy' gets enabled.
-
-	There is a clever trick to overcome this limitation: have an harmless
-	extension added by default, and then swap it with the actually desired one,
-	by defining its Maven coordinates as properties in the profile.
-	Source: https://stackoverflow.com/questions/17639778/maven-3-profile-with-extensions/36253007#36253007
-
-	The default extension we are using here is 'org.apache.maven.wagon/wagon-file/1.0',
-	because it is already installed in any Ubuntu system where either 'maven' or
-	'maven-debian-helper' is installed, so it doesn't introduce additional
-	build dependencies (field *Build-Depends* in the 'debian/control' file).
+	Kurento projects don't define a <distributionManagement> section with repositories
+	used for deployment. Instead, CI injects a `settings.xml` file with a "deploy"
+	profile, which configures maven-deploy-plugin through the properties
+	`altSnapshotDeploymentRepository` and `altReleaseDeploymentRepository`.
+	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
+	<distributionManagement>
+		<repository>
+			<id>example-deploy</id>
+			<url>https://example.com/deploy</url>
+		</repository>
+	</distributionManagement>
 	-->
 	<profiles>
 		<profile>
