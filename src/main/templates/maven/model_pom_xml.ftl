@@ -67,4 +67,28 @@ pom.xml
 		</extensions>
 	</build>
 
+	<!--
+	Repositories used to upload packages.
+	WARNING: This section must be kept in sync with the same in
+	kurento-java/kurento-parent-pom/pom.xml
+	-->
+	<distributionManagement>
+		<!--
+		<server> entries should exist with credentials for each repo.
+		* On CI, Jenkins injects them into `settings.xml`.
+		* On a local dev machine, these should be added to either of
+		  `$HOME/.m2/settings.xml` or `/etc/maven/settings.xml`.
+		-->
+		<repository>
+			<id>sonatype-nexus</id>
+			<name>Sonatype Nexus (Maven Central)</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>kurento-github</id>
+			<name>Kurento GitHub Maven packages</name>
+			<url>https://maven.pkg.github.com/kurento/kurento-java</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 </project>
