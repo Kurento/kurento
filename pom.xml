@@ -165,10 +165,6 @@
 				</plugins>
 			</build>
 		</profile>
-		<profile>
-			<id>deploy</id>
-			<!-- Profile required by CI script: kurento_maven_deploy -->
-		</profile>
 	</profiles>
 
 	<modules>
