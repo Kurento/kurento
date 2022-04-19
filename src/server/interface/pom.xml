@@ -25,7 +25,7 @@
         <scm>
           <url>https://github.com/Kurento/kms-platedetector</url>
           <connection>scm:git:https://github.com/Kurento/kms-platedetector.git</connection>
-          <developerConnection>scm:git:ssh://git@github.com:Kurento/kms-platedetector.git</developerConnection>
+          <developerConnection>scm:git:ssh://github.com/Kurento/kms-platedetector.git</developerConnection>
         </scm>
 
 </project>
