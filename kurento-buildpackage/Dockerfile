@@ -93,15 +93,13 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         coreutils \
  && rm -rf /var/lib/apt/lists/*
 
-# Install 'git-buildpackage'
-# WARNING: Don't update the GBP version.
-# gbp>=0.9.14 requires git>=2.10, because is uses `--no-show-signature`:
-# https://raw.githubusercontent.com/git/git/master/Documentation/RelNotes/2.10.0.txt
+# FIXME: Install old version because newer ones are not compatible.
+# gbp>=0.9.14 requires git>=2.10, because is uses `git --no-show-signature`.
 # Workaround: install gbp==0.9.13... but gbp between 0.9.11 and 0.9.13 had a
-# broken install script! :-(
-# So, GBP version can be updated only when this image bases from 18.04/Bionic.
-RUN pip3 --no-cache-dir install --upgrade 'gbp == 0.9.10' \
- || pip3                install --upgrade 'gbp == 0.9.10'
+# broken install script! 0.9.10 is the most recent that can be installed :-(
+# GBP version can be updated only when this image bases from 18.04/Bionic.
+RUN pip3 install --upgrade nosexcover \
+ && pip3 install --upgrade --use-deprecated=legacy-resolver gbp==0.9.10
 
 # Configure Git user, which will appear in the Debian Changelog files
 # (this is needed by git-buildpackage)
