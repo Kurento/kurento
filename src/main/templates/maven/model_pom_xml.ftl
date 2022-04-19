@@ -68,17 +68,12 @@ pom.xml
 	</build>
 
 	<!--
-	Kurento projects don't define a <distributionManagement> section with repositories
-	used for deployment. Instead, CI injects a `settings.xml` file with a "deploy"
-	profile, which configures maven-deploy-plugin through the properties
+	Kurento projects don't define a <distributionManagement> section with the
+	repositories used for deployment. Instead, CI injects a `settings.xml` file
+	with a "deploy" profile that configures maven-deploy-plugin through properties
 	`altSnapshotDeploymentRepository` and `altReleaseDeploymentRepository`.
 	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
-	<distributionManagement>
-		<repository>
-			<id>example-deploy</id>
-			<url>https://example.com/deploy</url>
-		</repository>
-	</distributionManagement>
+	<distributionManagement></distributionManagement>
 	-->
 
 </project>
