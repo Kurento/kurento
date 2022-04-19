@@ -93,7 +93,11 @@ MVN_COMMAND_INSTALL+=(install) # Add the "install" phase instead.
 "${MVN_COMMAND_INSTALL[@]}" # Run the new command.
 
 # For each submodule, go into its path and delete the current GitHub version.
-mapfile -t MVN_DIRS < <(mvn --batch-mode --quiet exec:exec -Dexec.executable=pwd)
+# shellcheck disable=SC2207
+MVN_DIRS=( $(mvn --batch-mode --quiet exec:exec -Dexec.executable=pwd) ) || {
+    log "ERROR: Command failed: mvn exec pwd"
+    exit 1
+}
 for MVN_DIR in "${MVN_DIRS[@]}"; do
     pushd "$MVN_DIR"
     delete_github_version
