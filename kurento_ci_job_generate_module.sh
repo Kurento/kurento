@@ -133,7 +133,7 @@ fi
 
 RUN_COMMANDS=(
     "dpkg --install ./*.*deb || { apt-get update ; apt-get install --fix-broken --no-remove --yes; }"
-    "find . -iname '*.jar' -print0 | xargs -0 -P0 -I{} mvn --batch-mode install:install-file -Dfile='{}'"
+    "find . -iname '*.jar' -print0 | xargs --no-run-if-empty -0 -P0 -I{} mvn --batch-mode install:install-file -Dfile='{}'"
     "$GEN_SCRIPT"
 )
 
