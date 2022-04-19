@@ -25,7 +25,7 @@
         <scm>
           <url>https://github.com/Kurento/kms-filters</url>
           <connection>scm:git:https://github.com/Kurento/kms-filters.git</connection>
-          <developerConnection>scm:git:ssh://git@github.com:Kurento/kms-filters.git</developerConnection>
+          <developerConnection>scm:git:ssh://github.com/Kurento/kms-filters.git</developerConnection>
         </scm>
 
 </project>
