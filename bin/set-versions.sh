@@ -55,10 +55,7 @@
 #/   message to start development on a new project version after a release.
 #/
 #/   If neither '--release' nor '--new-development' are given, the commit
-#/   message will be "Bump development version to <Version>", because this
-#/   script doesn't know if you are changing the version number after a release,
-#/   or just as part of normal development (e.g. according to SemVer, after
-#/   adding a new feature you should bump the Minor version number).
+#/   message will simply be "Update version to <Version>".
 #/
 #/   Optional. Default: Disabled.
 #/
