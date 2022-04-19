@@ -154,7 +154,7 @@ Edit one of the mentioned settings files, and include this:
      ...
      <profiles>
        <profile>
-         <id>snapshots</id>
+         <id>snapshot</id>
          <repositories>
            <repository>
              <id>kurento-github-public</id>
@@ -194,15 +194,15 @@ Edit one of the mentioned settings files, and include this:
    anonymous downloads from their Maven package registry.
    More details here: https://github.community/t/download-from-github-package-registry-without-authentication/14407/111
 
-Then use the ``-Psnapshots`` argument in your next Maven run, to enable the new profile. For example:
+Then use the ``-Psnapshot`` argument in your next Maven run, to enable the new profile. For example:
 
 .. code-block:: shell
 
-   mvn -Psnapshots clean package
+   mvn -Psnapshot clean package
 
 .. code-block:: shell
 
-   mvn dependency:get -Psnapshots -Dartifact='org.kurento:kurento-client:6.16.4-SNAPSHOT'
+   mvn dependency:get -Psnapshot -Dartifact='org.kurento:kurento-client:6.16.4-SNAPSHOT'
 
 
 

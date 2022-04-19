@@ -65,7 +65,7 @@ langdoc-client-java: langdoc-init
 	cd kurento-java
 	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JAVA|"
 	cd kurento-client || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
-	mvn --batch-mode --quiet -Psnapshots clean package \
+	mvn --batch-mode --quiet -Psnapshot clean package \
 		-DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
 	mvn --batch-mode --quiet javadoc:javadoc \
 		-DreportOutputDirectory="$(DESTPATH)" -DdestDir="client-javadoc" \
