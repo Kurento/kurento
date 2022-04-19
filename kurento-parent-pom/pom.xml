@@ -21,11 +21,11 @@
 		Parent POM for all Kurento Java projects.
 		Provides default properties, version numbers, and build configurations.
 	</description>
-	<url>https://www.kurento.org/docs/${version.kurento-java}</url>
+	<url>https://www.kurento.org/</url>
 	<scm>
-		<url>${kurento-java.scm.url}</url>
-		<connection>${kurento-java.scm.connection}</connection>
-		<developerConnection>${kurento-java.scm.developerConnection}</developerConnection>
+		<url>https://github.com/Kurento/kurento-java</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-java.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-java.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
@@ -233,10 +233,6 @@
 
 		<!-- maven-assembly-plugin -->
 		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
-
-		<kurento-java.scm.url>https://github.com/Kurento/kurento-java</kurento-java.scm.url>
-		<kurento-java.scm.connection>scm:git:git://github.com/Kurento/kurento-java.git</kurento-java.scm.connection>
-		<kurento-java.scm.developerConnection>scm:git:git@github.com:Kurento/kurento-java.git</kurento-java.scm.developerConnection>
 	</properties>
 
 	<dependencyManagement>
