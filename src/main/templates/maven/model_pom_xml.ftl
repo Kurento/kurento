@@ -23,6 +23,12 @@ pom.xml
 
 	<!-- Project configuration -->
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+	</properties>
+
 <#if module.imports[0]??>
 	<dependencies>
 <#list module.imports as import>
