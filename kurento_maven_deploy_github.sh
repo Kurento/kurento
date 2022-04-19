@@ -44,15 +44,11 @@ MVN_COMMAND=("$@")
 # Requires $GITHUB_TOKEN with `read:packages` and `delete:packages` scopes.
 
 function delete_github_version {
-    local PROJECT_NAME; PROJECT_NAME="$(
-        mvn --batch-mode --quiet --non-recursive \
-            exec:exec -Dexec.executable=echo -Dexec.args='${project.groupId}.${project.artifactId}'
-    )"
+    local GROUPID; GROUPID="$(mvn --batch-mode --quiet help:evaluate -Dexpression=project.groupId -DforceStdout)"
+    local ARTIFACTID; ARTIFACTID="$(mvn --batch-mode --quiet help:evaluate -Dexpression=project.artifactId -DforceStdout)"
+    local PROJECT_NAME="${GROUPID}.${ARTIFACTID}"
 
-    local PROJECT_VERSION; PROJECT_VERSION="$(
-        mvn --batch-mode --quiet --non-recursive \
-            exec:exec -Dexec.executable=echo -Dexec.args='${project.version}'
-    )"
+    local PROJECT_VERSION; PROJECT_VERSION="$(mvn --batch-mode --quiet help:evaluate -Dexpression=project.version -DforceStdout)"
 
     log "INFO: Reading all versions of '${PROJECT_NAME}' from GitHub."
     local API_VERSIONS_JSON; API_VERSIONS_JSON="$(
@@ -82,19 +78,20 @@ function delete_github_version {
 # Deploy to GitHub
 # ================
 
+# Prepare a base command that doesn't include the "deploy" goal.
+# This assumes that $MVN_COMMAND is a command like `mvn clean package deploy`,
+# so omitting the last component would run through the compilation phase.
+MVN_COMMAND_BASE=("${MVN_COMMAND[@]}")
+unset 'MVN_COMMAND_BASE[-1]' # Drop the last item.
+
 # Install packages into the local cache.
 # We'll be deleting versions from the remote repository, so all dependencies
 # must be already available locally when Maven runs.
-# This assumes that $MVN_COMMAND is a command like `mvn clean package deploy`,
-# so omitting the last component would run through the compilation phase.
-MVN_COMMAND_INSTALL=("${MVN_COMMAND[@]}")
-unset 'MVN_COMMAND_INSTALL[-1]' # Drop the last item.
-MVN_COMMAND_INSTALL+=(install) # Add the "install" phase instead.
-"${MVN_COMMAND_INSTALL[@]}" # Run the new command.
+"${MVN_COMMAND_BASE[@]}" install
 
 # For each submodule, go into its path and delete the current GitHub version.
 # shellcheck disable=SC2207
-MVN_DIRS=( $(mvn --batch-mode --quiet exec:exec -Dexec.executable=pwd) ) || {
+MVN_DIRS=( $("${MVN_COMMAND_BASE[@]}" --quiet exec:exec -Dexec.executable=pwd) ) || {
     log "ERROR: Command failed: mvn exec pwd"
     exit 1
 }
