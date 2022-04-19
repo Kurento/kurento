@@ -1,33 +1,36 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <url>http://moduleUrl</url>
-  <packaging>war</packaging>
+	<modelVersion>4.0.0</modelVersion>
 
-  <properties>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <custom_prop>custom_value</custom_prop>
-  </properties>
+	<url>http://moduleUrl</url>
+	<packaging>war</packaging>
 
-  <newTag>newValue</newTag>
+	<properties>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<custom_prop>custom_value</custom_prop>
+	</properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>fake_dependency</groupId>
-      <artifactId>fake_dependency</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-  </dependencies>
+	<newTag>newValue</newTag>
 
-  <build>
-     <plugins>
-       <plugin>
-         <groupId>fake_plugin</groupId>
-         <artifactId>kurento-maven-plugin</artifactId>
-         <version>0.0.21-SNAPSHOT</version>
-       </plugin>
-     </plugins>
-   </build>
+	<dependencies>
+		<dependency>
+			<groupId>fake_dependency</groupId>
+			<artifactId>fake_dependency</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+	</dependencies>
 
- </project>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>fake_plugin</groupId>
+				<artifactId>kurento-maven-plugin</artifactId>
+				<version>0.0.21-SNAPSHOT</version>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
