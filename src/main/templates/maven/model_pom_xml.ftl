@@ -32,7 +32,7 @@ pom.xml
 			<artifactId>${import.module.code.kmd.java.mavenArtifactId}</artifactId>
 			<version>${import.mavenVersion}</version>
 		</dependency>
-<#elseif import.name != "elements" && import.name != "filters">
+<#else>
 		<dependency>
 			<groupId>${import.module.code.api.java.mavenGroupId}</groupId>
 			<artifactId>${import.module.code.api.java.mavenArtifactId}</artifactId>
