@@ -21,8 +21,8 @@
 	</description>
 	<scm>
 		<url>https://github.com/Kurento/kurento-tutorial-test</url>
-		<connection>scm:git:git://github.com/Kurento/kurento-tutorial-test.git</connection>
-		<developerConnection>scm:git:git@github.com:Kurento/kurento-tutorial-test.git</developerConnection>
+		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-test.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-tutorial-test.git</developerConnection>
 	</scm>
 
 	<!-- Project configuration -->

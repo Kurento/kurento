@@ -30,7 +30,7 @@
 	<scm>
 		<url>https://github.com/Kurento/kurento-tutorial-test</url>
 		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-test</connection>
-		<developerConnection>scm:git://git@github.com:Kurento/kurento-tutorial-test</developerConnection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-tutorial-test</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
