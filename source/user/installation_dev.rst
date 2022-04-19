@@ -110,6 +110,19 @@ This adds access to development builds only for a single project. Open the proje
          </snapshots>
        </repository>
      </repositories>
+     <pluginRepositories>
+       <pluginRepository>
+         <id>kurento-github-public</id>
+         <name>Kurento GitHub Maven packages (public access)</name>
+         <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+         <releases>
+           <enabled>false</enabled>
+         </releases>
+         <snapshots>
+           <enabled>true</enabled>
+         </snapshots>
+       </pluginRepository>
+     </pluginRepositories>
      ...
    </project>
 
@@ -155,6 +168,19 @@ Edit one of the mentioned settings files, and include this:
              </snapshots>
            </repository>
          </repositories>
+         <pluginRepositories>
+           <pluginRepository>
+             <id>kurento-github-public</id>
+             <name>Kurento GitHub Maven packages (public access)</name>
+             <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+             <releases>
+               <enabled>false</enabled>
+             </releases>
+             <snapshots>
+               <enabled>true</enabled>
+             </snapshots>
+           </pluginRepository>
+         </pluginRepositories>
        </profile>
      </profiles>
      ...
