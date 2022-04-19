@@ -11,9 +11,8 @@
     },
     "api": {
       "java": {
-        "packageName": "org.kurento.client",
         "mavenGroupId": "org.kurento",
-        "mavenArtifactId": "kurento-client"
+        "mavenArtifactId": "kms-api-elements"
       },
       "js": {
         "nodeName": "kurento-client-elements",
