@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Maven coordinates -->
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-module-creator</artifactId>
 	<version>6.18.0-SNAPSHOT</version>
@@ -10,8 +14,8 @@
 	<!-- Project-level information -->
 	<name>Kurento Module Creator</name>
 	<description>
-		Tool that generates code for RPC between the Kurento Media Server
-		and remote libraries.
+		Tool that generates code for RPC between the Kurento Media Server and
+		remote libraries.
 	</description>
 	<url>https://www.kurento.org/</url>
 	<scm>
@@ -105,7 +109,7 @@
 		</dependency>
 	</dependencies>
 
-    <build>
+	<build>
 		<directory>${buildDirectory}</directory>
 		<resources>
 			<resource>
