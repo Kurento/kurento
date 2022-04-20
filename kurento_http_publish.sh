@@ -43,7 +43,7 @@ export -f upload
 export -f mkcol
 
 # Params management
-[ -z "$BUILDS_HOST" ] && BUILDS_HOST=builds.kurento.org
+[ -z "$BUILDS_HOST" ] && BUILDS_HOST=builds.openvidu.io
 [ -z "$FILES" ] && exit 1
 if [ -n "$HTTP_KEY$HTTP_CERT" ]; then
   export CURL="curl --insecure --key $HTTP_KEY --cert $HTTP_CERT"
