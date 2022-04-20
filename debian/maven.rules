@@ -1,3 +1,2 @@
 junit junit jar s/4\..*/4.x/ * *
-org.apache.maven.wagon wagon-file jar s/.*/debian/ * *
 org.kurento kurento-module-creator jar * * *

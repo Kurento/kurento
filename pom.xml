@@ -64,11 +64,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<buildDirectory>${project.basedir}/target</buildDirectory>
-
-		<!-- See explanation below -->
-		<extension.groupId>org.apache.maven.wagon</extension.groupId>
-		<extension.artifactId>wagon-file</extension.artifactId>
-		<extension.version>1.0</extension.version>
 	</properties>
 
 	<dependencies>
@@ -158,13 +153,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<extensions>
-			<extension>
-				<groupId>${extension.groupId}</groupId>
-				<artifactId>${extension.artifactId}</artifactId>
-				<version>${extension.version}</version>
-			</extension>
-		</extensions>
 	</build>
 
 	<!--
@@ -175,15 +163,5 @@
 	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
 	<distributionManagement></distributionManagement>
 	-->
-	<profiles>
-		<profile>
-			<id>deploy</id>
-			<properties>
-				<extension.groupId>org.kuali.maven.wagons</extension.groupId>
-				<extension.artifactId>maven-s3-wagon</extension.artifactId>
-				<extension.version>1.2.1</extension.version>
-			</properties>
-		</profile>
-	</profiles>
 
 </project>
