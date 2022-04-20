@@ -59,8 +59,6 @@ fi
 MVN_ARGS+=(
     --batch-mode
     -Dmaven.test.skip=true
-    # -Dmaven.wagon.http.ssl.insecure=true
-    # -Dmaven.wagon.http.ssl.allowall=true
     -Pdeploy
 )
 
