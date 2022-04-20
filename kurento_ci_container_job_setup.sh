@@ -240,8 +240,6 @@ docker run --pull always \
   -e "FILES=$FILES" \
   -e "BUILDS_HOST=$BUILDS_HOST" \
   -e "S3_BUCKET_NAME=$S3_BUCKET_NAME" \
-  $([ "${AWS_ACCESS_KEY_ID}x" != "x" ] && echo "-e S3_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID") \
-  $([ "${AWS_SECRET_ACCESS_KEY}x" != "x" ] && echo "-e S3_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY") \
   $([ "${AWS_ACCESS_KEY_ID}x" != "x" ] && echo "-e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID") \
   $([ "${AWS_SECRET_ACCESS_KEY}x" != "x" ] && echo "-e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY") \
   -e "S3_HOSTNAME=$S3_HOSTNAME" \
