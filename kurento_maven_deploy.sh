@@ -16,6 +16,21 @@ set -o xtrace
 
 
 
+# Verify project
+# ==============
+
+[[ -f pom.xml ]] || {
+    log "ERROR: File not found: pom.xml"
+    exit 1
+}
+
+kurento_check_version.sh false || {
+    log "ERROR: Command failed: kurento_check_version (tagging disabled)"
+    exit 1
+}
+
+
+
 # MAVEN_SETTINGS path
 #   Path to settings.xml file used by maven
 #
@@ -39,10 +54,6 @@ if [[ -n "$MAVEN_SETTINGS" ]]; then
     MVN_ARGS+=(--settings "$MAVEN_SETTINGS")
 fi
 [[ -z "${SIGN_ARTIFACTS:-}" ]] && SIGN_ARTIFACTS="true"
-
-# needed env vars
-# export AWS_ACCESS_KEY_ID="$UBUNTU_PRIV_S3_ACCESS_KEY_ID"
-# export AWS_SECRET_ACCESS_KEY="$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID"
 
 # Maven arguments that are common to all commands.
 MVN_ARGS+=(
