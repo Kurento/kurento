@@ -16,18 +16,6 @@ set -o xtrace
 
 
 
-# MAVEN_KURENTO_SNAPSHOTS url
-#   URL of Kurento repository for maven snapshots
-#
-# MAVEN_KURENTO_RELEASES url
-#   URL of Kurento repository for maven releases
-#
-# MAVEN_SONATYPE_NEXUS_STAGING url
-#   URL of Central staging repositories.
-#   Pass it empty to avoid deploying to nexus (private projects):
-#   export MAVEN_SONATYPE_NEXUS_STAGING=
-#   kurento_merge_java_project.sh
-
 kurento_check_version.sh false || {
   log "ERROR: Command failed: kurento_check_version (tagging disabled)"
   exit 1
@@ -58,19 +46,13 @@ cd java || {
   exit 1
 }
 
-# Deploy to Kurento Archiva (both Development and Release versions)
-export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
-export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
-kurento_maven_deploy.sh || {
-  log "ERROR: Command failed: kurento_maven_deploy (Kurento)"
-  exit 1
-}
 
-# Deploy to Maven Central (only Release versions)
-export SNAPSHOT_REPOSITORY=
-export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
+
+# Deploy project
+# --------------
+
 kurento_maven_deploy.sh || {
-  log "ERROR: Command failed: kurento_maven_deploy (Sonatype)"
+  log "ERROR: Command failed: kurento_maven_deploy"
   exit 1
 }
 

@@ -17,15 +17,6 @@ set -o xtrace
 # KURENTO_PROJECT string
 #   Name of the project to be merged
 #
-# MAVEN_KURENTO_SNAPSHOTS url
-#   URL of Kurento repository for maven snapshots
-#
-# MAVEN_KURENTO_RELEASES url
-#   URL of Kurento repository for maven releases
-#
-# MAVEN_SONATYPE_NEXUS_STAGING url
-#   URL of Central staging repositories
-#
 # BOWER_REPO_NAME string
 #   Name of the Git repo which contains Bower files
 
@@ -70,19 +61,13 @@ kurento_mavenize_js_project.sh "$KURENTO_PROJECT" || {
   exit 1
 }
 
-# Deploy to Kurento repositories
-export SNAPSHOT_REPOSITORY="$MAVEN_S3_KURENTO_SNAPSHOTS"
-export RELEASE_REPOSITORY="$MAVEN_S3_KURENTO_RELEASES"
-kurento_maven_deploy.sh || {
-  log "ERROR: Command failed: kurento_maven_deploy (Kurento)"
-  exit 1
-}
 
-# Deploy to Maven Central (only release)
-export SNAPSHOT_REPOSITORY=""
-export RELEASE_REPOSITORY="$MAVEN_SONATYPE_NEXUS_STAGING"
+
+# Deploy project
+# --------------
+
 kurento_maven_deploy.sh || {
-  log "ERROR: Command failed: kurento_maven_deploy (Sonatype)"
+  log "ERROR: Command failed: kurento_maven_deploy"
   exit 1
 }
 

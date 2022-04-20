@@ -27,18 +27,7 @@
 #/ Environment variables
 #/ ---------------------
 #/
-#/ MAVEN_KURENTO_SNAPSHOTS=<Url>
-#/
-#/   URL of Kurento repository for maven snapshots.
-#/
-#/ MAVEN_KURENTO_RELEASES=<Url>
-#/
-#/   URL of Kurento repository for maven releases.
-#/
-#/ MAVEN_SONATYPE_NEXUS_STAGING=<Url>
-#/
-#/   URL of Central staging repositories.
-#/   Pass it empty to avoid deploying to nexus (private projects).
+#/ None.
 
 
 
@@ -130,21 +119,10 @@ kurento_check_version.sh false || {
 # Deploy project
 # --------------
 
-# Kurento repositories
-#
-# TODO: For now, this is commented out as we're migrating to GitHub Repo.
-# If all goes well, this can be deleted and all of MAVEN_S3_KURENTO_SNAPSHOTS,
-# MAVEN_S3_KURENTO_RELEASES, and MAVEN_SONATYPE_NEXUS_STAGING can be deleted
-# from these scripts and from CI config.
-#
-# export SNAPSHOT_REPOSITORY="$MAVEN_S3_KURENTO_SNAPSHOTS"
-# export RELEASE_REPOSITORY="$MAVEN_S3_KURENTO_RELEASES"
-# kurento_maven_deploy.sh
-
-# Maven Central (only releases)
-export SNAPSHOT_REPOSITORY=""
-export RELEASE_REPOSITORY="$MAVEN_SONATYPE_NEXUS_STAGING"
-kurento_maven_deploy.sh
+kurento_maven_deploy.sh || {
+  log "ERROR: Command failed: kurento_maven_deploy"
+  exit 1
+}
 
 # Deploy to Kurento Builds only when it is release
 VERSION="$(kurento_get_version.sh)"

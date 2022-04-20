@@ -19,14 +19,6 @@ set -o xtrace
 # MAVEN_SETTINGS path
 #   Path to settings.xml file used by maven
 #
-# SNAPSHOT_REPOSITORY url
-#   Repository used to deploy snapshot artifacts.
-#   If empty, will use Maven settings from `<distributionManagement>`.
-#
-# RELEASE_REPOSITORY url
-#   Repository used to deploy release artifacts.
-#   If empty, will use Maven settings from `<distributionManagement>`.
-#
 # SIGN_ARTIFACTS true | false
 #   Whether to sign artifacts before deployment. Default value is true
 #
@@ -34,14 +26,6 @@ set -o xtrace
 # Path information
 # BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # PATH="${BASEPATH}:${PATH}"
-
-# Get command line parameters for backward compatibility
-# [[ -n "${1:-}" ]] && MAVEN_SETTINGS="$1"
-# [[ -n "${2:-}" ]] && {
-#     SNAPSHOT_REPOSITORY="$2"
-#     RELEASE_REPOSITORY="$2"
-# }
-# [[ -n "${3:-}" ]] && SIGN_ARTIFACTS="$3"
 
 MVN_ARGS=()
 
@@ -82,12 +66,6 @@ log "Build and deploy version: $PROJECT_VERSION"
 if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     log "Version to deploy is SNAPSHOT"
 
-    # if [[ -n "${SNAPSHOT_REPOSITORY:-}" ]]; then
-    #     MVN_ARGS+=(
-    #         -DaltSnapshotDeploymentRepository="$SNAPSHOT_REPOSITORY"
-    #     )
-    # fi
-
     MVN_ARGS+=(-Psnapshot)
 
     MVN_GOALS+=(
@@ -108,12 +86,6 @@ else
     log "Version to deploy is RELEASE"
 
     MVN_ARGS+=(-Pkurento-release)
-
-    # if [[ -n "${RELEASE_REPOSITORY:-}" ]]; then
-    #     MVN_ARGS+=(
-    #         -DaltReleaseDeploymentRepository="$RELEASE_REPOSITORY"
-    #     )
-    # fi
 
     MVN_GOALS=(
         clean
