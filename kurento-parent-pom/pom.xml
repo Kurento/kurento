@@ -191,8 +191,6 @@
 		<version.sonar.plugin>3.7.0.1746</version.sonar.plugin>
 		<version.source.plugin>3.2.1</version.source.plugin>
 		<version.surefire.plugin>3.0.0-M5</version.surefire.plugin>
-		<version.wagon.s3.plugin>1.2.1</version.wagon.s3.plugin>
-		<version.wagon.ssh.plugin>3.4.1</version.wagon.ssh.plugin>
 		<version.war.plugin>3.3.1</version.war.plugin>
 
 		<!-- ************** -->
@@ -1231,19 +1229,6 @@
 				<artifactId>maven-source-plugin</artifactId>
 			</plugin>
 		</plugins>
-
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${version.wagon.ssh.plugin}</version>
-			</extension>
-			<extension>
-				<groupId>org.kuali.maven.wagons</groupId>
-				<artifactId>maven-s3-wagon</artifactId>
-				<version>${version.wagon.s3.plugin}</version>
-			</extension>
-		</extensions>
 	</build>
 
 	<profiles>
