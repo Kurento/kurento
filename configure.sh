@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# File checked with ShellCheck (https://www.shellcheck.net/)
+#Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Initialization script for Kurento documentation.
 #/
@@ -14,20 +14,19 @@
 # Shell setup
 # ===========
 
-# Shell options for strict error checking
+# Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
+shopt -s inherit_errexit 2>/dev/null || true
 
-# Help message (extracted from script headers)
-usage() {
-    grep '^#/' "$0" | cut --characters=4-
-    exit 0
-}
-REGEX='^(-h|--help)$'
-if [[ "${1:-}" =~ $REGEX ]]; then
-    usage
-fi
+# Trace all commands (to stderr).
+#set -o xtrace
 
-# Log function
+# Help message.
+# Extracts and prints text from special comments in the script header.
+function usage { grep '^#/' "${BASH_SOURCE[-1]}" | cut -c 4-; exit 0; }
+if [[ "${1:-}" =~ ^(-h|--help)$ ]]; then usage; fi
+
+# Log function.
 BASENAME="$(basename "$0")"  # Complete file name
 log() { echo "[$BASENAME] $*"; }
 
