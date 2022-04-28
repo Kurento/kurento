@@ -1,24 +1,17 @@
 #!/usr/bin/env bash
 
+# Extension for `kurento_maven_deploy`, to deploy SNAPSHOT versions in the
+# Kurento GitHub repository for Maven artifacts.
 
 
-# Shell setup
-# ===========
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+# Check dependencies
+# ==================
 
-log "==================== BEGIN ===================="
-
-# Check dependencies.
 command -v jq >/dev/null || {
     log "ERROR: 'jq' is not installed; please install it"
     exit 1
 }
-
-# Trace all commands.
-set -o xtrace
 
 
 
@@ -77,14 +70,10 @@ MVN_DIRS=( $(mvn "${MVN_ARGS[@]}" --quiet exec:exec -Dexec.executable=pwd) ) || 
     exit 1
 }
 for MVN_DIR in "${MVN_DIRS[@]}"; do
-    pushd "$MVN_DIR"
+    pushd "$MVN_DIR" || exit 1
     delete_github_version
-    popd
+    popd || exit 1
 done
 
 # And now, finally, deploy the package (and submodules, if any).
 mvn "${MVN_ARGS[@]}" "$MVN_GOAL_DEPLOY"
-
-
-
-log "==================== END ===================="
