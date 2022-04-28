@@ -77,20 +77,16 @@ if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
 
     MVN_ARGS+=(-Psnapshot)
 
-    MVN_GOALS+=(
-        clean
-        package
-        "$MVN_GOAL_DEPLOY"
+    # Run in a subshell where needed vars are exported.
+    (
+        export MVN_ARGS
+        export MVN_GOAL_DEPLOY
+
+        kurento_maven_deploy_github.sh || {
+            log "ERROR: Command failed: kurento_maven_deploy_github"
+            exit 1
+        }
     )
-
-    MVN_CMD=(mvn)
-    MVN_CMD+=("${MVN_ARGS[@]}")
-    MVN_CMD+=("${MVN_GOALS[@]}")
-
-    kurento_maven_deploy_github.sh "${MVN_CMD[@]}" || {
-        log "ERROR: Command failed: kurento_maven_deploy_github"
-        exit 1
-    }
 else
     log "Version to deploy is RELEASE"
 

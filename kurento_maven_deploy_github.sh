@@ -22,22 +22,6 @@ set -o xtrace
 
 
 
-# Parse call arguments
-# ====================
-
-#/ Arguments:
-#/
-#/   All: Command to run.
-#/      Mandatory.
-
-MVN_COMMAND=("$@")
-[[ -z "${MVN_COMMAND:+x}" ]] && {
-    log "ERROR: Missing argument(s): Maven command to run"
-    exit 1
-}
-
-
-
 # Helper functions
 # ================
 
@@ -78,20 +62,17 @@ function delete_github_version {
 # Deploy to GitHub
 # ================
 
-# Prepare a base command that doesn't include the "deploy" goal.
-# This assumes that $MVN_COMMAND is a command like `mvn clean package deploy`,
-# so omitting the last component would run through the compilation phase.
-MVN_COMMAND_BASE=("${MVN_COMMAND[@]}")
-unset 'MVN_COMMAND_BASE[-1]' # Drop the last item.
-
 # Install packages into the local cache.
 # We'll be deleting versions from the remote repository, so all dependencies
 # must be already available locally when Maven runs.
-"${MVN_COMMAND_BASE[@]}" install
+mvn "${MVN_ARGS[@]}" clean install || {
+    log "ERROR: Command failed: mvn install"
+    exit 1
+}
 
 # For each submodule, go into its path and delete the current GitHub version.
 # shellcheck disable=SC2207
-MVN_DIRS=( $("${MVN_COMMAND_BASE[@]}" --quiet exec:exec -Dexec.executable=pwd) ) || {
+MVN_DIRS=( $(mvn "${MVN_ARGS[@]}" --quiet exec:exec -Dexec.executable=pwd) ) || {
     log "ERROR: Command failed: mvn exec pwd"
     exit 1
 }
@@ -102,7 +83,7 @@ for MVN_DIR in "${MVN_DIRS[@]}"; do
 done
 
 # And now, finally, deploy the package (and submodules, if any).
-"${MVN_COMMAND[@]}"
+mvn "${MVN_ARGS[@]}" "$MVN_GOAL_DEPLOY"
 
 
 
