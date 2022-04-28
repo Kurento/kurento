@@ -161,7 +161,7 @@ cat >pom.xml <<EOF
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.6.0</version>
+        <version>3.0.0</version>
         <executions>
           <!-- Explicit CLI calls (e.g. from kurento_get_version.sh to get
           the project version) are defined separately so maven_script.sh
