@@ -76,4 +76,4 @@ for MVN_DIR in "${MVN_DIRS[@]}"; do
 done
 
 # And now, finally, deploy the package (and submodules, if any).
-mvn "${MVN_ARGS[@]}" "$MVN_GOAL_DEPLOY"
+mvn "${MVN_ARGS[@]}" clean package "$MVN_GOAL_DEPLOY"
