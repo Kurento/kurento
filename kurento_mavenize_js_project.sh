@@ -163,9 +163,8 @@ cat >pom.xml <<EOF
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.0.0</version>
         <executions>
-          <!-- Explicit CLI calls (e.g. from kurento_get_version.sh to get
-          the project version) are defined separately so maven_script.sh
-          doesn't get called. -->
+          <!-- Explicit CLI calls to the exec:exec goal are defined separately,
+          so maven_script.sh doesn't get called. -->
           <execution>
             <id>default-cli</id>
             <phase/>
@@ -173,7 +172,7 @@ cat >pom.xml <<EOF
           <!-- Use the "generate-resources" phase to call maven_script.sh
           that generates all JS files and puts them into resources/ -->
           <execution>
-            <id>default-package</id>
+            <id>maven-script</id>
             <phase>generate-resources</phase>
             <goals>
               <goal>exec</goal>
