@@ -77,7 +77,7 @@ if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
 
     MVN_ARGS+=(-Psnapshot)
 
-    source ./kurento_maven_deploy_github.sh || {
+    source kurento_maven_deploy_github.sh || {
         log "ERROR: Command failed: kurento_maven_deploy_github"
         exit 1
     }
