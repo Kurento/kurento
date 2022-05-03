@@ -133,7 +133,7 @@ Afterwards, in the same ``pom.xml``, look for the desired dependency and change 
    <dependency>
      <groupId>org.kurento</groupId>
      <artifactId>kurento-client</artifactId>
-     <version>|VERSION_CLIENT_JAVA|-SNAPSHOT</version>
+     <version>6.12.0-SNAPSHOT</version>
    </dependency>
 
 
@@ -202,7 +202,7 @@ Then use the ``-Psnapshot`` argument in your next Maven run, to enable the new p
 
 .. code-block:: shell
 
-   mvn dependency:get -Psnapshot -Dartifact='org.kurento:kurento-client:6.16.4-SNAPSHOT'
+   mvn dependency:get -Psnapshot -Dartifact='org.kurento:kurento-client:6.12.0-SNAPSHOT'
 
 
 
