@@ -197,7 +197,7 @@ Release steps
       }
 
       # Run in a subshell where all commands are traced.
-      (set -o xtrace; do_release)
+      ( set -o xtrace; do_release; )
 
 #. Follow on with releasing Kurento Media Server.
 
@@ -240,7 +240,7 @@ The version number (as opposed to the Debian revision) is only changed when the 
    }
 
    # Run in a subshell where all commands are traced.
-   (set -o xtrace; do_release)
+   ( set -o xtrace; do_release; )
 
 
 
@@ -276,35 +276,66 @@ Release order:
 Preparation: Kurento Module Creator
 -----------------------------------
 
-If *kurento-maven-plugin* is going to get also a new release, then edit the file ``kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl`` to update the plugin version in the auto-generation template:
+* If *kurento-parent-pom* (from kurento-java) has changed and the newly generated Java API artifacts should depend on it, edit the file ``kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl`` to update the parent version in the generation template:
 
-.. code-block:: xml
+  .. code-block:: xml
 
-      <groupId>org.kurento</groupId>
-      <artifactId>kurento-maven-plugin</artifactId>
-   -  <version>1.0.0</version>
-   +  <version>1.1.0</version>
+        <!-- Maven coordinates -->
+        <parent>
+            <groupId>org.kurento</groupId>
+            <artifactId>kurento-parent-pom</artifactId>
+     -      <version>1.0.0</version>
+     +      <version>1.1.0</version>
+        </parent>
 
-If *kurento-parent-pom* (from kurento-java) has changed and the Java API artifacts should depend on newer versions, then edit the file ``kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl`` to update the parent version in the auto-generation template:
+  FIXME: **This currently has a chicken-and-egg problem**. The module creator will generate Kurento modules that depend on a new Java version that still doesn't exist (will be released in the next steps of this document)! The Java packages cannot be built beforehand either, because they depend on these new Kurento modules. Oops...
 
-.. code-block:: xml
+* If *kurento-maven-plugin* is going to get a new release, edit the file ``kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl`` to update the plugin version in the generation template:
 
-      <!-- Maven coordinates -->
-      <parent>
-          <groupId>org.kurento</groupId>
-          <artifactId>kurento-parent-pom</artifactId>
-   -      <version>1.0.0</version>
-   +      <version>1.1.0</version>
-      </parent>
+  .. code-block:: xml
 
-Then proceed with the normal release.
+        <groupId>org.kurento</groupId>
+        <artifactId>kurento-maven-plugin</artifactId>
+     -  <version>1.0.0</version>
+     +  <version>1.1.0</version>
+
+Build and install the new version (if any) of the Java module:
+
+.. code-block:: shell
+
+   cd kurento-module-creator
+   mvn clean install -DskipTests=false
+
+Set this build as the default on the system lookup path:
+
+.. code-block:: shell
+
+   export PATH="$PWD/scripts:$PATH"
+
+Then proceed with the release.
+
+
+
+Preparation: Kurento Maven Plugin
+---------------------------------
+
+Build and install the new version (if any) of the Java module:
+
+.. code-block:: shell
+
+   cd kurento-maven-plugin
+   mvn clean install -DskipTests=false
+
+Then proceed with the release.
 
 
 
 Preparation: KMS API Java modules
 ---------------------------------
 
-Test the KMS API Java module generation (local check).
+**Local check**: Test that the KMS API Java module generation works.
+
+Note that if the generation templates (``*.ftl``) have been changed, you'll probably need them to be in effect, and for that you'll need to use a local build of the Kurento Module Creator, instead of using the version that gets installed with the *kurento-module-creator* package.
 
 .. code-block:: shell
 
@@ -328,8 +359,7 @@ Test the KMS API Java module generation (local check).
        for PROJECT in "${PROJECTS[@]}"; do
            pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
 
-           mkdir build \
-           && cd build \
+           mkdir build && cd build \
            && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE \
            && cd java \
            && mvn clean install -DskipTests=false \
@@ -342,7 +372,7 @@ Test the KMS API Java module generation (local check).
    }
 
    # Run in a subshell where all commands are traced.
-   (set -o xtrace; do_release)
+   ( set -o xtrace; do_release; )
 
 
 
@@ -371,7 +401,7 @@ Release steps
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
    NEW_DEBIAN="<DebianRevision>"  # Eg.: 0kurento1
 
-   cd kms-omni-build/
+   cd kms-omni-build
 
    # Set the new version.
    ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
@@ -388,7 +418,7 @@ Post-Release
 
 When all repos have been released, and CI jobs have finished successfully:
 
-* Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain KMD API Definition files, ``*.kmd``):
+* Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain KMD API Definition files, ``*.kmd.json``):
 
   - `kms-core`_ -> `kurento-client-core-js`_
   - `kms-elements`_ -> `kurento-client-elements-js`_
@@ -446,7 +476,7 @@ New Development
    NEW_VERSION="<NextVersion>"   # Eg.: 1.0.1
    NEW_DEBIAN="<DebianRevision>" # Eg.: 0kurento1
 
-   cd kms-omni-build/
+   cd kms-omni-build
 
    # Set the new version.
    ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
@@ -586,7 +616,7 @@ Release steps
    }
 
    # Run in a subshell where all commands are traced.
-   (set -o xtrace; do_release)
+   ( set -o xtrace; do_release; )
 
 
 
@@ -669,7 +699,7 @@ New Development
    }
 
    # Run in a subshell where all commands are traced.
-   (set -o xtrace; do_release)
+   ( set -o xtrace; do_release; )
 
 
 
@@ -688,20 +718,28 @@ Release order:
 Preparation: kurento-java
 -------------------------
 
-If there have been changes in the API of Kurento Media Server modules (in the *.kmd* JSON files), update the corresponding versions in `kurento-parent-pom/pom.xml <https://github.com/Kurento/kurento-java/blob/1805889344933157e7a51574c38e4fd2fe921cc9/kurento-parent-pom/pom.xml#L78>`__:
+* If *kurento-maven-plugin* is going to get a new release, edit the file ``kurento-parent-pom/pom.xml`` to update the plugin version:
 
-.. code-block:: xml
+  .. code-block:: xml
 
-   <version.kurento-chroma>1.1.0</version.kurento-chroma>
-   <version.kurento-crowddetector>1.1.0</version.kurento-crowddetector>
-   <version.kurento-markerdetector>1.1.0</version.kurento-markerdetector>
-   <version.kurento-platedetector>1.1.0</version.kurento-platedetector>
-   <version.kurento-pointerdetector>1.1.0</version.kurento-pointerdetector>
+     -  <version.kurento-maven-plugin>1.0.0</version.kurento-maven-plugin>
+     +  <version.kurento-maven-plugin>1.1.0</version.kurento-maven-plugin>
 
-   <version.kurento-utils-js>1.1.0</version.kurento-utils-js>
-   <version.kurento-maven-plugin>1.1.0</version.kurento-maven-plugin>
 
-Doing this ensures that the Java client gets generated according to the latest versions of the API definitions.
+* If there have been changes in the API of Kurento Media Server modules (``*.kmd.json``), update the corresponding versions in `kurento-parent-pom/pom.xml <https://github.com/Kurento/kurento-java/blob/1805889344933157e7a51574c38e4fd2fe921cc9/kurento-parent-pom/pom.xml#L78>`__:
+
+  .. code-block:: xml
+
+     <version.kurento-chroma>1.1.0</version.kurento-chroma>
+     <version.kurento-crowddetector>1.1.0</version.kurento-crowddetector>
+     <version.kurento-markerdetector>1.1.0</version.kurento-markerdetector>
+     <version.kurento-platedetector>1.1.0</version.kurento-platedetector>
+     <version.kurento-pointerdetector>1.1.0</version.kurento-pointerdetector>
+
+     <version.kurento-utils-js>1.1.0</version.kurento-utils-js>
+     <version.kurento-maven-plugin>1.1.0</version.kurento-maven-plugin>
+
+  Doing this ensures that the Java client gets generated according to the latest versions of the API definitions.
 
 
 
@@ -807,7 +845,7 @@ Release steps
    }
 
    # Run in a subshell where all commands are traced.
-   (set -o xtrace; do_release)
+   ( set -o xtrace; do_release; )
 
 
 
@@ -911,7 +949,7 @@ New Development
    }
 
    # Run in a subshell where all commands are traced.
-   (set -o xtrace; do_release)
+   ( set -o xtrace; do_release; )
 
 
 
@@ -1024,7 +1062,7 @@ For this reason, the documentation must be built only after all the other module
       }
 
       # Run in a subshell where all commands are traced
-      (set -o xtrace; do_release)
+      ( set -o xtrace; do_release; )
 
 
 
