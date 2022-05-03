@@ -224,7 +224,7 @@ function startPresenter(sessionId, ws, sdpOffer, callback) {
                     }
                 }
 
-                webRtcEndpoint.on('OnIceCandidate', function(event) {
+                webRtcEndpoint.on('IceCandidateFound', function(event) {
                     var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                     ws.send(JSON.stringify({
                         id : 'iceCandidate',
@@ -287,7 +287,7 @@ function startViewer(sessionId, ws, sdpOffer, callback) {
 			}
 		}
 
-        webRtcEndpoint.on('OnIceCandidate', function(event) {
+        webRtcEndpoint.on('IceCandidateFound', function(event) {
             var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
             ws.send(JSON.stringify({
                 id : 'iceCandidate',
