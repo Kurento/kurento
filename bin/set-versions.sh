@@ -32,7 +32,7 @@
 #/   released, and the Java packages should be made to depend on the new API
 #/   definition ones (which get published as part of the Media Server release).
 #/
-#/   <KmsVersion> is a full Maven version, such as "6.16.0" or "6.16.1-SNAPSHOT".
+#/   <KmsVersion> is a full Maven version, such as "6.12.0-SNAPSHOT" or "6.12.0".
 #/
 #/   Optional. Default: None.
 #/
