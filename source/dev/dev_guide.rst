@@ -377,7 +377,7 @@ Let's see a couple examples that show the difference between the same stack trac
    $ cat /var/log/kurento-media-server/errors.log
    Segmentation fault (thread 139667051341568, pid 14132)
    Stack trace:
-   [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
+   [kurento::MediaElementImpl::mediaFlowInStateChanged(int, char*, KmsElementPadType)]
    /usr/lib/x86_64-linux-gnu/libkmscoreimpl.so.6:0x1025E0
    [g_signal_emit]
    /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0:0x2B08F
@@ -393,7 +393,7 @@ Let's see a couple examples that show the difference between the same stack trac
    $ cat /var/log/kurento-media-server/errors.log
    Segmentation fault (thread 140672899761920, pid 15217)
    Stack trace:
-   [kurento::MediaElementImpl::mediaFlowInStateChange(int, char*, KmsElementPadType)]
+   [kurento::MediaElementImpl::mediaFlowInStateChanged(int, char*, KmsElementPadType)]
    /home/kurento/kms-omni-build/kms-core/src/server/implementation/objects/MediaElementImpl.cpp:479
    [g_signal_emit]
    /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gsignal.c:3443

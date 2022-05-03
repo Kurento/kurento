@@ -196,16 +196,16 @@ The ``start()`` method performs the following actions:
       // Common events for all objects that inherit from BaseRtpEndpoint
       addErrorListener(
           new EventListener<ErrorEvent>() { ... });
-      addMediaFlowInStateChangeListener(
-          new EventListener<MediaFlowInStateChangeEvent>() { ... });
-      addMediaFlowOutStateChangeListener(
-          new EventListener<MediaFlowOutStateChangeEvent>() { ... });
+      addMediaFlowInStateChangedListener(
+          new EventListener<MediaFlowInStateChangedEvent>() { ... });
+      addMediaFlowOutStateChangedListener(
+          new EventListener<MediaFlowOutStateChangedEvent>() { ... });
       addConnectionStateChangedListener(
           new EventListener<ConnectionStateChangedEvent>() { ... });
       addMediaStateChangedListener(
           new EventListener<MediaStateChangedEvent>() { ... });
-      addMediaTranscodingStateChangeListener(
-          new EventListener<MediaTranscodingStateChangeEvent>() { ... });
+      addMediaTranscodingStateChangedListener(
+          new EventListener<MediaTranscodingStateChangedEvent>() { ... });
 
       // Events specific to objects of class WebRtcEndpoint
       addIceCandidateFoundListener(
