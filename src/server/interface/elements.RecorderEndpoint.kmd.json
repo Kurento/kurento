@@ -166,8 +166,8 @@
   <strong>
     It is recommended to start recording only after media arrives.
   </strong>
-  For this, you may use the <code>MediaFlowInStateChange</code> and
-  <code>MediaFlowOutStateChange</code>
+  For this, you may use the <code>MediaFlowInStateChanged</code> and
+  <code>MediaFlowOutStateChanged</code>
   events of your endpoints, and synchronize the recording with the moment media
   comes into the Recorder. For example:
 </p>
@@ -175,18 +175,18 @@
   <li>
     When the remote video arrives to KMS, your WebRtcEndpoint will start
     generating packets into the Kurento Pipeline, and it will trigger a
-    <code>MediaFlowOutStateChange</code> event.
+    <code>MediaFlowOutStateChanged</code> event.
   </li>
   <li>
     When video packets arrive from the WebRtcEndpoint to the RecorderEndpoint,
-    the RecorderEndpoint will raise a <code>MediaFlowInStateChange</code> event.
+    the RecorderEndpoint will raise a <code>MediaFlowInStateChanged</code> event.
   </li>
   <li>
     You should only start recording when RecorderEndpoint has notified a
-    <code>MediaFlowInStateChange</code> for ALL streams (so, if you record
+    <code>MediaFlowInStateChanged</code> for ALL streams (so, if you record
     AUDIO+VIDEO, your application must receive a
-    <code>MediaFlowInStateChange</code> event for audio, and another
-    <code>MediaFlowInStateChange</code> event for video).
+    <code>MediaFlowInStateChanged</code> event for audio, and another
+    <code>MediaFlowInStateChanged</code> event for video).
   </li>
 </ol>
       ",
