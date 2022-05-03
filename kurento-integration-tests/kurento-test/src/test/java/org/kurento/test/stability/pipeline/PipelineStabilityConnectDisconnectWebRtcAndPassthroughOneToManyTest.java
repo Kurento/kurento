@@ -31,7 +31,7 @@ import org.kurento.client.ElementConnectedEvent;
 import org.kurento.client.ElementDisconnectedEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.ListenerSubscription;
-import org.kurento.client.MediaFlowOutStateChangeEvent;
+import org.kurento.client.MediaFlowOutStateChangedEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.ObjectCreatedEvent;
@@ -213,10 +213,10 @@ public class PipelineStabilityConnectDisconnectWebRtcAndPassthroughOneToManyTest
 
         final CountDownLatch flowingLatch = new CountDownLatch(1);
         webRtcRoot
-            .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
+            .addMediaFlowOutStateChangedListener(new EventListener<MediaFlowOutStateChangedEvent>() {
 
               @Override
-              public void onEvent(MediaFlowOutStateChangeEvent event) {
+              public void onEvent(MediaFlowOutStateChangedEvent event) {
                 if (event.getState().equals(MediaFlowState.FLOWING)) {
                   flowingLatch.countDown();
                 }
