@@ -104,7 +104,7 @@ echo "CFG_PUBLISH_NAME=$CFG_PUBLISH_NAME"
 # https://www.aptly.info/doc/aptly/snapshot/
 # aptly snapshot drop ...
 # E.g.:
-# aptly snapshot drop snap-kurento-trusty-6.7.0
+# aptly snapshot drop snap-kurento-trusty-6.12.0
 
 # https://www.aptly.info/doc/aptly/repo/
 # aptly repo drop kurento-experimental-${DISTRIBUTION}

@@ -21,7 +21,7 @@
 #/   without also having to build all of its dependencies.
 #/
 #/   <KurentoVersion> indicates which Kurento repo should be used to download
-#/   packages from. E.g.: "6.8.0", or "dev" for nightly builds. Typically, you
+#/   packages from. E.g.: "6.12.0", or "dev" for nightly builds. Typically, you
 #/   will provide an actual version number when also using '--release', and just
 #/   use "dev" otherwise.
 #/
