@@ -28,7 +28,7 @@
 #
 # --build-arg KMS_VERSION=<KmsVersion>
 #
-#   <KmsVersion> is like "6.7.2", "6.9.0", etc.
+#   <KmsVersion> is like "6.12.0".
 #   Alternatively, "dev" is used to build a nightly version of KMS.
 #
 #   Optional. Default: "dev".
