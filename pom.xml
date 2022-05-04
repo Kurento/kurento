@@ -59,6 +59,7 @@
 	<!-- Project configuration -->
 
 	<properties>
+		<!-- maven-resources-plugin -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- maven-compiler-plugin -->
