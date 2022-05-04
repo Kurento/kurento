@@ -29,6 +29,7 @@ kurento_check_version.sh false || {
 # repositories, then we'd want to build experimental branches for them. But
 # for now, just skip and avoid polluting the default builds repositories.
 GIT_DEFAULT="$(kurento_git_default_branch.sh)"
+JOB_GIT_NAME="${JOB_GIT_NAME:-master}"
 if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
   log "Skip building from experimental branch '$JOB_GIT_NAME'"
   exit 0

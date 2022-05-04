@@ -23,6 +23,7 @@ set -o xtrace
 # Maybe in the future we might have something like experimental Maven or NPM
 # repositories, then we'd want to build experimental branches for them. But
 # for now, just skip and avoid polluting the default builds repositories.
+JOB_GIT_NAME="${JOB_GIT_NAME:-master}"
 GIT_DEFAULT="$(kurento_git_default_branch.sh)"
 if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
   log "Skip building from experimental branch '$JOB_GIT_NAME'"
