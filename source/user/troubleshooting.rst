@@ -746,7 +746,7 @@ If using Docker Compose, use ``network_mode: host`` such as this:
    version: "3.7"
    services:
      kms:
-       image: kurento/kurento-media-server:6.9.0
+       image: kurento/kurento-media-server:6.12.0
        container_name: kms
        restart: always
        network_mode: host
