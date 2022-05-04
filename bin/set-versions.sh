@@ -362,11 +362,9 @@ pushd kms-core/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/core.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMake/CodeGenerator.cmake
-fi
+perl -i -pe \
+    "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
+    CMake/CodeGenerator.cmake
 update_debian_changelog
 update_debian_control
 popd
