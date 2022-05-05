@@ -44,10 +44,6 @@ command -v mvn >/dev/null || {
     echo "ERROR: 'mvn' is not installed; please install it"
     exit 1
 }
-command -v xmlstarlet >/dev/null || {
-    echo "ERROR: 'xmlstarlet' is not installed; please install it"
-    exit 1
-}
 
 # Trace all commands.
 set -o xtrace
@@ -65,6 +61,12 @@ while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --release)
             CFG_RELEASE="true"
+            ;;
+        --kms-api)
+            # Ignore argument.
+            if [[ -n "${2-}" ]]; then
+                shift
+            fi
             ;;
         --git-add)
             CFG_GIT_ADD="true"
