@@ -81,11 +81,11 @@ TURN separates two network segments that cannot connect directly (otherwise, STU
 
 * When a WebRTC participant is behind a strict NAT or firewall that requires relay, it becomes a **TURN client**, contacting the TURN server on its client listening port (3478 by default, either UDP or TCP), and requesting a **TURN relay transport**.
 
-  - The TURN server listens for client requests on both UDP and TCP ports, to maximize the chances that the client’s firewall will allow the connection.
+  - The TURN server listens for client requests on both UDP and TCP ports, to maximize the chances that the client's firewall will allow the connection.
 
   - The *TURN relay transport*, mentioned above, is a random port selected on the **TURN port range** of the TURN server. This range, again, can be either UDP or TCP, to maximize the chances that remote peers are also able to send RTP data to the server.
 
-* When a remote WebRTC peer wants to send RTP data to the *TURN client*, it doesn’t send to it directly, instead it sends data towards the corresponding *TURN relay transport* of the TURN server. Then the server will relay this data through its client port (3478) towards the actual *TURN client*.
+* When a remote WebRTC peer wants to send RTP data to the *TURN client*, it doesn't send to it directly, instead it sends data towards the corresponding *TURN relay transport* of the TURN server. Then the server will relay this data through its client port (3478) towards the actual *TURN client*.
 
 
 

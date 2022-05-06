@@ -79,7 +79,7 @@ These modules are *demos* of what third party modules could be written and integ
 
 **Omni-Build repository**
 
-This repository is a special project because it is designed to build all KMS Main repositories from a single entry point. This repo brings the other KMS Main repositories as Git submodules: it makes KMS development easier because if you build this project, you don’t need to manually install the libraries of the other KMS Main repositories. However, all other development and support libraries must still be installed manually.
+This repository is a special project because it is designed to build all KMS Main repositories from a single entry point. This repo brings the other KMS Main repositories as Git submodules: it makes KMS development easier because if you build this project, you don't need to manually install the libraries of the other KMS Main repositories. However, all other development and support libraries must still be installed manually.
 
 - `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__
 
