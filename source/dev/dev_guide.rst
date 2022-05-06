@@ -226,7 +226,6 @@ Run:
 .. code-block:: shell
 
    git clone https://github.com/Kurento/kms-omni-build.git
-
    cd kms-omni-build/
 
    git submodule update --init --recursive
@@ -236,7 +235,7 @@ Run:
 
    ``--recursive`` and ``--remote`` are not used together, because each individual submodule may have their own submodules that might be expected to check out some specific commit, and we don't want to update those.
 
-(Optional) If you want to work and make commits on the submodules, switch them to the tip of their branch, to avoid being in a *detached HEAD*:
+(Optional) If you want to work on the submodules and make commits, switch them to the tip of their branch to avoid being in a *detached HEAD*:
 
 .. code-block:: shell
 
@@ -267,7 +266,6 @@ To switch to a branch on *kms-omni-build* itself and all submodules, run this:
 
    # After checkout: Re-init submodules.
    git submodule update --init --recursive
-   git submodule update --remote
    git submodule foreach "git checkout $REF || true"
 
 You can set *REF* to any git branch or tag. For example, ``REF=6.12.0`` will bring the code to the state it had in that version release.
@@ -673,7 +671,6 @@ What to do when you are developing a new feature that spans across KMS and the p
    .. code-block:: shell
 
       cd <module>  # E.g. kms-filters
-      rm -rf build
       mkdir build ; cd build
       cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
       cd java
