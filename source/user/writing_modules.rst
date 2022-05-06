@@ -306,8 +306,8 @@ Run this from the root directory of your module:
 
 This generates a ``build/java/`` directory, containing all the client code. You can now run either of these commands:
 
-* ``make java`` (equivalent to *mvn package*) to build the Java code and package it.
-* ``make java_install`` (equivalent to *mvn install*) to build the package *and* install it into the local Maven repository (typically located at *$HOME/.m2/*).
+* ``make java`` (equivalent to ``mvn clean package``) to build the Maven package.
+* ``make java_install`` (equivalent to ``mvn clean install``) to build the Maven package and install it into the local repository (typically located at *$HOME/.m2/*).
 
 Finally, to actually use the module in your Maven project, you have to add the dependency to the *pom.xml* file:
 
