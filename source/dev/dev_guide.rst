@@ -36,7 +36,7 @@ An overview of the relationships between all repos forming the Kurento Media Ser
 
 .. graphviz:: /images/graphs/dependencies-all.dot
    :align: center
-   :caption: All dependency relationships
+   :caption: Media Server dependency graph
 
 As the dependency graph is not strictly linear, there are multiple possible ways to order all modules into a linear dependency list; this section provides one possible ordered list, which will be consistently used through all Kurento documents.
 
@@ -89,6 +89,12 @@ Application Servers can be developed in Java, JavaScript with Node.js, or JavaSc
 
 - `kurento-client-js <https://github.com/Kurento/kurento-client-js>`__ (Node.js Application Servers, browser JavaScript)
 - `kurento-java <https://github.com/Kurento/kurento-java>`__ (Java Application Servers)
+
+This is an overview of the dependency graph for Java packages:
+
+.. graphviz:: /images/graphs/dependencies-java.dot
+   :align: center
+   :caption: Java dependency graph
 
 **Tutorial or demo repositories**
 
