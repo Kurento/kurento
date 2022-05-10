@@ -59,12 +59,24 @@ fi
 MVN_ARGS+=(
     --batch-mode
     -Dmaven.test.skip=true
-    -Pdeploy
 )
 
 # Fully-qualified goal name for the "deploy" plugin.
 # Needed so that we can use newer versions than the Maven default.
 MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M2:deploy"
+
+# First, make an initial deployment in a local repository. This is archived by
+# the Jenkins job, and passed along to dependent jobs.
+# This is done through the default `ci` profile in Jenkins' `settings.xml`.
+mvn "${MVN_ARGS[@]}" clean package "$MVN_GOAL_DEPLOY" || {
+    log "ERROR: Command failed: mvn deploy (Jenkins repo)"
+    exit 1
+}
+
+# Now make the actual deployment.
+MVN_ARGS+=(
+    -Pdeploy
+)
 
 PROJECT_VERSION="$(kurento_get_version.sh)" || {
   log "ERROR: Command failed: kurento_get_version"
@@ -87,7 +99,6 @@ else
     MVN_ARGS+=(-Pkurento-release)
 
     MVN_GOALS=(
-        clean
         javadoc:jar
         source:jar
     )

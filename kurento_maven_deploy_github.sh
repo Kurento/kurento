@@ -58,7 +58,7 @@ function delete_github_version {
 # Install packages into the local cache.
 # We'll be deleting versions from the remote repository, so all dependencies
 # must be already available locally when Maven runs.
-mvn "${MVN_ARGS[@]}" clean install || {
+mvn "${MVN_ARGS[@]}" install || {
     log "ERROR: Command failed: mvn install"
     exit 1
 }
@@ -76,4 +76,4 @@ for MVN_DIR in "${MVN_DIRS[@]}"; do
 done
 
 # And now, finally, deploy the package (and submodules, if any).
-mvn "${MVN_ARGS[@]}" clean package "$MVN_GOAL_DEPLOY"
+mvn "${MVN_ARGS[@]}" package "$MVN_GOAL_DEPLOY"
