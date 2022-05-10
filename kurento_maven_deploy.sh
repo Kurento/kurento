@@ -67,8 +67,8 @@ MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M2:deploy"
 
 # First, make an initial deployment in a local repository. This is archived by
 # the Jenkins job, and passed along to dependent jobs.
-# This is done through the default `ci` profile in Jenkins' `settings.xml`.
-mvn "${MVN_ARGS[@]}" clean package "$MVN_GOAL_DEPLOY" || {
+# This is done through the `deploy-local` profile in Jenkins' `settings.xml`.
+mvn "${MVN_ARGS[@]}" -Pdeploy-local clean package "$MVN_GOAL_DEPLOY" || {
     log "ERROR: Command failed: mvn deploy (Jenkins repo)"
     exit 1
 }
