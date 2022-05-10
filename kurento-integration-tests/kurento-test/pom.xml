@@ -37,14 +37,17 @@
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>platedetector</artifactId>
+			<version>6.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>crowddetector</artifactId>
+			<version>6.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>chroma</artifactId>
+			<version>6.15.0</version>
 		</dependency>
 
 		<dependency>

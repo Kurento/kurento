@@ -76,13 +76,6 @@
 		<version.kms-api-elements>6.18.0-SNAPSHOT</version.kms-api-elements>
 		<version.kms-api-filters>6.18.0-SNAPSHOT</version.kms-api-filters>
 
-		<!-- Kurento extra modules -->
-		<version.kurento-chroma>6.18.0-SNAPSHOT</version.kurento-chroma>
-		<version.kurento-crowddetector>6.18.0-SNAPSHOT</version.kurento-crowddetector>
-		<version.kurento-markerdetector>6.18.0-SNAPSHOT</version.kurento-markerdetector>
-		<version.kurento-platedetector>6.18.0-SNAPSHOT</version.kurento-platedetector>
-		<version.kurento-pointerdetector>6.18.0-SNAPSHOT</version.kurento-pointerdetector>
-
 		<!-- Kurento miscellaneous tools -->
 		<version.kurento-utils-js>6.18.0-SNAPSHOT</version.kurento-utils-js>
 		<version.kurento-maven-plugin>6.18.0-SNAPSHOT</version.kurento-maven-plugin>
@@ -243,33 +236,6 @@
 				<groupId>org.kurento</groupId>
 				<artifactId>kms-api-filters</artifactId>
 				<version>${version.kms-api-filters}</version>
-			</dependency>
-
-			<!-- Kurento extra modules -->
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>chroma</artifactId>
-				<version>${version.kurento-chroma}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>crowddetector</artifactId>
-				<version>${version.kurento-crowddetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>markerdetector</artifactId>
-				<version>${version.kurento-markerdetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>platedetector</artifactId>
-				<version>${version.kurento-platedetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>pointerdetector</artifactId>
-				<version>${version.kurento-pointerdetector}</version>
 			</dependency>
 
 			<!-- Kurento miscellaneous tools -->
