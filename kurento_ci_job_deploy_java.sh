@@ -74,7 +74,7 @@ fi
 RUN_COMMANDS=(
     # Install any .jar files that might have been passed to this job
     # (with "Copy artifacts from another project")
-    "find . -iname '*.jar' -print0 | xargs --no-run-if-empty -0 -P0 -I{} mvn --batch-mode org.apache.maven.plugins:maven-install-plugin:3.0.0-M1:install-file -Dfile='{}'"
+    # "find . -iname '*.jar' -print0 | xargs --no-run-if-empty -0 -P0 -I{} mvn --batch-mode org.apache.maven.plugins:maven-install-plugin:3.0.0-M1:install-file -Dfile='{}'"
 
     # Compile, package, and deploy the current project.
     "kurento_maven_deploy.sh"
