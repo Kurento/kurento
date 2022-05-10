@@ -65,10 +65,10 @@ MVN_ARGS+=(
 # Needed so that we can use newer versions than the Maven default.
 MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M2:deploy"
 
-# First, make an initial deployment in a local repository. This is archived by
-# the Jenkins job, and passed along to dependent jobs.
-# This is done through the `deploy-local` profile in Jenkins' `settings.xml`.
-mvn "${MVN_ARGS[@]}" -Pdeploy-local clean package "$MVN_GOAL_DEPLOY" || {
+# First, make an initial build that gets deployed to a local repository. This is
+# archived by Jenkins, and passed along to dependent jobs.
+# The repo is set by the `ci-build` profile from Maven's `settings.xml`.
+mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MVN_GOAL_DEPLOY" || {
     log "ERROR: Command failed: mvn deploy (Jenkins repo)"
     exit 1
 }
