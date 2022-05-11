@@ -170,7 +170,7 @@ To build the source code of Kurento Media Server, you have 2 options:
 
 To work directly with Kurento source code, the easiest way is using the **kms-omni-build** repo, which aggregates all the other Kurento projects in the form of `git submodules <https://git-scm.com/book/en/v2/Git-Tools-Submodules>`__.
 
-In all cases, the workflow is the same. Follow these steps to end up with an environment that is approrpiate for hacking on the Kurento source code:
+In all cases, the workflow is the same. Follow these steps to end up with an environment that is appropriate for hacking on the Kurento source code:
 
 1. Install required tools.
 2. Install build dependencies.
