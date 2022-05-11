@@ -30,6 +30,8 @@ While official release Docker images are published as `kurento/kurento-media-ser
 
 
 
+.. _installation-dev-local:
+
 Local Installation
 ------------------
 

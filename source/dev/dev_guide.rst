@@ -13,15 +13,15 @@ If you are looking to write applications that make use of Kurento, then you shou
 Introduction
 ============
 
-This is an overview of the tools and technologies used by KMS:
+This is an overview of the tools and technologies used by Kurento:
 
 - The code is written in C and C++ languages.
 - The code style is heavily influenced by that of Gtk and GStreamer projects.
 - CMake is the build tool of choice, and is used to build all modules.
 - Source code is versioned in several GitHub repositories.
-- The officially supported platforms are Long-Term Support (*LTS*) versions of Ubuntu: **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits only).
+- The only officially supported platforms are **Ubuntu 16.04 (Xenial)** and **Ubuntu 18.04 (Bionic)** (64-bits).
 - The GStreamer multimedia framework sits at the heart of Kurento Media Server.
-- In addition to GStreamer, KMS uses other libraries like boost, jsoncpp, libnice, etc.
+- In addition to GStreamer, Kurento uses lots of other libraries, such as Boost, jsoncpp, or libnice.
 
 
 
@@ -42,7 +42,7 @@ As the dependency graph is not strictly linear, there are multiple possible ways
 
 **Fork repositories**:
 
-KMS depends on several Open Source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for KMS; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries.
+Kurento depends on several Open Source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for Kurento; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries.
 
 - `jsoncpp <https://github.com/Kurento/jsoncpp>`__
 - `libsrtp <https://github.com/Kurento/libsrtp>`__
@@ -59,7 +59,7 @@ KMS depends on several Open Source libraries, the main one being GStreamer. Some
 
 **Main repositories**
 
-- `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes KMS code and Kurento client code. It has mainly Java code.
+- `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes Kurento Media Server code, and Kurento client code. It has mainly Java code.
 - `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
 - `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
 - `kms-core <https://github.com/Kurento/kms-core>`__: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
@@ -162,22 +162,28 @@ To specify a dependency it is necessary to know how to configure this library in
 Build from sources
 ==================
 
-To work directly with KMS source code, or to just build KMS from sources, the easiest way is using the module **kms-omni-build**. Just follow these steps:
+To build the source code of Kurento Media Server, you have 2 options:
 
-1. Install required tools, like Git.
-2. Add the Kurento repository to your system configuration.
-3. Clone **kms-omni-build**.
-4. Install build dependencies: tools like GCC, CMake, etc., and KMS development libraries.
-5. Build with CMake and Make.
-6. Run the newly compiled KMS.
-7. Run KMS tests.
+* Build absolutely everything from scratch. Keeping in mind the dependency graph from :ref:`dev-code-repos`, you will need to start from the leftmost part and progress towards the right, building all projects one by one.
+
+* Start from an intermediate point. For example if you only want to build Kurento Media Server itself, and not its dependencies, you can leverage the packages that are already built in the **Kurento packages repository** (see instructions for either the :ref:`Release repo <installation-local>` or :ref:`Development repo <installation-dev-local>`).
+
+To work directly with Kurento source code, the easiest way is using the **kms-omni-build** repo, which aggregates all the other Kurento projects in the form of `git submodules <https://git-scm.com/book/en/v2/Git-Tools-Submodules>`__.
+
+In all cases, the workflow is the same. Follow these steps to end up with an environment that is approrpiate for hacking on the Kurento source code:
+
+1. Install required tools.
+2. Install build dependencies.
+3. Download the source code.
+4. Build and run Kurento Media Server.
+5. Build and run Kurento tests.
 
 
 
 Install required tools
 ----------------------
 
-This command will install the basic set of tools that are needed for the next steps:
+This command installs the basic set of tools that are needed for the next steps:
 
 .. code-block:: shell
 
@@ -191,40 +197,38 @@ This command will install the basic set of tools that are needed for the next st
 
 
 
-Add Kurento repository
-----------------------
-
-Run these commands to add the Kurento repository to your system configuration:
-
-.. code-block:: shell
-
-   # Import the Kurento repository signing key
-   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
-
-   # Get Ubuntu version definitions
-   source /etc/lsb-release
-
-   # Add the repository to Apt
-   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-   # Kurento Media Server - Nightly packages
-   deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6
-   EOF
-
-
-
 Install build dependencies
 --------------------------
 
-Run:
+**Option 1: Quick setup**
+
+If you install the ``kurento-media-server-dev`` package, all build dependencies will get installed too. This is a quick and easy way to get all the dependencies, if you don't care about building them from scratch:
 
 .. code-block:: shell
 
    sudo apt-get update ; sudo apt-get install --no-install-recommends \
        kurento-media-server-dev
 
+If you *do care* about building everything from scratch, keep reading.
+
+**Option 2: Build everything**
+
+All repositories that form the Kurento Media Server codebase are prepared to be packaged with Debian packaging tools. As such, their build dependencies are written in the ``Build-Depends`` list of the ``debian/control`` file.
+
+For each of the projects, you should read that file, and make sure the listed dependencies are installed in your system. This can be automated with ``mk-build-deps`` (which is part of the ``devscripts`` package):
+
+.. code-block:: shell
+
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
+       devscripts
+
+   sudo apt-get update ; sudo mk-build-deps --install --remove \
+       --tool="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --no-remove" \
+       debian/control
 
 
-Download KMS source code
+
+Download the source code
 ------------------------
 
 Run:
@@ -278,19 +282,22 @@ You can set *REF* to any git branch or tag. For example, ``REF=6.12.0`` will bri
 
 
 
-Build and run KMS
------------------
+Build and run Kurento Media Server
+----------------------------------
 
 Make sure your current directory is already *kms-omni-build*, then run this command:
 
 .. code-block:: shell
 
    export MAKEFLAGS="-j$(nproc)"
-   ./bin/kms-build-run.sh
 
-By default, the script `kms-build-run.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/kms-build-run.sh>`__ will set up the environment and settings to make a Debug build of KMS. You can inspect that script to learn about all the other options it offers, including builds for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, selection between GCC and Clang compilers, and other modes.
+   bin/kms-build-run.sh
 
-You can set the logging level of specific categories by exporting the environment variable *GST_DEBUG* before running this script (see :doc:`/features/logging`).
+By default, the script `kms-build-run.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/kms-build-run.sh>`__ will set up the environment and settings to make a Debug build of Kurento Media Server. You can inspect that script to learn about all the other options it offers, including builds for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, selection between GCC and Clang compilers, and other modes.
+
+You can also set the logging level of specific categories by exporting the environment variable *GST_DEBUG* before running this script (see :doc:`/features/logging`).
+
+After the build has been completed, you can change into the build directory and run the unit tests. For more info, see :ref:`dev-unit-tests`.
 
 
 
@@ -596,36 +603,39 @@ For example, say you want to build the current *kms-core* development branch aga
 
 
 
+.. _dev-unit-tests:
+
 Unit Tests
 ==========
 
-KMS uses the Check unit testing framework for C (https://libcheck.github.io/check/). If you are developing KMS and :ref:`building from sources <dev-sources>`, you can build and run unit tests manually: just change the last one of the build commands from ``make`` to ``make check``. All available tests will run, and a summary report will be shown at the end.
+Kurento uses the Check unit testing framework for C (https://libcheck.github.io/check/). If you are working on the source code and :ref:`building from sources <dev-sources>`, you can build and run unit tests manually: just ``cd`` to the build directory and run ``make check``. All available tests will run, and a summary report will be shown at the end.
 
 .. note::
 
-   It is recommended to first disable GStreamer log colors, that way the resulting log files won't contain extraneous escape sequences such as ``^[[31;01m ^[[00m``. Also, it could be useful to specify a higher logging level than the default; set the environment variable *GST_DEBUG*, as explained in :ref:`logging-levels`.
+   It is recommended to first disable GStreamer log colors, that way the resulting log files won't contain extraneous escape sequences such as ``^[[31;01m ^[[00m``. Also, it will be useful to specify a higher logging level than the default; set the environment variable *GST_DEBUG*, as explained in :ref:`logging-levels`.
 
-   The complete command would look like this:
+   The complete command could look like this:
 
    .. code-block:: shell
 
       export GST_DEBUG_NO_COLOR=1
-      export GST_DEBUG="2,check:5"
+      export GST_DEBUG="3,check:5,test_base:5"
+
       make check
 
-The log output of the whole test suite will get saved into the file *./Testing/Temporary/LastTest.log*. To find the starting point of each individual test inside this log file, search for the words "**test start**". For the start of a specific test, search for "**{TestName}: test start**". For example:
+The log output of the whole test suite will get saved into the file *./Testing/Temporary/LastTest.log*. To find the starting point of each individual test inside this log file, search for the words "**test start**". For the start of a specific test, search for "**<TestName>: test start**". For example:
 
 .. code-block:: text
 
    webrtcendpoint.c:1848:test_vp8_sendrecv: test start
 
-To build and run one specific test, use ``make {TestName}.check``. For example:
+To build and run one specific test, use ``make test_<TestName>.check``. For example:
 
 .. code-block:: shell
 
    make test_agnosticbin.check
 
-If you want to analyze memory usage with Valgrind, use ``make {TestName}.valgrind``. For example:
+If you had Valgrind installed (to analyze memory usage), a ``.valgrind`` target will have been generated too. For example:
 
 .. code-block:: shell
 
