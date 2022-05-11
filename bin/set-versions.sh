@@ -137,7 +137,7 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
     MVN_ALLOW_SNAPSHOTS="false"
 else
     MVN_ALLOW_SNAPSHOTS="true"
-    MVN_ARGS+=(-Psnapshot)
+    MVN_ARGS+=(-U -Psnapshot)
 fi
 
 # Parent version: Update to latest available.
