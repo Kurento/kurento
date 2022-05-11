@@ -238,7 +238,9 @@ update_debian_changelog() {
             debian/
     fi
 
-    git add debian/changelog
+    if [[ "$CFG_COMMIT" == "true" ]]; then
+        git add debian/changelog
+    fi
 }
 
 # Edits debian/control to set all Kurento dependencies to the given version.
@@ -261,7 +263,9 @@ update_debian_control() {
         "s/^\s+(kms-|kurento-)\S+ \([<=>]+ \K\d\S*(?=\))/${CFG_VERSION}/" \
         debian/control
 
-    git add debian/control
+    if [[ "$CFG_COMMIT" == "true" ]]; then
+        git add debian/control
+    fi
 }
 
 # Creates a commit with the already staged files + any extra provided ones.
