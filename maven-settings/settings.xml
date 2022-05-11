@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Settings file for Maven. -->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
 
@@ -11,17 +12,54 @@
 	<interactiveMode>false</interactiveMode>
 
 	<!--
-	This list gets filled automatically by Jenkins, with all the "Server Credentials"
-	that are defined in the "Edit Configuration File" page.
-	Doc: https://plugins.jenkins.io/config-file-provider/
+	List of authentication profiles, keyed by the server-id used within the system.
+	Authentication profiles are used when maven makes a connection to a remote server.
 	-->
 	<servers>
+		<!--
+		This list gets filled automatically by Jenkins, with the "Server Credentials"
+		that are defined in the "Edit Configuration File" page.
+		Doc: https://plugins.jenkins.io/config-file-provider/
+		-->
 	</servers>
 
 	<!--
 	List of profiles which modify the build process.
 	-->
 	<profiles>
+		<profile>
+			<id>ci-build</id>
+			<activation>
+				<!--
+				Activate when the Jenkins environment variable `WORKSPACE` is defined:
+				The absolute path of the directory assigned to the build as a workspace.
+				-->
+				<property>
+					<name>env.WORKSPACE</name>
+				</property>
+			</activation>
+			<properties>
+				<!--
+				Maven only uses this property as fallback when
+				`altReleaseDeploymentRepository` or `altSnapshotDeploymentRepository`
+				are not set for release or snapshot versions, respectively.
+				So using the `deploy` profile would override this.
+				-->
+				<altDeploymentRepository>ci::file://${env.WORKSPACE}/target-m2</altDeploymentRepository>
+			</properties>
+			<repositories>
+				<repository>
+					<id>ci-build</id>
+					<url>file://${env.WORKSPACE}/target-m2</url>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>ci-build</id>
+					<url>file://${env.WORKSPACE}/target-m2</url>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
 		<profile>
 			<id>deploy</id>
 			<properties>
