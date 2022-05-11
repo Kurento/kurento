@@ -320,9 +320,10 @@ commit_and_tag() {
 # =================================
 
 pushd kurento-module-creator/
-TEMP="$(mktemp)"
-xmlstarlet edit -S --update "/_:project/_:version" --value "$VERSION_JAVA" pom.xml \
-    >"$TEMP" && mv "$TEMP" pom.xml
+xmlstarlet edit -S --inplace \
+    --update "/_:project/_:version" \
+    --value "$VERSION_JAVA" \
+    pom.xml
 update_debian_changelog
 update_debian_control
 popd
