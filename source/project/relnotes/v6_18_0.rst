@@ -30,7 +30,11 @@ There was a design issue in the way Kurento established the WebRTC communication
 
 Thankfully, DTLS doesn't give up as soon as some packets are dropped; instead, it just follows a progressively larger timeout scheme. Eventually the ICE protocol would establish a working socket, and one of the DTLS reattempts would finally be able to travel through it. However, this whole delay meant that WebRTC connections were taking much more time than what they really should.
 
-Thanks to this change, now the DTLS handsake will be put on hold until ICE has finished its work and the network socket is well established and ready for comms; this way, the very first DTLS packets will already reach their destination, thus speeding up the whole process.
+Thanks to this change, now the DTLS handsake will be put on hold until ICE has finished its work and the network socket is well established and ready for comms; this way, the very first DTLS packets will already reach their destination, thus speeding up the whole process:
+
+.. video:: ../../_static/project/relnotes/v6_18_0/connection.mp4
+
+*Comparison of connection speed (top: before; bottom: after)*
 
 Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#37 <https://github.com/Kurento/kms-elements/pull/37>`__ (*WebRTC DTLS handsake quick connection*).
 
