@@ -9,5 +9,5 @@
 #     # Install packages
 #     python3 -m pip install --upgrade -r requirements.txt
 
-Sphinx~=3.5.4
-sphinx-rtd-theme~=0.5.2
+Sphinx==4.5.0
+sphinx-rtd-theme==1.0.0
