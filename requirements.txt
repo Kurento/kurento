@@ -11,4 +11,13 @@
 
 Sphinx==4.5.0
 sphinx-rtd-theme==1.0.0
-sphinxcontrib-video==0.0.1.dev3
+
+# Sphinx extension "sphinxcontrib.video"
+# https://github.com/sphinx-contrib/video
+#sphinxcontrib-video==0.0.1.dev3
+# However, the extension is unmaintained and lacks some features, such as
+# support for Latex (that we use to generate PDF).
+# A fork exists here with needed fixes:
+# https://github.com/DavidPowell/video
+wheel
+git+https://github.com/DavidPowell/video.git@681dc0c522a66358428fcda83034fac054c37057
