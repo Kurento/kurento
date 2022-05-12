@@ -89,7 +89,8 @@ Several object classes contained a ``timestamp`` field, which wasn't fine-graine
 These classes are ``Stats`` (common parent of all Stats classes), and ``RaiseBase`` (common parent of all ``Event`` classes).
 
 * Old: ``timestamp`` - Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC)
-* New: ``timestampMillis`` - Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC)
+
+  New: ``timestampMillis`` - Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC)
 
 
 
@@ -106,13 +107,16 @@ Media Events
 A series of deprecations and renamings that normalize all events into the same naming convention.
 
 * Old: ``MediaFlowOutStateChange`` event
-* New: ``MediaFlowOutStateChanged`` event
+
+  New: ``MediaFlowOutStateChanged`` event
 
 * Old: ``MediaFlowInStateChange`` event
-* New: ``MediaFlowInStateChanged`` event
+
+  New: ``MediaFlowInStateChanged`` event
 
 * Old: ``MediaTranscodingStateChange`` event
-* New: ``MediaTranscodingStateChanged`` event
+
+  New: ``MediaTranscodingStateChanged`` event
 
 
 
@@ -120,7 +124,8 @@ childs -> children
 ~~~~~~~~~~~~~~~~~~
 
 * Old: ``MediaObject.getChilds()``
-* New: ``MediaObject.getChildren()``
+
+  New: ``MediaObject.getChildren()``
 
 
 
@@ -130,7 +135,8 @@ setOutputBitrate -> minOutputBitrate, maxOutputBitrate
 All ``MediaElement``-derived classes had a ``setOutputBitrate()`` method that could be used to set a specific target bitrate for the video stream. Instead, use the setters to specify a minimum and maximum desired target. To replicate the same behavior that ``setOutputBitrate()`` had, just provide the same value as both min and max.
 
 * Old: ``setOutputBitrate()``
-* New: ``setMinOutputBitrate()``, ``setMaxOutputBitrate()``
+
+  New: ``setMinOutputBitrate()``, ``setMaxOutputBitrate()``
 
 
 
@@ -140,10 +146,12 @@ minOuputBitrate, maxOuputBitrate -> minOutputBitrate, maxOutputBitrate
 These changes fix a typo in the original property names.
 
 * Old: ``getMinOuputBitrate()``, ``setMinOuputBitrate()``
-* New: ``getMinOutputBitrate()``, ``setMinOutputBitrate()``
+
+  New: ``getMinOutputBitrate()``, ``setMinOutputBitrate()``
 
 * Old: ``getMaxOuputBitrate()``, ``getMaxOuputBitrate()``
-* New: ``setMaxOutputBitrate()``, ``setMaxOutputBitrate()``
+
+  New: ``setMaxOutputBitrate()``, ``setMaxOutputBitrate()``
 
 
 
@@ -156,19 +164,24 @@ ICE Events
 A series of deprecations and renamings that normalize all events into the same naming convention.
 
 * Old: ``OnIceCandidate`` event
-* New: ``IceCandidateFound`` event
+
+  New: ``IceCandidateFound`` event
 
 * Old: ``OnIceGatheringDone`` event
-* New: ``IceGatheringDone`` event
+
+  New: ``IceGatheringDone`` event
 
 * Old: ``OnIceComponentStateChanged``, ``IceComponentStateChange`` events
-* New: ``IceComponentStateChanged`` event
+
+  New: ``IceComponentStateChanged`` event
 
 * Old: ``OnDataChannelOpened``, ``DataChannelOpen`` events
-* New: ``DataChannelOpened`` event
+
+  New: ``DataChannelOpened`` event
 
 * Old: ``OnDataChannelClosed``, ``DataChannelClose`` event
-* New: ``DataChannelClosed`` event
+
+  New: ``DataChannelClosed`` event
 
 
 
@@ -176,13 +189,16 @@ externalAddress -> externalIPv4, externalIPv6
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Old: ``externalAddress`` setting
-* New: ``externalIPv4``, ``externalIPv6`` settings
+
+  New: ``externalIPv4``, ``externalIPv6`` settings
 
 * Old: ``getExternalAddress()``
-* New: ``getExternalIPv4()``, ``getExternalIPv6()``
+
+  New: ``getExternalIPv4()``, ``getExternalIPv6()``
 
 * Old: ``setExternalAddress()``
-* New: ``setExternalIPv4()``, ``setExternalIPv6()``
+
+  New: ``setExternalIPv4()``, ``setExternalIPv6()``
 
 
 
@@ -192,10 +208,12 @@ IceCandidatePair
 Unifies all Kurento "Id" members under the same naming convention.
 
 * Old: ``streamID``
-* New: ``streamId``
+
+  New: ``streamId``
 
 * Old: ``componentID``
-* New: ``componentId``
+
+  New: ``componentId``
 
 
 
@@ -206,7 +224,8 @@ inputAudioLatency, inputVideoLatency -> inputLatency
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Old: ``ElementStats.inputAudioLatency``, ``ElementStats.inputVideoLatency`` - Average latency, in nanoseconds.
-* New: ``ElementStats.inputLatency`` - Array of average latencies (``MediaLatencyStat[]``), in nanoseconds.
+
+  New: ``ElementStats.inputLatency`` - Array of average latencies (``MediaLatencyStat[]``), in nanoseconds.
 
 
 
@@ -214,7 +233,8 @@ audioE2ELatency, videoE2ELatency -> E2ELatency
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Old: ``EndpointStats.audioE2ELatency``, ``EndpointStats.videoE2ELatency`` - End-to-end latency, in nanoseconds.
-* New: ``EndpointStats.E2ELatency`` - Array of average latencies (``MediaLatencyStat[]``), in nanoseconds.
+
+  New: ``EndpointStats.E2ELatency`` - Array of average latencies (``MediaLatencyStat[]``), in nanoseconds.
 
 
 
