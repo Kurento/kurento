@@ -281,8 +281,9 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
     break;
   }
 
+  IceComponentState *componentState_deprecated1 = new IceComponentState (type);
+  IceComponentState *componentState_deprecated2 = new IceComponentState (type);
   IceComponentState *componentState_event = new IceComponentState (type);
-  IceComponentState *newComponentState_event = new IceComponentState (type);
   IceComponentState *componentState_property = new IceComponentState (type);
 
   connectionState = std::make_shared< IceConnection> (streamId, componentId,
@@ -298,7 +299,7 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
   try {
     OnIceComponentStateChanged event (shared_from_this (),
         OnIceComponentStateChanged::getName (), atoi (streamId), componentId,
-        std::shared_ptr<IceComponentState> (componentState_event));
+        std::shared_ptr<IceComponentState> (componentState_deprecated1));
     sigcSignalEmit(signalOnIceComponentStateChanged, event);
   } catch (const std::bad_weak_ptr &e) {
     // shared_from_this()
@@ -309,7 +310,7 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
   try {
     IceComponentStateChange event (shared_from_this (),
         IceComponentStateChange::getName (), atoi (streamId), componentId,
-        std::shared_ptr<IceComponentState> (newComponentState_event));
+        std::shared_ptr<IceComponentState> (componentState_deprecated2));
     sigcSignalEmit(signalIceComponentStateChange, event);
   } catch (const std::bad_weak_ptr &e) {
     // shared_from_this()
@@ -320,7 +321,7 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
   try {
     IceComponentStateChanged event (shared_from_this (),
         IceComponentStateChanged::getName (), atoi (streamId), componentId,
-        std::shared_ptr<IceComponentState> (newComponentState_event));
+        std::shared_ptr<IceComponentState> (componentState_event));
     sigcSignalEmit(signalIceComponentStateChanged, event);
   } catch (const std::bad_weak_ptr &e) {
     // shared_from_this()
