@@ -530,7 +530,7 @@ Here, an example Error event is sent to notify about permission errors while try
      }
    }
 
-For more info about Kurento events, check :doc:`/features/events.rst`.
+For more info about Kurento events, check :doc:`/features/events`.
 
 
 
