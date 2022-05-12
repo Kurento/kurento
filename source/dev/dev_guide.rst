@@ -426,18 +426,18 @@ Run and debug with GDB
 
 `GDB <https://www.gnu.org/software/gdb/>`__ is a debugger that helps in understanding why and how a program is crashing. Among several other things, you can use GDB to obtain a **backtrace**, which is a detailed list of all functions that were running when the Kurento process failed.
 
-You can build KMS from sources and then use GDB to execute and debug it. Alternatively, you can also use GDB with an already installed version of KMS.
+You can build Kurento Media Server from sources and then use GDB to execute and debug it. Alternatively, you can also use GDB with an already installed version of Kurento.
 
 
 
-From sources
-------------
+GDB from sources
+----------------
 
 1. Complete the previous instructions on how to build and run from sources: :ref:`dev-sources`.
 
 2. Install debug symbols: :ref:`dev-dbg`.
 
-3. Build and run KMS with GDB.
+3. Build and run Kurento with GDB.
 
    For this step, the easiest method is to use our launch script, *kms-build-run.sh*. It builds all sources, configures the environment, and starts up the debugger:
 
@@ -447,16 +447,16 @@ From sources
       # [... wait for build ...]
       (gdb)
 
-4. Run GDB commands to *start KMS* and then get a *backtrace* (see indications in next section).
+4. Run GDB commands to *start Kurento Media Server* and then get a *backtrace* (see indications in next section).
 
 
 
-From installation
------------------
+GDB from installation
+---------------------
 
-You don't *have* to build KMS from sources in order to run it with the GDB debugger. Using an already existing installation is perfectly fine, too, so it's possible to use GDB in your servers without much addition (apart from installing *gdb* itself, that is):
+You don't *have* to build Kurento from sources in order to run it with the GDB debugger. Using an already existing installation is perfectly fine, too, so it's possible to use GDB in your servers without much addition (apart from installing *gdb* itself, that is):
 
-1. Assuming a machine where KMS is :doc:`installed </user/installation>`, go ahead and also install *gdb*.
+1. Assuming a machine where Kurento is :doc:`installed </user/installation>`, go ahead and also install ``gdb``.
 
 2. Install debug symbols: :ref:`dev-dbg`.
 
@@ -470,23 +470,39 @@ You don't *have* to build KMS from sources in order to run it with the GDB debug
 
 4. Load your service settings.
 
-   You possibly did some changes in the KMS service settings file, ``/etc/default/kurento-media-server``. This file contains shell code that can be sourced directly into your current session:
+   You possibly did some changes in the Kurento service settings file, ``/etc/default/kurento-media-server``. This file contains shell code that can be sourced directly into your current session:
 
    .. code-block:: shell
 
       source /etc/default/kurento-media-server
 
-5. Ensure KMS is not already running as a service, and run it with GDB.
+5. Ensure Kurento is not already running as a service.
 
    .. code-block:: shell
 
       sudo service kurento-media-server stop
 
+5. Run Kurento with GDB.
+
+   .. code-block:: shell
+
       gdb /usr/bin/kurento-media-server
       # [ ... GDB starts up ...]
       (gdb)
 
-6. Run GDB commands to *start KMS* and then get a *backtrace* (see indications in next section).
+6. Run GDB commands to *start Kurento Media Server* and then get a *backtrace* (see indications in next section).
+
+**Running Kurento with Docker**
+
+If you are running Kurento from the Docker image, you can also follow the steps above, however a couple extra things must be done:
+
+* Launch the Kurento Docker container with these additional arguments:
+
+  .. code-block:: shell
+
+     docker run -ti --cap-add SYS_PTRACE --security-opt seccomp=unconfined --entrypoint /bin/bash [...]
+
+* Skip steps *4* and *5* from above.
 
 
 
@@ -497,10 +513,10 @@ Once you see the ``(gdb)`` command prompt, you're already running a `GDB session
 
 .. code-block:: shell
 
-   # Actually start running the KMS process
+   # Actually start running the Kurento Media Server process
    (gdb) run
 
-   # At this point, KMS is running; wait until the crash happens,
+   # At this point, Kurento is running; now try to make the crash happen,
    # which will return you to the "(gdb)" prompt.
    #
    # Or you can press "Ctrl+C" to force an interruption.
@@ -508,16 +524,16 @@ Once you see the ``(gdb)`` command prompt, you're already running a `GDB session
    # You can also send the SIGSEGV signal to simulate a segmentation fault:
    # sudo kill -SIGSEGV "$(pgrep -f kurento-media-server)"
 
-   # Obtain an execution backtrace
+   # Obtain an execution backtrace.
    (gdb) backtrace
 
-   # Change to an interesting frame and get all details
+   # Change to an interesting frame and get all details.
    (gdb) frame 3
    (gdb) info frame
    (gdb) info args
    (gdb) info locals
 
-   # Quit GDB and return to the shell
+   # Quit GDB and return to the shell.
    (gdb) quit
 
 Explaining GDB usage is out of scope for this documentation, but just note one thing: in the above text, ``frame 3`` is **just an example**; depending on the case, the backtrace needs to be examined first to decide which frame number is the most interesting. Typically (but not always), the interesting frame is the first one that involves Kurento's own code instead of 3rd-party code.
