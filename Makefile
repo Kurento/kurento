@@ -40,10 +40,6 @@ help:
 	@echo "- texlive-fonts-recommended"
 	@echo "- texlive-latex-recommended"
 	@echo "- texlive-latex-extra"
-	@echo ""
-	@echo "python pip dependencies:"
-	@echo "- sphinx >= 1.5.0 (Tested: 3.3.0)"
-	@echo "- sphinx_rtd_theme  (Tested: 0.5.0)"
 
 init-workdir:
 	mkdir -p $(WORKDIR)
