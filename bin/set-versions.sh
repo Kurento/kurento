@@ -55,10 +55,7 @@
 #/   message to start development on a new project version after a release.
 #/
 #/   If neither '--release' nor '--new-development' are given, the commit
-#/   message will be "Bump development version to <Version>", because this
-#/   script doesn't know if you are changing the version number after a release,
-#/   or just as part of normal development (e.g. according to SemVer, after
-#/   adding a new feature you should bump the Minor version number).
+#/   message will simply be "Update version to <Version>".
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -241,7 +238,9 @@ update_debian_changelog() {
             debian/
     fi
 
-    git add debian/changelog
+    if [[ "$CFG_COMMIT" == "true" ]]; then
+        git add debian/changelog
+    fi
 }
 
 # Edits debian/control to set all Kurento dependencies to the given version.
@@ -264,7 +263,9 @@ update_debian_control() {
         "s/^\s+(kms-|kurento-)\S+ \([<=>]+ \K\d\S*(?=\))/${CFG_VERSION}/" \
         debian/control
 
-    git add debian/control
+    if [[ "$CFG_COMMIT" == "true" ]]; then
+        git add debian/control
+    fi
 }
 
 # Creates a commit with the already staged files + any extra provided ones.
@@ -319,9 +320,10 @@ commit_and_tag() {
 # =================================
 
 pushd kurento-module-creator/
-TEMP="$(mktemp)"
-xmlstarlet edit -S --update "/_:project/_:version" --value "$VERSION_JAVA" pom.xml \
-    >"$TEMP" && mv "$TEMP" pom.xml
+xmlstarlet edit -S --inplace \
+    --update "/_:project/_:version" \
+    --value "$VERSION_JAVA" \
+    pom.xml
 update_debian_changelog
 update_debian_control
 popd
@@ -365,11 +367,9 @@ pushd kms-core/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/core.kmd.json
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    perl -i -pe \
-        "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        cmake/Kurento/CodeGenerator.cmake
-fi
+perl -i -pe \
+    "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
+    cmake/Kurento/CodeGenerator.cmake
 update_debian_changelog
 update_debian_control
 popd
