@@ -34,8 +34,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.kurento.client.EventListener;
 import org.kurento.client.IceComponentStateChangedEvent;
-import org.kurento.client.MediaFlowInStateChangeEvent;
-import org.kurento.client.MediaFlowOutStateChangeEvent;
+import org.kurento.client.MediaFlowInStateChangedEvent;
+import org.kurento.client.MediaFlowOutStateChangedEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.NewCandidatePairSelectedEvent;
@@ -155,10 +155,10 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         });
 
     webRtcEndpoint
-        .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
+        .addMediaFlowOutStateChangedListener(new EventListener<MediaFlowOutStateChangedEvent>() {
 
           @Override
-          public void onEvent(MediaFlowOutStateChangeEvent event) {
+          public void onEvent(MediaFlowOutStateChangedEvent event) {
             if (event.getState().equals(MediaFlowState.FLOWING)) {
               eosLatch.countDown();
             }
@@ -245,10 +245,10 @@ public class SimpleIceTest extends FunctionalPlayerTest {
       }
     });
 
-    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+    webRtcEp.addMediaFlowInStateChangedListener(new EventListener<MediaFlowInStateChangedEvent>() {
 
       @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
+      public void onEvent(MediaFlowInStateChangedEvent event) {
         if (event.getState().equals(MediaFlowState.FLOWING)) {
           eosLatch.countDown();
         }
@@ -365,10 +365,10 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         });
 
     webRtcEpRcvOnly
-        .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+        .addMediaFlowInStateChangedListener(new EventListener<MediaFlowInStateChangedEvent>() {
 
           @Override
-          public void onEvent(MediaFlowInStateChangeEvent event) {
+          public void onEvent(MediaFlowInStateChangedEvent event) {
             if (event.getState().equals(MediaFlowState.FLOWING)) {
               eosLatch.countDown();
             }

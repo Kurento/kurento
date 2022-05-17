@@ -29,7 +29,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.FaceOverlayFilter;
-import org.kurento.client.MediaFlowInStateChangeEvent;
+import org.kurento.client.MediaFlowInStateChangedEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
@@ -126,10 +126,10 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
     getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
     playerEp.play();
 
-    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+    webRtcEp.addMediaFlowInStateChangedListener(new EventListener<MediaFlowInStateChangedEvent>() {
 
       @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
+      public void onEvent(MediaFlowInStateChangedEvent event) {
         if (event.getState().equals(MediaFlowState.FLOWING)) {
           if (flowingLatch.getCount() != 0) {
             flowingLatch.countDown();

@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.experimental.categories.Category;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
-import org.kurento.client.MediaFlowInStateChangeEvent;
+import org.kurento.client.MediaFlowInStateChangedEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
@@ -80,10 +80,10 @@ public class StabilityTest extends BaseTest {
       }
     });
 
-    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+    webRtcEp.addMediaFlowInStateChangedListener(new EventListener<MediaFlowInStateChangedEvent>() {
 
       @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
+      public void onEvent(MediaFlowInStateChangedEvent event) {
         if (event.getState().equals(MediaFlowState.FLOWING)) {
           flowingLatch.countDown();
         }

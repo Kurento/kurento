@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
-import org.kurento.client.MediaFlowInStateChangeEvent;
+import org.kurento.client.MediaFlowInStateChangedEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
@@ -94,10 +94,10 @@ public class SimplePlayer extends PlayerTest {
     playerEp.connect(webRtcEp);
 
     final CountDownLatch flowingLatch = new CountDownLatch(1);
-    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+    webRtcEp.addMediaFlowInStateChangedListener(new EventListener<MediaFlowInStateChangedEvent>() {
 
       @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
+      public void onEvent(MediaFlowInStateChangedEvent event) {
         if (event.getState().equals(MediaFlowState.FLOWING)) {
           flowingLatch.countDown();
         }
@@ -180,10 +180,10 @@ public class SimplePlayer extends PlayerTest {
     });
 
     final CountDownLatch flowingLatch = new CountDownLatch(1);
-    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+    webRtcEp.addMediaFlowInStateChangedListener(new EventListener<MediaFlowInStateChangedEvent>() {
 
       @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
+      public void onEvent(MediaFlowInStateChangedEvent event) {
         if (event.getState().equals(MediaFlowState.FLOWING)) {
           flowingLatch.countDown();
         }
@@ -276,10 +276,10 @@ public class SimplePlayer extends PlayerTest {
       }
     });
 
-    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+    webRtcEp.addMediaFlowInStateChangedListener(new EventListener<MediaFlowInStateChangedEvent>() {
 
       @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
+      public void onEvent(MediaFlowInStateChangedEvent event) {
         if (event.getState().equals(MediaFlowState.FLOWING)) {
           flowingLatch.countDown();
         }

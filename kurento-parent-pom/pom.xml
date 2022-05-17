@@ -1,14 +1,16 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- Maven coordinates -->
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>6.16.0</version>
+		<version>6.18.0-SNAPSHOT</version>
 
-		<!-- lookup parent from repository -->
+		<!-- Disable local search for parent pom; force repository lookup. -->
 		<relativePath/>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
@@ -21,11 +23,11 @@
 		Parent POM for all Kurento Java projects.
 		Provides default properties, version numbers, and build configurations.
 	</description>
-	<url>https://www.kurento.org/docs/${version.kurento-java}</url>
+	<url>https://www.kurento.org/</url>
 	<scm>
-		<url>${kurento-java.scm.url}</url>
-		<connection>${kurento-java.scm.connection}</connection>
-		<developerConnection>${kurento-java.scm.developerConnection}</developerConnection>
+		<url>https://github.com/Kurento/kurento-java</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-java.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-java.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
@@ -74,15 +76,8 @@
 		<version.kms-api-elements>7.0.0-SNAPSHOT</version.kms-api-elements>
 		<version.kms-api-filters>7.0.0-SNAPSHOT</version.kms-api-filters>
 
-		<!-- Kurento extra modules -->
-		<version.kurento-chroma>6.15.0</version.kurento-chroma>
-		<version.kurento-crowddetector>6.15.0</version.kurento-crowddetector>
-		<version.kurento-markerdetector>6.15.0</version.kurento-markerdetector>
-		<version.kurento-platedetector>6.15.0</version.kurento-platedetector>
-		<version.kurento-pointerdetector>6.15.0</version.kurento-pointerdetector>
-
 		<!-- Kurento miscellaneous tools -->
-		<version.kurento-utils-js>6.15.0</version.kurento-utils-js>
+		<version.kurento-utils-js>7.0.0-SNAPSHOT</version.kurento-utils-js>
 		<version.kurento-maven-plugin>7.0.0-SNAPSHOT</version.kurento-maven-plugin>
 
 		<!-- Kurento Java modules -->
@@ -105,56 +100,56 @@
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.4</version.apache.commons-fileupload>
 		<version.apache.commons-io>2.8.0</version.apache.commons-io>
-		<version.apache.commons-net>3.7.2</version.apache.commons-net>
 		<version.apache.commons-lang>2.6</version.apache.commons-lang>
 		<version.apache.commons-logging>1.2</version.apache.commons-logging>
+		<version.apache.commons-net>3.7.2</version.apache.commons-net>
 		<version.apache.commons-pool>2.9.0</version.apache.commons-pool>
-		<version.apache.tika>1.24.1</version.apache.tika>
 		<version.apache.fluent-hc>4.5.13</version.apache.fluent-hc>
 		<version.apache.httpclient>4.5.13</version.apache.httpclient>
 		<version.apache.httpcore>4.4.13</version.apache.httpcore>
 		<version.apache.maven-artifact>3.6.3</version.apache.maven-artifact>
 		<version.apache.source.assembly.descriptor>1.0.6</version.apache.source.assembly.descriptor>
+		<version.apache.tika>1.24.1</version.apache.tika>
 		<version.bcpkix>1.67</version.bcpkix>
 		<version.cglib>3.3.0</version.cglib>
 		<version.cors-filter>2.9</version.cors-filter>
 		<version.findbugs>3.0.1</version.findbugs>
 		<version.google.gson>2.8.6</version.google.gson>
 		<version.google.guava>30.0-jre</version.google.guava>
-		<version.google.youtube>v3-rev222-1.25.0</version.google.youtube>
 		<version.google.http>1.38.0</version.google.http>
 		<version.google.oauth>1.31.2</version.google.oauth>
+		<version.google.youtube>v3-rev222-1.25.0</version.google.youtube>
 		<version.keystone-client>3.2.9</version.keystone-client>
 
+		<version.hamcrest>2.2</version.hamcrest>
 		<version.javax.inject>1</version.javax.inject>
 		<version.junit>4.13.1</version.junit>
 		<version.mockito.all>1.10.19</version.mockito.all>
 		<version.mockito.core>3.6.0</version.mockito.core>
-		<version.powermock>1.7.4</version.powermock>
-		<version.hamcrest>2.2</version.hamcrest>
 		<version.paranamer>2.8</version.paranamer>
 		<version.plexus.io>3.2.0</version.plexus.io>
+		<version.powermock>1.7.4</version.powermock>
 
 		<version.reflections>0.9.12</version.reflections>
 		<version.scribe>1.3.7</version.scribe>
 		<version.servlet-api>4.0.1</version.servlet-api>
 		<version.slf4j>1.7.30</version.slf4j>
-		<version.spring-boot>2.3.5.RELEASE</version.spring-boot>
+		<version.spring-boot>2.6.7</version.spring-boot>
 		<version.websocket-api>1.1</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
-		<selenium-java.version>3.141.59</selenium-java.version>
-		<jmeter-maven-plugin.version>3.1.2</jmeter-maven-plugin.version>
-		<freemarker.version>2.3.30</freemarker.version>
 		<ApacheJMeter_core.version>5.3</ApacheJMeter_core.version>
-		<overthere.version>5.0.22</overthere.version>
+		<assertj.version>3.18.1</assertj.version>
+		<docker-java.version>3.2.5</docker-java.version>
+		<freemarker.version>2.3.30</freemarker.version>
+		<jackson.version>2.11.3</jackson.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
+		<jmeter-maven-plugin.version>3.1.2</jmeter-maven-plugin.version>
+		<jna.version>3.0.9</jna.version>
+		<overthere.version>5.0.22</overthere.version>
+		<selenium-java.version>3.141.59</selenium-java.version>
 		<version.ocr>4.0.0-1.4.4</version.ocr>
 		<webdrivermanager.version>4.2.2</webdrivermanager.version>
-		<docker-java.version>3.2.5</docker-java.version>
-		<jackson.version>2.11.3</jackson.version>
-		<assertj.version>3.18.1</assertj.version>
-		<jna.version>3.0.9</jna.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -168,19 +163,10 @@
 		<version.cobertura.plugin>2.7</version.cobertura.plugin>
 		<version.compiler.plugin>3.8.1</version.compiler.plugin>
 		<version.dependency.plugin>3.1.2</version.dependency.plugin>
-
-		<!--
-		NOTE: The latest version of this plugin (3.0.0-M1) has a bug that breaks
-		auth: https://issues.apache.org/jira/browse/MDEPLOY-244
-		This comment provides a work around:
-		https://issues.apache.org/jira/browse/MDEPLOY-244?focusedCommentId=16648217&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-16648217
-		But the better option is to avoid upgrading until the bug is fixed.
-		-->
-		<version.deploy.plugin>2.8.2</version.deploy.plugin>
-
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
 		<version.enforcer.rules.plugin>1.3</version.enforcer.rules.plugin>
+		<version.failsafe.plugin>3.0.0-M5</version.failsafe.plugin>
 		<version.gpg.plugin>1.6</version.gpg.plugin>
 		<version.help.plugin>3.2.0</version.help.plugin>
 		<version.install.plugin>3.0.0-M1</version.install.plugin>
@@ -190,17 +176,14 @@
 		<version.jdepend.plugin>2.0</version.jdepend.plugin>
 		<version.jxr.plugin>3.0.0</version.jxr.plugin>
 		<version.license.plugin>2.0.0</version.license.plugin>
-		<version.pir.plugin>3.1.1</version.pir.plugin><!-- maven-project-info-reports-plugins -->
+		<version.pir.plugin>3.1.1</version.pir.plugin>		<!-- maven-project-info-reports-plugins -->
 		<version.resources.plugin>3.2.0</version.resources.plugin>
-		<version.site.plugin>3.9.1</version.site.plugin>
-		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
 		<version.shade.plugin>3.2.4</version.shade.plugin>
+		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
+		<version.site.plugin>3.9.1</version.site.plugin>
 		<version.sonar.plugin>3.7.0.1746</version.sonar.plugin>
 		<version.source.plugin>3.2.1</version.source.plugin>
 		<version.surefire.plugin>3.0.0-M5</version.surefire.plugin>
-		<version.failsafe.plugin>3.0.0-M5</version.failsafe.plugin>
-		<version.wagon.ssh.plugin>3.4.1</version.wagon.ssh.plugin>
-		<version.wagon.s3.plugin>1.2.1</version.wagon.s3.plugin>
 		<version.war.plugin>3.3.1</version.war.plugin>
 
 		<!-- ************** -->
@@ -233,10 +216,6 @@
 
 		<!-- maven-assembly-plugin -->
 		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
-
-		<kurento-java.scm.url>https://github.com/Kurento/kurento-java</kurento-java.scm.url>
-		<kurento-java.scm.connection>scm:git:git://github.com/Kurento/kurento-java.git</kurento-java.scm.connection>
-		<kurento-java.scm.developerConnection>scm:git:git@github.com:Kurento/kurento-java.git</kurento-java.scm.developerConnection>
 	</properties>
 
 	<dependencyManagement>
@@ -257,33 +236,6 @@
 				<groupId>org.kurento</groupId>
 				<artifactId>kms-api-filters</artifactId>
 				<version>${version.kms-api-filters}</version>
-			</dependency>
-
-			<!-- Kurento extra modules -->
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>chroma</artifactId>
-				<version>${version.kurento-chroma}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>crowddetector</artifactId>
-				<version>${version.kurento-crowddetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>markerdetector</artifactId>
-				<version>${version.kurento-markerdetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>platedetector</artifactId>
-				<version>${version.kurento-platedetector}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>pointerdetector</artifactId>
-				<version>${version.kurento-pointerdetector}</version>
 			</dependency>
 
 			<!-- Kurento miscellaneous tools -->
@@ -899,11 +851,6 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-deploy-plugin</artifactId>
-					<version>${version.deploy.plugin}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
 					<version>${version.eclipse.plugin}</version>
 				</plugin>
@@ -1248,19 +1195,6 @@
 				<artifactId>maven-source-plugin</artifactId>
 			</plugin>
 		</plugins>
-
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${version.wagon.ssh.plugin}</version>
-			</extension>
-			<extension>
-				<groupId>org.kuali.maven.wagons</groupId>
-				<artifactId>maven-s3-wagon</artifactId>
-				<version>${version.wagon.s3.plugin}</version>
-			</extension>
-		</extensions>
 	</build>
 
 	<profiles>
@@ -1465,22 +1399,13 @@
 		</profile>
 	</profiles>
 
-	<!-- Repositories used to upload packages. -->
-	<distributionManagement>
-		<!--
-		<server> entries should exist with required credentials for each repo.
-		On CI, Jenkins injects them into settings.xml.
-		-->
-		<repository>
-			<id>sonatype-nexus</id>
-			<name>Sonatype Nexus (Maven Central)</name>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-		<snapshotRepository>
-			<id>kurento-github</id>
-			<name>Kurento GitHub Maven packages</name>
-			<url>https://maven.pkg.github.com/kurento/kurento-java</url>
-		</snapshotRepository>
-	</distributionManagement>
+	<!--
+	Kurento projects don't define a <distributionManagement> section with the
+	repositories used for deployment. Instead, CI injects a `settings.xml` file
+	with a "deploy" profile that configures maven-deploy-plugin through properties
+	`altSnapshotDeploymentRepository` and `altReleaseDeploymentRepository`.
+	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
+	<distributionManagement></distributionManagement>
+	-->
 
 </project>

@@ -32,7 +32,7 @@
 #/   released, and the Java packages should be made to depend on the new API
 #/   definition ones (which get published as part of the Media Server release).
 #/
-#/   <KmsVersion> is a full Maven version, such as "6.16.0" or "6.16.1-SNAPSHOT".
+#/   <KmsVersion> is a full Maven version, such as "6.12.0-SNAPSHOT" or "6.12.0".
 #/
 #/   Optional. Default: None.
 #/
@@ -154,10 +154,13 @@ function git_add() {
 # Apply version
 # =============
 
+MVN_ARGS=()
+
 if [[ "$CFG_RELEASE" == "true" ]]; then
     MVN_ALLOW_SNAPSHOTS="false"
 else
     MVN_ALLOW_SNAPSHOTS="true"
+    MVN_ARGS+=(-U -Psnapshot)
 fi
 
 # kurento-parent-pom
@@ -165,12 +168,13 @@ fi
     pushd kurento-parent-pom/
 
     # Parent version: Update to latest available.
-    mvn versions:update-parent \
+    mvn "${MVN_ARGS[@]}" versions:update-parent \
         -DgenerateBackupPoms=false \
+        -DparentVersion="[$VERSION_JAVA,)" \
         -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
 
     # Project version: Set new version.
-    mvn versions:set \
+    mvn "${MVN_ARGS[@]}" versions:set \
         -DgenerateBackupPoms=false \
         -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS" \
         -DnewVersion="$VERSION_JAVA"
@@ -192,7 +196,7 @@ fi
 
     # Install the project into local cache.
     # This allows the following project(s) to update their parent.
-    mvn clean install -Dmaven.test.skip=true
+    mvn "${MVN_ARGS[@]}" clean install -Dmaven.test.skip=true
 
     popd
 }
@@ -205,7 +209,7 @@ fi
     # that the *current* parent version also exists. So if won't allow
     # updating from a nonexistent version (like "1.2.3-SNAPSHOT").
     #
-    # mvn versions:update-parent \
+    # mvn "${MVN_ARGS[@]}" versions:update-parent \
     #     -DgenerateBackupPoms=false \
     #     -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS" \
     #     -DparentVersion="[$VERSION_JAVA]"
@@ -223,7 +227,7 @@ fi
     # that the *current* parent version also exists. So if won't allow
     # updating from a nonexistent version (like "1.2.3-SNAPSHOT").
     #
-    # mvn versions:update-child-modules \
+    # mvn "${MVN_ARGS[@]}" versions:update-child-modules \
     #     -DgenerateBackupPoms=false \
     #     -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
     #
