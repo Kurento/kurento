@@ -2109,47 +2109,6 @@ GST_END_TEST
 
 // ----------------------------------------------------------------------------
 
-// not_enough_ports
-// ----------------
-
-typedef struct {
-  GHashTable *tcp;
-  GHashTable *udp;
-} GatheringData;
-
-static void
-not_enough_ports_on_ice_candidate (GstElement *self, gchar *sess_id,
-    KmsIceCandidate *candidate, GatheringData *gatheringData)
-{
-  const KmsIceTcpCandidateType tcp_type =
-      kms_ice_candidate_get_candidate_tcp_type (candidate);
-  const KmsIceProtocol proto = kms_ice_candidate_get_protocol (candidate);
-
-  GST_DEBUG_OBJECT (self, "SessionId: '%s', candidate: '%s'", sess_id,
-      kms_ice_candidate_get_candidate (candidate));
-
-  if (tcp_type == KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE) {
-    return;
-  }
-
-  // Check that this candidate doesn't contain a repeated address
-  NiceAddress *address = nice_address_new ();
-  gboolean ok = nice_address_set_from_string (
-      address, kms_ice_candidate_get_address (candidate));
-  fail_unless (ok);
-  nice_address_set_port (address, kms_ice_candidate_get_port (candidate));
-
-  if (proto == KMS_ICE_PROTOCOL_TCP) {
-    fail_if (g_hash_table_contains (gatheringData->tcp, address));
-    g_hash_table_add (gatheringData->tcp, address);
-  } else {
-    fail_if (g_hash_table_contains (gatheringData->udp, address));
-    g_hash_table_add (gatheringData->udp, address);
-  }
-}
-
-// ----------------------------------------------------------------------------
-
 static void
 on_ice_candidate_check_mid (GstElement * self, gchar * sess_id,
     KmsIceCandidate * candidate, const gchar * expected_mid)
