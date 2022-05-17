@@ -418,6 +418,19 @@ kms_ice_nice_agent_init (KmsIceNiceAgent * self)
   self->priv = KMS_ICE_NICE_AGENT_GET_PRIVATE (self);
 }
 
+static void
+kms_ice_nice_agent_recv_cb (NiceAgent *agent,
+    guint stream_id,
+    guint component_id,
+    guint len,
+    gchar *buf,
+    gpointer user_data)
+{
+  ((void)0); // Nothing to do, noop
+  // KmsIceBaseAgent *self = user_data;
+  // GST_DEBUG_OBJECT (self, "Callback data received");
+}
+
 static char *
 kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
     guint16 min_port, guint16 max_port)
@@ -443,9 +456,18 @@ kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
   }
 
   // NOTE: Docs say [0] that an I/O callback must be registered in order to receive
-  // data through the ICE transport. We don't need to do that here, because it
-  // is already done inside the GStreamer's plugin (gstnicesrc).
-  // [0]: https://libnice.freedesktop.org/libnice/NiceAgent.html#NiceAgent.description
+  // data through the ICE transport:
+  // https://libnice.freedesktop.org/libnice/NiceAgent.html#NiceAgent.description
+  //
+  // This is done already by the "gstnicesrc" GStreamer plugin, which is set in
+  // place when Kurento is receiving an SDP Offer. However, it must still be done
+  // for when Kurento acts as sender of its own SDP Offer, because the GSt pipeline
+  // is not set up until the remote SDP Answer is received and processed.
+  GST_DEBUG_OBJECT (self, "Attach recv callback to mainloop");
+  for (i = 1; i <= KMS_NICE_N_COMPONENTS; i++) {
+    nice_agent_attach_recv (nice_agent->priv->agent, id, i,
+        nice_agent->priv->context, kms_ice_nice_agent_recv_cb, self);
+  }
 
   return g_strdup_printf ("%u", id);
 }

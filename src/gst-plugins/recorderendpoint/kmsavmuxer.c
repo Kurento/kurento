@@ -175,6 +175,11 @@ kms_av_muxer_create_muxer (KmsAVMuxer * self)
       g_object_unref (file_sink_factory);
       return mux;
     }
+    case KMS_RECORDING_PROFILE_FLV: {
+        GstElement *mux = gst_element_factory_make ("flvmux", NULL);
+        g_object_set(mux, "streamable", TRUE, NULL);
+        return mux;
+    }
     case KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY:
       return gst_element_factory_make ("jifmux", NULL);
     default:
@@ -190,11 +195,17 @@ kms_av_muxer_get_sink_pad_name (KmsRecordingProfile profile,
   if (type == KMS_ELEMENT_PAD_TYPE_VIDEO) {
     if (profile == KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY) {
       return "sink";
+    } else if (profile == KMS_RECORDING_PROFILE_FLV) {
+      return "video";
     } else {
       return "video_%u";
     }
   } else if (type == KMS_ELEMENT_PAD_TYPE_AUDIO) {
-    return "audio_%u";
+    if (profile == KMS_RECORDING_PROFILE_FLV) {
+      return "audio";
+    } else {
+      return "audio_%u";
+    }
   } else {
     return NULL;
   }

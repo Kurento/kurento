@@ -579,18 +579,22 @@ kms_webrtc_session_new_candidate (KmsIceBaseAgent * agent,
       kms_ice_candidate_get_stream_id (candidate),
       kms_ice_candidate_get_component (candidate));
 
-  gboolean is_candidate_ipv6 = kms_ice_candidate_get_ip_version (candidate) == IP_VERSION_6;
+  if (kms_ice_candidate_get_candidate_type (candidate)
+      == KMS_ICE_CANDIDATE_TYPE_HOST) {
+    const gboolean is_candidate_ipv6 =
+        (kms_ice_candidate_get_ip_version (candidate) == IP_VERSION_6);
 
-  if (self->external_ipv4 != NULL && is_candidate_ipv6 == FALSE) {
-    kms_ice_candidate_set_address (candidate, self->external_ipv4);
-    GST_DEBUG_OBJECT (self,
-        "[IceCandidateFound] Mangled local candidate with IPv4: '%s'",
-        kms_ice_candidate_get_candidate (candidate));
-  } else if (self->external_ipv6 != NULL && is_candidate_ipv6 == TRUE) {
-    kms_ice_candidate_set_address (candidate, self->external_ipv6);
-    GST_DEBUG_OBJECT (self,
-        "[IceCandidateFound] Mangled local candidate with IPv6: '%s'",
-        kms_ice_candidate_get_candidate (candidate));
+    if (self->external_ipv4 != NULL && is_candidate_ipv6 == FALSE) {
+      kms_ice_candidate_set_address (candidate, self->external_ipv4);
+      GST_DEBUG_OBJECT (self,
+          "[IceCandidateFound] Mangled local candidate with IPv4: '%s'",
+          kms_ice_candidate_get_candidate (candidate));
+    } else if (self->external_ipv6 != NULL && is_candidate_ipv6 == TRUE) {
+      kms_ice_candidate_set_address (candidate, self->external_ipv6);
+      GST_DEBUG_OBJECT (self,
+          "[IceCandidateFound] Mangled local candidate with IPv6: '%s'",
+          kms_ice_candidate_get_candidate (candidate));
+    }
   }
 
   kms_webrtc_session_sdp_msg_add_ice_candidate (self, candidate);

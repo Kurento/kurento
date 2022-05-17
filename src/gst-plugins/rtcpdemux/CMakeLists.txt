@@ -17,6 +17,7 @@ if(SANITIZERS_ENABLED)
 endif()
 
 target_link_libraries(rtcpdemux
+  ${KmsGstCommons_LIBRARIES}
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-base-1.0_LIBRARIES}
   ${gstreamer-rtp-1.0_LIBRARIES}
@@ -27,6 +28,7 @@ set_property (TARGET rtcpdemux
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${KmsGstCommons_INCLUDE_DIRS}
     ${gstreamer-1.0_INCLUDE_DIRS}
     ${gstreamer-base-1.0_INCLUDE_DIRS}
     ${gstreamer-rtp-1.0_INCLUDE_DIRS}

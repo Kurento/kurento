@@ -74,7 +74,7 @@ set_property (TARGET webrtcdataproto
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
     ${gstreamer-1.0_INCLUDE_DIRS}
-${gstreamer-sctp-1.0_INCLUDE_DIRS}
+    ${gstreamer-sctp-1.0_INCLUDE_DIRS}
 )
 
 set_target_properties(webrtcdataproto PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}")
@@ -144,7 +144,7 @@ set_property (TARGET kmswebrtcendpoint
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
     ${gstreamer-1.0_INCLUDE_DIRS}
-${gstreamer-sctp-1.0_INCLUDE_DIRS}
+    ${gstreamer-sctp-1.0_INCLUDE_DIRS}
     ${nice_INCLUDE_DIRS}
 )
 
@@ -186,7 +186,7 @@ set_property (TARGET webrtcendpoint
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
     ${gstreamer-1.0_INCLUDE_DIRS}
-${gstreamer-sctp-1.0_INCLUDE_DIRS}
+    ${gstreamer-sctp-1.0_INCLUDE_DIRS}
 )
 
 target_link_libraries(webrtcendpoint

@@ -95,7 +95,6 @@ public:
   sigc::signal<void, IceGatheringDone> signalIceGatheringDone;
   sigc::signal<void, IceComponentStateChanged> signalIceComponentStateChanged;
   sigc::signal<void, NewCandidatePairSelected> signalNewCandidatePairSelected;
-
   sigc::signal<void, DataChannelOpened> signalDataChannelOpened;
   sigc::signal<void, DataChannelClosed> signalDataChannelClosed;
 

@@ -55,6 +55,9 @@ struct _KmsWebrtcTransportSinkClass
                           KmsIceBaseAgent *agent,
                           const char *stream_id,
                           guint component_id);
+                      
+  void (*set_dtls_is_client) (KmsWebrtcTransportSink * self,
+                          gboolean is_client);
 };
 
 GType kms_webrtc_transport_sink_get_type (void);
@@ -65,5 +68,9 @@ void kms_webrtc_transport_sink_configure (KmsWebrtcTransportSink * self,
                                               KmsIceBaseAgent *agent,
                                               const char *stream_id,
                                               guint component_id);
+void kms_webrtc_transport_sink_set_dtls_is_client (KmsWebrtcTransportSink * self,
+                                              gboolean is_client);
+void kms_webrtc_transport_sink_start_dtls (KmsWebrtcTransportSink * self);
+
 G_END_DECLS
 #endif /* __KMS_WEBRTC_TRANSPORT_SINK_H__ */

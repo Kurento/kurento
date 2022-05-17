@@ -92,7 +92,7 @@ kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
   KmsWebRtcBundleConnectionPrivate *priv = self->priv;
   KmsWebRtcTransport *tr = priv->tr;
 
-  g_object_set (G_OBJECT (tr->sink->dtlssrtpenc), "is-client", active, NULL);
+  kms_webrtc_transport_sink_set_dtls_is_client (tr->sink, active);
 
   gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->src)));
   gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->sink)));

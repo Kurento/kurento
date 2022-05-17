@@ -42,6 +42,25 @@ kms_webrtc_transport_sink_nice_init (KmsWebrtcTransportSinkNice * self)
   kms_webrtc_transport_sink_connect_elements (parent);
 }
 
+static void
+kms_webrtc_transport_sink_nice_component_state_changed (KmsIceBaseAgent * agent,
+    char *stream_id, guint component_id, IceState state,
+    KmsWebrtcTransportSink * self)
+{
+  gboolean is_client;
+
+  GST_LOG_OBJECT (self,
+      "[IceComponentStateChanged] state: %s, stream_id: %s, component_id: %u",
+      kms_ice_base_agent_state_to_string (state), stream_id, component_id);
+
+  g_object_get (G_OBJECT (self->dtlssrtpenc), "is-client",
+          &is_client, NULL);
+
+  if ((state == ICE_STATE_CONNECTED) && is_client) {
+    kms_webrtc_transport_sink_start_dtls (self);
+  }
+}
+
 void
 kms_webrtc_transport_sink_nice_configure (KmsWebrtcTransportSink * self,
     KmsIceBaseAgent * agent, const char *stream_id, guint component_id)
@@ -53,6 +72,26 @@ kms_webrtc_transport_sink_nice_configure (KmsWebrtcTransportSink * self,
       "agent", kms_ice_nice_agent_get_agent (nice_agent),
       "stream", id, "component", component_id,
       "sync", FALSE, "async", FALSE, NULL);
+
+  g_signal_connect (nice_agent, "on-ice-component-state-changed",
+      G_CALLBACK (kms_webrtc_transport_sink_nice_component_state_changed), self);
+}
+
+void
+kms_webrtc_transport_sink_nice_set_dtls_is_client (KmsWebrtcTransportSink * self,
+    gboolean is_client)
+{
+  KmsWebrtcTransportSinkNiceClass *klass =
+      KMS_WEBRTC_TRANSPORT_SINK_NICE_CLASS (G_OBJECT_GET_CLASS (self));
+  KmsWebrtcTransportSinkClass *parent_klass =
+      KMS_WEBRTC_TRANSPORT_SINK_CLASS  (g_type_class_peek_parent(klass));
+
+  parent_klass->set_dtls_is_client (self, is_client);
+
+  if (!is_client) {
+    kms_webrtc_transport_sink_start_dtls (self);
+  }
+ 
 }
 
 static void
@@ -64,6 +103,7 @@ kms_webrtc_transport_sink_nice_class_init (KmsWebrtcTransportSinkNiceClass *
 
   base_class = KMS_WEBRTC_TRANSPORT_SINK_CLASS (klass);
   base_class->configure = kms_webrtc_transport_sink_nice_configure;
+  base_class->set_dtls_is_client = kms_webrtc_transport_sink_nice_set_dtls_is_client;
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
