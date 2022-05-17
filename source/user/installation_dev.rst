@@ -30,6 +30,8 @@ While official release Docker images are published as `kurento/kurento-media-ser
 
 
 
+.. _installation-dev-local:
+
 Local Installation
 ------------------
 
@@ -110,6 +112,19 @@ This adds access to development builds only for a single project. Open the proje
          </snapshots>
        </repository>
      </repositories>
+     <pluginRepositories>
+       <pluginRepository>
+         <id>kurento-github-public</id>
+         <name>Kurento GitHub Maven packages (public access)</name>
+         <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+         <releases>
+           <enabled>false</enabled>
+         </releases>
+         <snapshots>
+           <enabled>true</enabled>
+         </snapshots>
+       </pluginRepository>
+     </pluginRepositories>
      ...
    </project>
 
@@ -120,7 +135,7 @@ Afterwards, in the same ``pom.xml``, look for the desired dependency and change 
    <dependency>
      <groupId>org.kurento</groupId>
      <artifactId>kurento-client</artifactId>
-     <version>|VERSION_CLIENT_JAVA|-SNAPSHOT</version>
+     <version>6.12.0-SNAPSHOT</version>
    </dependency>
 
 
@@ -141,7 +156,7 @@ Edit one of the mentioned settings files, and include this:
      ...
      <profiles>
        <profile>
-         <id>snapshots</id>
+         <id>snapshot</id>
          <repositories>
            <repository>
              <id>kurento-github-public</id>
@@ -155,6 +170,19 @@ Edit one of the mentioned settings files, and include this:
              </snapshots>
            </repository>
          </repositories>
+         <pluginRepositories>
+           <pluginRepository>
+             <id>kurento-github-public</id>
+             <name>Kurento GitHub Maven packages (public access)</name>
+             <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+             <releases>
+               <enabled>false</enabled>
+             </releases>
+             <snapshots>
+               <enabled>true</enabled>
+             </snapshots>
+           </pluginRepository>
+         </pluginRepositories>
        </profile>
      </profiles>
      ...
@@ -168,15 +196,15 @@ Edit one of the mentioned settings files, and include this:
    anonymous downloads from their Maven package registry.
    More details here: https://github.community/t/download-from-github-package-registry-without-authentication/14407/111
 
-Then use the ``-Psnapshots`` argument in your next Maven run, to enable the new profile. For example:
+Then use the ``-Psnapshot`` argument in your next Maven run, to enable the new profile. For example:
 
 .. code-block:: shell
 
-   mvn -Psnapshots clean package
+   mvn -Psnapshot clean package
 
 .. code-block:: shell
 
-   mvn dependency:get -Psnapshots -Dartifact='org.kurento:kurento-client:6.16.4-SNAPSHOT'
+   mvn dependency:get -Psnapshot -Dartifact='org.kurento:kurento-client:6.12.0-SNAPSHOT'
 
 
 

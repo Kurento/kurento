@@ -630,7 +630,7 @@ There is a multitude of possible reasons for a failed WebRTC connection, so you 
 ICE connection problems
 -----------------------
 
-If your application receives an :ref:`events-icecomponentstatechange` event with state *FAILED* from Kurento Media Server, it means that the WebRTC ICE connectivity has been abruptly interrupted. In general terms, this implies that **there is some network connectivity issue** between KMS and the remote peer (typically, a web browser), but the exact reason can fall into a myriad possible causes. You will need to investigate what happened on the user's and the server's network when the failure happened.
+If your application receives an :ref:`events-icecomponentstatechanged` event with state *FAILED* from Kurento Media Server, it means that the WebRTC ICE connectivity has been abruptly interrupted. In general terms, this implies that **there is some network connectivity issue** between KMS and the remote peer (typically, a web browser), but the exact reason can fall into a myriad possible causes. You will need to investigate what happened on the user's and the server's network when the failure happened.
 
 Here are some tips to keep in mind:
 
@@ -746,7 +746,7 @@ If using Docker Compose, use ``network_mode: host`` such as this:
    version: "3.7"
    services:
      kms:
-       image: kurento/kurento-media-server:6.9.0
+       image: kurento/kurento-media-server:6.12.0
        container_name: kms
        restart: always
        network_mode: host
@@ -852,7 +852,7 @@ Follow this issue checklist to see if any of them is preventing the RecorderEndp
 
 * The RecorderEndpoint was connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__), which assumes both audio and video, but only video (or only audio) is arriving:
 
-  - Monitor the :ref:`MediaFlowInStateChange <events-mediaflowin>` and :ref:`MediaFlowOutStateChange <events-mediaflowout>` events from all MediaElements.
+  - Monitor the :ref:`MediaFlowInStateChanged <events-mediaflowin>` and :ref:`MediaFlowOutStateChanged <events-mediaflowout>` events from all MediaElements.
   - Make sure that the element providing media (the *source*) is firing a *MediaFlowOut* event, and that the RecorderEndpoint is firing a corresponding *MediaFlowIn* event.
   - If your recording should be only-audio or only-video, use the ``connect(MediaElement, MediaType)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement-org.kurento.client.MediaType->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__).
 

@@ -67,8 +67,8 @@ ElementDisconnected
 
 .. _events-mediaflowin:
 
-MediaFlowInStateChange
-----------------------
+MediaFlowInStateChanged
+-----------------------
 
 - State = *Flowing*: Data is arriving from the KMS Pipeline, and **flowing into** the Element. Technically, this means that there are GStreamer Buffers flowing from the Pipeline to the Element's *sink* pad. For example, with a Recorder element this event would fire when media arrives from the Pipeline to be written to disk.
 
@@ -78,8 +78,8 @@ MediaFlowInStateChange
 
 .. _events-mediaflowout:
 
-MediaFlowOutStateChange
------------------------
+MediaFlowOutStateChanged
+------------------------
 
 - State = *Flowing*: There is data **flowing out** from the Element towards the KMS Pipeline. Technically, this means that there are GStreamer Buffers flowing from the Element's *src* pad to the Pipeline. For example, with a Player element this event would fire when media is read from disk and is pushed to the Pipeline.
 
@@ -87,8 +87,8 @@ MediaFlowOutStateChange
 
 
 
-MediaTranscodingStateChange
----------------------------
+MediaTranscodingStateChanged
+----------------------------
 
 All Endpoint objects in Kurento Media Server embed a custom-made GStreamer element called `agnosticbin`. This element is used to provide seamless interconnection of components in the *MediaPipeline*, regardless of the format and codec configuration of the input and output media streams.
 
@@ -164,7 +164,7 @@ Call sequence:
 
    1. *NewCandidatePairSelected*.
    2. *IceComponentStateChanged* (State: *Connected*).
-   3. *MediaFlowOutStateChange* (State: *Flowing*).
+   3. *MediaFlowOutStateChanged* (State: *Flowing*).
 
 
 
@@ -178,14 +178,14 @@ For further reference, see the libnice's `Agent documentation <https://nice.free
 
 
 DataChannelClosed
-----------------
+-----------------
 
 [TODO - add contents]
 
 
 
 DataChannelOpened
----------------
+-----------------
 
 [TODO - add contents]
 
@@ -198,10 +198,10 @@ A new local candidate has been found, after the ICE Gathering process was starte
 
 
 
-.. _events-icecomponentstatechange:
+.. _events-icecomponentstatechanged:
 
 IceComponentStateChanged
------------------------
+------------------------
 
 This event carries the state values from the signal `NiceAgent::"component-state-changed" <https://nice.freedesktop.org/libnice/NiceAgent.html#NiceAgent-component-state-changed>`__.
 

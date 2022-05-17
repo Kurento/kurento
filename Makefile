@@ -40,10 +40,6 @@ help:
 	@echo "- texlive-fonts-recommended"
 	@echo "- texlive-latex-recommended"
 	@echo "- texlive-latex-extra"
-	@echo ""
-	@echo "python pip dependencies:"
-	@echo "- sphinx >= 1.5.0 (Tested: 3.3.0)"
-	@echo "- sphinx_rtd_theme  (Tested: 0.5.0)"
 
 init-workdir:
 	mkdir -p $(WORKDIR)
@@ -65,7 +61,7 @@ langdoc-client-java: langdoc-init
 	cd kurento-java
 	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JAVA|"
 	cd kurento-client || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
-	mvn --batch-mode --quiet -Psnapshots clean package \
+	mvn --batch-mode --quiet -Psnapshot clean package \
 		-DskipTests || { echo "ERROR: 'mvn clean' failed"; exit 1; }
 	mvn --batch-mode --quiet javadoc:javadoc \
 		-DreportOutputDirectory="$(DESTPATH)" -DdestDir="client-javadoc" \

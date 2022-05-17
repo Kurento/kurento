@@ -1,0 +1,32 @@
+digraph dependencies_all {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  rankdir = "RL";
+
+  "kurento-module-creator";
+  "kurento-maven-plugin" -> "kurento-module-creator";
+
+  "kms-api-core" -> {"kurento-maven-plugin"};
+  "kms-api-elements" -> {"kurento-maven-plugin"};
+  "kms-api-filters" -> {"kurento-maven-plugin"};
+
+  "kurento-qa-pom";
+  "kurento-utils-js";
+
+  "kurento-client" -> {"kurento-qa-pom" "kurento-utils-js" "kms-api-core" "kms-api-elements" "kms-api-filters"};
+
+  "kms-chroma" -> {"kurento-maven-plugin" "kurento-client"};
+  "kms-crowddetector" -> {"kurento-maven-plugin" "kurento-client"};
+  "kms-datachannelexample" -> {"kurento-maven-plugin" "kurento-client"};
+  "kms-markerdetector" -> {"kurento-maven-plugin" "kurento-client"};
+  "kms-platedetector" -> {"kurento-maven-plugin" "kurento-client"};
+  "kms-pointerdetector" -> {"kurento-maven-plugin" "kurento-client"};
+
+  "kurento-tutorial-java" -> {"kurento-client" "kms-chroma" "kms-crowddetector" "kms-datachannelexample" "kms-platedetector" "kms-pointerdetector"};
+  "kurento-tutorial-test" -> "kurento-tutorial-java";
+
+  "kurento-test" -> {"kurento-client" "kurento-client" "kurento-utils-js" "kms-chroma" "kms-crowddetector" "kms-platedetector"};
+}

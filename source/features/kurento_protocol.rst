@@ -497,7 +497,6 @@ The following example shows a notification sent from server to client, notifying
          "data": {
            "source": "681f1bc8-2d13-4189-a82a-2e2b92248a21_kurento.MediaPipeline/e983997e-ac19-4f4b-9575-3709af8c01be_kurento.PlayerEndpoint",
            "tags": [],
-           "timestamp": "1441277150",
            "timestampMillis": "1441277150433",
            "type": "EndOfStream"
          },
@@ -521,7 +520,6 @@ Here, an example Error event is sent to notify about permission errors while try
            "errorCode": 6,
            "source": "bdd15b54-9cfa-4036-8a1a-a17db06b78bc_kurento.MediaPipeline/5dd21f63-643f-4562-a5d5-0ea0b6fd4a48_kurento.RecorderEndpoint",
            "tags": [],
-           "timestamp": "1646657831",
            "timestampMillis": "1646657831138",
            "type": "RESOURCE_ERROR_OPEN"
          },
@@ -531,7 +529,7 @@ Here, an example Error event is sent to notify about permission errors while try
      }
    }
 
-For more info about Kurento events, check :doc:`/features/events.rst`.
+For more info about Kurento events, check :doc:`/features/events`.
 
 
 
