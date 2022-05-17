@@ -1,52 +1,56 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <groupId>org.kurento.module</groupId>
-  <artifactId>moduleA</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<modelVersion>4.0.0</modelVersion>
 
-  <name>moduleA</name>
-  <url>http://maven.apache.org</url>
+	<groupId>org.kurento.module</groupId>
+	<artifactId>moduleA</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-  <properties>
-    <maven.compiler.target>1.7</maven.compiler.target>
-    <maven.compiler.source>1.7</maven.compiler.source>
-  </properties>
+	<name>moduleA</name>
+	<url>http://maven.apache.org</url>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.kurento.module</groupId>
-      <artifactId>core</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.kurento.module</groupId>
-      <artifactId>elements</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.kurento.module</groupId>
-      <artifactId>elements</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-  </dependencies>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+	</properties>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.kurento</groupId>
-        <artifactId>kurento-maven-plugin</artifactId>
-        <version>0.0.21-SNAPSHOT</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-kurento-client</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+	<dependencies>
+		<dependency>
+			<groupId>org.kurento.module</groupId>
+			<artifactId>core</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento.module</groupId>
+			<artifactId>elements</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento.module</groupId>
+			<artifactId>elements</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+	</dependencies>
 
- </project>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.kurento</groupId>
+				<artifactId>kurento-maven-plugin</artifactId>
+				<version>0.0.21-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate-kurento-client</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

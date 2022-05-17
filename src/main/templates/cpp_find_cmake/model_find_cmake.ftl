@@ -1,5 +1,5 @@
-Find${module.code.implementation.lib?replace("lib", "")?upper_case}.cmake.in
-<#assign name_lower>${module.code.implementation.lib?replace("lib", "")}</#assign>
+Find${module.code.implementation.lib?replace("^lib", "", "r")?upper_case}.cmake.in
+<#assign name_lower>${module.code.implementation.lib?replace("^lib", "", "r")}</#assign>
 <#assign name>${name_lower?upper_case}</#assign>
 # - Try to find ${name} library
 
@@ -18,7 +18,7 @@ include (GenericFind)
 
 generic_find (
   REQUIRED
-  LIBNAME ${import.module.code.implementation.lib?replace("lib", "")?upper_case}
+  LIBNAME ${import.module.code.implementation.lib?replace("^lib", "", "r")?upper_case}
   VERSION ${import.version}
 )
 </#list>
@@ -35,7 +35,7 @@ set (${name}_SOURCE_DIR_PREFIX "" CACHE PATH "Path prefix used to look for sourc
 
 set(${name}_INCLUDE_DIRS
 <#list module.imports as import>
-  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
+  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("^lib", "", "r")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
 </#list>
 )
 
@@ -174,7 +174,7 @@ set(${name}_INCLUDE_DIRS
 set (${name}_LIBRARIES
   <#noparse>${</#noparse>${name}<#noparse>_LIBRARY}</#noparse>
 <#list module.imports as import>
-  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_LIBRARIES}</#noparse>
+  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("^lib", "", "r")?upper_case}<#noparse>_LIBRARIES}</#noparse>
 </#list>
   <#noparse>${REQUIRED_LIBRARIES}</#noparse>
   CACHE INTERNAL "Libraries for ${name}" FORCE

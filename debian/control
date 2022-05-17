@@ -13,8 +13,7 @@ Build-Depends-Indep:
  libgoogle-gson-java,
  libhamcrest-java,
  libmaven-assembly-plugin-java,
- libslf4j-java,
- libwagon-java
+ libslf4j-java
 Standards-Version: 4.0.0
 Vcs-Git: https://github.com/Kurento/kurento-module-creator.git
 Vcs-Browser: https://github.com/Kurento/kurento-module-creator

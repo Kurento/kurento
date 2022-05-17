@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Maven coordinates -->
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-module-creator</artifactId>
 	<version>7.0.0-SNAPSHOT</version>
@@ -10,14 +14,14 @@
 	<!-- Project-level information -->
 	<name>Kurento Module Creator</name>
 	<description>
-		Tool that generates code for RPC between the Kurento Media Server
-		and remote libraries.
+		Tool that generates code for RPC between the Kurento Media Server and
+		remote libraries.
 	</description>
-	<url>https://www.kurento.org/docs/${project.version}</url>
+	<url>https://www.kurento.org/</url>
 	<scm>
 		<url>https://github.com/Kurento/kurento-module-creator</url>
-		<connection>scm:git:git://github.com/Kurento/kurento-module-creator.git</connection>
-		<developerConnection>scm:git:git@github.com:Kurento/kurento-module-creator.git</developerConnection>
+		<connection>scm:git:https://github.com/Kurento/kurento-module-creator.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-module-creator.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
@@ -56,13 +60,10 @@
 	<!-- Project configuration -->
 
 	<properties>
+		<!-- maven-resources-plugin -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<buildDirectory>${project.basedir}/target</buildDirectory>
 
-		<!-- See explanation below -->
-		<extension.groupId>org.apache.maven.wagon</extension.groupId>
-		<extension.artifactId>wagon-file</extension.artifactId>
-		<extension.version>1.0</extension.version>
+		<buildDirectory>${project.basedir}/target</buildDirectory>
 	</properties>
 
 	<dependencies>
@@ -105,7 +106,7 @@
 		</dependency>
 	</dependencies>
 
-    <build>
+	<build>
 		<directory>${buildDirectory}</directory>
 		<resources>
 			<resource>
@@ -152,39 +153,15 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<extensions>
-			<extension>
-				<groupId>${extension.groupId}</groupId>
-				<artifactId>${extension.artifactId}</artifactId>
-				<version>${extension.version}</version>
-			</extension>
-		</extensions>
 	</build>
 
 	<!--
-	Maven has the limitation that it doesn't allow to define new <extensions>
-	as part of a <profile>, which means that we cannot easily inject the
-	'maven-s3-wagon' extension when the profile 'deploy' gets enabled.
-
-	There is a clever trick to overcome this limitation: have an harmless
-	extension added by default, and then swap it with the actually desired one,
-	by defining its Maven coordinates as properties in the profile.
-	Source: https://stackoverflow.com/questions/17639778/maven-3-profile-with-extensions/36253007#36253007
-
-	The default extension we are using here is 'org.apache.maven.wagon/wagon-file/1.0',
-	because it is already installed in any Ubuntu system where either 'maven' or
-	'maven-debian-helper' is installed, so it doesn't introduce additional
-	build dependencies (field *Build-Depends* in the 'debian/control' file).
+	Kurento projects don't define a <distributionManagement> section with the
+	repositories used for deployment. Instead, CI injects a `settings.xml` file
+	with a "deploy" profile that configures maven-deploy-plugin through properties
+	`altSnapshotDeploymentRepository` and `altReleaseDeploymentRepository`.
+	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
+	<distributionManagement></distributionManagement>
 	-->
-	<profiles>
-		<profile>
-			<id>deploy</id>
-			<properties>
-				<extension.groupId>org.kuali.maven.wagons</extension.groupId>
-				<extension.artifactId>maven-s3-wagon</extension.artifactId>
-				<extension.version>1.2.1</extension.version>
-			</properties>
-		</profile>
-	</profiles>
 
 </project>

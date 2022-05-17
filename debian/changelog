@@ -1,8 +1,19 @@
 kurento-module-creator (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
+  [ Kurento ]
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 03 Mar 2021 12:26:46 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 13 Apr 2022 11:52:22 +0200
+
+kurento-module-creator (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Paul Wise ]
+  * Add KurentoModuleCreatorConfig with path to FindKurentoModuleCreator (#3)
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:39 +0200
 
 kurento-module-creator (6.16.0-0kurento1) testing; urgency=medium
 
