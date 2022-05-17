@@ -140,7 +140,7 @@ kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink *self)
       FUNNEL_FACTORY_NAME);
 
   if (funnel != NULL) {
-    g_object_set (funnel, "forward-sticky-events-mode", 0 /* never */, NULL);
+    g_object_set (funnel, "forward-sticky-events", FALSE, NULL);
     g_object_unref (funnel);
   }
 
