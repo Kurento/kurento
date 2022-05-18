@@ -83,7 +83,10 @@ else
 fi
 
 # Temp dir to store all packages in remote machine
-TEMP_DIR="pkg_${JOB_DISTRO}_${JOB_TIMESTAMP}"
+TEMP_DIR="aptly_${JOB_DISTRO}_${JOB_TIMESTAMP}"
+
+# Aptly repository name prefix to use for the repo name
+REPO_NAME_PREFIX="kurento-${JOB_DISTRO}"
 
 # Aptly runner script arguments
 ARGS="--distro-name $JOB_DISTRO"
@@ -91,6 +94,8 @@ ARGS="--distro-name $JOB_DISTRO"
 # Define parameters for the repository creation
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy to release repo"
+
+    ARGS="$ARGS --release"
 
     # Get version number from the package file itself
     # shellcheck disable=SC2012
@@ -107,25 +112,19 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
         log "ERROR: Cannot parse KMS Version field"
         exit 1
     fi
-
-    ARGS="$ARGS --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
-    ARGS="$ARGS --publish-name ${KMS_VERSION}"
-    ARGS="$ARGS --release"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy to experimental feature repo"
 
-    KMS_VERSION="$JOB_DEPLOY_NAME"
-
-    ARGS="$ARGS --repo-name kurento-labs-${JOB_DISTRO}-${KMS_VERSION}"
-    ARGS="$ARGS --publish-name ${KMS_VERSION}"
+    REPO_NAME_PREFIX+="-exp"
+    KMS_VERSION="${JOB_DEPLOY_NAME}"
 else
     log "Deploy to nightly packages repo"
 
     KMS_VERSION="dev"
-
-    ARGS="$ARGS --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
-    ARGS="$ARGS --publish-name ${KMS_VERSION}"
 fi
+
+ARGS="$ARGS --repo-name ${REPO_NAME_PREFIX}-${KMS_VERSION}"
+ARGS="$ARGS --publish-name $KMS_VERSION"
 
 
 
@@ -141,25 +140,26 @@ docker run --pull always --rm -i \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
     buildpack-deps:xenial-scm /bin/bash <<DOCKERCOMMANDS
 
-# Bash options for strict error checking
+# Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
+shopt -s inherit_errexit 2>/dev/null || true
 
-# Trace all commands
+# Trace all commands (to stderr).
 set -o xtrace
 
-# Exit trap, used to clean up
+# Exit trap, used to clean up.
 on_exit() {
-    ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
+    ssh -n -o StrictHostKeyChecking=no -i secret.pem \
         ubuntu@proxy.openvidu.io '\
             rm -rf "$TEMP_DIR"'
 }
 trap on_exit EXIT
 
-ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
+ssh -n -o StrictHostKeyChecking=no -i secret.pem \
     ubuntu@proxy.openvidu.io '\
         mkdir -p "$TEMP_DIR"'
 
-scp -o StrictHostKeyChecking=no -i ./secret.pem \
+scp -o StrictHostKeyChecking=no -i secret.pem \
     ./*.*deb \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
@@ -167,7 +167,7 @@ scp -o StrictHostKeyChecking=no -i secret.pem \
     /adm-scripts/kurento_ci_aptly_repo_publish.sh \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
-ssh -n -o StrictHostKeyChecking=no -i ./secret.pem \
+ssh -n -o StrictHostKeyChecking=no -i secret.pem \
     ubuntu@proxy.openvidu.io '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
@@ -193,16 +193,17 @@ rm secret.pem
 
 docker run --pull always --rm -i "ubuntu:$JOB_DISTRO" /bin/bash <<DOCKERCOMMANDS
 
-# Bash options for strict error checking
+# Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
+shopt -s inherit_errexit 2>/dev/null || true
 
-# Trace all commands
+# Trace all commands (to stderr).
 set -o xtrace
 
-# Disable Apt interactive mode
+# Disable Apt interactive mode.
 export DEBIAN_FRONTEND=noninteractive
 
-# Local Installation
+# Local Installation.
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
@@ -212,7 +213,7 @@ EOF
 apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server
 
-# Install debug symbols
+# Install debug symbols.
 apt-key adv \
     --keyserver keyserver.ubuntu.com \
     --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
@@ -223,7 +224,7 @@ EOF
 apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-dbg
 
-echo "KMS packages were installed successfully!"
+echo "Kurento packages were installed successfully!"
 
 DOCKERCOMMANDS
 
