@@ -219,7 +219,7 @@ If you are using the Kurento JavaScript Client from a Node.js application and wa
 .. code-block:: js
 
    "dependencies": {
-       "kurento-client": "Kurento/kurento-client-js#master",
+     "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git#master"
    }
 
 
@@ -231,8 +231,8 @@ If you are using the Kurento JavaScript Client from a browser application, with 
 .. code-block:: js
 
    "dependencies": {
-       "kurento-client": "master",
-       "kurento-utils": "master",
+     "kurento-client": "git+https://github.com/Kurento/kurento-client-bower.git#master",
+     "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git#master"
    }
 
 Alternatively, if your browser application is pointing directly to JavaScript libraries from HTML resources, then you have to change to development URLs:
