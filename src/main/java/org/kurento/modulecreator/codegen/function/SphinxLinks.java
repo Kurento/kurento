@@ -82,20 +82,17 @@ public class SphinxLinks implements TemplateMethodModelEx {
   private void addRemoteClasses(ModuleDefinition module) {
     for (RemoteClass remoteClass : module.getRemoteClasses()) {
       String className = remoteClass.getName();
-      String namePath = "module:" + module.getName();
-      namePath += remoteClass.isAbstract() ? "/abstracts" : "";
-      namePath += "." + className;
 
       toReplace.addAll(Arrays.asList(new String[][] {
-          { ":rom:cls:`" + className + "`", "{@link " + namePath + " " + className + "}" },
-          { ":rom:cls:`([^`]*?)<" + className + ">`", "{@link " + namePath + " $1}" } }));
+          { ":rom:cls:`" + className + "`", "{@link " + className + "}" },
+          { ":rom:cls:`([^`]*?)<" + className + ">`", "{@link " + className + " $1}" } }));
     }
   }
 
   private void addComplexTypes(ModuleDefinition module) {
     for (ComplexType complexType : module.getComplexTypes()) {
       String typeName = complexType.getName();
-      String namePath = "module:" + module.getName() + "/complexTypes." + typeName;
+      String namePath = module.getName() + "/complexTypes." + typeName;
 
       toReplace.addAll(Arrays.asList(new String[][] {
           { ":rom:ref:`" + typeName + "`", "{@link " + namePath + " " + typeName + "}" },
@@ -106,7 +103,7 @@ public class SphinxLinks implements TemplateMethodModelEx {
   private void addEvents(ModuleDefinition module) {
     for (Event event : module.getEvents()) {
       String eventName = event.getName();
-      String namePath = "module:" + module.getName() + "#event:" + eventName;
+      String namePath = module.getName() + "#event:" + eventName;
 
       toReplace.addAll(Arrays.asList(new String[][] {
           { ":rom:evt:`" + eventName + "`", "{@link " + namePath + " " + eventName + "}" },
