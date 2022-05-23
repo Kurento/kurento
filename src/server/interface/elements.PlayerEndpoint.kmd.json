@@ -6,7 +6,7 @@
       "doc": "Retrieves content from external sources.
 <p>
   PlayerEndpoint will access the given resource, read all available data, and
-  inject it into :term:`KMS`. Once this is is done, the injected video or audio
+  inject it into Kurento. Once this is is done, the injected video or audio
   will be available for passing through any other Filter or Endpoint to which
   the PlayerEndpoint gets connected.
 </p>
