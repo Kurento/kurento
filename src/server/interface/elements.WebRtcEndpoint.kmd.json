@@ -169,7 +169,7 @@
   <strong>
     Check the extended documentation of these parameters in
     :rom:cls:`SdpEndpoint`, :rom:cls:`BaseRtpEndpoint`, and
-    :rom:ref:`RembParams`.
+    :rom:cls:`RembParams`.
   </strong>
 </p>
 <ul>

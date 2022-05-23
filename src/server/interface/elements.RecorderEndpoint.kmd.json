@@ -70,7 +70,7 @@
     </ul>
   </li>
   <li>
-    <strong>Media Profile</strong> (:rom:attr:`MediaProfileSpecType`), used for
+    <strong>Media Profile</strong> (:rom:enum:`MediaProfileSpecType`), used for
     storage. This will determine the video and audio encoding. See below for
     more details about Media Profile.
   </li>
@@ -217,7 +217,7 @@
             },
             {
               "name": "stopOnEndOfStream",
-              "doc": "Forces the recorder endpoint to finish processing data when an :term:`EOS` is detected in the stream",
+              "doc": "Forces the recorder endpoint to finish processing data when an End Of Stream (EOS) is detected in the stream",
               "type": "boolean",
               "optional": true,
               "defaultValue": false
