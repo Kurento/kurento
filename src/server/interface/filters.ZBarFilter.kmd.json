@@ -3,7 +3,7 @@
     {
       "name": "ZBarFilter",
       "extends": "Filter",
-      "doc": "This filter detects :term:`QR` codes in a video feed. When a code is found, the filter raises a :rom:evnt:`CodeFound` event.",
+      "doc": "This filter detects QR codes in a video feed. When a code is found, the filter raises a :rom:evnt:`CodeFound` event.",
       "constructor": {
         "doc": "Builder for the :rom:cls:`ZBarFilter`.",
         "params": [
@@ -24,12 +24,12 @@
       "properties": [
         {
           "name": "codeType",
-          "doc": "type of :term:`QR` code found",
+          "doc": "type of QR code found",
           "type": "String"
         },
         {
           "name": "value",
-          "doc": "value contained in the :term:`QR` code",
+          "doc": "value contained in the QR code",
           "type": "String"
         }
       ],
