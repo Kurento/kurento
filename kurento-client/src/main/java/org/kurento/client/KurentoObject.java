@@ -43,8 +43,8 @@ public interface KurentoObject {
 	 * Explicitly release a media object form memory. All of its children will also
 	 * be released. Asynchronous call.
 	 *
-	 * @param continuation {@link #onSuccess(void)} will be called when the actions
-	 *                     complete. {@link #onError} will be called if there is an
+	 * @param continuation {@link Continuation#onSuccess} will be called when the actions
+	 *                     complete. {@link Continuation#onError} will be called if there is an
 	 *                     exception.
 	 *
 	 **/
