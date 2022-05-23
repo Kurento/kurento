@@ -139,8 +139,7 @@ public class SphinxLinks implements TemplateMethodModelEx {
     String instancePropertyAlt = "{@link " + classNamePath + "#$2 $1}";
 
     res = translate(res,
-        Arrays.asList(new String[][] { { ":rom:meth:`([^`]*?)<([^`]*?)>`", instancePropertyAlt },
-            { ":rom:meth:`([^`]*?)`", instanceProperty },
+        Arrays.asList(new String[][] {
             { ":rom:attr:`([^`]*?)<([^`]*?)>`", instancePropertyAlt },
             { ":rom:attr:`([^`]*?)`", instanceProperty }, }));
 
