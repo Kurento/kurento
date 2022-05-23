@@ -41,10 +41,6 @@ import freemarker.template.TemplateModelException;
  */
 public class SphinxLinks implements TemplateMethodModelEx {
 
-  private static Pattern glossary_term_1 = Pattern.compile(":term:`([^`<]*?)`");
-  private static Pattern glossary_term_2 = Pattern.compile(":term:`([^`<]*?)<([^`]*?)>`");
-
-  private static String glossary_href = "<a href=\"http://www.kurento.org/docs/current/glossary.html#term-%s\">%s</a>";
   // TODO: `<text>`, ** and *, other markup...
 
   private final List<String[]> toReplace = new ArrayList<String[]>(Arrays.asList(new String[][] {
@@ -147,21 +143,6 @@ public class SphinxLinks implements TemplateMethodModelEx {
             { ":rom:meth:`([^`]*?)`", instanceProperty },
             { ":rom:attr:`([^`]*?)<([^`]*?)>`", instancePropertyAlt },
             { ":rom:attr:`([^`]*?)`", instanceProperty }, }));
-
-    // Glosaries
-    Matcher m2 = glossary_term_2.matcher(res);
-    while (m2.find()) {
-      res = res.substring(0, m2.start() - 1)
-          + String.format(glossary_href, make_id(m2.group(2)), m2.group(1))
-          + res.substring(m2.end() + 1);
-    }
-
-    m2 = glossary_term_1.matcher(res);
-    while (m2.find()) {
-      res = res.substring(0, m2.start())
-          + String.format(glossary_href, make_id(m2.group(1)), m2.group(1))
-          + res.substring(m2.end());
-    }
 
     return res;
   }
