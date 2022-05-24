@@ -231,7 +231,7 @@ QUnit.module('reconnect', {
           host: hostIp,
           port: 2375
         });
-        docker.run('kurento/kurento-media-server-dev:latest', [], [
+        docker.run('kurento/kurento-media-server:dev', [], [
           process.stdout,
           process.stderr
         ], {
@@ -363,7 +363,7 @@ QUnit.test('MediaServer restarted', function (assert) {
     container.stop(function (error, data) {
       //container.remove(function (error, data) {
 
-      docker.run('kurento/kurento-media-server-dev:latest', [], [
+      docker.run('kurento/kurento-media-server:dev', [], [
           process.stdout,
           process.stderr
         ], {
