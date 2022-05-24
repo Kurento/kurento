@@ -36,10 +36,10 @@
 # --build-arg KMS_IMAGE=<KmsImage>
 #
 #   <KmsImage> is:
-#   * "kurento/kurento-media-server:<KmsVersion>" for release,
-#   * "kurento/kurento-media-server-dev:latest" for nightly.
+#   * "kurento/kurento-media-server:<KmsVersion>" for releases,
+#   * "kurento/kurento-media-server:dev" for development.
 #
-#   Optional. Default: "kurento/kurento-media-server-dev:latest".
+#   Optional. Default: "kurento/kurento-media-server:dev".
 #
 # --build-arg APT_ARGS=<AptArguments>
 #
@@ -70,7 +70,7 @@
 
 # Global arguments for FROM
 ARG UBUNTU_CODENAME="xenial"
-ARG KMS_IMAGE="kurento/kurento-media-server-dev:latest"
+ARG KMS_IMAGE="kurento/kurento-media-server:dev"
 
 
 
