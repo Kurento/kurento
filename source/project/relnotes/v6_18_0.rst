@@ -6,6 +6,8 @@ One of the latest (if not the last) releases of the 6.x branch of Kurento; this 
 
 To install Kurento Media Server: :doc:`/user/installation`.
 
+.. contents:: Table of Contents
+
 
 
 Added
