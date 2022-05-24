@@ -171,7 +171,7 @@
 		<version.help.plugin>3.2.0</version.help.plugin>
 		<version.install.plugin>3.0.0-M1</version.install.plugin>
 		<version.jar.plugin>3.2.0</version.jar.plugin>
-		<version.javadoc.plugin>3.3.1</version.javadoc.plugin>
+		<version.javadoc.plugin>3.4.0</version.javadoc.plugin>
 		<version.javancss.plugin>2.1</version.javancss.plugin>
 		<version.jdepend.plugin>2.0</version.jdepend.plugin>
 		<version.jxr.plugin>3.0.0</version.jxr.plugin>
