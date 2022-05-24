@@ -64,7 +64,7 @@ Then, please provide us with information about the crash:
 
 * Finally, if a developer suspects that the crash might be due to a memory corruption error, we could ask you to run with a special build of Kurento that comes bundled with support for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, a memory access error detector.
 
-  To do this, you'll need to run a `Kurento Docker image with AddressSanitizer <https://hub.docker.com/r/kurento/kurento-media-server-dev/tags?name=asan>`__. If we ask for it, you would have to provide the `Docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ from running this image.
+  To do this, you'll need to run a `Kurento Docker image with AddressSanitizer <https://hub.docker.com/r/kurento/kurento-media-server/tags?name=asan>`__. If we ask for it, you would have to provide the `Docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ from running this image.
 
   For this reason (and also for better test repeatability), it's a very good idea that you have your services planned in a way that it's possible to **run Kurento Media Server from Docker**, at any time, regardless of what is your normal / usual method of deploying Kurento.
 

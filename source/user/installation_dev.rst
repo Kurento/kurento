@@ -26,7 +26,7 @@ Kurento Media Server
 Docker image
 ------------
 
-While official release Docker images are published as `kurento/kurento-media-server <https://hub.docker.com/r/kurento/kurento-media-server>`__, nightly builds with the latest development progress are available as `kurento/kurento-media-server-dev <https://hub.docker.com/r/kurento/kurento-media-server-dev>`__ (notice the ``-dev``). Other than that, these images behave exactly like the release ones. For usage instructions check out this section: :ref:`installation-docker`.
+While official Kurento releases are published as Docker images and tagged with a release number, the latest development progress is tagged with `dev`: `kurento/kurento-media-server <https://hub.docker.com/r/kurento/kurento-media-server/tags>`__ (notice the ``dev-*`` tags). Other than that, these images behave exactly like the release ones. For usage instructions check out this section: :ref:`installation-docker`.
 
 
 
