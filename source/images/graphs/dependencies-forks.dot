@@ -10,13 +10,5 @@ digraph dependencies_forks {
   "jsoncpp";
   "libsrtp";
   "openh264";
-  "usrsctp";
-  "gstreamer";
-  "gst-plugins-base" -> "gstreamer";
-  "gst-plugins-good" -> "gst-plugins-base";
-  "gst-plugins-bad" -> {"gst-plugins-base" "libsrtp" "openh264"};
-  "gst-plugins-ugly" -> "gst-plugins-base";
-  "gst-libav" -> "gst-plugins-base";
-  "openwebrtc-gst-plugins" -> {"gstreamer" "gst-plugins-base" "usrsctp"};
-  "libnice" -> "gstreamer";
+  "libnice";
 }

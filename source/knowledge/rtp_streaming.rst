@@ -349,8 +349,8 @@ For the SRTP examples, you need to install the Kurento's fork of GStreamer:
 .. code-block:: shell
 
    sudo apt-get update ; sudo apt-get install --no-install-recommends \
-       gstreamer1.5-{tools,libav} \
-       gstreamer1.5-plugins-{base,good,bad,ugly}
+       gstreamer1.0-{tools,libav} \
+       gstreamer1.0-plugins-{base,good,bad,ugly}
 
 
 
@@ -367,7 +367,7 @@ Features:
     SELF_PATH="$PWD/video.mp4" \
     SELF_VSSRC=112233 \
     SELF_KEY="4142434445464748494A4B4C4D4E4F505152535455565758595A31323334" \
-    bash -c 'gst-launch-1.5 -e \
+    bash -c 'gst-launch-1.0 -e \
         uridecodebin uri="file://$SELF_PATH" \
         ! videoconvert \
         ! x264enc tune=zerolatency \
@@ -396,7 +396,7 @@ Features:
         srtp-key=(buffer)$PEER_KEY, \
         srtp-cipher=(string)aes-128-icm,srtp-auth=(string)hmac-sha1-80, \
         srtcp-cipher=(string)aes-128-icm,srtcp-auth=(string)hmac-sha1-80" \
-    bash -c 'gst-launch-1.5 -e \
+    bash -c 'gst-launch-1.0 -e \
         udpsrc port=$SELF_V \
         ! "application/x-srtp,$SRTP_CAPS" \
         ! srtpdec \
@@ -429,7 +429,7 @@ Features:
         srtp-key=(buffer)$PEER_KEY, \
         srtp-cipher=(string)aes-128-icm,srtp-auth=(string)hmac-sha1-80, \
         srtcp-cipher=(string)aes-128-icm,srtcp-auth=(string)hmac-sha1-80" \
-    bash -c 'gst-launch-1.5 -e \
+    bash -c 'gst-launch-1.0 -e \
         rtpsession name=r sdes="application/x-rtp-source-sdes,cname=(string)\"user\@example.com\"" \
         srtpenc name=e key="$SELF_KEY" \
             rtp-cipher="aes-128-icm" rtp-auth="hmac-sha1-80" \
@@ -477,7 +477,7 @@ Features:
         srtp-cipher=(string)aes-128-icm,srtp-auth=(string)hmac-sha1-80, \
         srtcp-cipher=(string)aes-128-icm,srtcp-auth=(string)hmac-sha1-80" \
     CAPS_V="media=(string)video,clock-rate=(int)90000,encoding-name=(string)H264,payload=(int)103" \
-    bash -c 'gst-launch-1.5 -e \
+    bash -c 'gst-launch-1.0 -e \
         rtpsession name=r sdes="application/x-rtp-source-sdes,cname=(string)\"recv\@example.com\"" \
         srtpenc name=e key="$SELF_KEY" \
             rtp-cipher="aes-128-icm" rtp-auth="hmac-sha1-80" \

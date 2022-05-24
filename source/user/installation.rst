@@ -252,9 +252,7 @@ B. **Uninstall the old Kurento version**, before installing the new one.
    - *kms-elements*
    - *kms-filters*
    - *libnice10*
-   - *libusrsctp*
    - *openh264*
-   - *openwebrtc-gst-plugins*
    - And more
 
    To use a newer version **you have to upgrade all Kurento packages**, not only the first one.

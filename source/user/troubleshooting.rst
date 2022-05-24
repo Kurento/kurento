@@ -359,12 +359,12 @@ Installing and running KMS on a clean Ubuntu installation shows this message:
 .. code-block:: text
 
    (gst-plugin-scanner:15): GStreamer-WARNING **: Failed to load plugin
-   '/usr/lib/x86_64-linux-gnu/gstreamer-1.5/libgstopenh264.so': libopenh264.so.0:
+   '/usr/lib/x86_64-linux-gnu/gstreamer-1.0/libgstopenh264.so': libopenh264.so.0:
    cannot open shared object file: No such file or directory
 
 Also these conditions apply:
 
-- Packages *openh264-gst-plugins-bad-1.5* and *openh264* are already installed.
+- Packages *openh264-gst-plugins-bad-1.0* and *openh264* are already installed.
 - The file ``/usr/lib/x86_64-linux-gnu/libopenh264.so`` is a broken link to the non-existing file ``/usr/lib/x86_64-linux-gnu/libopenh264.so.0``.
 
 **Reason**
@@ -539,7 +539,7 @@ The reason for this is that Kurento hasn't enabled support for the video codec H
 
 The solution is to ensure that both peers are able to find a match in their supported codecs. To enable H.264 support in Kurento, check these points:
 
-- The package *openh264-gst-plugins-bad-1.5* must be installed in the system.
+- The package *openh264-gst-plugins-bad-1.0* must be installed in the system.
 - The package *openh264* must be **correctly** installed. Specifically, the post-install script of this package requires Internet connectivity, because it downloads a codec binary blob from the Cisco servers. See :ref:`troubleshooting-h264`.
 - The H.264 codec must be enabled in the corresponding Kurento settings file: ``/etc/kurento/modules/kurento/SdpEndpoint.conf.json``.
   Ensure that the entry corresponding to this codec does exist and is not commented out. For example:

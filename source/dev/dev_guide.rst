@@ -47,15 +47,8 @@ Kurento depends on several Open Source libraries, the main one being GStreamer. 
 - `jsoncpp <https://github.com/Kurento/jsoncpp>`__
 - `libsrtp <https://github.com/Kurento/libsrtp>`__
 - `openh264 <https://github.com/Kurento/openh264>`__
-- `usrsctp <https://github.com/Kurento/usrsctp>`__
-- `gstreamer <https://github.com/Kurento/gstreamer>`__ (produces libgstreamer1.5)
-- `gst-plugins-base <https://github.com/Kurento/gst-plugins-base>`__
 - `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
-- `gst-plugins-bad <https://github.com/Kurento/gst-plugins-bad>`__
-- `gst-plugins-ugly <https://github.com/Kurento/gst-plugins-ugly>`__
-- `gst-libav <https://github.com/Kurento/gst-libav>`__
-- `openwebrtc-gst-plugins <https://github.com/Kurento/openwebrtc-gst-plugins>`__
-- `libnice <https://github.com/Kurento/libnice>`__ (produces gstreamer1.0-nice, gstreamer1.5-nice)
+- `libnice <https://github.com/Kurento/libnice>`__ (produces gstreamer1.0-nice)
 
 **Main repositories**
 

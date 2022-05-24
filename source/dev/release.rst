@@ -126,14 +126,7 @@ Before Kurento Media Server itself, all required forks and libraries must be bui
 * `libsrtp`_
 * `openh264`_
 * `openh264-gst-plugin`_
-* `libusrsctp`_
-* `gstreamer`_
-* `gst-plugins-base`_
 * `gst-plugins-good`_
-* `gst-plugins-bad`_
-* `gst-plugins-ugly`_
-* `gst-libav`_
-* `openwebrtc-gst-plugins`_
 * `libnice`_
 
 The main :ref:`dev-release-media-server` modules should be built in this order:
@@ -236,14 +229,7 @@ Release order:
 * `libsrtp`_
 * `openh264`_
 * `openh264-gst-plugin`_
-* `libusrsctp`_
-* `gstreamer`_
-* `gst-plugins-base`_
 * `gst-plugins-good`_
-* `gst-plugins-bad`_
-* `gst-plugins-ugly`_
-* `gst-libav`_
-* `openwebrtc-gst-plugins`_
 * `libnice`_
 
 
@@ -1187,14 +1173,7 @@ For this reason, the documentation must be built only after all the other module
 .. _libsrtp: https://github.com/Kurento/libsrtp
 .. _openh264: https://github.com/Kurento/openh264
 .. _openh264-gst-plugin: https://github.com/Kurento/openh264-gst-plugin
-.. _libusrsctp: https://github.com/Kurento/libusrsctp
-.. _gstreamer: https://github.com/Kurento/gstreamer
-.. _gst-plugins-base: https://github.com/Kurento/gst-plugins-base
 .. _gst-plugins-good: https://github.com/Kurento/gst-plugins-good
-.. _gst-plugins-bad: https://github.com/Kurento/gst-plugins-bad
-.. _gst-plugins-ugly: https://github.com/Kurento/gst-plugins-ugly
-.. _gst-libav: https://github.com/Kurento/gst-libav
-.. _openwebrtc-gst-plugins: https://github.com/Kurento/openwebrtc-gst-plugins
 .. _libnice: https://github.com/Kurento/libnice
 
 .. _kurento-module-creator: https://github.com/Kurento/kurento-module-creator

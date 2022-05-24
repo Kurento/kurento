@@ -6,11 +6,12 @@ digraph dependencies_kms {
 
   rankdir = "RL";
 
-  // KMS main components
+  // Main components.
   {
     rank = "same";
     "kurento-module-creator";
     "kms-cmake-utils";
+    "kms-jsonrpc";
   }
   "kms-jsonrpc" -> "kms-cmake-utils";
   "kms-core" -> {"kurento-module-creator" "kms-cmake-utils" "kms-jsonrpc"};
@@ -18,10 +19,11 @@ digraph dependencies_kms {
   "kms-filters" -> "kms-elements";
   "kurento-media-server" -> {"kms-core" "kms-elements" "kms-filters"};
 
-  // KMS extra modules
-  "kms-chroma" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-crowddetector" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-datachannelexample" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-platedetector" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-pointerdetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  // Extra modules.
+  // Build disabled on Ubuntu >= 20.04 (due to breaking changes in OpenCV 4.0).
+  //"kms-chroma" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-crowddetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-datachannelexample" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-platedetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-pointerdetector" -> {"kms-core" "kms-elements" "kms-filters"};
 }

@@ -6,33 +6,34 @@ digraph dependencies_all {
 
   rankdir = "RL";
 
-  // Kurento external libraries
-  "jsoncpp";
-  "libsrtp";
-  "openh264";
-  "usrsctp";
-  "gstreamer";
-  "gst-plugins-base" -> "gstreamer";
-  "gst-plugins-good" -> "gst-plugins-base";
-  "gst-plugins-bad" -> {"gst-plugins-base" "libsrtp" "openh264"};
-  "gst-plugins-ugly" -> "gst-plugins-base";
-  "gst-libav" -> "gst-plugins-base";
-  "openwebrtc-gst-plugins" -> {"gstreamer" "gst-plugins-base" "usrsctp"};
-  "libnice" -> "gstreamer";
+  // Forks and external libraries.
+  {
+    rank = "same";
+    "gst-plugins-good";
+    "jsoncpp";
+    "libnice";
+    "libsrtp";
+    "openh264";
+  }
 
-  // KMS main components
-  "kurento-module-creator";
-  "kms-cmake-utils";
+  // Main components.
+  {
+    rank = "same";
+    "kurento-module-creator";
+    "kms-cmake-utils";
+    "kms-jsonrpc";
+  }
   "kms-jsonrpc" -> {"jsoncpp" "kms-cmake-utils"};
-  "kms-core" -> {"gstreamer" "gst-plugins-base" "gst-plugins-good" "gst-plugins-bad" "gst-plugins-ugly" "gst-libav" "kurento-module-creator" "kms-cmake-utils" "kms-jsonrpc"};
-  "kms-elements" -> {"openwebrtc-gst-plugins" "libnice" "kms-core"};
+  "kms-core" -> {"gst-plugins-good" "kurento-module-creator" "kms-cmake-utils" "kms-jsonrpc"};
+  "kms-elements" -> {"libnice" "openh264" "kms-core"};
   "kms-filters" -> "kms-elements";
-  "kurento-media-server" -> {"kms-core" "kms-elements" "kms-filters"};
+  "kurento-media-server" -> {"libsrtp" "kms-core" "kms-elements" "kms-filters"};
 
-  // KMS extra modules
-  "kms-chroma" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-crowddetector" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-datachannelexample" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-platedetector" -> {"kms-core" "kms-elements" "kms-filters"};
-  "kms-pointerdetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  // Extra modules.
+  // Build disabled on Ubuntu >= 20.04 (due to breaking changes in OpenCV 4.0).
+  //"kms-chroma" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-crowddetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-datachannelexample" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-platedetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-pointerdetector" -> {"kms-core" "kms-elements" "kms-filters"};
 }
