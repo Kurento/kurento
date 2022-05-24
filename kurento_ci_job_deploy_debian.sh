@@ -85,17 +85,14 @@ fi
 # Temp dir to store all packages in remote machine
 TEMP_DIR="aptly_${JOB_DISTRO}_${JOB_TIMESTAMP}"
 
-# Aptly repository name prefix to use for the repo name
-REPO_NAME_PREFIX="kurento-${JOB_DISTRO}"
-
 # Aptly runner script arguments
-ARGS="--distro-name $JOB_DISTRO"
+PUBLISH_ARGS=""
 
-# Define parameters for the repository creation
+# Get a KMS_VERSION suitable for naming things in Aptly
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    log "Deploy to release repo"
+    log "Deploy a release repo"
 
-    ARGS="$ARGS --release"
+    PUBLISH_ARGS+=" --release"
 
     # Get version number from the package file itself
     # shellcheck disable=SC2012
@@ -113,18 +110,18 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
         exit 1
     fi
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    log "Deploy to experimental feature repo"
+    log "Deploy a feature branch repo"
 
-    REPO_NAME_PREFIX+="-exp"
-    KMS_VERSION="${JOB_DEPLOY_NAME}"
+    KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
 else
-    log "Deploy to nightly packages repo"
+    log "Deploy a development branch repo"
 
     KMS_VERSION="dev"
 fi
 
-ARGS="$ARGS --repo-name ${REPO_NAME_PREFIX}-${KMS_VERSION}"
-ARGS="$ARGS --publish-name $KMS_VERSION"
+PUBLISH_ARGS+=" --distro-name $JOB_DISTRO"
+PUBLISH_ARGS+=" --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
+PUBLISH_ARGS+=" --publish-name $KMS_VERSION"
 
 
 
@@ -171,7 +168,7 @@ ssh -n -o StrictHostKeyChecking=no -i secret.pem \
     ubuntu@proxy.openvidu.io '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
-           ./kurento_ci_aptly_repo_publish.sh $ARGS'
+           ./kurento_ci_aptly_repo_publish.sh $PUBLISH_ARGS'
 
 DOCKERCOMMANDS
 

@@ -81,22 +81,24 @@ if [[ -z "$KMS_VERSION" ]]; then
     exit 1
 fi
 
-# Define parameters for the Docker container
+# Define parameters for the Docker container.
+# NOTE: `DOCKER_KMS_VERSION` must match an existing Debian repo with that name.
+# NOTE: `DOCKER_SOURCE_TAG` must match an existing Docker image with that tag.
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    log "Release version"
+    log "Deploy a release image"
     DOCKER_KMS_VERSION="$KMS_VERSION"
     DOCKER_NAME_SUFFIX=""
-    DOCKER_SOURCE_TAG="${KMS_VERSION}"
+    DOCKER_SOURCE_TAG="$KMS_VERSION"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    log "Experimental feature version"
-    DOCKER_KMS_VERSION="$JOB_DEPLOY_NAME"
-    DOCKER_NAME_SUFFIX="-exp"
-    DOCKER_SOURCE_TAG="${JOB_DEPLOY_NAME}"
+    log "Deploy a feature branch image"
+    DOCKER_KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
+    DOCKER_NAME_SUFFIX=""
+    DOCKER_SOURCE_TAG="dev-${JOB_DEPLOY_NAME}"
 else
-    log "Nightly development version"
+    log "Deploy a development branch image"
     DOCKER_KMS_VERSION="dev"
-    DOCKER_NAME_SUFFIX="-dev"
-    DOCKER_SOURCE_TAG="${KMS_VERSION}-${JOB_TIMESTAMP}"
+    DOCKER_NAME_SUFFIX=""
+    DOCKER_SOURCE_TAG="dev-${KMS_VERSION}"
 fi
 
 # Best effort to check if the given source tag does actually exist.
@@ -128,11 +130,12 @@ else
     log "WARNING: Unknown system version --> Use GCC $DOCKER_GCC_VERSION"
 fi
 
-pushd ./kurento-media-server-asan/  # Enter kurento-media-server-asan/
+pushd ./kurento-media-server-asan/
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
-BUILD_ARGS="UBUNTU_CODENAME=$JOB_DISTRO"
+BUILD_ARGS=""
+BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
 BUILD_ARGS+=" KMS_IMAGE=$DOCKER_KMS_IMAGE"
 BUILD_ARGS+=" GCC_VERSION=$DOCKER_GCC_VERSION"
@@ -142,24 +145,22 @@ export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     # Main tag: "1.2.3-asan"
-    # Moving tag: "latest-asan"
     export TAG="${KMS_VERSION}-asan"
-    export EXTRA_TAGS="latest-asan"
+    export EXTRA_TAGS=""
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    # Main tag: "experiment-asan"
-    export TAG="${JOB_DEPLOY_NAME}-asan"
+    # Main tag: "dev-deploy-name-asan"
+    export TAG="dev-${JOB_DEPLOY_NAME}-asan"
     export EXTRA_TAGS=""
 else
-    # Main tag: "1.2.3-20191231235959-asan"
-    # Moving tag: "latest-asan"
-    export TAG="${KMS_VERSION}-${JOB_TIMESTAMP}-asan"
-    export EXTRA_TAGS="latest-asan"
+    # Main tag: "dev-1.2.3-asan"
+    export TAG="dev-${KMS_VERSION}-asan"
+    export EXTRA_TAGS=""
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
 log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}:${TAG}'"
 
-popd  # Exit kurento-media-server-asan/
+popd  # kurento-media-server-asan/
 
 
 

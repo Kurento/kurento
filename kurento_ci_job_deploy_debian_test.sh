@@ -72,13 +72,13 @@ fi
 
 # Define parameters for the Docker container
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    log "Release version"
+    log "Test a release build"
     DOCKER_KMS_VERSION="$KMS_VERSION"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    log "Experimental feature version"
-    DOCKER_KMS_VERSION="$JOB_DEPLOY_NAME"
+    log "Test a feature branch build"
+    DOCKER_KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
 else
-    log "Nightly development version"
+    log "Test a development branch build"
     DOCKER_KMS_VERSION="dev"
 fi
 

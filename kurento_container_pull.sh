@@ -36,7 +36,7 @@ done
 docker pull kurento/dev-integration-browser:$SELENIUM_VERSION-node-8.x
 
 # kurento-media-server development version with core dump & public modules
-docker pull kurento/kurento-media-server-dev:latest
+docker pull kurento/kurento-media-server:dev
 
 # coturn image
 docker pull kurento/coturn:latest
@@ -70,13 +70,13 @@ docker images > container_images.txt
 
 # Keep just KEEP_IMAGES last kms dev images
 KEEP_IMAGES=3
-NUM_IMAGES=$(docker images | grep kurento-media-server-dev | awk '{print $2}' | sort | uniq | wc -l)
+NUM_IMAGES=$(docker images | grep kurento-media-server:dev | awk '{print $2}' | sort | uniq | wc -l)
 if [ $NUM_IMAGES -gt $KEEP_IMAGES ]; then
     NUM_REMOVE_IMAGES=$[$NUM_IMAGES-$KEEP_IMAGES]
-    REMOVE_IMAGES=$(docker images | grep kurento-media-server-dev | awk '{print $2}' | sort | uniq | head -$NUM_REMOVE_IMAGES)
+    REMOVE_IMAGES=$(docker images | grep kurento-media-server:dev | awk '{print $2}' | sort | uniq | head -$NUM_REMOVE_IMAGES)
     status=0
     for image in $REMOVE_IMAGES; do
-        for repo_name in $(docker images | grep kurento-media-server-dev | grep -P "\s$image\s" | awk '{print $1}'); do
+        for repo_name in $(docker images | grep kurento-media-server:dev | grep -P "\s$image\s" | awk '{print $1}'); do
             echo "Removing image $image"
             docker rmi $repo_name:$image || status=$[$status || $?]
         done

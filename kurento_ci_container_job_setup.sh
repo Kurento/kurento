@@ -157,7 +157,7 @@ docker run --pull always \
 # Start a KMS container if the job requires it
 if [[ "$START_KMS_CONTAINER" == "true" ]]; then
     KMS_CONTAINER_ID="$(docker run --pull always -d --name "$BUILD_TAG-KMS-$(date +"%s")" \
-        kurento/kurento-media-server-dev:latest)" \
+        kurento/kurento-media-server:dev)" \
     || {
         echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run"
         exit $?

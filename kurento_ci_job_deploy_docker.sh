@@ -50,7 +50,7 @@ source "$BASEPATH/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
 
-# Trace all commands
+# Trace all commands (to stderr).
 set -o xtrace
 
 
@@ -85,26 +85,30 @@ fi
 KMS_VERSION_MAJ_MIN="$(echo "$KMS_VERSION" | cut -d. -f1,2)"
 KMS_VERSION_MAJ="$(echo "$KMS_VERSION" | cut -d. -f1)"
 
-# Define parameters for the Docker container
+# Define parameters for the Docker container.
+# NOTE: `DOCKER_KMS_VERSION` must match an existing Debian repo with that name.
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    log "Release version"
+    log "Deploy a release image"
     DOCKER_KMS_VERSION="$KMS_VERSION"
     DOCKER_NAME_SUFFIX=""
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    log "Experimental feature version"
-    DOCKER_KMS_VERSION="$JOB_DEPLOY_NAME"
-    DOCKER_NAME_SUFFIX="-exp"
+    log "Deploy a feature branch image"
+    DOCKER_KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
+    DOCKER_NAME_SUFFIX=""
 else
-    log "Nightly development version"
+    log "Deploy a development branch image"
     DOCKER_KMS_VERSION="dev"
-    DOCKER_NAME_SUFFIX="-dev"
+    DOCKER_NAME_SUFFIX=""
 fi
 
-pushd ./kurento-media-server/  # Enter kurento-media-server/
+pushd ./kurento-media-server/
+
+# FIXME: Delete `DOCKER_NAME_SUFFIX` and Docker build argument `IMAGE_NAME_SUFFIX`.
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
-BUILD_ARGS="UBUNTU_CODENAME=$JOB_DISTRO"
+BUILD_ARGS=""
+BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
 BUILD_ARGS+=" APT_ARGS=-oAcquire::http::Proxy=http://proxy.openvidu.io:3142"
 export BUILD_ARGS
@@ -112,24 +116,24 @@ export TAG_COMMIT="no"
 export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     # Main tag: "1.2.3"
-    # Moving tags: "1.2", "1", "latest"
-    export TAG="${KMS_VERSION}"
+    # Moving tag(s): "1.2", "1", "latest"
+    export TAG="$KMS_VERSION"
     export EXTRA_TAGS="$KMS_VERSION_MAJ_MIN $KMS_VERSION_MAJ latest"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    # Main tag: "experiment"
-    export TAG="${JOB_DEPLOY_NAME}"
+    # Main tag: "dev-deploy-name"
+    export TAG="dev-${JOB_DEPLOY_NAME}"
     export EXTRA_TAGS=""
 else
-    # Main tag: "1.2.3-20191231235959"
-    # Moving tags: "1.2.3", "1.2", "1", "latest"
-    export TAG="${KMS_VERSION}-${JOB_TIMESTAMP}"
-    export EXTRA_TAGS="$KMS_VERSION $KMS_VERSION_MAJ_MIN $KMS_VERSION_MAJ latest"
+    # Main tag: "dev-1.2.3"
+    # Moving tag(s): "dev-1.2", "dev"
+    export TAG="dev-${KMS_VERSION}"
+    export EXTRA_TAGS="dev-${KMS_VERSION_MAJ_MIN} dev"
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
 log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}:${TAG}'"
 
-popd  # Exit kurento-media-server/
+popd  # kurento-media-server/
 
 
 
