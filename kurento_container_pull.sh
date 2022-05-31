@@ -69,5 +69,3 @@ echo "Generating report"
 docker images > container_images.txt
 
 log "==================== END ===================="
-
-exit ${status:-0}
