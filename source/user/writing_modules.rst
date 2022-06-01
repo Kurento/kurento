@@ -314,13 +314,15 @@ Finally, to actually use the module in your Maven project, you have to add the d
 .. code-block:: xml
 
    <project>
-     <dependencies>
-       <dependency>
-         <groupId>org.kurento.module</groupId>
-         <artifactId>{modulename}</artifactId>
-         <version>0.0.1-SNAPSHOT</version>
-       </dependency>
-     </dependencies>
+       ...
+       <dependencies>
+           <dependency>
+               <groupId>org.kurento.module</groupId>
+               <artifactId>{modulename}</artifactId>
+               <version>0.0.1-SNAPSHOT</version>
+           </dependency>
+       </dependencies>
+       ...
    </project>
 
 Note that ``{modulename}`` is the name of your module in all lowercase.
