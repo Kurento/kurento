@@ -16,12 +16,9 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 doc-kurento
 ===========
 
-Kurento Documentation. Made with [Sphinx] and [Read the Docs].
+Kurento Documentation. Made with [Sphinx](https://www.sphinx-doc.org/) and [Read the Docs](https://docs.readthedocs.io/).
 
-To learn the style conventions and how to build these docs, read here: [Writing this documentation](https://doc-kurento.readthedocs.io/en/latest/dev/writing_documentation.html).
-
-[Sphinx]: https://www.sphinx-doc.org/
-[Read the Docs]: https://docs.readthedocs.io
+For **how to build** and **style conventions**: Read the [Writing this documentation](https://doc-kurento.readthedocs.io/en/latest/dev/writing_documentation.html) section.
 
 
 
