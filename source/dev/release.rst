@@ -384,7 +384,7 @@ Preparation: kurento-module-creator
 
 * If *kurento-maven-plugin* is getting a new version, edit the file ``kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl`` to update it:
 
-  .. code-block:: xml
+  .. code-block:: diff
 
         <groupId>org.kurento</groupId>
         <artifactId>kurento-maven-plugin</artifactId>
@@ -814,7 +814,7 @@ Preparation: kurento-java
 
 * If *kurento-qa-pom* is getting a new version, edit the file ``kurento-parent-pom/pom.xml`` to update it:
 
-  .. code-block:: xml
+  .. code-block:: diff
 
         <parent>
             <groupId>org.kurento</groupId>
@@ -825,7 +825,7 @@ Preparation: kurento-java
 
 * If *kurento-maven-plugin* is getting a new version, edit the file ``kurento-parent-pom/pom.xml`` to update it:
 
-  .. code-block:: xml
+  .. code-block:: diff
 
      -  <version.kurento-maven-plugin>1.0.0</version.kurento-maven-plugin>
      +  <version.kurento-maven-plugin>1.1.0</version.kurento-maven-plugin>
@@ -833,7 +833,7 @@ Preparation: kurento-java
 
 * If *kurento-utils-js* is getting a new version, edit the file ``kurento-parent-pom/pom.xml`` to update it:
 
-  .. code-block:: xml
+  .. code-block:: diff
 
      -  <version.kurento-utils-js>1.0.0</version.kurento-utils-js>
      +  <version.kurento-utils-js>1.1.0</version.kurento-utils-js>
