@@ -93,12 +93,7 @@ For more information about adding a snapshots repository to Maven, check the off
 Per-User config
 ---------------
 
-Add the snapshots repository to either of your *User*' or *System* settings file:
-
-* ``$HOME/.m2/settings.xml`` for just the current user.
-* ``/etc/maven/settings.xml`` for all users on the machine.
-
-Our sugestion is using the first one, where you would collect all your personal settings for using Maven.
+Add the snapshots repository to your Maven settings file: ``$HOME/.m2/settings.xml``. If this file doesn't exist yet, you can copy it from ``/etc/maven/settings.xml``, which offers a nice default template to get you started.
 
 Edit the settings file to include this:
 
