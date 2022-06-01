@@ -84,108 +84,60 @@ Kurento Java Client
 
 Development builds of Kurento Java packages are uploaded to the `GitHub Maven Repository <https://github.com/orgs/Kurento/packages>`__.
 
-This repository can be added to the Maven configuration at the **Project**, **User**, or **System** levels.
+This repo can be configured once per-User (by editing Maven's global ``settings.xml``), or it can be added per-Project, to every ``pom.xml``. We recommend using the first method.
 
 For more information about adding a snapshots repository to Maven, check the official documentation: `Guide to Testing Development Versions of Plugins <https://maven.apache.org/guides/development/guide-testing-development-plugins.html>`__.
 
 
 
-Project level
--------------
+Per-User config
+---------------
 
-This adds access to development builds only for a single project. Open the project's ``pom.xml`` and include this:
+Add the snapshots repository to either of your *User*' or *System* settings file:
 
-.. code-block:: xml
+* ``$HOME/.m2/settings.xml`` for just the current user.
+* ``/etc/maven/settings.xml`` for all users on the machine.
 
-   <project>
-     ...
-     <repositories>
-       <repository>
-         <id>kurento-github-public</id>
-         <name>Kurento GitHub Maven packages (public access)</name>
-         <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
-         <releases>
-           <enabled>false</enabled>
-         </releases>
-         <snapshots>
-           <enabled>true</enabled>
-         </snapshots>
-       </repository>
-     </repositories>
-     <pluginRepositories>
-       <pluginRepository>
-         <id>kurento-github-public</id>
-         <name>Kurento GitHub Maven packages (public access)</name>
-         <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
-         <releases>
-           <enabled>false</enabled>
-         </releases>
-         <snapshots>
-           <enabled>true</enabled>
-         </snapshots>
-       </pluginRepository>
-     </pluginRepositories>
-     ...
-   </project>
+Our sugestion is using the first one, where you would collect all your personal settings for using Maven.
 
-Afterwards, in the same ``pom.xml``, look for the desired dependency and change its version to a snapshot one. For example:
-
-.. code-block:: xml
-
-   <dependency>
-     <groupId>org.kurento</groupId>
-     <artifactId>kurento-client</artifactId>
-     <version>6.12.0-SNAPSHOT</version>
-   </dependency>
-
-
-
-User and System levels
-----------------------
-
-Add the snapshots repository to either of your *User* or *System* ``settings.xml`` file:
-
-- At ``$HOME/.m2/settings.xml``, the configuration applies only to the current user.
-- At ``/etc/maven/settings.xml``, the configuration applies to all users on the machine.
-
-Edit one of the mentioned settings files, and include this:
+Edit the settings file to include this:
 
 .. code-block:: xml
 
    <settings>
-     ...
-     <profiles>
-       <profile>
-         <id>snapshot</id>
-         <repositories>
-           <repository>
-             <id>kurento-github-public</id>
-             <name>Kurento GitHub Maven packages (public access)</name>
-             <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
-             <releases>
-               <enabled>false</enabled>
-             </releases>
-             <snapshots>
-               <enabled>true</enabled>
-             </snapshots>
-           </repository>
-         </repositories>
-         <pluginRepositories>
-           <pluginRepository>
-             <id>kurento-github-public</id>
-             <name>Kurento GitHub Maven packages (public access)</name>
-             <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
-             <releases>
-               <enabled>false</enabled>
-             </releases>
-             <snapshots>
-               <enabled>true</enabled>
-             </snapshots>
-           </pluginRepository>
-         </pluginRepositories>
-       </profile>
-     </profiles>
-     ...
+       ...
+       <profiles>
+           <profile>
+               <id>snapshot</id>
+               <repositories>
+                   <repository>
+                       <id>kurento-github-public</id>
+                       <name>Kurento GitHub Maven packages (public access)</name>
+                       <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+                       <releases>
+                           <enabled>false</enabled>
+                       </releases>
+                       <snapshots>
+                           <enabled>true</enabled>
+                       </snapshots>
+                   </repository>
+               </repositories>
+               <pluginRepositories>
+                   <pluginRepository>
+                       <id>kurento-github-public</id>
+                       <name>Kurento GitHub Maven packages (public access)</name>
+                       <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+                       <releases>
+                           <enabled>false</enabled>
+                       </releases>
+                       <snapshots>
+                           <enabled>true</enabled>
+                       </snapshots>
+                   </pluginRepository>
+               </pluginRepositories>
+           </profile>
+       </profiles>
+       ...
    </settings>
 
 ..
@@ -196,7 +148,7 @@ Edit one of the mentioned settings files, and include this:
    anonymous downloads from their Maven package registry.
    More details here: https://github.community/t/download-from-github-package-registry-without-authentication/14407/111
 
-Then use the ``-Psnapshot`` argument in your next Maven run, to enable the new profile. For example:
+Then use the ``-Psnapshot`` argument in your Maven commands, to enable the new profile. For example:
 
 .. code-block:: shell
 
@@ -205,6 +157,74 @@ Then use the ``-Psnapshot`` argument in your next Maven run, to enable the new p
 .. code-block:: shell
 
    mvn dependency:get -Psnapshot -Dartifact='org.kurento:kurento-client:6.12.0-SNAPSHOT'
+
+If you don't want to change all your Maven commands, it is possible to mark the profile as active by default. This way, a ``-Psnapshot`` argument will always be implicitly added, so all calls to Maven will already use the profile:
+
+.. code-block:: xml
+
+   <settings>
+       ...
+       <profiles>
+           <profile>
+               <id>snapshot</id>
+               ...
+           </profile>
+       </profiles>
+       <activeProfiles>
+           <activeProfile>snapshot</activeProfile>
+       </activeProfiles>
+       ...
+   </settings>
+
+
+
+Per-Project config
+------------------
+
+This method consists on explicitly adding access to the snapshots repository, for a specific project. Open the project's ``pom.xml`` and include this:
+
+.. code-block:: xml
+
+   <project>
+       ...
+       <repositories>
+           <repository>
+               <id>kurento-github-public</id>
+               <name>Kurento GitHub Maven packages (public access)</name>
+               <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+               <releases>
+                   <enabled>false</enabled>
+               </releases>
+               <snapshots>
+                   <enabled>true</enabled>
+               </snapshots>
+           </repository>
+       </repositories>
+       <pluginRepositories>
+           <pluginRepository>
+               <id>kurento-github-public</id>
+               <name>Kurento GitHub Maven packages (public access)</name>
+               <url>https://public:&#103;hp_tFHDdd4Nh9GqKSaoPjnFIXrb0PFsUh258gzV@maven.pkg.github.com/kurento/*</url>
+               <releases>
+                   <enabled>false</enabled>
+               </releases>
+               <snapshots>
+                   <enabled>true</enabled>
+               </snapshots>
+           </pluginRepository>
+       </pluginRepositories>
+       ...
+   </project>
+
+Afterwards, in the same ``pom.xml``, look for the desired dependency and change its version to a snapshot one. For example:
+
+.. code-block:: xml
+
+   <dependency>
+       <groupId>org.kurento</groupId>
+       <artifactId>kurento-client</artifactId>
+       <version>6.12.0-SNAPSHOT</version>
+   </dependency>
 
 
 
