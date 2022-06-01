@@ -134,7 +134,19 @@
 		<version.scribe>1.3.7</version.scribe>
 		<version.servlet-api>4.0.1</version.servlet-api>
 		<version.slf4j>1.7.30</version.slf4j>
+
+		<!--
+		NOTE: Spring Boot doesn't follow SemVer. Minor version upgrades can break things.
+		To update the Spring Boot version, you must:
+		1. Follow the upgrade guide from the appropriate Spring Boot Release Notes:
+		   https://github.com/spring-projects/spring-boot/wiki#release-notes
+		2. Run this command:
+		   mvn -Pspring-boot-upgrade -Psnapshot -DskipTests=false clean verify
+		3. Fix all broken tests.
+		4. Fix all WARN and ERROR messages from `PropertiesMigrationListener`.
+		-->
 		<version.spring-boot>2.6.7</version.spring-boot>
+
 		<version.websocket-api>1.1</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
@@ -493,9 +505,9 @@
 
 			<!--
 			Import dependency management from Spring Boot.
-			Individual dependencies can be overriden by specifying them *before*
-			this entry. See:
-			https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/html/#using-import
+			Individual dependencies can be overriden by specifying them *before* this entry.
+			Doc:
+			* https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#using.import
 			-->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
@@ -1267,6 +1279,7 @@
 				</plugins>
 			</build>
 		</profile>
+
 		<!-- Profile to allow generating javadoc in both Java 7 & 8 environments -->
 		<profile>
 			<id>doclint-java8-disable</id>
@@ -1277,6 +1290,25 @@
 				<javadoc.opts>-Xdoclint:none</javadoc.opts>
 			</properties>
 		</profile>
+
+		<!-- Profile to aid upgrading Spring Boot to newer versions. -->
+		<profile>
+			<id>spring-boot-upgrade</id>
+			<dependencies>
+				<!--
+				Migrator tool for upgrading to a new Spring Boot feature release.
+				Doc:
+				* https://docs.spring.io/spring-boot/docs/current/reference/html/upgrading.html#upgrading.to-feature
+				* https://www.baeldung.com/spring-boot-properties-migrator
+				-->
+				<dependency>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-properties-migrator</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+
 		<!-- This profile can be activated to generate gpg signatures for all build
 		artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase"
 		are available to the current build. -->
