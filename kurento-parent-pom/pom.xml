@@ -145,7 +145,7 @@
 		3. Fix all broken tests.
 		4. Fix all WARN and ERROR messages from `PropertiesMigrationListener`.
 		-->
-		<version.spring-boot>2.6.7</version.spring-boot>
+		<version.spring-boot>2.3.12.RELEASE</version.spring-boot>
 
 		<version.websocket-api>1.1</version.websocket-api>
 
