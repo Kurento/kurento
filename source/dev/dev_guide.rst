@@ -352,22 +352,26 @@ After having :doc:`installed Kurento </user/installation>`, first thing to do is
 
 .. code-block:: shell
 
-   # Import the Ubuntu debug repository signing key
-   sudo apt-key adv \
-       --keyserver keyserver.ubuntu.com \
-       --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+   # Install the Ubuntu ddebs repository signing key.
+   sudo apt-get update ; sudo apt-get install --yes ubuntu-dbgsym-keyring \
+   || {
+       # Fallback for Ubuntu <= 16.04 Xenial.
+       apt-key adv \
+           --keyserver keyserver.ubuntu.com \
+           --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+   }
 
-   # Get Ubuntu version definitions
+   # Load system version variables.
    source /etc/lsb-release
 
-   # Add the repository to Apt
-   sudo tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
-   # Official Ubuntu repos with debug packages
+   # Add the repository to Apt.
+   tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
+   # Official Ubuntu packages with debug symbols
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
    EOF
 
-Now, install all debug symbols that are relevant to KMS:
+Now, install the meta-package that depends on all debug symbols which are relevant to Kurento:
 
 .. code-block:: shell
 
