@@ -166,9 +166,15 @@ Installation and usage
 
 Before being able to use your new module, its binary files must be installed to the host where Kurento Media Server is running. Using a module with Kurento comprises two sides of the same coin:
 
-1. Install the module. This allows KMS to know about the module, and allows the media server to use it when clients attempt to instantiate a new object that is exported by the module code.
+1. Install the module. This allows Kurento to know about the module, so clients can instantiate objects and types provided by it.
 
-2. Use the module from client applications. Technically this step is optional, but unless your application directly implements the :doc:`Kurento Protocol </features/kurento_protocol>`, you will want to use the client-side module API. This is done by using client code that gets automatically generated from the Kurento Module Descriptor files (``*.kmd.json``).
+   .. warning::
+
+      To avoid C++ issues with ABI compatibility (which are usually caused by mixing compiler versions) you should build your module on the same system that Kurento was built. For example, if you run Kurento on Ubuntu 18.04, you should compile your module also on Ubuntu 18.04.
+
+      Do not mix system versions. For example, do not compile your module on Ubuntu 18.04, and then try to install it for Kurento on Ubuntu 16.04.
+
+2. Use the module from client applications. Technically this step is optional, but unless your application directly implements the :doc:`Kurento Protocol </features/kurento_protocol>`, you will want to use the client-side SDK that gets auto-generated from the Kurento Module Descriptor files (``*.kmd.json``).
 
 
 
