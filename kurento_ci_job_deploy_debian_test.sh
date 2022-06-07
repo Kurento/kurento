@@ -132,9 +132,10 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 
 # Install debug symbols
 {
-    apt-key adv \
-        --keyserver keyserver.ubuntu.com \
-        --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+    apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
+    || apt-key adv \
+            --keyserver keyserver.ubuntu.com \
+            --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
     source /etc/lsb-release
 
