@@ -166,7 +166,8 @@ RUN apt-get-install \
         gstreamer1.0-x
 
 # Install debug symbols
-RUN apt-key adv \
+RUN apt-get-install ubuntu-dbgsym-keyring \
+ || apt-key adv \
         --keyserver keyserver.ubuntu.com \
         --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
