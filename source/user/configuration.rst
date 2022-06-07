@@ -71,16 +71,16 @@ Read :ref:`faq-stun-needed` to learn about when you might need to use these, and
 
 **Local install**
 
-* Set values ``stunServerAddress``, ``stunServerPort``, and ``turnURL`` in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``.
+* Set values ``stunServerAddress`` and ``stunServerPort`` to use a STUN server, or set ``turnURL`` to use a TURN server; in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``.
 
 **Docker**
 
-* Pass environment variables ``KMS_STUN_IP``, ``KMS_STUN_PORT``, ``KMS_TURN_URL``.
+* Pass environment variables ``KMS_STUN_IP`` and ``KMS_STUN_PORT`` for STUN, or ``KMS_TURN_URL`` for TURN.
 
 **Client API**
 
-* Java: `setStunServerAddress <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__, `setStunServerPort <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort-int->`__, `setTurnUrl <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__.
-* JavaScript: `setStunServerAddress <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerAddress>`__, `setStunServerPort <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerPort>`__, `setTurnUrl <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__.
+* Java: `setStunServerAddress <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__ and `setStunServerPort <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort-int->`__ for STUN, or `setTurnUrl <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__ for TURN.
+* JavaScript: `setStunServerAddress <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerAddress>`__ and `setStunServerPort <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerPort>`__ for STUN, or `setTurnUrl <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__ for TURN.
 
 
 
