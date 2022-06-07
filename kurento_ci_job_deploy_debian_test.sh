@@ -70,7 +70,8 @@ if [[ -z "$KMS_VERSION" ]]; then
     exit 1
 fi
 
-# Define parameters for the Docker container
+# Define parameters for the Docker container.
+# NOTE: `DOCKER_KMS_VERSION` must match an existing Debian repo with that name.
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Test a release build"
     DOCKER_KMS_VERSION="$KMS_VERSION"
@@ -159,9 +160,13 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     cd kms-omni-build/
 
     if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
-        # Use the repo default branch.
+        echo "Switch to development branch"
         REF="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD)"
+    elif [[ "$DOCKER_KMS_VERSION" == "dev-"* ]]; then
+        echo "Switch to feature branch"
+        REF="${DOCKER_KMS_VERSION#dev-}"
     else
+        echo "Switch to release tag"
         REF="$DOCKER_KMS_VERSION"
     fi
 
