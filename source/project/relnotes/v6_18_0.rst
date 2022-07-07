@@ -22,6 +22,17 @@ Thanks to `@alex1712 <https://github.com/alex1712>`__ (Alex) for `Kurento/kms-co
 
 
 
+Explicit network interface for WebSocket
+----------------------------------------
+
+Up until now, the media server would open a WebSocket listening on port 8888 on all network interfaces. Any application wanting to control the media server, by means of the :doc:`Kurento Protocol </features/kurento_protocol>`, would just connect to this port and start sending RPC requests.
+
+However, some users need to be able to configure the exact interface where this control port is opened; now this can be done in the static configuration files.
+
+Thanks to `@Craeckie <https://github.com/Craeckie>`__ for `Kurento/kurento-media-server#21 <https://github.com/Kurento/kurento-media-server/pull/21>`__ (*WebSocketTransport: allow to set listen address in config*).
+
+
+
 Changed
 =======
 
@@ -38,7 +49,7 @@ Thanks to this change, now the DTLS handsake will be put on hold until ICE has f
 
 *Comparison of connection speed (top: before; bottom: after)*
 
-Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#37 <https://github.com/Kurento/kms-elements/pull/37>`__ (*WebRTC DTLS handsake quick connection*).
+Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#37 <https://github.com/Kurento/kms-elements/pull/37>`__ (*WebRTC DTLS handsake quick connection*) and `Kurento/kms-elements#38 <https://github.com/Kurento/kms-elements/pull/38>`__ (*dtls server quick connection fix*).
 
 
 
