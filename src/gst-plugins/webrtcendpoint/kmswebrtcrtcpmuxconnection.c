@@ -88,7 +88,6 @@ kms_webrtc_rtcp_mux_connection_add (KmsIRtpConnection * base_rtp_conn,
 
   /* srcs */
   kms_webrtc_transport_sink_set_dtls_is_client(tr->sink, active);
-  kms_webrtc_transport_src_set_dtls_is_client (tr->src, active);
 
   gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->src)));
   gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->sink)));

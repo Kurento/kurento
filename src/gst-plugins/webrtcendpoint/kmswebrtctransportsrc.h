@@ -45,8 +45,6 @@ struct _KmsWebrtcTransportSrc
   GstElement *src;
   GstElement *dtlssrtpdec;
   gulong src_probe;
-
-  gboolean dtls_client;
 };
 
 struct _KmsWebrtcTransportSrcClass
@@ -58,10 +56,6 @@ struct _KmsWebrtcTransportSrcClass
                          KmsIceBaseAgent *agent,
                          const char *stream_id,
                          guint component_id);
-
-  void (*set_dtls_is_client) (KmsWebrtcTransportSrc * self,
-                          gboolean is_client);
-
 };
 
 GType kms_webrtc_transport_src_get_type (void);
@@ -72,9 +66,6 @@ void kms_webrtc_transport_src_configure (KmsWebrtcTransportSrc * self,
                                              KmsIceBaseAgent *agent,
                                              const char *stream_id,
                                              guint component_id);
-
-void kms_webrtc_transport_src_set_dtls_is_client (KmsWebrtcTransportSrc *src, 
-                                                  gboolean is_client);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_TRANSPORT_SRC_H__ */

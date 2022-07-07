@@ -80,7 +80,6 @@ static void
 add_tr (KmsWebRtcTransport * tr, GstBin * bin, gboolean is_client)
 {
   kms_webrtc_transport_sink_set_dtls_is_client(tr->sink, is_client);
-  kms_webrtc_transport_src_set_dtls_is_client (tr->src, is_client);
 
   gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->src)));
   gst_bin_add (bin, GST_ELEMENT (g_object_ref (tr->sink)));

@@ -28,7 +28,7 @@ G_BEGIN_DECLS
 #define KMS_WEBRTC_TRANSPORT_SRC_NICE(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_WEBRTC_TRANSPORT_SRC_NICE,KmsWebrtcTransportSrcNice))
 #define KMS_WEBRTC_TRANSPORT_SRC_NICE_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_WEBRTC_TRANSPORT_SRC_NICE,KmsWebrtcTransportSrcNiceClass))
+  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_WEBRTC_TRANSPORT_SRCNICE,KmsWebrtcTransportSrcNiceClass))
 #define KMS_IS_WEBRTC_TRANSPORT_SRC_NICE(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_WEBRTC_TRANSPORT_SRC_NICE))
 #define KMS_IS_WEBRTC_TRANSPORT_SRC_NICE_CLASS(klass) \
@@ -36,14 +36,11 @@ G_BEGIN_DECLS
 #define KMS_WEBRTC_TRANSPORT_SRC_NICE_CAST(obj) ((KmsWebrtcTransportSrcNice*)(obj))
 
 typedef struct _KmsWebrtcTransportSrcNice KmsWebrtcTransportSrcNice;
-typedef struct _KmsWebrtcTransportSrcNicePrivate KmsWebrtcTransportSrcNicePrivate;
 typedef struct _KmsWebrtcTransportSrcNiceClass KmsWebrtcTransportSrcNiceClass;
 
 struct _KmsWebrtcTransportSrcNice
 {
   KmsWebrtcTransportSrc parent;
-
-  KmsWebrtcTransportSrcNicePrivate *priv;
 };
 
 struct _KmsWebrtcTransportSrcNiceClass
