@@ -249,7 +249,7 @@ ice_state_changes_ipv6 ()
 // That feature will be PR'd when KMS reaches at least GStreamer 1.17
 /******************************************************
 static  void
-dtls_quick_connection_test (bool useIpv6)
+dtls_quick_connection_dtls_client_test (bool useIpv6)
 {
   DtlsConnectionState offerer_dtls_connection_state = DtlsConnectionState::FAILED;
   DtlsConnectionState answerer_dtls_connection_state = DtlsConnectionState::FAILED;
@@ -348,18 +348,166 @@ dtls_quick_connection_test (bool useIpv6)
   releaseWebRtc (webRtcEpAnswerer);
 }
 
-
 static void
-dtls_quick_connection_test_ipv6 ()
+send_pending_candidates (std::shared_ptr <WebRtcEndpointImpl> endpoint, std::list<kurento::OnIceCandidate> candidates, bool useIpv6)
 {
-  dtls_quick_connection_test (true);
+  GST_WARNING ("Pushing queued candidate");
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  std::for_each (candidates.begin(), candidates.end(), [endpoint, useIpv6](const OnIceCandidate event) {exchange_candidate (event, endpoint, useIpv6); });
+}
+
+static  void
+dtls_quick_connection_dtls_server_test (bool useIpv6)
+{
+  DtlsConnectionState offerer_dtls_connection_state = DtlsConnectionState::FAILED;
+  DtlsConnectionState answerer_dtls_connection_state = DtlsConnectionState::FAILED;
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+  uint64_t ice_gathering_started = 0;
+  uint64_t dtls_connection_started_offerer = 0;
+  uint64_t dtls_connection_started_answerer = 0;
+  uint64_t dtls_connection_connecting_offerer = 0;
+  uint64_t dtls_connection_connecting_answerer = 0;
+  uint64_t dtls_connection_connected_offerer = 0;
+  uint64_t dtls_connection_connected_answerer = 0;
+  std::list<kurento::OnIceCandidate> answerer_candidates = {};
+  std::shared_ptr<std::thread> async_deliver = NULL;
+
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
+
+  webRtcEpOfferer->setName ("offerer");
+  webRtcEpAnswerer->setName ("answerer");
+
+  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  });
+
+  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+    //answerer_candidates.push_back (event);
+  });
+
+//  webRtcEpOfferer->signalOnIceComponentStateChanged.connect ([&] (
+//  OnIceComponentStateChanged event) {
+//    ice_state_changed = true;
+//    cv.notify_one();
+//  });
+
+
+
+  webRtcEpAnswerer->signalIceComponentStateChange.connect ([&] (IceComponentStateChange event) {
+    std::shared_ptr<IceComponentState> state = event.getState ();
+
+    GST_WARNING ("Answerer ICE connection state change to %s", state->getString().c_str());
+  });
+  webRtcEpOfferer->signalIceComponentStateChange.connect ([&] (IceComponentStateChange event) {
+    std::shared_ptr<IceComponentState> state = event.getState ();
+
+    GST_WARNING ("Offerer ICE connection state change to %s", state->getString().c_str());
+  });
+  webRtcEpOfferer->signalDtlsConnectionStateChange.connect ([&] (
+    DtlsConnectionStateChange event) {
+      offerer_dtls_connection_state = *(event.getState());
+      GST_WARNING ("Offerer DTLS connect state change %s", offerer_dtls_connection_state.getString().c_str());
+      BOOST_TEST_MESSAGE("Offerer DTLS connection state: " + offerer_dtls_connection_state.getString() + " component: " + event.getComponentId() + " stream " + event.getStreamId());
+      // Using current KMS offerer is passive one so it gets to the NEW state immediately
+      if (offerer_dtls_connection_state.getValue() == DtlsConnectionState::NEW) {
+        dtls_connection_started_offerer = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+      } else if (offerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED) {
+        dtls_connection_connected_offerer = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        cv.notify_one();
+      } else if (offerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTING) {
+        dtls_connection_connecting_offerer = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+      }
+    });
+
+
+  webRtcEpAnswerer->signalDtlsConnectionStateChange.connect ([&] (
+    DtlsConnectionStateChange event) {
+      answerer_dtls_connection_state = *(event.getState());
+      GST_WARNING ("Answerer DTLS connect state change %s", offerer_dtls_connection_state.getString().c_str());
+      BOOST_TEST_MESSAGE("Answerer DTLS connection state: " + answerer_dtls_connection_state.getString() + " component: " + event.getComponentId() + " stream " + event.getStreamId());
+      // Using current KMS answerer is active so its is-client is true and should only be reached after the ICE connection gets to 
+      // CONNECTED state with the feature we are testing.
+      if (answerer_dtls_connection_state.getValue() == DtlsConnectionState::NEW) {
+        dtls_connection_started_answerer = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        async_deliver = std::make_shared<std::thread>(send_pending_candidates, webRtcEpOfferer, answerer_candidates, useIpv6);
+//        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//        std::for_each (answerer_candidates.begin(), answerer_candidates.end(), [webRtcEpAnswerer, useIpv6](const OnIceCandidate event) {exchange_candidate (event, webRtcEpAnswerer, useIpv6); });
+      } else if (answerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED) {
+        dtls_connection_connected_answerer = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        cv.notify_one();
+      } else if (answerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTING) {
+        dtls_connection_connecting_answerer = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+      }
+    });
+
+
+  std::string offer = webRtcEpOfferer->generateOffer ();
+  std::string answer = webRtcEpAnswerer->processOffer (offer);
+  webRtcEpOfferer->processAnswer (answer);
+
+
+  // Just to check the feature we wait for some seconds, if feature is not working, DTLS Hello should be triggered immediately and 
+  // as it is dropped (no valid candidate pair) exponential backoff will take place
+  // This delay just makes the ICE connection to take longer
+  // Although testing with delays is always a not so good idea, due to the dependencies it get about the conditions of the testing host
+  // in this case we are using it just to enhance the difference between the feature working (DTLS NEW state only reached after ICE connection 
+  // reaching CONNECTED state for answerer), and not working (NEW state reached immediately after processOffer is done on answerer)
+  std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+  ice_gathering_started = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+  webRtcEpOfferer->gatherCandidates ();
+  webRtcEpAnswerer->gatherCandidates ();
+
+  if (!cv.wait_for (lck, std::chrono::seconds (40000*TIMEOUT), [&] () {
+    return ((offerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED) && (answerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED));
+  }) ) {
+    BOOST_ERROR ("Timeout waiting for ICE state change");
+  }
+
+  // Correct outcome is answerer DTLS NEW state reached after ICE gathering is started
+  // Incorrect outcome is answerer DTLS NEW state reached before ICE gathering is started
+  // Either case offerer DTLS NEW state should be reached before ICE gathering is started
+  if (dtls_connection_started_answerer <= ice_gathering_started) {
+    BOOST_ERROR ("DTLS quick connection is not working");
+  }
+  if (dtls_connection_started_offerer > ice_gathering_started) {
+    BOOST_ERROR ("This should not happen");
+  }
+
+  async_deliver->join ();
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
 }
 
 static void
-dtls_quick_connection_test_ipv4 ()
+dtls_quick_connection_dtls_client_test_ipv6 ()
 {
-  dtls_quick_connection_test (false);
+  dtls_quick_connection_dtls_client_test (true);
 }
+
+static void
+dtls_quick_connection_dtls_client_test_ipv4 ()
+{
+  dtls_quick_connection_dtls_client_test (false);
+}
+
+static void
+dtls_quick_connection_dtls_server_test_ipv6 ()
+{
+  dtls_quick_connection_dtls_server_test (true);
+}
+
+static void
+dtls_quick_connection_dtls_server_test_ipv4 ()
+{
+  dtls_quick_connection_dtls_server_test (false);
+}
+
+
 ******************************/
 
 static  void
@@ -844,8 +992,10 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &media_state_changes_ipv6 ), 0, /* timeout */ 15);
 
   /* These tests depend on GStreamer 1.17+ and feature on https://github.com/naevatec/kms-elements/tree/dtls-connection-state*/
-  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_test_ipv4), 0, /* timeout */ 15);
-  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_test_ipv6), 0, /* timeout */ 15); 
+  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv4), 0, /* timeout */ 15);
+  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv6), 0, /* timeout */ 15); 
+  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_server_test_ipv4), 0, /* timeout */ 15);
+  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_server_test_ipv6), 0, /* timeout */ 15); 
   
   test->add (BOOST_TEST_CASE ( &connection_state_changes_ipv4 ),
              0, /* timeout */ 15);
