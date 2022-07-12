@@ -842,15 +842,13 @@ RecorderEndpoint
 Zero-size video files
 ~~~~~~~~~~~~~~~~~~~~~
 
-If you are trying to generate a video recording, keep in mind that **the endpoint will wait until all tracks (audio, video) start arriving**.
+Remember that the `client documentation <../_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__ contains lots of important information about usage of the RecorderEndpoint.
 
-Quoting from the `Client documentation <../_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__:
+Follow this checklist to make sure none of these are the cause of your issue:
 
-    It is recommended to start recording only after media arrives, either to the endpoint that is the source of the media connected to the recorder, to the recorder itself, or both. Users may use the MediaFlowIn and MediaFlowOut events, and synchronize the recording with the moment media comes in. In any case, nothing will be stored in the file until the first media packets arrive.
+* The RecorderEndpoint was created with a ``mediaProfile`` type that assumes *both* audio and video. If you intend to record audio-only or video-only media, select the appropriate ``_AUDIO_ONLY`` or ``_VIDEO_ONLY`` profile when creating the recorder instance. For example, to record a WebRTC screen capture (as obtained from a web browser's call to ``MediaDevices.getDisplayMedia()``), choose ``WEBM_VIDEO_ONLY`` instead of just ``WEBM``.
 
-Follow this issue checklist to see if any of them is preventing the RecorderEndpoint from working correctly:
-
-* The RecorderEndpoint was connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__), which assumes both audio and video, but only video (or only audio) is arriving:
+* The RecorderEndpoint was connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__) (which assumes both audio and video), but the stream is audio-only or video-only.
 
   - Monitor the :ref:`MediaFlowInStateChanged <events-mediaflowin>` and :ref:`MediaFlowOutStateChanged <events-mediaflowout>` events from all MediaElements.
   - Make sure that the element providing media (the *source*) is firing a *MediaFlowOut* event, and that the RecorderEndpoint is firing a corresponding *MediaFlowIn* event.
