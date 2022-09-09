@@ -114,7 +114,7 @@
 		<version.cglib>3.3.0</version.cglib>
 		<version.cors-filter>2.9</version.cors-filter>
 		<version.findbugs>3.0.1</version.findbugs>
-		<version.google.gson>2.8.6</version.google.gson>
+		<version.google.gson>2.8.9</version.google.gson>
 		<version.google.guava>30.0-jre</version.google.guava>
 		<version.google.http>1.38.0</version.google.http>
 		<version.google.oauth>1.31.2</version.google.oauth>
