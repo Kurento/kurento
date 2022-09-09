@@ -52,7 +52,7 @@ Understanding this example
 This application incorporates the recording capability provided by the Kurento
 Media Server in a one to one video communication. In addition, a filter element
 (*FaceOverlayFilter*) is placed between the *WebRtcEndpoints* of the Media
-Pipeline. The following picture shows an screenshot of this demo running in a
+Pipeline. The following picture shows a screenshot of this demo running in a
 web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-screenshot.png

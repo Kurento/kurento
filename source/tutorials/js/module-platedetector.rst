@@ -100,7 +100,7 @@ The complete source code of this demo can be found in
 
 This example is a modified version of the
 :doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this
-demo uses a **PlateDetector** instead of **FaceOverlay** filter. An screenshot
+demo uses a **PlateDetector** instead of **FaceOverlay** filter. A screenshot
 of the running example is shown in the following picture:
 
 .. figure:: ../../images/kurento-module-tutorial-plate-screenshot-01.png

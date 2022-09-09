@@ -48,7 +48,7 @@ Firefox).
 Understanding this example
 ==========================
 
-The following picture shows an screenshot of this demo running in a web browser:
+The following picture shows a screenshot of this demo running in a web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-screenshot.png
    :align:   center

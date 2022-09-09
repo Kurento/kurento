@@ -71,7 +71,7 @@ Understanding this example
 There will be two types of users in this application: 1 peer sending media
 (let's call it *Presenter*) and N peers receiving the media from the
 *Presenter* (let's call them *Viewers*). Thus, the Media Pipeline is composed
-by 1+N interconnected *WebRtcEndpoints*. The following picture shows an
+by 1+N interconnected *WebRtcEndpoints*. The following picture shows a
 screenshot of the Presenter's web GUI:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-screenshot.png
