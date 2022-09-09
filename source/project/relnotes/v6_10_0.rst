@@ -19,7 +19,9 @@ To install KMS on this version of Ubuntu, just follow the usual :doc:`installati
 
    DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
 
-   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+   sudo apt-key adv \
+       --keyserver keyserver.ubuntu.com \
+       --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
    sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
    # Kurento Media Server - Release packages

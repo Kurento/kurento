@@ -172,7 +172,9 @@ Open a terminal and run these commands:
    .. code-block:: shell
 
       # Import the Kurento repository signing key
-      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+      sudo apt-key adv \
+          --keyserver keyserver.ubuntu.com \
+          --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
       # Get Ubuntu version definitions
       source /etc/lsb-release
