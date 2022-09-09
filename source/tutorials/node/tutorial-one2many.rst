@@ -501,14 +501,8 @@ In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/one2many``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are three incoming messages to client: ``presenterResponse``,
-``viewerResponse``,``stopCommunication``, and ``iceCandidate``. Convenient
+``viewerResponse``, ``stopCommunication``, and ``iceCandidate``. Convenient
 actions are taken to implement each step in the communication.
-
-On the one hand, the function ``presenter`` uses the method
-``WebRtcPeer.WebRtcPeerSendonly`` of *kurento-utils.js* to start a WebRTC
-communication in send-only mode. On the other hand, the function ``viewer``
-uses the method ``WebRtcPeer.WebRtcPeerRecvonly`` of *kurento-utils.js* to
-start a WebRTC communication in receive-only mode.
 
 .. sourcecode:: javascript
 
