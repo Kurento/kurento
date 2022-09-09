@@ -143,7 +143,8 @@ MediaObject.prototype.release = function(callback){
         {
           if(event[0] == '_'
           || event == 'newListener'
-          || event == 'removeListener')
+          || event == 'removeListener'
+          || event == 'release')
             return;
 
           self.removeAllListeners(event);
