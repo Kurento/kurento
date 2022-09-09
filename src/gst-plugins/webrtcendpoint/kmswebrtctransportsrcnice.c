@@ -191,6 +191,7 @@ kms_webrtc_transport_src_nice_component_state_changed (KmsIceBaseAgent * agent,
         filter_time = now + (GST_SECOND / 100);
         filter_time_id = gst_clock_new_single_shot_id (clock, filter_time);
         gst_clock_id_wait_async (filter_time_id, do_send_pending_buffers, gst_object_ref (self), gst_object_unref);
+        gst_clock_id_unref (filter_time_id);
         gst_object_unref (clock);
       }
     }
