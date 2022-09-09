@@ -10,7 +10,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-platedetector
 =====================
 
-Kurento Java Tutorial: WebRTC in loopback with plate detector filter.
+Kurento Node.js Tutorial: WebRTC in loopback with plate detector filter.
 
 Running this tutorial
 ---------------------

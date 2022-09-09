@@ -10,7 +10,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-one2one-call
 ====================
 
-Kurento Java Tutorial: WebRTC one to one video call.
+Kurento Node.js Tutorial: WebRTC one to one video call.
 
 Running this tutorial
 ---------------------

@@ -10,7 +10,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-crowddetector
 =====================
 
-Kurento Java Tutorial: WebRTC in loopback with crowd detector filter.
+Kurento Node.js Tutorial: WebRTC in loopback with crowd detector filter.
 
 Running this tutorial
 ---------------------

@@ -10,7 +10,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-chroma
 ==============
 
-Kurento Java Tutorial: WebRTC in loopback with chroma filter.
+Kurento Node.js Tutorial: WebRTC in loopback with chroma filter.
 
 Running this tutorial
 ---------------------

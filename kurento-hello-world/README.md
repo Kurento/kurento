@@ -10,7 +10,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-hello-world
 ===================
 
-Kurento Java Tutorial: Hello World (WebRTC in loopback).
+Kurento Node.js Tutorial: Hello World (WebRTC in loopback).
 
 Running this tutorial
 ---------------------

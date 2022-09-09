@@ -10,7 +10,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 kurento-pointerdetector
 =======================
 
-Kurento Java Tutorial: WebRTC in loopback with a pointer detector filter.
+Kurento Node.js Tutorial: WebRTC in loopback with a pointer detector filter.
 
 Running this tutorial
 ---------------------
