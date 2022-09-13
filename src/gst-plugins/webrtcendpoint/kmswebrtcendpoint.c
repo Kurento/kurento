@@ -59,6 +59,7 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
 #define DEFAULT_EXTERNAL_IPV4 NULL
 #define DEFAULT_EXTERNAL_IPV6 NULL
 #define DEFAULT_ICE_TCP TRUE
+#define DEFAULT_QOS_DSCP -1
 
 enum
 {
@@ -72,6 +73,7 @@ enum
   PROP_EXTERNAL_IPV4,
   PROP_EXTERNAL_IPV6,
   PROP_ICE_TCP,
+  PROP_QOS_DSCP,
   N_PROPERTIES
 };
 
@@ -108,6 +110,7 @@ struct _KmsWebrtcEndpointPrivate
   gchar *external_ipv4;
   gchar *external_ipv6;
   gboolean ice_tcp;
+  gint qos_dscp;
 };
 
 /* Internal session management begin */
@@ -321,7 +324,7 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
   KmsWebrtcSession *webrtc_sess;
 
   webrtc_sess =
-      kms_webrtc_session_new (base_sdp, id, manager, self->priv->context);
+      kms_webrtc_session_new (base_sdp, id, manager, self->priv->context, self->priv->qos_dscp);
 
   callbacks.add_pad_cb = kms_webrtc_endpoint_add_pad;
   callbacks.remove_pad_cb = kms_webrtc_endpoint_remove_pad;
@@ -545,6 +548,9 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
     case PROP_ICE_TCP:
       self->priv->ice_tcp = g_value_get_boolean (value);
       break;
+  	case PROP_QOS_DSCP:
+	  	self->priv->qos_dscp = g_value_get_int (value);
+		  break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -589,6 +595,9 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
     case PROP_ICE_TCP:
       g_value_set_boolean (value, self->priv->ice_tcp);
       break;
+  	case PROP_QOS_DSCP:
+	  	g_value_set_int (value, self->priv->qos_dscp);
+		  break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -833,6 +842,12 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
         "iceTcp",
         "Enable ICE-TCP candidate gathering",
         DEFAULT_ICE_TCP, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_QOS_DSCP,
+      g_param_spec_int ("qos-dscp",
+          "QoS DSCP", "Set to assign DSCP value for network traffic sent",
+		  -1, G_MAXINT, DEFAULT_QOS_DSCP,
+		  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   /**
   * KmsWebrtcEndpoint::on-ice-candidate:

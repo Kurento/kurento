@@ -43,6 +43,8 @@
 
 #include <CertificateManager.hpp>
 
+#include <DSCPValue.hpp>
+
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoWebRtcEndpointImpl"
@@ -63,6 +65,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define PROP_EXTERNAL_IPV6 "external-ipv6"
 #define PROP_NETWORK_INTERFACES "network-interfaces"
 #define PROP_ICE_TCP "ice-tcp"
+
+#define PARAM_QOS_DSCP "qos-dscp"
 
 namespace kurento
 {
@@ -519,11 +523,105 @@ WebRtcEndpointImpl::getCerficateFromFile (std::string &path)
   return certificate;
 }
 
+static gint
+get_dscp_value (std::shared_ptr<DSCPValue> qosDscp)
+{
+  switch (qosDscp->getValue ())
+  {
+  case DSCPValue::CS0:
+    return 0;
+  case DSCPValue::CS1:
+    return 8;
+  case DSCPValue::CS2:
+    return 16;
+  case DSCPValue::CS3:
+    return 24;
+  case DSCPValue::CS4:
+    return 32;
+  case DSCPValue::CS5:
+    return 40;
+  case DSCPValue::CS6:
+    return 48;
+  case DSCPValue::CS7:
+    return 56;
+  case DSCPValue::AF11:
+    return 10;
+  case DSCPValue::AF12:
+    return 12;
+  case DSCPValue::AF13:
+    return 14;
+  case DSCPValue::AF21:
+    return 18;
+  case DSCPValue::AF22:
+    return 20;
+  case DSCPValue::AF23:
+    return 22;
+  case DSCPValue::AF31:
+    return 26;
+  case DSCPValue::AF32:
+    return 28;
+  case DSCPValue::AF33:
+    return 30;
+  case DSCPValue::AF41:
+    return 34;
+  case DSCPValue::AF42:
+    return 36;
+  case DSCPValue::AF43:
+    return 38;
+  case DSCPValue::EF:
+    return 46;
+  case DSCPValue::VOICEADMIT:
+    return 44;
+  case DSCPValue::LE:
+    return 1;
+  case DSCPValue::AUDIO_VERYLOW:
+    return 1;
+  case DSCPValue::AUDIO_LOW:
+    return 0;
+  case DSCPValue::AUDIO_MEDIUM:
+    return 46;
+  case DSCPValue::AUDIO_HIGH:
+    return 46;
+  case DSCPValue::VIDEO_VERYLOW:
+    return 1;
+  case DSCPValue::VIDEO_LOW:
+    return 0;
+  case DSCPValue::VIDEO_MEDIUM:
+    return 36;
+  case DSCPValue::VIDEO_MEDIUM_THROUGHPUT:
+    return 38;
+  case DSCPValue::VIDEO_HIGH:
+    return 36;
+  case DSCPValue::VIDEO_HIGH_THROUGHPUT:
+    return 34;
+  case DSCPValue::DATA_VERYLOW:
+    return 1;
+  case DSCPValue::DATA_LOW:
+    return 0;
+  case DSCPValue::DATA_MEDIUM:
+    return 10;
+  case DSCPValue::DATA_HIGH:
+    return 18;
+  case DSCPValue::CHROME_HIGH:
+    return 56;
+  case DSCPValue::CHROME_MEDIUM:
+    return 56;
+  case DSCPValue::CHROME_LOW:
+    return 0;
+  case DSCPValue::CHROME_VERYLOW:
+    return 8;
+  default:
+    return -1;
+  }
+}
+
+
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
                                         mediaPipeline, bool recvonly,
                                         bool sendonly, bool useDataChannels,
-                                        std::shared_ptr<CertificateKeyType> certificateKeyType) :
+                                        std::shared_ptr<CertificateKeyType> certificateKeyType, 
+                                        std::shared_ptr<DSCPValue> qosDscp) :
   BaseRtpEndpointImpl (conf,
                        std::dynamic_pointer_cast<MediaObjectImpl>
                        (mediaPipeline), FACTORY_NAME)
@@ -531,6 +629,23 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   std::call_once (check_openh264, check_support_for_h264);
   std::call_once (certificates_flag,
                   std::bind (&WebRtcEndpointImpl::generateDefaultCertificates, this) );
+
+  this->qosDscp = qosDscp;
+  if (qosDscp->getValue () == DSCPValue::NO_VALUE) {
+    std::string cfg_dscp_value;
+    if (getConfigValue<std::string,WebRtcEndpoint>(&cfg_dscp_value, PARAM_QOS_DSCP)) {
+      GST_INFO ("QOS-DSCP default configured value is %s", cfg_dscp_value.c_str());
+      qosDscp = std::make_shared<DSCPValue> (cfg_dscp_value);
+    }
+  }
+
+  if ((qosDscp->getValue () != DSCPValue::NO_VALUE) && (qosDscp->getValue() != DSCPValue::NO_DSCP)) {
+    GST_INFO ("Setting QOS-DSCP value to %s", qosDscp->getString().c_str());
+    g_object_set (element, "qos-dscp", get_dscp_value (qosDscp), NULL);
+  } else {
+    GST_INFO ("No QOS-DSCP value set");
+  }
+
 
   if (recvonly) {
     g_object_set (element, "offer-dir", GST_SDP_DIRECTION_RECVONLY, NULL);
@@ -1190,11 +1305,12 @@ MediaObjectImpl *
 WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, bool recvonly, bool sendonly, bool useDataChannels,
-    std::shared_ptr<CertificateKeyType> certificateKeyType) const
+    std::shared_ptr<CertificateKeyType> certificateKeyType, 
+    std::shared_ptr<DSCPValue> qosDscp) const
 {
   return new WebRtcEndpointImpl (conf, mediaPipeline, recvonly,
                                  sendonly, useDataChannels,
-                                 certificateKeyType);
+                                 certificateKeyType, qosDscp);
 }
 
 WebRtcEndpointImpl::StaticConstructor WebRtcEndpointImpl::staticConstructor;

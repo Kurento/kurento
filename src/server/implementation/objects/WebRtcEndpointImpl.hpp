@@ -42,7 +42,8 @@ public:
   WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                       std::shared_ptr<MediaPipeline> mediaPipeline,
                       bool recvonly, bool sendonly, bool useDataChannels,
-                      std::shared_ptr<CertificateKeyType> certificateKeyType);
+                      std::shared_ptr<CertificateKeyType> certificateKeyType, 
+                      std::shared_ptr<DSCPValue> qosDscp);
 
   ~WebRtcEndpointImpl () override;
 
@@ -147,6 +148,8 @@ private:
   std::map < std::string, std::shared_ptr<IceCandidatePair >> candidatePairs;
   std::map < std::string, std::shared_ptr<IceConnection>> iceConnectionState;
 
+  std::shared_ptr<DSCPValue> qosDscp;
+  
   std::mutex mut;
 
   class StaticConstructor

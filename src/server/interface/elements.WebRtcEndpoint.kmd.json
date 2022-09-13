@@ -505,6 +505,23 @@
               "type": "CertificateKeyType",
               "optional": true,
               "defaultValue": "RSA"
+            },
+            {
+              "name": "qosDscp",
+              "doc": "DSCP value to be used in network traffic sent from this endpoint
+              <p>
+              If this parameter is present with a value different to NO_VALUE, all traffic sent from this WebRTCEndpoint will be marked with the correspondent
+              DSCP value according to the DiffServ architecture. This may provide better handling of network traffic according to its characteristics associated to 
+              its DSCP value. This better handling includes priority in forwarding traffic and probablity of packet drop in case of network congestion.
+              <p>
+              It must be taken into account that on Internet not all intermediate routers are guaranteed to enforce those DSCP values, even it is possible that 
+              certain routers just block traffic marked with specific DSCP values, as discussed here https://datatracker.ietf.org/doc/html/rfc8835#section-4.2.
+              <p> 
+              So, this feature must be managed with care and is mostly intended for private networks, where the network proprietor can configure and guarantee 
+              DSCP management in all routers.",
+              "type": "DSCPValue",
+              "optional": true,
+              "defaultValue": "NO_VALUE"
             }
           ]
         },
@@ -970,6 +987,89 @@ This could also happen in the middle of a session, though not likely.
         "RSA",
         "ECDSA"
       ]
+    },
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "NO_DSCP",                  //  -1 USed to signal that no DSCP feature is requested
+        "NO_VALUE",                 //  -1 Used to signal to use the default value configured in configuration file
+        "AUDIO_VERYLOW",            //   LE (1)
+        "AUDIO_LOW",                //   DF (0)        
+        "AUDIO_MEDIUM",             //  EF (46)
+        "AUDIO_HIGH",               //  EF (46)
+        "VIDEO_VERYLOW",            //  LE (1)
+        "VIDEO_LOW",                //  DF (0)
+        "VIDEO_MEDIUM",             //  AF42 (36)
+        "VIDEO_MEDIUM_THROUGHPUT",  //  AF43 (38)
+        "VIDEO_HIGH",               //  AF42 (36)
+        "VIDEO_HIGH_THROUGHPUT",    //  AF41(34)
+        "DATA_VERYLOW",             //  LE (1)
+        "DATA_LOW",                 //  DF (0)
+        "DATA_MEDIUM",              //  AF11 (10)
+        "DATA_HIGH",                //  AF21 (18)
+        "CHROME_HIGH",              // CS7 (56)
+        "CHROME_MEDIUM",            // CS7 (56)
+        "CHROME_LOW",               // CS0 (0)
+        "CHROME_VERYLOW",           // CS1 (8)
+        "CS0",      //   0
+        "CS1",      //   8        
+        "CS2",      //  16
+        "CS3",      //  24
+        "CS4",      //  32
+        "CS5",      //  40
+        "CS6",      //  48
+        "CS7",      //  56
+        "AF11",     //  10
+        "AF12",     //  12
+        "AF13",     //  14
+        "AF21",     //  18
+        "AF22",     //  20
+        "AF23",     //  22
+        "AF31",     //  26
+        "AF32",     //  28
+        "AF33",     //  30
+        "AF41",     //  34
+        "AF42",     //  36
+        "AF43",     //  38
+        "EF",       //  46
+        "VOICEADMIT", // 44
+        "LE"        //   1
+      ],
+      "name": "DSCPValue",
+      "doc": "Possible DSCP values 
+      <p>
+      WebRTC recommended values are taken from RFC 8837 https://datatracker.ietf.org/doc/html/rfc8837#section-5 , These are the values from AUDIO_VERYLOW to DATA_HIGH. First element in the 
+      name indicates kind of traffic that it should apply to, the second indicates relative priority. For video, a third field would indicate if the traffic is intended for high throughput or not.
+      As indicated on RFC 8837 section 5 diagram:
+
+          +=======================+==========+=====+============+============+
+          |       Flow Type       | Very Low | Low |   Medium   |    High    |
+          +=======================+==========+=====+============+============+
+          |         Audio         |  LE (1)  |  DF |  EF (46)   |  EF (46)   |
+          |                       |          | (0) |            |            |
+          +-----------------------+----------+-----+------------+------------+
+          +-----------------------+----------+-----+------------+------------+
+          |   Interactive Video   |  LE (1)  |  DF | AF42, AF43 | AF41, AF42 |
+          | with or without Audio |          | (0) |  (36, 38)  |  (34, 36)  |
+          +-----------------------+----------+-----+------------+------------+
+          +-----------------------+----------+-----+------------+------------+
+          | Non-Interactive Video |  LE (1)  |  DF | AF32, AF33 | AF31, AF32 |
+          | with or without Audio |          | (0) |  (28, 30)  |  (26, 28)  |
+          +-----------------------+----------+-----+------------+------------+
+          +-----------------------+----------+-----+------------+------------+
+          |          Data         |  LE (1)  |  DF |    AF11    |    AF21    |
+          |                       |          | (0) |            |            |
+          +-----------------------+----------+-----+------------+------------+
+
+      As indicated also in RFC, non interactive video is not considered
+      <p>
+      Apart from the WebRTC recommended values, we also include all possible values are referenced in http://www.iana.org/assignments/dscp-registry/dscp-registry.xml of course some of 
+      those values are synonyms for the WebRTC recommended ones, they are included mainly for completeness
+      <p>
+      And as a last point, we include a shorthand for Chrome supported markings for low  (CS0), very low (CS1), medium (CS7) and high (CS7) priorities in priority property for RTCRtpSender parameters. See https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/setParameters
+      <p>
+      This only covers outgoing network packets from KMS, to complete the solution, DSCP must be also requested on client, unfortunately for traffic on the other direction, this must be requested to the 
+      browser or client. On browser, the client application needs to use the following API https://www.w3.org/TR/webrtc-priority/"
     }
   ]
 }

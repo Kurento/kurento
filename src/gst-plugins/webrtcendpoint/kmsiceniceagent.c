@@ -43,6 +43,7 @@ struct _KmsIceNiceAgentPrivate
   GMainContext *context;
   NiceAgent *agent;
   GSList *remote_candidates;
+  gint qos_dscp;
 };
 
 static char *
@@ -362,7 +363,7 @@ end:
 // ----------------------------------------------------------------------------
 
 KmsIceNiceAgent *
-kms_ice_nice_agent_new (GMainContext * context)
+kms_ice_nice_agent_new (GMainContext * context, gint qos_dscp)
 {
   GObject *obj;
   KmsIceNiceAgent *self;
@@ -370,6 +371,7 @@ kms_ice_nice_agent_new (GMainContext * context)
   obj = g_object_new (KMS_TYPE_ICE_NICE_AGENT, NULL);
   self = KMS_ICE_NICE_AGENT (obj);
   self->priv->context = context;
+  self->priv->qos_dscp = qos_dscp;
 
   GST_DEBUG_OBJECT (self, "Create new instance, compatibility level: RFC5245");
   self->priv->agent =
@@ -453,6 +455,17 @@ kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
   for (i = 1; i <= KMS_NICE_N_COMPONENTS; i++) {
     nice_agent_set_port_range (nice_agent->priv->agent, id, i, min_port,
         max_port);
+  }
+
+  if (nice_agent->priv->qos_dscp >= 0) {
+    gint tos;
+
+    GST_LOG_OBJECT (self, "Setting DSCP tag %d for stream %u - %s", nice_agent->priv->qos_dscp, id, stream_id);
+    
+    /* Extract and shift 6 bits of DSFIELD */
+    tos = (nice_agent->priv->qos_dscp & 0x3f) << 2;
+
+    nice_agent_set_stream_tos (nice_agent->priv->agent, id, tos);
   }
 
   // NOTE: Docs say [0] that an I/O callback must be registered in order to receive
