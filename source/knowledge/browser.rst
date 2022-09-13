@@ -359,30 +359,28 @@ Video Encoding
 Video Bitrate
 -------------
 
-Web browsers will adapt their output video quality according to what they detect is the network quality. Most browsers will adapt the **video bitrate**; in addition, Chrome also adapts the **video resolution**.
+Web browsers will try to estimate the real performance of the network, and with this information they adapt their video output quality. Most browsers are able to adjust the **video bitrate**; in addition, Chrome also dynamically adapts the **resolution** and **framerate** of its video output.
 
-The **maximum video bitrate** is calculated by the WebRTC stack, by following a simple rule based on the video dimensions:
+The **maximum video bitrate** is calculated for WebRTC by following a simple rule based on the dimensions of the video source:
 
 * 600 kbps if ``width * height <= 320 * 240``.
 * 1700 kbps if ``width * height <= 640 * 480``.
 * 2000 kbps (2 Mbps) if ``width * height <= 960 * 540``.
 * 2500 kbps (2.5 Mbps) for bigger video sizes.
-* 1200 kbps in any case, if the video is a screen capture.
+* Never less than 1200 kbps, if the video is a screen capture.
 
 Source: The ``GetMaxDefaultVideoBitrateKbps()`` function in `libwebrtc source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/webrtc_video_engine.cc#231>`__.
 
-Browsers offer internal stats through a special web address that you can use to verify what is really being sent by their WebRTC stack.
-
-For example, to check the outbound stats in Chrome:
+To verify what is exactly being sent by your web browser, check its internal WebRTC stats. For example, to check the outbound stats in Chrome:
 
 #. Open this URL: ``chrome://webrtc-internals/``.
 #. Look for the stat name "*Stats graphs for RTCOutboundRTPVideoStream (outbound-rtp)*".
-#. You will find the effective output video bitrate in ``[bytesSent_in_bits/s]``, and the output resolution in ``frameWidth`` and ``frameHeight``.
+#. You will find the effective output bitrate in ``[bytesSent_in_bits/s]``, and the output resolution in ``frameWidth`` and ``frameHeight``.
 
 You can also check what is the network bandwidth estimation in Chrome:
 
 #. Look for the stat name "*Stats graphs for RTCIceCandidatePair (candidate-pair)*". Note that there might be several of these, but only one will be active.
-#. Find the output network bandwidth estimation in ``availableOutgoingBitrate``. Chrome will try to slowly increase its output bitrate, until it reaches this estimation.
+#. Find the output network bandwidth estimation in ``availableOutgoingBitrate``. Chrome will try to slowly increase its effective output bitrate, until it reaches this estimation.
 
 
 
