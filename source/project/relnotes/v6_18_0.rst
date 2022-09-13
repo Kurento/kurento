@@ -33,6 +33,19 @@ Thanks to `@Craeckie <https://github.com/Craeckie>`__ for `Kurento/kurento-media
 
 
 
+Differentiated Services Code Point (DSCP) for WebRTC QoS
+--------------------------------------------------------
+
+Networks can provide different favorable routings for individual IPv4 and IPv6 packets, based on the *Differentiated Services* (DS) field of the IP header. This kind of *Quality of Service* (QoS) enhancement is enabled by setting the DS field to one of the *Differentiated Services Code Point* (DSCP) values that have been specified for usage with WebRTC, as defined by :rfc:`8837`.
+
+At least some web browsers (i.e. Chrome) are able to set the DS field on its outbound packets, and now Kurento is also able to do the same thanks to this addition.
+
+You can set a global DSCP value for all WebRtcEndpoints in the static configuration file, ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Alternatively, it is also possible to set the DSCP value separately for each endpoint, with the ``qosDscp()`` method of the WebRtcEndpoint Builder class.
+
+Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#41 <https://github.com/Kurento/kms-elements/pull/41>`__ (*Feature/webrtc qos dscp*).
+
+
+
 Changed
 =======
 
@@ -258,6 +271,7 @@ Fixed
 * `#470 <https://github.com/Kurento/bugtracker/issues/470>`__ (*kmsaudiomixer outputs silence after running for 2 hours*).
 * `#616 <https://github.com/Kurento/bugtracker/issues/616>`__ (*Kurento Media Server not sending relay candidates, although configured, unless ANSWER is received or OFFER is processed*).
 * `#622 <https://github.com/Kurento/bugtracker/issues/622>`__ (*externalIpv4 and externalIpv6 affect all candidates instead of just host*).
+* `#631 <https://github.com/Kurento/bugtracker/issues/631>`__ (*Kurento overwrites PPID of data channel packets as type "String" even when sent as "Binary"*).
 
 
 
@@ -267,3 +281,5 @@ Other changes
 This list includes other changes and fixes contributed by users and/or fellow developers, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
 
 * `@dpocock <https://github.com/dpocock>`__ (Daniel Pocock) for `Kurento/kms-elements#35 <https://github.com/Kurento/kms-elements/pull/35>`__ (*CMakeLists.txt: explicitly list the Boost libraries required for linking*).
+* `@DorianScholz <https://github.com/DorianScholz>`__ (Dorian Scholz) for `Kurento/kms-elements#42 <https://github.com/Kurento/kms-elements/pull/42>`__ (*data channel: do not overwrite ppid if it was successfully parsed from received data*).
+* `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kurento-client-js#13 <https://github.com/Kurento/kurento-client-js/pull/13>`__ (*Fix memory leak in JavaScript Client*).
