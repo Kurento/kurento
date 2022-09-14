@@ -36,7 +36,7 @@ include(GenericFind)
 # DEVELOPER NOTE:
 # If you want to force generating Kurento Module Creator, instead of using the
 # one installed in the system, just comment out this line:
-generic_find(LIBNAME KurentoModuleCreator VERSION ^6.18.0-dev)
+generic_find(LIBNAME KurentoModuleCreator VERSION ^6.18.0)
 
 if(NOT KurentoModuleCreator_FOUND)
   message(STATUS "Generating module creator")
