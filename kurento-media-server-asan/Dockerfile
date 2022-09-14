@@ -118,7 +118,7 @@ ARG GCC_VERSION="9"
 # * LANG: Set the default locale for all commands
 ENV LANG="C.UTF-8"
 
-# Install required tools:
+# Install tools:
 # * git: For `git clone` in build.sh
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
 RUN apt-get-install \

@@ -121,16 +121,19 @@ ARG KMS_VERSION="dev"
 # * LANG: Set the default locale for all commands
 ENV LANG="C.UTF-8"
 
-# Install required tools:
+# Install tools:
 # * ca-certificates: For HTTPS requests (e.g. with PlayerEndpoint)
 # * curl: For `healthchecker.sh`
 # * dnsutils: For `dig` in `getmyip.sh`
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
+# * nano: Not required but useful for edits while troubleshooting
 RUN apt-get-install \
         ca-certificates \
         curl \
         dnsutils \
-        gnupg
+        gnupg \
+        \
+        nano
 
 # Add Kurento Apt package repository.
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
