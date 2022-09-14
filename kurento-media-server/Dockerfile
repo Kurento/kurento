@@ -171,8 +171,10 @@ RUN apt-get-install ubuntu-dbgsym-keyring \
         --keyserver keyserver.ubuntu.com \
         --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
- && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
- && apt-get-install-fix kurento-dbg
+ && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
+ # FIXME: Waiting for a fix in Ubuntu repos:
+ # https://bugs.launchpad.net/ubuntu/+source/glib2.0/+bug/1989572
+ #&& apt-get-install-fix kurento-dbg
 #
 # FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
 
