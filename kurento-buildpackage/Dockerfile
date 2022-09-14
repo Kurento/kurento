@@ -80,6 +80,7 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         build-essential \
         libglib2.0-dev \
+        wget \
  && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies of the `kurento-buildpackage` build script
@@ -102,14 +103,14 @@ RUN git config --system user.name "Kurento" \
  && git config --global --add safe.directory '*'
 
 # Install the Git-BuildPackage tool for creation of .deb files.
-RUN if [[ "$UBUNTU_CODENAME" == "xenial" ]]; then \
+RUN if [ "$UBUNTU_CODENAME" = "xenial" ]; then \
         apt-get purge --auto-remove --yes python3-pip \
-        wget -O /tmp/get-pip.py https://bootstrap.pypa.io/pip/3.5/get-pip.py \
-        python3 /tmp/get-pip.py \
-        python3 -m pip install --upgrade nosexcover \
-        python3 -m pip install --upgrade --use-deprecated=legacy-resolver gbp==0.9.10 \
+        && wget -O /tmp/get-pip.py https://bootstrap.pypa.io/pip/3.5/get-pip.py \
+        && python3 /tmp/get-pip.py \
+        && python3 -m pip install --upgrade nosexcover \
+        && python3 -m pip install --upgrade --use-deprecated=legacy-resolver gbp==0.9.10 ; \
     else \
-        python3 -m pip install --upgrade gbp \
+        python3 -m pip install --upgrade gbp ; \
     fi
 
 # APT_KEEP_CACHE
