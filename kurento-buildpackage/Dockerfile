@@ -50,6 +50,8 @@ ARG UBUNTU_CODENAME=xenial
 
 FROM ubuntu:${UBUNTU_CODENAME}
 
+ARG UBUNTU_CODENAME
+
 # Configure environment:
 # * DEBIAN_FRONTEND: Disable Apt interactive questions and messages
 # * PYTHONUNBUFFERED: Disable Python stdin/stdout/stderr buffering
@@ -93,18 +95,22 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
         coreutils \
  && rm -rf /var/lib/apt/lists/*
 
-# FIXME: Install old version because newer ones are not compatible.
-# gbp>=0.9.14 requires git>=2.10, because is uses `git --no-show-signature`.
-# Workaround: install gbp==0.9.13... but gbp between 0.9.11 and 0.9.13 had a
-# broken install script! 0.9.10 is the most recent that can be installed :-(
-# GBP version can be updated only when this image bases from 18.04/Bionic.
-RUN pip3 install --upgrade nosexcover \
- && pip3 install --upgrade --use-deprecated=legacy-resolver gbp==0.9.10
-
 # Configure Git user, which will appear in the Debian Changelog files
-# (this is needed by git-buildpackage)
+# (this is required by Git-BuildPackage)
 RUN git config --system user.name "Kurento" \
- && git config --system user.email "info@kurento.org"
+ && git config --system user.email "info@kurento.org" \
+ && git config --global --add safe.directory '*'
+
+# Install the Git-BuildPackage tool for creation of .deb files.
+RUN if [[ "$UBUNTU_CODENAME" == "xenial" ]]; then \
+        apt-get purge --auto-remove --yes python3-pip \
+        wget -O /tmp/get-pip.py https://bootstrap.pypa.io/pip/3.5/get-pip.py \
+        python3 /tmp/get-pip.py \
+        python3 -m pip install --upgrade nosexcover \
+        python3 -m pip install --upgrade --use-deprecated=legacy-resolver gbp==0.9.10 \
+    else \
+        python3 -m pip install --upgrade gbp \
+    fi
 
 # APT_KEEP_CACHE
 #
