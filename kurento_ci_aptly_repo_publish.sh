@@ -166,15 +166,14 @@ aptly repo add -force-replace -remove-files "$CFG_REPO_NAME" ./*.*deb
 PUBLISH_ENDPOINT="s3:ubuntu:${CFG_PUBLISH_NAME}"
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    echo "Create and publish new release snapshot: $SNAP_NAME"
-
     # Aptly docs:
     # > It is not recommended to publish local repositories directly unless the
     # > repository is for testing purposes and changes happen frequently. For
     # > production usage please take snapshot of repository and publish it.
     SNAP_NAME="snap-${CFG_REPO_NAME}"
-    aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
 
+    echo "Create and publish new release snapshot: $SNAP_NAME"
+    aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
     aptly publish snapshot -gpg-key="$GPGKEY" "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
     REPO_PUBLISHED="$(aptly publish list -raw | grep --count "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME")" || true
