@@ -52,10 +52,10 @@ set -o errexit -o errtrace -o pipefail -o nounset
 # Trace all commands
 set -o xtrace
 echo "#### Run maven_script.sh ####"
-npm install --no-color || { echo ERR7; exit 1; }
-node_modules/.bin/grunt --no-color || { echo ERR8; exit 1; }
-node_modules/.bin/grunt --no-color sync:bower || { echo ERR9; exit 1; }
-mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR10; exit 1; }
+npm install --no-color --loglevel=info --audit=false --fund=false || { echo ERR1; exit 1; }
+node_modules/.bin/grunt --no-color || { echo ERR2; exit 2; }
+node_modules/.bin/grunt --no-color sync:bower || { echo ERR3; exit 3; }
+mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR4; exit 4; }
 cp dist/* src/main/resources/META-INF/resources/js/
 EOF
 fi
