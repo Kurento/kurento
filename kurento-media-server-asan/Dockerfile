@@ -123,11 +123,14 @@ ENV LANG="C.UTF-8"
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04)
 RUN apt-get-install \
         git \
-        gnupg \
- && echo "deb http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME kms6" \
-        >/etc/apt/sources.list.d/kurento.list \
- && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
- && apt-get-install \
+        gnupg
+
+# Add Kurento Apt package repository.
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
+ && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" >/etc/apt/sources.list.d/kurento.list
+
+# Install development tools.
+RUN apt-get-install \
         build-essential \
         kurento-media-server-dev \
         maven-debian-helper

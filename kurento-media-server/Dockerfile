@@ -136,10 +136,8 @@ RUN apt-get-install \
         nano
 
 # Add Kurento Apt package repository.
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83 \
- && APT_LIST="deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" \
- && echo "Apt source line: $APT_LIST" \
- && echo "$APT_LIST" >/etc/apt/sources.list.d/kurento.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
+ && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server
 #RUN apt-get-install kurento-media-server
