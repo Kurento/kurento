@@ -4,7 +4,7 @@
 #
 # This Docker image is used to run an instance of Kurento Media Server that
 # has AddressSanitizer instrumentation code injected into the binary. This is
-# useful to run KMS and detect memory access errors.
+# useful to run Kurento and detect memory access errors.
 #
 #
 #
@@ -29,7 +29,7 @@
 # --build-arg KMS_VERSION=<KmsVersion>
 #
 #   <KmsVersion> is like "6.12.0".
-#   Alternatively, "dev" is used to build a nightly version of KMS.
+#   Alternatively, "dev" is used to build a nightly version of Kurento.
 #
 #   Optional. Default: "dev".
 #
@@ -68,7 +68,7 @@
 
 
 
-# Global arguments for FROM
+# Global arguments for FROM.
 ARG UBUNTU_CODENAME="xenial"
 ARG KMS_IMAGE="kurento/kurento-media-server:dev"
 
@@ -82,18 +82,16 @@ FROM ubuntu:${UBUNTU_CODENAME} AS ubuntu_base
 ARG APT_ARGS=""
 
 # Configure Apt:
-# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages
+# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages.
 # * --quiet: Hide progress bars.
 # * --yes: Assume "Yes" for all confirmation requests.
 # * APT::Install-Recommends=false: Avoid installing non-essential stuff.
-RUN touch /etc/profile \
- && touch "$HOME"/.bash_profile \
- && printf "\
-apt-get-install() {\n\
+RUN touch /etc/profile ~/.bash_profile && printf "\
+function apt-get-install {\n\
     (\n\
         export DEBIAN_FRONTEND=noninteractive\n\
         /usr/bin/apt-get --quiet $APT_ARGS update \\\\\\n\
-        && /usr/bin/apt-get --quiet --yes -oAPT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
+        && /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
     )\n\
     local RC=\$?\n\
     rm -rf /var/lib/apt/lists/*\n\
@@ -115,12 +113,12 @@ ARG KMS_VERSION="dev"
 ARG GCC_VERSION="9"
 
 # Configure environment:
-# * LANG: Set the default locale for all commands
+# * LANG: Set the default locale for all commands.
 ENV LANG="C.UTF-8"
 
 # Install tools:
-# * git: For `git clone` in build.sh
-# * gnupg: For `apt-key adv` (since Ubuntu 18.04)
+# * git: For `git clone` in `build.sh`.
+# * gnupg: For `apt-key adv` (since Ubuntu 18.04).
 RUN apt-get-install \
         git \
         gnupg
@@ -135,9 +133,9 @@ RUN apt-get-install \
         kurento-media-server-dev \
         maven-debian-helper
 
-# Install latest GCC (GCC 9 in Ubuntu 16.04 "Xenial")
+# Install latest GCC (GCC 9 in Ubuntu 16.04 "Xenial").
 # This is done to use the latest AddressSanitizer, which is always a good idea
-# because it will have better detection capabilities and bugs resolved
+# because it will have better detection capabilities and bugs resolved.
 RUN echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
         >/etc/apt/sources.list.d/ubuntu-toolchain.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
@@ -146,7 +144,7 @@ RUN echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CO
         "g++-${GCC_VERSION}" \
         "cpp-${GCC_VERSION}"
 
-# Configure GCC version
+# Configure GCC version.
 RUN update-alternatives --remove-all gcc || true \
  && update-alternatives --remove-all g++ || true \
  && update-alternatives --remove-all cpp || true \
@@ -155,7 +153,7 @@ RUN update-alternatives --remove-all gcc || true \
         --slave /usr/bin/cpp cpp "/usr/bin/cpp-${GCC_VERSION}" \
  && update-alternatives --set gcc "/usr/bin/gcc-${GCC_VERSION}"
 
-# Download, build, and dist KMS
+# Download, build, and dist Kurento.
 COPY build.sh /
 RUN /build.sh
 
@@ -168,7 +166,7 @@ FROM ${KMS_IMAGE}
 
 ARG UBUNTU_CODENAME
 
-# Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial")
+# Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial").
 RUN apt-get-install \
         gnupg \
  && echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
@@ -178,10 +176,9 @@ RUN apt-get-install \
         libgcc1 \
         libstdc++6
 
-# Get the KMS built in previous stage
+# Get the Kurento binaries built in previous stage.
 COPY --from=builder /kurento-asan /kurento-asan
 
-# Get and run the custom entrypoint
 COPY entrypoint.sh /
 COPY getmyip.sh /
 WORKDIR /kurento-asan

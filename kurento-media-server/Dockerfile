@@ -27,7 +27,7 @@
 # --build-arg KMS_VERSION=<KmsVersion>
 #
 #   <KmsVersion> is like "6.12.0".
-#   Alternatively, "dev" is used to build a nightly version of KMS.
+#   Alternatively, "dev" is used to build a nightly version of Kurento.
 #
 #   Optional. Default: "dev".
 #
@@ -58,7 +58,7 @@
 
 
 
-# Global arguments for FROM
+# Global arguments for FROM.
 ARG UBUNTU_CODENAME="xenial"
 
 
@@ -71,18 +71,16 @@ FROM ubuntu:${UBUNTU_CODENAME} AS ubuntu_base
 ARG APT_ARGS=""
 
 # Configure Apt:
-# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages
+# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages.
 # * --quiet: Hide progress bars.
 # * --yes: Assume "Yes" for all confirmation requests.
 # * APT::Install-Recommends=false: Avoid installing non-essential stuff.
-RUN touch /etc/profile \
- && touch "$HOME"/.bash_profile \
- && printf "\
-apt-get-install() {\n\
+RUN touch /etc/profile ~/.bash_profile && printf "\
+function apt-get-install {\n\
     (\n\
         export DEBIAN_FRONTEND=noninteractive\n\
         /usr/bin/apt-get --quiet $APT_ARGS update \\\\\\n\
-        && /usr/bin/apt-get --quiet --yes -oAPT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
+        && /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
     )\n\
     local RC=\$?\n\
     rm -rf /var/lib/apt/lists/*\n\
@@ -91,11 +89,11 @@ apt-get-install() {\n\
 
 # FIXME: Workaround for the network errors introduced by our OpenStack CI.
 RUN printf "\
-apt-get-install-fix() {\n\
+function apt-get-install-fix {\n\
     (\n\
         export DEBIAN_FRONTEND=noninteractive\n\
         /usr/bin/apt-get --quiet update \\\\\\n\
-        && until /usr/bin/apt-get --quiet --yes -oAPT::Install-Recommends=false install \"\$@\"; do echo FIXME RETRY; done\n\
+        && until /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false install \"\$@\"; do echo FIXME RETRY; done\n\
     )\n\
     local RC=\$?\n\
     rm -rf /var/lib/apt/lists/*\n\
@@ -118,15 +116,15 @@ ARG UBUNTU_CODENAME
 ARG KMS_VERSION="dev"
 
 # Configure environment:
-# * LANG: Set the default locale for all commands
+# * LANG: Set the default locale for all commands.
 ENV LANG="C.UTF-8"
 
 # Install tools:
-# * ca-certificates: For HTTPS requests (e.g. with PlayerEndpoint)
-# * curl: For `healthchecker.sh`
-# * dnsutils: For `dig` in `getmyip.sh`
-# * gnupg: For `apt-key adv` (since Ubuntu 18.04)
-# * nano: Not required but useful for edits while troubleshooting
+# * ca-certificates: For HTTPS requests (e.g. with PlayerEndpoint).
+# * curl: For `healthchecker.sh`.
+# * dnsutils: For `dig` in `getmyip.sh`.
+# * gnupg: For `apt-key adv` (since Ubuntu 18.04).
+# * nano: Not required but useful for edits while troubleshooting.
 RUN apt-get-install \
         ca-certificates \
         curl \
@@ -139,14 +137,14 @@ RUN apt-get-install \
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
  && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" >/etc/apt/sources.list.d/kurento.list
 
-# Install Kurento Media Server
+# Install Kurento Media Server.
 #RUN apt-get-install kurento-media-server
 #
 # FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
 RUN apt-get-install-fix kurento-media-server
 
-# Install additional modules
-# These might not be all available, so install separately and allow errors
+# Install additional modules.
+# These might not be all available, so install separately and allow errors.
 RUN apt-get-install kms-chroma || true
 RUN apt-get-install kms-crowddetector || true
 RUN apt-get-install kms-datachannelexample || true
@@ -166,11 +164,9 @@ RUN apt-get-install \
         gstreamer1.0-tools \
         gstreamer1.0-x
 
-# Install debug symbols
+# Install debug symbols.
 RUN apt-get-install ubuntu-dbgsym-keyring \
- || apt-key adv \
-        --keyserver keyserver.ubuntu.com \
-        --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
+ || apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
  && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
  # FIXME: Waiting for a fix in Ubuntu repos:
@@ -179,7 +175,7 @@ RUN apt-get-install ubuntu-dbgsym-keyring \
 #
 # FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
 
-# Expose default Kurento RPC control port
+# Expose default Kurento RPC control port.
 EXPOSE 8888
 
 COPY entrypoint.sh /
