@@ -10,6 +10,7 @@ BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 source "$BASEPATH/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
+trap_add 'log "==================== END ===================="' EXIT
 
 # Trace all commands.
 set -o xtrace
@@ -84,6 +85,7 @@ mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MVN_GOAL_DEPLOY" || {
 }
 
 # Now make the actual deployment.
+
 MVN_ARGS+=(
     -Pdeploy
 )
@@ -94,6 +96,7 @@ PROJECT_VERSION="$(kurento_get_version.sh)" || {
 }
 log "Build and deploy version: $PROJECT_VERSION"
 
+# If SNAPSHOT, deploy to snapshots repository and exit.
 if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
     log "Version to deploy is SNAPSHOT"
 
@@ -103,65 +106,63 @@ if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
         log "ERROR: Command failed: kurento_maven_deploy_github"
         exit 1
     }
-else
-    log "Version to deploy is RELEASE"
 
-    MVN_ARGS+=(-Pkurento-release)
-
-    MVN_GOALS=(
-        javadoc:jar
-        source:jar
-    )
-
-    if [[ $SIGN_ARTIFACTS == "true" ]]; then
-        log "Artifact signing on deploy is ENABLED"
-
-        MVN_ARGS+=(-Pgpg-sign)
-
-        MVN_GOALS+=(
-            package
-            gpg:sign # "sign" requires an already packaged artifact.
-            "$MVN_GOAL_DEPLOY"
-        )
-
-        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
-            log "ERROR: Command failed: mvn deploy (signed release)"
-            exit 1
-        }
-
-        # Verify signed files (if any)
-        mapfile -t SIGNED_FILES < <(find ./target -type f -name '*.asc' ! -name '*.asc.asc')
-
-        if [[ ${#SIGNED_FILES[@]} -eq 0 ]]; then
-            log "Exit: No signed files found"
-            exit 0
-        fi
-
-        log "Signed files:"
-        printf '  %s\n' "${SIGNED_FILES[@]}"
-
-        for SIGNED_FILE in "${SIGNED_FILES[@]}"; do
-            FILE="${SIGNED_FILE%.asc}"
-            gpg --verify "$SIGNED_FILE" "$FILE" || {
-                log "ERROR: Command failed: gpg --verify '$SIGNED_FILE' '$FILE'"
-                exit 1
-            }
-        done
-    else
-        log "Artifact signing on deploy is DISABLED"
-
-        MVN_GOALS+=(
-            package
-            "$MVN_GOAL_DEPLOY"
-        )
-
-        mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
-            log "ERROR: Command failed: mvn deploy (unsigned release)"
-            exit 1
-        }
-    fi
+    exit 0
 fi
 
+log "Version to deploy is RELEASE"
 
+MVN_ARGS+=(-Pkurento-release)
 
-log "==================== END ===================="
+MVN_GOALS=(
+    javadoc:jar
+    source:jar
+)
+
+if [[ $SIGN_ARTIFACTS == "true" ]]; then
+    log "Artifact signing on deploy is ENABLED"
+
+    MVN_ARGS+=(-Pgpg-sign)
+
+    MVN_GOALS+=(
+        package
+        gpg:sign # "sign" requires an already packaged artifact.
+        "$MVN_GOAL_DEPLOY"
+    )
+
+    mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
+        log "ERROR: Command failed: mvn deploy (signed release)"
+        exit 1
+    }
+
+    # Verify signed files (if any)
+    mapfile -t SIGNED_FILES < <(find ./target -type f -name '*.asc' ! -name '*.asc.asc')
+
+    if [[ ${#SIGNED_FILES[@]} -eq 0 ]]; then
+        log "Exit: No signed files found"
+        exit 0
+    fi
+
+    log "Signed files:"
+    printf '  %s\n' "${SIGNED_FILES[@]}"
+
+    for SIGNED_FILE in "${SIGNED_FILES[@]}"; do
+        FILE="${SIGNED_FILE%.asc}"
+        gpg --verify "$SIGNED_FILE" "$FILE" || {
+            log "ERROR: Command failed: gpg --verify '$SIGNED_FILE' '$FILE'"
+            exit 1
+        }
+    done
+else
+    log "Artifact signing on deploy is DISABLED"
+
+    MVN_GOALS+=(
+        package
+        "$MVN_GOAL_DEPLOY"
+    )
+
+    mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
+        log "ERROR: Command failed: mvn deploy (unsigned release)"
+        exit 1
+    }
+fi
