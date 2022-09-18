@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -8,13 +7,13 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>6.18.0-SNAPSHOT</version>
+		<version>6.18.0</version>
 
 		<!-- Disable local search for parent pom; force repository lookup. -->
 		<relativePath/>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.18.0-SNAPSHOT</version>
+	<version>6.18.0</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -72,13 +71,13 @@
 		It's not critical that these versions coincide with the latest available,
 		but whenever an API update is done in those files and released,
 		these version numbers should get updated accordingly. -->
-		<version.kms-api-core>6.18.0-SNAPSHOT</version.kms-api-core>
-		<version.kms-api-elements>6.18.0-SNAPSHOT</version.kms-api-elements>
-		<version.kms-api-filters>6.18.0-SNAPSHOT</version.kms-api-filters>
+		<version.kms-api-core>6.18.0</version.kms-api-core>
+		<version.kms-api-elements>6.18.0</version.kms-api-elements>
+		<version.kms-api-filters>6.18.0</version.kms-api-filters>
 
 		<!-- Kurento miscellaneous tools -->
-		<version.kurento-utils-js>6.18.0-SNAPSHOT</version.kurento-utils-js>
-		<version.kurento-maven-plugin>6.18.0-SNAPSHOT</version.kurento-maven-plugin>
+		<version.kurento-utils-js>6.18.0</version.kurento-utils-js>
+		<version.kurento-maven-plugin>6.18.0</version.kurento-maven-plugin>
 
 		<!-- Kurento Java modules -->
 		<version.kurento-java>${project.parent.version}</version.kurento-java>
