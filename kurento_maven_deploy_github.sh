@@ -5,16 +5,6 @@
 
 
 
-# Check dependencies
-# ==================
-
-command -v jq >/dev/null || {
-    log "ERROR: 'jq' is not installed; please install it"
-    exit 1
-}
-
-
-
 # Helper functions
 # ================
 
