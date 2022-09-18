@@ -112,6 +112,18 @@ fi
 
 log "Version to deploy is RELEASE"
 
+# Don't deploy versions not greater than what is already published.
+{
+    GROUP_ID="$(mvn --quiet --non-recursive exec:exec -Dexec.executable=echo -Dexec.args='${project.groupId}')"
+    ARTIFACT_ID="$(mvn --quiet --non-recursive exec:exec -Dexec.executable=echo -Dexec.args='${project.artifactId}')"
+    PUBLIC_VERSION="$(curl --silent "https://search.maven.org/solrsearch/select?q=g:${GROUP_ID}+AND+a:${ARTIFACT_ID}&rows=20&wt=json" | jq --raw-output '.response.docs[0].latestVersion')"
+
+    if dpkg --compare-versions "$PROJECT_VERSION" le "$PUBLIC_VERSION"; then
+        log "Skip deploying: project version <= public version"
+        exit 0
+    fi
+}
+
 MVN_ARGS+=(-Pkurento-release)
 
 MVN_GOALS=(
