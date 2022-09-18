@@ -82,7 +82,7 @@ RUN_COMMANDS=(
     # Only create a tag if the deployment process was successful
     # Allow errors because the tag might already exist (like if the release
     # is being done again after solving some deployment issue).
-    "kurento_check_version.sh true || { log 'WARNING: Command failed: kurento_check_version (tagging enabled)'; }"
+    "kurento_check_version.sh true || { echo 'WARNING: Command failed: kurento_check_version (tagging enabled)'; }"
 )
 
 export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:xenial"
