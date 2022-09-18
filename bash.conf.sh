@@ -61,7 +61,6 @@ alias log='({ flags="$-"; set +o xtrace; } 2>/dev/null; echo_and_restore) <<<'
 
 # Error trap function.
 # Captures the return code of any error as soon as it happens.
-# NOTE: Not sure under what conditions this is needed? Commented out for now.
 # function on_error {
 #     _RC=$?
 # }
@@ -70,11 +69,21 @@ alias log='({ flags="$-"; set +o xtrace; } 2>/dev/null; echo_and_restore) <<<'
 # Exit trap function.
 # Runs always at the end, either on success or error (errexit).
 function on_exit {
-    # { _RC=${_RC:-$?}; set +o xtrace; } 2>/dev/null
-    { _RC=$?; set +o xtrace; } 2>/dev/null
+    { _RC=${_RC:-$?}; set +o xtrace; } 2>/dev/null
     if ((_RC)); then log "ERROR ($_RC)"; fi
 }
 trap on_exit EXIT
+
+# Add custom commands to run on trap handler.
+function trap_add {
+    local COMMAND="$1"
+    local NAME="$2"
+    local TRAP;
+    # Append the new command to the already existing trap command, if any.
+    TRAP="$(trap -p "$NAME" | { grep -o "'.*'" || true; } | tr -d "'"); $COMMAND"
+    # shellcheck disable=SC2064
+    trap "$TRAP" "$NAME"
+}
 
 # Help message.
 # Extracts and prints text from special comments in the script header.
