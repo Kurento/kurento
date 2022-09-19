@@ -74,7 +74,7 @@ MVN_ARGS+=(
 
 # Fully-qualified goal name for the "deploy" plugin.
 # Needed so that we can use newer versions than the Maven default.
-MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M2:deploy"
+MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:3.0.0:deploy"
 
 # First, make an initial build that gets deployed to a local repository. This is
 # archived by Jenkins, and passed along to dependent jobs.
