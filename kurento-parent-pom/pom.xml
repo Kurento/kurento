@@ -83,7 +83,7 @@
 		<version.kurento-java>${project.parent.version}</version.kurento-java>
 
 		<!-- External versions -->
-		<webjars-locator.version>0.40</webjars-locator.version>
+		<webjars-locator.version>0.45</webjars-locator.version>
 		<webjars.bootstrap.version>4.5.3</webjars.bootstrap.version>
 		<webjars.demo-console.version>1.5.1</webjars.demo-console.version>
 		<webjars.draggabilly.version>2.1.0</webjars.draggabilly.version>
@@ -149,7 +149,7 @@
 		<version.websocket-api>1.1</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
-		<ApacheJMeter_core.version>5.3</ApacheJMeter_core.version>
+		<ApacheJMeter_core.version>5.5</ApacheJMeter_core.version>
 		<assertj.version>3.18.1</assertj.version>
 		<docker-java.version>3.2.5</docker-java.version>
 		<freemarker.version>2.3.30</freemarker.version>
