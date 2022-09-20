@@ -120,7 +120,7 @@ Release order
 
 First, the C/C++ parts of the code are built, Debian packages are created, and everything is left ready for deployment into an Aptly repository (for *apt-get*).
 
-Before Kurento Media Server itself, all required forks and libraries must be built and installed: :ref:`dev-release-forks`. These are:
+Before Kurento Media Server itself, all required forks and libraries must be built and installed (see :ref:`dev-release-forks`). These are:
 
 * `jsoncpp`_
 * `libsrtp`_
@@ -136,7 +136,7 @@ Before Kurento Media Server itself, all required forks and libraries must be bui
 * `openwebrtc-gst-plugins`_
 * `libnice`_
 
-The main :ref:`dev-release-media-server` modules should be built in this order:
+The Kurento Media Server should be built in this order (see :ref:`dev-release-media-server`):
 
 * `kurento-module-creator`_
 * `kms-cmake-utils`_
@@ -163,49 +163,55 @@ The *kurento-utils-js* library must be built before Java modules, because it is 
 
 * `kurento-utils-js`_
 
-Now, the main Java Kurento modules and :ref:`dev-release-java`:
+Now, the main Java tools (see :ref:`dev-release-java`):
 
-* kurento-module-creator-java
-* `kurento-maven-plugin`_
-* `kurento-qa-pom`_
+* kurento-module-creator-java (*org.kurento.kurento-module-creator*)
+* `kurento-maven-plugin`_ (*org.kurento.kurento-maven-plugin*)
+* `kurento-qa-pom`_ (*org.kurento.kurento-qa-pom*)
 
-* kms-core-java ("*kms-api-core*")
-* kms-elements-java ("*kms-api-elements*")
-* kms-filters-java ("*kms-api-filters*")
+Main Kurento modules:
 
-* `kurento-java`_
+* kms-core-java (*org.kurento.kms-api-core*)
+* kms-elements-java (*org.kurento.kms-api-elements*)
+* kms-filters-java (*org.kurento.kms-api-filters*)
 
-After *kurento-java* is done, the extra Kurento modules (which depend on *kurento-java/kurento-client*) can be built:
+Client SDK:
 
-* kms-chroma-java
-* kms-crowddetector-java
-* kms-datachannelexample-java
-* kms-markerdetector-java
-* kms-platedetector-java
-* kms-pointerdetector-java
+* `kurento-java`_ (*org.kurento.kurento-client*)
+
+After *kurento-java* is done, the extra Kurento modules (which depend on *kurento-java/kurento-client*):
+
+* kms-chroma-java (*org.kurento.module.chroma*)
+* kms-crowddetector-java (*org.kurento.module.crowddetector*)
+* kms-datachannelexample-java (*org.kurento.module.datachannelexample*)
+* kms-markerdetector-java (*org.kurento.module.markerdetector*)
+* kms-platedetector-java (*org.kurento.module.platedetector*)
+* kms-pointerdetector-java (*org.kurento.module.pointerdetector*)
 
 And lastly, the tutorials (which depend on the extra modules):
 
-* `kurento-tutorial-java`_
+* `kurento-tutorial-java`_ (*org.kurento.tutorial.\**)
 * `kurento-tutorial-test`_
 
-JavaScript follows a similar ordering. Starting from :ref:`dev-release-javascript` for the main Kurento modules:
+JavaScript follows a similar ordering (see :ref:`dev-release-javascript`). Starting from the main Kurento modules:
 
-* kms-core-javascript
-* kms-elements-javascript
-* kms-filters-javascript
-
-* `kurento-jsonrpc-js`_
-* `kurento-client-js`_
+* kms-core-javascript (`kurento-client-core-js`_)
+* kms-elements-javascript (`kurento-client-elements-js`_)
+* kms-filters-javascript (`kurento-client-filters-js`_)
 
 Extra Kurento modules:
 
-* kms-chroma-javascript
-* kms-crowddetector-javascript
-* kms-datachannelexample-javascript
-* kms-markerdetector-javascript
-* kms-platedetector-javascript
-* kms-pointerdetector-javascript
+* kms-chroma-javascript (`kurento-module-chroma-js`_)
+* kms-crowddetector-javascript (`kurento-module-crowddetector-js`_)
+* kms-datachannelexample-javascript (`kurento-module-datachannelexample-js`_)
+* kms-markerdetector-javascript (`kurento-module-markerdetector-js`_)
+* kms-platedetector-javascript (`kurento-module-platedetector-js`_)
+* kms-pointerdetector-javascript (`kurento-module-pointerdetector-js`_)
+
+Client SDK:
+
+* `kurento-jsonrpc-js`_
+* `kurento-client-js`_
 
 And tutorials:
 
@@ -268,6 +274,8 @@ Release steps
           local SNAPSHOT_ENTRY="* UNRELEASED"
           local RELEASE_ENTRY="* $COMMIT_MSG"
 
+          DEBFULLNAME="Kurento" \
+          DEBEMAIL="info@kurento.org" \
           gbp dch \
               --ignore-branch \
               --git-author \
@@ -326,6 +334,8 @@ The version number (as opposed to the Debian revision) is only changed when the 
        local PACKAGE_VERSION="${NEW_VERSION}-${NEW_DEBIAN}"
        local COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
 
+       DEBFULLNAME="Kurento" \
+       DEBEMAIL="info@kurento.org" \
        gbp dch \
              --ignore-branch \
              --git-author \
@@ -382,7 +392,7 @@ Release order:
 Preparation: kurento-module-creator
 -----------------------------------
 
-* If *kurento-maven-plugin* is getting a new version, edit the file ``kurento-module-creator/src/main/templates/maven/model_pom_xml.ftl`` to update it:
+* If *kurento-maven-plugin* is getting a new version, edit the file ``src/main/templates/maven/model_pom_xml.ftl`` to update it:
 
   .. code-block:: diff
 
@@ -390,72 +400,6 @@ Preparation: kurento-module-creator
         <artifactId>kurento-maven-plugin</artifactId>
      -  <version>1.0.0</version>
      +  <version>1.1.0</version>
-
-Build the new version (if any), install it to the Maven cache, and set the ``PATH`` appropriately:
-
-.. code-block:: shell
-
-   cd kurento-module-creator
-   mvn -DskipTests=false clean install
-   export PATH="$PWD/scripts:$PATH"
-
-
-
-Preparation: kurento-maven-plugin
----------------------------------
-
-Build the new version (if any) and install it to the Maven cache:
-
-.. code-block:: shell
-
-   cd kurento-maven-plugin
-   mvn -DskipTests=false clean install
-
-
-
-Preparation: KMS API Java modules
----------------------------------
-
-**Local check**: Test that the KMS API Java module generation works.
-
-Note that if the generation templates (``*.ftl``) have been changed, you'll probably need them to be in effect, and for that you'll need to use a local build of the Kurento Module Creator, instead of using the version that gets installed with the *kurento-module-creator* package.
-
-.. code-block:: shell
-
-   apt-get update ; apt-get install --no-install-recommends \
-       kurento-module-creator \
-       kms-cmake-utils \
-       kms-jsonrpc-dev \
-       kms-core-dev \
-       kms-elements-dev \
-       kms-filters-dev
-
-   cd kms-omni-build
-
-   function do_release {
-       local PROJECTS=(
-           kms-core
-           kms-elements
-           kms-filters
-       )
-
-       for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           mkdir build && cd build \
-           && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE \
-           && cd java \
-           && mvn -DskipTests=false clean install \
-           || { echo "ERROR: Command failed"; return 1; }
-
-           popd
-       done
-
-       echo "Done!"
-   }
-
-   # Run in a subshell where all commands are traced.
-   ( set -o xtrace; do_release; )
 
 
 
@@ -468,9 +412,9 @@ Release steps
 
 #. Commit and tag as needed.
 
-#. Start the `KMS CI job`_ with the parameters *JOB_RELEASE* **ENABLED** and *JOB_ONLY_KMS* **DISABLED**.
+#. Start the `Kurento Build job`_ with the parameters *JOB_RELEASE* **ENABLED** and *JOB_ONLY_KMS* **DISABLED**.
 
-   The KMS CI job is a *Jenkins MultiJob Project*. If it fails at any stage, after fixing the cause of the error there is no need to start the job again from the beginning. Instead, you can resume the build from the point it was before the failure.
+   The *Kurento Build job* is a *Jenkins MultiJob Project*. If it fails at any stage, after fixing the cause of the error there is no need to start the job again from the beginning. Instead, you can resume the build from the point it was before the failure.
 
    For this, just open the latest build number that failed (with a red marker in the *Build History* panel at the left of the job page); in the description of the build, the action *Resume build* is available on the left side.
 
@@ -484,65 +428,84 @@ Release steps
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
    NEW_DEBIAN="<DebianRevision>"  # Eg.: 0kurento1
 
-   cd kms-omni-build
+   cd kms-omni-build/
 
    # Set the new version.
    ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
        --release --commit --tag
 
+
+
+Verify and push
+---------------
+
+**Before pushing commits**, test that the Kurento API Java module generation works. This is a great way of testing that everything is correct across a variety of components, including Kurento Module Creator, and Kurento Maven Plugin.
+
+First, build the new version (if any) of kurento-module-creator, install it to the local Maven cache, and set the ``PATH`` appropriately:
+
+.. code-block:: shell
+
+   cd kurento-module-creator/
+   mvn -DskipTests=false clean install
+   export PATH="$PWD/scripts:$PATH"
+
+Then, do the same for kurento-maven-plugin:
+
+.. code-block:: shell
+
+   cd kurento-maven-plugin/
+   mvn -DskipTests=false clean install
+
+Install dependencies:
+
+.. code-block:: shell
+
+   apt-get update ; apt-get install --no-install-recommends \
+       kurento-module-creator \
+       kms-cmake-utils \
+       kms-jsonrpc-dev \
+       kms-core-dev \
+       kms-elements-dev \
+       kms-filters-dev
+
+Lastly, attempt to build all modules:
+
+.. code-block:: shell
+
+   cd kms-omni-build/
+
+   function do_release {
+       local PROJECTS=(
+           kms-core
+           kms-elements
+           kms-filters
+       )
+
+       for PROJECT in "${PROJECTS[@]}"; do
+           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
+
+           mkdir build/ && cd build/ \
+           && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE \
+           && cd java/ \
+           && mvn -DskipTests=false clean install \
+           || { echo "ERROR: Command failed"; return 1; }
+
+           popd
+       done
+
+       echo "Done!"
+   }
+
+   # Run in a subshell where all commands are traced.
+   ( set -o xtrace; do_release; )
+
+If everything looks good, push commits and tags to the git repo:
+
+.. code-block:: shell
+
    # Push committed changes.
    git submodule foreach 'git push --follow-tags'
    git push --follow-tags
-
-
-
-Post-Release
-------------
-
-When all repos have been released, and CI jobs have finished successfully:
-
-* Check that the Auto-Generated API Client JavaScript repos have been updated (which should happen as part of the CI jobs for all Kurento Media Server modules that contain KMD API Definition files, ``*.kmd.json``):
-
-  - `kms-core`_ -> `kurento-client-core-js`_
-  - `kms-elements`_ -> `kurento-client-elements-js`_
-  - `kms-filters`_ -> `kurento-client-filters-js`_
-
-  - `kms-chroma`_ -> `kurento-module-chroma-js`_
-  - `kms-crowddetector`_ -> `kurento-module-crowddetector-js`_
-  - `kms-datachannelexample`_ -> `kurento-module-datachannelexample-js`_
-  - `kms-markerdetector`_ -> `kurento-module-markerdetector-js`_
-  - `kms-platedetector`_ -> `kurento-module-platedetector-js`_
-  - `kms-pointerdetector`_ -> `kurento-module-pointerdetector-js`_
-
-* Open the `Nexus Sonatype Staging Repositories`_ section.
-* Select **kurento** repository.
-* Inspect **Content** to ensure they are as expected:
-
-  - kurento-module-creator
-  - kms-api-core
-  - kms-api-elements
-  - kms-api-filters
-  - All of them must appear in the correct version, ``$NEW_VERSION``.
-
-* **Close** repository.
-* Wait a bit.
-* **Refresh**.
-* **Release** repository.
-* Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
-
-* Also, check that the JavaScript modules have been published by CI:
-
-  - Open each module's page in NPM, and check that the latest version corresponds to the current release:
-
-    - NPM: `kurento-client-core <https://www.npmjs.com/package/kurento-client-core>`__
-    - NPM: `kurento-client-elements <https://www.npmjs.com/package/kurento-client-elements>`__
-    - NPM: `kurento-client-filters <https://www.npmjs.com/package/kurento-client-filters>`__
-
-  - If any of these are missing, it's probably due to the CI job not running (because the project didn't really contain any code difference from the previous version... happens sometimes when not all repos have changed since the last release). Open CI and run the jobs manually:
-
-    - CI: `kurento_client_core_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_core_js_merged/>`__
-    - CI: `kurento_client_elements_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_elements_js_merged/>`__
-    - CI: `kurento_client_filters_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_filters_js_merged/>`__
 
 
 
@@ -559,7 +522,7 @@ New Development
    NEW_VERSION="<NextVersion>"   # Eg.: 1.0.1
    NEW_DEBIAN="<DebianRevision>" # Eg.: 0kurento1
 
-   cd kms-omni-build
+   cd kms-omni-build/
 
    # Set the new version.
    ./bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
@@ -568,7 +531,7 @@ New Development
    # Push committed changes.
    git submodule foreach 'git push'
 
-Then start the `KMS CI job`_ with the parameters *JOB_RELEASE* **DISABLED** and *JOB_ONLY_KMS* **DISABLED**.
+Then start the `Kurento Build job`_ with the parameters *JOB_RELEASE* **DISABLED** and *JOB_ONLY_KMS* **DISABLED**.
 
 
 
@@ -579,9 +542,21 @@ Kurento JavaScript client
 
 Release order:
 
+* kms-core-javascript (`kurento-client-core-js`_)
+* kms-elements-javascript (`kurento-client-elements-js`_)
+* kms-filters-javascript (`kurento-client-filters-js`_)
+
+* kms-chroma-javascript (`kurento-module-chroma-js`_)
+* kms-crowddetector-javascript (`kurento-module-crowddetector-js`_)
+* kms-datachannelexample-javascript (`kurento-module-datachannelexample-js`_)
+* kms-markerdetector-javascript (`kurento-module-markerdetector-js`_)
+* kms-platedetector-javascript (`kurento-module-platedetector-js`_)
+* kms-pointerdetector-javascript (`kurento-module-pointerdetector-js`_)
+
 * `kurento-utils-js`_
 * `kurento-jsonrpc-js`_
 * `kurento-client-js`_
+
 * `kurento-tutorial-js`_
 * `kurento-tutorial-node`_
 
@@ -589,6 +564,43 @@ Release order:
 
 Release steps
 -------------
+
+#. Start the `Kurento JavaScript job`_ and wait for it to finish.
+
+   The *Kurento JavaScript job* is a *Jenkins MultiJob Project*. It will auto-generate the JavaScript Client libraries (from each of the Kurento Media Server modules that contain KMD API Definition files, ``*.kmd.json``), and will commit them to their corresponding repos (see below).
+
+   At this point, all other JavaScript repos which are not auto-generated modules, will get a development build, which is good to verify that their jobs work fine, before the actual release build.
+
+#. Check that the auto-generated API Client JavaScript repos have been updated and tagged with the new version:
+
+   .. warning::
+
+      During release 6.18.0, some of the jobs didn't publish a new version to NPM because the scripts detected a development number; the jobs had to be started manually a second time to make it detect a release number. Watch out because it's possible that there is a bug somewhere in the process.
+
+   - kms-core-javascript -> `kurento-client-core-js`_
+   - kms-elements-javascript -> `kurento-client-elements-js`_
+   - kms-filters-javascript -> `kurento-client-filters-js`_
+
+   - kms-chroma-javascript -> `kurento-module-chroma-js`_
+   - kms-crowddetector-javascript -> `kurento-module-crowddetector-js`_
+   - kms-datachannelexample-javascript -> `kurento-module-datachannelexample-js`_
+   - kms-markerdetector-javascript -> `kurento-module-markerdetector-js`_
+   - kms-platedetector-javascript -> `kurento-module-platedetector-js`_
+   - kms-pointerdetector-javascript -> `kurento-module-pointerdetector-js`_
+
+#. Also check that the JavaScript modules have been published by CI:
+
+  - Open each module's page in NPM, and check that the latest version corresponds to the current release:
+
+    - NPM: `kurento-client-core <https://www.npmjs.com/package/kurento-client-core>`__
+    - NPM: `kurento-client-elements <https://www.npmjs.com/package/kurento-client-elements>`__
+    - NPM: `kurento-client-filters <https://www.npmjs.com/package/kurento-client-filters>`__
+
+  - If any of these are missing, it's probably due to the CI job not running (because the project didn't really contain any code difference from the previous version... happens sometimes when not all repos have changed since the last release). Open CI and run the jobs manually:
+
+    - CI: `kurento_client_core_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_core_js_merged/>`__
+    - CI: `kurento_client_elements_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_elements_js_merged/>`__
+    - CI: `kurento_client_filters_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_filters_js_merged/>`__
 
 #. Choose the *final release version*, following the SemVer guidelines as explained in :ref:`dev-release-general`.
 
@@ -631,8 +643,8 @@ Release steps
        local COMMIT_MSG="Prepare release $NEW_VERSION"
 
        local PROJECTS=(
-           kurento-jsonrpc-js
            kurento-utils-js
+           kurento-jsonrpc-js
            kurento-client-js
            kurento-tutorial-js
            kurento-tutorial-node
@@ -663,9 +675,12 @@ Release steps
                # kurento-client-js depends on kurento-jsonrpc-js, so we'll use
                # `npm link` here to solve the dependency.
                # Use a custom Node prefix so `npm link` doesn't require root permissions.
-               NPM_CONFIG_PREFIX=.npm npm link ../kurento-jsonrpc-js
+               mkdir -p /tmp/.npm/lib/
+               NPM_CONFIG_PREFIX=/tmp/.npm npm link ../kurento-jsonrpc-js
            fi
-           npm install || { echo "ERROR: Command failed: npm install"; return 1; }
+           if [[ -f package.json ]]; then
+               npm install || { echo "ERROR: Command failed: npm install"; return 1; }
+           fi
            if [[ -x node_modules/.bin/grunt ]]; then
                node_modules/.bin/grunt jsbeautifier \
                && node_modules/.bin/grunt \
@@ -708,16 +723,24 @@ Release steps
 Post-Release
 ------------
 
-When all repos have been released, and CI jobs have finished successfully:
+When all CI jobs have finished successfully:
 
 * Open the `Nexus Sonatype Staging Repositories`_ section.
 * Select **kurento** repository.
 * Inspect **Content** to ensure they are as expected:
 
-  - kurento-jsonrpc-js
+  - kurento-module-chroma-js
+  - kurento-module-crowddetector-js
+  - kurento-module-datachannelexample-js
+  - kurento-module-markerdetector-js
+  - kurento-module-platedetector-js
+  - kurento-module-pointerdetector-js
+
   - kurento-utils-js
+  - kurento-jsonrpc-js
   - kurento-client-js
-  - All of them must appear in the correct version, ``$NEW_VERSION``.
+
+  All of them must appear in the correct version, ``$NEW_VERSION``.
 
 * **Close** repository.
 * Wait a bit.
@@ -795,10 +818,24 @@ Kurento Java client
 
 Release order:
 
-* `kurento-maven-plugin`_
-* `kurento-qa-pom`_
-* `kurento-java`_
-* `kurento-tutorial-java`_
+* kurento-module-creator-java (*org.kurento.kurento-module-creator*)
+* `kurento-maven-plugin`_ (*org.kurento.kurento-maven-plugin*)
+* `kurento-qa-pom`_ (*org.kurento.kurento-qa-pom*)
+
+* kms-core-java (*org.kurento.kms-api-core*)
+* kms-elements-java (*org.kurento.kms-api-elements*)
+* kms-filters-java (*org.kurento.kms-api-filters*)
+
+* `kurento-java`_ (*org.kurento.kurento-client*)
+
+* kms-chroma-java (*org.kurento.module.chroma*)
+* kms-crowddetector-java (*org.kurento.module.crowddetector*)
+* kms-datachannelexample-java (*org.kurento.module.datachannelexample*)
+* kms-markerdetector-java (*org.kurento.module.markerdetector*)
+* kms-platedetector-java (*org.kurento.module.platedetector*)
+* kms-pointerdetector-java (*org.kurento.module.pointerdetector*)
+
+* `kurento-tutorial-java`_ (*org.kurento.tutorial.\**)
 * `kurento-tutorial-test`_
 
 Dependency graph:
@@ -851,8 +888,6 @@ Release steps
 
 #. Set the new version. This operation might vary between projects.
 
-   Order matters. *kurento-tutorial-java* and *kurento-tutorial-test* require that *kurento-java* has been installed locally (with ``mvn install``) before being able to change their version numbers programmatically with Maven.
-
 #. Check there are no development versions in any of the dependencies.
 
    In *kurento-java*, all dependencies are defined as properties in the file ``kurento-parent-pom/pom.xml``.
@@ -862,6 +897,10 @@ Release steps
    The profile '*kurento-release*' is used to enforce no development versions are present.
 
 #. Commit and tag as needed.
+
+#. Start the `Kurento Java job`_ and wait for it to finish.
+
+   The *Kurento Java job* is a *Jenkins MultiJob Project*. For each Java project, it will use Maven to compile, package, generate JARs with sources and JavaDoc, and finally deploy them to Sonatype Nexus, which is the gateway for publication to Maven Central.
 
 **All-In-One script**:
 
@@ -874,15 +913,10 @@ Release steps
        local COMMIT_MSG="Prepare release $NEW_VERSION"
 
        local PROJECTS=(
-           # FIXME: The interaction between this and kurento-java needs to
-           # be addressed in the CI jobs. Probably copying the JAR artifacts.
-           #kurento-qa-pom
-
+           kurento-qa-pom
            kurento-java
            kurento-tutorial-java
-
-           # FIXME tests fail because Kurento Test Framework needs improvements
-           #kurento-tutorial-test
+           kurento-tutorial-test # FIXME tests fail because Kurento Test Framework needs improvements
        )
 
        for PROJECT in "${PROJECTS[@]}"; do
@@ -904,15 +938,6 @@ Release steps
            # Check there are no development versions in any of the dependencies.
            grep -Fr --include='pom.xml' -e '-SNAPSHOT' \
            && { echo "ERROR: Development versions not allowed!"; return 1; }
-
-           # Test the build.
-           # Also install the project into local cache; this allows the next
-           # projects to update their parent version.
-           # * Build and run tests.
-           # * Do not use `-U` because for each project we want Maven to find
-           #   the locally installed artifacts from previous $PROJECT.
-           mvn -Pkurento-release -DskipTests=false clean install \
-           || { echo "ERROR: Command failed: mvn clean install"; return 1; }
 
            popd
        done
@@ -949,26 +974,28 @@ Release steps
 Post-Release
 ------------
 
-When all repos have been released, and CI jobs have finished successfully:
+When all repos have been released, and all CI jobs have finished successfully:
 
 * Open the `Nexus Sonatype Staging Repositories`_ section.
 * Select **kurento** repository.
 * Inspect **Content** to ensure they are as expected:
 
-  - kurento-client
-  - kurento-commons
-  - kurento-integration-tests
-  - kurento-java
-  - kurento-jsonrpc
-  - kurento-jsonrpc-client
-  - kurento-jsonrpc-client-jetty
-  - kurento-jsonrpc-server
-  - kurento-parent-pom
-  - kurento-repository (UNMAINTAINED)
-  - kurento-repository-client (UNMAINTAINED)
-  - kurento-repository-internal (UNMAINTAINED)
-  - kurento-test
-  - All of them must appear in the correct version, ``$NEW_VERSION``.
+  - org.kurento.kurento-module-creator
+  - org.kurento.kurento-maven-plugin
+  - org.kurento.kurento-qa-pom
+  - org.kurento.kms-api-core
+  - org.kurento.kms-api-elements
+  - org.kurento.kms-api-filters
+  - org.kurento.kurento-client
+  - org.kurento.module.chroma
+  - org.kurento.module.crowddetector
+  - org.kurento.module.datachannelexample
+  - org.kurento.module.markerdetector
+  - org.kurento.module.platedetector
+  - org.kurento.module.pointerdetector
+  - org.kurento.tutorial.\*
+
+  All of them must appear in the correct version, ``$NEW_VERSION``.
 
 * **Close** repository.
 * Wait a bit.
@@ -1055,7 +1082,7 @@ New Development
 Docker images
 =============
 
-A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `KMS CI job`_ is triggered.
+A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `Kurento Build job`_ is triggered.
 
 The repository `kurento-docker`_ contains *Dockerfile*s for all the `Kurento Docker images`_, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (because *which one of the sub-dirs would the tag apply to?*).
 
@@ -1095,6 +1122,9 @@ For this reason, the documentation must be built only after all the other module
 
    .. code-block:: shell
 
+      python3 -m venv python_modules
+      source python_modules/bin/activate
+      python3 -m pip install --upgrade -r requirements.txt
       make html
 
    Note that the JavaDoc and JsDoc pages won't be generated locally if you don't have your system prepared to do so; also there are some Sphinx constructs or plugins that might fail if you don't have them ready to use, but the Read the Docs servers have them so they should end up working fine.
@@ -1102,6 +1132,11 @@ For this reason, the documentation must be built only after all the other module
 #. Git add, commit, and push. Trigger a nightly build, where you can **check the result** of the documentation builds to have an idea of how the final release build will end up looking like, at https://doc-kurento.readthedocs.io/en/latest/.
 
    .. code-block:: shell
+
+      # Change here.
+      NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
+
+      COMMIT_MSG="Prepare release $NEW_VERSION"
 
       # `--all` to include possibly deleted files.
       git add --all \
@@ -1174,7 +1209,9 @@ For this reason, the documentation must be built only after all the other module
 .. _Kurento Docker Hub: https://hub.docker.com/u/kurento
 .. _Kurento Docker images: https://hub.docker.com/r/kurento/kurento-media-server
 .. _kurento-docker: https://github.com/Kurento/kurento-docker
-.. _KMS CI job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
+.. _Kurento Build job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
+.. _Kurento JavaScript job: https://ci.openvidu.io/jenkins/job/Development/job/00_KURENTO_JAVASCRIPT_ALL/
+.. _Kurento Java job: https://ci.openvidu.io/jenkins/job/Development/job/00_KURENTO_JAVA_ALL/
 .. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
 .. _doc-kurento: https://github.com/Kurento/doc-kurento
 .. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs
