@@ -1,6 +1,6 @@
-===================
-6.18.0 (UNRELEASED)
-===================
+=======================
+6.18.0 (September 2022)
+=======================
 
 One of the latest (if not the last) releases of the 6.x branch of Kurento; this one brings several deprecations that pave the way for introduction of the upcoming Kurento 7.0.
 
@@ -52,17 +52,17 @@ Changed
 WebRTC DTLS Quick Connection
 ----------------------------
 
-There was a design issue in the way Kurento established the WebRTC communications channel, that led it to mistakenly send the initial DTLS handsake packets before ICE had established a working network socket, leading to the dropping of such handsake packets.
+There was a design issue in the way Kurento established the WebRTC communications channel, that led it to mistakenly send the initial DTLS handshake packets before ICE had established a working network socket, leading to the dropping of such handshake packets.
 
 Thankfully, DTLS doesn't give up as soon as some packets are dropped; instead, it just follows a progressively larger timeout scheme. Eventually the ICE protocol would establish a working socket, and one of the DTLS reattempts would finally be able to travel through it. However, this whole delay meant that WebRTC connections were taking much more time than what they really should.
 
-Thanks to this change, now the DTLS handsake will be put on hold until ICE has finished its work and the network socket is well established and ready for comms; this way, the very first DTLS packets will already reach their destination, thus speeding up the whole process:
+Thanks to this change, now the DTLS handshake will be put on hold until ICE has finished its work and the network socket is well established and ready for comms; this way, the very first DTLS packets will already reach their destination, thus speeding up the whole process:
 
 .. video:: ../../_static/project/relnotes/v6_18_0/connection.mp4
 
 *Comparison of connection speed (top: before; bottom: after)*
 
-Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#37 <https://github.com/Kurento/kms-elements/pull/37>`__ (*WebRTC DTLS handsake quick connection*) and `Kurento/kms-elements#38 <https://github.com/Kurento/kms-elements/pull/38>`__ (*dtls server quick connection fix*).
+Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#37 <https://github.com/Kurento/kms-elements/pull/37>`__ (*WebRTC DTLS handshake quick connection*) and `Kurento/kms-elements#38 <https://github.com/Kurento/kms-elements/pull/38>`__ (*dtls server quick connection fix*).
 
 
 
@@ -94,7 +94,7 @@ The list of modules marked for retirement is as follows:
 
 Starting with support for OpenCV 4.0, the old OpenCV 2.0 based plugin code cannot be compiled any more. Kurento project maintainers do not have the time, knowledge, or scheduling bandwidth to migrate these plugins into modern OpenCV 4.0 style code, so they will get discontinued until/unless some open-source community members can offer some help with porting them. If you'd like to see these plugins alive, and would be able to give us a hand, please contact us! :-)
 
-These removals will be efective starting from the next major release, Kurento 7.0.
+These removals will be effective starting from the next major release, Kurento 7.0.
 
 
 
