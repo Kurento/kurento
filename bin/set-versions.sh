@@ -131,25 +131,30 @@ function git_add() {
 # Apply version
 # =============
 
-MVN_ARGS=()
+# Parent: Update to the new version of kurento-parent-pom.
+xmlstarlet edit -S --inplace \
+    --update "/_:project/_:parent/_:version" \
+    --value "$VERSION_JAVA" \
+    pom.xml
 
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    MVN_ALLOW_SNAPSHOTS="false"
-else
-    MVN_ALLOW_SNAPSHOTS="true"
-    MVN_ARGS+=(-U -Psnapshot)
-fi
-
-# Parent version: Update to latest available.
-mvn "${MVN_ARGS[@]}" versions:update-parent \
-    -DgenerateBackupPoms=false \
-    -DparentVersion="[$VERSION_JAVA,)" \
-    -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
-
-# Children versions: Make them inherit from parent.
-mvn "${MVN_ARGS[@]}" versions:update-child-modules \
-    -DgenerateBackupPoms=false \
-    -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
+# Children: Make them inherit from the new parent.
+CHILDREN=(
+    kurento-chroma-test
+    kurento-crowddetector-test
+    kurento-hello-world-test
+    kurento-magic-mirror-test
+    kurento-one2many-call-test
+    kurento-one2one-call-test
+    kurento-one2one-call-advanced-test
+    kurento-platedetector-test
+    kurento-pointerdetector-test
+)
+for CHILD in "${CHILDREN[@]}"; do
+    find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \
+        xmlstarlet edit -S --inplace \
+            --update "/_:project/_:parent/_:version" \
+            --value "$VERSION_JAVA"
+done
 
 git_add \
     '*pom.xml'
