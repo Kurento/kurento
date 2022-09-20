@@ -59,17 +59,17 @@ You can also use ``about:config`` and set any log option into the profile prefer
 
 The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special booleans *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
 
-- **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
-- **timestamp**: Insert timestamp at start of each log line.
+* **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
+* **timestamp**: Insert timestamp at start of each log line.
 
 Logging Levels:
 
-- **(0) DISABLED**: Indicates logging is disabled. This should not be used directly in code.
-- **(1) ERROR**: An error occurred, generally something you would consider asserting in a debug build.
-- **(2) WARNING**: A warning often indicates an unexpected state.
-- **(3) INFO**: An informational message, often indicates the current program state. and rare enough to be logged at this level.
-- **(4) DEBUG**: A debug message, useful for debugging but too verbose to be turned on normally.
-- **(5) VERBOSE**: A message that will be printed a lot, useful for debugging program flow and will probably impact performance.
+* **(0) DISABLED**: Indicates logging is disabled. This should not be used directly in code.
+* **(1) ERROR**: An error occurred, generally something you would consider asserting in a debug build.
+* **(2) WARNING**: A warning often indicates an unexpected state.
+* **(3) INFO**: An informational message, often indicates the current program state. and rare enough to be logged at this level.
+* **(4) DEBUG**: A debug message, useful for debugging but too verbose to be turned on normally.
+* **(5) VERBOSE**: A message that will be printed a lot, useful for debugging program flow and will probably impact performance.
 
 Log categories:
 
@@ -217,35 +217,41 @@ Sources:
 * https://peter.sh/experiments/chromium-command-line-switches/
 * https://webrtc.org/web-apis/chrome/
 
-# LINUX:
-TEST_BROWSER="/usr/bin/chromium"
-TEST_BROWSER="/usr/bin/google-chrome"
-#
-TEST_PROFILE="/tmp/chrome-profile"
-#
-{
-    "$TEST_BROWSER" \
-        --user-data-dir="$TEST_PROFILE" \
-        --use-fake-ui-for-media-stream \
-        --use-fake-device-for-media-stream \
-        --enable-logging=stderr \
-        --log-level=0 \
-        --vmodule='*/webrtc/*=2,*/libjingle/*=2,*=-2' \
-        --v=0 \
-        "https://localhost:8443/" \
-        >chrome_debug.log 2>&1 &
+**Linux**:
 
-    # Other flags:
-    # --use-file-for-fake-audio-capture="/path/to/audio.wav" \
-    # --use-file-for-fake-video-capture="/path/to/video.y4m" \
+.. code-block:: shell
 
-    tail -f chrome_debug.log
-}
+   TEST_BROWSER="/usr/bin/chromium"
+   TEST_BROWSER="/usr/bin/google-chrome"
+   #
+   TEST_PROFILE="/tmp/chrome-profile"
+   #
+   {
+       "$TEST_BROWSER" \
+           --user-data-dir="$TEST_PROFILE" \
+           --use-fake-ui-for-media-stream \
+           --use-fake-device-for-media-stream \
+           --enable-logging=stderr \
+           --log-level=0 \
+           --vmodule='*/webrtc/*=2,*/libjingle/*=2,*=-2' \
+           --v=0 \
+           "https://localhost:8443/" \
+           >chrome_debug.log 2>&1 &
 
-# MAC:
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-    --enable-logging=stderr \
-    --vmodule=*/webrtc/*=2,*/libjingle/*=2,*=-2
+       # Other flags:
+       # --use-file-for-fake-audio-capture="/path/to/audio.wav" \
+       # --use-file-for-fake-video-capture="/path/to/video.y4m" \
+
+       tail -f chrome_debug.log
+   }
+
+**MacOS**:
+
+.. code-block:: shell
+
+   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+       --enable-logging=stderr \
+       --vmodule=*/webrtc/*=2,*/libjingle/*=2,*=-2
 
 
 
@@ -253,7 +259,10 @@ Packet Loss
 -----------
 
 A command line for 3% sent packet loss and 5% received packet loss is:
---force-fieldtrials=WebRTCFakeNetworkSendLossPercent/3/WebRTCFakeNetworkReceiveLossPercent/5/
+
+.. code-block:: shell
+
+   --force-fieldtrials=WebRTCFakeNetworkSendLossPercent/3/WebRTCFakeNetworkReceiveLossPercent/5/
 
 
 
@@ -261,13 +270,15 @@ H.264 codec
 -----------
 
 Chrome uses OpenH264 (same lib as Firefox uses) for encoding, and FFmpeg (which is already used elsewhere in Chrome) for decoding.
-Feature page: https://www.chromestatus.com/feature/6417796455989248
-Since Chrome 52.
-Bug tracker: https://bugs.chromium.org/p/chromium/issues/detail?id=500605
+
+* Feature page: https://www.chromestatus.com/feature/6417796455989248
+* Since Chrome 52.
+* Bug tracker: https://bugs.chromium.org/p/chromium/issues/detail?id=500605
 
 Autoplay:
-- https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#best-practices
-- https://www.chromium.org/audio-video/autoplay
+
+* https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#best-practices
+* https://www.chromium.org/audio-video/autoplay
 
 
 
