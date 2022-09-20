@@ -4,9 +4,9 @@ Priority: optional
 Build-Depends: debhelper (>= 9),
  cmake,
  pkg-config,
- kms-core-dev (>= 6.18.0),
- kms-elements-dev (>= 6.18.0),
- kms-filters-dev (>= 6.18.0),
+ kms-core-dev (>= 6.18.1),
+ kms-elements-dev (>= 6.18.1),
+ kms-filters-dev (>= 6.18.1),
  libopencv-dev,
  libsoup2.4-dev,
  libtinyxml-dev
@@ -20,9 +20,9 @@ Architecture: any
 Section: libs
 Depends: ${shlibs:Depends},
  ${misc:Depends},
- kms-core (>= 6.18.0),
- kms-elements (>= 6.18.0),
- kms-filters (>= 6.18.0)
+ kms-core (>= 6.18.1),
+ kms-elements (>= 6.18.1),
+ kms-filters (>= 6.18.1)
 Breaks: kms-markerdetector-6.0
 Replaces: kms-markerdetector-6.0
 Description: Kurento Augmented Reality marker detector
@@ -31,9 +31,9 @@ Package: kms-markerdetector-dev
 Architecture: any
 Section: libdevel
 Depends: kms-markerdetector (= ${binary:Version}),
- kms-core-dev (>= 6.18.0),
- kms-elements-dev (>= 6.18.0),
- kms-filters-dev (>= 6.18.0),
+ kms-core-dev (>= 6.18.1),
+ kms-elements-dev (>= 6.18.1),
+ kms-filters-dev (>= 6.18.1),
  libopencv-dev,
  libsoup2.4-dev,
  libtinyxml-dev
