@@ -53,6 +53,11 @@ kurento_check_version.sh false || {
 # BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 # PATH="${BASEPATH}:${PATH}"
 
+# Fully-qualified plugin names, to use newer versions than the Maven defaults.
+MAVEN_DEPLOY_PLUGIN="org.apache.maven.plugins:maven-deploy-plugin:3.0.0"
+MAVEN_JAVADOC_PLUGIN="org.apache.maven.plugins:maven-javadoc-plugin:3.4.1"
+MAVEN_SOURCE_PLUGIN="org.apache.maven.plugins:maven-source-plugin:3.2.1"
+
 MVN_ARGS=()
 
 # Validate parameters
@@ -69,17 +74,14 @@ fi
 # Maven arguments that are common to all commands.
 MVN_ARGS+=(
     --batch-mode
+    #--no-transfer-progress # TODO: Uncomment this line when the image kurento/kurento-ci-buildtools is updated to use Maven >= 3.6.1 (Ubuntu >= 20.04)
     -Dmaven.test.skip=true
 )
-
-# Fully-qualified goal name for the "deploy" plugin.
-# Needed so that we can use newer versions than the Maven default.
-MVN_GOAL_DEPLOY="org.apache.maven.plugins:maven-deploy-plugin:3.0.0:deploy"
 
 # First, make an initial build that gets deployed to a local repository. This is
 # archived by Jenkins, and passed along to dependent jobs.
 # The repo is set by the `ci-build` profile from Maven's `settings.xml`.
-mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MVN_GOAL_DEPLOY" || {
+mvn "${MVN_ARGS[@]}" -Pci-build clean package "${MAVEN_DEPLOY_PLUGIN}:deploy" || {
     log "ERROR: Command failed: mvn deploy (Jenkins repo)"
     exit 1
 }
@@ -125,20 +127,17 @@ log "Version to deploy is RELEASE"
 
 MVN_ARGS+=(-Pkurento-release)
 
-MVN_GOALS=(
-    javadoc:jar
-    source:jar
-)
-
 if [[ $SIGN_ARTIFACTS == "true" ]]; then
     log "Artifact signing on deploy is ENABLED"
 
     MVN_ARGS+=(-Pgpg-sign)
 
-    MVN_GOALS+=(
+    MVN_GOALS=(
         package
-        gpg:sign # "sign" requires an already packaged artifact.
-        "$MVN_GOAL_DEPLOY"
+        "${MAVEN_SOURCE_PLUGIN}:jar"
+        "${MAVEN_JAVADOC_PLUGIN}:jar"
+        gpg:sign
+        "${MAVEN_DEPLOY_PLUGIN}:deploy"
     )
 
     mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
@@ -167,9 +166,11 @@ if [[ $SIGN_ARTIFACTS == "true" ]]; then
 else
     log "Artifact signing on deploy is DISABLED"
 
-    MVN_GOALS+=(
+    MVN_GOALS=(
         package
-        "$MVN_GOAL_DEPLOY"
+        "${MAVEN_SOURCE_PLUGIN}:jar"
+        "${MAVEN_JAVADOC_PLUGIN}:jar"
+        "${MAVEN_DEPLOY_PLUGIN}:deploy"
     )
 
     mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
