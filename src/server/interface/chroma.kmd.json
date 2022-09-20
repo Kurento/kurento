@@ -1,7 +1,7 @@
 {
   "name": "chroma",
-  "version": "6.18.0",
-  "kurentoVersion": "^6.18.0",
+  "version": "6.18.1-dev",
+  "kurentoVersion": "^6.18.1-dev",
   "code": {
     "api": {
       "js": {
