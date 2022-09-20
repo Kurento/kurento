@@ -66,7 +66,7 @@ langdoc-client-java: langdoc-init
 	mvn --batch-mode --quiet javadoc:javadoc \
 		-DreportOutputDirectory="$(DESTPATH)" \
 		-DdestDir="client-javadoc" \
-		-Dsourcepath="src/main/java:target/generated-sources/kmd" \
+		-Dsourcepath="src/main/java;target/generated-sources/kmd" \
 		-Dsubpackages="org.kurento.client" \
 		-DexcludePackageNames="*.internal" \
 		|| { echo "ERROR: 'mvn javadoc' failed"; exit 1; }
