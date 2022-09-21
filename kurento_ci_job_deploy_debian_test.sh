@@ -145,9 +145,8 @@ deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multive
 deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
 EOF
 
-    # FIXME: Waiting for a fix in Ubuntu repos:
-    # https://bugs.launchpad.net/ubuntu/+source/glib2.0/+bug/1989572
-    #apt-get update ; apt-get install --no-install-recommends --yes kurento-dbg
+    apt-get update ; apt-get install --no-install-recommends --yes \
+        kurento-dbg
 }
 
 # Install build dependencies
