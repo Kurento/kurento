@@ -3,7 +3,17 @@ kurento-module-creator (7.0.0-0kurento1) UNRELEASED; urgency=medium
   [ Kurento ]
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 13 Apr 2022 11:52:22 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 20 Sep 2022 17:15:31 +0200
+
+kurento-module-creator (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+  [ Juan Navarro ]
+  * Delete unused 'maven-s3-wagon' Maven extension
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:30 +0000
 
 kurento-module-creator (6.17.0-0kurento1) testing; urgency=medium
 
