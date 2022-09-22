@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#Checked with ShellCheck (https://www.shellcheck.net/)
+# Checked with ShellCheck (https://www.shellcheck.net/)
 
 # Strict error checking and other utilities for Bash scripts.
 #

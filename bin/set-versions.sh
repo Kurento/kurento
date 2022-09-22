@@ -91,6 +91,14 @@ command -v xmlstarlet >/dev/null || {
     log "ERROR: 'xmlstarlet' is not installed; please install it"
     exit 1
 }
+command -v indent >/dev/null || {
+    log "ERROR: 'indent' is not installed; please install it"
+    exit 1
+}
+command -v astyle >/dev/null || {
+    log "ERROR: 'astyle' is not installed; please install it"
+    exit 1
+}
 
 set -o xtrace
 

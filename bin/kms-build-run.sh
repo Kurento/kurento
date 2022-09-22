@@ -415,7 +415,12 @@ pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 
 # Always run `make`: if any source file changed, it needs building; if nothing
 # changed since last time, it is a "no-op" anyway
-make -j"$(nproc)"
+if [[ -n "${MAKEFLAGS:-}" ]]; then
+    # Custom Make flags are already set in the environment. Let Make use them.
+    make
+else
+    make -j"$(nproc)"
+fi
 
 if [[ "$CFG_BUILD_ONLY" == "true" ]]; then
     exit 0
