@@ -7,7 +7,7 @@
 <p>
   RecorderEndpoint can store media into local files or send it to a remote
   network storage. When another :rom:cls:`MediaElement` is connected to a
-  RecorderEndpoint, the media coming from the former will be encapsulated into
+  RecorderEndpoint, the media coming from the former will be muxed into
   the selected recording format and stored in the designated location.
 </p>
 <p>
@@ -70,9 +70,8 @@
     </ul>
   </li>
   <li>
-    <strong>Media Profile</strong> (:rom:enum:`MediaProfileSpecType`), used for
-    storage. This will determine the video and audio encoding. See below for
-    more details about Media Profile.
+    <strong>Media Profile</strong> (:rom:enum:`MediaProfileSpecType`), which
+    determines the video and audio encoding. See below for more details.
   </li>
   <li>
     <strong>EndOfStream</strong> (optional), a parameter that dictates if the
@@ -101,37 +100,8 @@
   </li>
 </ul>
 <p>
-  The <strong>Media Profile</strong> is quite an important parameter, as it will
-  determine whether the server needs to perform on-the-fly transcoding of the
-  media. If the input stream codec if not compatible with the selected media
-  profile, the media will be transcoded into a suitable format. This will result
-  in a higher CPU load and will impact overall performance of the media server.
-</p>
-<p>
-  For example: If your pipeline receives <b>VP8</b>-encoded video from WebRTC,
-  and sends it to a RecorderEndpoint; depending on the format selected...
-</p>
-<ul>
-  <li>
-    WEBM: The input codec is the same as the recording format, so no transcoding
-    will take place.
-  </li>
-  <li>
-    MP4: The media server will have to transcode from <b>VP8</b> to <b>H264</b>.
-    This will raise the CPU load in the system.
-  </li>
-  <li>
-    MKV: Again, video must be transcoded from <b>VP8</b> to <b>H264</b>, which
-    means more CPU load.
-  </li>
-</ul>
-<p>
-  From this you can see how selecting the correct format for your application is
-  a very important decision.
-</p>
-<p>
   Recording will start as soon as the user invokes the
-  <code>record</code> method. The recorder will then store, in the location
+  <code>record()</code> method. The recorder will then store, in the location
   indicated, the media that the source is sending to the endpoint. If no media
   is being received, or no endpoint has been connected, then the destination
   will be empty. The recorder starts storing information into the file as soon
@@ -139,20 +109,8 @@
 </p>
 <p>
   <strong>Recording must be stopped</strong> when no more data should be stored.
-  This is done with the <code>stopAndWait</code> method, which blocks and
+  This is done with the <code>stopAndWait()</code> method, which blocks and
   returns only after all the information was stored correctly.
-</p>
-<p>
-  <strong>
-    If your output file is empty, this means that the recorder is waiting for
-    input media.
-  </strong>
-  When another endpoint is connected to the recorder, by default both AUDIO and
-  VIDEO media types are expected, unless specified otherwise when invoking the
-  <code>connect</code> method. Failing to provide both types, will result in the
-  RecorderEndpoint buffering the received media: it won't be written to the file
-  until the recording is stopped. The recorder waits until all types of media
-  start arriving, in order to synchronize them appropriately.
 </p>
 <p>
   The source endpoint can be hot-swapped while the recording is taking place.
@@ -164,29 +122,44 @@
 </p>
 <p>
   <strong>
-    It is recommended to start recording only after media arrives.
+    NOTE: It is recommended to start recording only after media arrives.
   </strong>
   For this, you may use the <code>MediaFlowInStateChanged</code> and
   <code>MediaFlowOutStateChanged</code>
   events of your endpoints, and synchronize the recording with the moment media
-  comes into the Recorder. For example:
+  comes into the Recorder.
+</p>
+<p>
+  <strong>
+    WARNING: All connected media types must be flowing to the RecorderEndpoint.
+  </strong>
+  If you used the default <code>connect()</code> method, it will assume both
+  AUDIO and VIDEO. Failing to provide both kinds of media will result in the
+  RecorderEndpoint creating an empty file and buffering indefinitely; the
+  recorder waits until all kinds of media start arriving, in order to
+  synchronize them appropriately.<br>
+  For audio-only or video-only recordings, make sure to use the correct,
+  media-specific variant of the <code>connect()</code> method.
+</p>
+<p>
+  For example:
 </p>
 <ol>
   <li>
-    When the remote video arrives to KMS, your WebRtcEndpoint will start
-    generating packets into the Kurento Pipeline, and it will trigger a
-    <code>MediaFlowOutStateChanged</code> event.
+    When a web browser's video arrives to Kurento via WebRTC, your
+    WebRtcEndpoint will emit a <code>MediaFlowOutStateChanged</code> event.
   </li>
   <li>
-    When video packets arrive from the WebRtcEndpoint to the RecorderEndpoint,
-    the RecorderEndpoint will raise a <code>MediaFlowInStateChanged</code> event.
+    When video starts flowing from the WebRtcEndpoint to the RecorderEndpoint,
+    the RecorderEndpoint will emit a <code>MediaFlowInStateChanged</code> event.
+    You should start recording at this point.
   </li>
   <li>
     You should only start recording when RecorderEndpoint has notified a
-    <code>MediaFlowInStateChanged</code> for ALL streams (so, if you record
+    <code>MediaFlowInStateChanged</code> for ALL streams. So, if you record
     AUDIO+VIDEO, your application must receive a
     <code>MediaFlowInStateChanged</code> event for audio, and another
-    <code>MediaFlowInStateChanged</code> event for video).
+    <code>MediaFlowInStateChanged</code> event for video.
   </li>
 </ol>
       ",
@@ -210,7 +183,34 @@
             },
             {
               "name": "mediaProfile",
-              "doc": "Sets the media profile used for recording. If the profile is different than the one being received at the sink pad, media will be transcoded, resulting in a higher CPU load. For instance, when recording a VP8 encoded video from a WebRTC endpoint in MP4, the load is higher that when recording to WEBM.",
+              "doc": "Selects the media format used for recording.
+<p>
+  The media profile allows you to specify which codecs and media container will
+  be used for the recordings. This is currently the only way available to tell
+  Kurento about which codecs should be used.
+</p>
+<p>
+  Watch out for these important remarks:
+</p>
+<ul>
+  <li>
+    If the format of incoming media differs from the recording profile, media
+    will need to be transcoded. Transcoding always incurs in noticeable CPU
+    load, so it is always good trying to avoid it. For instance, if a
+    VP8-encoded video (from WebRTC) is recorded with an MP4 recording profile
+    (which means H.264 encoding), the video needs to be transcoded from VP8 to
+    H.264. On the other hand, recording with the WEBM profile would allow to
+    store the video as-is with its VP8 encoding.
+  </li>
+  <li>
+    If you intend to record audio-only or video-only media, select the
+    appropriate <code>_AUDIO_ONLY</code> or <code>_VIDEO_ONLY</code> profile.
+    For example, to record a WebRTC screen capture (as obtained from a web
+    browser's call to <code>MediaDevices.getDisplayMedia()</code>), choose
+    <code>WEBM_VIDEO_ONLY</code> instead of just <code>WEBM</code>.
+  </li>
+</ul>
+              ",
               "type": "MediaProfileSpecType",
               "optional": true,
               "defaultValue": "WEBM"
@@ -247,7 +247,7 @@
     {
       "name": "Recording",
       "extends": "Media",
-      "doc": "Fired when the recoding effectively starts. ie: Media is received by the recorder and record method has been called.",
+      "doc": "Fired when the recoding effectively starts. ie: Media is received by the recorder, and <code>record()</code> method has been called.",
       "properties": []
     },
     {

@@ -31,6 +31,84 @@ G_DEFINE_TYPE (KmsWebrtcTransportSrc, kms_webrtc_transport_src, GST_TYPE_BIN);
 
 #define SRTPDEC_FACTORY_NAME "srtpdec"
 
+
+// {{{{ FIXME: This can be deleted when we start using GStreamer >=1.18 for Kurento.
+// Code sourced from GStreamer/gstbin.c >=1.18
+//
+// https://gitlab.freedesktop.org/gstreamer/gstreamer/-/blob/10f72da5040b74678c8f81723971127ee8bee04f/subprojects/gstreamer/gst/gstbin.c#L4526-4537
+static gint
+compare_factory_names (const GValue *velement, GValue *factory_name_val)
+{
+  GstElement *element = g_value_get_object (velement);
+  GstElementFactory *factory = gst_element_get_factory (element);
+  const gchar *factory_name = g_value_get_string (factory_name_val);
+
+  if (factory == NULL)
+    return -1;
+
+  return g_strcmp0 (GST_OBJECT_NAME (factory), factory_name);
+}
+
+//
+// https://gitlab.freedesktop.org/gstreamer/gstreamer/-/blob/10f72da5040b74678c8f81723971127ee8bee04f/subprojects/gstreamer/gst/gstbin.c#L4553-4574
+static GstIterator *
+gst_bin_iterate_all_by_element_factory_name (GstBin *bin,
+    const gchar *factory_name)
+{
+  GstIterator *children;
+  GstIterator *result;
+  GValue factory_name_val = G_VALUE_INIT;
+
+  g_return_val_if_fail (GST_IS_BIN (bin), NULL);
+  g_return_val_if_fail (factory_name && *factory_name, NULL);
+
+  g_value_init (&factory_name_val, G_TYPE_STRING);
+  g_value_set_string (&factory_name_val, factory_name);
+
+  children = gst_bin_iterate_recurse (bin);
+  result = gst_iterator_filter (children, (GCompareFunc)compare_factory_names,
+      &factory_name_val);
+
+  g_value_unset (&factory_name_val);
+
+  return result;
+}
+// }}}}
+
+static GstElement *
+kms_webrtc_transport_src_get_element_in_dtlssrtpdec (
+    KmsWebrtcTransportSrc *self,
+    const gchar *factory_name)
+{
+  GstElement *element = NULL;
+  GValue velement = G_VALUE_INIT;
+
+  GstIterator *iter = gst_bin_iterate_all_by_element_factory_name (
+      GST_BIN (self->dtlssrtpdec), factory_name);
+
+  if (gst_iterator_next (iter, &velement) == GST_ITERATOR_OK) {
+    // Assume only one element of the given type. This is the case in dtlssrtpdec.
+    element = g_value_dup_object (&velement);
+    g_value_reset (&velement);
+  }
+
+  if (gst_iterator_next (iter, &velement) != GST_ITERATOR_DONE) {
+    GST_WARNING_OBJECT (self,
+        "BUG: Several elements '%s' found in dtlssrtpdec; code assumes only one",
+        factory_name);
+  }
+
+  if (element == NULL) {
+    GST_WARNING_OBJECT (self, "BUG: Element '%s' not found in dtlssrtpdec",
+        factory_name);
+  }
+
+  g_value_unset (&velement);
+  gst_iterator_free (iter);
+
+  return element;
+}
+
 static void
 kms_webrtc_transport_src_init (KmsWebrtcTransportSrc * self)
 {
@@ -40,41 +118,18 @@ kms_webrtc_transport_src_init (KmsWebrtcTransportSrc * self)
 void
 kms_webrtc_transport_src_connect_elements (KmsWebrtcTransportSrc * self)
 {
-  GstElement *element;
+  GstElement *srtpdec;
 
   gst_bin_add_many (GST_BIN (self), self->src, self->dtlssrtpdec, NULL);
   gst_element_link (self->src, self->dtlssrtpdec);
 
-  // Iterate over the dtlssrtpdec bin to set the srtpdec
-  GstIterator *it = gst_bin_iterate_elements (GST_BIN (self->dtlssrtpdec));
-  GValue item = G_VALUE_INIT;
-  gboolean done = FALSE;
-
-  while (!done) {
-    switch (gst_iterator_next (it, &item)) {
-      case GST_ITERATOR_OK:
-        element = g_value_get_object (&item);
-
-        if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
-                (gst_element_get_factory (element))), SRTPDEC_FACTORY_NAME) == 0) {
-          g_object_set (element, "replay-window-size", RTP_RTX_SIZE, NULL);
-        }
-
-        g_value_reset (&item);
-        break;
-      case GST_ITERATOR_RESYNC:
-        gst_iterator_resync (it);
-        break;
-      case GST_ITERATOR_ERROR:
-        done = TRUE;
-        break;
-      case GST_ITERATOR_DONE:
-        done = TRUE;
-        break;
-    }
+  srtpdec = kms_webrtc_transport_src_get_element_in_dtlssrtpdec (self, SRTPDEC_FACTORY_NAME);
+  if (srtpdec != NULL) {
+    g_object_set (srtpdec, "replay-window-size", RTP_RTX_SIZE, NULL);
+    g_object_unref (srtpdec);
+  } else {
+    GST_WARNING ("Cannot get SRTP DTLS decoder");
   }
-
-  gst_iterator_free (it);
 }
 
 void
@@ -100,12 +155,27 @@ kms_webrtc_transport_src_configure (KmsWebrtcTransportSrc * self,
   klass->configure (self, agent, stream_id, component_id);
 }
 
+void
+kms_webrtc_transport_src_set_dtls_is_client_default (KmsWebrtcTransportSrc * self,
+    gboolean is_client)
+{
+  // We just need to cache the DTLS client value for later use
+  self->dtls_client = is_client;
+
+  if (is_client) {
+    GST_DEBUG_OBJECT(self, "Set as DTLS client (handshake initiator)");
+  } else {
+    GST_DEBUG_OBJECT(self, "Set as DTLS server (wait for handshake)");
+  }
+}
+
 static void
 kms_webrtc_transport_src_class_init (KmsWebrtcTransportSrcClass * klass)
 {
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
 
   klass->configure = kms_webrtc_transport_src_configure_default;
+  klass->set_dtls_is_client = kms_webrtc_transport_src_set_dtls_is_client_default;
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
@@ -125,4 +195,14 @@ kms_webrtc_transport_src_new ()
   obj = g_object_new (KMS_TYPE_WEBRTC_TRANSPORT_SRC, NULL);
 
   return KMS_WEBRTC_TRANSPORT_SRC (obj);
+}
+
+void
+kms_webrtc_transport_src_set_dtls_is_client (KmsWebrtcTransportSrc * self,
+    gboolean is_client)
+{
+  KmsWebrtcTransportSrcClass *klass =
+      KMS_WEBRTC_TRANSPORT_SRC_CLASS (G_OBJECT_GET_CLASS (self));
+
+  klass->set_dtls_is_client (self, is_client);
 }

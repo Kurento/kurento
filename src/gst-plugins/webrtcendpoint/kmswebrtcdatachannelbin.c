@@ -1106,12 +1106,15 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
 
   gst_buffer_unmap (buffer, &info);
 
-  if (sctp_receive_meta != NULL &&
-      !kms_webrtc_data_channel_bin_get_ppid_from_meta (self,
-          sctp_receive_meta, is_empty, &ppid)) {
-    gst_buffer_unref (buffer);
+  /* if available, get PPID from received SCTP meta data */
+  /* otherwise set PPID based on is_binary and is_empty flags */
+  if (sctp_receive_meta != NULL) {
+    if (!kms_webrtc_data_channel_bin_get_ppid_from_meta (self,
+        sctp_receive_meta, is_empty, &ppid)) {
+      gst_buffer_unref(buffer);
 
-    return GST_FLOW_ERROR;
+      return GST_FLOW_ERROR;
+    }
   } else if (is_binary) {
     if (is_empty) {
       ppid = KMS_DATA_CHANNEL_PPID_BINARY_EMPTY;

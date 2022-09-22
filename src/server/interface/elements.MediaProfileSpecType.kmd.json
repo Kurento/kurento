@@ -2,7 +2,7 @@
   "complexTypes": [
     {
       "name": "MediaProfileSpecType",
-      "doc": "Media Profile.\n\nCurrently WEBM, MKV, MP4, FLV and JPEG are supported.",
+      "doc": "Media profile, used by the RecorderEndpoint builder to specify the codecs and media container that should be used for the recordings.",
       "typeFormat": "ENUM",
       "values": [
         "WEBM",

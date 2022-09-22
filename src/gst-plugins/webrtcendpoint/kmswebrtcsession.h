@@ -78,6 +78,8 @@ struct _KmsWebrtcSession
   guint16 min_port;
   guint16 max_port;
 
+  gint qos_dscp;
+
   gboolean gather_started;
 
   GstElement *data_session;
@@ -118,7 +120,8 @@ GType kms_webrtc_session_get_type (void);
 
 KmsWebrtcSession * kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
 					   KmsIRtpSessionManager * manager,
-                                           GMainContext * context);
+                                           GMainContext * context, 
+                                           gint qos_dscp);
 
 KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, KmsSdpMediaHandler * handler);
 gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, KmsSdpMediaHandler *handler, GstSDPMedia *media);

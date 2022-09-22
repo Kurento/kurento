@@ -182,13 +182,14 @@ connect_sctp_data_new (KmsWebrtcSession * self, GstSDPMedia * media,
 
 KmsWebrtcSession *
 kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
-    KmsIRtpSessionManager * manager, GMainContext * context)
+    KmsIRtpSessionManager * manager, GMainContext * context, gint qos_dscp)
 {
   GObject *obj;
   KmsWebrtcSession *self;
 
   obj = g_object_new (KMS_TYPE_WEBRTC_SESSION, NULL);
   self = KMS_WEBRTC_SESSION (obj);
+  self->qos_dscp = qos_dscp;
   KMS_WEBRTC_SESSION_CLASS (G_OBJECT_GET_CLASS (self))->post_constructor
       (self, ep, id, manager, context);
 
@@ -1893,7 +1894,7 @@ kms_webrtc_session_new_selected_pair_full (KmsIceBaseAgent * agent,
 static void
 kms_webrtc_session_init_ice_agent (KmsWebrtcSession * self)
 {
-  self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context));
+  self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context, self->qos_dscp));
 
   kms_ice_base_agent_run_agent (self->agent);
 
