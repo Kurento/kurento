@@ -25,6 +25,14 @@
 #/
 #/   Git branch or tag that should be checked out, if it exists.
 #/
+#/ JOB_GIT_NAME_FALLBACK
+#/
+#/   Git branch or tag that should be checked out, if `JOB_GIT_NAME` does not
+#/   exist. If this fails too, then `JOB_DISTRO` will be used, and failing that,
+#/   `master` will be used as a last recourse.
+#/
+#/   Optional.
+#/
 #/
 #/ * Variable(s) from job Multi-Configuration ("Matrix") Project axis:
 #/
@@ -61,7 +69,7 @@ set -o xtrace
 
 # Check out the requested branch
 "${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
-    --name "$JOB_GIT_NAME" --fallback "$JOB_DISTRO"
+    --name "$JOB_GIT_NAME" --fallback "${JOB_GIT_NAME_FALLBACK:-$JOB_DISTRO}"
 
 # Arguments to kurento-buildpackage.
 KURENTO_BUILDPACKAGE_ARGS=()
