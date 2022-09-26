@@ -1,4 +1,0 @@
-image:
-  name: kurento/release-media-server
-  version: trusty-jdk-8
-  
