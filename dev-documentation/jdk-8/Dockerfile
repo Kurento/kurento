@@ -1,7 +1,7 @@
 FROM buildpack-deps:xenial-scm
 
 # Configure Kurento's apt proxy
-RUN echo 'Acquire::http::Proxy "http://proxy.kurento.org:3142";' > /etc/apt/apt.conf.d/01proxy \
+RUN echo 'Acquire::http::Proxy "http://proxy.openvidu.io:3142";' > /etc/apt/apt.conf.d/01proxy \
   && echo 'Acquire::HTTP::Proxy::deb.nodesource.com "DIRECT";' >> /etc/apt/apt.conf.d/01proxy
 
 RUN apt-get update \
