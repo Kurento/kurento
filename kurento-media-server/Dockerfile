@@ -50,7 +50,7 @@
 #
 # Run:
 #
-#     docker run --name kms -p 8888:8888 kurento/kurento-media-server:latest
+#     docker run --name kurento --network host kurento/kurento-media-server:latest
 #
 # Then, you can follow the logs with the `docker logs` command:
 #
