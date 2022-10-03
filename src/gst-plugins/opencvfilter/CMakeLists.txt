@@ -21,6 +21,7 @@ set_property(TARGET kmsopencvfilter
     ${CMAKE_CURRENT_SOURCE_DIR}/../../server/implementation/objects/
     ${gstreamer-1.0_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
+    ${KmsJsonRpc_INCLUDE_DIRS}
     ${KMSCORE_INCLUDE_DIRS}
 )
 
