@@ -33,14 +33,6 @@ create_check_target()
 
 
 
-# kms-jsonrpc
-# ===========
-
-add_subdirectory(kms-jsonrpc)
-set(JSON_CPP_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-jsonrpc" CACHE PATH "Path prefix used to look for binary files" FORCE)
-
-
-
 # kurento-module-creator
 # ======================
 
@@ -108,6 +100,19 @@ endif()
 if(SANITIZERS_ENABLED)
   sanitizer_add_blacklist_file("bin/sanitizers/blacklist.txt")
 endif()
+
+
+
+# kms-jsonrpc
+# ===========
+
+add_subdirectory(kms-jsonrpc)
+
+# Add CMake settings provided by kms-jsonrpc.
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/kms-jsonrpc")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/kms-jsonrpc")
+
+set(JSON_CPP_BINARY_DIR_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/kms-jsonrpc" CACHE PATH "Path prefix used to look for binary files" FORCE)
 
 
 
