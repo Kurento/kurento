@@ -34,6 +34,14 @@
 #/
 #/   Optional. Default: Disabled.
 #/
+#/ --jemalloc
+#/
+#/   Run Kurento with the Jemalloc memory allocator. This improves memory
+#/   handling by reducing fragmentation wrt. the standard system allocator.
+#/   Requires installing Jemalloc (package `libjemalloc2` on Ubuntu 20.04).
+#/
+#/   Optional. Default: Disabled.
+#/
 #/ --gdb
 #/
 #/   Run KMS in a GDB session. Useful to set break points and get backtraces.
@@ -158,6 +166,7 @@ source "$SELF_PATH/bash.conf.sh" || exit 1
 
 CFG_BUILD_ONLY="false"
 CFG_RELEASE="false"
+CFG_JEMALLOC="false"
 CFG_GDB="false"
 CFG_CLANG="false"
 CFG_VERBOSE="false"
@@ -173,6 +182,7 @@ while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --build-only) CFG_BUILD_ONLY="true" ;;
         --release) CFG_RELEASE="true" ;;
+        --jemalloc) CFG_JEMALLOC="true" ;;
         --gdb) CFG_GDB="true" ;;
         --clang) CFG_CLANG="true" ;;
         --verbose) CFG_VERBOSE="true" ;;
@@ -217,6 +227,7 @@ fi
 
 log "CFG_BUILD_ONLY=$CFG_BUILD_ONLY"
 log "CFG_RELEASE=$CFG_RELEASE"
+log "CFG_JEMALLOC=$CFG_JEMALLOC"
 log "CFG_GDB=$CFG_GDB"
 log "CFG_CLANG=$CFG_CLANG"
 log "CFG_VERBOSE=$CFG_VERBOSE"
@@ -321,6 +332,17 @@ fi
 
 RUN_VARS=()
 RUN_WRAPPER=""
+
+if [[ "$CFG_JEMALLOC" == "true" ]]; then
+    RUN_VARS+=(
+        # Find the full path to the Jemalloc library file.
+        LD_PRELOAD="$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[[:digit:]]' | head -n 1)"
+
+        # Pass this settings string to Jemalloc.
+        MALLOC_CONF="abort_conf:true,confirm_conf:true"
+        # MALLOC_CONF="abort_conf:true,confirm_conf:true,background_thread:true,metadata_thp:always"
+    )
+fi
 
 if [[ "$CFG_GDB" == "true" ]]; then
     # RUN_WRAPPER="gdb -ex 'run' --args"
