@@ -3,62 +3,64 @@
     {
       "name": "WebRtcEndpoint",
       "extends": "BaseRtpEndpoint",
-      "doc": "Control interface for Kurento WebRTC endpoint.
+      "doc": "
+Endpoint that provides bidirectional WebRTC capabilities for Kurento.
 <p>
-  This endpoint is one side of a peer-to-peer WebRTC communication, being the
-  other peer a WebRTC capable browser -using the RTCPeerConnection API-, a
-  native WebRTC app or even another Kurento Media Server.
+  This endpoint is one side of a peer-to-peer WebRTC communication, where the
+  other peer is either of a WebRTC capable browser (using the
+  <em>RTCPeerConnection</em> API), a native WebRTC app, or even another Kurento
+  Media Server instance.
 </p>
 <p>
-  In order to establish a WebRTC communication, peers engage in an SDP
-  negotiation process, where one of the peers (the offerer) sends an offer,
-  while the other peer (the offeree) responds with an answer. This endpoint can
-  function in both situations
+  In order to establish WebRTC communications, peers first engage in an SDP
+  Offer/Answer negotiation process, where one of the peers (the offerer) sends
+  an SDP Offer, while the other peer (the answerer) responds with an SDP Answer.
+  This endpoint can work in both roles.
 </p>
 <ul>
   <li>
-    As offerer: The negotiation process is initiated by the media server
+    <b>As offerer</b>: The negotiation process is initiated by the media server.
     <ul>
       <li>
-        KMS generates the SDP offer through the
-        <code>generateOffer</code> method. This <i>offer</i> must then be sent
-        to the remote peer (the offeree) through the signaling channel, for
-        processing.
+        Kurento generates the SDP Offer through the
+        <code>generateOffer()</code> method. This offer must then be sent to the
+        remote peer (the answerer) through the signaling channel.
       </li>
       <li>
-        The remote peer processes the <i>offer</i>, and generates an
-        <i>answer</i>. The <i>answer</i> is sent back to the media server.
+        The remote peer process the SDP Offer, and generates an SDP Answer. This
+        answer is then sent back to the media server.
       </li>
       <li>
-        Upon receiving the <i>answer</i>, the endpoint must invoke the
-        <code>processAnswer</code> method.
+        Upon receiving the SDP Answer, this endpoint must process it with the
+        <code>processAnswer()</code> method.
       </li>
     </ul>
   </li>
   <li>
-    As offeree: The negotiation process is initiated by the remote peer
+    <b>As answerer</b>: The negotiation process is initiated by the remote peer.
     <ul>
       <li>
-        The remote peer, acting as offerer, generates an SDP <i>offer</i> and
-        sends it to the WebRTC endpoint in Kurento.
+        The remote peer, acting as offerer, generates an SDP Offer and sends it
+        to this endpoint.
       </li>
       <li>
-        The endpoint will process the <i>offer</i> invoking the
-        <code>processOffer</code> method. The result of this method will be a
-        string, containing an SDP <i>answer</i>.
+        This endpoint processes the SDP Offer with the
+        <code>processOffer()</code> method. The result of this method will be a
+        string, containing an SDP Answer.
       </li>
       <li>
-        The SDP <i>answer</i> must be sent back to the offerer, so it can be
-        processed.
+        The SDP Answer must then be sent back to the offerer, so it can be
+        processed by it.
       </li>
     </ul>
   </li>
 </ul>
+<h2>ICE candidates and connectivity checks</h2>
 <p>
   SDPs are sent without ICE candidates, following the Trickle ICE optimization.
   Once the SDP negotiation is completed, both peers proceed with the ICE
   discovery process, intended to set up a bidirectional media connection. During
-  this process, each peer
+  this process, each peer...
 </p>
 <ul>
   <li>
@@ -76,11 +78,11 @@
 <p>
   Once a suitable pair of candidates (one for each peer) is discovered, the
   media session can start. The harvesting process in Kurento, begins with the
-  invocation of the <code>gatherCandidates</code> method. Since the whole
+  invocation of the <code>gatherCandidates()</code> method. Since the whole
   Trickle ICE purpose is to speed-up connectivity, candidates are generated
   asynchronously. Therefore, in order to capture the candidates, the user must
   subscribe to the event <code>IceCandidateFound</code>. It is important that
-  the event listener is bound before invoking <code>gatherCandidates</code>,
+  the event listener is bound before invoking <code>gatherCandidates()</code>,
   otherwise a suitable candidate might be lost, and connection might not be
   established.
 </p>
@@ -143,81 +145,40 @@
   callback function. Each event provides different information, so it is
   recommended to consult the signature of the event listeners.
 </p>
+<h2>Bitrate management and network congestion control</h2>
 <p>
-  Flow control and congestion management is one of the most important features
-  of WebRTC. WebRTC connections start with the lowest bandwidth configured and
-  slowly ramps up to the maximum available bandwidth, or to the higher limit of
-  the exploration range in case no bandwidth limitation is detected. Notice that
-  WebRtcEndpoints in Kurento are designed in a way that multiple WebRTC
-  connections fed by the same stream share quality. When a new connection is
-  added, as it requires to start with low bandwidth, it will cause the rest of
-  connections to experience a transient period of degraded quality, until it
-  stabilizes its bitrate. This doesn't apply when transcoding is involved.
-  Transcoders will adjust their output bitrate based in bandwidth requirements,
-  but it won't affect the original stream. If an incoming WebRTC stream needs to
-  be transcoded, for whatever reason, all WebRtcEndpoints fed from transcoder
-  output will share a separate quality than the ones connected directly to the
-  original stream.
+  Congestion control is one of the most important features of WebRTC. WebRTC
+  connections start with the lowest bandwidth configured and slowly ramps up to
+  the maximum available bandwidth, or to the higher limit of the allowed range
+  in case no bandwidth limitation is detected.
 </p>
 <p>
-  Note that the default <strong>VideoSendBandwidth</strong> range of the
-  endpoint is a VERY conservative one, and leads to a low maximum video quality.
-  Most applications will probably want to increase this to higher values such as
-  2000 kbps (2 mbps).
+  Notice that WebRtcEndpoints in Kurento are designed in a way that
+  <strong>
+    multiple WebRTC connections fed by the same stream, share the same bitrate
+    limits.
+  </strong>
+  When a new connection is added, as it requires to start with low bandwidth, it
+  will cause the rest of connections to experience a transient period of
+  degraded quality, until it stabilizes its bitrate. This doesn't apply when
+  transcoding is involved; transcoders will adjust their output bitrate based in
+  the receiver requirements, but it won't affect the original stream.
+</p>
+<p>
+  If an incoming WebRTC stream needs to be transcoded, for whatever reason, all
+  WebRtcEndpoints fed from the transcoder output will share a separate quality
+  than the ones connected directly to the original stream.
 </p>
 <p>
   <strong>
-    Check the extended documentation of these parameters in
-    :rom:cls:`SdpEndpoint`, :rom:cls:`BaseRtpEndpoint`, and
-    :rom:cls:`RembParams`.
+    Note that the default <em>MaxVideoSendBandwidth</em> is a VERY conservative
+    value, and leads to a low maximum video quality. Most applications will
+    probably want to increase this to higher values such as 2000 kbps (2 Mbps).
   </strong>
+  Check the documentation of :rom:cls:`BaseRtpEndpoint` and
+  :rom:cls:`RembParams` for detailed information about bitrate management.
 </p>
-<ul>
-  <li>
-    Input bandwidth: Values used to inform remote peers about the bitrate that
-    can be sent to this endpoint.
-    <ul>
-      <li>
-        <strong>MinVideoRecvBandwidth</strong>: Minimum input bitrate, requested
-        from WebRTC senders with REMB (Default: 30 Kbps).
-      </li>
-      <li>
-        <strong>MaxAudioRecvBandwidth</strong> and
-        <strong>MaxVideoRecvBandwidth</strong>: Maximum input bitrate, signaled
-        in SDP Offers to WebRTC and RTP senders (Default: unlimited).
-      </li>
-    </ul>
-  </li>
-  <li>
-    Output bandwidth: Values used to control bitrate of the video streams sent
-    to remote peers. It is important to keep in mind that pushed bitrate depends
-    on network and remote peer capabilities. Remote peers can also announce
-    bandwidth limitation in their SDPs (through the
-    <code>b={modifier}:{value}</code> attribute). Kurento will always enforce
-    bitrate limitations specified by the remote peer over internal
-    configurations.
-    <ul>
-      <li>
-        <strong>MinVideoSendBandwidth</strong>: REMB override of minimum bitrate
-        sent to WebRTC receivers (Default: 100 Kbps).
-      </li>
-      <li>
-        <strong>MaxVideoSendBandwidth</strong>: REMB override of maximum bitrate
-        sent to WebRTC receivers (Default: 500 Kbps).
-      </li>
-      <li>
-        <strong>RembParams.rembOnConnect</strong>: Initial local REMB bandwidth
-        estimation that gets propagated when a new endpoint is connected.
-      </li>
-    </ul>
-  </li>
-</ul>
-<p>
-  <strong>
-    All bandwidth control parameters must be changed before the SDP negotiation
-    takes place, and can't be changed afterwards.
-  </strong>
-</p>
+<h2>WebRTC Data Channels</h2>
 <p>
   DataChannels allow other media elements that make use of the DataPad, to send
   arbitrary data. For instance, if there is a filter that publishes event
@@ -481,13 +442,13 @@
               "doc": "DSCP value to be used in network traffic sent from this endpoint
               <p>
               If this parameter is present with a value different to NO_VALUE, all traffic sent from this WebRTCEndpoint will be marked with the correspondent
-              DSCP value according to the DiffServ architecture. This may provide better handling of network traffic according to its characteristics associated to 
-              its DSCP value. This better handling includes priority in forwarding traffic and probablity of packet drop in case of network congestion.
+              DSCP value according to the DiffServ architecture. This may provide better handling of network traffic according to its characteristics associated to
+              its DSCP value. This better handling includes priority in forwarding traffic and probability of packet drop in case of network congestion.
               <p>
-              It must be taken into account that on Internet not all intermediate routers are guaranteed to enforce those DSCP values, even it is possible that 
+              It must be taken into account that on Internet not all intermediate routers are guaranteed to enforce those DSCP values, even it is possible that
               certain routers just block traffic marked with specific DSCP values, as discussed here https://datatracker.ietf.org/doc/html/rfc8835#section-4.2.
-              <p> 
-              So, this feature must be managed with care and is mostly intended for private networks, where the network proprietor can configure and guarantee 
+              <p>
+              So, this feature must be managed with care and is mostly intended for private networks, where the network proprietor can configure and guarantee
               DSCP management in all routers.",
               "type": "DSCPValue",
               "optional": true,
@@ -813,7 +774,7 @@ This could also happen in the middle of a session, though not likely.
         "NO_DSCP",                  //  -1 USed to signal that no DSCP feature is requested
         "NO_VALUE",                 //  -1 Used to signal to use the default value configured in configuration file
         "AUDIO_VERYLOW",            //   LE (1)
-        "AUDIO_LOW",                //   DF (0)        
+        "AUDIO_LOW",                //   DF (0)
         "AUDIO_MEDIUM",             //  EF (46)
         "AUDIO_HIGH",               //  EF (46)
         "VIDEO_VERYLOW",            //  LE (1)
@@ -831,7 +792,7 @@ This could also happen in the middle of a session, though not likely.
         "CHROME_LOW",               // CS0 (0)
         "CHROME_VERYLOW",           // CS1 (8)
         "CS0",      //   0
-        "CS1",      //   8        
+        "CS1",      //   8
         "CS2",      //  16
         "CS3",      //  24
         "CS4",      //  32
@@ -855,9 +816,9 @@ This could also happen in the middle of a session, though not likely.
         "LE"        //   1
       ],
       "name": "DSCPValue",
-      "doc": "Possible DSCP values 
+      "doc": "Possible DSCP values
       <p>
-      WebRTC recommended values are taken from RFC 8837 https://datatracker.ietf.org/doc/html/rfc8837#section-5 , These are the values from AUDIO_VERYLOW to DATA_HIGH. First element in the 
+      WebRTC recommended values are taken from RFC 8837 https://datatracker.ietf.org/doc/html/rfc8837#section-5 , These are the values from AUDIO_VERYLOW to DATA_HIGH. First element in the
       name indicates kind of traffic that it should apply to, the second indicates relative priority. For video, a third field would indicate if the traffic is intended for high throughput or not.
       As indicated on RFC 8837 section 5 diagram:
 
@@ -882,12 +843,12 @@ This could also happen in the middle of a session, though not likely.
 
       As indicated also in RFC, non interactive video is not considered
       <p>
-      Apart from the WebRTC recommended values, we also include all possible values are referenced in http://www.iana.org/assignments/dscp-registry/dscp-registry.xml of course some of 
+      Apart from the WebRTC recommended values, we also include all possible values are referenced in http://www.iana.org/assignments/dscp-registry/dscp-registry.xml of course some of
       those values are synonyms for the WebRTC recommended ones, they are included mainly for completeness
       <p>
       And as a last point, we include a shorthand for Chrome supported markings for low  (CS0), very low (CS1), medium (CS7) and high (CS7) priorities in priority property for RTCRtpSender parameters. See https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/setParameters
       <p>
-      This only covers outgoing network packets from KMS, to complete the solution, DSCP must be also requested on client, unfortunately for traffic on the other direction, this must be requested to the 
+      This only covers outgoing network packets from KMS, to complete the solution, DSCP must be also requested on client, unfortunately for traffic on the other direction, this must be requested to the
       browser or client. On browser, the client application needs to use the following API https://www.w3.org/TR/webrtc-priority/"
     }
   ]
