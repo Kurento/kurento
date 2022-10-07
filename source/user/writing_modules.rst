@@ -264,7 +264,7 @@ A ``Dockerfile`` such as this one would be a good enough starting point:
 
 .. code-block:: docker
 
-   FROM kurento/kurento-media-server:latest
+   FROM kurento/kurento-media-server:|VERSION_KMS|
    COPY my-gst-module_0.0.1~rc1_amd64.deb /
    RUN dpkg -i /my-gst-module_0.0.1~rc1_amd64.deb
 
@@ -272,19 +272,19 @@ Now build the new image:
 
 .. code-block:: shell-session
 
-   $ docker build --tag kms-with-my-gst-module:latest .
-   Step 1/3 : FROM kurento/kurento-media-server:latest
+   $ docker build --tag kurento-with-my-gst-module:|VERSION_KMS| .
+   Step 1/3 : FROM kurento/kurento-media-server:|VERSION_KMS|
    Step 2/3 : COPY my-gst-module_0.0.1~rc1_amd64.deb /
    Step 3/3 : RUN dpkg -i /my-gst-module_0.0.1~rc1_amd64.deb
    Successfully built d10d3b4a8202
-   Successfully tagged kms-with-my-gst-module:latest
+   Successfully tagged kurento-with-my-gst-module:|VERSION_KMS|
 
 And verify your module is correctly loaded by Kurento:
 
 .. code-block:: shell-session
    :emphasize-lines: 7,12,13
 
-   $ docker run --rm kms-with-my-gst-module:latest --version
+   $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --version
    Kurento Media Server version: 6.12.0
    Found modules:
        'core' version 6.12.0
@@ -292,7 +292,7 @@ And verify your module is correctly loaded by Kurento:
        'filters' version 6.12.0
        'mygstmodule' version 0.0.1~0.gd61e201
 
-   $ docker run --rm kms-with-my-gst-module:latest --list
+   $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --list
    Available factories:
        [...]
        MyGstModule
