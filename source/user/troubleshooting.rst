@@ -388,6 +388,12 @@ Missing audio or video streams
 
 If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a :term:`STUN` server or a :term:`TURN` relay, to traverse through the :term:`NAT` of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <faq-coturn-install>`.
 
+If your application is expected to work with **audio-only** or **video-only** streams, make sure that Kurento Pipeline elements are not connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__):
+
+  - Use the ``connect(MediaElement, MediaType)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement-org.kurento.client.MediaType->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__).
+  - Monitor the :ref:`MediaFlowInStateChanged <events-mediaflowin>` and :ref:`MediaFlowOutStateChanged <events-mediaflowout>` events from all MediaElements.
+  - Make sure that the element providing media (the *source*) is firing a *MediaFlowOut* event, and that the receiver (the *sink*) is firing a corresponding *MediaFlowIn* event.
+
 
 
 Application Server
