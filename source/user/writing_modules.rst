@@ -227,8 +227,8 @@ For more information about the process of creating Debian packages, check these 
 
 .. code-block:: shell
 
-   KURENTO_MODULES_PATH="$KURENTO_MODULES_PATH /path/to/module"
-   GST_PLUGIN_PATH="$GST_PLUGIN_PATH /path/to/module"
+   KURENTO_MODULES_PATH="$KURENTO_MODULES_PATH:/path/to/module"
+   GST_PLUGIN_PATH="$GST_PLUGIN_PATH:/path/to/module"
 
 Kurento will then add these paths to the path lookup it performs at startup, when looking for all available plugins.
 
