@@ -7,8 +7,8 @@
 <p>
   RecorderEndpoint can store media into local files or send it to a remote
   network storage. When another :rom:cls:`MediaElement` is connected to a
-  RecorderEndpoint, the media coming from the former will be muxed into
-  the selected recording format and stored in the designated location.
+  RecorderEndpoint, the media coming from the former will be muxed into the
+  selected recording format and stored in the designated location.
 </p>
 <p>
   These parameters must be provided to create a RecorderEndpoint, and they
@@ -31,10 +31,10 @@
         must support using the <i>chunked</i> encoding mode (HTTP header
         <code>Transfer-Encoding: chunked</code>). Examples:
         <ul>
-          <li><code>http(s)://{server-ip}/path/to/file</code></li>
+          <li><code>http(s)://{host}/path/to/file</code></li>
           <li>
             <code>
-              http(s)://{username}:{password}@{server-ip}:{server-port}/path/to/file
+              http(s)://{username}:{password}@{host}:{port}/path/to/file
             </code>
           </li>
         </ul>
@@ -48,24 +48,12 @@
       </li>
       <li>
         <strong>
-          NOTE (for current versions of Kurento 6.x): special characters are not
-          supported in <code>{username}</code> or <code>{password}</code>.
+          NOTE: Special characters must be
+          <a href='https://en.wikipedia.org/wiki/Query_string#URL_encoding'>
+            URL-encoded
+          </a>
+          in <code>{username}</code> and <code>{password}</code> fields.
         </strong>
-        This means that <code>{username}</code> cannot contain colons
-        (<code>:</code>), and <code>{password}</code> cannot contain 'at' signs
-        (<code>@</code>). This is a limitation of GStreamer 1.8 (the underlying
-        media framework behind Kurento), and is already fixed in newer versions
-        (which the upcoming Kurento 7.x will use).
-      </li>
-      <li>
-        <strong>
-          NOTE (for upcoming Kurento 7.x): special characters in
-          <code>{username}</code> or <code>{password}</code> must be
-          url-encoded.
-        </strong>
-        This means that colons (<code>:</code>) should be replaced with
-        '<code>%3A</code>', and 'at' signs (<code>@</code>) should be replaced
-        with '<code>%40</code>'.
       </li>
     </ul>
   </li>
@@ -137,13 +125,11 @@
   AUDIO and VIDEO. Failing to provide both kinds of media will result in the
   RecorderEndpoint creating an empty file and buffering indefinitely; the
   recorder waits until all kinds of media start arriving, in order to
-  synchronize them appropriately.<br>
+  synchronize them appropriately.<br />
   For audio-only or video-only recordings, make sure to use the correct,
   media-specific variant of the <code>connect()</code> method.
 </p>
-<p>
-  For example:
-</p>
+<p>For example:</p>
 <ol>
   <li>
     When a web browser's video arrives to Kurento via WebRTC, your

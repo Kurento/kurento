@@ -6,9 +6,9 @@
       "doc": "Retrieves content from external sources.
 <p>
   PlayerEndpoint will access the given resource, read all available data, and
-  inject it into Kurento. Once this is is done, the injected video or audio
-  will be available for passing through any other Filter or Endpoint to which
-  the PlayerEndpoint gets connected.
+  inject it into Kurento. Once this is is done, the injected video or audio will
+  be available for passing through any other Filter or Endpoint to which the
+  PlayerEndpoint gets connected.
 </p>
 <p>
   The source can provide either seekable or non-seekable media; this will
@@ -26,10 +26,10 @@
   <li>
     HTTP: Any file available in an HTTP server. Examples:
     <ul>
-      <li><code>http(s)://{server-ip}/path/to/file</code></li>
+      <li><code>http(s)://{host}/path/to/file</code></li>
       <li>
         <code>
-          http(s)://{username}:{password}@{server-ip}:{server-port}/path/to/file
+          http(s)://{username}:{password}@{host}:{port}/path/to/file
         </code>
       </li>
     </ul>
@@ -37,33 +37,22 @@
   <li>
     RTSP: Typically used to capture a feed from an IP Camera. Examples:
     <ul>
-      <li><code>rtsp://{server-ip}</code></li>
+      <li><code>rtsp://{host}</code></li>
       <li>
         <code>
-          rtsp://{username}:{password}@{server-ip}:{server-port}/path/to/file
+          rtsp://{username}:{password}@{host}:{port}/path/to/file?{key=value}&{key=value}
         </code>
       </li>
     </ul>
   </li>
   <li>
     <strong>
-      NOTE (for current versions of Kurento 6.x): special characters are not
-      supported in <code>{username}</code> or <code>{password}</code>.
+      NOTE: Special characters must be
+      <a href='https://en.wikipedia.org/wiki/Query_string#URL_encoding'>
+        URL-encoded
+      </a>
+      in <code>{username}</code> and <code>{password}</code> fields.
     </strong>
-    This means that <code>{username}</code> cannot contain colons
-    (<code>:</code>), and <code>{password}</code> cannot contain 'at' signs
-    (<code>@</code>). This is a limitation of GStreamer 1.8 (the underlying
-    media framework behind Kurento), and is already fixed in newer versions
-    (which the upcoming Kurento 7.x will use).
-  </li>
-  <li>
-    <strong>
-      NOTE (for upcoming Kurento 7.x): special characters in
-      <code>{username}</code> or <code>{password}</code> must be url-encoded.
-    </strong>
-    This means that colons (<code>:</code>) should be replaced with
-    <code>%3A</code>, and 'at' signs (<code>@</code>) should be replaced with
-    <code>%40</code>.
   </li>
 </ul>
 <p>
