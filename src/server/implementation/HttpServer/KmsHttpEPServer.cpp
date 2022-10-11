@@ -692,7 +692,8 @@ kms_http_ep_server_set_cookie (KmsHttpEPServer *self, GstElement *httpep,
   gint64 id;
 
   /* No cookie has been set for this httpep */
-  id = g_rand_double_range (self->priv->rand, G_MININT64, G_MAXINT64);
+  id = g_rand_double_range (self->priv->rand, (gdouble)G_MININT64,
+      (gdouble)G_MAXINT64);
   id_str = g_strdup_printf ("%" G_GINT64_FORMAT, id);
   cookie = soup_cookie_new (COOKIE_NAME, id_str,
                             kms_http_ep_server_get_announced_addr (self), path,
