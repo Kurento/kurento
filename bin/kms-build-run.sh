@@ -7,14 +7,14 @@
 #/
 #/ To use, first clone the KMS omni-build repo and its submodules:
 #/
-#/     git clone https://github.com/Kurento/kms-omni-build.git
-#/     cd kms-omni-build/
-#/     git submodule update --init --recursive
-#/     git submodule update --remote
+#/   git clone https://github.com/Kurento/kms-omni-build.git
+#/   cd kms-omni-build/
+#/   git submodule update --init --recursive
+#/   git submodule update --remote
 #/
 #/ Then run this script directly from that directory:
 #/
-#/     bin/kms-build-run.sh
+#/   bin/kms-build-run.sh
 #/
 #/
 #/ Arguments
@@ -52,10 +52,15 @@
 #/
 #/   Build (and run, in case of using a Sanitizer) with Clang C/C++ compiler.
 #/
-#/   Note: You are still in charge of providing the desired version of Clang in
-#/   `/usr/bin/clang` for C; `/usr/bin/clang++` for C++.
-#/   For this, either create symlinks manually, or have a look into the
-#/   Debian/Ubuntu alternatives system (`update-alternatives`).
+#/   Note: You are still in charge of installing a valid compiler as programs
+#/   `clang` for C, and `clang++` for C++. For this, either create symlinks
+#/   manually, set the appropriate `PATH` variable for Clang, or have a look
+#/   into the Debian/Ubuntu alternatives system (`update-alternatives`).
+#/
+#/   You can also skip this flag and set the compiler directly through the
+#/   environment variables `CC` and `CXX`. For example:
+#/
+#/     CC=gcc-11 CXX=g++-11 bin/kms-build-run.sh
 #/
 #/   Optional. Default: Disabled. When disabled, the compiler will be GCC.
 #/
@@ -71,11 +76,10 @@
 #/   Build and run with Valgrind's Memcheck memory error detector.
 #/   Valgrind should be available in the PATH.
 #/
-#/   See:
-#/   * Memcheck manual: http://valgrind.org/docs/manual/mc-manual.html
+#/   Memcheck manual: http://valgrind.org/docs/manual/mc-manual.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --valgrind-massif
 #/
@@ -87,13 +91,12 @@
 #/
 #/   For example:
 #/
-#/       ms_print valgrind-massif-13522.out >valgrind-massif-13522.out.txt
+#/     ms_print valgrind-massif-13522.out >valgrind-massif-13522.out.txt
 #/
-#/   See:
-#/   * Massif manual: http://valgrind.org/docs/manual/ms-manual.html
+#/   Massif manual: http://valgrind.org/docs/manual/ms-manual.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --valgrind-callgrind
 #/
@@ -103,30 +106,30 @@
 #/   Callgrind gathers profiling information, which then can be loaded with
 #/   the `KCachegrind` tool to visualize and interpret it.
 #/
-#/   See:
-#/   * Callgrind manual: http://valgrind.org/docs/manual/cl-manual.html
+#/   Callgrind manual: http://valgrind.org/docs/manual/cl-manual.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --address-sanitizer
 #/
 #/   Build and run with the instrumentation provided by the compiler's
 #/   AddressSanitizer and LeakSanitizer (available in GCC and Clang).
 #/
-#/   See:
+#/   Doc:
+#/
 #/   * https://clang.llvm.org/docs/AddressSanitizer.html
 #/   * https://clang.llvm.org/docs/LeakSanitizer.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --thread-sanitizer
 #/
 #/   Build and run with the instrumentation provided by the compiler's
 #/   ThreadSanitizer (available in GCC and Clang).
 #/
-#/   See: https://clang.llvm.org/docs/ThreadSanitizer.html
+#/   Doc: https://clang.llvm.org/docs/ThreadSanitizer.html
 #/
 #/   NOTE: A recent version of GCC is required for ThreadSanitizer to work;
 #/   GCC 5, 6 and 7 have been tested and don't work; GCC 8 and 9 do.
@@ -137,23 +140,22 @@
 #/   The official solution is to recompile GLib with TSAN instrumentation.
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --undefined-sanitizer
 #/
 #/   Build and run with the compiler's UndefinedBehaviorSanitizer, an
 #/   undefined behavior detector (available in GCC and Clang).
 #/
-#/   See:
-#/   * https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+#/   Doc: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 
 
 
 # Shell setup
-# -----------
+# ===========
 
 SELF_PATH="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
 # shellcheck source=bash.conf.sh
@@ -162,7 +164,7 @@ source "$SELF_PATH/bash.conf.sh" || exit 1
 
 
 # Parse call arguments
-# --------------------
+# ====================
 
 CFG_BUILD_ONLY="false"
 CFG_RELEASE="false"
@@ -202,8 +204,8 @@ done
 
 
 
-# Apply config logic
-# ------------------
+# Config logic
+# ============
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     CFG_RELEASE="true"
@@ -225,6 +227,21 @@ if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
 fi
 
+if [[ -n "${CC:-}" || -n "${CXX:-}" ]]; then
+    if [[ -z "${CC:-}" || -z "${CXX:-}" ]]; then
+        log "ERROR: Both of these env vars should be set: CC='${CC:-}' CXX='${CXX:-}'"
+        exit 1
+    fi
+
+    log "Using compiler set by env vars: CC='$CC' CXX='$CXX'"
+
+    if [[ "$CC" =~ 'gcc' ]]; then
+        CFG_CLANG="false"
+    elif [[ "$CC" =~ 'clang' ]]; then
+        CFG_CLANG="true"
+    fi
+fi
+
 log "CFG_BUILD_ONLY=$CFG_BUILD_ONLY"
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_JEMALLOC=$CFG_JEMALLOC"
@@ -240,8 +257,8 @@ log "CFG_UNDEFINED_SANITIZER=$CFG_UNDEFINED_SANITIZER"
 
 
 
-# Run CMake if not done yet
-# -------------------------
+# Run CMake (if needed)
+# =====================
 
 BUILD_VARS=()
 BUILD_TYPE="Debug"
@@ -258,16 +275,11 @@ fi
 
 if [[ "$CFG_CLANG" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-clang"
-    BUILD_VARS+=(
-        "CC='clang'"
-        "CXX='clang++'"
-    )
+    CC="${CC:-clang}"
+    CXX="${CXX:-clang++}"
 else
-    # Default dirs are assumed to be GCC, no need for a suffix
-    BUILD_VARS+=(
-        "CC='gcc'"
-        "CXX='g++'"
-    )
+    CC="${CC:-gcc}"
+    CXX="${CXX:-g++}"
 fi
 
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
@@ -275,11 +287,11 @@ if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_ADDRESS=ON"
 
     if [[ "$CFG_CLANG" == "true" ]]; then
-        BUILD_VARS+=(
-            "CFLAGS='${CFLAGS:-} -shared-libasan'"
-            "CXXFLAGS='${CXXFLAGS:-} -shared-libasan'"
-        )
+        CFLAGS+=" -shared-libasan"
+        CXXFLAGS+=" -shared-libasan"
     fi
+
+    CXXFLAGS+=" -fsized-deallocation"
 fi
 
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
@@ -296,6 +308,17 @@ if [[ -f /.dockerenv ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-docker"
 fi
 
+# Store vars that affect compiler configuration.
+BUILD_VARS+=(
+    # C
+    "CC='${CC:-}'"
+    "CFLAGS='${CFLAGS:-}'"
+
+    # C++
+    "CXX='${CXX:-}'"
+    "CXXFLAGS='${CXXFLAGS:-}'"
+)
+
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
 if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; then
@@ -305,7 +328,7 @@ if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; the
     mkdir -p "$BUILD_DIR"
     pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 
-    # Prepare the final command
+    # Prepare the build command
     COMMAND=""
     for BUILD_VAR in "${BUILD_VARS[@]:-}"; do
         [[ -n "$BUILD_VAR" ]] && COMMAND="$COMMAND $BUILD_VAR"
@@ -327,8 +350,8 @@ fi
 
 
 
-# Prepare run environment
-# -----------------------
+# Prepare run command
+# ===================
 
 RUN_VARS=()
 RUN_WRAPPER=""
@@ -336,16 +359,15 @@ RUN_WRAPPER=""
 if [[ "$CFG_JEMALLOC" == "true" ]]; then
     RUN_VARS+=(
         # Find the full path to the Jemalloc library file.
-        LD_PRELOAD="$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[[:digit:]]' | head -n 1)"
+        "LD_PRELOAD='$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[[:digit:]]' | head -n 1)'"
 
         # Pass this settings string to Jemalloc.
-        MALLOC_CONF="abort_conf:true,confirm_conf:true"
-        # MALLOC_CONF="abort_conf:true,confirm_conf:true,background_thread:true,metadata_thp:always"
+        "MALLOC_CONF='abort_conf:true,confirm_conf:true'"
+        # "MALLOC_CONF='abort_conf:true,confirm_conf:true,background_thread:true,metadata_thp:always'"
     )
 fi
 
 if [[ "$CFG_GDB" == "true" ]]; then
-    # RUN_WRAPPER="gdb -ex 'run' --args"
     RUN_WRAPPER="gdb --args"
     RUN_VARS+=(
         "G_DEBUG='fatal-warnings'"
@@ -382,11 +404,11 @@ elif [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     if [[ "$CFG_CLANG" == "true" ]]; then
-        CLANG_VERSION="$(clang --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
+        CLANG_VERSION="$("$CC" --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
         CLANG_VERSION_MAJ="${CLANG_VERSION%%.*}"
         LIBSAN="/usr/lib/llvm-${CLANG_VERSION_MAJ}/lib/clang/${CLANG_VERSION}/lib/linux/libclang_rt.asan-x86_64.so"
     else
-        GCC_VERSION="$(gcc -dumpversion)"
+        GCC_VERSION="$("$CC" -dumpversion)"
         GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
         LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libasan.so"
     fi
@@ -395,13 +417,17 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
         "LD_PRELOAD='$LIBSAN'"
         # Use ASAN_OPTIONS recommended for aggressive diagnostics:
         # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
-        # NOTE: "detect_stack_use_after_return=1" breaks Kurento execution (more study needed to see why)
-        # NOTE: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled
-        "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_odr_violation=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1'"
+        # NOTE: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled.
+        # FIXME: `detect_stack_use_after_return=1` breaks Kurento execution (more study needed to see why).
+        # FIXME: `new_delete_type_mismatch=0` is needed because libsigc++ contains false positives
+        #     and ASan doesn't provide a granular way of suppressing them.
+        #     See discussion here: https://github.com/libsigcplusplus/libsigcplusplus/issues/10
+        #     See feature request here: https://github.com/llvm/llvm-project/issues/58404
+        "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_odr_violation=0 new_delete_type_mismatch=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1'"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    GCC_VERSION="$(gcc -dumpversion)"
+    GCC_VERSION="$("$CC" -dumpversion)"
     GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
     LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libtsan.so"
     RUN_VARS+=(
@@ -430,8 +456,8 @@ fi
 
 
 
-# Run Kurento Media Server
-# ------------------------
+# Launch run command
+# ==================
 
 pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 
@@ -461,19 +487,34 @@ ulimit -c unlimited
 #log "Set kernel core dump path: $KERNEL_CORE_PATH"
 #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
 
-# Prepare the final command
-COMMAND=""
-for RUN_VAR in "${RUN_VARS[@]:-}"; do
-    [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
-done
+# Set modules path.
+# Equivalent to `--modules-path`, `--modules-config-path`, `--gst-plugin-path`.
+RUN_VARS+=(
+    "KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules'"
+    "KURENTO_MODULES_CONFIG_PATH='${KURENTO_MODULES_CONFIG_PATH:+$KURENTO_MODULES_CONFIG_PATH:}$PWD/config'"
+    "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
+)
 
-COMMAND="$COMMAND $RUN_WRAPPER"
+# {
+#     # Prepare the final command
+#     COMMAND=""
+#     for RUN_VAR in "${RUN_VARS[@]:-}"; do
+#         [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
+#     done
+#     COMMAND="$COMMAND $RUN_WRAPPER"
+# }
+{
+    # Use `env` to set the environment variables just for our target program,
+    # without affecting the wrapper.
+    COMMAND="$RUN_WRAPPER env -i"
+    for RUN_VAR in "${RUN_VARS[@]}"; do
+        [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
+    done
+}
 
-COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
+# COMMAND+=" bash /home/juan/work/codeurjc/scratch.sh \
+COMMAND+=" kurento-media-server/server/kurento-media-server \
     --conf-file='$PWD/config/kurento.conf.json' \
-    --modules-config-path='$PWD/config' \
-    --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
-    --gst-plugin-path='$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.5' \
 "
 
 log "Run command: $COMMAND"
