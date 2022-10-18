@@ -495,24 +495,13 @@ RUN_VARS+=(
     "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
 )
 
-# {
-#     # Prepare the final command
-#     COMMAND=""
-#     for RUN_VAR in "${RUN_VARS[@]:-}"; do
-#         [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
-#     done
-#     COMMAND="$COMMAND $RUN_WRAPPER"
-# }
-{
-    # Use `env` to set the environment variables just for our target program,
-    # without affecting the wrapper.
-    COMMAND="$RUN_WRAPPER env -i"
-    for RUN_VAR in "${RUN_VARS[@]}"; do
-        [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
-    done
-}
+# Use `env` to set the environment variables just for our target program,
+# without affecting the wrapper.
+COMMAND="$RUN_WRAPPER env -i"
+for RUN_VAR in "${RUN_VARS[@]}"; do
+    [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
+done
 
-# COMMAND+=" bash /home/juan/work/codeurjc/scratch.sh \
 COMMAND+=" kurento-media-server/server/kurento-media-server \
     --conf-file='$PWD/config/kurento.conf.json' \
 "
