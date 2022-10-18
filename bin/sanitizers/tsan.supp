@@ -1,9 +1,12 @@
 # ThreadSanitizer suppressions file for Kurento Media Server.
 #
-# Doc: https://github.com/google/sanitizers/wiki/ThreadSanitizerSuppressions
+# * https://clang.llvm.org/docs/ThreadSanitizer.html#ignorelist
+# * https://github.com/google/sanitizers/wiki/ThreadSanitizerSuppressions
+
+
 
 # GLib
-# ----
+# ====
 
 deadlock:g_module_open
 race:g_malloc
@@ -18,7 +21,7 @@ race:g_type_create_instance
 
 
 # GStreamer
-# ---------
+# =========
 
 race:gst_allocator_alloc
 race:gst_buffer_new
@@ -45,7 +48,7 @@ race:libgstrtpmanager.so
 
 
 # kms-core
-# --------
+# ========
 
 # register_signal_handler<void, _GstBus*, _GstMessage*> kms-core/src/server/implementation/SignalHandler.hpp:77 (libkmscoreimpl.so.6)
 race:^register_signal_handler$
@@ -67,7 +70,7 @@ race:SignalHandler.hpp
 
 
 # kurento-media-server
-# --------------------
+# ====================
 
 # kurento::RequestCache::addResponse([...]) kurento-media-server/server/RequestCache.cpp:68 (kurento-media-server)
 race:kurento::RequestCache::addResponse
