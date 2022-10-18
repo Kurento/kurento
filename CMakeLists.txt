@@ -60,6 +60,11 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 
+# FIXME GLib < 2.67.1 (Ubuntu 20.04) used `volatile` as if it provided atomic
+#       guarantees, which it doesn't. GCC-11 started warning about this.
+#       Remove this when upgrading to newer systems.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=incompatible-pointer-types")
+
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
