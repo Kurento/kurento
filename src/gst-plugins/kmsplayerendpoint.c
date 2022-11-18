@@ -970,7 +970,7 @@ kms_player_endpoint_set_position (KmsPlayerEndpoint * self, gint64 position)
   }
 
   seek = gst_event_new_seek (1.0, GST_FORMAT_TIME,
-      GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_TRICKMODE | GST_SEEK_FLAG_ACCURATE,
+      GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE,
       /* start */ GST_SEEK_TYPE_SET, position,
       /* stop */ GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE);
 
