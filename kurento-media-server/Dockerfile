@@ -70,38 +70,6 @@ FROM ubuntu:${UBUNTU_CODENAME} AS ubuntu_base
 
 ARG APT_ARGS=""
 
-# Configure Apt:
-# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages.
-# * --quiet: Hide progress bars.
-# * --yes: Assume "Yes" for all confirmation requests.
-# * APT::Install-Recommends=false: Avoid installing non-essential stuff.
-RUN touch /etc/profile ~/.bash_profile && printf "\
-function apt-get-install {\n\
-    (\n\
-        export DEBIAN_FRONTEND=noninteractive\n\
-        /usr/bin/apt-get --quiet $APT_ARGS update \\\\\\n\
-        && /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
-    )\n\
-    local RC=\$?\n\
-    rm -rf /var/lib/apt/lists/*\n\
-    return \$RC\n\
-}\n" >>/etc/profile
-
-# FIXME: Workaround for the network errors introduced by our OpenStack CI.
-RUN printf "\
-function apt-get-install-fix {\n\
-    (\n\
-        export DEBIAN_FRONTEND=noninteractive\n\
-        /usr/bin/apt-get --quiet update \\\\\\n\
-        && until /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false install \"\$@\"; do echo FIXME RETRY; done\n\
-    )\n\
-    local RC=\$?\n\
-    rm -rf /var/lib/apt/lists/*\n\
-    return \$RC\n\
-}\n" >>/etc/profile
-
-SHELL ["/bin/bash", "--login", "-x", "-c"]
-
 
 
 # Stage: Install and prepare
@@ -125,53 +93,63 @@ ENV LANG="C.UTF-8"
 # * dnsutils: For `dig` in `getmyip.sh`.
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04).
 # * nano: Not required but useful for edits while troubleshooting.
-RUN apt-get-install \
+RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         ca-certificates \
         curl \
         dnsutils \
         gnupg \
-        \
-        nano
+        nano \
+ && rm -rf /var/lib/apt/lists/*
 
 # Add Kurento Apt package repository.
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
  && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server.
-#RUN apt-get-install kurento-media-server
-#
-# FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
-RUN apt-get-install-fix kurento-media-server
+RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+        kurento-media-server \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install additional modules.
 # These might not be all available, so install separately and allow errors.
-RUN apt-get-install kms-chroma || true
-RUN apt-get-install kms-crowddetector || true
-RUN apt-get-install kms-datachannelexample || true
-RUN apt-get-install kms-markerdetector || true
-RUN apt-get-install kms-platedetector || true
-RUN apt-get-install kms-pointerdetector || true
+RUN apt-get $APT_ARGS update && \
+    for PACKAGE in \
+        kms-chroma \
+        kms-crowddetector \
+        kms-datachannelexample \
+        kms-markerdetector \
+        kms-platedetector \
+        kms-pointerdetector ; \
+    do \
+        apt-get $APT_ARGS install --no-install-recommends --yes "$PACKAGE" || true ; \
+    done \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install additional tools that are indirectly used by some GStreamer plugins:
 # * gstreamer-tools: Allows running the command `gst-inspect`.
 #   Useful for troubleshooting and debugging installed GStreamer plugins.
 # * gstreamer-x: Video rendering plugins for X11 and Pango.
 #   Needed by some overlay elements like "textoverlay".
-RUN apt-get-install \
+RUN apt-get $APT_ARGS update \
+ && apt-get $APT_ARGS install --no-install-recommends --yes \
         gstreamer1.5-tools \
         gstreamer1.5-x \
- || apt-get-install \
+ || apt-get $APT_ARGS install --no-install-recommends --yes \
         gstreamer1.0-tools \
-        gstreamer1.0-x
+        gstreamer1.0-x \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install debug symbols.
-RUN apt-get-install ubuntu-dbgsym-keyring \
- || apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
- && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
- && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
- && apt-get-install-fix kurento-dbg
-#
-# FIXME: apt-get-install-fix is a workaround for the network errors introduced by our OpenStack CI.
+RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+        ubuntu-dbgsym-keyring \
+ || { \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
+    && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
+    && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
+    && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+        kurento-dbg ; \
+ } \
+ && rm -rf /var/lib/apt/lists/*
 
 # Expose default Kurento RPC control port.
 EXPOSE 8888

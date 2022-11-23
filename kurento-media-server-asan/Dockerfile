@@ -81,25 +81,6 @@ FROM ubuntu:${UBUNTU_CODENAME} AS ubuntu_base
 
 ARG APT_ARGS=""
 
-# Configure Apt:
-# * DEBIAN_FRONTEND: Disable Apt interactive questions and messages.
-# * --quiet: Hide progress bars.
-# * --yes: Assume "Yes" for all confirmation requests.
-# * APT::Install-Recommends=false: Avoid installing non-essential stuff.
-RUN touch /etc/profile ~/.bash_profile && printf "\
-function apt-get-install {\n\
-    (\n\
-        export DEBIAN_FRONTEND=noninteractive\n\
-        /usr/bin/apt-get --quiet $APT_ARGS update \\\\\\n\
-        && /usr/bin/apt-get --quiet --yes -o APT::Install-Recommends=false $APT_ARGS install \"\$@\"\n\
-    )\n\
-    local RC=\$?\n\
-    rm -rf /var/lib/apt/lists/*\n\
-    return \$RC\n\
-}\n" >>/etc/profile
-
-SHELL ["/bin/bash", "--login", "-x", "-c"]
-
 
 
 # Stage: Build from sources
@@ -119,19 +100,21 @@ ENV LANG="C.UTF-8"
 # Install tools:
 # * git: For `git clone` in `build.sh`.
 # * gnupg: For `apt-key adv` (since Ubuntu 18.04).
-RUN apt-get-install \
+RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         git \
-        gnupg
+        gnupg \
+ && rm -rf /var/lib/apt/lists/*
 
 # Add Kurento Apt package repository.
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
  && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" >/etc/apt/sources.list.d/kurento.list
 
 # Install development tools.
-RUN apt-get-install \
+RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         build-essential \
         kurento-media-server-dev \
-        maven-debian-helper
+        maven-debian-helper \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install latest GCC (GCC 9 in Ubuntu 16.04 "Xenial").
 # This is done to use the latest AddressSanitizer, which is always a good idea
@@ -139,10 +122,11 @@ RUN apt-get-install \
 RUN echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
         >/etc/apt/sources.list.d/ubuntu-toolchain.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
- && apt-get-install \
+ && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         "gcc-${GCC_VERSION}" \
         "g++-${GCC_VERSION}" \
-        "cpp-${GCC_VERSION}"
+        "cpp-${GCC_VERSION}" \
+ && rm -rf /var/lib/apt/lists/*
 
 # Configure GCC version.
 RUN update-alternatives --remove-all gcc || true \
@@ -167,14 +151,15 @@ FROM ${KMS_IMAGE}
 ARG UBUNTU_CODENAME
 
 # Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial").
-RUN apt-get-install \
+RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         gnupg \
  && echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
         >/etc/apt/sources.list.d/ubuntu-toolchain.list \
  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
- && apt-get-install \
+ && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         libgcc1 \
-        libstdc++6
+        libstdc++6 \
+ && rm -rf /var/lib/apt/lists/*
 
 # Get the Kurento binaries built in previous stage.
 COPY --from=builder /kurento-asan /kurento-asan
