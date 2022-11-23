@@ -80,7 +80,7 @@ fi
 if [[ -n "${KMS_ICE_TCP:-}" ]]; then
     set_parameter "$WEBRTC_FILE" "iceTcp" "$KMS_ICE_TCP"
 fi
-if [[ -n "${KMS_STUN_IP:-}" ]] && [[ -n "${KMS_STUN_PORT:-}" ]]; then
+if [[ -n "${KMS_STUN_IP:-}" && -n "${KMS_STUN_PORT:-}" ]]; then
     set_parameter "$WEBRTC_FILE" "stunServerAddress" "$KMS_STUN_IP"
     set_parameter "$WEBRTC_FILE" "stunServerPort" "$KMS_STUN_PORT"
 fi
