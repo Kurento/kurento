@@ -35,10 +35,10 @@ ENV APT_KEEP_CACHE="false"
 # Install Node, NPM, and Bower (fox JavaScript-based projects)
 # - Tested Node version: 8.x (10.x might introduce breaking changes)
 # - Tested NPM version: 6.14.5 (newer versions should probably work fine)
-RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+RUN apt-get update && apt-get install --no-install-recommends --yes \
         wget \
  && wget --no-verbose -O - https://deb.nodesource.com/setup_8.x | bash - \
- && apt-get -q update && apt-get -q install --no-install-recommends --yes \
+ && apt-get update && apt-get install --no-install-recommends --yes \
         nodejs \
  && rm -rf /var/lib/apt/lists/* \
  && npm install -g npm@6.14.5 \
@@ -57,7 +57,7 @@ RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
 # * ffmpeg: For different integration testst that generate an RTP stream
 # * libmediainfo-dev: MediaInfoLibrary class
 # * netcat: KmsService class, to check if KMS port is already in use
-RUN apt-get -q update && apt-get -q install --no-install-recommends --yes \
+RUN apt-get update && apt-get install --no-install-recommends --yes \
         build-essential \
         curl \
         default-jdk \
