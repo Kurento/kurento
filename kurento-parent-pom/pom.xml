@@ -83,56 +83,55 @@
 		<version.kurento-java>${project.parent.version}</version.kurento-java>
 
 		<!-- External versions -->
-		<webjars-locator.version>0.45</webjars-locator.version>
-		<webjars.bootstrap.version>4.5.3</webjars.bootstrap.version>
+		<webjars-locator.version>0.46</webjars-locator.version>
+		<webjars.bootstrap.version>5.2.2</webjars.bootstrap.version>
 		<webjars.demo-console.version>1.5.1</webjars.demo-console.version>
 		<webjars.draggabilly.version>2.1.0</webjars.draggabilly.version>
 		<webjars.ekko-lightbox.version>5.2.0</webjars.ekko-lightbox.version>
 		<webjars.event-emitter.version>5.1.0</webjars.event-emitter.version>
-		<webjars.jquery.version>3.5.1</webjars.jquery.version>
+		<webjars.jquery.version>3.6.1</webjars.jquery.version>
 		<webjars.jsnlog.js.version>2.20.1</webjars.jsnlog.js.version>
 		<webjars.webrtc-adapter.version>7.4.0</webjars.webrtc-adapter.version>
 
-		<version.jetty>9.4.40.v20210413</version.jetty>
-		<version.netty>4.1.77.Final</version.netty>
+		<version.jetty>9.4.49.v20220914</version.jetty>
+		<version.netty>4.1.85.Final</version.netty>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.4</version.apache.commons-fileupload>
-		<version.apache.commons-io>2.8.0</version.apache.commons-io>
-		<version.apache.commons-lang>2.6</version.apache.commons-lang>
+		<version.apache.commons-io>2.11.0</version.apache.commons-io>
+		<version.apache.commons-lang>3.12.0</version.apache.commons-lang>
 		<version.apache.commons-logging>1.2</version.apache.commons-logging>
-		<version.apache.commons-net>3.7.2</version.apache.commons-net>
-		<version.apache.commons-pool>2.9.0</version.apache.commons-pool>
+		<version.apache.commons-net>3.8.0</version.apache.commons-net>
+		<version.apache.commons-pool>2.11.1</version.apache.commons-pool>
 		<version.apache.fluent-hc>4.5.13</version.apache.fluent-hc>
-		<version.apache.httpclient>4.5.13</version.apache.httpclient>
-		<version.apache.httpcore>4.4.13</version.apache.httpcore>
-		<version.apache.maven-artifact>3.6.3</version.apache.maven-artifact>
+		<version.apache.httpclient>5.2</version.apache.httpclient>
+		<version.apache.httpmime>4.5.13</version.apache.httpmime>
+		<version.apache.maven-artifact>3.8.6</version.apache.maven-artifact>
 		<version.apache.source.assembly.descriptor>1.0.6</version.apache.source.assembly.descriptor>
-		<version.apache.tika>1.24.1</version.apache.tika>
-		<version.bcpkix>1.67</version.bcpkix>
+		<version.apache.tika>2.6.0</version.apache.tika>
+		<version.bcpkix>1.70</version.bcpkix>
 		<version.cglib>3.3.0</version.cglib>
-		<version.cors-filter>2.9</version.cors-filter>
-		<version.findbugs>3.0.1</version.findbugs>
-		<version.google.gson>2.8.9</version.google.gson>
-		<version.google.guava>30.0-jre</version.google.guava>
-		<version.google.http>1.38.0</version.google.http>
-		<version.google.oauth>1.31.2</version.google.oauth>
-		<version.google.youtube>v3-rev222-1.25.0</version.google.youtube>
+		<version.cors-filter>2.10</version.cors-filter>
+		<version.spotbugs>4.7.3</version.spotbugs>
+		<version.google.gson>2.10</version.google.gson>
+		<version.google.guava>31.1-jre</version.google.guava>
+		<version.google.http>1.42.3</version.google.http>
+		<version.google.oauth>1.34.1</version.google.oauth>
+		<version.google.youtube>v3-rev20221108-2.0.0</version.google.youtube>
 		<version.keystone-client>3.2.9</version.keystone-client>
 
 		<version.hamcrest>2.2</version.hamcrest>
 		<version.javax.inject>1</version.javax.inject>
-		<version.junit>4.13.1</version.junit>
-		<version.mockito.all>1.10.19</version.mockito.all>
-		<version.mockito.core>3.6.0</version.mockito.core>
+		<version.junit>4.13.2</version.junit>
+		<version.mockito.core>4.9.0</version.mockito.core>
 		<version.paranamer>2.8</version.paranamer>
-		<version.plexus.io>3.2.0</version.plexus.io>
-		<version.powermock>1.7.4</version.powermock>
+		<version.plexus.io>3.4.0</version.plexus.io>
+		<version.powermock>2.0.9</version.powermock>
 
-		<version.reflections>0.9.12</version.reflections>
-		<version.scribe>1.3.7</version.scribe>
-		<version.servlet-api>4.0.1</version.servlet-api>
-		<version.slf4j>1.7.30</version.slf4j>
+		<version.reflections>0.10.2</version.reflections>
+		<version.scribe>8.3.3</version.scribe>
+		<version.servlet-api>6.0.0</version.servlet-api>
+		<version.slf4j>1.7.36</version.slf4j>
 
 		<!--
 		NOTE: Spring Boot doesn't follow SemVer. Minor version upgrades can break things.
@@ -150,51 +149,52 @@
 
 		<!-- Test Dependencies Versions -->
 		<ApacheJMeter_core.version>5.5</ApacheJMeter_core.version>
-		<assertj.version>3.18.1</assertj.version>
-		<docker-java.version>3.2.5</docker-java.version>
-		<freemarker.version>2.3.30</freemarker.version>
-		<jackson.version>2.11.3</jackson.version>
-		<jfreechart.version>1.0.19</jfreechart.version>
-		<jmeter-maven-plugin.version>3.1.2</jmeter-maven-plugin.version>
-		<jna.version>3.0.9</jna.version>
-		<overthere.version>5.0.22</overthere.version>
+		<assertj.version>3.23.1</assertj.version>
+		<docker-java.version>3.2.14</docker-java.version>
+		<freemarker.version>2.3.31</freemarker.version>
+		<jackson.version>2.14.1</jackson.version>
+		<jfreechart.version>1.5.3</jfreechart.version>
+		<jmeter-maven-plugin.version>3.6.1</jmeter-maven-plugin.version>
+
+		<jna.version>5.12.1</jna.version>
+		<overthere.version>5.3.0</overthere.version>
 		<selenium-java.version>3.141.59</selenium-java.version>
 		<version.ocr>4.0.0-1.4.4</version.ocr>
-		<webdrivermanager.version>4.2.2</webdrivermanager.version>
+		<webdrivermanager.version>5.3.1</webdrivermanager.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
 		<!-- **************** -->
-		<version.antrun.plugin>3.0.0</version.antrun.plugin>
-		<version.assembly.plugin>3.3.0</version.assembly.plugin>
-		<version.buildhelper.plugin>3.2.0</version.buildhelper.plugin>
-		<version.buildnumber.plugin>1.4</version.buildnumber.plugin>
-		<version.clean.plugin>3.1.0</version.clean.plugin>
+		<version.antrun.plugin>3.1.0</version.antrun.plugin>
+		<version.assembly.plugin>3.4.2</version.assembly.plugin>
+		<version.buildhelper.plugin>3.3.0</version.buildhelper.plugin>
+		<version.buildnumber.plugin>3.0.0</version.buildnumber.plugin>
+		<version.clean.plugin>3.2.0</version.clean.plugin>
 		<version.clover2.plugin>4.0.6</version.clover2.plugin>
 		<version.cobertura.plugin>2.7</version.cobertura.plugin>
-		<version.compiler.plugin>3.8.1</version.compiler.plugin>
-		<version.dependency.plugin>3.1.2</version.dependency.plugin>
+		<version.compiler.plugin>3.10.1</version.compiler.plugin>
+		<version.dependency.plugin>3.3.0</version.dependency.plugin>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
 		<version.enforcer.rules.plugin>1.3</version.enforcer.rules.plugin>
-		<version.failsafe.plugin>3.0.0-M5</version.failsafe.plugin>
+		<version.failsafe.plugin>3.0.0-M7</version.failsafe.plugin>
 		<version.gpg.plugin>1.6</version.gpg.plugin>
-		<version.help.plugin>3.2.0</version.help.plugin>
-		<version.install.plugin>3.0.0-M1</version.install.plugin>
-		<version.jar.plugin>3.2.0</version.jar.plugin>
-		<version.javadoc.plugin>3.4.0</version.javadoc.plugin>
+		<version.help.plugin>3.8.6</version.help.plugin>
+		<version.install.plugin>3.1.0</version.install.plugin>
+		<version.jar.plugin>3.3.0</version.jar.plugin>
+		<version.javadoc.plugin>3.4.1</version.javadoc.plugin>
 		<version.javancss.plugin>2.1</version.javancss.plugin>
 		<version.jdepend.plugin>2.0</version.jdepend.plugin>
-		<version.jxr.plugin>3.0.0</version.jxr.plugin>
+		<version.jxr.plugin>3.3.0</version.jxr.plugin>
 		<version.license.plugin>2.0.0</version.license.plugin>
-		<version.pir.plugin>3.1.1</version.pir.plugin>		<!-- maven-project-info-reports-plugins -->
-		<version.resources.plugin>3.2.0</version.resources.plugin>
-		<version.shade.plugin>3.2.4</version.shade.plugin>
+		<version.pir.plugin>3.4.1</version.pir.plugin>		<!-- maven-project-info-reports-plugins -->
+		<version.resources.plugin>3.3.0</version.resources.plugin>
+		<version.shade.plugin>3.4.1</version.shade.plugin>
 		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
-		<version.sonar.plugin>3.7.0.1746</version.sonar.plugin>
+		<version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
 		<version.source.plugin>3.2.1</version.source.plugin>
-		<version.surefire.plugin>3.0.0-M5</version.surefire.plugin>
-		<version.war.plugin>3.3.1</version.war.plugin>
+		<version.surefire.plugin>3.0.0-M7</version.surefire.plugin>
+		<version.war.plugin>3.3.2</version.war.plugin>
 
 		<!-- ************** -->
 		<!-- Build settings -->
@@ -452,8 +452,8 @@
 				<version>${version.apache.tika}</version>
 			</dependency>
 			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
 				<version>${version.servlet-api}</version>
 				<scope>provided</scope>
 			</dependency>
@@ -470,7 +470,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-library</artifactId>
+				<artifactId>hamcrest</artifactId>
 				<version>${version.hamcrest}</version>
 				<scope>test</scope>
 			</dependency>
@@ -527,9 +527,10 @@
 				<version>${version.apache.source.assembly.descriptor}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.scribe</groupId>
-				<artifactId>scribe</artifactId>
+				<groupId>com.github.scribejava</groupId>
+				<artifactId>scribejava-apis</artifactId>
 				<version>${version.scribe}</version>
+				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
@@ -542,19 +543,19 @@
 				<version>${version.google.guava}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpclient</artifactId>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5</artifactId>
 				<version>${version.apache.httpclient}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpcore</artifactId>
-				<version>${version.apache.httpcore}</version>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5</artifactId>
+				<version>${version.apache.httpclient}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpmime</artifactId>
-				<version>${version.apache.httpclient}</version>
+				<version>${version.apache.httpmime}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-fileupload</groupId>
@@ -568,7 +569,7 @@
 			</dependency>
 			<dependency>
 				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
+				<artifactId>commons-lang3</artifactId>
 				<version>${version.apache.commons-lang}</version>
 			</dependency>
 			<dependency>
@@ -612,12 +613,6 @@
 				<version>${version.jetty}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>${version.mockito.all}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-core</artifactId>
 				<version>${assertj.version}</version>
@@ -627,19 +622,13 @@
 				<artifactId>mockito-core</artifactId>
 				<version>${version.mockito.core}</version>
 				<scope>test</scope>
-				<exclusions>
-					<exclusion>
-						<groupId>org.hamcrest</groupId>
-						<artifactId>hamcrest-core</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.powermock</groupId>
-				<artifactId>powermock-api-mockito</artifactId>
+				<artifactId>powermock-api-mockito2</artifactId>
 				<version>${version.powermock}</version>
 				<scope>test</scope>
-			</dependency>
+			</dependency>			
 			<dependency>
 				<groupId>org.powermock</groupId>
 				<artifactId>powermock-module-junit4</artifactId>
@@ -767,12 +756,12 @@
 				<version>${version.ocr}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>annotations</artifactId>
-				<version>${version.findbugs}</version>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-annotations</artifactId>
+				<version>${version.spotbugs}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sun.jna</groupId>
+				<groupId>net.java.dev.jna</groupId>
 				<artifactId>jna</artifactId>
 				<version>${jna.version}</version>
 			</dependency>

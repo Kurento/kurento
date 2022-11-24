@@ -51,8 +51,8 @@
 			<artifactId>fluent-hc</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.scribe</groupId>
-			<artifactId>scribe</artifactId>
+			<groupId>com.github.scribejava</groupId>
+			<artifactId>scribejava-apis</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -69,7 +69,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
+			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
