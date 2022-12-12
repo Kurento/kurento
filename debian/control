@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 9),
 Standards-Version: 4.0.0
 Vcs-Git: https://github.com/Kurento/kms-cmake-utils.git
 Vcs-Browser: https://github.com/Kurento/kms-cmake-utils
-Homepage: https://www.kurento.org
+Homepage: https://kurento.openvidu.io/
 
 Package: kms-cmake-utils
 Architecture: all
