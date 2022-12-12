@@ -39,11 +39,11 @@
     "srtp",
     "rtsp"
   ],
-  "homepage": "https://www.kurento.org",
+  "homepage": "https://kurento.openvidu.io/",
   "license": "Apache-2.0",
-  "author": "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
+  "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
   "contributors": [
-    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)",
+    "Kurento Community <kurento@googlegroups.com> (https://kurento.openvidu.io/)",
     "Jesús Leganés-Combarro 'piranna' <piranna@gmail.com> (https://pirannafs.blogspot.com/)",
     "Ivan Gracia <igracia@kurento.org>"
   ],
