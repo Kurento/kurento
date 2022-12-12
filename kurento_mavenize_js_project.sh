@@ -115,7 +115,7 @@ cat >pom.xml <<EOF
   <description>
     Kurento Media Server, JavaScript client code for module ${PROJECT_NAME}.
   </description>
-  <url>https://www.kurento.org/docs/\${project.version}</url>
+  <url>https://kurento.openvidu.io/docs/\${project.version}</url>
   <scm>
     <url>https://github.com/Kurento/${PROJECT_NAME}</url>
     <connection>scm:git:https://github.com/Kurento/${PROJECT_NAME}.git</connection>
@@ -128,7 +128,7 @@ cat >pom.xml <<EOF
       <id>kurento.org</id>
       <name>Kurento Community</name>
       <organization>Kurento</organization>
-      <organizationUrl>https://www.kurento.org</organizationUrl>
+      <organizationUrl>https://kurento.openvidu.io/</organizationUrl>
     </developer>
   </developers>
   <issueManagement>
@@ -152,7 +152,7 @@ cat >pom.xml <<EOF
   </mailingLists>
   <organization>
     <name>Kurento</name>
-    <url>https://www.kurento.org</url>
+    <url>https://kurento.openvidu.io/</url>
   </organization>
 
   <!-- Project configuration -->

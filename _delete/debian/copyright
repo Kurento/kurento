@@ -3,7 +3,7 @@ Upstream-Name: kurento-adm-scripts
 Source: https://github.com/Kurento/adm-scripts
 
 Files: *
-Copyright: Copyright 2015 Kurento <kurento@kurento.com>
+Copyright: Copyright 2015 Kurento <kurento@openvidu.io>
 License: LGPL-2.1
  This program is free software; you can redistribute it
  and/or modify it under the terms of the GNU Lesser
