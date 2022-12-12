@@ -1,4 +1,4 @@
-<a href="https://www.kurento.org/">
+<a href="https://kurento.openvidu.io/">
     <img src="https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120">
 </a>
 
@@ -27,7 +27,7 @@ Usage information for the Kurento Media Server Docker images is in the appropria
 
 # About Kurento
 
-Kurento is an open source software project providing a platform suitable for creating modular applications with advanced real-time communication capabilities. For knowing more about Kurento, please visit the Kurento project website: https://www.kurento.org/.
+Kurento is an open source software project providing a platform suitable for creating modular applications with advanced real-time communication capabilities. For knowing more about Kurento, please visit the Kurento project website: https://kurento.openvidu.io/.
 
 Kurento is part of [FIWARE]. For further information on the relationship of FIWARE and Kurento check the [Kurento FIWARE Catalog Entry].
 
@@ -60,7 +60,7 @@ Kurento is also part of the [NUBOMEDIA] research initiative.
 
 The Kurento project provides detailed [documentation] including tutorials, installation and development guides. The [Open API specification], also known as *Kurento Protocol*, is available on [apiary.io].
 
-[documentation]: https://www.kurento.org/documentation
+[documentation]: https://kurento.openvidu.io/documentation
 [Open API specification]: https://doc-kurento.readthedocs.io/en/latest/features/kurento_api.html
 [apiary.io]: http://docs.streamoriented.apiary.io/
 
@@ -82,7 +82,7 @@ Issues:
 
 News:
 
-* [Kurento Blog](https://www.kurento.org/blog)
+* [Kurento Blog](https://kurento.openvidu.io/blog)
 * [Google Groups](https://groups.google.com/forum/#!forum/kurento)
 * [Kurento RoadMap](https://github.com/Kurento/kurento-media-server/blob/master/ROADMAP.md)
 

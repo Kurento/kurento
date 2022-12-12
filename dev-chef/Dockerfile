@@ -1,5 +1,5 @@
 FROM ubuntu:14.04
-MAINTAINER Kurento <admin@kurento.org>
+MAINTAINER Kurento <kurento@openvidu.io>
 
 RUN apt-get update \
   && apt-get install -y \

@@ -99,7 +99,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 # Configure Git user, which will appear in the Debian Changelog files
 # (this is required by Git-BuildPackage)
 RUN git config --system user.name "Kurento" \
- && git config --system user.email "info@kurento.org" \
+ && git config --system user.email "kurento@openvidu.io" \
  && git config --global --add safe.directory '*'
 
 # Install the Git-BuildPackage tool for creation of .deb files.
