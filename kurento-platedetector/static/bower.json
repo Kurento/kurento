@@ -2,14 +2,14 @@
   "name": "kurento-platedetector",
   "description": "Kurento Browser JavaScript Tutorial",
   "authors": [
-    "Kurento <info@kurento.org>"
+    "Kurento <kurento@openvidu.io>"
   ],
   "main": "index.html",
   "moduleType": [
     "globals"
   ],
   "license": "ALv2",
-  "homepage": "http://www.kurento.org/",
+  "homepage": "https://kurento.openvidu.io/",
   "private": true,
   "ignore": [
     "**/.*",
