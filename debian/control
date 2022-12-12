@@ -10,7 +10,7 @@ Build-Depends: debhelper (>= 8.0.0),
  kms-filters-6.0-dev (>= 6.0.0),
  libopencv-dev
 Standards-Version: 3.9.4
-Homepage: http://kurento.org
+Homepage: https://kurento.openvidu.io/
 Vcs-Git: git://github.com/Kurento/kms-plugin-sample.git
 Vcs-Browser: https://github.com/Kurento/kms-plugin-sample.git
 

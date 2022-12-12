@@ -39,4 +39,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     samplefilter,
     "Kurento sample filter",
-    init, VERSION, "LGPL", "Kurento", "http://kurento.com/")
+    init, VERSION, "LGPL", "Kurento", "https://kurento.openvidu.io/")
