@@ -3,7 +3,7 @@
         <modelVersion>4.0.0</modelVersion>
 
         <description>Kurento Data channel example module</description>
-        <url>http://www.kurento.org/</url>
+        <url>https://kurento.openvidu.io/</url>
 
         <licenses>
           <license>
@@ -18,7 +18,7 @@
               <id>kurento.org</id>
               <name>Kurento Community</name>
               <organization>kurento.org</organization>
-              <organizationUrl>http://www.kurento.org</organizationUrl>
+              <organizationUrl>https://kurento.openvidu.io/</organizationUrl>
           </developer>
         </developers>
 
