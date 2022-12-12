@@ -24,7 +24,7 @@
 
 	<organization>
 		<name>Kurento</name>
-		<url>http://www.kurento.org</url>
+		<url>https://kurento.openvidu.io/</url>
 	</organization>
 
 	<scm>
@@ -37,9 +37,9 @@
 	<developers>
 		<developer>
 			<id>kurento.org</id>
-			<name>-kurento.org Community</name>
-			<organization>Kurento.org</organization>
-			<organizationUrl>http://www.kurento.org</organizationUrl>
+			<name>Kurento Community</name>
+			<organization>Kurento</organization>
+			<organizationUrl>https://kurento.openvidu.io/</organizationUrl>
 		</developer>
 	</developers>
 
