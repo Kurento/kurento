@@ -1,7 +1,7 @@
 {
   "license": "LGPL-2.1",
-  "homepage": "http://www.kurento.com",
-  "author": "Kurento <info@kurento.com> (http://kurento.org)",
+  "homepage": "https://kurento.openvidu.io/",
+  "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
   "bugs": {
     "email": "kurento@googlegroups.com"
   }
