@@ -22,7 +22,7 @@
 		Parent POM for all Kurento Java projects.
 		Provides default properties, version numbers, and build configurations.
 	</description>
-	<url>https://www.kurento.org/</url>
+	<url>https://kurento.openvidu.io/</url>
 	<scm>
 		<url>https://github.com/Kurento/kurento-java</url>
 		<connection>scm:git:https://github.com/Kurento/kurento-java.git</connection>
@@ -35,7 +35,7 @@
 			<id>kurento.org</id>
 			<name>Kurento Community</name>
 			<organization>Kurento</organization>
-			<organizationUrl>https://www.kurento.org</organizationUrl>
+			<organizationUrl>https://kurento.openvidu.io/</organizationUrl>
 		</developer>
 	</developers>
 	<issueManagement>
@@ -59,7 +59,7 @@
 	</mailingLists>
 	<organization>
 		<name>Kurento</name>
-		<url>https://www.kurento.org</url>
+		<url>https://kurento.openvidu.io/</url>
 	</organization>
 
 	<!-- Project configuration -->
@@ -628,7 +628,7 @@
 				<artifactId>powermock-api-mockito2</artifactId>
 				<version>${version.powermock}</version>
 				<scope>test</scope>
-			</dependency>			
+			</dependency>
 			<dependency>
 				<groupId>org.powermock</groupId>
 				<artifactId>powermock-module-junit4</artifactId>
