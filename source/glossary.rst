@@ -101,7 +101,7 @@ This is a glossary of terms that often appear in discussion about multimedia tra
        `JSON-RPC <https://www.jsonrpc.org/>`__ is a simple remote procedure call protocol encoded in JSON. JSON-RPC allows for notifications and for multiple calls to be sent to the server which may be answered out of order.
 
    Kurento
-       `Kurento <https://www.kurento.org/>`__ is a platform for the development of multimedia-enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Some components of Kurento are the :term:`Kurento Media Server`, the :term:`Kurento API`, the :term:`Kurento Protocol`, and the :term:`Kurento Client`.
+       `Kurento <https://kurento.openvidu.io/>`__ is a platform for the development of multimedia-enabled applications. Kurento is the Esperanto term for the English word 'stream'. We chose this name because we believe the Esperanto principles are inspiring for what the multimedia community needs: simplicity, openness and universality. Some components of Kurento are the :term:`Kurento Media Server`, the :term:`Kurento API`, the :term:`Kurento Protocol`, and the :term:`Kurento Client`.
 
    Kurento API
         An object oriented API to create media pipelines to control media. It can be seen as and interface to Kurento Media Server. It can be used from the Kurento Protocol or from Kurento Clients.

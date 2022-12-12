@@ -275,7 +275,7 @@ Release steps
           local RELEASE_ENTRY="* $COMMIT_MSG"
 
           DEBFULLNAME="Kurento" \
-          DEBEMAIL="info@kurento.org" \
+          DEBEMAIL="kurento@openvidu.io" \
           gbp dch \
               --ignore-branch \
               --git-author \
@@ -335,7 +335,7 @@ The version number (as opposed to the Debian revision) is only changed when the 
        local COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
 
        DEBFULLNAME="Kurento" \
-       DEBEMAIL="info@kurento.org" \
+       DEBEMAIL="kurento@openvidu.io" \
        gbp dch \
              --ignore-branch \
              --git-author \
