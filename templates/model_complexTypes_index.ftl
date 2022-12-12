@@ -10,7 +10,7 @@ complexTypes/index.js
  *
  * @module ${module.name}/complexTypes
  *
- * @copyright 2013-2015 Kurento (http://kurento.org/)
+ * @copyright 2013-2015 Kurento (https://kurento.openvidu.io/)
  * @license ALv2
  */
 

@@ -15,7 +15,7 @@ abstracts/index.js
  *
  * @module ${module.name}/abstracts
  *
- * @copyright 2013-2015 Kurento (http://kurento.org/)
+ * @copyright 2013-2015 Kurento (https://kurento.openvidu.io/)
  * @license ALv2
  */
 
