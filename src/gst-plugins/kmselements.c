@@ -68,4 +68,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     kmselements,
     "Kurento elements",
     kurento_init, VERSION, GST_LICENSE_UNKNOWN, "Kurento Elements",
-    "http://kurento.com/")
+    "https://kurento.openvidu.io/")
