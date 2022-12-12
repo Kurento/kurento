@@ -2,9 +2,9 @@
   "name": "npmName",
   "version": "1.0.0",
   "description": "xxxxxxx",
-  "homepage": "http://www.kurento.com",
+  "homepage": "https://kurento.openvidu.io/",
   "main": "lib/index.js",
-  "author": "Kurento <info@kurento.com> (http://kurento.org)",
+  "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
   "license": "ALv2",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   },
   "bugs": {
     "url": "Kurento/npmName-js/issues",
-    "email": "info@kurento.com"
+    "email": "kurento@openvidu.io"
   },
   "keywords": [
     "API",
