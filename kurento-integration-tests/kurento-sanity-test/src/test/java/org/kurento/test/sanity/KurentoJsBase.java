@@ -56,7 +56,7 @@ public class KurentoJsBase extends KurentoClientBrowserTest<WebPage> {
 
   protected static final Logger log = LoggerFactory.getLogger(KurentoJsBase.class);
 
-  protected static final String DEFAULT_KURENTO_JS_URL = "//builds.kurento.org/dev/master/latest/";
+  protected static final String DEFAULT_BOWER_RELEASE_URL = "//example.com/dev/master/latest/";
 
   protected String[] kurentoLibs =
       { "kurento-client", "kurento-client.min", "kurento-utils", "kurento-utils.min" };
