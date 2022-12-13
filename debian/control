@@ -13,7 +13,7 @@ Build-Depends: debhelper (>= 9),
  kms-filters-dev (>= 6.18.1),
  libopencv-dev
 Standards-Version: 4.0.0
-Homepage: www.kurento.org
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kms-crowddetector
 Vcs-Git: https://github.com/Kurento/kms-crowddetector.git
 
