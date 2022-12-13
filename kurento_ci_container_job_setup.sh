@@ -152,7 +152,6 @@ docker run --pull always \
     echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run kurento_update_test_files"
     exit $?
   }
-#     kurento/svn-client:1.0.0 svn checkout http://files.kurento.org/svn/kurento . || exit
 
 # Start a KMS container if the job requires it
 if [[ "$START_KMS_CONTAINER" == "true" ]]; then
@@ -179,7 +178,6 @@ MAVEN_OPTIONS+=" -Dtest.selenium.record=$RECORD_TEST"
 
 [ -n "$TEST_GROUP" ] && MAVEN_OPTIONS+=" -Dgroups=$TEST_GROUP"
 [ -n "$TEST_NAME" ] && MAVEN_OPTIONS+=" -Dtest=$TEST_NAME"
-[ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS+=" -Dbower.release.url=$BOWER_RELEASE_URL"
 [ -n "$KMS_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=ws://kms:8888/kurento"
 [ -z "$KMS_CONTAINER_ID" -a -n "$KMS_WS_URI" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=$KMS_WS_URI"
 [ -n "$SCENARIO_TEST_CONFIG_JSON" ] && MAVEN_OPTIONS+=" -Dtest.config.file=$CONTAINER_TEST_CONFIG_JSON"

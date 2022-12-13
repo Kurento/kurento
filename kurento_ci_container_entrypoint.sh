@@ -61,9 +61,6 @@ wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedat
 dpkg -i libtimedate*deb
 rm libtimedate*deb
 
-wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add -
-apt-get update
-
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
   echo "GNUPGHOME=$GNUPGHOME"
@@ -73,36 +70,6 @@ fi
 
 # For backwards compatibility with kurento_clone_repo / Update to use github instead of gerrit
 export KURENTO_GIT_REPOSITORY=${KURENTO_GIT_REPOSITORY}
-
-# Configure private bower Repository
-tee /root/.bowerrc >/dev/null <<EOF
-{
-   "registry": "http://bower.kurento.org:5678",
-   "strict-ssl": false
-}
-EOF
-
-CODE_KURENTO_ORG=$(getent hosts code.kurento.org | awk '{ print $1 }')
-while [ -z $CODE_KURENTO_ORG ]
-do
-  CODE_KURENTO_ORG=$(getent hosts code.kurento.org | awk '{ print $1 }')
-done
-
-MAVEN_KURENTO_ORG=$(getent hosts maven.kurento.org | awk '{ print $1 }')
-while [ -z $MAVEN_KURENTO_ORG ]
-do
-  MAVEN_KURENTO_ORG=$(getent hosts maven.kurento.org | awk '{ print $1 }')
-done
-
-BOWER_KURENTO_ORG=$(getent hosts bower.kurento.org | awk '{ print $1 }')
-while [ -z $BOWER_KURENTO_ORG ]
-do
-  BOWER_KURENTO_ORG=$(getent hosts bower.kurento.org | awk '{ print $1 }')
-done
-
-echo "$CODE_KURENTO_ORG code.kurento.org" >> /etc/hosts
-echo "$MAVEN_KURENTO_ORG maven.kurento.org" >> /etc/hosts
-echo "$BOWER_KURENTO_ORG bower.kurento.org" >> /etc/hosts
 
 echo "[kurento_ci_container_entrypoint] Network configuration"
 ip addr list
