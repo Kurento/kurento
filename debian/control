@@ -11,7 +11,7 @@ Build-Depends: debhelper (>= 9),
  libsoup2.4-dev,
  libtinyxml-dev
 Standards-Version: 4.0.0
-Homepage: www.kurento.org
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kms-markerdetector
 Vcs-Git: https://github.com/Kurento/kms-markerdetector.git
 
