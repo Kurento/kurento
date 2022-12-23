@@ -189,13 +189,11 @@ Endpoint that provides bidirectional WebRTC capabilities for Kurento.
   enabled, so in this case it is Kurento itself the one generating keyframes.
 </p>
 <p>
-  On top of this, a common technique used for streaming is to request new
-  keyframes from time to time, even if they are apparently not needed, in case
-  there is a receiver without support for emitting PLI/FIR requests (as is the
-  case of the RtpEndpoint, because vanilla RTP protocol does not have these
-  features). However, as of this writing, Kurento does not support this kind of
-  behavior, so keyframes cannot be explicitly requested either from the Client
-  API, or on fixed intervals.
+  On top of this, a common technique used for streaming is to forcefully request
+  new keyframes. Either in fixed intervals, or explicitly by the application.
+  Kurento doesn't support the former, but the latter is possible by calling
+  <code>requestKeyframe()</code> from a subscribing element (i.e. an endpoint
+  that sends data out from the Kurento Pipeline).
 </p>
 <h2>WebRTC Data Channels</h2>
 <p>
