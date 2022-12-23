@@ -157,9 +157,10 @@
 # Shell setup
 # ===========
 
-SELF_PATH="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+
 # shellcheck source=bash.conf.sh
-source "$SELF_PATH/bash.conf.sh" || exit 1
+source "$SELF_DIR/bash.conf.sh" || exit 1
 
 
 
@@ -379,7 +380,7 @@ fi
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
-    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
         "G_DEBUG='gc-friendly'"
@@ -394,12 +395,12 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
-    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=massif --log-file='valgrind-massif-%p.log' --massif-out-file='valgrind-massif-%p.out' ${VALGRIND_ARGS[*]}"
 
 elif [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
-    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=callgrind --log-file='valgrind-callgrind-%p.log' --callgrind-out-file='valgrind-callgrind-%p.out' ${VALGRIND_ARGS[*]}"
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then

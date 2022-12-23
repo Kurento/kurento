@@ -51,8 +51,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 # Source: https://superuser.com/a/1338887/922762
 shopt -s expand_aliases # This trick requires enabling aliases in Bash.
 function echo_and_restore {
-    local SELF_FILE
-    SELF_FILE="$(basename "${BASH_SOURCE[-1]}")" # File name of the running script.
+    local SELF_FILE; SELF_FILE="$(basename "${BASH_SOURCE[-1]}")" # File name of the running script.
     echo "[$SELF_FILE] $(cat -)"
     # shellcheck disable=SC2154
     case "$flags" in (*x*) set -o xtrace; esac
