@@ -17,8 +17,6 @@
 
 
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-
 # shellcheck disable=SC2034
 VALGRIND_ARGS=(
     # Basic Options
@@ -38,9 +36,9 @@ VALGRIND_ARGS=(
 
     # Write all messages to the specified file.
     # Format specifiers:
-    # - '%p': the current process ID. Useful for '--trace-children=yes'.
-    # - '%n': a file sequence number, unique for the process.
-    # - '%q{FOO}': replaced with contents of the environment variable 'FOO'.
+    # * %p: the current process ID. Useful for `--trace-children=yes`.
+    # * %n: a file sequence number, unique for the process.
+    # * %q{FOO}: replaced with contents of the environment variable `FOO`.
     # =<filename>
     # "--log-file='valgrind-%n-%p.log'"
 
@@ -69,11 +67,9 @@ VALGRIND_ARGS=(
 
     # Add an extra file from which to read error suppressions.
     # =<filename> [default: $PREFIX/lib/valgrind/default.supp]
-    "--suppressions='${BASEPATH}/val grind/GNOME.supp'"
-    "--suppressions='${BASEPATH}/val grind/debian.supp'"
-    "--suppressions='${BASEPATH}/val grind/glib.supp'"
-    "--suppressions='${BASEPATH}/valgrind/gst.supp'"
-    "--suppressions='${BASEPATH}/valgrind/walbottle.supp'"
+    "--suppressions=/usr/lib/valgrind/debian.supp"
+    "--suppressions=/usr/share/glib-2.0/valgrind/glib.supp"
+    "--suppressions=/usr/share/doc/libgstreamer1.0-0-dbg/gst.supp"
 
     # Generate a suppression for every reported error.
     # Useful to generate new suppression files.
@@ -128,29 +124,31 @@ VALGRIND_ARGS=(
     # http://valgrind.org/docs/manual/mc-manual.html#mc-manual.options
 
     # Search for memory leaks when the client program finishes.
-    # - 'no': Disable reporting of memory leaks.
-    # - 'summary': Just says how many leaks occurred.
-    # - 'full', 'yes': Each individual leak will be shown in detail.
+    # * no: Disable reporting of memory leaks.
+    # * summary: Just says how many leaks occurred.
+    # * full, yes: Each individual leak will be shown in detail.
     # =<no|summary|yes|full> [default: summary]
     "--memcheck:leak-check=full"
 
     # Threshold to merge different backtraces into the same leak report.
-    # - 'low': Only the first two entries need match.
-    # - 'med': Four entries have to match.
-    # - 'high': All entries need to match.
+    # * low: Only the first two entries need match.
+    # * med: Four entries have to match.
+    # * high: All entries need to match.
     # =<low|med|high> [default: high]
     "--memcheck:leak-resolution=med"
 
-    # Leak kinds to show in a 'full' leak search.
+    # Leak kinds to show in a full leak search.
     # =<definite,indirect,possible,reachable> [default: definite,possible]
+    # GLib always leaves "still reachable" memory on exit. Don't use
+    # `--show-reachable=yes` option, which just pollutes output when using GLib.
     "--memcheck:show-leak-kinds=definite,indirect,possible"
 
-    # Output a 'Callgrind Format' execution tree file with leak results.
+    # Output a Callgrind Format execution tree file with leak results.
     # =<no|yes> [default: no]
     # "--memcheck:xtree-leak=yes"
     # "--memcheck:xtree-leak-file='valgrind-memcheck-xtleak-%p.kcg'"
 
-    # Report uses of 'undefined value' errors.
+    # Report uses of "undefined value" errors.
     # =<yes|no> [default: yes]
     # "--memcheck:undef-value-errors=no"
 
@@ -198,7 +196,7 @@ VALGRIND_ARGS=(
     # =<yes|no> [default: no]
     # "--massif:pages-as-heap=yes"
 
-    # Add functions to be treated as wrappers to 'malloc' or 'new'.
+    # Add functions to be treated as wrappers to `malloc` or `new`.
     # =<name>
     "--massif:alloc-fn=g_malloc"
     "--massif:alloc-fn=g_malloc0"
@@ -208,9 +206,9 @@ VALGRIND_ARGS=(
     "--massif:alloc-fn=g_try_malloc"
 
     # The time base used for the profiling results.
-    # - 'i': Instructions executed.
-    # - 'ms' (i.e. milliseconds): real (wallclock) time.
-    # - 'B': Bytes allocated/deallocated on the heap and/or stack.
+    # * i: Instructions executed.
+    # * ms (i.e. milliseconds): real (wallclock) time.
+    # * B: Bytes allocated/deallocated on the heap and/or stack.
     # =<i|ms|B> [default: i]
     "--massif:time-unit=B"
 
