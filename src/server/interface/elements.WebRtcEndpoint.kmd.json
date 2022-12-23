@@ -87,7 +87,7 @@ Endpoint that provides bidirectional WebRTC capabilities for Kurento.
   established.
 </p>
 <p>
-  It's important to keep in mind that WebRTC connection is an asynchronous
+  It is important to keep in mind that WebRTC connection is an asynchronous
   process, when designing interactions between different MediaElements. For
   example, it would be pointless to start recording before media is flowing. In
   order to be notified of state changes, the application can subscribe to events
@@ -112,7 +112,7 @@ Endpoint that provides bidirectional WebRTC capabilities for Kurento.
       </li>
     </ul>
     The transitions between states are covered in RFC5245. It could be said that
-    it's network-only, as it only takes into account the state of the network
+    it is network-only, as it only takes into account the state of the network
     connection, ignoring other higher level stuff, like DTLS handshake, RTCP
     flow, etc. This implies that, while the component state is
     <code>CONNECTED</code>, there might be no media flowing between the peers.
@@ -178,12 +178,31 @@ Endpoint that provides bidirectional WebRTC capabilities for Kurento.
   Check the documentation of :rom:cls:`BaseRtpEndpoint` and
   :rom:cls:`RembParams` for detailed information about bitrate management.
 </p>
+<h3>Keyframe requests (PLI/FIR)</h3>
+<p>
+  WebRTC allows receivers to emit keyframe requests for the senders, by means of
+  RTCP Feedback messages called PLI (Picture Loss Indication) and/or FIR (Full
+  Intra-frame Request). Kurento supports this mechanism: PLI and FIR requests
+  that are emitted by a receiver will be forwarded to the sender. This way, the
+  encoder of the video (e.g. a web browser) can decide if a new keyframe should
+  be generated. Sometimes Kurento itself acts as encoder when transcoding is
+  enabled, so in this case it is Kurento itself the one generating keyframes.
+</p>
+<p>
+  On top of this, a common technique used for streaming is to request new
+  keyframes from time to time, even if they are apparently not needed, in case
+  there is a receiver without support for emitting PLI/FIR requests (as is the
+  case of the RtpEndpoint, because vanilla RTP protocol does not have these
+  features). However, as of this writing, Kurento does not support this kind of
+  behavior, so keyframes cannot be explicitly requested either from the Client
+  API, or on fixed intervals.
+</p>
 <h2>WebRTC Data Channels</h2>
 <p>
   DataChannels allow other media elements that make use of the DataPad, to send
   arbitrary data. For instance, if there is a filter that publishes event
-  information, it'll be sent to the remote peer through the channel. There is no
-  API available for programmers to make use of this feature in the
+  information, it will be sent to the remote peer through the channel. There is
+  no API available for programmers to make use of this feature in the
   WebRtcElement. DataChannels can be configured to provide the following:
 </p>
 <ul>
