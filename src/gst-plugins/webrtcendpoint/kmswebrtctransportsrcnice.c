@@ -106,6 +106,9 @@ kms_webrtc_transport_src_nice_init (KmsWebrtcTransportSrcNice * self)
   KmsWebrtcTransportSrc *parent = KMS_WEBRTC_TRANSPORT_SRC (self);
 
   self->priv = KMS_WEBRTC_TRANSPORT_SRC_NICE_GET_PRIVATE (self);
+
+  g_rec_mutex_init (&self->priv->mutex);
+
   parent->src = gst_element_factory_make ("nicesrc", NULL);
 
   kms_webrtc_transport_src_connect_elements (parent);
@@ -120,6 +123,8 @@ kms_webrtc_transport_src_nice_finalize (GObject * object)
     g_list_free_full (self->priv->pending_buffers, (GDestroyNotify)gst_buffer_unref);
     self->priv->pending_buffers = NULL;
   }
+
+  g_rec_mutex_clear (&self->priv->mutex);
 }
 
 static void
