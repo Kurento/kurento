@@ -51,8 +51,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 # Source: https://superuser.com/a/1338887/922762
 shopt -s expand_aliases # This trick requires enabling aliases in Bash.
 function echo_and_restore {
-    local SELF_FILE
-    SELF_FILE="$(basename "${BASH_SOURCE[-1]}")" # File name of the running script.
+    local SELF_FILE; SELF_FILE="$(basename "${BASH_SOURCE[-1]}")" # File name of the running script.
     echo "[$SELF_FILE] $(cat -)"
     # shellcheck disable=SC2154
     case "$flags" in (*x*) set -o xtrace; esac
@@ -61,6 +60,7 @@ alias log='({ flags="$-"; set +o xtrace; } 2>/dev/null; echo_and_restore) <<<'
 
 # Error trap function.
 # Captures the return code of any error as soon as it happens.
+# NOTE: Not sure under what conditions this is needed? Commented out for now.
 # function on_error {
 #     _RC=$?
 # }
@@ -69,7 +69,7 @@ alias log='({ flags="$-"; set +o xtrace; } 2>/dev/null; echo_and_restore) <<<'
 # Exit trap function.
 # Runs always at the end, either on success or error (errexit).
 function on_exit {
-    { _RC=${_RC:-$?}; set +o xtrace; } 2>/dev/null
+    { _RC=$?; set +o xtrace; } 2>/dev/null
     if ((_RC)); then log "ERROR ($_RC)"; fi
 }
 trap on_exit EXIT
