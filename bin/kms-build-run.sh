@@ -323,13 +323,13 @@ BUILD_VARS+=(
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
 if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; then
-    # If only a partial build exists (or none at all), delete it
+    # If only a partial build exists (or none at all), delete it.
     rm -rf "$BUILD_DIR"
 
     mkdir -p "$BUILD_DIR"
     pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 
-    # Prepare the build command
+    # Prepare the build command.
     COMMAND=""
     for BUILD_VAR in "${BUILD_VARS[@]:-}"; do
         [[ -n "$BUILD_VAR" ]] && COMMAND="$COMMAND $BUILD_VAR"
@@ -343,37 +343,46 @@ if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; the
     popd || exit 1  # Exit $BUILD_DIR
 fi
 
-# Other Make alternatives:
-# make check_build       # Build all tests
-# make check             # Build and run all tests
-# make <TestName>.check  # Build and run specific test
-# make valgrind
-
 
 
 # Prepare run command
 # ===================
 
+# GLib settings: https://docs.gtk.org/glib/running.html#environment-variables
+
 RUN_VARS=()
 RUN_WRAPPER=""
 
 if [[ "$CFG_JEMALLOC" == "true" ]]; then
-    RUN_VARS+=(
-        # Find the full path to the Jemalloc library file.
-        "LD_PRELOAD='$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[[:digit:]]' | head -n 1)'"
+    # Find the full path to the Jemalloc library file.
+    JEMALLOC_PATH="$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[0-9]+' | sort --version-sort --reverse | head --lines 1)" || {
+        log "ERROR: Jemalloc not found, please install it:"
+        log "sudo apt-get update && sudo apt-get install '^libjemalloc[0-9]+$'"
+        exit 1
+    }
 
-        # Pass this settings string to Jemalloc.
-        "MALLOC_CONF='abort_conf:true,confirm_conf:true'"
-        # "MALLOC_CONF='abort_conf:true,confirm_conf:true,background_thread:true,metadata_thp:always'"
+    JEMALLOC_CONF="abort_conf:true,confirm_conf:true"
+    #JEMALLOC_CONF="abort_conf:true,confirm_conf:true,background_thread:true,metadata_thp:auto"
+
+    RUN_VARS+=(
+        "LD_PRELOAD='$JEMALLOC_PATH'"
+        "MALLOC_CONF='$JEMALLOC_CONF'"
+
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "G_DEBUG='gc-friendly'"
+
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "G_SLICE='always-malloc'"
     )
 fi
 
 if [[ "$CFG_GDB" == "true" ]]; then
     RUN_WRAPPER="gdb --args"
     RUN_VARS+=(
+        # fatal-warnings: Abort on calls to `g_warning()`` or `g_critical()`.
         "G_DEBUG='fatal-warnings'"
 
-        # Prevent GStreamer from forking on startup
+        # Prevent GStreamer from forking at startup.
         "GST_REGISTRY_FORK='no'"
     )
 fi
@@ -383,13 +392,14 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
         "G_DEBUG='gc-friendly'"
 
-        #"G_SLICE='always-malloc'"
-        #"G_SLICE='debug-blocks'"
-        "G_SLICE='all'"
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "G_SLICE='always-malloc,debug-blocks'"
 
-        # Prevent GStreamer from forking on startup
+        # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
     )
 
@@ -414,27 +424,63 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
         LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libasan.so"
     fi
 
+    ASAN_OPTIONS="suppressions=$PWD/bin/sanitizers/asan.supp"
+    # Use ASAN_OPTIONS recommended for aggressive diagnostics:
+    # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
+    ASAN_OPTIONS+=":strict_string_checks=1"
+    ASAN_OPTIONS+=":detect_stack_use_after_return=1"
+    ASAN_OPTIONS+=":check_initialization_order=1"
+    ASAN_OPTIONS+=":strict_init_order=1"
+    # FIXME: `new_delete_type_mismatch=0` is needed because libsigc++ contains false positives
+    #     and ASan doesn't provide a granular way of suppressing them.
+    #     See discussion here: https://github.com/libsigcplusplus/libsigcplusplus/issues/10
+    #     See feature request here: https://github.com/llvm/llvm-project/issues/58404
+    ASAN_OPTIONS+=":new_delete_type_mismatch=0"
+    # Extra options for more comprehensive memory analysis.
+    ASAN_OPTIONS+=":detect_leaks=1"
+    ASAN_OPTIONS+=":detect_invalid_pointer_pairs=2"
+
     RUN_VARS+=(
         "LD_PRELOAD='$LIBSAN'"
-        # Use ASAN_OPTIONS recommended for aggressive diagnostics:
-        # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
-        # NOTE: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled.
-        # FIXME: `detect_stack_use_after_return=1` breaks Kurento execution (more study needed to see why).
-        # FIXME: `new_delete_type_mismatch=0` is needed because libsigc++ contains false positives
-        #     and ASan doesn't provide a granular way of suppressing them.
-        #     See discussion here: https://github.com/libsigcplusplus/libsigcplusplus/issues/10
-        #     See feature request here: https://github.com/llvm/llvm-project/issues/58404
-        "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_odr_violation=0 new_delete_type_mismatch=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1'"
+        "ASAN_OPTIONS='$ASAN_OPTIONS'"
+
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "G_DEBUG='gc-friendly'"
+
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "G_SLICE='always-malloc,debug-blocks'"
+
+        # Prevent GStreamer from forking at startup
+        "GST_REGISTRY_FORK='no'"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    GCC_VERSION="$("$CC" -dumpversion)"
-    GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
-    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libtsan.so"
+    if [[ "$CFG_CLANG" == "true" ]]; then
+        # Nothing to do when the compiler is Clang; TSan is statically linked.
+        true
+    else
+        GCC_VERSION="$("$CC" -dumpversion)"
+        GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
+        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libtsan.so"
+
+        RUN_VARS+=(
+            "LD_PRELOAD='$LIBSAN'"
+        )
+    fi
+
     RUN_VARS+=(
-        "G_SLICE='all'"
-        "LD_PRELOAD='$LIBSAN'"
         "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
+
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "G_DEBUG='gc-friendly'"
+
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "G_SLICE='always-malloc,debug-blocks'"
+
+        # Prevent GStreamer from forking at startup
+        "GST_REGISTRY_FORK='no'"
     )
 fi
 
@@ -463,7 +509,13 @@ fi
 pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 
 # Always run `make`: if any source file changed, it needs building; if nothing
-# changed since last time, it is a "no-op" anyway
+# changed since last time, it is a "no-op" anyway.
+#
+# Other Make alternatives:
+#     make check_build       # Build all tests
+#     make check             # Build and run all tests
+#     make <TestName>.check  # Build and run specific test
+#     make valgrind
 if [[ -n "${MAKEFLAGS:-}" ]]; then
     # Custom Make flags are already set in the environment. Let Make use them.
     make
@@ -491,9 +543,11 @@ ulimit -c unlimited
 # Set modules path.
 # Equivalent to `--modules-path`, `--modules-config-path`, `--gst-plugin-path`.
 RUN_VARS+=(
-    "KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules'"
+    #"KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules'"
+    "KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD'"
     "KURENTO_MODULES_CONFIG_PATH='${KURENTO_MODULES_CONFIG_PATH:+$KURENTO_MODULES_CONFIG_PATH:}$PWD/config'"
-    "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
+    #"GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
+    "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD'"
 )
 
 # Use `env` to set the environment variables just for our target program,
