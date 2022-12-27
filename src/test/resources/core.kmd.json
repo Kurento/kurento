@@ -17,7 +17,7 @@
       "js": {
         "nodeName": "kurento-client-core",
         "npmDescription": "JavaScript Client API for Kurento Media Server",
-        "npmGit": "Kurento/kurento-client-core-js"
+        "npmGit": "https://github.com/Kurento/kurento-client-core-js.git"
       }
     },
     "implementation": {
