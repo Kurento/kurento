@@ -2,6 +2,7 @@ set (SOURCE_FILES
   JsonRpcHandler.cpp
   JsonRpcClient.cpp
   JsonRpcUtils.cpp
+  JsonFixes.cpp
 )
 
 set (HEADER_FILES
@@ -11,6 +12,7 @@ set (HEADER_FILES
   jsonrpc/JsonSerializer.hpp
   jsonrpc/JsonRpcUtils.hpp
   jsonrpc/JsonRpcConstants.hpp
+  jsonrpc/JsonFixes.hpp
 )
 
 add_library(jsonrpc SHARED ${SOURCE_FILES} ${HEADER_FILES})

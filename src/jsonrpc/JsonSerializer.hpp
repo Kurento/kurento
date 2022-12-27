@@ -27,10 +27,9 @@
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
 #include <string>
-#include <cstring>
 #include <memory>
 #include <list>
-#include <iostream>
+#include "JsonFixes.hpp"
 
 namespace kurento
 {
@@ -332,8 +331,6 @@ private:
   void Read (TKey key, TValue &value,
              typename boost::enable_if<boost::is_arithmetic<TValue> >::type *dummy = 0)
   {
-    std::cout << "############ Read(is_arithmetic = true)" << std::endl;
-
     int ival = JsonValue[key].asInt();
     value = (TValue) ival;
   }
@@ -341,69 +338,43 @@ private:
   template<typename TKey>
   void Read (TKey key, bool &value)
   {
-    if (JsonValue[key].isString ()) {
-      value = std::strcmp (JsonValue[key].asCString (), "true") == 0;
-    } else {
-      value = JsonValue[key].asBool ();
-    }
+    value = JsonValue[key].asBool();
   }
 
   template<typename TKey>
   void Read (TKey key, int &value)
   {
-    if (JsonValue[key].isString ()) {
-      value = std::stoi (JsonValue[key].asCString ());
-    } else {
-      value = JsonValue[key].asInt ();
-    }
+    value = JsonValue[key].asInt();
   }
 
   template<typename TKey>
   void Read (TKey key, unsigned int &value)
   {
-    if (JsonValue[key].isString ()) {
-      value = (unsigned int)std::stoul (JsonValue[key].asCString ());
-    } else {
-      value = JsonValue[key].asUInt ();
-    }
+    value = JsonValue[key].asUInt();
   }
 
   template<typename TKey>
   void Read (TKey key, float &value)
   {
-    if (JsonValue[key].isString ()) {
-      value = std::stof (JsonValue[key].asCString ());
-    } else {
-      value = JsonValue[key].asFloat ();
-    }
+    value = JsonValue[key].asFloat();
   }
 
   template<typename TKey>
   void Read (TKey key, double &value)
   {
-    if (JsonValue[key].isString ()) {
-      value = std::stod (JsonValue[key].asCString ());
-    } else {
-      value = JsonValue[key].asDouble ();
-    }
+    value = JsonValue[key].asDouble();
   }
 
   template<typename TKey>
   void Read (TKey key, int64_t &value)
   {
-    if (JsonValue[key].isString ()) {
-      value = std::stoll (JsonValue[key].asCString ());
-    } else {
-      value = JsonValue[key].asLargestInt ();
-    }
+    value = JsonValue[key].asLargestInt();
   }
 
   template<typename TKey>
   void Read (TKey key, std::string &value)
   {
-    std::cout << "############ Read(std::string)" << std::endl;
-
-    value = JsonValue[key].asString ();
+    value = JsonFixes::getString (JsonValue[key]);
   }
 };
 

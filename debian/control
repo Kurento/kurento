@@ -5,7 +5,7 @@ Build-Depends: debhelper (>= 9),
  build-essential,
  cmake,
  kms-cmake-utils (>= 6.18.1),
- libjsoncpp-dev,
+ kmsjsoncpp-dev,
  libboost-dev,
  libboost-test-dev,
  pkg-config
@@ -27,7 +27,7 @@ Package: kms-jsonrpc-dev
 Architecture: any
 Section: libdevel
 Depends: kms-jsonrpc (= ${binary:Version}),
- libjsoncpp-dev,
+ kmsjsoncpp-dev,
  libboost-dev,
  libboost-test-dev
 Breaks: kms-jsonrpc-1.0-dev
