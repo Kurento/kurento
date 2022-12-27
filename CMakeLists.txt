@@ -54,9 +54,9 @@ set(OPENCV_REQUIRED <5.0.0)
 
 find_package(PkgConfig)
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
-pkg_check_modules(KMSCORE REQUIRED kmscore)
 
 include(GenericFind)
+generic_find(LIBNAME KMSCORE VERSION ^7.0.0-dev REQUIRED)
 generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 # Generate file "config.h"
