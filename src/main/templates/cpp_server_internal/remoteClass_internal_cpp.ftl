@@ -84,7 +84,7 @@ ${remoteClass.name}Impl::invoke (std::shared_ptr<MediaObjectImpl> obj, const std
     s.JsonValue = params;
 
 <#assign jsonData = getJsonCppTypeData(property.type)>
-    if (!s.JsonValue.isMember ("${property.name}") || !s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+    if (!s.JsonValue.isMember ("${property.name}") || !(s.JsonValue["${property.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}))) {
       throw KurentoException (MARSHALL_ERROR,
                               "'${property.name}' parameter should be a ${jsonData.getTypeDescription()}");
     }
@@ -181,7 +181,7 @@ Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remo
     }
   } else {
     std::shared_ptr<kurento::MediaObjectImpl> aux;
-    aux = ${module.code.implementation["cppNamespace"]}::${remoteClass.name}ImplFactory::getObject (JsonFixes::getString(serializer.JsonValue) );
+    aux = ${module.code.implementation["cppNamespace"]}::${remoteClass.name}ImplFactory::getObject (serializer.JsonValue.asString());
     object = std::dynamic_pointer_cast<${module.code.implementation["cppNamespace"]}::${remoteClass.name}Impl> (aux);
   }
 }
