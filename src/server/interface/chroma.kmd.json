@@ -7,7 +7,7 @@
       "js": {
         "nodeName": "kurento-module-chroma",
         "npmDescription": "JavaScript Client API for Kurento Media Server",
-        "npmGit": "Kurento/kurento-module-chroma-js"
+        "npmGit": "https://github.com/Kurento/kurento-module-chroma-js.git"
       }
     }
   }
