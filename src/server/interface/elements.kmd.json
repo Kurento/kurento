@@ -18,7 +18,7 @@
       "js": {
         "nodeName": "kurento-client-elements",
         "npmDescription": "JavaScript Client API for Kurento Media Server",
-        "npmGit": "Kurento/kurento-client-elements-js"
+        "npmGit": "https://github.com/Kurento/kurento-client-elements-js.git"
       }
     },
     "implementation": {
