@@ -32,11 +32,16 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
 
   public class JsonTypeData {
     String jsonMethod;
+    String jsonValueCheck;
     String jsonValueType;
     String typeDescription;
 
     public String getJsonMethod() {
       return jsonMethod;
+    }
+
+    public String getJsonValueCheck() {
+      return jsonValueCheck;
     }
 
     public String getJsonValueType() {
@@ -72,43 +77,50 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
       if (typeRef.isList()) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "List";
+        data.jsonValueCheck = "isArray";
         data.jsonValueType = "arrayValue";
         data.typeDescription = "list";
         return data;
       } else if (typeRef.isMap()) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "Map";
+        data.jsonValueCheck = "isObject";
         data.jsonValueType = "objectValue";
         data.typeDescription = "map";
         return data;
       } else if (typeRef.getName().equals("String")) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "String";
+        data.jsonValueCheck = "isString";
         data.jsonValueType = "stringValue";
         data.typeDescription = "string";
         return data;
       } else if (typeRef.getName().equals("int")) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "Int";
+        data.jsonValueCheck = "isInt";
         data.jsonValueType = "intValue";
         data.typeDescription = "integer";
         return data;
       } else if (typeRef.getName().equals("boolean")) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "Bool";
+        data.jsonValueCheck = "isBool";
         data.jsonValueType = "booleanValue";
         data.typeDescription = "boolean";
         return data;
       } else if (typeRef.getName().equals("double") || typeRef.getName().equals("float")) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "Double";
+        data.jsonValueCheck = "isDouble";
         data.jsonValueType = "realValue";
         data.typeDescription = "double";
         return data;
       } else if (typeRef.getName().equals("int64")) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "Int64";
-        data.jsonValueType = "int64Value";
+        data.jsonValueCheck = "isInt64";
+        data.jsonValueType = "intValue";
         data.typeDescription = "int64";
         return data;
       } else if (typeRef.getType() instanceof ComplexType) {
@@ -117,12 +129,14 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
         if (complexType.getTypeFormat() == TypeFormat.ENUM) {
           JsonTypeData data = new JsonTypeData();
           data.jsonMethod = "String";
+          data.jsonValueCheck = "isString";
           data.jsonValueType = "stringValue";
           data.typeDescription = "string";
           return data;
         } else if (complexType.getTypeFormat() == TypeFormat.REGISTER) {
           JsonTypeData data = new JsonTypeData();
           data.jsonMethod = "Object";
+          data.jsonValueCheck = "isObject";
           data.jsonValueType = "objectValue";
           data.typeDescription = "object";
           return data;
@@ -130,6 +144,7 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
       } else if (typeRef.getType() instanceof RemoteClass) {
         JsonTypeData data = new JsonTypeData();
         data.jsonMethod = "String";
+        data.jsonValueCheck = "isString";
         data.jsonValueType = "stringValue";
         data.typeDescription = "string";
         return data;

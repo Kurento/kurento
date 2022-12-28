@@ -65,7 +65,7 @@ void ${complexType.name}::Serialize (JsonSerializer &s)
     <#assign jsonData = getJsonCppTypeData(property.type)>
     <#if property.optional>
     if (s.JsonValue.isMember ("${property.name}") ) {
-      if (s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+      if (s.JsonValue["${property.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()})) {
         __isSet${property.name?cap_first} = true;
         s.SerializeNVP (${property.name});
       } else {
@@ -77,7 +77,7 @@ void ${complexType.name}::Serialize (JsonSerializer &s)
       Json::Reader reader;
       std::string defaultValue = "${escapeString (property.defaultValue)}";
       reader.parse (defaultValue, s.JsonValue["${property.name}"]);
-      if (s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+      if (s.JsonValue["${property.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()})) {
         __isSet${property.name?cap_first} = true;
         s.SerializeNVP (${property.name});
       } else {
@@ -88,7 +88,7 @@ void ${complexType.name}::Serialize (JsonSerializer &s)
     }
 
     <#else>
-    if (!s.JsonValue.isMember ("${property.name}") || !s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+    if (!s.JsonValue.isMember ("${property.name}") || !(s.JsonValue["${property.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}))) {
       throw KurentoException (MARSHALL_ERROR,
                               "'${property.name}' property should be a ${jsonData.getTypeDescription()}");
     }

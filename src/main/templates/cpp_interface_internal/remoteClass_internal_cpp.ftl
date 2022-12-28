@@ -84,7 +84,7 @@ void ${remoteClass.name}Method${method.name?cap_first}::Serialize (kurento::Json
     <#assign jsonData = getJsonCppTypeData(param.type)>
     <#if param.optional>
     if (s.JsonValue.isMember ("${param.name}") ) {
-      if (s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+      if (s.JsonValue["${param.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()})) {
         __isSet${param.name?cap_first} = true;
         s.SerializeNVP (${param.name});
       } else {
@@ -94,7 +94,7 @@ void ${remoteClass.name}Method${method.name?cap_first}::Serialize (kurento::Json
     }
 
     <#else>
-    if (!s.JsonValue.isMember ("${param.name}") || !s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+    if (!s.JsonValue.isMember ("${param.name}") || !(s.JsonValue["${param.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}))) {
       throw KurentoException (MARSHALL_ERROR,
                               "'${param.name}' parameter should be a ${jsonData.getTypeDescription()}");
     }
@@ -175,7 +175,7 @@ void ${remoteClass.name}Constructor::Serialize (kurento::JsonSerializer &s)
     <#assign jsonData = getJsonCppTypeData(param.type)>
     <#if param.optional>
     if (s.JsonValue.isMember ("${param.name}") ) {
-      if (s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+      if (s.JsonValue["${param.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()})) {
         __isSet${param.name?cap_first} = true;
         s.SerializeNVP (${param.name});
       } else {
@@ -185,7 +185,7 @@ void ${remoteClass.name}Constructor::Serialize (kurento::JsonSerializer &s)
     }
 
     <#else>
-    if (!s.JsonValue.isMember ("${param.name}") || !s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+    if (!s.JsonValue.isMember ("${param.name}") || !(s.JsonValue["${param.name}"].${jsonData.getJsonValueCheck()} () || s.JsonValue["${param.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}))) {
       throw KurentoException (MARSHALL_ERROR,
                               "'${param.name}' parameter should be a ${jsonData.getTypeDescription()}");
     }
