@@ -8,9 +8,13 @@
 set(PACKAGE_VERSION "@PROJECT_VERSION@")
 set(KmsJsonRpc_VERSION ${PACKAGE_VERSION})
 
-find_package(PkgConfig)
 
-pkg_check_modules(_JSONCPP REQUIRED kmsjsoncpp>=0.6.0)
+
+# Set include directories
+# =======================
+
+find_package(PkgConfig)
+pkg_check_modules(_JSONCPP REQUIRED jsoncpp>=1.7.2)
 
 find_path(KmsJsonRpc_INCLUDE_DIR
   NAMES
@@ -28,29 +32,35 @@ set(KmsJsonRpc_INCLUDE_DIRS ${KmsJsonRpc_INCLUDE_DIR} ${_JSONCPP_INCLUDE_DIRS}
   CACHE INTERNAL "Include directories for KmsJsonRpc library"
 )
 
-set (JSON_CPP_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
 
-if (TARGET jsonrpc)
+
+# Set path to library
+# ===================
+
+set(JSON_CPP_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
+
+if(TARGET jsonrpc)
   #Just get the target for the library
-  set (KmsJsonRpc_LIBRARY jsonrpc)
-  set (KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
-    CACHE INTERNAL "Libraries for KmsJsonRpc"
-  )
-else ()
-  find_library (KmsJsonRpc_LIBRARY
+  set(KmsJsonRpc_LIBRARY jsonrpc)
+else()
+  find_library(KmsJsonRpc_LIBRARY
     NAMES
       jsonrpc
     PATH_SUFFIXES
       ${JSON_CPP_BINARY_DIR_PREFIX}/src
   )
-
-  set (KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
-    CACHE INTERNAL "Libraries for KmsJsonRpc"
-)
-
 endif()
 
-include (FindPackageHandleStandardArgs)
+set(KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
+  CACHE INTERNAL "Libraries for KmsJsonRpc"
+)
+
+
+
+# Set output variables
+# ====================
+
+include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(KmsJsonRpc
   FOUND_VAR

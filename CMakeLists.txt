@@ -35,7 +35,7 @@ common_buildflags_set()
 #common_buildflags_print()
 
 find_package(PkgConfig)
-pkg_check_modules(JSONCPP REQUIRED kmsjsoncpp>=0.6.0)
+pkg_check_modules(JSONCPP REQUIRED jsoncpp>=1.7.2)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
@@ -51,7 +51,7 @@ set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
 set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
 set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}")
-set(requires "kmsjsoncpp")
+set(requires "jsoncpp")
 
 configure_file(libjsonrpc.pc.in
   ${PROJECT_BINARY_DIR}/libjsonrpc.pc

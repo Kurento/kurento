@@ -25,7 +25,7 @@ Package: kms-jsonrpc-dev
 Architecture: any
 Section: libdevel
 Depends: kms-jsonrpc (= ${binary:Version}),
- kmsjsoncpp-dev,
+ libjsoncpp-dev,
  libboost-dev,
  libboost-test-dev
 Description: Kurento JSON-RPC library
