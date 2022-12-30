@@ -1,5 +1,5 @@
 Source: kms-pointerdetector
-Maintainer: Kurento <kurento@googlegroups.com>
+Maintainer: Kurento <kurento@openvidu.io>
 Priority: optional
 Build-Depends: debhelper (>= 9),
  cmake,
