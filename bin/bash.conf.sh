@@ -51,8 +51,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 # Source: https://superuser.com/a/1338887/922762
 shopt -s expand_aliases # This trick requires enabling aliases in Bash.
 function echo_and_restore {
-    local SELF_FILE
-    SELF_FILE="$(basename "${BASH_SOURCE[-1]}")" # File name of the running script.
+    local SELF_FILE; SELF_FILE="$(basename "${BASH_SOURCE[-1]}")" # File name of the running script.
     echo "[$SELF_FILE] $(cat -)"
     # shellcheck disable=SC2154
     case "$flags" in (*x*) set -o xtrace; esac
@@ -70,11 +69,21 @@ alias log='({ flags="$-"; set +o xtrace; } 2>/dev/null; echo_and_restore) <<<'
 # Exit trap function.
 # Runs always at the end, either on success or error (errexit).
 function on_exit {
-    # { _RC=${_RC:-$?}; set +o xtrace; } 2>/dev/null
     { _RC=$?; set +o xtrace; } 2>/dev/null
     if ((_RC)); then log "ERROR ($_RC)"; fi
 }
 trap on_exit EXIT
+
+# Add custom commands to run on trap handler.
+function trap_add {
+    local COMMAND="$1"
+    local NAME="$2"
+    local TRAP;
+    # Append the new command to the already existing trap command, if any.
+    TRAP="$(trap -p "$NAME" | { grep -o "'.*'" || true; } | tr -d "'"); $COMMAND"
+    # shellcheck disable=SC2064
+    trap "$TRAP" "$NAME"
+}
 
 # Help message.
 # Extracts and prints text from special comments in the script header.

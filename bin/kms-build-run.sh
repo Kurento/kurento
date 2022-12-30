@@ -7,18 +7,18 @@
 #/
 #/ To use, first clone the KMS omni-build repo and its submodules:
 #/
-#/     git clone https://github.com/Kurento/kms-omni-build.git
-#/     cd kms-omni-build/
-#/     git submodule update --init --recursive
-#/     git submodule update --remote
+#/   git clone https://github.com/Kurento/kms-omni-build.git
+#/   cd kms-omni-build/
+#/   git submodule update --init --recursive
+#/   git submodule update --remote
 #/
 #/ Then run this script directly from that directory:
 #/
-#/     bin/kms-build-run.sh
+#/   bin/kms-build-run.sh
 #/
 #/
 #/ Arguments
-#/ ---------
+#/ =========
 #/
 #/ --build-only
 #/
@@ -34,6 +34,14 @@
 #/
 #/   Optional. Default: Disabled.
 #/
+#/ --jemalloc
+#/
+#/   Run Kurento with the Jemalloc memory allocator. This improves memory
+#/   handling by reducing fragmentation wrt. the standard system allocator.
+#/   Requires installing Jemalloc (package `libjemalloc2` on Ubuntu 20.04).
+#/
+#/   Optional. Default: Disabled.
+#/
 #/ --gdb
 #/
 #/   Run KMS in a GDB session. Useful to set break points and get backtraces.
@@ -44,10 +52,13 @@
 #/
 #/   Build (and run, in case of using a Sanitizer) with Clang C/C++ compiler.
 #/
-#/   Note: You are still in charge of providing the desired version of Clang in
-#/   `/usr/bin/clang` for C; `/usr/bin/clang++` for C++.
-#/   For this, either create symlinks manually, or have a look into the
-#/   Debian/Ubuntu alternatives system (`update-alternatives`).
+#/   Note: You are in charge of installing Clang (and its symbolizer, if using
+#/   any of the Sanitizers). If the programs are called `clang` and `clang++`,
+#/   they will be picked by this script. Otherwise, you should pass the correct
+#/   name through the env vars `CC` and `CXX`. For example:
+#/
+#/     sudo apt-get update ; sudo apt-get install --yes clang-12 llvm-12
+#/     CC=clang-12 CXX=clang++-12 bin/kms-build-run.sh --clang
 #/
 #/   Optional. Default: Disabled. When disabled, the compiler will be GCC.
 #/
@@ -63,11 +74,10 @@
 #/   Build and run with Valgrind's Memcheck memory error detector.
 #/   Valgrind should be available in the PATH.
 #/
-#/   See:
-#/   * Memcheck manual: http://valgrind.org/docs/manual/mc-manual.html
+#/   Memcheck manual: http://valgrind.org/docs/manual/mc-manual.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --valgrind-massif
 #/
@@ -79,13 +89,12 @@
 #/
 #/   For example:
 #/
-#/       ms_print valgrind-massif-13522.out >valgrind-massif-13522.out.txt
+#/     ms_print valgrind-massif-13522.out >valgrind-massif-13522.out.txt
 #/
-#/   See:
-#/   * Massif manual: http://valgrind.org/docs/manual/ms-manual.html
+#/   Massif manual: http://valgrind.org/docs/manual/ms-manual.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --valgrind-callgrind
 #/
@@ -95,30 +104,30 @@
 #/   Callgrind gathers profiling information, which then can be loaded with
 #/   the `KCachegrind` tool to visualize and interpret it.
 #/
-#/   See:
-#/   * Callgrind manual: http://valgrind.org/docs/manual/cl-manual.html
+#/   Callgrind manual: http://valgrind.org/docs/manual/cl-manual.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --address-sanitizer
 #/
 #/   Build and run with the instrumentation provided by the compiler's
 #/   AddressSanitizer and LeakSanitizer (available in GCC and Clang).
 #/
-#/   See:
+#/   Doc:
+#/
 #/   * https://clang.llvm.org/docs/AddressSanitizer.html
 #/   * https://clang.llvm.org/docs/LeakSanitizer.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --thread-sanitizer
 #/
 #/   Build and run with the instrumentation provided by the compiler's
 #/   ThreadSanitizer (available in GCC and Clang).
 #/
-#/   See: https://clang.llvm.org/docs/ThreadSanitizer.html
+#/   Doc: https://clang.llvm.org/docs/ThreadSanitizer.html
 #/
 #/   NOTE: A recent version of GCC is required for ThreadSanitizer to work;
 #/   GCC 5, 6 and 7 have been tested and don't work; GCC 8 and 9 do.
@@ -129,35 +138,35 @@
 #/   The official solution is to recompile GLib with TSAN instrumentation.
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 #/
 #/ --undefined-sanitizer
 #/
 #/   Build and run with the compiler's UndefinedBehaviorSanitizer, an
 #/   undefined behavior detector (available in GCC and Clang).
 #/
-#/   See:
-#/   * https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+#/   Doc: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 #/
 #/   Optional. Default: Disabled.
-#/   Implies '--release'.
+#/   Implies `--release`.
 
 
 
 # Shell setup
-# -----------
+# ===========
 
-SELF_PATH="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
 # shellcheck source=bash.conf.sh
-source "$SELF_PATH/bash.conf.sh" || exit 1
+source "$SELF_DIR/bash.conf.sh" || exit 1
 
 
 
 # Parse call arguments
-# --------------------
+# ====================
 
 CFG_BUILD_ONLY="false"
 CFG_RELEASE="false"
+CFG_JEMALLOC="false"
 CFG_GDB="false"
 CFG_CLANG="false"
 CFG_VERBOSE="false"
@@ -173,6 +182,7 @@ while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --build-only) CFG_BUILD_ONLY="true" ;;
         --release) CFG_RELEASE="true" ;;
+        --jemalloc) CFG_JEMALLOC="true" ;;
         --gdb) CFG_GDB="true" ;;
         --clang) CFG_CLANG="true" ;;
         --verbose) CFG_VERBOSE="true" ;;
@@ -192,8 +202,8 @@ done
 
 
 
-# Apply config logic
-# ------------------
+# Validate config
+# ===============
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     CFG_RELEASE="true"
@@ -215,8 +225,24 @@ if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     CFG_RELEASE="true"
 fi
 
+if [[ -n "${CC:-}" || -n "${CXX:-}" ]]; then
+    if [[ -z "${CC:-}" || -z "${CXX:-}" ]]; then
+        log "ERROR: Both of these env vars should be set: CC='${CC:-}' CXX='${CXX:-}'"
+        exit 1
+    fi
+
+    log "Using compiler set by env vars: CC='$CC' CXX='$CXX'"
+
+    if [[ "$CC" =~ 'gcc' ]]; then
+        CFG_CLANG="false"
+    elif [[ "$CC" =~ 'clang' ]]; then
+        CFG_CLANG="true"
+    fi
+fi
+
 log "CFG_BUILD_ONLY=$CFG_BUILD_ONLY"
 log "CFG_RELEASE=$CFG_RELEASE"
+log "CFG_JEMALLOC=$CFG_JEMALLOC"
 log "CFG_GDB=$CFG_GDB"
 log "CFG_CLANG=$CFG_CLANG"
 log "CFG_VERBOSE=$CFG_VERBOSE"
@@ -229,8 +255,8 @@ log "CFG_UNDEFINED_SANITIZER=$CFG_UNDEFINED_SANITIZER"
 
 
 
-# Run CMake if not done yet
-# -------------------------
+# Run CMake (if needed)
+# =====================
 
 BUILD_VARS=()
 BUILD_TYPE="Debug"
@@ -247,16 +273,11 @@ fi
 
 if [[ "$CFG_CLANG" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-clang"
-    BUILD_VARS+=(
-        "CC='clang'"
-        "CXX='clang++'"
-    )
+    CC="${CC:-clang}"
+    CXX="${CXX:-clang++}"
 else
-    # Default dirs are assumed to be GCC, no need for a suffix
-    BUILD_VARS+=(
-        "CC='gcc'"
-        "CXX='g++'"
-    )
+    CC="${CC:-gcc}"
+    CXX="${CXX:-g++}"
 fi
 
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
@@ -264,11 +285,13 @@ if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_ADDRESS=ON"
 
     if [[ "$CFG_CLANG" == "true" ]]; then
-        BUILD_VARS+=(
-            "CFLAGS='${CFLAGS:-} -shared-libasan'"
-            "CXXFLAGS='${CXXFLAGS:-} -shared-libasan'"
-        )
+        # While GCC opts for shared sanitizer libs by default, Clang goes the
+        # other way and prefers statically linking them, unless told otherwise.
+        CFLAGS+=" -shared-libsan"
+        CXXFLAGS+=" -shared-libsan"
     fi
+
+    CXXFLAGS+=" -fsized-deallocation"
 fi
 
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
@@ -300,16 +323,27 @@ if [[ -f /.dockerenv ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-docker"
 fi
 
+# Store vars that affect compiler configuration.
+BUILD_VARS+=(
+    # C
+    "CC='${CC:-}'"
+    "CFLAGS='${CFLAGS:-}'"
+
+    # C++
+    "CXX='${CXX:-}'"
+    "CXXFLAGS='${CXXFLAGS:-}'"
+)
+
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
 if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; then
-    # If only a partial build exists (or none at all), delete it
+    # If only a partial build exists (or none at all), delete it.
     rm -rf "$BUILD_DIR"
 
     mkdir -p "$BUILD_DIR"
     pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 
-    # Prepare the final command
+    # Prepare the build command.
     COMMAND=""
     for BUILD_VAR in "${BUILD_VARS[@]:-}"; do
         [[ -n "$BUILD_VAR" ]] && COMMAND="$COMMAND $BUILD_VAR"
@@ -323,84 +357,140 @@ if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; the
     popd || exit 1  # Exit $BUILD_DIR
 fi
 
-# Other Make alternatives:
-# make check_build       # Build all tests
-# make check             # Build and run all tests
-# make <TestName>.check  # Build and run specific test
-# make valgrind
 
 
+# Prepare run command
+# ===================
 
-# Prepare run environment
-# -----------------------
+# GLib settings: https://docs.gtk.org/glib/running.html#environment-variables
 
 RUN_VARS=()
 RUN_WRAPPER=""
 
+if [[ "$CFG_JEMALLOC" == "true" ]]; then
+    # Find the full path to the Jemalloc library file.
+    JEMALLOC_PATH="$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[0-9]+' | sort --version-sort --reverse | head --lines 1)" || {
+        log "ERROR: Jemalloc not found, please install it:"
+        log "sudo apt-get update && sudo apt-get install '^libjemalloc[0-9]+$'"
+        exit 1
+    }
+
+    JEMALLOC_CONF="abort_conf:true,confirm_conf:true"
+    #JEMALLOC_CONF="abort_conf:true,confirm_conf:true,background_thread:true,metadata_thp:auto"
+
+    RUN_VARS+=(
+        "LD_PRELOAD='$JEMALLOC_PATH'"
+        "MALLOC_CONF='$JEMALLOC_CONF'"
+
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "G_DEBUG='gc-friendly'"
+
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "G_SLICE='always-malloc'"
+    )
+fi
+
 if [[ "$CFG_GDB" == "true" ]]; then
-    # RUN_WRAPPER="gdb -ex 'run' --args"
     RUN_WRAPPER="gdb --args"
     RUN_VARS+=(
+        # fatal-warnings: Abort on calls to `g_warning()`` or `g_critical()`.
         "G_DEBUG='fatal-warnings'"
 
-        # Prevent GStreamer from forking on startup
+        # Prevent GStreamer from forking at startup.
         "GST_REGISTRY_FORK='no'"
     )
 fi
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
-    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
         "G_DEBUG='gc-friendly'"
 
-        #"G_SLICE='always-malloc'"
-        #"G_SLICE='debug-blocks'"
-        "G_SLICE='all'"
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "G_SLICE='always-malloc,debug-blocks'"
 
-        # Prevent GStreamer from forking on startup
+        # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
     )
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
-    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=massif --log-file='valgrind-massif-%p.log' --massif-out-file='valgrind-massif-%p.out' ${VALGRIND_ARGS[*]}"
 
 elif [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
     # shellcheck source=valgrind.conf.sh
-    source "$BASEPATH/valgrind.conf.sh" || exit 1
+    source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=callgrind --log-file='valgrind-callgrind-%p.log' --callgrind-out-file='valgrind-callgrind-%p.out' ${VALGRIND_ARGS[*]}"
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     if [[ "$CFG_CLANG" == "true" ]]; then
-        CLANG_VERSION="$(clang --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
-        CLANG_VERSION_MAJ="${CLANG_VERSION%%.*}"
-        LIBSAN="/usr/lib/llvm-${CLANG_VERSION_MAJ}/lib/clang/${CLANG_VERSION}/lib/linux/libclang_rt.asan-x86_64.so"
+        LIBSAN="$("$CC" -print-file-name=libclang_rt.asan-x86_64.so)"
     else
-        GCC_VERSION="$(gcc -dumpversion)"
-        GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
-        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libasan.so"
+        LIBSAN="$("$CC" -print-file-name=libasan.so)"
     fi
+
+    ASAN_OPTIONS="suppressions=$PWD/bin/sanitizers/asan.supp"
+    # Use ASAN_OPTIONS recommended for aggressive diagnostics:
+    # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
+    ASAN_OPTIONS+=":strict_string_checks=1"
+    ASAN_OPTIONS+=":detect_stack_use_after_return=1"
+    ASAN_OPTIONS+=":check_initialization_order=1"
+    ASAN_OPTIONS+=":strict_init_order=1"
+    # FIXME: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled.
+    ASAN_OPTIONS+=":detect_odr_violation=0"
+    # FIXME: `new_delete_type_mismatch=0` is needed because libsigc++ contains false positives
+    #     and ASan doesn't provide a granular way of suppressing them.
+    #     See discussion here: https://github.com/libsigcplusplus/libsigcplusplus/issues/10
+    #     See feature request here: https://github.com/llvm/llvm-project/issues/58404
+    ASAN_OPTIONS+=":new_delete_type_mismatch=0"
+    # Extra options for more comprehensive memory analysis.
+    ASAN_OPTIONS+=":detect_leaks=1"
+    ASAN_OPTIONS+=":detect_invalid_pointer_pairs=2"
 
     RUN_VARS+=(
         "LD_PRELOAD='$LIBSAN'"
-        # Use ASAN_OPTIONS recommended for aggressive diagnostics:
-        # https://github.com/google/sanitizers/wiki/AddressSanitizer#faq
-        # NOTE: "detect_stack_use_after_return=1" breaks Kurento execution (more study needed to see why)
-        # NOTE: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled
-        "ASAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/asan.supp detect_odr_violation=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1'"
+        "ASAN_OPTIONS='$ASAN_OPTIONS'"
+
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "G_DEBUG='gc-friendly'"
+
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "G_SLICE='always-malloc,debug-blocks'"
+
+        # Prevent GStreamer from forking at startup
+        "GST_REGISTRY_FORK='no'"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
-    GCC_VERSION="$(gcc -dumpversion)"
-    GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
-    LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libtsan.so"
+    if [[ "$CFG_CLANG" == "true" ]]; then
+        # Nothing to do: Clang only ships a static lib for TSan.
+        true
+    else
+        LIBSAN="$("$CC" -print-file-name=libtsan.so)"
+
+        RUN_VARS+=(
+            "LD_PRELOAD='$LIBSAN'"
+        )
+    fi
+
     RUN_VARS+=(
-        "G_SLICE='all'"
-        "LD_PRELOAD='$LIBSAN'"
         "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
+
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "G_DEBUG='gc-friendly'"
+
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "G_SLICE='always-malloc,debug-blocks'"
+
+        # Prevent GStreamer from forking at startup
+        "GST_REGISTRY_FORK='no'"
     )
 fi
 
@@ -423,13 +513,19 @@ fi
 
 
 
-# Run Kurento Media Server
-# ------------------------
+# Launch run command
+# ==================
 
 pushd "$BUILD_DIR" || exit 1  # Enter $BUILD_DIR
 
 # Always run `make`: if any source file changed, it needs building; if nothing
-# changed since last time, it is a "no-op" anyway
+# changed since last time, it is a "no-op" anyway.
+#
+# Other Make alternatives:
+#     make check_build       # Build all tests
+#     make check             # Build and run all tests
+#     make <TestName>.check  # Build and run specific test
+#     make valgrind
 if [[ -n "${MAKEFLAGS:-}" ]]; then
     # Custom Make flags are already set in the environment. Let Make use them.
     make
@@ -454,19 +550,29 @@ ulimit -c unlimited
 #log "Set kernel core dump path: $KERNEL_CORE_PATH"
 #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
 
-# Prepare the final command
-COMMAND=""
-for RUN_VAR in "${RUN_VARS[@]:-}"; do
-    [[ -n "$RUN_VAR" ]] && COMMAND="$COMMAND $RUN_VAR"
+# Set modules path.
+# Equivalent to `--modules-path`, `--modules-config-path`, `--gst-plugin-path`.
+RUN_VARS+=(
+    # Use the former to include modules already installed in the system.
+    #"KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules'"
+    "KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD'"
+
+    "KURENTO_MODULES_CONFIG_PATH='${KURENTO_MODULES_CONFIG_PATH:+$KURENTO_MODULES_CONFIG_PATH:}$PWD/config'"
+
+    # Use the former to include plugins already installed in the system.
+    #"GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
+    "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD'"
+)
+
+# Use `env` to set the environment variables just for our target program,
+# without affecting the wrapper.
+COMMAND="$RUN_WRAPPER env -i"
+for RUN_VAR in "${RUN_VARS[@]}"; do
+    [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
 done
 
-COMMAND="$COMMAND $RUN_WRAPPER"
-
-COMMAND="$COMMAND kurento-media-server/server/kurento-media-server \
+COMMAND+=" kurento-media-server/server/kurento-media-server \
     --conf-file='$PWD/config/kurento.conf.json' \
-    --modules-config-path='$PWD/config' \
-    --modules-path='$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules' \
-    --gst-plugin-path='$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.5' \
 "
 
 log "Run command: $COMMAND"
