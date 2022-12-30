@@ -66,6 +66,16 @@ function(common_buildflags_set)
   # All code is C-based and old style casts are widespread
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-old-style-cast")
 
+  # Disable useless Clang warnings when compiling with CFLAGS/CXXFLAGS='-save-temps=obj'
+  if(CMAKE_C_FLAGS MATCHES "-save-temps=obj")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-parentheses-equality")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-value")
+  endif()
+  if(CMAKE_CXX_FLAGS MATCHES "-save-temps=obj")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses-equality")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-compare")
+  endif()
+
   # Final step: set local variables in the scope of the caller
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}"   PARENT_SCOPE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
