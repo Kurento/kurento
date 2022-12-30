@@ -18,7 +18,7 @@
 #/
 #/
 #/ Arguments
-#/ ---------
+#/ =========
 #/
 #/ --build-only
 #/
@@ -52,15 +52,13 @@
 #/
 #/   Build (and run, in case of using a Sanitizer) with Clang C/C++ compiler.
 #/
-#/   Note: You are still in charge of installing a valid compiler as programs
-#/   `clang` for C, and `clang++` for C++. For this, either create symlinks
-#/   manually, set the appropriate `PATH` variable for Clang, or have a look
-#/   into the Debian/Ubuntu alternatives system (`update-alternatives`).
+#/   Note: You are in charge of installing Clang (and its symbolizer, if using
+#/   any of the Sanitizers). If the programs are called `clang` and `clang++`,
+#/   they will be picked by this script. Otherwise, you should pass the correct
+#/   name through the env vars `CC` and `CXX`. For example:
 #/
-#/   You can also skip this flag and set the compiler directly through the
-#/   environment variables `CC` and `CXX`. For example:
-#/
-#/     CC=gcc-11 CXX=g++-11 bin/kms-build-run.sh
+#/     sudo apt-get update ; sudo apt-get install --yes clang-12 llvm-12
+#/     CC=clang-12 CXX=clang++-12 bin/kms-build-run.sh --clang
 #/
 #/   Optional. Default: Disabled. When disabled, the compiler will be GCC.
 #/
@@ -158,7 +156,6 @@
 # ===========
 
 SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
-
 # shellcheck source=bash.conf.sh
 source "$SELF_DIR/bash.conf.sh" || exit 1
 
@@ -205,8 +202,8 @@ done
 
 
 
-# Config logic
-# ============
+# Validate config
+# ===============
 
 if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     CFG_RELEASE="true"
@@ -288,8 +285,10 @@ if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_ADDRESS=ON"
 
     if [[ "$CFG_CLANG" == "true" ]]; then
-        CFLAGS+=" -shared-libasan"
-        CXXFLAGS+=" -shared-libasan"
+        # While GCC opts for shared sanitizer libs by default, Clang goes the
+        # other way and prefers statically linking them, unless told otherwise.
+        CFLAGS+=" -shared-libsan"
+        CXXFLAGS+=" -shared-libsan"
     fi
 
     CXXFLAGS+=" -fsized-deallocation"
@@ -415,13 +414,9 @@ elif [[ "$CFG_VALGRIND_CALLGRIND" == "true" ]]; then
 
 elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     if [[ "$CFG_CLANG" == "true" ]]; then
-        CLANG_VERSION="$("$CC" --version | perl -ne '/clang version (\d+\.\d+\.\d+)/ && print $1')"
-        CLANG_VERSION_MAJ="${CLANG_VERSION%%.*}"
-        LIBSAN="/usr/lib/llvm-${CLANG_VERSION_MAJ}/lib/clang/${CLANG_VERSION}/lib/linux/libclang_rt.asan-x86_64.so"
+        LIBSAN="$("$CC" -print-file-name=libclang_rt.asan-x86_64.so)"
     else
-        GCC_VERSION="$("$CC" -dumpversion)"
-        GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
-        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libasan.so"
+        LIBSAN="$("$CC" -print-file-name=libasan.so)"
     fi
 
     ASAN_OPTIONS="suppressions=$PWD/bin/sanitizers/asan.supp"
@@ -431,6 +426,8 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     ASAN_OPTIONS+=":detect_stack_use_after_return=1"
     ASAN_OPTIONS+=":check_initialization_order=1"
     ASAN_OPTIONS+=":strict_init_order=1"
+    # FIXME: GST_PLUGIN_DEFINE() causes ODR violations so this check must be disabled.
+    ASAN_OPTIONS+=":detect_odr_violation=0"
     # FIXME: `new_delete_type_mismatch=0` is needed because libsigc++ contains false positives
     #     and ASan doesn't provide a granular way of suppressing them.
     #     See discussion here: https://github.com/libsigcplusplus/libsigcplusplus/issues/10
@@ -457,12 +454,10 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     if [[ "$CFG_CLANG" == "true" ]]; then
-        # Nothing to do when the compiler is Clang; TSan is statically linked.
+        # Nothing to do: Clang only ships a static lib for TSan.
         true
     else
-        GCC_VERSION="$("$CC" -dumpversion)"
-        GCC_VERSION_MAJ="${GCC_VERSION%%.*}"
-        LIBSAN="/usr/lib/gcc/x86_64-linux-gnu/${GCC_VERSION_MAJ}/libtsan.so"
+        LIBSAN="$("$CC" -print-file-name=libtsan.so)"
 
         RUN_VARS+=(
             "LD_PRELOAD='$LIBSAN'"
@@ -543,9 +538,13 @@ ulimit -c unlimited
 # Set modules path.
 # Equivalent to `--modules-path`, `--modules-config-path`, `--gst-plugin-path`.
 RUN_VARS+=(
+    # Use the former to include modules already installed in the system.
     #"KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules'"
     "KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD'"
+
     "KURENTO_MODULES_CONFIG_PATH='${KURENTO_MODULES_CONFIG_PATH:+$KURENTO_MODULES_CONFIG_PATH:}$PWD/config'"
+
+    # Use the former to include plugins already installed in the system.
     #"GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
     "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD'"
 )
