@@ -166,16 +166,22 @@ Installation and usage
 
 Before being able to use your new module, its binary files must be installed to the host where Kurento Media Server is running. Using a module with Kurento comprises two sides of the same coin:
 
-1. Install the module. This allows KMS to know about the module, and allows the media server to use it when clients attempt to instantiate a new object that is exported by the module code.
+1. Install the module. This allows Kurento to know about the module, so clients can instantiate objects and types provided by it.
 
-2. Use the module from client applications. Technically this step is optional, but unless your application directly implements the :doc:`Kurento Protocol </features/kurento_protocol>`, you will want to use the client-side module API. This is done by using client code that gets automatically generated from the Kurento Module Descriptor files (``*.kmd.json``).
+   .. warning::
+
+      To avoid C++ issues with ABI compatibility (which are usually caused by mixing compiler versions) you should build your module on the same system that Kurento was built. For example, if you run Kurento on Ubuntu 18.04, you should compile your module also on Ubuntu 18.04.
+
+      Do not mix system versions. For example, do not compile your module on Ubuntu 18.04, and then try to install it for Kurento on Ubuntu 16.04.
+
+2. Use the module from client applications. Technically this step is optional, but unless your application directly implements the :doc:`Kurento Protocol </features/kurento_protocol>`, you will want to use the client-side SDK that gets auto-generated from the Kurento Module Descriptor files (``*.kmd.json``).
 
 
 
 Installing locally
 ------------------
 
-The recommended way to distribute a module is to build it into a Debian package file (``*.deb``). This is the easiest and most convenient method for end users of the module, as they will just have to perform a simple package installation on any system where KMS is already running. Besides, this doesn't require the user to know anything about plugin paths or how the module files must be laid out on disk.
+The recommended way to distribute a module is to build it into a Debian package file (``*.deb``). This is the easiest and most convenient method for end users of the module, as they will just have to perform a simple package installation on any system where Kurento is already running. Besides, this doesn't require the user to know anything about plugin paths or how the module files must be laid out on disk.
 
 To build a Debian package file, you can either use the **kurento-buildpackage** tool as described in :ref:`dev-packages`, or do it manually by installing and running the appropriate tools:
 
@@ -201,12 +207,12 @@ The Debian builder tool ends up generating one or more *.deb* package files **in
 
 Depending on the contents of the module project, the Debian package builder can generate multiple *.deb* files:
 
-* The file without any suffix contains the shared library code that has been compiled from our source code. This is the file that end users of the module will need to install in their systems.
+* The file without any suffix contains the shared library code that has been compiled from source code. This is the file that end users of the module will need to install in their systems.
 * *-dev* packages contain header files and are used by *other developers* to build their software upon the module's code. This is not needed by end users.
 * *-doc* packages usually contain *manpages* and other documentation, if the module contained any.
 * *-dbg* and *-dbgsym* packages contain the debug symbols that have been extracted from the compilation process. It can be used by other developers to troubleshoot crashes and provide bug reports.
 
-Now copy and install the package(s) into any Debian or Ubuntu based system where KMS is already installed:
+Now copy and install the package(s) into any Debian or Ubuntu based system where Kurento is already installed:
 
 .. code-block:: shell
 
@@ -217,16 +223,16 @@ For more information about the process of creating Debian packages, check these 
 * `Debian Building Tutorial <https://wiki.debian.org/BuildingTutorial>`__
 * `Debian Policy Manual <https://www.debian.org/doc/debian-policy/index.html>`__
 
-**Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento``, to instruct KMS about where the plugin files have been copied:
+**Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento``, to instruct Kurento about where the plugin files have been copied:
 
 .. code-block:: shell
 
-   KURENTO_MODULES_PATH="$KURENTO_MODULES_PATH /path/to/module"
-   GST_PLUGIN_PATH="$GST_PLUGIN_PATH /path/to/module"
+   KURENTO_MODULES_PATH="$KURENTO_MODULES_PATH:/path/to/module"
+   GST_PLUGIN_PATH="$GST_PLUGIN_PATH:/path/to/module"
 
-KMS will then add these paths to the path lookup it performs at startup, when looking for all available plugins.
+Kurento will then add these paths to the path lookup it performs at startup, when looking for all available plugins.
 
-When ready, you should **verify the module installation**. Run KMS twice, with the ``--version`` and ``--list`` arguments. The former shows a list of all installed modules and their versions, while the latter prints a list of all the actual *MediaObject* Factories that clients can invoke with the JSON-RPC API. Your own module should show up in both lists:
+When ready, you should **verify the module installation**. Run Kurento twice, with the ``--version`` and ``--list`` arguments. The former shows a list of all installed modules and their versions, while the latter prints a list of all the actual *MediaObject* Factories that clients can invoke with the JSON-RPC API. Your own module should show up in both lists:
 
 .. code-block:: shell-session
    :emphasize-lines: 7,12,13
@@ -258,7 +264,7 @@ A ``Dockerfile`` such as this one would be a good enough starting point:
 
 .. code-block:: docker
 
-   FROM kurento/kurento-media-server:latest
+   FROM kurento/kurento-media-server:|VERSION_KMS|
    COPY my-gst-module_0.0.1~rc1_amd64.deb /
    RUN dpkg -i /my-gst-module_0.0.1~rc1_amd64.deb
 
@@ -266,19 +272,19 @@ Now build the new image:
 
 .. code-block:: shell-session
 
-   $ docker build --tag kms-with-my-gst-module:latest .
-   Step 1/3 : FROM kurento/kurento-media-server:latest
+   $ docker build --tag kurento-with-my-gst-module:|VERSION_KMS| .
+   Step 1/3 : FROM kurento/kurento-media-server:|VERSION_KMS|
    Step 2/3 : COPY my-gst-module_0.0.1~rc1_amd64.deb /
    Step 3/3 : RUN dpkg -i /my-gst-module_0.0.1~rc1_amd64.deb
    Successfully built d10d3b4a8202
-   Successfully tagged kms-with-my-gst-module:latest
+   Successfully tagged kurento-with-my-gst-module:|VERSION_KMS|
 
-And verify your module is correctly loaded by KMS:
+And verify your module is correctly loaded by Kurento:
 
 .. code-block:: shell-session
    :emphasize-lines: 7,12,13
 
-   $ docker run --rm kms-with-my-gst-module:latest --version
+   $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --version
    Kurento Media Server version: 6.12.0
    Found modules:
        'core' version 6.12.0
@@ -286,7 +292,7 @@ And verify your module is correctly loaded by KMS:
        'filters' version 6.12.0
        'mygstmodule' version 0.0.1~0.gd61e201
 
-   $ docker run --rm kms-with-my-gst-module:latest --list
+   $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --list
    Available factories:
        [...]
        MyGstModule
@@ -314,13 +320,15 @@ Finally, to actually use the module in your Maven project, you have to add the d
 .. code-block:: xml
 
    <project>
-     <dependencies>
-       <dependency>
-         <groupId>org.kurento.module</groupId>
-         <artifactId>{modulename}</artifactId>
-         <version>0.0.1-SNAPSHOT</version>
-       </dependency>
-     </dependencies>
+       ...
+       <dependencies>
+           <dependency>
+               <groupId>org.kurento.module</groupId>
+               <artifactId>{modulename}</artifactId>
+               <version>0.0.1-SNAPSHOT</version>
+           </dependency>
+       </dependencies>
+       ...
    </project>
 
 Note that ``{modulename}`` is the name of your module in all lowercase.

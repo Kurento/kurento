@@ -78,7 +78,7 @@ Kurento provides developers a **Kurento JavaScript Client** to control
 JavaScript application including desktop and mobile browsers.
 
 This *hello world* demo is one of the simplest web applications you can create
-with Kurento. The following picture shows an screenshot of this demo running:
+with Kurento. The following picture shows a screenshot of this demo running:
 
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png
    :align:   center

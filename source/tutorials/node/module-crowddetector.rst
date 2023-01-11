@@ -106,7 +106,7 @@ the video width and height.
 hand, the detected crowd are colored over the stream. On the other hand,
 different events are raised to the client.
 
-To understand crowd coloring, we can take a look to an screenshot of a running
+To understand crowd coloring, we can take a look to a screenshot of a running
 example of ``CrowdDetectorFilter``. In the picture below, we can see that there
 are two ROIs (bounded with white lines in the video). On these ROIs, we can see
 two different colors over the original video stream: red zones are drawn over

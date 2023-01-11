@@ -113,15 +113,27 @@ This technique is very handy, because practically all modern platforms include a
 Trusting a self-signed certificate
 ==================================
 
-Most browsers will not trust a self-signed certificate, showing a security warning page (or rejecting access altogether, like iOS Safari). However, you can override this by installing your Root CA in the device. Then, the self-signed certificate will be trusted just like if it had been issued by a reputable Authority.
+Most if not all clients of any kind, will not trust a self-signed certificate when they connect to a server that uses one. What the client will do is to block the connection with an error message (this is what iOS Safari does, also Node.js apps); or show a security warning page (Chrome and Firefox web browsers).
 
-On desktop browsers, installing the Root CA is easy because *mkcert* does it for you:
+Normally, there is some way to override this behavior. Either by installing your Root CA in the device's root storage, or by setting some configuration. Then, the self-signed certificate will be trusted just like if it had been issued by a reputable Authority.
+
+
+
+On desktop browsers
+-------------------
+
+Installing the Root CA is easy because *mkcert* does it for you. In the terminal, go to the dir where your ``rootCA.pem`` file is located, and run:
 
 .. code-block:: shell
 
    CAROOT="$PWD" mkcert -install
 
-On mobile devices, installing the Root CA is a bit more difficult:
+
+
+On mobile devices
+-----------------
+
+Installing the Root CA is a bit more difficult:
 
 * With iOS, you can either email the ``rootCA.pem`` file to yourself, use AirDrop, or serve it from an HTTP server. Normally, a dialog should pop up asking if you want to install the new certificate; afterwards, you must `enable full trust in it <https://support.apple.com/en-nz/HT204477>`__. When finished, your self-signed certs will be trusted by the system, and iOS Safari will allow accessing pages on the ``*.home.arpa`` subdomain.
 
@@ -130,3 +142,16 @@ On mobile devices, installing the Root CA is a bit more difficult:
      Only AirDrop, Apple Mail, or Safari are allowed to download and install certificates on iOS. Other applications will not work for this.
 
 * With Android, you'll have to install the Root CA and then enable user roots in the development build of your app. See `this StackOverflow answer <https://stackoverflow.com/a/22040887/749014>`__.
+
+
+
+On Node.js applications
+-----------------------
+
+Node.js does not use the system root store, so it won't accept mkcert certificates automatically. Instead, you will have to set the [`NODE_EXTRA_CA_CERTS`](https://nodejs.org/api/cli.html#cli_node_extra_ca_certs_file) environment variable:
+
+.. code-block:: shell
+
+   export NODE_EXTRA_CA_CERTS="/path/to/rootCA.pem"
+
+One good way to do this is by adding the export to the file ``~/.profile``, so it will get automatically set on every system startup.

@@ -6,7 +6,7 @@ Kurento Media Server **6.13.0** has been released! It comes with some new API me
 
 To install Kurento Media Server: :doc:`/user/installation`.
 
-These Release Notes were also posted on the `Kurento blog <https://www.kurento.org/blog/kurento-613-felices-fiestas>`__.
+These Release Notes were also posted on the `Kurento blog <https://kurento.openvidu.io/blog/kurento-613-felices-fiestas>`__.
 
 
 

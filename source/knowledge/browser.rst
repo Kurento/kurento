@@ -59,17 +59,17 @@ You can also use ``about:config`` and set any log option into the profile prefer
 
 The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special booleans *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
 
-- **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
-- **timestamp**: Insert timestamp at start of each log line.
+* **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
+* **timestamp**: Insert timestamp at start of each log line.
 
 Logging Levels:
 
-- **(0) DISABLED**: Indicates logging is disabled. This should not be used directly in code.
-- **(1) ERROR**: An error occurred, generally something you would consider asserting in a debug build.
-- **(2) WARNING**: A warning often indicates an unexpected state.
-- **(3) INFO**: An informational message, often indicates the current program state. and rare enough to be logged at this level.
-- **(4) DEBUG**: A debug message, useful for debugging but too verbose to be turned on normally.
-- **(5) VERBOSE**: A message that will be printed a lot, useful for debugging program flow and will probably impact performance.
+* **(0) DISABLED**: Indicates logging is disabled. This should not be used directly in code.
+* **(1) ERROR**: An error occurred, generally something you would consider asserting in a debug build.
+* **(2) WARNING**: A warning often indicates an unexpected state.
+* **(3) INFO**: An informational message, often indicates the current program state. and rare enough to be logged at this level.
+* **(4) DEBUG**: A debug message, useful for debugging but too verbose to be turned on normally.
+* **(5) VERBOSE**: A message that will be printed a lot, useful for debugging program flow and will probably impact performance.
 
 Log categories:
 
@@ -217,35 +217,41 @@ Sources:
 * https://peter.sh/experiments/chromium-command-line-switches/
 * https://webrtc.org/web-apis/chrome/
 
-# LINUX:
-TEST_BROWSER="/usr/bin/chromium"
-TEST_BROWSER="/usr/bin/google-chrome"
-#
-TEST_PROFILE="/tmp/chrome-profile"
-#
-{
-    "$TEST_BROWSER" \
-        --user-data-dir="$TEST_PROFILE" \
-        --use-fake-ui-for-media-stream \
-        --use-fake-device-for-media-stream \
-        --enable-logging=stderr \
-        --log-level=0 \
-        --vmodule='*/webrtc/*=2,*/libjingle/*=2,*=-2' \
-        --v=0 \
-        "https://localhost:8443/" \
-        >chrome_debug.log 2>&1 &
+**Linux**:
 
-    # Other flags:
-    # --use-file-for-fake-audio-capture="/path/to/audio.wav" \
-    # --use-file-for-fake-video-capture="/path/to/video.y4m" \
+.. code-block:: shell
 
-    tail -f chrome_debug.log
-}
+   TEST_BROWSER="/usr/bin/chromium"
+   TEST_BROWSER="/usr/bin/google-chrome"
+   #
+   TEST_PROFILE="/tmp/chrome-profile"
+   #
+   {
+       "$TEST_BROWSER" \
+           --user-data-dir="$TEST_PROFILE" \
+           --use-fake-ui-for-media-stream \
+           --use-fake-device-for-media-stream \
+           --enable-logging=stderr \
+           --log-level=0 \
+           --vmodule='*/webrtc/*=2,*/libjingle/*=2,*=-2' \
+           --v=0 \
+           "https://localhost:8443/" \
+           >chrome_debug.log 2>&1 &
 
-# MAC:
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-    --enable-logging=stderr \
-    --vmodule=*/webrtc/*=2,*/libjingle/*=2,*=-2
+       # Other flags:
+       # --use-file-for-fake-audio-capture="/path/to/audio.wav" \
+       # --use-file-for-fake-video-capture="/path/to/video.y4m" \
+
+       tail -f chrome_debug.log
+   }
+
+**MacOS**:
+
+.. code-block:: shell
+
+   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+       --enable-logging=stderr \
+       --vmodule=*/webrtc/*=2,*/libjingle/*=2,*=-2
 
 
 
@@ -253,7 +259,10 @@ Packet Loss
 -----------
 
 A command line for 3% sent packet loss and 5% received packet loss is:
---force-fieldtrials=WebRTCFakeNetworkSendLossPercent/3/WebRTCFakeNetworkReceiveLossPercent/5/
+
+.. code-block:: shell
+
+   --force-fieldtrials=WebRTCFakeNetworkSendLossPercent/3/WebRTCFakeNetworkReceiveLossPercent/5/
 
 
 
@@ -261,13 +270,15 @@ H.264 codec
 -----------
 
 Chrome uses OpenH264 (same lib as Firefox uses) for encoding, and FFmpeg (which is already used elsewhere in Chrome) for decoding.
-Feature page: https://www.chromestatus.com/feature/6417796455989248
-Since Chrome 52.
-Bug tracker: https://bugs.chromium.org/p/chromium/issues/detail?id=500605
+
+* Feature page: https://www.chromestatus.com/feature/6417796455989248
+* Since Chrome 52.
+* Bug tracker: https://bugs.chromium.org/p/chromium/issues/detail?id=500605
 
 Autoplay:
-- https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#best-practices
-- https://www.chromium.org/audio-video/autoplay
+
+* https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#best-practices
+* https://www.chromium.org/audio-video/autoplay
 
 
 
@@ -359,30 +370,28 @@ Video Encoding
 Video Bitrate
 -------------
 
-Web browsers will adapt their output video quality according to what they detect is the network quality. Most browsers will adapt the **video bitrate**; in addition, Chrome also adapts the **video resolution**.
+Web browsers will try to estimate the real performance of the network, and with this information they adapt their video output quality. Most browsers are able to adjust the **video bitrate**; in addition, Chrome also dynamically adapts the **resolution** and **framerate** of its video output.
 
-The **maximum video bitrate** is calculated by the WebRTC stack, by following a simple rule based on the video dimensions:
+The **maximum video bitrate** is calculated for WebRTC by following a simple rule based on the dimensions of the video source:
 
 * 600 kbps if ``width * height <= 320 * 240``.
 * 1700 kbps if ``width * height <= 640 * 480``.
 * 2000 kbps (2 Mbps) if ``width * height <= 960 * 540``.
 * 2500 kbps (2.5 Mbps) for bigger video sizes.
-* 1200 kbps in any case, if the video is a screen capture.
+* Never less than 1200 kbps, if the video is a screen capture.
 
 Source: The ``GetMaxDefaultVideoBitrateKbps()`` function in `libwebrtc source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/webrtc_video_engine.cc#231>`__.
 
-Browsers offer internal stats through a special web address that you can use to verify what is really being sent by their WebRTC stack.
-
-For example, to check the outbound stats in Chrome:
+To verify what is exactly being sent by your web browser, check its internal WebRTC stats. For example, to check the outbound stats in Chrome:
 
 #. Open this URL: ``chrome://webrtc-internals/``.
 #. Look for the stat name "*Stats graphs for RTCOutboundRTPVideoStream (outbound-rtp)*".
-#. You will find the effective output video bitrate in ``[bytesSent_in_bits/s]``, and the output resolution in ``frameWidth`` and ``frameHeight``.
+#. You will find the effective output bitrate in ``[bytesSent_in_bits/s]``, and the output resolution in ``frameWidth`` and ``frameHeight``.
 
 You can also check what is the network bandwidth estimation in Chrome:
 
 #. Look for the stat name "*Stats graphs for RTCIceCandidatePair (candidate-pair)*". Note that there might be several of these, but only one will be active.
-#. Find the output network bandwidth estimation in ``availableOutgoingBitrate``. Chrome will try to slowly increase its output bitrate, until it reaches this estimation.
+#. Find the output network bandwidth estimation in ``availableOutgoingBitrate``. Chrome will try to slowly increase its effective output bitrate, until it reaches this estimation.
 
 
 

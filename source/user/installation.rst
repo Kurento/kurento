@@ -95,10 +95,10 @@ This is a good starting point, which runs the latest Kurento Media Server image 
 
 .. code-block:: shell
 
-   docker pull kurento/kurento-media-server:latest
+   docker pull kurento/kurento-media-server:|VERSION_KMS|
 
-   docker run -d --name kms --network host \
-       kurento/kurento-media-server:latest
+   docker run -d --name kurento --network host \
+       kurento/kurento-media-server:|VERSION_KMS|
 
 By default, KMS listens on the port **8888**. Clients wanting to control the media server using the :doc:`/features/kurento_protocol` should open a WebSocket connection to that port, either directly or by means of one of the provided :doc:`/features/kurento_client` SDKs.
 
@@ -130,7 +130,7 @@ For example, if you use Docker for Mac and want to have KMS listening on the UDP
        -p 5000-5050:5000-5050/udp \
        -e KMS_MIN_PORT=5000 \
        -e KMS_MAX_PORT=5050 \
-       kurento/kurento-media-server:latest
+       kurento/kurento-media-server:|VERSION_KMS|
 
 
 
@@ -174,7 +174,9 @@ Open a terminal and run these commands:
    .. code-block:: shell
 
       # Import the Kurento repository signing key
-      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+      sudo apt-key adv \
+          --keyserver keyserver.ubuntu.com \
+          --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
       # Get Ubuntu version definitions
       source /etc/lsb-release

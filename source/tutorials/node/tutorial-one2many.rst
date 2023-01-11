@@ -71,7 +71,7 @@ Understanding this example
 There will be two types of users in this application: 1 peer sending media
 (let's call it *Presenter*) and N peers receiving the media from the
 *Presenter* (let's call them *Viewers*). Thus, the Media Pipeline is composed
-by 1+N interconnected *WebRtcEndpoints*. The following picture shows an
+by 1+N interconnected *WebRtcEndpoints*. The following picture shows a
 screenshot of the Presenter's web GUI:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-screenshot.png
@@ -501,14 +501,8 @@ In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/one2many``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are three incoming messages to client: ``presenterResponse``,
-``viewerResponse``,``stopCommunication``, and ``iceCandidate``. Convenient
+``viewerResponse``, ``stopCommunication``, and ``iceCandidate``. Convenient
 actions are taken to implement each step in the communication.
-
-On the one hand, the function ``presenter`` uses the method
-``WebRtcPeer.WebRtcPeerSendonly`` of *kurento-utils.js* to start a WebRTC
-communication in send-only mode. On the other hand, the function ``viewer``
-uses the method ``WebRtcPeer.WebRtcPeerRecvonly`` of *kurento-utils.js* to
-start a WebRTC communication in receive-only mode.
 
 .. sourcecode:: javascript
 

@@ -41,19 +41,19 @@ When are STUN and TURN needed?
 
 The STUN server uses a single port for client connections (3478 by default), so this port should be opened up for the public in the server's network configuration or *Security Group*. If using TURN relay, then the whole range of TURN ports (49152 to 65535 by default) should be opened up too, besides the client port. Depending on the features of the STUN/TURN server, these might be only UDP or both UDP and TCP ports. For example, *Coturn* uses both UDP and TCP in its default configuration.
 
-If you are installing Kurento in a NAT environment (e.g. if your media server is behind a NAT firewall), you also need to configure an external STUN server, in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Similarly, all browser clients that are behind a NAT need to use the STUN server through the *iceServers* field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__.
+If Kurento is behind a NAT (e.g. if your media server is protected by a NAT firewall) you must provide it with your STUN or TURN server settings. Check :ref:`STUN/TURN Server Configuration <configuration-stun-turn>` for ways to configure this in Kurento. Do the same also for any WebRTC clients (like web browsers, through the *iceServers* field of the `RTCPeerConnection constructor <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection>`__).
 
 **Example:**
 
-Kurento Media Server and its Application Server are running in a cloud machine **without any NAT** or port restriction on incoming connections, while a browser client runs from a possibly restricted :term:`NAT` network that forbids incoming connections on any port that hasn't been "opened" in advance
+Kurento Media Server and its Application Server are running in a cloud machine **without any NAT** or port restriction on incoming connections, while a browser client runs from a possibly restricted :term:`NAT` network that forbids incoming connections on any port that hasn't been "opened" in advance.
 
-The browser client may communicate with the Application Server for signaling purposes, but at the end of the day the bulk of the audio/video RTP transmission is done between the WebRTC engines of the browser and KMS.
+The browser client may communicate with the Application Server for signaling purposes, but at the end of the day the bulk of the audio/video RTP transmission is done between the WebRTC engines of the browser and Kurento.
 
 .. figure:: /images/faq-stun-1.png
    :align:  center
    :alt:    NAT client without STUN
 
-In scenarios like this, the client is able to send data to KMS because its NAT will allow outgoing packets. However, KMS will *not* be able to send data to the client, because the client's NAT is closed for incoming packets. This is solved by configuring the client to use a STUN server; this server will be used by the client's browser to open the appropriate ports in its own NAT. After this operation, the client is now able to receive audio/video streams from KMS:
+In scenarios like this, the client is able to send data to Kurento because its NAT will allow outgoing packets. However, Kurento will *not* be able to send data to the client, because the client's NAT is closed for incoming packets. This is solved by configuring the client to use a STUN server; this server will be used by the client's browser to open the appropriate ports in its own NAT. After this operation, the client is now able to receive audio/video streams from Kurento:
 
 .. figure:: /images/faq-stun-2.png
    :align:  center
@@ -61,10 +61,11 @@ In scenarios like this, the client is able to send data to KMS because its NAT w
 
 This procedure is done by the :term:`ICE` implementation of the client's browser.
 
-Note that you *can* also deploy KMS behind a NAT firewall, as long as KMS itself is also configured to use a STUN server.
+Note that you *can* also deploy Kurento behind a NAT firewall, as long as Kurento itself is also configured to use a STUN server.
 
 Further reading:
 
+* `Introduction to WebRTC protocols <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Protocols>`__.
 * `WebRTC - How many STUN/TURN servers do I need to specify? <https://stackoverflow.com/questions/23292520/webrtc-how-many-stun-turn-servers-do-i-need-to-specify/23307588#23307588>`__.
 * `What are STUN, TURN, and ICE? <https://www.twilio.com/docs/stun-turn/faq#faq-what-is-nat>`__ (`archive <https://web.archive.org/web/20181009181338/https://www.twilio.com/docs/stun-turn/faq>`__).
 
@@ -197,7 +198,7 @@ To configure it for WebRTC, follow these steps:
 
       If you happen to deploy both Coturn and KMS in the same machine, we recommend that their port ranges do not overlap.
 
-#. Configure the STUN or TURN parameters in both Kurento Media Server and all WebRTC clients (like web browsers). Check :ref:`STUN/TURN Server Configuration <configuration-stun-turn>` for ways to configure KMS with these parameters.
+#. Provide your STUN or TURN server settings to both Kurento Media Server and all WebRTC clients (like web browsers). Check :ref:`STUN/TURN Server Configuration <configuration-stun-turn>` for ways to configure this in Kurento.
 
 #. Check that your Coturn server is working. For that, follow the steps given in the next section.
 
@@ -254,7 +255,7 @@ To edit the configuration files used in your containers, first you'll need the a
 
 .. code-block:: shell
 
-   docker create --name temp kurento/kurento-media-server:latest
+   docker create --name temp kurento/kurento-media-server:|VERSION_KMS|
    docker cp temp:/etc/kurento/ ./kurento-files/
    docker rm temp
 
@@ -269,9 +270,9 @@ A `bind-mount <https://docs.docker.com/storage/bind-mounts/>`__ will "inject" yo
 
 .. code-block:: shell
 
-   docker run -d --name kms --network host \
+   docker run -d --name kurento --network host \
        --mount type=bind,src="$PWD/kurento-files/",dst=/etc/kurento/ \
-       kurento/kurento-media-server:latest
+       kurento/kurento-media-server:|VERSION_KMS|
 
 The equivalent Docker Compose file would look like this:
 
@@ -280,7 +281,7 @@ The equivalent Docker Compose file would look like this:
    version: "3.8"
    services:
      kms:
-       image: kurento/kurento-media-server:latest
+       image: kurento/kurento-media-server:|VERSION_KMS|
        network_mode: host
        volumes:
          - type: bind
@@ -308,9 +309,9 @@ Then run your container as usual, mounting the volume in the appropriate path:
 
 .. code-block:: shell
 
-   docker run -d --name kms --network host \
+   docker run -d --name kurento --network host \
        --mount type=volume,src=kurento-volume,dst=/etc/kurento/ \
-       kurento/kurento-media-server:latest
+       kurento/kurento-media-server:|VERSION_KMS|
 
 The equivalent Docker Compose file would look like this:
 
@@ -319,7 +320,7 @@ The equivalent Docker Compose file would look like this:
    version: "3.8"
    services:
      kms:
-       image: kurento/kurento-media-server:latest
+       image: kurento/kurento-media-server:|VERSION_KMS|
        network_mode: host
        volumes:
          - type: volume
@@ -337,7 +338,7 @@ A ``Dockerfile`` such as this one would be a good enough starting point:
 
 .. code-block:: docker
 
-   FROM kurento/kurento-media-server:latest
+   FROM kurento/kurento-media-server:|VERSION_KMS|
    COPY ./kurento-files /etc/kurento
 
 Now, build the new image:
@@ -345,7 +346,7 @@ Now, build the new image:
 .. code-block:: shell-session
 
    $ docker build --tag kurento-media-server-custom .
-   Step 1/2 : FROM kurento/kurento-media-server:latest
+   Step 1/2 : FROM kurento/kurento-media-server:|VERSION_KMS|
    Step 2/2 : COPY ./kurento-files /etc/kurento
    Successfully built 3d2bedb31a9d
    Successfully tagged kurento-media-server-custom
