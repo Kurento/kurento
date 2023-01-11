@@ -3,7 +3,7 @@
         <modelVersion>4.0.0</modelVersion>
 
         <description>Kurento Marker Detector example module</description>
-        <url>http://www.kurento.org/</url>
+        <url>https://kurento.openvidu.io/</url>
 
         <licenses>
           <license>
@@ -17,15 +17,15 @@
           <developer>
               <id>kurento.org</id>
               <name>Kurento Community</name>
-              <organization>kurento.org</organization>
-              <organizationUrl>http://www.kurento.org</organizationUrl>
+              <organization>Kurento</organization>
+              <organizationUrl>https://kurento.openvidu.io/</organizationUrl>
           </developer>
         </developers>
 
         <scm>
           <url>https://github.com/Kurento/kms-markerdetector</url>
           <connection>scm:git:https://github.com/Kurento/kms-markerdetector.git</connection>
-          <developerConnection>scm:git:ssh://git@github.com:Kurento/kms-markerdetector.git</developerConnection>
+          <developerConnection>scm:git:ssh://github.com/Kurento/kms-markerdetector.git</developerConnection>
         </scm>
 
 </project>

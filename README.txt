@@ -2,7 +2,7 @@ AR MarkerDetector Kurento module
 ================================
 
 Here is a very short explanation of needed steps to
-use the AR MarkerDetector Kurento module. 
+use the AR MarkerDetector Kurento module.
 
 To try out the module, you need to and restart kurento
 
@@ -35,7 +35,7 @@ modifying the kurento magic-mirror example.
 		<version>0.0.1-SNAPSHOT</version>
 	</dependency>
 
-> gvim src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorHandler.java 
+> gvim src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorHandler.java
 
 	// Add the needed additional imports
 	import org.kurento.module.armarkerdetector.ArMarkerdetector;
@@ -59,13 +59,13 @@ modifying the kurento magic-mirror example.
 
 Try it out in the web browser: http://localhost:8080/
 
-Note, that you give URL for the transparent png-file in the 
+Note, that you give URL for the transparent png-file in the
 setOverlayImage. For some reason not all of the PNG-files work correctly.
 
 Notes on how the ar-markerdetector module was made
 ==================================================
 
-Generate module based on opencv-filter and describe the interface 
+Generate module based on opencv-filter and describe the interface
 in armarkerdetector.ArMarkerdetector.kmd.json.
 
 > kurento-module-scaffold.sh ArMarkerdetector . huuhaa
@@ -84,9 +84,9 @@ Every time interface is changed you need to regenerate the related codes.
 Your code should be implemented into ArMarkerdetectorOpenCVImpl.*
 (Check out the FIXME parts).
 
-As you might need to regenrate these later on it makes sense to 
+As you might need to regenrate these later on it makes sense to
 make most of the actual implementation in separate files (e.g. Process.*).
-These separate files and lib debendencies need to be added in 
+These separate files and lib debendencies need to be added in
 src/server/CMakeLists.txt
 
 > cd src/server/implementation/objects
@@ -125,7 +125,7 @@ src/server/CMakeLists.txt
 To try out the projet while developing the easiest approach is to
 make kurento-media-server directly from your build directory
 
-> sudo gvim /etc/default/kurento-media-server 
+> sudo gvim /etc/default/kurento-media-server
 
 	export KURENTO_MODULES_PATH=/home/alvar/kurento/ar-markerdetector/build
 	export GST_PLUGIN_PATH=/home/alvar/kurento/ar-markerdetector/build
@@ -156,10 +156,24 @@ If you are missing something or you are having some version issues
 you can try some of the following things:
 
 Make sure you have the kurento development repository:
-> sudo apt-add-repository http://ubuntu.kurento.org
-> wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
 
-Check out versions of installed pacakges
+```
+# Import the Kurento repository signing key
+sudo apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
+
+# Get Ubuntu version definitions
+source /etc/lsb-release
+
+# Add the repository to Apt
+sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+# Kurento Media Server - Nightly packages
+deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6
+EOF
+```
+
+Check out versions of installed packages
 > dpkg -l kms-core
 > dpkg -l kms-core-dev
 > dpkg -l kms-elements
@@ -175,8 +189,8 @@ Install latest versions
 > sudo apt-get install kms-filters-dev
 > sudo apt-get install kurento-media-server
 
-At least for kurento-media-server it sometimes does not install 
-the latest version unless you force it. 
+At least for kurento-media-server it sometimes does not install
+the latest version unless you force it.
 
 > sudo apt-get remove kurento-media-server
 > sudo apt-get install kurento-media-server

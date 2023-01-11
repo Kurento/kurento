@@ -7,7 +7,7 @@
       "js": {
         "nodeName": "kurento-module-markerdetector",
         "npmDescription": "JavaScript Client API for Kurento Media Server",
-        "npmGit": "Kurento/kurento-module-markerdetector-js"
+        "npmGit": "https://github.com/Kurento/kurento-module-markerdetector-js.git"
       }
     }
   }
