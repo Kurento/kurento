@@ -1,5 +1,5 @@
 Source: kms-gstreamer-plugin-sample
-Maintainer: Kurento <info@kurento.com>
+Maintainer: Kurento <kurento@openvidu.io>
 Priority: optional
 Build-Depends: debhelper (>= 12),
  build-essential,
@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 12),
  libgstreamer1.0-dev,
  libopencv-dev
 Standards-Version: 4.4.0
-Homepage: https://www.kurento.org/
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kms-gstreamer-plugin-sample
 Vcs-Git: https://github.com/Kurento/kms-gstreamer-plugin-sample.git
 
