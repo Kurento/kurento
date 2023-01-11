@@ -17,7 +17,7 @@ Build-Depends-Indep:
 Standards-Version: 4.0.0
 Vcs-Git: https://github.com/Kurento/kurento-module-creator.git
 Vcs-Browser: https://github.com/Kurento/kurento-module-creator
-Homepage: https://www.kurento.org
+Homepage: https://kurento.openvidu.io/
 
 Package: kurento-module-creator
 Architecture: all
