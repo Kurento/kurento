@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 9),
 Standards-Version: 4.0.0
 Vcs-Git: https://github.com/Kurento/kms-datachannelexample.git
 Vcs-Browser: https://github.com/Kurento/kms-datachannelexample
-Homepage: https://www.kurento.org
+Homepage: https://kurento.openvidu.io/
 
 Package: kms-datachannelexample
 Architecture: any
