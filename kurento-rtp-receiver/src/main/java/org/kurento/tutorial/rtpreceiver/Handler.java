@@ -52,10 +52,10 @@ import org.kurento.client.ErrorEvent;
 import org.kurento.client.IceCandidateFoundEvent;
 import org.kurento.client.IceComponentStateChangedEvent;
 import org.kurento.client.IceGatheringDoneEvent;
-import org.kurento.client.MediaFlowInStateChangeEvent;
-import org.kurento.client.MediaFlowOutStateChangeEvent;
+import org.kurento.client.MediaFlowInStateChangedEvent;
+import org.kurento.client.MediaFlowOutStateChangedEvent;
 import org.kurento.client.MediaStateChangedEvent;
-import org.kurento.client.MediaTranscodingStateChangeEvent;
+import org.kurento.client.MediaTranscodingStateChangedEvent;
 import org.kurento.client.NewCandidatePairSelectedEvent;
 import org.kurento.client.OnKeySoftLimitEvent;
 
@@ -146,10 +146,10 @@ public class Handler extends TextWebSocketHandler
     });
 
     // Event: Media is flowing into this sink
-    baseRtpEp.addMediaFlowInStateChangeListener(
-        new EventListener<MediaFlowInStateChangeEvent>() {
+    baseRtpEp.addMediaFlowInStateChangedListener(
+        new EventListener<MediaFlowInStateChangedEvent>() {
       @Override
-      public void onEvent(MediaFlowInStateChangeEvent ev) {
+      public void onEvent(MediaFlowInStateChangedEvent ev) {
         log.info("[{}::{}] source: {}, timestamp: {}, tags: {}, state: {}, padName: {}, mediaType: {}",
             className, ev.getType(), ev.getSource().getName(), ev.getTimestampMillis(),
             ev.getTags(), ev.getState(), ev.getPadName(), ev.getMediaType());
@@ -157,10 +157,10 @@ public class Handler extends TextWebSocketHandler
     });
 
     // Event: Media is flowing out of this source
-    baseRtpEp.addMediaFlowOutStateChangeListener(
-        new EventListener<MediaFlowOutStateChangeEvent>() {
+    baseRtpEp.addMediaFlowOutStateChangedListener(
+        new EventListener<MediaFlowOutStateChangedEvent>() {
       @Override
-      public void onEvent(MediaFlowOutStateChangeEvent ev) {
+      public void onEvent(MediaFlowOutStateChangedEvent ev) {
         log.info("[{}::{}] source: {}, timestamp: {}, tags: {}, state: {}, padName: {}, mediaType: {}",
             className, ev.getType(), ev.getSource().getName(), ev.getTimestampMillis(),
             ev.getTags(), ev.getState(), ev.getPadName(), ev.getMediaType());
@@ -190,10 +190,10 @@ public class Handler extends TextWebSocketHandler
     });
 
     // Event: This element will (or will not) perform media transcoding
-    baseRtpEp.addMediaTranscodingStateChangeListener(
-        new EventListener<MediaTranscodingStateChangeEvent>() {
+    baseRtpEp.addMediaTranscodingStateChangedListener(
+        new EventListener<MediaTranscodingStateChangedEvent>() {
       @Override
-      public void onEvent(MediaTranscodingStateChangeEvent ev) {
+      public void onEvent(MediaTranscodingStateChangedEvent ev) {
         log.info("[{}::{}] source: {}, timestamp: {}, tags: {}, state: {}, binName: {}, mediaType: {}",
             className, ev.getType(), ev.getSource().getName(), ev.getTimestampMillis(),
             ev.getTags(), ev.getState(), ev.getBinName(), ev.getMediaType());

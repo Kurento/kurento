@@ -1,6 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- Maven coordinates -->
@@ -20,25 +19,11 @@
 	</description>
 	<scm>
 		<url>https://github.com/Kurento/kurento-tutorial-java</url>
-		<connection>scm:git:git://github.com/Kurento/kurento-tutorial-java.git</connection>
-		<developerConnection>scm:git:git@github.com:Kurento/kurento-tutorial-java.git</developerConnection>
+		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-java.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-tutorial-java.git</developerConnection>
 	</scm>
 
 	<!-- Project configuration -->
-
-	<properties>
-		<version.kurento-datachannelexample>6.6.0</version.kurento-datachannelexample>
-	</properties>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.kurento.module</groupId>
-				<artifactId>datachannelexample</artifactId>
-				<version>${version.kurento-datachannelexample}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<modules>
 		<module>kurento-chroma</module>
@@ -64,29 +49,33 @@
 		<pluginManagement>
 			<plugins>
 				<!--
-				Goal: spring-boot:run
-				Allows running the project from Maven.
-				Use this command: `mvn clean spring-boot:run`.
+				spring-boot-maven-plugin provides a couple useful goals:
 
-				Goal: spring-boot:repackage
-				Runs automatically during the Maven's 'package' goal.
-				The parameter 'executable=true' generates an executable JAR during
-				the 'package' phase. The original package is still generated as
-				"<Name>.jar", and the executable one is generated as "<Name>-exec.jar".
-				It also supports the service actions start/stop/status, so it
-				can be linked into "/etc/init.d/" to be used as system service.
+				spring-boot:run
+				https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#goals-run
+				Allows running the project from Maven. Use like this:
+					mvn clean spring-boot:run
 
-				Ref:
-				- https://stackoverflow.com/questions/21503883/spring-boot-application-as-a-service/30497095#30497095
-				- https://docs.spring.io/spring-boot/docs/current/reference/html/deployment.html#deployment-service
-				- https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/html/
+				spring-boot:repackage
+				https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#goals-repackage
+				Made here to run automatically during the `package` phase of the
+				Maven lifecycle. Creates a standalone jar that can be run with
+					java -jar package-exec.jar
+
+				<executable>true</executable> could be used to produce a JAR file
+				that is directly executable from the shell, however this makes it
+				incompatible with the GitHub Packages repository, which rejects
+				deployment with a "400 Bad Request" error.
+
+				Doc: https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#goals-repackage-parameters-details-executable
+				> It is recommended that you only enable this option if you intend
+				> to execute it directly, rather than [...] deploying it.
 				-->
 				<plugin>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
 					<configuration>
 						<classifier>exec</classifier>
-						<executable>true</executable>
 						<layout>ZIP</layout>
 						<mainClass>${start-class}</mainClass>
 					</configuration>

@@ -6,21 +6,37 @@
 #/ versions to the one provided as argument.
 #/
 #/
+#/ Notice
+#/ ======
+#/
+#/ This script does not use the Maven `versions` plugin (with goals such as
+#/ `versions:update-parent`, `versions:update-child-modules`, or `versions:set`)
+#/ because running Maven requires that the *current* versions are all correct
+#/ and existing (available for download or installed locally).
+#/
+#/ We have frequently found that this is a limitation, because some times it is
+#/ needed to update from an unexisting version (like if some component is
+#/ skipping a patch number, during separate development of different modules),
+#/ or when doing a Release (when the release version is not yet available).
+#/
+#/ It ends up being less troublesome to just edit the pom.xml directly.
+#/
+#/
 #/ Arguments
 #/ =========
 #/
-#/ <Version>
+#/ <BaseVersion>
 #/
-#/   Base version number to set. When '--release' is used, this version will
-#/   be used as-is; otherwise, a nightly/snapshot indicator will be appended.
+#/   Base version number to use. When '--release' is used, this string will
+#/   be set as-is; otherwise, a nightly/snapshot suffix is added.
 #/
-#/   <Version> should be in a format compatible with Semantic Versioning,
-#/   such as "1.2.3" or, in general terms, "<Major>.<Minor>.<Patch>".
+#/   <BaseVersion> must be in the Semantic Versioning format, such as "1.2.3"
+#/   ("<Major>.<Minor>.<Patch>").
 #/
 #/ --release
 #/
-#/   Use version numbers intended for Release builds, such as "1.2.3". If this
-#/   option is not given, a nightly/snapshot indicator is appended: "-dev".
+#/   Do not add nightly/snapshot suffix to the base version number.
+#/   The resulting value will be valid for a Release build.
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -40,12 +56,8 @@
 set -o errexit -o errtrace -o pipefail -o nounset
 
 # Check dependencies.
-command -v mvn >/dev/null || {
-    echo "ERROR: 'mvn' is not installed; please install it"
-    exit 1
-}
 command -v xmlstarlet >/dev/null || {
-    log "ERROR: 'xmlstarlet' is not installed; please install it"
+    echo "ERROR: 'xmlstarlet' is not installed; please install it"
     exit 1
 }
 
@@ -65,6 +77,12 @@ while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --release)
             CFG_RELEASE="true"
+            ;;
+        --kms-api)
+            # Ignore argument.
+            if [[ -n "${2-}" ]]; then
+                shift
+            fi
             ;;
         --git-add)
             CFG_GIT_ADD="true"
@@ -88,7 +106,7 @@ fi
 
 REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
 [[ "$CFG_VERSION" =~ $REGEX ]] || {
-    echo "ERROR: '$CFG_VERSION' must be compatible with Semantic Versioning: <Major>.<Minor>.<Patch>"
+    echo "ERROR: '$CFG_VERSION' is not SemVer (<Major>.<Minor>.<Patch>)"
     exit 1
 }
 
@@ -102,9 +120,9 @@ echo "CFG_GIT_ADD=$CFG_GIT_ADD"
 # ==================
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    VERSION="$CFG_VERSION"
+    VERSION_JAVA="$CFG_VERSION"
 else
-    VERSION="${CFG_VERSION}-SNAPSHOT"
+    VERSION_JAVA="${CFG_VERSION}-SNAPSHOT"
 fi
 
 
@@ -129,21 +147,39 @@ function git_add() {
 # Apply version
 # =============
 
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    MVN_ALLOW_SNAPSHOTS="false"
-else
-    MVN_ALLOW_SNAPSHOTS="true"
-fi
+# Parent: Update to the new version of kurento-java.
+xmlstarlet edit -S --inplace \
+        --update "/_:project/_:parent/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
 
-# Parent version: Update to latest available.
-mvn versions:update-parent \
-    -DgenerateBackupPoms=false \
-    -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
-
-# Children versions: Make them inherit from parent.
-mvn versions:update-child-modules \
-    -DgenerateBackupPoms=false \
-    -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
+# Children: Make them inherit from the new parent.
+CHILDREN=(
+    kurento-chroma
+    kurento-crowddetector
+    kurento-group-call
+    kurento-hello-world
+    kurento-hello-world-recording
+    kurento-hello-world-repository
+    kurento-magic-mirror
+    kurento-metadata-example
+    kurento-one2many-call
+    kurento-one2one-call
+    kurento-one2one-call-advanced
+    kurento-one2one-call-recording
+    kurento-platedetector
+    kurento-player
+    kurento-pointerdetector
+    kurento-rtp-receiver
+    kurento-send-data-channel
+    kurento-show-data-channel
+)
+for CHILD in "${CHILDREN[@]}"; do
+    find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \
+        xmlstarlet edit -S --inplace \
+            --update "/_:project/_:parent/_:version" \
+            --value "$VERSION_JAVA"
+done
 
 git_add \
     '*pom.xml'

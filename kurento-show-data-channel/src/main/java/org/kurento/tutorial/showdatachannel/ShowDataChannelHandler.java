@@ -41,7 +41,7 @@ import com.google.gson.JsonObject;
 
 /**
  * Show Data Channel handler (application and media logic).
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 6.1.1

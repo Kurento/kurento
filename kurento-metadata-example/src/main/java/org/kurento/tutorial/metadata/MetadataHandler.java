@@ -42,7 +42,7 @@ import com.google.gson.JsonObject;
 
 /**
  * Magic Mirror handler (application and media logic).
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 6.0.0
