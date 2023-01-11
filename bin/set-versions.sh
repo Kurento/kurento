@@ -215,7 +215,7 @@ update_debian_changelog() {
     # debchange (dch) requires an email being set on the system.
     if [[ -z "${EMAIL:-}${DEBEMAIL:-}" ]]; then
         export DEBFULLNAME="Kurento"
-        export DEBEMAIL="info@kurento.org"
+        export DEBEMAIL="kurento@openvidu.io"
     fi
 
     if [[ "$CFG_RELEASE" == "true" ]]; then
