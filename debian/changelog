@@ -7,6 +7,22 @@ kms-chroma (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
  -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:51 +0200
 
+kms-chroma (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:33 +0000
+
+kms-chroma (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Kurento ]
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:42 +0200
+
 kms-chroma (6.16.0-0kurento1) testing; urgency=medium
 
   * Prepare release 6.16.0-0kurento1

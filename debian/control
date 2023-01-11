@@ -13,7 +13,7 @@ Build-Depends: debhelper (>= 9),
  libopencv-dev,
  libsoup2.4-dev
 Standards-Version: 4.0.0
-Homepage: www.kurento.org
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kms-chroma
 Vcs-Git: https://github.com/Kurento/kms-chroma.git
 
