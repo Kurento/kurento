@@ -32,4 +32,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     pointerdetector,
     "Kurento pointer detector",
-    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "http://kurento.com/")
+    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "https://kurento.openvidu.io/")
