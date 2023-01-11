@@ -275,7 +275,7 @@ lifecycle = {
         var hostIp = ip;
         console.log("Docker IP:", hostIp);
         docker = new Docker();
-        docker.run('kurento/kurento-media-server-dev:latest', [], [
+        docker.run('kurento/kurento-media-server:dev', [], [
           process.stdout,
           process.stderr
         ], {

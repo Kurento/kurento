@@ -25,4 +25,4 @@ If you need to use a WebSocket endpoint different from the default one, you can 
 
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [Apache 2.0 License]: http://www.apache.org/licenses/LICENSE-2.0
-[website]: http://kurento.org
+[website]: https://kurento.openvidu.io/
