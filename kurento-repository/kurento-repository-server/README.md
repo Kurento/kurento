@@ -623,7 +623,7 @@ What is Kurento
 Kurento is an open source software project providing a platform suitable
 for creating modular applications with advanced real-time communication
 capabilities. For knowing more about Kurento, please visit the Kurento
-project website: http://www.kurento.org.
+project website: https://kurento.openvidu.io/.
 
 Kurento is part of [FIWARE]. For further information on the relationship of
 FIWARE and Kurento check the [Kurento FIWARE Catalog Entry]
@@ -701,15 +701,15 @@ Mailing List] and through [StackOverflow] using the tags *kurento* and
 
 Before asking for support, please read first the [Kurento Netiquette Guidelines]
 
-[documentation]: http://www.kurento.org/documentation
+[documentation]: https://kurento.openvidu.io/documentation
 [FIWARE]: http://www.fiware.org
 [GitHub Kurento bugtracker]: https://github.com/Kurento/bugtracker/issues
 [GitHub Kurento Group]: https://github.com/kurento
 [kurentoms]: http://twitter.com/kurentoms
-[Kurento]: http://kurento.org
-[Kurento Blog]: http://www.kurento.org/blog
+[Kurento]: https://kurento.openvidu.io/
+[Kurento Blog]: https://kurento.openvidu.io/blog
 [Kurento FIWARE Catalog Entry]: http://catalogue.fiware.org/enablers/stream-oriented-kurento
-[Kurento Netiquette Guidelines]: http://www.kurento.org/blog/kurento-netiquette-guidelines
+[Kurento Netiquette Guidelines]: https://kurento.openvidu.io/blog/kurento-netiquette-guidelines
 [Kurento Public Mailing list]: https://groups.google.com/forum/#!forum/kurento
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [Apache 2.0 License]: http://www.apache.org/licenses/LICENSE-2.0
@@ -720,7 +720,7 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [Open API specification]: http://kurento.github.io/doc-kurento/
 [apiary.io]: http://docs.streamoriented.apiary.io/
 [GitHub Kurento Java]: https://github.com/Kurento/kurento-java
-[kurento-install]: http://www.kurento.org/docs/current/installation_guide.html
+[kurento-install]: https://kurento.openvidu.io/docs/current/installation_guide.html
 [helloworld-repository]: https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-hello-world-recording
 [mongo]: https://www.mongodb.org/
 [mongo-install]: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/

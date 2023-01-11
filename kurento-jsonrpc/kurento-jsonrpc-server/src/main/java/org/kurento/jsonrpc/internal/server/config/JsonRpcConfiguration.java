@@ -18,14 +18,11 @@
 package org.kurento.jsonrpc.internal.server.config;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.catalina.Context;
-import org.apache.tomcat.websocket.server.WsSci;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.internal.http.JsonRpcHttpRequestHandler;
 import org.kurento.jsonrpc.internal.server.PerSessionJsonRpcHandler;
@@ -34,8 +31,6 @@ import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.internal.ws.JsonRpcWebSocketHandler;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -215,26 +210,6 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
       registration.addInterceptors(interceptors);
       
     }
-  }
-
-  // This methods workaround the bug
-  // https://jira.springsource.org/browse/SPR-10841
-  @Bean
-  public TomcatServletWebServerFactory tomcatContainerFactory() {
-	  TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
-    factory.setTomcatContextCustomizers(
-        Arrays.asList(new TomcatContextCustomizer[] { tomcatContextCustomizer() }));
-    return factory;
-  }
-
-  @Bean
-  public TomcatContextCustomizer tomcatContextCustomizer() {
-    return new TomcatContextCustomizer() {
-      @Override
-      public void customize(Context context) {
-        context.addServletContainerInitializer(new WsSci(), null);
-      }
-    };
   }
 
   // ----------------------- Components ------------------------

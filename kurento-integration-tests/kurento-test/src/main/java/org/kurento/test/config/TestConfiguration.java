@@ -152,7 +152,7 @@ public class TestConfiguration {
 
   public static final String KMS_DOCKER_IMAGE_NAME_PROP = "test.kms.docker.image.name";
   public static final String KMS_DOCKER_IMAGE_NAME_DEFAULT =
-      "kurento/kurento-media-server-dev:latest";
+      "kurento/kurento-media-server:dev";
 
   public static final String KMS_DOCKER_IMAGE_FORCE_PULLING_PROP =
       "test.kms.docker.image.forcepulling";

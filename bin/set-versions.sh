@@ -6,6 +6,22 @@
 #/ versions to the one provided as argument.
 #/
 #/
+#/ Notice
+#/ ======
+#/
+#/ This script does not use the Maven `versions` plugin (with goals such as
+#/ `versions:update-parent`, `versions:update-child-modules`, or `versions:set`)
+#/ because running Maven requires that the *current* versions are all correct
+#/ and existing (available for download or installed locally).
+#/
+#/ We have frequently found that this is a limitation, because some times it is
+#/ needed to update from an unexisting version (like if some component is
+#/ skipping a patch number, during separate development of different modules),
+#/ or when doing a Release (when the release version is not yet available).
+#/
+#/ It ends up being less troublesome to just edit the pom.xml directly.
+#/
+#/
 #/ Arguments
 #/ =========
 #/
@@ -52,10 +68,6 @@
 set -o errexit -o errtrace -o pipefail -o nounset
 
 # Check dependencies.
-command -v mvn >/dev/null || {
-    echo "ERROR: 'mvn' is not installed; please install it"
-    exit 1
-}
 command -v xmlstarlet >/dev/null || {
     echo "ERROR: 'xmlstarlet' is not installed; please install it"
     exit 1
@@ -154,32 +166,20 @@ function git_add() {
 # Apply version
 # =============
 
-MVN_ARGS=()
-
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    MVN_ALLOW_SNAPSHOTS="false"
-else
-    MVN_ALLOW_SNAPSHOTS="true"
-    MVN_ARGS+=(-U -Psnapshot)
-fi
-
 # kurento-parent-pom
 {
     pushd kurento-parent-pom/
 
-    # Parent version: Update to latest available.
-    mvn "${MVN_ARGS[@]}" versions:update-parent \
-        -DgenerateBackupPoms=false \
-        -DparentVersion="[$VERSION_JAVA,)" \
-        -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
+    # NOTE: No need to update the parent version. Release docs already instruct
+    # to update it manually whenever kurento-qa-pom is getting a new version.
 
-    # Project version: Set new version.
-    mvn "${MVN_ARGS[@]}" versions:set \
-        -DgenerateBackupPoms=false \
-        -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS" \
-        -DnewVersion="$VERSION_JAVA"
+    # Project version: Set new value.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
 
-    # API dependencies: Set new version.
+    # API dependencies: Set new Kurento API value.
     if [[ -n "$CFG_KMS_API" ]]; then
         MODULES=(
             kms-api-core
@@ -187,33 +187,19 @@ fi
             kms-api-filters
         )
         for MODULE in "${MODULES[@]}"; do
-            mvn versions:set-property \
-                -DgenerateBackupPoms=false \
-                -Dproperty="version.${MODULE}" \
-                -DnewVersion="$VERSION_KMS"
+            xmlstarlet edit -S --inplace \
+                --update "/_:project/_:properties/_:version.${MODULE}" \
+                --value "$VERSION_KMS" \
+                pom.xml
         done
     fi
-
-    # Install the project into local cache.
-    # This allows the following project(s) to update their parent.
-    mvn "${MVN_ARGS[@]}" clean install -Dmaven.test.skip=true
 
     popd
 }
 
 # All except kurento-parent-pom
 {
-    # Parent version: Update to latest available.
-    #
-    # Cannot use the "versions:update-parent" plugin here, because it requires
-    # that the *current* parent version also exists. So if won't allow
-    # updating from a nonexistent version (like "1.2.3-SNAPSHOT").
-    #
-    # mvn "${MVN_ARGS[@]}" versions:update-parent \
-    #     -DgenerateBackupPoms=false \
-    #     -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS" \
-    #     -DparentVersion="[$VERSION_JAVA]"
-    #
+    # Parent: Update to the new version of kurento-parent-pom.
     xmlstarlet edit -S --inplace \
         --update "/_:project/_:parent/_:version" \
         --value "$VERSION_JAVA" \
@@ -221,16 +207,7 @@ fi
 
     # Project version: Inherited from parent.
 
-    # Children versions: Make them inherit from parent.
-    #
-    # Cannot use the "versions:update-parent" plugin here, because it requires
-    # that the *current* parent version also exists. So if won't allow
-    # updating from a nonexistent version (like "1.2.3-SNAPSHOT").
-    #
-    # mvn "${MVN_ARGS[@]}" versions:update-child-modules \
-    #     -DgenerateBackupPoms=false \
-    #     -DallowSnapshots="$MVN_ALLOW_SNAPSHOTS"
-    #
+    # Children: Make them inherit from the new parent.
     CHILDREN=(
         kurento-assembly
         kurento-basicroom

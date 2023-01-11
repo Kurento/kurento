@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
@@ -35,7 +35,7 @@ import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.RectangleInsets;
+import org.jfree.chart.ui.RectangleInsets;
 
 /**
  * Chart writer for latency results.
@@ -83,7 +83,7 @@ public class ChartWriter {
 
     // Create chart
     JFreeChart chart = new JFreeChart(chartTitle, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
-    ChartUtilities.applyCurrentTheme(chart);
+    ChartUtils.applyCurrentTheme(chart);
     ChartPanel chartPanel = new ChartPanel(chart, false);
 
     // Draw png
