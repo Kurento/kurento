@@ -2146,4 +2146,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     kmsrecorderendpoint,
     "Kurento recorder endpoint",
     kms_recorder_endpoint_plugin_init, VERSION, GST_LICENSE_UNKNOWN,
-    "Kurento Elements", "http://kurento.com/")
+    "Kurento Elements", "https://kurento.openvidu.io/")

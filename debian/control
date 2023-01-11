@@ -26,7 +26,7 @@ Build-Depends: debhelper (>= 9),
 Standards-Version: 4.0.0
 Vcs-Git: https://github.com/Kurento/kms-elements.git
 Vcs-Browser: https://github.com/Kurento/kms-elements
-Homepage: https://www.kurento.org
+Homepage: https://kurento.openvidu.io/
 
 Package: kms-elements
 Architecture: any

@@ -3,7 +3,7 @@
         <modelVersion>4.0.0</modelVersion>
 
         <description>Kurento Media Server elements module</description>
-        <url>http://www.kurento.org/</url>
+        <url>https://kurento.openvidu.io/</url>
 
         <licenses>
           <license>
@@ -17,8 +17,8 @@
           <developer>
               <id>kurento.org</id>
               <name>Kurento Community</name>
-              <organization>kurento.org</organization>
-              <organizationUrl>http://www.kurento.org</organizationUrl>
+              <organization>Kurento</organization>
+              <organizationUrl>https://kurento.openvidu.io/</organizationUrl>
           </developer>
         </developers>
 

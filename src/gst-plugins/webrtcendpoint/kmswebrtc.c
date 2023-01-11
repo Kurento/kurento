@@ -23,4 +23,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     webrtcendpoint,
     "Kurento WebRTC endpoint",
     kms_webrtc_endpoint_plugin_init, VERSION, GST_LICENSE_UNKNOWN,
-    "Kurento Elements", "http://kurento.com/")
+    "Kurento Elements", "https://kurento.openvidu.io/")

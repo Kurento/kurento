@@ -23,4 +23,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     rtpendpoint,
     "Kurento rtp endpoint",
     kms_rtp_endpoint_plugin_init, VERSION, GST_LICENSE_UNKNOWN,
-    "Kurento Elements", "http://kurento.org/")
+    "Kurento Elements", "https://kurento.openvidu.io/")
