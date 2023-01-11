@@ -1,6 +1,6 @@
 {
   "name": "kurento-recorder",
-  "version": "6.16.1-dev",
+  "version": "6.18.1-dev",
   "description": "Kurento demo with Recorder",
   "keywords": [
     "kurento",
@@ -39,11 +39,11 @@
     "srtp",
     "rtsp"
   ],
-  "homepage": "https://www.kurento.org",
+  "homepage": "https://kurento.openvidu.io/",
   "license": "Apache-2.0",
   "authors": [
-    "Kurento <openvidu@gmail.com> (https://www.kurento.org)",
-    "Kurento Community <kurento@googlegroups.com> (https://www.kurento.org)"
+    "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
+    "Kurento Community <kurento@googlegroups.com> (https://kurento.openvidu.io/)"
   ],
   "repository": {
     "type": "git",
