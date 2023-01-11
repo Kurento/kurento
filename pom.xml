@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Maven coordinates -->
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-maven-plugin</artifactId>
 	<version>7.0.0-SNAPSHOT</version>
@@ -13,11 +15,11 @@
 		Generates Java and Javascript client code from Kurento Media Server
 		module description files.
 	</description>
-	<url>https://www.kurento.org/docs/${project.version}</url>
+	<url>https://kurento.openvidu.io/</url>
 	<scm>
 		<url>https://github.com/Kurento/kurento-maven-plugin</url>
-		<connection>scm:git:git://github.com/Kurento/kurento-maven-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</developerConnection>
+		<connection>scm:git:https://github.com/Kurento/kurento-maven-plugin.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-maven-plugin.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
@@ -26,7 +28,7 @@
 			<id>kurento.org</id>
 			<name>Kurento Community</name>
 			<organization>Kurento</organization>
-			<organizationUrl>https://www.kurento.org</organizationUrl>
+			<organizationUrl>https://kurento.openvidu.io/</organizationUrl>
 		</developer>
 	</developers>
 	<issueManagement>
@@ -50,17 +52,19 @@
 	</mailingLists>
 	<organization>
 		<name>Kurento</name>
-		<url>https://www.kurento.org</url>
+		<url>https://kurento.openvidu.io/</url>
 	</organization>
 
 	<!-- Project configuration -->
 
 	<properties>
+		<!-- maven-resources-plugin -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- maven-compiler-plugin -->
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<maven.compiler.source>1.7</maven.compiler.source>
+		<!-- REVIEW: Starting from Java-9, change to use the new <release> parameter. -->
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 	</properties>
 
 	<build>
@@ -100,13 +104,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<extensions>
-			<extension>
-				<groupId>org.kuali.maven.wagons</groupId>
-				<artifactId>maven-s3-wagon</artifactId>
-				<version>1.2.1</version>
-			</extension>
-		</extensions>
 	</build>
 
 	<dependencies>
@@ -118,14 +115,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-project</artifactId>
-			<version>2.2.1</version>
+			<artifactId>maven-core</artifactId>
+			<version>3.8.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
 			<version>3.2</version>
-			<scope>provided</scope><!-- annotations are needed only to build the plugin -->
+			<!-- annotations are needed only to build the plugin -->
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
@@ -140,7 +138,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>27.1-jre</version>
+			<version>29.0-jre</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -156,5 +154,14 @@
 			<version>7.0.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
+
+	<!--
+	Kurento projects don't define a <distributionManagement> section with the
+	repositories used for deployment. Instead, CI injects a `settings.xml` file
+	with a "deploy" profile that configures maven-deploy-plugin through properties
+	`altSnapshotDeploymentRepository` and `altReleaseDeploymentRepository`.
+	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
+	<distributionManagement></distributionManagement>
+	-->
 
 </project>

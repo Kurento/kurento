@@ -192,11 +192,11 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 				// kmd
 				// files
 				SourceMapping mapping = new SuffixMapping("kmd.json",
-						Collections.<String> emptySet());
+						Collections.<String>emptySet());
 
 				SourceInclusionScanner scan = new SimpleSourceInclusionScanner(
 						Collections.singleton("**/*.kmd.json"),
-						Collections.<String> emptySet());
+						Collections.<String>emptySet());
 
 				scan.addSourceMapping(mapping);
 
@@ -225,7 +225,7 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 	private Path loadTemplatesPath(MavenProject project)
 			throws MojoExecutionException, IOException {
 
-		log.info("Searching for kurento dependencies:");
+		log.info("Searching for Kurento template paths...");
 
 		if (KURENTO_CLIENT_ARTIFACT_ID.equals(project.getArtifactId())
 				&& KURENTO_CLIENT_GROUP_ID.equals(project.getGroupId())) {
@@ -236,7 +236,7 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 
 			Artifact artifact = (Artifact) artObj;
 
-			log.debug("Exploring dependency: " + artifact);
+			log.debug("Exploring project artifact: " + artifact);
 
 			if (KURENTO_CLIENT_ARTIFACT_ID.equals(artifact.getArtifactId())
 					&& KURENTO_CLIENT_GROUP_ID.equals(artifact.getGroupId())) {
@@ -244,6 +244,9 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 				return loadTemplatesPathFromKurentoClient(artifact.getFile());
 			}
 		}
+
+		log.warn("No Kurento template path was found (missing a dependency on '"
+				+ KURENTO_CLIENT_ARTIFACT_ID + "'?)");
 
 		return null;
 	}
@@ -290,6 +293,9 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 
 				krp.setDeleteGenDir(true);
 				krp.setVerbose(false);
+
+				log.info("Loading templates path for " + project);
+
 				Path templatesPath = loadTemplatesPath(project);
 
 				log.info("Templates path: " + templatesPath);
