@@ -1,0 +1,33 @@
+Source: kurento-module-creator
+Priority: optional
+Maintainer: Kurento <kurento@openvidu.io>
+Build-Depends: debhelper (>= 9),
+ build-essential,
+ default-jdk-headless,
+ maven (>= 3.0),
+ maven-debian-helper (>= 1.5)
+Build-Depends-Indep:
+ junit4,
+ libcommons-cli-java,
+ libfreemarker-java,
+ libgoogle-gson-java,
+ libhamcrest-java,
+ libmaven-assembly-plugin-java,
+ libslf4j-java
+Standards-Version: 4.0.0
+Vcs-Git: https://github.com/Kurento/kurento-module-creator.git
+Vcs-Browser: https://github.com/Kurento/kurento-module-creator
+Homepage: https://kurento.openvidu.io/
+
+Package: kurento-module-creator
+Architecture: all
+Section: java
+Depends: ${misc:Depends},
+ ${maven:Depends},
+ default-jdk-headless,
+ maven (>= 3.0)
+Suggests: ${maven:OptionalDepends}
+Description: Kurento Module Creator
+ This tool generates client stubs in different languages for communication
+ with the Kurento Media Server, using a JSON-RPC API and language-dependent
+ templates.

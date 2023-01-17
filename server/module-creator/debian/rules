@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+# Uncomment this to change the Java installation path.
+# Default: /usr/lib/jvm/default-java
+#export JAVA_HOME=/usr/lib/jvm/default-java
+
+# Uncomment this to enable verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --buildsystem=maven

@@ -1,0 +1,1016 @@
+kurento-module-creator (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  [ Kurento ]
+  * UNRELEASED
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 20 Sep 2022 17:15:31 +0200
+
+kurento-module-creator (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+  [ Juan Navarro ]
+  * Delete unused 'maven-s3-wagon' Maven extension
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:30 +0000
+
+kurento-module-creator (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Paul Wise ]
+  * Add KurentoModuleCreatorConfig with path to FindKurentoModuleCreator (#3)
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:39 +0200
+
+kurento-module-creator (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:37 +0100
+
+kurento-module-creator (6.15.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.15.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 03 Nov 2020 18:04:20 +0100
+
+kurento-module-creator (6.14.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.14.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 16 Jun 2020 17:48:02 +0200
+
+kurento-module-creator (6.13.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.13.0-0kurento1
+  * debian/control: Depend on Java JDK instead of JRE
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 17 Dec 2019 13:37:52 +0100
+
+kurento-module-creator (6.12.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.12.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 14 Oct 2019 19:12:32 +0200
+
+kurento-module-creator (6.11.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.11.0-0kurento1
+  * debian/control: Require maven >= 3.0
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 19 Jul 2019 19:47:52 +0200
+
+kurento-module-creator (6.10.0-0kurento1) testing; urgency=medium
+
+  * debian: Review for 18.04 build
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:29 +0200
+
+kurento-module-creator (6.8.0) testing; urgency=medium
+
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 26 Sep 2018 11:30:00 +0200
+
+kurento-module-creator (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+    - Other licenses: Review formatting and use correct syntax.
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kurento-module-creator-4.0 (4.0.7) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * cpp_templates: Generate invocation of methods with optional parameters correctly
+  * Make project build driven my cmake
+
+  [ José Antonio Santos Cadenas ]
+  * Revert "Make project build driven my cmake"
+
+  [ Jose Antonio Santos Cadenas ]
+  * pom.xml: Allow defining a custom build directory by command line
+  * scripts: Try to run kurento-module-creator from the same directory
+  * tamplate: find_cmake: Allow same project imports
+  * templates: cmake_dependencies: Add different names for dependencies variables
+  * Simplify .gitignore file
+  * Prepare release 4.0.7
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 11:08:53 +0200
+
+kurento-module-creator-4.0 (4.0.6) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * cpp_interface/complexType_class_cpp: Add default value for optional fields
+
+  [ Jose Antonio Santos Cadenas ]
+  * pom.xml: Add extensions to upload to s3
+  * pom.xml: Move extensions to build
+  * pom.xml: Remove ssh extensions
+  * Use s3 wagon only for release, use ssh wagon otherwise
+  * Prepare release 4.0.6
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 14:28:19 +0200
+
+kurento-module-creator-4.0 (4.0.5) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * pom.xml.ftl: As s3-wagon as extension
+  * Add build configuration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp_templates: Add method getHierarchy to know the parent classes
+  * cpp_templates: return const pointer to string to avoid copies
+  * cpp_templates: Add method to obtain the fully qualified name
+  * TypeHierarchy: Compare string correctly
+  * Install cmake find module for cmake 3.5 version
+  * RemoteClassRactoryTemplate: Include Factory.hpp
+  * cpp_interface/event_class: Add copy constructor to events
+  * cpp_server_internal/remoteClass_internal: Send events asynchronously
+
+  [ Raúl Benítez Mejías ]
+  * Add new getter for qualifiedName
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change license to Apache 2.0
+  * Fix Readme templates for npm projects
+  * Prepare release 4.0.5
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 27 May 2016 19:14:26 +0200
+
+kurento-module-creator-4.0 (4.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Format source
+  * cpp_templates: Do not initialize values that should be read from the JSON
+  * Prepare release 4.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 19 Jan 2016 16:03:08 +0100
+
+kurento-module-creator-4.0 (4.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * complexType_class_cpp: Fix sever crash
+
+  [ Jose Antonio Santos Cadenas ]
+  * Format source to 80 character length
+  * Main: Add option to print classes, events and complex types
+  * KurentoModuleCreator: Print dependencies in simple kmd
+  * KurentoModuleCreator: Use just one digest
+  * Copy opencv templates to a different folder
+  * debian: Install cmake also in cmake 3.2 folder
+  * Prepare release 4.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 15:38:10 +0100
+
+kurento-module-creator-4.0 (4.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * cpp templates: Fix problem with event handlers references
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * README templates according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Updated README templates to include links to readthedocs.org and apiary.io
+  * Fixed broken links in README templates
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add generation tests for checking templates
+  * Fix cpp templates for Events and ComplexTypes with dependencies
+  * OrganizeDependencies: Simplify remoteClass detection
+  * Format source
+  * Prepare release 4.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 01 Oct 2015 17:03:43 +0200
+
+kurento-module-creator-4.0 (4.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Update maven plugin dependency
+  * Prepare release 4.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 16:17:23 +0200
+
+kurento-module-creator-4.0 (4.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Jesús Leganés Combarro "piranna ]
+  * [Fix bug] Do require()s only before update package.json file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update .gitreview to work with new repo
+  * Prepare for 4.0 development iteration
+  * Add compatibility for cmake 3.0
+  * Remove replaces line
+  * Fix comparation of development versions
+  * Add more test for compatible versions
+  * Use master branch by default
+  * Fix kurento-client development version for js
+
+  [ David Fernandez ]
+  * Add support for RaiseBase event in codeGenerator
+
+  [ Jose Antonio Santos Cadenas ]
+  * Upgrade kurento-maven-plugin to 2.0.0-SNAPSHOT
+
+  [ David Fernandez ]
+  * Add support for extends in complexTypes
+  * Add type field in Json for ComplexTypes
+  * Add RegisterParent heritage for register elements without parent
+  * Register complexTypes as RegisterParent elements
+  * Add map type to kmd
+
+  [ Jose Antonio Santos Cadenas ]
+  * Do not include SNAPSHOT version as upper range in maven
+
+  [ David Fernandez ]
+  * Add type "double" to code generator
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove js templates that are deprecated
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Generate .gitignore file (it's clearer when inspecting the plugin folder)
+  * Don't generate code if it's already done
+  * Publish kurento-module-creator as a npm package
+  * Updated modules dependencies
+  * Access modules using its package name instead of polluting global namespace
+  * Javascript templates only allow to generate Bower packages on external modules
+  * [npm] Removed usage of peerDependencies
+  * Updated grunt-npm2bower-sync dependency (fix empty author in package.json)
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp_templates: Do not add jsoncpp prefix to includes
+  * cpp_templates: Add missing include
+  * cpp_templates: If __type__ or __module__ are not present deduce the type
+  * cpp_templates: Do not depend on registered types when we already know the type
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Updated grunt-npm2bower-sync dependency (fix for MultiTask registration)
+
+  [ David Fernandez ]
+  * Add int64 as data type
+  * Generate empty constructor if complexType parent has parameters
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove package.json
+  * Prepare release 4.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 16:04:36 +0200
+
+kurento-module-creator-4.0 (4.0.0~0) testing; urgency=medium
+
+  * Update to version 4.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 12:27:34 +0100
+
+kurento-module-creator (3.0.9) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * maven: Set kurento-maven-plugin to 1.0.5
+  * Prepare release 3.0.9
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 15:18:01 +0100
+
+kurento-module-creator (3.0.8) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * maven: Set kurento-maven-plugin to 1.0.4
+  * Prepare release 3.0.8
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 15:07:42 +0100
+
+kurento-module-creator (3.0.7) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Set global kurentoClient namespace on browser if it's not defined
+
+  [ David Fernandez ]
+  * Add kurento namespace to json functions
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Get reference directly from external classes on basic modules
+  * fluent API for connect()
+  * Pseudo-syncronous API
+  * Transactional API
+  * TransactionsManager class
+  * MediaObjectCreator class
+  * Explicit transaction as first parameter
+  * Using checkType() from kurento-client for all the modules
+
+  [ Micael Gallego Carrillo ]
+  * Revert "Using checkType() from kurento-client for all the modules"
+  * Revert "Explicit transaction as first parameter"
+  * Revert "MediaObjectCreator class"
+  * Revert "TransactionsManager class"
+  * Revert "Transactional API"
+  * Revert "Pseudo-syncronous API"
+
+  [ David Fernandez ]
+  * Modify template to initialize property setters functions
+
+  [ mgallego ]
+  * [java-templates] Transactional Java API
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Changed README.md template to be used for the .kmd repositories
+
+  [ David Fernandez ]
+  * Revert "Revert "Pseudo-syncronous API""
+  * Revert "Revert "Transactional API""
+  * Revert "Revert "TransactionsManager class""
+  * Revert "Revert "MediaObjectCreator class""
+  * Revert "Revert "Explicit transaction as first parameter""
+  * Revert "Revert "Using checkType() from kurento-client for all the modules""
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Fix 'Transaction is not defined' in Hub
+  * devDependencies for modules
+
+  [ Jose Antonio Santos Cadenas ]
+  * dependencies_cmake: Do not require boost by default
+  * Find_cmake: Allow passing dependencies with custom params for generic_find
+
+  [ mgallego ]
+  * Move java templates to kurento-maven-plugin
+  * Use config.json file in any templates folder (internal or external)
+  * Update kurento-maven-plugin to 1.0.3-SNAPSHOT
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Fix bug of HubPort constructorParams
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp: Fix problem in JsonCpp library while getting string values
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Propagate HubPort '_rpc' events
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp: Use proper error codes in exceptions
+  * cpptemplates: Initialize json before trying to deserialize it
+  * cpp templates: Improve error message when constructor params are not set
+  * cpp templates: Improve error message when invoke params are not set
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Generate Javascript project (NPM & Bower)
+  * Fully generate the Node.js & Bower code on 'npm install'
+
+  [ Jose Antonio Santos Cadenas ]
+  * Revert "Fully generate the Node.js & Bower code on 'npm install'"
+  * Revert "Generate Javascript project (NPM & Bower)"
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Generate Javascript project (NPM & Bower)
+  * Capture exception if json file doesn't exists
+  * Module definition: check name is not null before version for better error messages
+  * dependency ROMs as devDependencies
+  * install dependencies on prepublish if they are not available yet
+  * scripts.prepublish as external Node.js script instead of inline bash
+  * Fixed typo in Gruntfile.js, and don't generate prepublish for internal modules
+  * Updated NPM templates to use Javascript ones on kurento-client-js
+
+  [ Jose Antonio Santos Cadenas ]
+  * Keep old devDependencies while fusioning json
+  * cpp: Fix thrown exception when object deserialization fails
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Clean-up of generated Gruntfile.js & removed duplicated dependencies
+  * Always generate bower.json
+  * Bower repo may not be the same of NPM, prepare templates for it
+  * Set peerDependencies after the code has been created (and published)
+  * Don't update package.json for core, elements & filters modules
+
+  [ Jose Antonio Santos Cadenas ]
+  * maven: Fix maven plugin to next release version
+  * Prepare relase 3.0.7
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 14:39:54 +0100
+
+kurento-module-creator (3.0.6) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Find<MODULE>.cmake: Fix corner cases while finding includes
+  * Find<MODULE>.cmake: Add extra required libraries correctly
+  * Find<MODULE>.cmake: Fix problems with kmsfilter requirements
+  * Prepare release 3.0.6
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 07 Oct 2014 15:01:43 +0200
+
+kurento-module-creator (3.0.5) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Ivan Gracia ]
+  * Updated logo
+
+  [ Jose Antonio Santos Cadenas ]
+  * JsonModuleSaverLoader: Do not write json scaping html characters
+  * pom.xml template: Do not make multiple kurento-client multiple times
+  * pkgconfig: Fix name in template
+  * Update script to allow developer execution not from /usr/bin folder
+  * Add template for FindMODULE.cmake style files
+  * Find jsonrpc package using cmake instead of pkg-config
+  * dependencies_cmake: Remove referenced to specific core dependencies
+  * pkgconfig: Remove fixed dependencies from template
+  * Use GenericFind for internal imports
+  * FindMODULE.cmake: Add support for extra required libraries
+  * Fix finding modules that do not have extra include directories
+  * Cmake: Do not use variables if they are set to NOT-FOUND
+  * RemoteClass.cpp: Add method to know object module
+  * FindCamke: Improve includes finding
+  * Prepare release 3.0.5
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 06 Oct 2014 19:13:18 +0200
+
+kurento-module-creator (3.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ mgallego ]
+  * [Bug-fix] Exception when creating a jar file system twice
+
+  [ Jose Antonio Santos Cadenas ]
+  * js: Fix import for internal modules
+  * pom template: Modify version of plugin
+  * Prepare release 3.0.3
+  * Prepare for next development iteration
+  * Prepare release 3.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 22 Sep 2014 10:20:22 +0200
+
+kurento-module-creator (3.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * pom.xml: Add fields required by maven central
+  * Prepare release 3.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 19 Sep 2014 15:44:42 +0200
+
+kurento-module-creator (3.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * pom_template: Set plugin version to 1.0.1
+  * pom.xml: Add license
+  * Prepare release 3.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 19 Sep 2014 15:06:12 +0200
+
+kurento-module-creator (3.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * pom.xml: Do not add dependencies tag if there are no dependencies
+  * pom.xml: Version range for maven plugin
+  * js: Remove kurento specifics from js templates
+
+  [ mgallego ]
+  * Allow caret ranges in kurento module versions
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix generation of bower.json using a template to merge field
+  * JsonFusioner: Write json using bufferedWriter + rename xml variables
+
+  [ mgallego ]
+  * Test verification of non-dev versions in release version module
+  * Fix check of dependencies versions
+
+  [ Jose Antonio Santos Cadenas ]
+  * Return error correctly while reading kmd.json values
+
+  [ mgallego ]
+  * Include junit4 in debian descriptor file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove StingContains from tests that does not work with debian
+  * Improve exception description when finding module dependencies
+  * Prepare release 3.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 19 Sep 2014 10:56:03 +0200
+
+kurento-module-creator (3.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Fixed autogenerated JsDoc references (not Sphinx documentation, though)
+
+  [ Jose Antonio Santos Cadenas ]
+  * Rename project to kurento-module-creator
+  * Fix maven template
+
+  [ mgallego ]
+  * Remove old js_gen_config.json
+  * [bug-fix] generate correct dependency coordinates for modules with no java code generation ('code.kmd' entry in kmd file)
+  * Refactor package names, classes and change 'model' by 'module'
+  * Refactor KurentoRomProcessor to ModuleDefinitionProcessor
+  * More refactorings and clean-up
+
+  [ Jose Antonio Santos Cadenas ]
+  * Rename model to module in templates
+  * Remove semver dependency
+  * Add cmake finder for the program
+  * Fix pom.xml template
+
+  [ mgallego ]
+  * Move classes non related to codegen to main package
+  * Support flexible compatibility with -dev versions to make easier work with deb packages in Jenkins machines
+  * [Bug-fix] Properties were not correctly serialized to output kmd
+
+  [ Jose Antonio Santos Cadenas ]
+  * Avoid concurrent modification exception not removing while iterating
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Sphinx links converted to JsDoc
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix debian package version in changelog
+
+  [ Jesús Leganés Combarro "piranna ]
+  * External and cross-plugin references for autogenerated JsDoc
+  * Cross references in Sphinx links and JsDoc events
+  * Using NPM package name on require() instead of KMD name field
+  * Using correct path for abstract classes
+
+  [ David Fernandez ]
+  * Update kurento-maven-plugin version
+  * Remove duplicate include
+
+  [ Jose Antonio Santos Cadenas ]
+  * js templates: Fix problem generating code for projects with dependencies
+  * js templates: Cleanup
+
+  [ mgallego ]
+  * Change com by org
+  * Update Java templates with new names and packages
+  * New template for Kurento-API generation
+  * Rebase changes
+  * Update Java templates with kurento-client refactorings
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix bug in events with a list of elements as property
+
+  [ David Fernandez ]
+  * Add new templates to generate classes which inherit from OpenCVFilter
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp templates: Add configuration for each object
+
+  [ Jesús Leganés Combarro "piranna ]
+  * NPM dependencies set to final package names
+  * Fixed typo
+  * Concatenate element events with their parent classes ones
+
+  [ mgallego ]
+  * Added namespaces in kurento module definitions
+  * Formatting minor-fixes
+  * Change "plugin" by "module" in the default implementation namespace
+  * Bug-fix: Solve infinite loop causing OutOfMemory or StackOverflow
+  * Add new pseudo-test to auto generate Java projects from modules
+  * Bug-fix: Generate correct continuation type in properties (fix kms-example project)
+  * Generate output folder if not exist when creating fusioned kmd file
+  * Added namespaces in kurento module definitions (2)
+  * Bug-fix: better handling of comma in the last element of a Json Array and duplicate dependencies in pom.xml.
+  * Enable core, elements and filters code generation in pseudo-test
+  * bug-fix Remove "kurento" virtual dependency for problems in C projects
+  * Bug-fix Import EventSubscription in Java generated code
+
+  [ David Fernandez ]
+  * Fix bug in constructor generation when the class extends of abstract classes
+
+  [ mgallego ]
+  * Refactor kmd properties to make easier Json parsing in Java
+  * Refactor Namespaces test
+  * Allow custom maven and npm versions in import section in kmd
+  * Refactor kmd properties to make easier Json parsing in Java
+  * Allow custom maven and npm versions in import section in kmd
+  * Bug-fix Incorrect groupId selection in pom.xml template
+  * Allow custom npm and maven versions in kurentoVersion
+  * Generate #develop version if npmGit is configured in JS
+  * Allow customization of pom.xml, package.json and bower.json with a customization file.
+  * Refactor to fully-qualified class references to avoid name collisions
+  * Add support for ranges in imports and kurentoVersion in kmd files
+
+  [ David Fernandez ]
+  * Add namespaces to generated code
+
+  [ mgallego ]
+  * [Bug-fix] Change "js["node.name"] by "js.nodeName" in remoteClass_plugin.ftl due to change un kmd.json file.
+  * Generate JS projects in KurentoCodeGeneration pseudo-test
+
+  [ Jose Antonio Santos Cadenas ]
+  * If node version get from a git repo you don't need to parse it for semantic version
+  * Import filters instead of elements twice (bad copy/paste)
+  * Set a proper npm version for kurento-client when a external module is created
+  * Do not add tilde to node dependencies, semantic versioning will add appropriate ranges
+  * package.json: Set version module version in package.json instead of npmVersion
+  * package.json: Use npmRepository set in kmd.json file instead of creating one
+  * package.json: Do not set bugs url as github issues, we do not use them
+  * package.json: Fix format of generated file
+  * package.json: Fix kurento-client version in peerDependencies
+
+  [ David Fernandez ]
+  * package json: Test package generation
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Notify better the type of expected objects
+  * [js] Get parent classes from kurento-client, not as dependency
+  * Get reference directly from external classes on basic modules
+
+  [ Boni Garcia ]
+  * Removed KWS/KMF references
+
+  [ Jose Antonio Santos Cadenas ]
+  * js: Make requires in external modules correctly
+  * Prepare release 3.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 17 Sep 2014 11:06:00 +0200
+
+ktool-rom-processor (2.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix debian dependencies for java 1.7
+  * Prepare release 2.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 23 Jul 2014 19:59:26 +0200
+
+ktool-rom-processor (2.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * [maven-release-plugin] prepare for next development iteration
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Fixed JsDoc problem with enums
+  * kws-media-api autogenerated
+  * model.json MediaObject is autogenerated, too
+
+  [ Jose Antonio Santos Cadenas ]
+  * Make debian build standard
+  * Fix wagon extension version
+  * Fix program script
+
+  [ mgallego ]
+  * First prototype for plugin development
+  * Refactoring for Maven Plugin support and improved log
+  * Bug fix for detecting non existing template folder
+  * Bug fix: Error when executing ktool-rom-processor without config file
+
+  [ Jose Antonio Santos Cadenas ]
+  * CppObjectType: Allow adding a prefix and a suffix to the type name
+  * Minor fixes to fix cpp core generation style
+  * Add utility function for cpp objects serialization
+  * Fix serialization name for "Property" "final" attribute
+  * Add properties to RemoteClass dependencies
+  * Support just one constructor for remote classes
+  * Add method to escape strings
+
+  [ mgallego ]
+  * Improvements Java templates
+  * Bug fix: Some files are not deleted when generating code
+  * Internal templates
+  * Refactoring and clean up
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix doc template
+  * Add templates to jar file by default
+
+  [ mgallego ]
+  * Add name to model
+  * Allow space separated list of files or folders in kmd files and dependencies
+  * Model name, several kmd files and imports with versions
+  * Extended imports for package name query in Java templates
+  * Create default values for code entry in kmd
+  * Load models without generate code and delete MANIFEST/kurento folder
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add support to print model variables
+  * Do not raise exception it got object is a basic type
+  * Add an option to write completed and merged model to a file
+  * Do not stop the program if no dependency files are found
+  * Do not stop the program if no templates or codegendir are found
+  * Add templates for cpp
+  * Reduce logging category
+  * Format source with eclipse
+  * Add parameter to avoid overwrite generated files
+  * Model: Do not serialize allType attributes
+  * Minor fixes in cpp templates
+  * Cpp templates, set getters and setters as virtual to allow overriding
+  * Change cpp factory registrar from list to map
+  * Cpp templates: Initializce gstreamer logging
+  * Cpp templates: Do not try to deserialize not reference object on server
+  * Allow having the generated modules in dependencies, just remove them
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Generate Javascript plugins
+
+  [ Jose Antonio Santos Cadenas ]
+  * Import: make Model transient to avoid it to be serialized when writing models back
+  * Fix cmake dependencies template
+  * Fix generted pkgconfig file
+  * cpptemplates: Add default constructor with a comment
+  * Reduce log from info to debug
+  * Cpp templates: Extract factories to an external file
+  * Code: Set default library name in lowercase
+  * Cpp templates: Move Factory template to cpp_server directory
+  * Revert "Cpp templates: Move Factory template to cpp_server directory"
+  * cpp templates: Fix factory.hpp files
+
+  [ mgallego ]
+  * Codegen control with kmd file and support for multiple local kmd files
+  * Rename default java packages to include 'module' instead of 'plugin'
+
+  [ Jose Antonio Santos Cadenas ]
+  * Allow adding version and name to model just in one file
+  * Reduce logging from info to debug
+
+  [ mgallego ]
+  * Not allowing dev version dependencies in release versions of modules
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Don't generate files when there's no complexTypes or abstract classes
+
+  [ mgallego ]
+  * Support empty output templates
+  * Bug fix: No kmd files in local project (only files from dependencies)
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Integrated _MediaObject in autogenerated MediaObject class
+  * Not generate empty files
+
+  [ mgallego ]
+  * [bug-fix] Improve error reporting
+  * Add pom.xml template
+  * Auto imported core module in module descriptions
+  * package.json template
+  * kurentoVersion is not mandatory in "core" module
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix maven version converter
+  * Set kurentoVersion as Version if it is not set
+  * Change default value of js.node.name
+  * Fusionate kurentoVersion correctly
+  * Set kurentoVersion in validate to make it work while printing variables
+  * Fix package json template
+
+  [ mgallego ]
+  * [Bug-fix] Generate correct pom.xml when code.kmd entry is present in kmd
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp: Do not generate attributes for properties, should be decided by the implementation
+  * cpp: Allow get/set properties using getters and setters through rpc's
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 23 Jul 2014 15:42:01 +0200
+
+ktool-rom-processor (1.1.0) testing; urgency=low
+
+  [ Santiago Gala ]
+  * [release] Prepare for next development iteration
+
+  [ Jose Antonio Santos Cadenas ]
+  * Allow any object to be a factory
+  * Deserialize correctly optional parameters in complex types
+  * Fixes to templates to support crowddetector plugin
+
+  [ Santiago Gala ]
+  * Adapt debian/control description to the current name
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove duplicates from dependencies
+  * Make media object inherit from enable_shared_from_this
+  * Cpp templates: Make factories return a pointer
+
+  [ Santiago Gala ]
+  * Generate documentation for release in the java template
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove garbagePeriod from model
+  * cpptemplates: Do not create empty constructor for register type
+
+  [ Santiago Gala ]
+  * Use a String for model documentation.
+  * Doc generation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove empty spaces from generated documentation
+
+  [ Santiago Gala ]
+  * Fix incorrect rst substitution
+  * More errors in javadoc link generation
+  * Missing comments for getter and setter of complexType properties
+  * Add the machinery for the right sphinx glossary ids
+
+  [ mgallego ]
+  * Initial templates for JavaScript generation
+  * getJsNamespace() function for generating JS templates
+  * Support to exclude files from delete
+  * Improve templates for non Spring compliant MediaPipelineFactory
+
+  [ Santiago Gala ]
+  * use parameter name for @param
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Templates for auto-generation of Javascript client (browser & Node.js)
+
+  [ David Fernandez ]
+  * Update template for MediaPipelineFactory
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 24 Apr 2014 15:22:16 +0200
+
+ktool-rom-processor (1.0.0) testing; urgency=low
+
+  [ Santiago Gala ]
+  * Initial release.
+
+  [ Micael Gallego Carrillo ]
+  * Initial commit
+
+  [ Jose Antonio Santos Cadenas ]
+  * Generate a executable jar
+  * Add generator for C++ trypes
+  * Add .gitignore
+  * Include access to model in template
+  * First attemp to create hpp files for remoteClasses
+
+  [ Santiago Gala ]
+  * Add wagon-ssh extension for deployment
+
+  [ Jose Antonio Santos Cadenas ]
+  * Some fixes to model
+  * Add function to change CamelCase to underscore
+  * Update cpp header files template
+  * Add more default values
+  * Add defaultValue to DataItem
+  * Add template for cpp files
+  * Fix default values
+  * Add template for complex types
+  * Fix compilation problems in generated cpp code
+  * Update cpp templates to deserialize complex types from json
+  * CppTemplate: Set methods as virtual, to be implemented by child classes
+  * Model: set MediaObject as abstract
+  * Minor fixes to model
+  * Do not generate Factory objects for abstract classes except for MediaObject
+  * Add command line options to code generator program
+  * cppgenerator: Make factories to be autogenerated
+  * Add cpp code to deserialice a RemoteObject
+  * Add support for invoke deserialization to Cpp template
+  * Cleanup cpp templates
+
+  [ Santiago Gala ]
+  * Don't concatenate Strings before appending them to a StringBuilder
+  * Ignore Unix backup files
+
+  [ Jose Antonio Santos Cadenas ]
+  * Move cpp templates to a different folder
+  * Generate cpp code for serialization
+  * Remove serialize methods from generated cpp classes
+
+  [ Santiago Gala ]
+  * Debian packaging
+
+  [ Jose Antonio Santos Cadenas ]
+  * Use eclipse to unify format and perform a source cleanup
+
+  [ mica ]
+  * Java code generation compatible with old MediaAPI
+
+  [ Jose Antonio Santos Cadenas ]
+  * Templates cleanup
+  * model: Make MediaMixer abstract
+  * Generate sources in . folder not in cpp folder
+  * Add cpp templates for events
+  * Templates cleanup
+
+  [ mica ]
+  * Add code generation options
+  * Add package name configurable for Java templates
+  * Java template improvements
+  * Add parentProperties por events
+
+  [ Jose Antonio Santos Cadenas ]
+  * Cpp templates for event handling
+  * Do not write a file it has the same content
+  * Make cpp code generator deterministic avoiding use of sets
+  * Correctly serialize events
+  * Remove exception declaration on cpp templates
+  * Model: Constructor of pointerdetector receives an optional array of WindowMediaParam
+  * Allow creating an optional DataItem without default value
+  * Serialize default value for DataItem if it is optional
+  * Generate correct lists in cpp types
+  * CppObjectType: remove uneeded code
+  * Fix templates to generate cpp code correctly when there are lists
+  * Simplify cpp constructor serialization code template
+
+  [ mica ]
+  * Remove ugly trace in "IsFirstConstructorParam" funciton
+  * Fix factory method creation template
+  * Remove event interface template
+  * Add MediaApiConfiguration and MediaPipelineFactory templates
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix compilation problem while generating debian package
+  * Do not copy handler inside the lambda
+  * Fixes to Java code generation
+  * Fix problems with serialization in cpp templates
+
+  [ mica ]
+  * Add @RemoteClass annotation to all generated remote classes
+
+  [ Jose Antonio Santos Cadenas ]
+  * Rename project
+  * Rename package from kms.idl to ktool.rom.processor
+  * Remove model.json it is a kms-interface-rom project
+  * Make generator work with gson 2.1 that is availablle in ubuntu
+  * Set version to 1.0.0-SNAPSHOT
+
+  [ Santiago Gala ]
+  * Add README.md and LICENSE files
+
+ -- Santiago Gala <sgala@apache.org>  Fri, 14 Feb 2014 16:38:11 +0100

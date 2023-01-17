@@ -1,0 +1,44 @@
+{
+  "name":"moduleB",
+  "version":"1.0.0-dev",
+  "kurentoVersion":"1.0.0",
+  "imports":[
+    {
+      "name":"moduleA",
+      "version":"1.0.0-dev"
+    }
+  ],
+  "remoteClasses":[
+    {
+      "name":"ClassB",
+      "constructor":{
+
+      },
+      "methods":[
+        {
+          "name":"method",
+          "params":[
+            {
+              "name":"importModuleParam",
+              "type":"moduleA.ClassA"
+            },
+            {
+              "name":"coreParam",
+              "type":"CoreClass"
+            },
+            {
+              "name":"sameModuleParam",
+              "type":"ClassB"
+            },
+          ],
+          "return":{
+            "type":"String"
+          }
+        }
+      ]
+    },
+    {
+      "name":"ClassAB"
+    }
+  ]
+}

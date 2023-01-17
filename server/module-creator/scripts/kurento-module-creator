@@ -1,0 +1,27 @@
+#!/bin/sh
+
+JAVA_CMD="/usr/bin/java"
+JAVA_OPTS=""
+
+MY_PATH=`dirname "$0"`
+MY_PATH=`( cd "$MY_PATH" && pwd )`
+if [ -z "$MY_PATH" ] ; then
+  # error; for some reason, the path is not accessible
+  # to the script (e.g. permissions re-evaled after suid)
+  exit 1  # fail
+fi
+
+if [ "${MY_PATH}" = "/usr/bin" ]
+then
+  JAVA_JAR="/usr/bin/kurento-module-creator-jar-with-dependencies.jar"
+else
+  echo Not system kurento-module-creator, running from $MY_PATH
+  if [ -f ${MY_PATH}/kurento-module-creator-jar-with-dependencies.jar ]
+  then
+    JAVA_JAR=${MY_PATH}/kurento-module-creator-jar-with-dependencies.jar
+  else
+    JAVA_JAR=${MY_PATH}/../target/kurento-module-creator-jar-with-dependencies.jar
+  fi
+fi
+
+$JAVA_CMD $JAVA_OPTS -jar "$JAVA_JAR" "$@"

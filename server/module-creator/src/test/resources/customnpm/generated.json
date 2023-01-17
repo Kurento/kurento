@@ -1,0 +1,28 @@
+{
+  "name": "npmName",
+  "version": "1.0.0",
+  "description": "xxxxxxx",
+  "homepage": "https://kurento.openvidu.io/",
+  "main": "lib/index.js",
+  "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
+  "license": "ALv2",
+  "repository": {
+    "type": "git",
+    "url": "Kurento/npmName-js"
+  },
+  "bugs": {
+    "url": "Kurento/npmName-js/issues",
+    "email": "kurento@openvidu.io"
+  },
+  "keywords": [
+    "API",
+    "Kurento",
+    "WebRTC"
+  ],
+  "dependencies": {
+    "inherits": "^2.0.1"
+  },
+  "peerDependencies": {
+    "kurento-client": "^5.0.0"
+  }
+}

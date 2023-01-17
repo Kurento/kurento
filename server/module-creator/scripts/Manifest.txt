@@ -1,0 +1,1 @@
+Class-Path: /usr/share/java/freemarker.jar /usr/share/java/commons-cli.jar /usr/share/java/slf4j-api.jar /usr/share/java/slf4j-simple.jar /usr/share/java/gson.jar

@@ -1,0 +1,17 @@
+{
+  "name":"moduleB",
+  "version":"1.0.0-dev",
+  "kurentoVersion":"1.0.0",
+  "code":{
+    "api":{
+      "js":{
+        "nodeName":"npmModuleB"
+      }
+    }
+  },
+  "remoteClasses":[
+    {
+      "name":"ClassA"
+    }
+  ]
+}

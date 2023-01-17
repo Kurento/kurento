@@ -1,0 +1,16 @@
+{
+  "name":"moduleB",
+  "version":"1.0.0-dev",
+  "kurentoVersion":"~1.0",
+  "imports":[
+    {
+      "name":"moduleA",
+      "version":"~1.0"
+    }
+  ],
+  "remoteClasses":[
+    {
+      "name":"ClassA"
+    }
+  ]
+}
