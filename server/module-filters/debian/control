@@ -1,0 +1,62 @@
+Source: kms-filters
+Priority: optional
+Maintainer: Kurento <kurento@openvidu.io>
+Build-Depends: debhelper (>= 9),
+ build-essential,
+ cmake,
+ gstreamer1.0-plugins-bad,
+ gstreamer1.0-plugins-good,
+ kms-cmake-utils (>= 7.0.0),
+ kms-core-dev (>= 7.0.0),
+ kms-elements-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
+ libboost-filesystem-dev,
+ libboost-system-dev,
+ libglibmm-2.4-dev,
+ libgstreamer1.0-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libopencv-dev,
+ libsigc++-2.0-dev,
+ libsoup2.4-dev,
+ opencv-data
+Standards-Version: 4.0.0
+Vcs-Git: https://github.com/Kurento/kms-filters.git
+Vcs-Browser: https://github.com/Kurento/kms-filters
+Homepage: https://kurento.openvidu.io/
+
+Package: kms-filters
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ ca-certificates,
+ kms-elements (>= 7.0.0),
+ libsoup2.4-1,
+ opencv-data
+Description: Kurento Filters module
+ Kurento Filters module - Binary libraries.
+
+Package: kms-filters-dev
+Architecture: any
+Section: libdevel
+Depends: kms-filters (= ${binary:Version}),
+ kms-cmake-utils (>= 7.0.0),
+ kms-core-dev (>= 7.0.0),
+ kms-elements-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
+ libboost-filesystem-dev,
+ libboost-system-dev,
+ libglibmm-2.4-dev,
+ libgstreamer1.0-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libopencv-dev,
+ libsigc++-2.0-dev,
+ libsoup2.4-dev
+Description: Kurento Filters module
+ Kurento Filters module - Development files.
+
+Package: kms-filters-dbg
+Architecture: any
+Section: debug
+Depends: kms-filters (= ${binary:Version})
+Description: Kurento Filters module
+ Kurento Filters module - Debugging symbols.

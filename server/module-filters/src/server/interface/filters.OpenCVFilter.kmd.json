@@ -1,0 +1,10 @@
+{
+  "remoteClasses": [
+    {
+      "name": "OpenCVFilter",
+      "extends": "Filter",
+      "doc": "Generic OpenCV Filter",
+      "abstract" : true
+    }
+  ]
+}

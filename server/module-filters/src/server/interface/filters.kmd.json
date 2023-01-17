@@ -1,0 +1,28 @@
+{
+  "name": "filters",
+  "version": "7.0.0-dev",
+  "kurentoVersion": "^7.0.0-dev",
+  "code": {
+    "kmd": {
+      "java": {
+        "mavenGroupId": "org.kurento",
+        "mavenArtifactId": "kms-api-filters"
+      }
+    },
+    "api": {
+      "java": {
+        "packageName": "org.kurento.client",
+        "mavenGroupId": "org.kurento",
+        "mavenArtifactId": "kurento-client"
+      },
+      "js": {
+        "nodeName": "kurento-client-filters",
+        "npmDescription": "JavaScript Client API for Kurento Media Server",
+        "npmGit": "https://github.com/Kurento/kurento-client-filters-js.git"
+      }
+    },
+    "implementation": {
+      "cppNamespace": "kurento"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "remoteClasses": [
+    {
+      "name": "ImageOverlayFilter",
+      "extends": "Filter",
+      "doc": "ImageOverlayFilter interface. This type of :rom:cls:`Filter` draws an image in a configured position over a video feed.",
+      "constructor": {
+        "doc": "ImageOverlayFilter interface. This type of :rom:cls:`Filter` draws an image in a configured position over a video feed.",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "pipeline to which this :rom:cls:`Filter` belongs",
+            "type": "MediaPipeline"
+          }
+        ]
+      },
+      "methods": [
+        {
+          "name": "removeImage",
+          "doc": "Remove the image with the given ID.",
+          "params": [
+            {
+              "name": "id",
+              "doc": "Image ID to be removed",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "addImage",
+          "doc": "Add an image to be used as overlay.",
+          "params": [
+            {
+              "name": "id",
+              "doc": "image ID",
+              "type": "String"
+            },
+            {
+              "name": "uri",
+              "doc": "URI where the image is located",
+              "type": "String"
+            },
+            {
+              "name": "offsetXPercent",
+              "doc": "Percentage relative to the image width to calculate the X coordinate of the position (left upper corner) [0..1]",
+              "type": "float"
+            },
+            {
+              "name": "offsetYPercent",
+              "doc": "Percentage relative to the image height to calculate the Y coordinate of the position (left upper corner) [0..1]",
+              "type": "float"
+            },
+            {
+              "name": "widthPercent",
+              "doc": "Proportional width of the overlaid image, relative to the width of the video [0..1].",
+              "type": "float"
+            },
+            {
+              "name": "heightPercent",
+              "doc": "Proportional height of the overlaid image, relative to the height of the video [0..1].",
+              "type": "float"
+            },
+            {
+              "name": "keepAspectRatio",
+              "doc": "Keep the aspect ratio of the original image.",
+              "type": "boolean"
+            },
+            {
+              "name": "center",
+              "doc": "If the image doesn't fit in the dimensions, the image will be center into the region defined by height and width.",
+              "type": "boolean"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

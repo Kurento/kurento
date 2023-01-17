@@ -1,0 +1,370 @@
+kms-filters (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  * UNRELEASED
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:51 +0200
+
+kms-filters (7.0.0-0kurento1) testing; urgency=medium
+
+  * UNRELEASED
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 20 Sep 2022 17:15:32 +0200
+
+kms-filters (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:32 +0000
+
+kms-filters (6.17.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.17.0-0kurento1
+  * debian: install ca-certificates for HTTPS access in OpenCV filters
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:41 +0200
+
+kms-filters (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+  * Update all dependency versions to 6.15.1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:39 +0100
+
+kms-filters (6.15.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.15.0-0kurento1
+  * debian: update versions of Kurento dependencies
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 03 Nov 2020 18:04:23 +0100
+
+kms-filters (6.14.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.14.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 16 Jun 2020 17:48:05 +0200
+
+kms-filters (6.13.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.13.0-0kurento1
+  * debian/control: Add build-essential to Build-Depends
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 17 Dec 2019 13:37:55 +0100
+
+kms-filters (6.12.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.12.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 14 Oct 2019 19:12:35 +0200
+
+kms-filters (6.11.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.11.0-0kurento1
+  * debian/control: Add deps needed for building and testing
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 19 Jul 2019 19:47:55 +0200
+
+kms-filters (6.10.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.10.0
+  * debian: Review for 18.04 build
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:32 +0200
+
+kms-filters (6.9.0) testing; urgency=medium
+
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 10 Dec 2018 17:49:35 +0100
+
+kms-filters (6.8.0) testing; urgency=medium
+
+  * Remove 'override_dh_auto_test' from debian/rules
+  * Prepare release 6.8.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 26 Sep 2018 11:30:00 +0200
+
+kms-filters (6.7.1) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Prepare release 6.7.1
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 21 Mar 2018 16:20:32 +0100
+
+kms-filters (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+  * Updates to debian/docs:
+    - Added file CHANGELOG.md
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kms-filters-6.0 (6.6.2) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+
+  * Changed
+    - Old ChangeLog.md moved to the new format in this CHANGELOG.md file.
+    - CMake: Full review of all CMakeLists.txt files to tidy up and homogenize
+      code style and compiler flags.
+    - CMake: Position Independent Code flags ("-fPIC") were scattered around
+      projects, and are now removed. Instead, the more CMake-idiomatic variable
+      "CMAKE_POSITION_INDEPENDENT_CODE" is used.
+    - CMake: All projects now compile with
+      "[-std=c11|-std=c++11] -Wall -Werror -pthread".
+    - CMake: Debug builds now compile with "-g -O0" (while default CMake used
+      "-O1" for Debug builds).
+    - CMake: include() and import() commands were moved to the code areas where
+      they are actually required.
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Fri, 24 Jul 2017 11:00:00 +0200
+
+kms-filters-6.0 (6.6.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMake: Add missing link library
+  * CMake: Rename library testutils to filtertestutils
+  * CMake: Rename constructor test to filters_constructors
+  * CMake: Avoid using global cmake directories
+  * constructors: Add more paths to look for modules
+  * CMake: Avoid the use of global include directories
+  * Fix compilation with clang
+  * Prepare release 6.6.1
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 12:51:25 +0200
+
+kms-filters-6.0 (6.6.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * ChangeLog.md: Prepare release notes for 6.6.0
+  * Prepare release 6.6.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 17:08:18 +0200
+
+kms-filters-6.0 (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * test: Update and activate filter tests
+  * logooverlay: Add test for kmslogooverlay filter
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * CMake: Disable error date time
+  * Fix style
+  * Change license to Apache 2.0
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 27 May 2016 17:42:26 +0200
+
+kms-filters-6.0 (6.4.1~20160510170902.5.22d9f69.xenial) testing; urgency=medium
+
+  Generating new package version
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 10 May 2016 17:09:02 +0200
+
+kms-filters-6.0 (6.4.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Add build configuration
+
+  [ David Fernandez ]
+  * debian/rules: Execute test in debian package generation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.4.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 24 Feb 2016 17:16:14 +0100
+
+kms-filters-6.0 (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 19 Jan 2016 17:09:08 +0100
+
+kms-filters-6.0 (6.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMakeLists: Fix gstreamer version
+
+  [ David Fernandez ]
+  * kmsopencvfilter: Convert KurentoExceptions in bus messages
+
+  [ Jose Antonio Santos Cadenas ]
+  * GStreamerFilter: user gst_parse_launch to generate element
+  * pre-commit-hook: Fix to work newer versions of astyle
+  * pre-commit.hook: Do not print git add and git commit in fix command
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 12:41:36 +0100
+
+kms-filters-6.0 (6.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 01 Oct 2015 19:58:44 +0200
+
+kms-filters-6.0 (6.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 01 Sep 2015 15:57:30 +0200
+
+kms-filters-6.0 (6.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix build dependencies for tests
+  * Add support for different cmake vesions
+  * Update .gitreview to work with new repo
+  * Prepare for 6.0 development iteration
+
+  [ David Fernandez ]
+  * Adapt events code to KmsEvent
+  * kmsimageoverlay: Protect set and get properties with locks
+  * [ImageOverlayFilter] Add new filter to allow overlay images over a video
+  * ZBarFilter: Move signal logic to postConstructor function
+  * Update gstreamer dependencies
+  * kmsimageoverlay: Progress event to parent
+  * kmslogooverlay: Not show image if it is NULL
+  * ImageOverlayFilter: Add keepAspectRatio and center parameters
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use correct SPDX licence string
+
+  [ David Fernandez ]
+  * GStreamerFilter: Add property to get the command of the filter
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 19:26:45 +0200
+
+kms-filters-6.0 (6.0.0~0) testing; urgency=medium
+
+  * Pre release of version 6.0.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 11 Feb 2015 12:24:49 +0100
+
+kms-filters (5.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Change version to 5.1.0
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Removed bower.json since now it's being generated
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update dependencies
+  * Prepare release 5.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sat, 24 Jan 2015 09:02:33 +0100
+
+kms-filters (5.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next developmen iteration
+  * Update kms-elements dependencies dependencies
+  * Add opencv to generated pkg-config
+
+  [ David Fernandez ]
+  * OpenCVProcess: Add getSharedPtr function
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix compilation of gst-plugins
+  * Install generated FindKMSFILTERS.cmake
+  * Start using generic_find to look for dependencies
+  * Prepare release 5.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 07 Oct 2014 07:37:05 +0200
+
+kms-filters (5.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Update dependencies
+  * Prepare release 5.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 22 Sep 2014 11:14:02 +0200
+
+kms-filters (5.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * debian/control: Update dependencies
+  * Prepare release 5.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sat, 20 Sep 2014 23:13:19 +0200
+
+kms-filters (5.0.1) trusty; urgency=medium
+
+  * Release 5.0.1
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 19 Sep 2014 15:31:17 +0200
+
+kms-filters (5.0.0~rc1) testing; urgency=medium
+
+  * Initial release.
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 24 Jul 2014 22:00:30 +0200

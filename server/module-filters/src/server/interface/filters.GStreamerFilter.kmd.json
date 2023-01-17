@@ -1,0 +1,71 @@
+{
+  "remoteClasses": [
+    {
+      "name": "GStreamerFilter",
+      "extends": "Filter",
+      "doc": "A generic filter that allows injecting a single GStreamer element.
+<p>
+  The current implementation of GStreamerFilter only allows single elements to
+  be injected; one cannot indicate more than one at the same time; use several
+  GStreamerFilters if you need to inject more than one element into the
+  pipeline.
+</p>
+<p>
+  Note that usage of some popular GStreamer elements requires installation of
+  additional packages. For example, overlay elements such as
+  <em>timeoverlay</em> or <em>textoverlay</em> require installation of the
+  <strong>gstreamer1.0-x</strong> package, which will also install the
+  <em>Pango</em> rendering library.
+</p>
+      ",
+      "constructor": {
+        "doc": "Create a :rom:cls:`GStreamerFilter`.",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "command",
+            "doc": "String used to instantiate the GStreamer element, as in gst-launch (https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html).",
+            "type": "String"
+          },
+          {
+            "name": "filterType",
+            "doc": "Sets the filter as Audio, Video, or Autodetect.",
+            "type": "FilterType",
+            "optional": true,
+            "defaultValue": "AUTODETECT"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "command",
+          "doc": "String used to instantiate the GStreamer element, as in gst-launch (https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html).",
+          "type": "String",
+          "readOnly": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "setElementProperty",
+          "doc": "Provide a value to one of the GStreamer element's properties.",
+          "params": [
+            {
+              "name": "propertyName",
+              "doc": "Name of the property that needs to be modified in the GStreamer element.",
+              "type": "String"
+            },
+            {
+              "name": "propertyValue",
+              "doc": "Value that must be assigned to the property.",
+              "type": "String"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
