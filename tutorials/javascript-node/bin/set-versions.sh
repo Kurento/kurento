@@ -142,14 +142,14 @@ function git_add() {
 
 # Dirs that contain common dependencies (kurento-client and kurento-utils).
 DIRS_COMMON=(
-    kurento-chroma
-    kurento-crowddetector
-    kurento-hello-world
-    kurento-magic-mirror
-    kurento-one2many-call
-    kurento-one2one-call
-    kurento-platedetector
-    kurento-pointerdetector
+    chroma
+    crowddetector
+    hello-world
+    magic-mirror
+    one2many-call
+    one2one-call
+    platedetector
+    pointerdetector
 )
 
 # Dirs that contain module dependencies.

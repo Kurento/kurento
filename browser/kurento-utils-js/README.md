@@ -46,8 +46,8 @@ npm install kurento-utils
 Alternatively, you can download the code using git and install manually its dependencies:
 
 ```bash
-git clone https://github.com/Kurento/kurento-utils
-cd kurento-utils
+git clone https://github.com/Kurento/kurento.git
+cd kurento/browser/kurento-utils-js/
 npm install
 ```
 
@@ -109,7 +109,7 @@ Usage:
 
 Issues:
 
-* [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
+* [Bug Tracker](https://github.com/Kurento/kurento/issues)
 * [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:

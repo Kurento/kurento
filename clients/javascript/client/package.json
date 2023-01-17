@@ -1,6 +1,6 @@
 {
   "name": "kurento-client",
-  "version": "6.18.1-dev",
+  "version": "7.0.0-dev",
   "description": "JavaScript Client API for Kurento Media Server",
   "keywords": [
     "kurento",
@@ -43,16 +43,16 @@
   "license": "Apache-2.0",
   "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
   "contributors": [
-    "Kurento Community <kurento@googlegroups.com> (https://kurento.openvidu.io/)",
+    "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
     "Jesús Leganés-Combarro 'piranna' <piranna@gmail.com> (https://pirannafs.blogspot.com/)"
   ],
   "bugs": {
-    "url": "https://github.com/Kurento/bugtracker/issues",
-    "email": "kurento@googlegroups.com"
+    "url": "https://github.com/Kurento/kurento/issues",
+    "email": "kurento@openvidu.io"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kurento/kurento-client-js.git"
+    "url": "https://github.com/Kurento/kurento.git"
   },
   "main": "./lib/index.js",
   "scripts": {
@@ -72,7 +72,7 @@
     "kurento-client-core": "git+https://github.com/Kurento/kurento-client-core-js.git",
     "kurento-client-elements": "git+https://github.com/Kurento/kurento-client-elements-js.git",
     "kurento-client-filters": "git+https://github.com/Kurento/kurento-client-filters-js.git",
-    "kurento-jsonrpc": "git+https://github.com/Kurento/kurento-jsonrpc-js.git",
+    "kurento-jsonrpc": "https://gitpkg.now.sh/Kurento/kurento/clients/javascript/jsonrpc?main",
     "promisecallback": "0.0.4",
     "reconnect-ws": "KurentoForks/reconnect-ws#master",
     "minimist": "^1.2.0"

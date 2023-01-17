@@ -42,8 +42,8 @@ Alternatively, you can download the code using git and install manually its
 dependencies:
 
 ```bash
-git clone https://github.com/Kurento/kurento-jsonrpc-js.git
-cd kurento-jsonrpc-js
+git clone https://github.com/Kurento/kurento.git
+cd kurento/clients/javascript/jsonrpc/
 npm install
 ```
 
@@ -101,7 +101,6 @@ News and Website
 ----------------
 
 Check the [Kurento blog]
-Follow us on Twitter @[kurentoms].
 
 Issue tracker
 -------------
@@ -157,9 +156,8 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 
 [documentation]: https://kurento.openvidu.io/documentation
 [FIWARE]: http://www.fiware.org
-[GitHub Kurento bugtracker]: https://github.com/Kurento/bugtracker/issues
-[GitHub Kurento Group]: https://github.com/kurento
-[kurentoms]: http://twitter.com/kurentoms
+[GitHub Kurento bugtracker]: https://github.com/Kurento/kurento/issues
+[GitHub Kurento Group]: https://github.com/Kurento
 [Kurento]: https://kurento.openvidu.io/
 [Kurento Blog]: https://kurento.openvidu.io/blog
 [Kurento FIWARE Catalog Entry]: http://catalogue.fiware.org/enablers/stream-oriented-kurento
@@ -173,7 +171,7 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [readthedocs.org]: http://kurento.readthedocs.org/
 [Open API specification]: http://kurento.github.io/doc-kurento/
 [apiary.io]: http://docs.streamoriented.apiary.io/
-[GitHub repository]: https://github.com/kurento/kurento-jsonrpc-js
+[GitHub repository]: https://github.com/Kurento/kurento
 [grunt]: http://gruntjs.com/
 [Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os
 [NPM repository]: https://www.npmjs.org/package/kurento-jsonrpc

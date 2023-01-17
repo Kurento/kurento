@@ -32,7 +32,7 @@ dependencies:
 
 ```bash
 git clone https://github.com/Kurento/kurento-utils-bower
-cd kurento-utils-bower
+cd kurento-utils-bower/
 npm install
 ```
 
@@ -69,7 +69,6 @@ News and Website
 ----------------
 
 Check the [Kurento blog]
-Follow us on Twitter @[kurentoms].
 
 Issue tracker
 -------------
@@ -125,9 +124,8 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 
 [documentation]: https://kurento.openvidu.io/documentation
 [FIWARE]: http://www.fiware.org
-[GitHub Kurento bugtracker]: https://github.com/Kurento/bugtracker/issues
-[GitHub Kurento Group]: https://github.com/kurento
-[kurentoms]: http://twitter.com/kurentoms
+[GitHub Kurento bugtracker]: https://github.com/Kurento/kurento/issues
+[GitHub Kurento Group]: https://github.com/Kurento
 [Kurento]: https://kurento.openvidu.io/
 [Kurento Blog]: https://kurento.openvidu.io/blog
 [Kurento FIWARE Catalog Entry]: http://catalogue.fiware.org/enablers/stream-oriented-kurento
@@ -137,7 +135,7 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [Apache 2.0 License]: http://www.apache.org/licenses/LICENSE-2.0
 [NUBOMEDIA]: http://www.nubomedia.eu
 [StackOverflow]: http://stackoverflow.com/search?q=kurento
-[GitHub repository]: https://github.com/kurento/kurento-utils-js
+[GitHub repository]: https://github.com/Kurento/kurento
 [grunt]: http://gruntjs.com/
 [Node.js]: http://nodejs.org/
 [NPM repository]: https://www.npmjs.org/package/kurento-utils

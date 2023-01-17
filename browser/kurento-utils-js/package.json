@@ -1,6 +1,6 @@
 {
   "name": "kurento-utils",
-  "version": "6.18.1-dev",
+  "version": "7.0.0-dev",
   "description": "Kurento JavaScript Utilities",
   "keywords": [
     "kurento",
@@ -43,15 +43,15 @@
   "license": "Apache-2.0",
   "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
   "contributors": [
-    "Kurento Community <kurento@googlegroups.com> (https://kurento.openvidu.io/)"
+    "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)"
   ],
   "bugs": {
-    "url": "https://github.com/Kurento/bugtracker/issues",
-    "email": "kurento@googlegroups.com"
+    "url": "https://github.com/Kurento/kurento/issues",
+    "email": "kurento@openvidu.io"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kurento/kurento-utils-js.git"
+    "url": "https://github.com/Kurento/kurento.git"
   },
   "main": "lib/index.js",
   "scripts": {
