@@ -1,0 +1,221 @@
+kms-markerdetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  * UNRELEASED
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:52 +0200
+
+kms-markerdetector (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:34 +0000
+
+kms-markerdetector (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Kurento ]
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:43 +0200
+
+kms-markerdetector (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+  * Update all dependency versions to 6.15.1
+  * debian/control: fix dependency version for kms-filters
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:41 +0100
+
+kms-markerdetector (6.15.0-0kurento1) testing; urgency=medium
+
+  * Fix build for both Ubuntu 16.04 Xenial and 18.04 Bionic
+  * fix debian/install and build process for binary & API clients
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 04 Nov 2020 13:08:26 +0100
+
+kms-markerdetector (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+  * Updates to debian/docs:
+    - Added file README.txt
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kms-markerdetector-6.0 (6.6.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.6.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 17:31:09 +0200
+
+kms-markerdetector-6.0 (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMakeLists: Fix compilation problems on xenial
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 31 May 2016 09:41:47 +0200
+
+kms-markerdetector-6.0 (6.4.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Set repository as private
+  * Prepare release 6.4.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 25 Feb 2016 12:58:04 +0100
+
+kms-markerdetector-6.0 (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 08:35:07 +0100
+
+kms-markerdetector-6.0 (6.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 26 Nov 2015 12:30:17 +0100
+
+kms-markerdetector-6.0 (6.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 02 Oct 2015 17:43:39 +0200
+
+kms-markerdetector-6.0 (6.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 01 Sep 2015 16:36:54 +0200
+
+kms-markerdetector-6.0 (6.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare for 6.0.0-dev version
+  * Update .gitreview to work with new repo
+
+  [ David Fernandez ]
+  * Remove devDependencies in package.json
+  * Adapt events code to KmsEvent
+  * Update gstreamer dependencies
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use correct SPDX licence string
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 15 Jul 2015 10:35:35 +0200
+
+kms-markerdetector-6.0 (6.0.0~0) testing; urgency=medium
+
+  * Prerelease for 6.0.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Feb 2015 12:33:18 +0100
+
+kms-markerdetector (0.0.3) testing; urgency=medium
+
+  [ Petri Honkamaa ]
+  * Initial commit
+  * Trying to make sceleton project
+  * Managed to compile and even make debian package
+  * First time markerdetector works
+  * Added couple of missing files
+  * Now markerdetector arguments are understood
+  * First working version for the new Kurento
+  * wget overlay-image base on URL
+  * Fixed date in changelog
+  * Started 0.0.3
+  * URL loading with SOUP but it does not work?
+  * Regenerated all implementation files.
+  * URL with SOUP works
+  * First time event sending works
+  * Now MarkerCount event is working
+
+  [ David Fernandez ]
+  * Install libalvar200 with debian package
+  * Change project name to kms-markerdetector
+  * Change .gitreview
+  * Add alvar code
+  * Change project name in debian/changelog
+  * Change project name in CMakeLists.txt
+  * Change project name in kmd file
+  * Avoid errors in dev debian package installation
+  * Fix error when overlay_image does not exist
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use templates from kurento-client-js
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian: Add missing build dependency
+  * Update dependencies
+  * Prepare release 0.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Wed, 28 Jan 2015 00:47:51 +0100
+
+kms-markerdetector (0.0.3~rc1) testing; urgency=medium
+
+  * Implemented MarkerCount event to show when markers (dis)appear
+  * setOverlayImage URLs are now implemented using SOUP
+
+ -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Wed, 22 Oct 2014 12:00:00 +0300
+
+kms-markerdetector (0.0.2~rc1) testing; urgency=medium
+
+  * setOverlayImage now accepts URLs (currently requires wget)
+  * Started implementing event for marker detection
+
+ -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Fri, 17 Oct 2014 12:00:00 +0300
+
+kms-markerdetector (0.0.1~rc1) testing; urgency=medium
+
+  * Initial release.
+
+ -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Wed, 13 Oct 2014 12:00:00 +0300
+

@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="C:\windev\git\alvar\doc\logo.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient4359">
+      <stop
+         style="stop-color:#2d5ab4;stop-opacity:1;"
+         offset="0"
+         id="stop4361" />
+      <stop
+         style="stop-color:#2d5ab4;stop-opacity:0;"
+         offset="1"
+         id="stop4363" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4359"
+       id="linearGradient4365"
+       x1="260.00128"
+       y1="252.86218"
+       x2="474.99872"
+       y2="252.86218"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2"
+     inkscape:cx="276.56952"
+     inkscape:cy="740.36873"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     showguides="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1151"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="true"
+     objecttolerance="20"
+     gridtolerance="10000">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2816"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       spacingx="1px"
+       spacingy="1px" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-9"
+       width="10"
+       height="50"
+       x="65"
+       y="27.362183" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-2"
+       width="10"
+       height="27.5"
+       x="52.362183"
+       y="-75"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-0"
+       width="10"
+       height="50"
+       x="80"
+       y="27.362183" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-7"
+       width="10"
+       height="30"
+       x="67.362183"
+       y="-110"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-72"
+       width="10"
+       height="50"
+       x="115"
+       y="27.362183" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-1"
+       width="10"
+       height="50"
+       x="185"
+       y="27.362183" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;stroke:none"
+       d="m 197.5,27.368594 0,10 c 4.14213,0 7.5,3.357864 7.5,7.5 0,4.142136 -3.35787,7.499996 -7.5,7.499996 l 0,10 c 9.66498,0 17.5,-7.83501 17.5,-17.499996 0,-9.664983 -7.83502,-17.5 -17.5,-17.5 z"
+       id="path3774" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-7-6"
+       width="10"
+       height="12.5"
+       x="52.362183"
+       y="-197.5"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-7-6-7"
+       width="10"
+       height="12.5"
+       x="27.362183"
+       y="-197.5"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-9-3"
+       width="10"
+       height="65"
+       x="67.846603"
+       y="-19.248259"
+       transform="matrix(0.78078276,0.6248026,-0.6248026,0.78078276,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-9-49"
+       width="10"
+       height="50"
+       x="170"
+       y="27.362183" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-2-67"
+       width="10"
+       height="27.5"
+       x="52.362175"
+       y="-180"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-9-3-2"
+       width="10"
+       height="65"
+       x="149.82893"
+       y="-84.852631"
+       transform="matrix(0.78078276,0.6248026,-0.6248026,0.78078276,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-72-4"
+       width="10"
+       height="65"
+       x="135.91508"
+       y="-82.850578"
+       transform="matrix(0.78012693,0.62562127,-0.62562127,0.78012693,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-1-9"
+       width="10"
+       height="25"
+       x="139.2993"
+       y="147.97339"
+       transform="matrix(0.87111623,-0.4910769,0.4910769,0.87111623,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-9-2"
+       width="10"
+       height="50"
+       x="310"
+       y="27.362183" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-2-8"
+       width="10"
+       height="27.5"
+       x="52.36219"
+       y="-320"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-0-1"
+       width="10"
+       height="50"
+       x="325"
+       y="27.362183" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-7-7"
+       width="10"
+       height="30"
+       x="67.362183"
+       y="-355"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-72-7"
+       width="10"
+       height="50"
+       x="360"
+       y="27.362183" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-1-97"
+       width="10"
+       height="50"
+       x="430"
+       y="27.362183" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;stroke:none"
+       d="m 442.5,27.3686 0,10 c 4.14213,0 7.5,3.35786 7.5,7.49999 0,4.14214 -3.35787,7.5 -7.5,7.5 l 0,10 c 9.66498,0 17.5,-7.83501 17.5,-17.5 0,-9.66498 -7.83502,-17.49999 -17.5,-17.49999 z"
+       id="path3774-9" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-7-6-8"
+       width="10"
+       height="12.5"
+       x="52.36219"
+       y="-442.5"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-7-6-7-8"
+       width="10"
+       height="12.5"
+       x="27.362183"
+       y="-442.5"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 310,27.375 -40.03125,50 12.8125,0 L 317.8125,33.624997 310,27.375 z"
+       id="rect2822-9-3-9" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-9-49-8"
+       width="10"
+       height="50"
+       x="415"
+       y="27.36219" />
+    <rect
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2822-2-67-0"
+       width="10"
+       height="27.5"
+       x="52.36219"
+       y="-425"
+       transform="matrix(0,1,-1,0,0,0)" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 415,27.375 -40.03125,50 12.8125,0 L 422.8125,33.624997 415,27.375 z"
+       id="rect2822-9-3-2-5" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="M 397.28125,27.375 362.1875,71.09375 370,77.375 l 40.09375,-50 -12.8125,0 z"
+       id="rect2822-72-4-2" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="M 447.71875,55.59375 439,60.5 l 9.5,16.875 11.5,0 -12.28125,-21.78125 z"
+       id="rect2822-1-9-0" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 555,27.375003 -40.03125,50 12.8125,0 12,-15 15.21875,0 0,15 10,0 0,-15 0,-10 0,-25 -10,0 z m 0,16 0,9 -7.1875,0 7.1875,-9 z"
+       id="rect2822-9-2-8" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 570,27.362183 0,40 0,10 10,0 20,0 0,-10 -20,0 0,-40 -10,0 z"
+       id="rect2822-0-1-7" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 605,27.362183 0,50 10,0 40.09375,-50 -12.8125,0 -27.28125,34 0,-34 -10,0 z"
+       id="rect2822-72-7-0" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 675,27.362183 0,10 0,15 0,10 0,15 10,0 0,-15 0.0625,0 8.4375,15 11.5,0 -9.5625,-16.9375 c 5.66972,-2.89544 9.5625,-8.75935 9.5625,-15.5625 0,-9.66498 -7.83502,-17.5 -17.5,-17.5 l -2.5,0 -10,0 z m 10,10 2.5,0 c 4.14213,0 7.5,3.35787 7.5,7.5 0,4.14214 -3.35787,7.5 -7.5,7.5 l -2.5,0 0,-15 z"
+       id="rect2822-1-97-9" />
+    <path
+       style="fill:#0064ff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 660,27.362183 -40.03125,50 12.8125,0 12,-15 15.21875,0 0,15 10,0 0,-50 -10,0 z m 0,16 0,9 -7.1875,0 7.1875,-9 z"
+       id="rect2822-9-49-8-2" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 495,37.362183 10,0"
+       id="path6556" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 324.99999,127.36218 0,40 0,10 10,0 20.00001,0 0,-10 -20.00001,0 0,-40 -10,0 z"
+       id="rect2822-0-1-7-0-0-40-5"
+       inkscape:export-filename="C:\windev\git\alvar\doc\logo.png"
+       inkscape:export-xdpi="93.720001"
+       inkscape:export-ydpi="93.720001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 360,127.36218 0,50 10,0 40.09374,-50 -12.8125,0 -27.28124,34 0,-34 -10,0 z"
+       id="rect2822-72-7-0-0-9-94-5"
+       inkscape:export-filename="C:\windev\git\alvar\doc\logo.png"
+       inkscape:export-xdpi="93.720001"
+       inkscape:export-ydpi="93.720001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 431.99999,127.36218 0,10 0,15 0,10 0,15 10,0 0,-15 0.0625,0 8.43749,15 11.5,0 -9.5625,-16.9375 c 5.66972,-2.89544 9.5625,-8.75935 9.5625,-15.5625 0,-9.66498 -7.83501,-17.5 -17.49999,-17.5 l -2.5,0 -10,0 z m 10,10 2.5,0 c 4.14212,0 7.49999,3.35787 7.49999,7.5 0,4.14214 -3.35787,7.5 -7.49999,7.5 l -2.5,0 0,-15 z"
+       id="rect2822-1-97-9-2-5-8-1"
+       inkscape:export-filename="C:\windev\git\alvar\doc\logo.png"
+       inkscape:export-xdpi="93.720001"
+       inkscape:export-ydpi="93.720001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 309.96874,127.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1"
+       inkscape:export-filename="C:\windev\git\alvar\doc\logo.png"
+       inkscape:export-xdpi="93.720001"
+       inkscape:export-ydpi="93.720001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 416.96874,127.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1-9"
+       inkscape:export-filename="C:\windev\git\alvar\doc\logo.png"
+       inkscape:export-xdpi="93.720001"
+       inkscape:export-ydpi="93.720001" />
+    <path
+       style="fill:#76a8f6;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 569.99999,127.36218 0,40 0,10 10,0 20.00001,0 0,-10 -20.00001,0 0,-40 -10,0 z"
+       id="rect2822-0-1-7-0-0-40-5-4"
+       inkscape:export-filename="H:\alvar\logo\option6.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#76a8f6;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 605,127.36218 0,50 10,0 40.09374,-50 -12.8125,0 -27.28124,34 0,-34 -10,0 z"
+       id="rect2822-72-7-0-0-9-94-5-8"
+       inkscape:export-filename="H:\alvar\logo\option6.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#76a8f6;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 676.99999,127.36218 0,10 0,15 0,10 0,15 10,0 0,-15 0.0625,0 8.43749,15 11.5,0 -9.5625,-16.9375 c 5.66972,-2.89544 9.5625,-8.75935 9.5625,-15.5625 0,-9.66498 -7.83501,-17.5 -17.49999,-17.5 l -2.5,0 -10,0 z m 10,10 2.5,0 c 4.14212,0 7.49999,3.35787 7.49999,7.5 0,4.14214 -3.35787,7.5 -7.49999,7.5 l -2.5,0 0,-15 z"
+       id="rect2822-1-97-9-2-5-8-1-8"
+       inkscape:export-filename="H:\alvar\logo\option6.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#76a8f6;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 554.96874,127.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1-2"
+       inkscape:export-filename="H:\alvar\logo\option6.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#76a8f6;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 661.96874,127.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1-9-4"
+       inkscape:export-filename="H:\alvar\logo\option6.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#0f1e83;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 79.99999,127.36218 0,40 0,10 10,0 20.00001,0 0,-10 -20.00001,0 0,-40 -10,0 z"
+       id="rect2822-0-1-7-0-0-40-5-5"
+       inkscape:export-filename="H:\alvar\logo\option4.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#0f1e83;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 115,127.36218 0,50 10,0 40.09374,-50 -12.8125,0 -27.28124,34 0,-34 -10,0 z"
+       id="rect2822-72-7-0-0-9-94-5-1"
+       inkscape:export-filename="H:\alvar\logo\option4.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#0f1e83;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 186.99999,127.36218 0,10 0,15 0,10 0,15 10,0 0,-15 0.0625,0 8.43749,15 11.5,0 -9.5625,-16.9375 c 5.66972,-2.89544 9.5625,-8.75935 9.5625,-15.5625 0,-9.66498 -7.83501,-17.5 -17.49999,-17.5 l -2.5,0 -10,0 z m 10,10 2.5,0 c 4.14212,0 7.49999,3.35787 7.49999,7.5 0,4.14214 -3.35787,7.5 -7.49999,7.5 l -2.5,0 0,-15 z"
+       id="rect2822-1-97-9-2-5-8-1-7"
+       inkscape:export-filename="H:\alvar\logo\option4.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#0f1e83;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 64.96874,127.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1-1"
+       inkscape:export-filename="H:\alvar\logo\option4.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#0f1e83;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 171.96874,127.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1-9-1"
+       inkscape:export-filename="H:\alvar\logo\option4.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 325,227.36218 0,40 0,10 10,0 20.00001,0 0,-10 -20.00001,0 0,-40 -10,0 z"
+       id="rect2822-0-1-7-0-0-40-5-1"
+       inkscape:export-filename="C:\windev\git\alvar\doc\header.png"
+       inkscape:export-xdpi="62.790001"
+       inkscape:export-ydpi="62.790001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 360.00001,227.36218 0,50 10,0 40.09374,-50 -12.8125,0 -27.28124,34 0,-34 -10,0 z"
+       id="rect2822-72-7-0-0-9-94-5-7"
+       inkscape:export-filename="C:\windev\git\alvar\doc\header.png"
+       inkscape:export-xdpi="62.790001"
+       inkscape:export-ydpi="62.790001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 432,227.36218 0,10 0,15 0,10 0,15 10,0 0,-15 0.0625,0 8.43749,15 11.5,0 -9.5625,-16.9375 c 5.66972,-2.89544 9.5625,-8.75935 9.5625,-15.5625 0,-9.66498 -7.83501,-17.5 -17.49999,-17.5 l -2.5,0 -10,0 z m 10,10 2.5,0 c 4.14212,0 7.49999,3.35787 7.49999,7.5 0,4.14214 -3.35787,7.5 -7.49999,7.5 l -2.5,0 0,-15 z"
+       id="rect2822-1-97-9-2-5-8-1-4"
+       inkscape:export-filename="C:\windev\git\alvar\doc\header.png"
+       inkscape:export-xdpi="62.790001"
+       inkscape:export-ydpi="62.790001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 309.96875,227.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1-0"
+       inkscape:export-filename="C:\windev\git\alvar\doc\header.png"
+       inkscape:export-xdpi="62.790001"
+       inkscape:export-ydpi="62.790001" />
+    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 416.96875,227.36218 -40.03125,50 12.8125,0 8,-10 19.21875,0 0,10 10,0 0,-50 -10,0 z m 0,16 0,14 -11.21875,0 11.21875,-14 z"
+       id="rect2822-9-1-9-9"
+       inkscape:export-filename="C:\windev\git\alvar\doc\header.png"
+       inkscape:export-xdpi="62.790001"
+       inkscape:export-ydpi="62.790001" />
+    <rect
+       style="fill:url(#linearGradient4365);stroke:none;fill-opacity:1;opacity:0.20000000000000001"
+       id="rect4310"
+       width="214.99744"
+       height="80.997429"
+       x="260.00128"
+       y="212.36346"
+       inkscape:export-filename="C:\windev\git\alvar\doc\header.png"
+       inkscape:export-xdpi="62.790001"
+       inkscape:export-ydpi="62.790001" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4312"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       transform="translate(26,-2)"><flowRegion
+         id="flowRegion4314"><rect
+           id="rect4316"
+           width="157"
+           height="94"
+           x="45.5"
+           y="240.36218" /></flowRegion><flowPara
+         id="flowPara4318"
+         style="font-size:10px">export logo: 146x55</flowPara><flowPara
+         style="font-size:10px"
+         id="flowPara4376">export header: 150x57</flowPara><flowPara
+         style="font-size:10px"
+         id="flowPara4320">export splash: 164x314</flowPara></flowRoot>    <path
+       style="fill:#2d5ab4;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       d="m 275,507.39343 50,40.03125 0,-12.8125 -10,-8 0,-19.21875 10,0 0,-10 -50,0 0,10 z m 0,-15.03125 40,0 10,0 0,-10 0,-20 -10,0 0,20 -40,0 0,10 z m 0,-35 50,0 0,-10 -50,-40.09375 0,12.8125 34,27.28125 -34,0 0,10 z m 0,-56.96875 50,40.03125 0,-12.8125 -10,-8 0,-19.21875 10,0 0,-10 -50,0 0,10 z m 0,-15.03125 10,0 15,0 10,0 15,0 0,-10 -15,0 0,-0.0625 15,-8.4375 0,-11.5 -16.9375,9.5625 c -2.89544,-5.66971 -8.75935,-9.5625 -15.5625,-9.5625 -9.66498,0 -17.5,7.83502 -17.5,17.5 l 0,2.5 0,10 z m 10,-10 0,-2.5 c 0,-4.14212 3.35787,-7.5 7.5,-7.5 4.14214,0 7.5,3.35788 7.5,7.5 l 0,2.5 -15,0 z m 6,132.03125 14,0 0,11.21875 -14,-11.21875 z m 0,-107 14,0 0,11.21875 -14,-11.21875 z"
+       id="rect2822-0-1-7-0-0-40-5-1-4"
+       inkscape:export-filename="C:\windev\git\alvar\doc\splash.png"
+       inkscape:export-xdpi="131.78999"
+       inkscape:export-ydpi="131.78999" />
+    <rect
+       style="opacity:0.2;fill:#2d5ab4;fill-opacity:1;stroke:none"
+       id="rect4357"
+       width="112"
+       height="214.5"
+       x="260"
+       y="342.86218"
+       inkscape:export-filename="C:\windev\git\alvar\doc\splash.png"
+       inkscape:export-xdpi="131.78999"
+       inkscape:export-ydpi="131.78999" />
+  </g>
+</svg>

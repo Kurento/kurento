@@ -1,0 +1,17 @@
+ALVAR - A Library for Virtual and Augmented Reality
+---------------------------------------------------
+
+ALVAR is a software library for creating virtual and augmented reality (AR)
+applications. ALVAR has been developed by the VTT Technical Research Centre
+of Finland. ALVAR is release under the terms of the GNU Lesser General Public
+License, version 2.1, or (at your option) any later version.
+
+For compiling instructions, please see doc/Compiling.txt.
+
+For release notes, please see doc/ReleaseNotes.txt
+
+For additional information, please visit the ALVAR website or contact us.
+
+VTT Augmented Reality Team
+<http://www.vtt.fi/multimedia/alvar.html>
+<alvar.info@vtt.fi>

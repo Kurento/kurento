@@ -1,0 +1,133 @@
+{
+  "remoteClasses": [
+    {
+      "name": "ArMarkerdetector",
+      "extends": "OpenCVFilter",
+      "doc": "ArMarkerdetector interface. Documentation about the module",
+      "constructor": {
+	"doc": "Create an element",
+	"params": [
+	  {
+	    "name": "mediaPipeline",
+	    "doc": "the parent :rom:cls:`MediaPipeline`",
+	    "type": "MediaPipeline",
+	    "final": true
+	  }
+	]
+      },
+      "methods": [
+        {
+          "name": "setShowDebugLevel",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "showDebugLevel",
+              "doc": "show debug info on image",
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "getShowDebugLevel",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "showDebugLevel",
+            "doc": "show debug info on image",
+            "type": "int"
+          }
+        },
+        {
+          "name": "setOverlayImage",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "overlayImage",
+              "doc": "TODO",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "getOverlayImage",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "overlayImage",
+            "doc": "TODO",
+            "type": "String"
+          }
+        },
+        {
+          "name": "setOverlayText",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "overlayText",
+              "doc": "TODO",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "getOverlayText",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "overlayText",
+            "doc": "TODO",
+            "type": "String"
+          }
+        },
+        {
+          "name": "setOverlayScale",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "overlayScale",
+              "doc": "TODO",
+              "type": "float"
+            }
+          ]
+        },
+        {
+          "name": "getOverlayScale",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "overlayScale",
+            "doc": "TODO",
+            "type": "float"
+          }
+        }
+      ],
+      "events": [
+        "MarkerCount"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "MarkerCount",
+      "extends": "Media",
+      "doc": "An event that is sent when the number of visible markers is changed. Tracking coordinates for the markers is going to be sent with some other approach.",
+      "properties": [
+        {
+          "name": "markerId",
+          "doc": "marker id",
+          "type": "int"
+        },
+        {
+          "name": "markerCount",
+          "doc": "Number of visible markers with the specified id",
+          "type": "int"
+        },
+        {
+          "name": "markerCountDiff",
+          "doc": "How much the markerCount was changed from the previous situation",
+          "type": "int"
+        }
+      ]
+    }
+  ]
+}

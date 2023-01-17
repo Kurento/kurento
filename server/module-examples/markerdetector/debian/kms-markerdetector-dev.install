@@ -1,0 +1,12 @@
+usr/include/alvar/*.h
+usr/include/alvar/*/*.h
+usr/include/alvar/*/*/*.h
+usr/include/kurento/modules/*/*.h
+usr/include/kurento/modules/*/*.hpp
+usr/lib/*/libalvar.so
+usr/lib/*/libalvarplatform.so
+usr/lib/*/libkmsmarkerdetectorimpl.so
+usr/lib/*/pkgconfig/*.pc
+usr/share/alvar/*
+usr/share/cmake-*/*/*.cmake
+usr/share/kurento/modules/*.kmd.json
