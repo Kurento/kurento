@@ -1,0 +1,18 @@
+# Temp files
+pipeline.dot
+target/
+
+# Editor backups
+~*
+
+# IDE: Eclipse
+.classpath
+.project
+.settings
+
+# IDE: Visual Studio Code
+.vscode/
+
+# Java Spring
+.springBeans
+.sts4-cache/

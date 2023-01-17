@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Maven coordinates -->
+	<parent>
+		<groupId>org.kurento</groupId>
+		<artifactId>kurento-parent-pom</artifactId>
+		<version>7.0.0-SNAPSHOT</version>
+	</parent>
+	<groupId>org.kurento.tutorial</groupId>
+	<artifactId>kurento-tutorial</artifactId>
+	<packaging>pom</packaging>
+
+	<!-- Project-level information -->
+	<name>Kurento Java Client Tutorials</name>
+	<description>
+		Sample client applications that showcase usage of the Kurento Java Client.
+	</description>
+	<scm>
+		<url>https://github.com/Kurento/kurento-tutorial-java</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-java.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-tutorial-java.git</developerConnection>
+	</scm>
+
+	<!-- Project configuration -->
+
+	<modules>
+		<module>kurento-chroma</module>
+		<module>kurento-crowddetector</module>
+		<module>kurento-group-call</module>
+		<module>kurento-hello-world</module>
+		<module>kurento-hello-world-recording</module>
+		<module>kurento-magic-mirror</module>
+		<module>kurento-metadata-example</module>
+		<module>kurento-one2many-call</module>
+		<module>kurento-one2one-call</module>
+		<module>kurento-one2one-call-advanced</module>
+		<module>kurento-one2one-call-recording</module>
+		<module>kurento-platedetector</module>
+		<module>kurento-player</module>
+		<module>kurento-pointerdetector</module>
+		<module>kurento-rtp-receiver</module>
+		<module>kurento-send-data-channel</module>
+		<module>kurento-show-data-channel</module>
+	</modules>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!--
+				spring-boot-maven-plugin provides a couple useful goals:
+
+				spring-boot:run
+				https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#goals-run
+				Allows running the project from Maven. Use like this:
+					mvn clean spring-boot:run
+
+				spring-boot:repackage
+				https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#goals-repackage
+				Made here to run automatically during the `package` phase of the
+				Maven lifecycle. Creates a standalone jar that can be run with
+					java -jar package-exec.jar
+
+				<executable>true</executable> could be used to produce a JAR file
+				that is directly executable from the shell, however this makes it
+				incompatible with the GitHub Packages repository, which rejects
+				deployment with a "400 Bad Request" error.
+
+				Doc: https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#goals-repackage-parameters-details-executable
+				> It is recommended that you only enable this option if you intend
+				> to execute it directly, rather than [...] deploying it.
+				-->
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<configuration>
+						<classifier>exec</classifier>
+						<layout>ZIP</layout>
+						<mainClass>${start-class}</mainClass>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>repackage</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+</project>

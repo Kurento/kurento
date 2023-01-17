@@ -1,0 +1,55 @@
+{
+  "feedUrl": "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov",
+  "rois":
+  [
+    {
+      "id" : "roi0",
+      "points":
+      [
+	{"x":0.15,"y":0.6},
+	{"x":0.3,"y":0.6},
+	{"x":0.3,"y":0.7},
+	{"x":0.15,"y":0.7}
+      ],
+      "fluidityLevelMin":10,
+      "fluidityLevelMed":35,
+      "fluidityLevelMax":65,
+      "fluidityNumFramesToEvent":5,
+      "occupancyLevelMin":10,
+      "occupancyLevelMed":35,
+      "occupancyLevelMax":65,
+      "occupancyNumFramesToEvent":5,
+      "sendOpticalFlowEvent":false,
+      "opticalFlowNumFramesToEvent":3,
+      "opticalFlowNumFramesToReset":3,
+      "opticalFlowAngleOffset":0
+    },
+    {
+      "id" : "roi1",
+      "points":
+      [
+	{"x":0.7,"y":0.45},
+	{"x":1.0,"y":0.45},
+	{"x":1.0,"y":0.75},
+	{"x":0.6,"y":1},
+	{"x":0.1,"y":1}
+      ],
+      "fluidityLevelMin":5,
+      "fluidityLevelMed":20,
+      "fluidityLevelMax":50,
+      "fluidityNumFramesToEvent":6,
+      "occupancyLevelMin":5,
+      "occupancyLevelMed":20,
+      "occupancyLevelMax":50,
+      "occupancyNumFramesToEvent":6,
+      "sendOpticalFlowEvent":false,
+      "opticalFlowNumFramesToEvent":3,
+      "opticalFlowNumFramesToReset":3,
+      "opticalFlowAngleOffset":0
+    }
+  ]
+}
+
+
+
+

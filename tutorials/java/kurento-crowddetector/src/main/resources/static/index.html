@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="./img/kurento.png" type="image/png" />
+
+<link rel="stylesheet"
+	href="webjars/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="webjars/ekko-lightbox/dist/ekko-lightbox.min.css">
+<link rel="stylesheet" href="css/kurento.css">
+
+<script src="webjars/jquery/dist/jquery.min.js"></script>
+<script src="webjars/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="webjars/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
+<script src="/webjars/webrtc-adapter/release/adapter.js"></script>
+
+<script src="./js/kurento-utils.js"></script>
+<script src="./js/console.js"></script>
+<script src="./js/index.js"></script>
+<title>Kurento CrowdDetector</title>
+</head>
+
+<body>
+	<header>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse"></button>
+					<a class="navbar-brand" href="./">Kurento Tutorial</a>
+				</div>
+				<div class="collapse navbar-collapse"
+					id="bs-example-navbar-collapse-1"></div>
+			</div>
+		</div>
+	</header>
+	<div class="container">
+		<div class="page-header">
+			<h1>Kurento CrowdDetector</h1>
+		</div>
+		<div class="row">
+			<div class="col-md-5">
+				<h3>Remote stream</h3>
+				<video id="videoOutput" autoplay width="480px" height="360px"
+					poster="./img/webrtc.png"></video>
+				</br> Video feed: <input disabled style="width: 350px;" id="address"
+					type="text"> </br> </br>
+				<div class="col-md-12" style="margin-left: 150px;">
+					<a id="changeFeed" href="#" class="btn btn-danger"
+						onclick="return false;"><span class="glyphicon glyphicon-plus"></span>
+						Change Feed</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<a id="start" href="#" class="btn btn-success"
+					onclick="start(); return false;"><span
+					class="glyphicon glyphicon-play"></span> Start</a><br /> <br /> <a
+					id="stop" href="#" class="btn btn-danger"
+					onclick="stop(); return false;"><span
+					class="glyphicon glyphicon-stop"></span> Stop</a>
+			</div>
+			<div class="col-md-5">
+				<div class="row">
+					<div class="col-md-12">
+						Roi ID <select id="rois" onchange="changeRoi()"></select>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-6">occupancyLevelMin 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue1_1" min="1" max="100">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue1" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">occupancyLevelMed 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue2_1" min="1" max="100">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue2" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">occupancyLevelMax 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue3_1" min="1" max="100">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue3" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">occupancyNumFramesToEvent 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue4_1" min="1" max="100"
+							value="0">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue4" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">fluidityLevelMin 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue5_1" min="1" max="100">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue5" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">fluidityLevelMed 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue6_1" min="1" max="100">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue6" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">fluidityLevelMax 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue7_1" min="1" max="100">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue7" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">fluidityNumFramesToEvent 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue8_1" min="1" max="100"
+							value="0">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue8" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">sendOpticalFlowEvent :</div>
+					<div class="col-md-6">
+						<input disabled type="checkbox" id="true" name="option1"
+							value="true"> Yes <input disabled type="checkbox"
+							id="false" name="option2" value="false" checked> No<br>
+					</div>
+
+					<div class="col-md-6">opticalFlowFramesToEvent 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue9_1" min="1" max="100"
+							value="0">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue9" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">opticalFlowFramesToReset 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue10_1" min="1" max="100"
+							value="0">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue10" type="text" size="3">
+					</div>
+
+					<div class="col-md-6">opticalFlowAngleOffset 0:</div>
+					<div class="col-md-3">
+						<input disabled type="range" id="rangeValue11_1" min="1" max="100"
+							value="0">
+					</div>
+					<div class="col-md-3">
+						100 <input disabled id="rangeValue11" type="text" size="3">
+					</div>
+
+					<div class="col-md-4" style="margin-top: 30px;">processingWidth
+						160:</div>
+					<div class="col-md-4" style="margin-top: 30px;">
+						<input disabled type="range" id="rangeValue12_1" min="160"
+							max="1280" value="160"
+							onchange="updateValue(this.value,'rangeValue12')">
+					</div>
+					<div class="col-md-4" style="margin-top: 30px;">
+						1280 <input disabled id="rangeValue12" type="text" size="4">
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<label class="control-label" for="console">Console</label>
+					<div id="console"></div>
+				</div>
+			</div>
+		</div>
+
+		<footer>
+			<div class="foot-fixed-bottom">
+				<div class="container text-center">
+					<hr />
+					<div class="row">&copy; 2014 Kurento</div>
+					<div class="row">
+						<div class="col-md-4">
+							<a href="http://www.urjc.es"><img src="./img/urjc.gif"
+								alt="Universidad Rey Juan Carlos" height="50px" /></a>
+						</div>
+						<div class="col-md-4">
+							<a href="https://kurento.openvidu.io/"><img src="./img/kurento.png"
+								alt="Kurento" height="50px" /></a>
+						</div>
+						<div class="col-md-4">
+							<a href="http://www.naevatec.com"><img
+								src="./img/naevatec.png" alt="Naevatec" height="50px" /></a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</div>
+</body>
+</html>
