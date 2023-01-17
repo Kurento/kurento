@@ -1,0 +1,5 @@
+image:
+  name: kurento/chef
+  version: 1.1.0
+  extra_tags:
+    - latest

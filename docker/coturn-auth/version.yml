@@ -1,0 +1,6 @@
+
+image:
+  name: kurento/coturn-auth
+  version: 1.0.0
+  extra_tags:
+    - latest

@@ -1,0 +1,6 @@
+image:
+  name: kurento/dev-documentation
+  version: 1.2.0-jdk-8
+  extra_tags:
+    - jdk-8
+    - latest

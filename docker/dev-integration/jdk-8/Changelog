@@ -1,0 +1,8 @@
+* jdk-8-node-0.12-1
+
+  - Added libmediainfo-dev
+  - Remove Python packages:
+      awscli 
+      boto3 
+      dnspython 
+      pyOpenSSL

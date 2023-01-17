@@ -1,0 +1,3 @@
+image:
+  name: kurento/dev-integration
+  version: jdk-7-node-$NODE_VERSION

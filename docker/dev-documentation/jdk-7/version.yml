@@ -1,0 +1,6 @@
+image:
+  name: kurento/dev-documentation
+  version: 1.1.1-jdk-7
+  extra_tags:
+    - jdk-7
+    - latest
