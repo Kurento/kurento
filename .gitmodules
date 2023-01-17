@@ -1,3 +1,6 @@
 [submodule "server/cmake-utils/3rdparty/sanitizers-cmake"]
 	path = server/cmake-utils/3rdparty/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake.git
+[submodule "server/media-server/3rdparty/DeathHandler"]
+	path = server/media-server/3rdparty/DeathHandler
+	url = https://github.com/vmarkovtsev/DeathHandler.git

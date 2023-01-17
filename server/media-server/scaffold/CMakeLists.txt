@@ -1,0 +1,23 @@
+file(GLOB SCAFFOLD_TEMPLATES
+  LIST_DIRECTORIES false
+  *.template
+)
+
+install(
+  FILES ${SCAFFOLD_TEMPLATES}
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${CUSTOM_PREFIX}/scaffold/
+)
+
+configure_file(
+  kurento-module-scaffold
+  ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-scaffold @ONLY
+)
+
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/kurento-module-scaffold
+  PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ GROUP_EXECUTE
+    WORLD_READ WORLD_EXECUTE
+  DESTINATION bin
+)

@@ -1,0 +1,9 @@
+*.kdev4
+build
+*swp
+/nbproject/
+*~
+*orig
+obj-x86_64-linux-gnu
+.excludes
+CMakeLists.txt.user

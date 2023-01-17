@@ -1,0 +1,5 @@
+{{nameKebabCase}} (0.0.1~rc1) testing; urgency=medium
+
+  * Initial release.
+
+ -- {{debianOwner}}  {{debianDate}}
