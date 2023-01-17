@@ -11,7 +11,6 @@ cmake_minimum_required(VERSION 3.0)
 #     |-- execute_code_generator
 
 include(GNUInstallDirs) # CMAKE_INSTALL_*
-include (KurentoGitHelpers)
 
 include (GenericFind)
 generic_find(LIBNAME KurentoModuleCreator VERSION ^7.0.0 REQUIRED)
@@ -28,9 +27,6 @@ mark_as_advanced(KURENTO_MODULES_DIR)
 
 set (KURENTO_MODULES_DIR_INSTALL_PREFIX kurento/modules CACHE PATH "Directory where kurento module descriptors are installed (relative to \${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}). Also .so module files are installed using this prefix, but relative to \${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})")
 mark_as_advanced(KURENTO_MODULES_DIR_INSTALL_PREFIX)
-
-set (KURENTO_CLIENT_JS_GIT https://github.com/Kurento/kurento.git CACHE STRING "URL of kurento-client-js git repository to get templates from")
-set (KURENTO_CLIENT_JS_BRANCH main CACHE STRING "Branch of kurento-client-js repository to get templates from")
 
 set (MODULE_EVENTS "")
 set (MODULE_REMOTE_CLASSES "")
@@ -997,29 +993,18 @@ function (generate_kurento_libraries)
 
     file(WRITE ${CMAKE_BINARY_DIR}/js_project_name "${VALUE_CODE_API_JS_NODENAME}")
 
-    #Download kurento-client-js
-    set (KURENTO_CLIENT_JS_DIR ${CMAKE_BINARY_DIR}/kurento-client-js)
-    file(REMOVE_RECURSE ${KURENTO_CLIENT_JS_DIR})
-    file(MAKE_DIRECTORY ${KURENTO_CLIENT_JS_DIR})
-
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} clone ${KURENTO_CLIENT_JS_GIT} ${KURENTO_CLIENT_JS_DIR}
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
-
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} checkout ${KURENTO_CLIENT_JS_BRANCH}
-      WORKING_DIRECTORY ${KURENTO_CLIENT_JS_DIR}
-    )
-
     execute_code_generator (
       EXEC_PARAMS
         -r ${PARAM_MODELS} ${KURENTO_MODULES_DIR_LINE} -c ${CMAKE_BINARY_DIR}/js -npm
     )
 
+    # Templates for JavaScript were imported from kurento-client-js, and are
+    # stored in `src/main/templates/client-js/`. This allows to build the
+    # Kurento modules (kurento-client-{core,elements,filters}) before the JS
+    # client itself (as required by the dependency tree).
     execute_code_generator (
       EXEC_PARAMS
-        -r ${PARAM_MODELS} ${KURENTO_MODULES_DIR_LINE} -c ${CMAKE_BINARY_DIR}/js/lib -t ${KURENTO_CLIENT_JS_DIR}/templates
+        -r ${PARAM_MODELS} ${KURENTO_MODULES_DIR_LINE} -c ${CMAKE_BINARY_DIR}/js/lib -it client-js
     )
 
     execute_code_generator (
