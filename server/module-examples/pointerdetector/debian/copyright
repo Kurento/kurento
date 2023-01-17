@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: kms-pointerdetector
+Upstream-Contact: Kurento <kurento@openvidu.io>
+Source: https://github.com/Kurento/kms-pointerdetector
+
+Files: *
+Copyright: Copyright 2018 Kurento (https://kurento.openvidu.io/)
+License: Apache-2.0
+ On Debian systems, the full text of the Apache License, Version 2.0
+ can be found in the file '/usr/share/common-licenses/Apache-2.0'.

@@ -1,0 +1,14 @@
+{
+  "name": "pointerdetector",
+  "version": "7.0.0-dev",
+  "kurentoVersion": "^7.0.0-dev",
+  "code": {
+    "api": {
+      "js": {
+        "nodeName": "kurento-module-pointerdetector",
+        "npmDescription": "JavaScript Client API for Kurento Media Server",
+        "npmGit": "https://github.com/Kurento/kurento-module-pointerdetector-js.git"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+include_directories(
+  ${KMSCORE_INCLUDE_DIRS}
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${OPENCV_INCLUDE_DIRS}
+  ${SOUP_INCLUDE_DIRS}
+)
+
+set(POINTERDETECTOR_SOURCES
+  pointerdetector.c
+  kmspointerdetector.c kmspointerdetector.h
+)
+
+add_library(pointerdetector MODULE ${POINTERDETECTOR_SOURCES})
+
+target_link_libraries(pointerdetector
+  kmsgstcommons
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_VIDEO_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${SOUP_LIBRARIES}
+)
+
+install(
+  TARGETS pointerdetector
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
