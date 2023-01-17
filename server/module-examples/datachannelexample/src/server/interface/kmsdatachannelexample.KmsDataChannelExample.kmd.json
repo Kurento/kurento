@@ -1,0 +1,68 @@
+{
+  "remoteClasses": [
+    {
+      "name": "KmsShowData",
+      "extends": "MediaElement",
+      "doc": "KmsShowData interface. Documentation about the module",
+      "constructor": {
+        "doc": "Create an element",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the parent :rom:cls:`MediaPipeline`",
+            "type": "MediaPipeline",
+            "final": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "KmsSendData",
+      "extends": "MediaElement",
+      "doc": "KmsSendData interface. Documentation about the module",
+      "constructor": {
+        "doc": "Create an element",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the parent :rom:cls:`MediaPipeline`",
+            "type": "MediaPipeline",
+            "final": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "KmsDetectFaces",
+      "extends": "Filter",
+      "doc": "KmsDetectFaces interface. Documentation about the module",
+      "constructor": {
+        "doc": "Create an element",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the parent :rom:cls:`MediaPipeline`",
+            "type": "MediaPipeline",
+            "final": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "KmsShowFaces",
+      "extends": "Filter",
+      "doc": "KmsShowFaces interface. Documentation about the module",
+      "constructor": {
+        "doc": "Create an element",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the parent :rom:cls:`MediaPipeline`",
+            "type": "MediaPipeline",
+            "final": true
+          }
+        ]
+      }
+    }
+  ]
+}

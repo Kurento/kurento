@@ -1,0 +1,41 @@
+Source: kms-datachannelexample
+Priority: optional
+Maintainer: Kurento <kurento@openvidu.io>
+Build-Depends: debhelper (>= 9),
+ cmake,
+ pkg-config,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libopencv-dev
+Standards-Version: 4.0.0
+Vcs-Git: https://github.com/Kurento/kms-datachannelexample.git
+Vcs-Browser: https://github.com/Kurento/kms-datachannelexample
+Homepage: https://kurento.openvidu.io/
+
+Package: kms-datachannelexample
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ gstreamer1.0-plugins-bad,
+ gstreamer1.0-plugins-base,
+ gstreamer1.0-x
+Recommends: fonts-droid-fallback
+Description: Kurento WebRTC DataChannel example
+
+Package: kms-datachannelexample-dev
+Architecture: any
+Section: libdevel
+Depends: kms-datachannelexample (= ${binary:Version}),
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libopencv-dev
+Description: Kurento WebRTC DataChannel example - Development files
+
+Package: kms-datachannelexample-dbg
+Architecture: any
+Section: debug
+Depends: kms-datachannelexample (= ${binary:Version})
+Description: Kurento WebRTC DataChannel example - Debugging symbols

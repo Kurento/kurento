@@ -1,0 +1,5 @@
+usr/include/kurento/modules/*/*.hpp
+usr/lib/*/*.so
+usr/lib/*/pkgconfig/*.pc
+usr/share/cmake-*/Modules/*
+usr/share/kurento/modules/*.kmd.json

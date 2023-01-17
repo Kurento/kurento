@@ -1,0 +1,165 @@
+kms-datachannelexample (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  * UNRELEASED
+
+  [ Saul Pablo Labajo Izquierdo ]
+  * switched to gstreamer from bionic
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:52 +0200
+
+kms-datachannelexample (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:34 +0000
+
+kms-datachannelexample (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Kurento ]
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:43 +0200
+
+kms-datachannelexample (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:41 +0100
+
+kms-datachannelexample (6.15.0-0kurento1) testing; urgency=medium
+
+  * debian/control: Sort deps, add missing one
+  * debian: add missing dependencies (fixes show-data example)
+  * debian: copy kms-core control file, add dbg section
+  * debian: recommend installing "fonts-droid-fallback"
+  * Prepare release 6.15.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 04 Nov 2020 13:07:31 +0100
+
+kms-datachannelexample (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kms-datachannelexample (6.6.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.6.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 17:32:12 +0200
+
+kms-datachannelexample (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ David Fernandez ]
+  * kmsimageoverlaymetadata: Adapt the filter to the new kms_serializable_meta API
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change license to Apache 2.0
+  * CMakeLists: Fix compilation problems on xenial
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 31 May 2016 09:43:17 +0200
+
+kms-datachannelexample (6.4.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.4.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 25 Feb 2016 12:59:26 +0100
+
+kms-datachannelexample (6.3.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add README.md file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.3.0
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Add pom.xml file to add mandatory data to generate pom
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.3.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 20:10:47 +0100
+
+kms-datachannelexample (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add README.md file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 08:39:11 +0100
+
+kms-datachannelexample (6.2.0) testing; urgency=medium
+
+  [ David Fernandez ]
+  * Add .gitreview
+  * Add KmsShowData media element
+  * Add KmsSendData media element
+  * Add KmsDetectFaces and KmsShowFaces media elements
+
+  [ Jose Antonio Santos Cadenas ]
+  * CMakeLists: Fix gstreamer version
+
+  [ David Fernandez ]
+  * Change class names to avoid problem with existing filters
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 26 Nov 2015 12:35:20 +0100
+
+kms-datachannelexample (0.0.1~rc1) testing; urgency=medium
+
+  * Initial release.
+
+ -- Maintainer name <maintainerMail@mail>  Mon, 19 Oct 2015 13:06:16 +0200
+

@@ -1,0 +1,4 @@
+build/
+CMakeLists.txt.user
+obj-x86_64-linux-gnu/
+
