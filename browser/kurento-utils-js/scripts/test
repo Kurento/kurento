@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+
+var http = require('http')
+
+var webdriver = require('selenium-webdriver')
+var chrome = require('selenium-webdriver/chrome')
+var firefox = require('selenium-webdriver/firefox')
+
+var install    = require('bower').commands.install
+var outputFile = require('fs-extra').outputFile
+var Server     = require('node-static').Server
+var tasks      = require('grunt').tasks
+
+var parseString = require('xml2js').parseString;
+
+// firefox options
+const profile = new firefox.Profile();
+// from http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
+profile.setPreference('media.navigator.streams.fake', true)
+const ffoptions = new firefox.Options().setProfile(profile)
+// assume it's running chrome
+// http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
+const croptions = new chrome.Options()
+    .addArguments('allow-file-access-from-files')
+    .addArguments('use-fake-device-for-media-stream')
+    .addArguments('use-fake-ui-for-media-stream')
+
+
+const package_name = require('../package.json').name
+
+const PORT = 6060
+const REPORTS_DIR='reports'
+const TIMEOUT=20
+
+
+function onerror(error)
+{
+  if(error)
+  {
+    console.debug(error)
+    process.exit(-1)
+  }
+}
+
+function writeReport(type, data, callback)
+{
+  callback = callback || onerror
+
+  if(!data) return callback("There's no "+type+' report data')
+
+  const path = REPORTS_DIR+'/'+package_name+'.'+type
+
+  outputFile(path, data, function(error)
+  {
+    if(error) return callback(error);
+
+    console.debug(type + ' report saved at ' + path);
+
+    callback(null, data)
+  });
+}
+
+function waitReport(driver, id, callback)
+{
+  var elem = driver.findElement({id: id})
+
+  driver
+      .wait(webdriver.until.elementIsVisible(elem), TIMEOUT*1000)
+      .then(elem.getAttribute.bind(elem, 'value'))
+      .then(function(data)
+      {
+        writeReport(id, data, callback)
+      })
+}
+
+function runTest(browser)
+{
+  var driver = new webdriver.Builder().setFirefoxOptions(ffoptions)
+      .setChromeOptions(croptions).forBrowser(browser).build()
+
+  driver.get('http://localhost:'+PORT+'/test/index.html')
+
+  waitReport(driver, 'junit', function(error, data)
+  {
+    if(error) return onerror(error)
+
+    parseString(data, function(error, result)
+    {
+      if(error) return onerror(error)
+
+      // Set process exit code if test didn't passed
+      var $ = result.testsuites.$
+      var code = parseInt($.failures) + parseInt($.errors)
+      if(code)
+        process.exit(code)
+    });
+  })
+  waitReport(driver, 'lcov')
+
+  return driver.quit()
+}
+
+
+install([], undefined, {cwd: 'test'})
+.on('error', onerror)
+.on('end', function(installed)
+{
+  installed = Object.keys(installed)
+
+  if(installed.length)
+    console.debug('Installed:',installed.join(', '));
+
+  tasks(['jsdoc', 'coverage'], {}, function()
+  {
+    var file = new Server();
+
+    var server = http.createServer(function(request, response)
+    {
+      var listener = file.serve.bind(file, request, response)
+
+      request.addListener('end', listener).resume()
+    }).listen(PORT);
+
+    runTest('chrome').then(server.close.bind(server))
+//    runTest('firefox').then(server.close.bind(server))
+  })
+});

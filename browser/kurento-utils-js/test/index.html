@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>JavaScript Kurento Utils</title>
+    <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+
+    <script src="bower_components/adapter.js/adapter.js"></script>
+
+    <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+
+    <script src="../node_modules/qunit-assert-canvas/qunit-assert-canvas.js"></script>
+    <script src="../node_modules/qunit-reporter-junit/qunit-reporter-junit.js"></script>
+    <script src="../node_modules/qunit-reporter-lcov/qunit-reporter-lcov.js"></script>
+
+    <script src="../dist/kurento-utils.cov.js"></script>
+  </head>
+  <body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture">
+      <video id="video" autoplay></video>
+      <canvas id="canvas"></canvas>
+    </div>
+    <textarea id="junit" readonly style="width: 100%;visibility:hidden"></textarea>
+    <textarea id="lcov"  readonly style="width: 100%;visibility:hidden"></textarea>
+
+    <script src="_common.js"></script>
+
+    <script src="WebRtcPeer.js"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "Kurento Utils tests",
+  "authors": [
+    "Kurento <kurento@openvidu.io>"
+  ],
+  "moduleType": [
+    "globals"
+  ],
+  "license": "ALv2",
+  "homepage": "http://www.kurento.org/",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "adapter.js": "v0.2.9"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "name": "kurento-utils",
+  "version": "6.18.1-dev",
+  "description": "Kurento JavaScript Utilities",
+  "keywords": [
+    "kurento",
+    "mcu",
+    "sfu",
+    "rpc",
+    "mediaserver",
+    "pipe",
+    "audio",
+    "video",
+    "media",
+    "recording",
+    "stream",
+    "streaming",
+    "videoconference",
+    "broadcast",
+    "multicast",
+    "client",
+    "server",
+    "browser",
+    "chrome",
+    "edge",
+    "firefox",
+    "safari",
+    "webrtc",
+    "datachannel",
+    "sdp",
+    "ice",
+    "stun",
+    "turn",
+    "h264",
+    "h.264",
+    "opus",
+    "vp8",
+    "rtp",
+    "srtp",
+    "rtsp"
+  ],
+  "homepage": "https://kurento.openvidu.io/",
+  "license": "Apache-2.0",
+  "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
+  "contributors": [
+    "Kurento Community <kurento@googlegroups.com> (https://kurento.openvidu.io/)"
+  ],
+  "bugs": {
+    "url": "https://github.com/Kurento/bugtracker/issues",
+    "email": "kurento@googlegroups.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kurento/kurento-utils-js.git"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "coveralls": "scripts/coveralls",
+    "test": "scripts/test"
+  },
+  "dependencies": {
+    "freeice": "^2.1.2",
+    "hark": "^1.0.0",
+    "inherits": "^2.0.0",
+    "merge": "^1.2.0",
+    "sdp-translator": "^0.1.15",
+    "ua-parser-js": "^0.7.7",
+    "uuid": "^3.0.0"
+  },
+  "devDependencies": {
+    "bower": "^1.0.0",
+    "browserify": "^16.0.0",
+    "browserify-optional": "^1.0.0",
+    "chromedriver": "74.0.0",
+    "coveralls": "^3.0.0",
+    "fs-extra": "^0.30.0",
+    "grunt": "^1.0.0",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-clean": "^2.0.0",
+    "grunt-contrib-jshint": "^2.0.0",
+    "grunt-githooks": "^0.6.0",
+    "grunt-jsbeautifier": "^0.2.10",
+    "grunt-jscoverage": "^0.1.3",
+    "grunt-jsdoc": "^2.0.0",
+    "grunt-npm2bower-sync": "^0.9.1",
+    "grunt-shell": "^3.0.0",
+    "minifyify": "^7.0.0",
+    "node-static": "^0.7.6",
+    "qunit-assert-canvas": "^1.0.6",
+    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit#1.0.3",
+    "qunit-reporter-lcov": "^1.0.2",
+    "qunitjs": "^1.23.1",
+    "selenium-webdriver": "2.53.2",
+    "xml2js": "^0.4.9"
+  },
+  "optionalDependencies": {
+    "kurento-browser-extensions": "*"
+  }
+}
