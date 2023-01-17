@@ -1,0 +1,37 @@
+# Sanitizer blacklist file for Kurento Media Server.
+#
+# * https://clang.llvm.org/docs/SanitizerSpecialCaseList.html
+#
+# WARNING: A syntax error in this file will cause it to be ignored.
+# Check for warning messages from CMake, like this one:
+#
+#     -- Performing Test SanBlist_FLAG_DETECTED
+#     -- Performing Test SanBlist_FLAG_DETECTED - Failed
+#     CMake Warning at kms-cmake-utils/3rdparty/sanitizers-cmake/cmake/sanitize-helpers.cmake:152 (message):
+#       SanitizerBlacklist is not available for Clang compiler.  Targets using this
+#       compiler will be compiled without SanitizerBlacklist.
+
+
+
+# AddressSanitizer
+# ================
+
+[address]
+
+
+
+# libsigc++-2.0
+# -------------
+
+# ERROR: AddressSanitizer: new-delete-type-mismatch
+# in sigc::slot0<bool>::~slot0()
+#
+# This is a known issue in libsigc++ v2, apparently fixed in v3.
+# See https://github.com/libsigcplusplus/libsigcplusplus/issues/10
+#
+# FIXME: This rule doesn't actually work because ASan lacks the feature of
+# disabling it. Feature request: https://github.com/llvm/llvm-project/issues/58404
+#
+# NOTE: Blacklist is NOT supported by GCC; you should use Clang or disable the
+# check altogether, with `ASAN_OPTIONS=new_delete_type_mismatch=0`.
+src:/usr/include/sigc\+\+-2.0/sigc\+\+/functors/slot.h

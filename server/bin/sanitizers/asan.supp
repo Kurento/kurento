@@ -1,0 +1,3 @@
+# AddressSanitizer suppressions file for Kurento Media Server.
+#
+# * https://clang.llvm.org/docs/AddressSanitizer.html#issue-suppression
