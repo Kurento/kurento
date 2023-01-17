@@ -1,9 +1,9 @@
 {
   "remoteClasses": [
     {
-      "name": "GStreamerPluginSample",
-      "extends": "Filter",
-      "doc": "GStreamerPluginSample interface. Documentation about the module.",
+      "name": "OpenCVExample",
+      "extends": "OpenCVFilter",
+      "doc": "OpenCVExample interface. Documentation about the module.",
       "constructor": {
         "doc": "Create an element.",
         "params": [

@@ -13,12 +13,10 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 
 
 
-kms-sample-plugin
-=================
+kurento-module-gstreamer-example
+================================
 
-Kurento Plugin Sample.
-
-Sample Module for Kurento Media Server.
+Example of a GStreamer Kurento module.
 
 
 

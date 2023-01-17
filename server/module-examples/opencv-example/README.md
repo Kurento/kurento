@@ -14,9 +14,9 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 
 
 kurento-module-opencv-example
-============================
+=============================
 
-Sample project for KMS plugins based on [OpenCV](https://opencv.org).
+Example of an OpenCV Kurento module.
 
 
 

@@ -17,13 +17,13 @@
 #include <config.h>
 #include <gst/gst.h>
 
-#include "gstgstreamerpluginsample.h"
+#include "gstgstreamerexample.h"
 #include "config.h"
 
 static gboolean
 plugin_init (GstPlugin *plugin)
 {
-  if (!gst_gstreamer_plugin_sample_plugin_init (plugin)) {
+  if (!gst_gstreamer_example_plugin_init (plugin)) {
     GST_WARNING_OBJECT (plugin, "GStreamer plugin failed registering");
     return FALSE;
   }
@@ -31,10 +31,12 @@ plugin_init (GstPlugin *plugin)
   return TRUE;
 }
 
-GST_PLUGIN_DEFINE (GST_VERSION_MAJOR, GST_VERSION_MINOR,
-    gstreamerpluginsample,
+GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
+    GST_VERSION_MINOR,
+    gstreamerexample,
     "Filter documentation",
-    plugin_init, VERSION, GST_LICENSE_UNKNOWN,
-    "GStreamerPluginSample",
-    "https://www.example.com/"
-)
+    plugin_init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
+    "GStreamerExample",
+    "https://www.example.com/")

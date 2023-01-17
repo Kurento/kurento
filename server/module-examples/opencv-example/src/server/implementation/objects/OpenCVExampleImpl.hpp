@@ -14,76 +14,81 @@
  * limitations under the License.
  */
 
-#ifndef __GSTREAMER_PLUGIN_SAMPLE_IMPL_HPP__
-#define __GSTREAMER_PLUGIN_SAMPLE_IMPL_HPP__
+#ifndef __OPENCV_EXAMPLE_IMPL_HPP__
+#define __OPENCV_EXAMPLE_IMPL_HPP__
 
-#include "FilterImpl.hpp"
-#include "GStreamerPluginSample.hpp"
+#include "OpenCVFilterImpl.hpp"
+#include "OpenCVExample.hpp"
 #include <EventHandler.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include "OpenCVExampleOpenCVImpl.hpp"
 
 namespace kurento
 {
 namespace module
 {
-namespace gstreamerpluginsample
+namespace opencvexample
 {
-class GStreamerPluginSampleImpl;
-} /* gstreamerpluginsample */
-} /* module */
-} /* kurento */
+class OpenCVExampleImpl;
+} // namespace opencvexample
+} // namespace module
+} // namespace kurento
 
 namespace kurento
 {
-void Serialize (std::shared_ptr<kurento::module::gstreamerpluginsample::GStreamerPluginSampleImpl> &object, JsonSerializer &serializer);
-} /* kurento */
+void Serialize (
+    std::shared_ptr<kurento::module::opencvexample::OpenCVExampleImpl> &object,
+    JsonSerializer &serializer);
+} // namespace kurento
 
 namespace kurento
 {
 class MediaPipelineImpl;
-} /* kurento */
+} // namespace kurento
 
 namespace kurento
 {
 namespace module
 {
-namespace gstreamerpluginsample
+namespace opencvexample
 {
 
-class GStreamerPluginSampleImpl : public FilterImpl, public virtual GStreamerPluginSample
+class OpenCVExampleImpl : public OpenCVFilterImpl,
+                          public virtual OpenCVExample,
+                          public virtual OpenCVExampleOpenCVImpl
 {
 
 public:
+  OpenCVExampleImpl (const boost::property_tree::ptree &config,
+      std::shared_ptr<MediaPipeline> mediaPipeline);
 
-  GStreamerPluginSampleImpl (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline);
-
-  virtual ~GStreamerPluginSampleImpl() = default;
+  virtual ~OpenCVExampleImpl () = default;
 
   void setFilterType (int filterType);
   void setEdgeThreshold (int edgeValue);
 
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+      std::shared_ptr<EventHandler> handler);
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
-                       const std::string &methodName, const Json::Value &params,
-                       Json::Value &response);
+      const std::string &methodName,
+      const Json::Value &params,
+      Json::Value &response);
 
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
-
   class StaticConstructor
   {
   public:
-    StaticConstructor();
+    StaticConstructor ();
   };
 
   static StaticConstructor staticConstructor;
-
 };
 
-} /* gstreamerpluginsample */
-} /* module */
-} /* kurento */
+} // namespace opencvexample
+} // namespace module
+} // namespace kurento
 
-#endif /*  __GSTREAMER_PLUGIN_SAMPLE_IMPL_HPP__ */
+#endif /*  __OPENCV_EXAMPLE_IMPL_HPP__ */

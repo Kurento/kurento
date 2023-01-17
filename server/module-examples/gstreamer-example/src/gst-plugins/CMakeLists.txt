@@ -1,22 +1,22 @@
-set(GSTREAMER_PLUGIN_SAMPLE_SOURCES
-  gstreamerpluginsample.c
-  gstgstreamerpluginsample.h
-  gstgstreamerpluginsample.cpp
+set(GSTREAMER_EXAMPLE_SOURCES
+  gstreamerexample.c
+  gstgstreamerexample.h
+  gstgstreamerexample.cpp
 )
 
-add_library(gstgstreamerpluginsample MODULE ${GSTREAMER_PLUGIN_SAMPLE_SOURCES})
+add_library(gstgstreamerexample MODULE ${GSTREAMER_EXAMPLE_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(gstgstreamerpluginsample)
+  add_sanitizers(gstgstreamerexample)
 endif()
 
-target_include_directories(gstgstreamerpluginsample SYSTEM
+target_include_directories(gstgstreamerexample SYSTEM
   PRIVATE
     ${GSTREAMER_INCLUDE_DIRS}
     ${GSTREAMER_VIDEO_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
 )
 
-target_link_libraries(gstgstreamerpluginsample
+target_link_libraries(gstgstreamerexample
   PRIVATE
     ${GSTREAMER_LIBRARIES}
     ${GSTREAMER_VIDEO_LIBRARIES}
@@ -24,7 +24,7 @@ target_link_libraries(gstgstreamerpluginsample
 )
 
 install(
-  TARGETS gstgstreamerpluginsample
+  TARGETS gstgstreamerexample
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

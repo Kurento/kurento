@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef __OPENCV_PLUGIN_SAMPLE_OPENCV_IMPL_HPP__
-#define __OPENCV_PLUGIN_SAMPLE_OPENCV_IMPL_HPP__
+#ifndef __OPENCV_EXAMPLE_OPENCV_IMPL_HPP__
+#define __OPENCV_EXAMPLE_OPENCV_IMPL_HPP__
 
-#include "OpenCVPluginSample.hpp"
+#include "OpenCVExample.hpp"
 #include <OpenCVProcess.hpp>
 #include <EventHandler.hpp>
 
@@ -25,17 +25,16 @@ namespace kurento
 {
 namespace module
 {
-namespace opencvpluginsample
+namespace opencvexample
 {
 
-class OpenCVPluginSampleOpenCVImpl : public virtual OpenCVProcess
+class OpenCVExampleOpenCVImpl : public virtual OpenCVProcess
 {
 
 public:
+  OpenCVExampleOpenCVImpl ();
 
-  OpenCVPluginSampleOpenCVImpl ();
-
-  virtual ~OpenCVPluginSampleOpenCVImpl() = default;
+  virtual ~OpenCVExampleOpenCVImpl () = default;
 
   virtual void process (cv::Mat &mat);
 
@@ -43,13 +42,12 @@ public:
   void setEdgeThreshold (int edgeValue);
 
 private:
-
   int filterType;
   int edgeValue;
 };
 
-} /* opencvpluginsample */
-} /* module */
-} /* kurento */
+} // namespace opencvexample
+} // namespace module
+} // namespace kurento
 
-#endif /*  __OPENCV_PLUGIN_SAMPLE_OPENCV_IMPL_HPP__ */
+#endif /*  __OPENCV_EXAMPLE_OPENCV_IMPL_HPP__ */

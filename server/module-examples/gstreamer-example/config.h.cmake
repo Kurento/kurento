@@ -1,5 +1,5 @@
-#ifndef __GSTREAMER_PLUGIN_SAMPLE_CONFIG_H__
-#define __GSTREAMER_PLUGIN_SAMPLE_CONFIG_H__
+#ifndef __GSTREAMER_EXAMPLE_CONFIG_H__
+#define __GSTREAMER_EXAMPLE_CONFIG_H__
 
 /* Version */
 #cmakedefine VERSION "@VERSION@"
@@ -13,4 +13,4 @@
 /* Library installation directory */
 #cmakedefine KURENTO_MODULES_SO_DIR "@KURENTO_MODULES_SO_DIR@"
 
-#endif /* __GSTREAMER_PLUGIN_SAMPLE_CONFIG_H__ */
+#endif /* __GSTREAMER_EXAMPLE_CONFIG_H__ */

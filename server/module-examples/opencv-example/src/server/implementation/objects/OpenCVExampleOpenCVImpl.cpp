@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-#include "OpenCVPluginSampleOpenCVImpl.hpp"
+#include "OpenCVExampleOpenCVImpl.hpp"
 #include <KurentoException.hpp>
-#include <opencv2/core.hpp> // cv::Mat
+#include <opencv2/core.hpp>    // cv::Mat
 #include <opencv2/imgproc.hpp> // cv::cvtColor
 
 namespace kurento
 {
 namespace module
 {
-namespace opencvpluginsample
+namespace opencvexample
 {
 
-OpenCVPluginSampleOpenCVImpl::OpenCVPluginSampleOpenCVImpl ()
+OpenCVExampleOpenCVImpl::OpenCVExampleOpenCVImpl ()
 {
   this->filterType = 0;
   this->edgeValue = 125;
@@ -37,7 +37,8 @@ OpenCVPluginSampleOpenCVImpl::OpenCVPluginSampleOpenCVImpl ()
  * contains the current frame. You should insert your image processing code
  * here. Any changes in mat, will be sent through the Media Pipeline.
  */
-void OpenCVPluginSampleOpenCVImpl::process (cv::Mat &mat)
+void
+OpenCVExampleOpenCVImpl::process (cv::Mat &mat)
 {
   cv::Mat matBN (mat.rows, mat.cols, CV_8UC1);
   cv::cvtColor (mat, matBN, cv::COLOR_BGRA2GRAY);
@@ -48,16 +49,18 @@ void OpenCVPluginSampleOpenCVImpl::process (cv::Mat &mat)
   cv::cvtColor (matBN, mat, cv::COLOR_GRAY2BGRA);
 }
 
-void OpenCVPluginSampleOpenCVImpl::setFilterType (int filterType)
+void
+OpenCVExampleOpenCVImpl::setFilterType (int filterType)
 {
   this->filterType = filterType;
 }
 
-void OpenCVPluginSampleOpenCVImpl::setEdgeThreshold (int edgeValue)
+void
+OpenCVExampleOpenCVImpl::setEdgeThreshold (int edgeValue)
 {
   this->edgeValue = edgeValue;
 }
 
-} /* opencvpluginsample */
-} /* module */
-} /* kurento */
+} // namespace opencvexample
+} // namespace module
+} // namespace kurento
