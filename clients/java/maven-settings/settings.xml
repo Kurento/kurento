@@ -67,7 +67,7 @@
 				<altReleaseDeploymentRepository>sonatype-nexus::https://oss.sonatype.org/service/local/staging/deploy/maven2/</altReleaseDeploymentRepository>
 
 				<!-- Kurento GitHub Maven packages -->
-				<altSnapshotDeploymentRepository>kurento-github::https://maven.pkg.github.com/kurento/kurento-java</altSnapshotDeploymentRepository>
+				<altSnapshotDeploymentRepository>kurento-github::https://maven.pkg.github.com/Kurento/kurento-java</altSnapshotDeploymentRepository>
 			</properties>
 		</profile>
 		<profile>
@@ -76,7 +76,7 @@
 				<repository>
 					<id>kurento-github-public</id>
 					<name>Kurento GitHub Maven packages (public access)</name>
-					<url>https://maven.pkg.github.com/kurento/*</url>
+					<url>https://maven.pkg.github.com/Kurento/*</url>
 					<releases>
 						<enabled>false</enabled>
 					</releases>
@@ -89,7 +89,7 @@
 				<pluginRepository>
 					<id>kurento-github-public</id>
 					<name>Kurento GitHub Maven packages (public access)</name>
-					<url>https://maven.pkg.github.com/kurento/*</url>
+					<url>https://maven.pkg.github.com/Kurento/*</url>
 					<releases>
 						<enabled>false</enabled>
 					</releases>

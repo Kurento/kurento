@@ -6,7 +6,7 @@
 	<!-- Maven coordinates -->
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-qa-pom</artifactId>
-	<version>6.18.0</version>
+	<version>7.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -17,9 +17,9 @@
 	</description>
 	<url>https://kurento.openvidu.io/</url>
 	<scm>
-		<url>https://github.com/Kurento/kurento-qa-pom</url>
-		<connection>scm:git:https://github.com/Kurento/kurento-qa-pom.git</connection>
-		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-qa-pom.git</developerConnection>
+		<url>https://github.com/Kurento/kurento</url>
+		<connection>scm:git:https://github.com/Kurento/kurento.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
@@ -163,7 +163,7 @@
 	</profiles>
 
 	<modules>
-		<module>kurento-qa-config</module>
+		<module>qa-config</module>
 	</modules>
 
 	<!--

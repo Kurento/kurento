@@ -84,7 +84,7 @@ Usage:
 
 Issues:
 
-* [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
+* [Bug Tracker](https://github.com/Kurento/kurento/issues)
 * [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:

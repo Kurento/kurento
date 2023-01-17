@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.kurento.tutorial</groupId>
+		<artifactId>kurento-tutorial-test</artifactId>
+		<version>7.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>kurento-chroma-test</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Kurento Java Module Tutorial Test 2 - Chroma Filter</name>
+	<description>WebRTC in loopback with a chroma filter</description>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>https://kurento.openvidu.io/</url>
+	</organization>
+
+	<scm>
+		<url>https://github.com/Kurento/kurento</url>
+		<connection>scm:git:https://github.com/Kurento/kurento.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento.git</developerConnection>
+		<tag>develop</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>Kurento Community</name>
+			<organization>Kurento</organization>
+			<organizationUrl>https://kurento.openvidu.io/</organizationUrl>
+		</developer>
+	</developers>
+
+	<dependencies>
+		<!-- Kurento -->
+		<dependency>
+			<groupId>org.kurento.tutorial</groupId>
+			<artifactId>kurento-chroma</artifactId>
+			<version>${version.kurento-tutorials}</version>
+		</dependency>
+	</dependencies>
+
+</project>

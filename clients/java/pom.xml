@@ -7,7 +7,7 @@
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
 		<version>7.0.0-SNAPSHOT</version>
-		<relativePath>kurento-parent-pom</relativePath>
+		<relativePath>parent-pom</relativePath>
 	</parent>
 	<artifactId>kurento-java</artifactId>
 	<packaging>pom</packaging>
@@ -31,13 +31,10 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<modules>
-				<module>kurento-parent-pom</module>
-				<module>kurento-commons</module>
-				<module>kurento-jsonrpc</module>
-				<module>kurento-client</module>
-				<module>kurento-assembly</module>
-				<module>kurento-integration-tests</module>
-				<module>kurento-basicroom</module>
+				<module>parent-pom</module>
+				<module>commons</module>
+				<module>jsonrpc</module>
+				<module>client</module>
 			</modules>
 			<build>
 				<plugins>
@@ -61,11 +58,10 @@
 		<profile>
 			<id>deploy</id>
 			<modules>
-				<module>kurento-parent-pom</module>
-				<module>kurento-commons</module>
-				<module>kurento-jsonrpc</module>
-				<module>kurento-client</module>
-				<module>kurento-integration-tests</module>
+				<module>parent-pom</module>
+				<module>commons</module>
+				<module>jsonrpc</module>
+				<module>client</module>
 			</modules>
 			<build>
 				<plugins>
@@ -85,12 +81,6 @@
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
-		<profile>
-			<id>integration</id>
-			<modules>
-				<module>kurento-integration-tests</module>
-			</modules>
 		</profile>
 	</profiles>
 

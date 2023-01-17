@@ -139,15 +139,15 @@ xmlstarlet edit -S --inplace \
 
 # Children: Make them inherit from the new parent.
 CHILDREN=(
-    kurento-chroma-test
-    kurento-crowddetector-test
-    kurento-hello-world-test
-    kurento-magic-mirror-test
-    kurento-one2many-call-test
-    kurento-one2one-call-test
-    kurento-one2one-call-advanced-test
-    kurento-platedetector-test
-    kurento-pointerdetector-test
+    chroma-test
+    crowddetector-test
+    hello-world-test
+    magic-mirror-test
+    one2many-call-test
+    one2one-call-test
+    one2one-call-advanced-test
+    platedetector-test
+    pointerdetector-test
 )
 for CHILD in "${CHILDREN[@]}"; do
     find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \

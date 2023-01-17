@@ -17,9 +17,9 @@
 	</description>
 	<url>https://kurento.openvidu.io/</url>
 	<scm>
-		<url>https://github.com/Kurento/kurento-maven-plugin</url>
-		<connection>scm:git:https://github.com/Kurento/kurento-maven-plugin.git</connection>
-		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-maven-plugin.git</developerConnection>
+		<url>https://github.com/Kurento/kurento</url>
+		<connection>scm:git:https://github.com/Kurento/kurento.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento.git</developerConnection>
 	</scm>
 
 	<!-- Organization-level information -->
@@ -33,7 +33,7 @@
 	</developers>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/Kurento/bugtracker/issues</url>
+		<url>https://github.com/Kurento/kurento/issues</url>
 	</issueManagement>
 	<licenses>
 		<license>

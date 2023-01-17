@@ -15,7 +15,7 @@
 #/ and existing (available for download or installed locally).
 #/
 #/ We have frequently found that this is a limitation, because some times it is
-#/ needed to update from an unexisting version (like if some component is
+#/ needed to update from an nonexistent version (like if some component is
 #/ skipping a patch number, during separate development of different modules),
 #/ or when doing a Release (when the release version is not yet available).
 #/
@@ -48,7 +48,7 @@
 #/   released, and the Java packages should be made to depend on the new API
 #/   definition ones (which get published as part of the Media Server release).
 #/
-#/   <KmsVersion> is a full Maven version, such as "6.12.0-SNAPSHOT" or "6.12.0".
+#/   <KmsVersion> is a full Maven version, such as "7.0.0-SNAPSHOT" or "7.0.0".
 #/
 #/   Optional. Default: None.
 #/
@@ -166,9 +166,27 @@ function git_add() {
 # Apply version
 # =============
 
+# maven-plugin
+{
+    pushd maven-plugin/
+
+    # Project version: Set new value.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    # Dependency on kurento-module-creator.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='kurento-module-creator']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+    popd
+}
+
 # kurento-parent-pom
 {
-    pushd kurento-parent-pom/
+    pushd parent-pom/
 
     # NOTE: No need to update the parent version. Release docs already instruct
     # to update it manually whenever kurento-qa-pom is getting a new version.
@@ -209,13 +227,9 @@ function git_add() {
 
     # Children: Make them inherit from the new parent.
     CHILDREN=(
-        kurento-assembly
-        kurento-basicroom
-        kurento-client
-        kurento-commons
-        kurento-integration-tests
-        kurento-jsonrpc
-        kurento-repository
+        client
+        commons
+        jsonrpc
     )
     for CHILD in "${CHILDREN[@]}"; do
         find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \

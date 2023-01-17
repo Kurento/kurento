@@ -18,31 +18,31 @@
 		Sample client applications that showcase usage of the Kurento Java Client.
 	</description>
 	<scm>
-		<url>https://github.com/Kurento/kurento-tutorial-java</url>
-		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-java.git</connection>
-		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-tutorial-java.git</developerConnection>
+		<url>https://github.com/Kurento/kurento</url>
+		<connection>scm:git:https://github.com/Kurento/kurento.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento.git</developerConnection>
 	</scm>
 
 	<!-- Project configuration -->
 
 	<modules>
-		<module>kurento-chroma</module>
-		<module>kurento-crowddetector</module>
-		<module>kurento-group-call</module>
-		<module>kurento-hello-world</module>
-		<module>kurento-hello-world-recording</module>
-		<module>kurento-magic-mirror</module>
-		<module>kurento-metadata-example</module>
-		<module>kurento-one2many-call</module>
-		<module>kurento-one2one-call</module>
-		<module>kurento-one2one-call-advanced</module>
-		<module>kurento-one2one-call-recording</module>
-		<module>kurento-platedetector</module>
-		<module>kurento-player</module>
-		<module>kurento-pointerdetector</module>
-		<module>kurento-rtp-receiver</module>
-		<module>kurento-send-data-channel</module>
-		<module>kurento-show-data-channel</module>
+		<module>chroma</module>
+		<module>crowddetector</module>
+		<module>group-call</module>
+		<module>hello-world</module>
+		<module>hello-world-recording</module>
+		<module>magic-mirror</module>
+		<module>metadata-example</module>
+		<module>one2many-call</module>
+		<module>one2one-call</module>
+		<module>one2one-call-advanced</module>
+		<module>one2one-call-recording</module>
+		<module>platedetector</module>
+		<module>player</module>
+		<module>pointerdetector</module>
+		<module>rtp-receiver</module>
+		<module>send-data-channel</module>
+		<module>show-data-channel</module>
 	</modules>
 
 	<build>

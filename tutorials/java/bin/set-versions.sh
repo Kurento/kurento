@@ -15,7 +15,7 @@
 #/ and existing (available for download or installed locally).
 #/
 #/ We have frequently found that this is a limitation, because some times it is
-#/ needed to update from an unexisting version (like if some component is
+#/ needed to update from an nonexistent version (like if some component is
 #/ skipping a patch number, during separate development of different modules),
 #/ or when doing a Release (when the release version is not yet available).
 #/
@@ -155,24 +155,23 @@ xmlstarlet edit -S --inplace \
 
 # Children: Make them inherit from the new parent.
 CHILDREN=(
-    kurento-chroma
-    kurento-crowddetector
-    kurento-group-call
-    kurento-hello-world
-    kurento-hello-world-recording
-    kurento-hello-world-repository
-    kurento-magic-mirror
-    kurento-metadata-example
-    kurento-one2many-call
-    kurento-one2one-call
-    kurento-one2one-call-advanced
-    kurento-one2one-call-recording
-    kurento-platedetector
-    kurento-player
-    kurento-pointerdetector
-    kurento-rtp-receiver
-    kurento-send-data-channel
-    kurento-show-data-channel
+    chroma
+    crowddetector
+    group-call
+    hello-world
+    hello-world-recording
+    magic-mirror
+    metadata-example
+    one2many-call
+    one2one-call
+    one2one-call-advanced
+    one2one-call-recording
+    platedetector
+    player
+    pointerdetector
+    rtp-receiver
+    send-data-channel
+    show-data-channel
 )
 for CHILD in "${CHILDREN[@]}"; do
     find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \

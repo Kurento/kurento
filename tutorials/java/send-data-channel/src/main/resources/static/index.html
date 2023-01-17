@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="img/kurento.png" type="image/png" />
+
+<link rel="stylesheet"
+	href="webjars/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="webjars/ekko-lightbox/dist/ekko-lightbox.min.css">
+<link rel="stylesheet" href="webjars/demo-console/index.css">
+<link rel="stylesheet" href="css/kurento.css">
+
+<script src="webjars/jquery/dist/jquery.min.js"></script>
+<script src="webjars/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="webjars/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
+<script src="/webjars/webrtc-adapter/release/adapter.js"></script>
+<script src="webjars/demo-console/index.js"></script>
+
+<script src="js/kurento-utils.js"></script>
+<script src="js/index.js"></script>
+<title>Kurento Tutorial: WebRTC Send Data channel</title>
+</head>
+
+<body>
+	<header>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse"></button>
+					<a class="navbar-brand" href="">Kurento Tutorial</a>
+				</div>
+				<div class="collapse navbar-collapse"
+					id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a
+							href="https://github.com/Kurento/kurento/tree/main/tutorials/java/send-data-channel"><span
+								class="glyphicon glyphicon-file"></span> Source Code</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</header>
+	<div class="container">
+		<div class="page-header">
+			<h1>Tutorial: WebRTC Send Data Channels</h1>
+			<p>
+				This application shows an example on the use of <b>WebRTC Data
+					Channels</b> with Kurento. The <a href="img/pipeline.png"
+					data-toggle="lightbox" data-title="WebRTC Send Data Channels"
+					data-footer="A PlayerEndpoint feeds with media a KmsSendData Media Element, which is connected to a WebRtcEndpont in receive-only mode.">Media
+					Pipeline</a> is composed by a <i>PlayerEndpoint</i> which feeds <a
+					href="http://files.openvidu.io/video/filter/barcodes.webm"
+					target="_blank">media</a> a <i>KmsSendData</i>. This Media Element
+				is a test element aimed to show the capabilities of Kurento Media
+				Server for Data Channels. Internally it is composed by a <i>ZBarFilter</i>,
+				which is another Media Element that detects Bar/QR codes in a media
+				stream. This information is sent as WebRTC Data Channel Metadata by
+				<i>KmsSendData</i> to the last element of the pipeline, i.e. a <i>WebRtcEndpoint</i>.
+				In the client side the WebRtcPeer is setup in receive-only mode, and
+				the received data is shown in the GUI. To run this demo follow these
+				steps:
+			</p>
+			<ol>
+				<li>Open this page with a browser compliant with WebRTC.</li>
+				<li>Click on <i>Start</i> button.
+				</li>
+				<li>Watch the received data on the text area labeled as <i>Data
+						received</i></li>
+				<li>Click on <i>Stop</i> to finish the communication (or wait
+					until the video ends).
+				</li>
+			</ol>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<h3>Remote stream</h3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-5">
+				<video id="videoOutput" autoplay width="480px" height="360px"
+					poster="img/webrtc.png"></video>
+
+			</div>
+			<div class="col-md-7">
+				<a id="start" href="#" class="btn btn-success"
+					onclick="start(); return false;"><span
+					class="glyphicon glyphicon-play"></span> Start</a> <a id="stop"
+					href="#" class="btn btn-danger" onclick="stop(); return false;"><span
+					class="glyphicon glyphicon-stop"></span> Stop</a> <br> <br> <label
+					class="control-label" for="dataChannelReceive">Data
+					received</label><br>
+				<textarea id="dataChannelReceive" class="form-control" rows="5"
+					readonly="readonly"></textarea>
+				<br> <label class="control-label" for="console">Console</label><br>
+				<br>
+				<div id="console" class="democonsole">
+					<ul></ul>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<footer>
+		<div class="foot-fixed-bottom">
+			<div class="container text-center">
+				<hr />
+				<div class="row">&copy; 2014-2016 Kurento</div>
+				<div class="row">
+					<div class="col-md-4">
+						<a href="http://www.urjc.es"><img src="img/urjc.gif"
+							alt="Universidad Rey Juan Carlos" height="50px" /></a>
+					</div>
+					<div class="col-md-4">
+						<a href="https://kurento.openvidu.io/"><img src="img/kurento.png"
+							alt="Kurento" height="50px" /></a>
+					</div>
+					<div class="col-md-4">
+						<a href="http://www.naevatec.com"><img src="img/naevatec.png"
+							alt="Naevatec" height="50px" /></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+</body>
+</html>
