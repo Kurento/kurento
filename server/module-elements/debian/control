@@ -1,4 +1,4 @@
-Source: kms-elements
+Source: kurento-module-elements
 Priority: optional
 Maintainer: Kurento <kurento@openvidu.io>
 Build-Depends: debhelper (>= 9),
@@ -9,8 +9,8 @@ Build-Depends: debhelper (>= 9),
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-good,
  gstreamer1.0-x,
- kms-cmake-utils (>= 7.0.0),
- kms-core-dev (>= 7.0.0),
+ kurento-cmake-utils (>= 7.0.0),
+ kurento-module-core-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-system-dev,
@@ -24,28 +24,28 @@ Build-Depends: debhelper (>= 9),
  libsoup2.4-dev,
  libssl-dev
 Standards-Version: 4.0.0
-Vcs-Git: https://github.com/Kurento/kms-elements.git
-Vcs-Browser: https://github.com/Kurento/kms-elements
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
 
-Package: kms-elements
+Package: kurento-module-elements
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
  gstreamer1.0-nice,
- kms-core (>= 7.0.0),
+ kurento-module-core (>= 7.0.0),
  libgstreamer-plugins-bad1.0-0,
  libsoup2.4-1,
  openh264-gst-plugin
 Description: Kurento Elements module
  Kurento Elements module - Binary libraries.
 
-Package: kms-elements-dev
+Package: kurento-module-elements-dev
 Architecture: any
 Section: libdevel
-Depends: kms-elements (= ${binary:Version}),
- kms-cmake-utils (>= 7.0.0),
- kms-core-dev (>= 7.0.0),
+Depends: kurento-module-elements (= ${binary:Version}),
+ kurento-cmake-utils (>= 7.0.0),
+ kurento-module-core-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-system-dev,
@@ -61,9 +61,9 @@ Depends: kms-elements (= ${binary:Version}),
 Description: Kurento Elements module
  Kurento Elements module - Development files.
 
-Package: kms-elements-dbg
+Package: kurento-module-elements-dbg
 Architecture: any
 Section: debug
-Depends: kms-elements (= ${binary:Version})
+Depends: kurento-module-elements (= ${binary:Version})
 Description: Kurento Elements module
  Kurento Elements module - Debugging symbols.

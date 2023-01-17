@@ -13,12 +13,12 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 
 
 
-kms-elements
-============
+kurento-module-elements
+=======================
 
 Elements for Kurento Media Server.
 
-The kms-elements project contains **elements** needed for the Kurento Media Server.
+The kurento-module-elements project contains **elements** needed for the Kurento Media Server.
 
 
 
@@ -57,7 +57,7 @@ Usage:
 
 Issues:
 
-* [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
+* [Bug Tracker](https://github.com/Kurento/kurento/issues)
 * [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:

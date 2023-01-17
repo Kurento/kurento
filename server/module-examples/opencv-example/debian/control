@@ -1,32 +1,32 @@
-Source: kms-opencv-plugin-sample
-Maintainer: Kurento <info@kurento.com>
+Source: kurento-module-opencv-example
+Maintainer: Kurento <kurento@openvidu.io>
 Priority: optional
 Build-Depends: debhelper (>= 12),
  build-essential,
  cmake,
  pkg-config,
- kms-cmake-utils,
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev,
+ kurento-cmake-utils,
+ kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev,
  libgstreamer1.0-dev,
  libopencv-dev
 Standards-Version: 4.4.0
-Homepage: https://www.kurento.org/
-Vcs-Browser: https://github.com/Kurento/kms-opencv-plugin-sample
-Vcs-Git: https://github.com/Kurento/kms-opencv-plugin-sample.git
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
+Homepage: https://kurento.openvidu.io/
 
-Package: kms-opencv-plugin-sample
+Package: kurento-module-opencv-example
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Kurento OpenCV filter plugin sample
 
-Package: kms-opencv-plugin-sample-dev
+Package: kurento-module-opencv-example-dev
 Architecture: any
 Section: libdevel
-Depends: kms-opencv-plugin-sample (= ${binary:Version}), ${misc:Depends},
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev
+Depends: kurento-module-opencv-example (= ${binary:Version}), ${misc:Depends},
+ kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev
 Description: Kurento OpenCV filter plugin sample (development files)

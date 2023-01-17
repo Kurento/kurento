@@ -13,8 +13,8 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 
 
 
-kms-opencv-plugin-sample
-========================
+kurento-module-opencv-example
+============================
 
 Sample project for KMS plugins based on [OpenCV](https://opencv.org).
 
@@ -55,7 +55,7 @@ Usage:
 
 Issues:
 
-* [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
+* [Bug Tracker](https://github.com/Kurento/kurento/issues)
 * [Support](http://doc-kurento.readthedocs.io/en/stable/user/support.html)
 
 News:

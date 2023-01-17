@@ -1,11 +1,8 @@
-kms-crowddetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
+kurento-module-crowddetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
   * UNRELEASED
 
-  [ Saul Pablo Labajo Izquierdo ]
-  * swithed to gstreamer from bionic
-
- -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:52 +0200
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 20 Sep 2022 17:15:33 +0200
 
 kms-crowddetector (6.18.0-0kurento1) testing; urgency=medium
 

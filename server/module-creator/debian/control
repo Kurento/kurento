@@ -15,8 +15,8 @@ Build-Depends-Indep:
  libmaven-assembly-plugin-java,
  libslf4j-java
 Standards-Version: 4.0.0
-Vcs-Git: https://github.com/Kurento/kurento-module-creator.git
-Vcs-Browser: https://github.com/Kurento/kurento-module-creator
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
 
 Package: kurento-module-creator

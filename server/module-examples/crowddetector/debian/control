@@ -1,4 +1,4 @@
-Source: kms-crowddetector
+Source: kurento-module-crowddetector
 Maintainer: Kurento <kurento@openvidu.io>
 Priority: optional
 Build-Depends: debhelper (>= 9),
@@ -8,16 +8,16 @@ Build-Depends: debhelper (>= 9),
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
- kms-core-dev (>= 7.0.0),
- kms-elements-dev (>= 7.0.0),
- kms-filters-dev (>= 7.0.0),
+ kurento-module-core-dev (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
+ kurento-module-filters-dev (>= 7.0.0),
  libopencv-dev
 Standards-Version: 4.0.0
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
-Vcs-Browser: https://github.com/Kurento/kms-crowddetector
-Vcs-Git: https://github.com/Kurento/kms-crowddetector.git
 
-Package: kms-crowddetector
+Package: kurento-module-crowddetector
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends},
@@ -26,23 +26,23 @@ Depends: ${shlibs:Depends},
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
- kms-core (>= 7.0.0),
- kms-elements (>= 7.0.0),
- kms-filters (>= 7.0.0)
+ kurento-module-core (>= 7.0.0),
+ kurento-module-elements (>= 7.0.0),
+ kurento-module-filters (>= 7.0.0)
 Description: Kurento Crowd Detector filter
 
-Package: kms-crowddetector-dev
+Package: kurento-module-crowddetector-dev
 Architecture: any
 Section: libdevel
-Depends: kms-crowddetector (= ${binary:Version}),
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev,
+Depends: kurento-module-crowddetector (= ${binary:Version}),
+ kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev,
  libopencv-dev
 Description: Kurento Crowd Detector filter - Development files
 
-Package: kms-crowddetector-dbg
+Package: kurento-module-crowddetector-dbg
 Architecture: any
 Section: debug
-Depends: kms-crowddetector (= ${binary:Version})
+Depends: kurento-module-crowddetector (= ${binary:Version})
 Description: Kurento Crowd Detector filter - Debug symbols

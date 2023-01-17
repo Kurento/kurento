@@ -7,7 +7,7 @@
 #
 #     -- Performing Test SanBlist_FLAG_DETECTED
 #     -- Performing Test SanBlist_FLAG_DETECTED - Failed
-#     CMake Warning at kms-cmake-utils/3rdparty/sanitizers-cmake/cmake/sanitize-helpers.cmake:152 (message):
+#     CMake Warning at cmake-utils/3rdparty/sanitizers-cmake/cmake/sanitize-helpers.cmake:152 (message):
 #       SanitizerBlacklist is not available for Clang compiler.  Targets using this
 #       compiler will be compiled without SanitizerBlacklist.
 

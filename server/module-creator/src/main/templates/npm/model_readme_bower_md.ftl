@@ -47,7 +47,6 @@ News and Website
 ----------------
 
 Check the [Kurento blog]
-Follow us on Twitter @[kurentoms].
 
 Issue tracker
 -------------
@@ -103,9 +102,8 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 
 [documentation]: https://kurento.openvidu.io/documentation
 [FIWARE]: http://www.fiware.org
-[GitHub Kurento bugtracker]: https://github.com/Kurento/bugtracker/issues
-[GitHub Kurento Group]: https://github.com/kurento
-[kurentoms]: http://twitter.com/kurentoms
+[GitHub Kurento bugtracker]: https://github.com/Kurento/kurento/issues
+[GitHub Kurento Group]: https://github.com/Kurento
 [Kurento]: https://kurento.openvidu.io/
 [Kurento Blog]: https://kurento.openvidu.io/blog
 [Kurento FIWARE Catalog Entry]: http://catalogue.fiware.org/enablers/stream-oriented-kurento

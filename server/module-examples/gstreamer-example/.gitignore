@@ -1,5 +1,5 @@
 build*/
-debian/kms-gstreamer-plugin-sample*
+debian/kurento-module-gstreamer-example*
 debian/*debhelper*
 debian/files
 debian/tmp/

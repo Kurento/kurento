@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Kurento Module Creator
 Upstream-Contact: Kurento <kurento@openvidu.io>
-Source: https://github.com/Kurento/kurento-module-creator
+Source: https://github.com/Kurento/kurento
 
 Files: *
 Copyright: 2018, Kurento (https://kurento.openvidu.io/)

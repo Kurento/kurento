@@ -12,7 +12,7 @@ set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of ent
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
-  message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")
+  message(FATAL_ERROR "KurentoUtils not found; please install package 'kurento-cmake-utils'")
 endif()
 
 include(KurentoGitHelpers)
@@ -50,12 +50,6 @@ generic_find(LIBNAME KmsJsonRpc VERSION ^7.0.0-dev REQUIRED)
 generic_find(LIBNAME KMSCORE VERSION ^7.0.0-dev REQUIRED)
 
 # Generate file "config.h"
-check_version_internal(>=2.6.2 sigc++-2.0_VERSION OUTPUT_ERROR)
-if(DEFINED OUTPUT_ERROR AND NOT ${OUTPUT_ERROR} EQUAL "")
-  set(FIX_SIGC TRUE)
-else()
-  set(FIX_SIGC FALSE)
-endif()
 set(TEST_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")

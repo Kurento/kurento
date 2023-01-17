@@ -40,10 +40,10 @@
   "license": "Apache-2.0",
   "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
   "contributors": [
-    "Kurento Community <kurento@openvidu.io> (https://kurento.openvidu.io/)"
+    "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)"
   ],
   "bugs": {
-    "url": "https://github.com/Kurento/bugtracker/issues",
+    "url": "https://github.com/Kurento/kurento/issues",
     "email": "kurento@openvidu.io"
   }
 }

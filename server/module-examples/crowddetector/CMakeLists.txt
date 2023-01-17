@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project("kms-crowddetector")
+project("kurento-module-crowddetector")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
 # Test configuration
@@ -10,10 +10,10 @@ set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of ent
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
-  message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")
+  message(FATAL_ERROR "KurentoUtils not found; please install package 'kurento-cmake-utils'")
 endif()
 
-message("If CodeGenerator is not found, you need to install 'kms-core' from the Kurento repository")
+message("If CodeGenerator is not found, you need to install 'kurento-module-core' from the Kurento repository")
 include(CodeGenerator)
 get_values_from_model(PREFIX VALUE MODELS ${CMAKE_CURRENT_SOURCE_DIR}/src/server/interface KEYS version)
 
@@ -37,7 +37,7 @@ endif()
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
-set(GETTEXT_PACKAGE "kms-crowddetector")
+set(GETTEXT_PACKAGE "kurento-module-crowddetector")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 set(BINARY_LOCATION "http://files.openvidu.io/" CACHE STRING "Local binary directory expressed as an URI ( http:// or file:/// )")
 include(GNUInstallDirs)

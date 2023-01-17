@@ -1,6 +1,44 @@
+### Project ignores ###
+
 # Build directories
 build/
 build-*/
 
-# IDE files -- QtCreator
+# Debian packaging (debhelper)
+**/debian/.debhelper/
+**/debian/*/
+**/debian/files
+**/debian/kurento-*.debhelper.log
+**/debian/kurento-*.substvars
+**/debian/tmp/
+**/kurento-*_*_amd64.buildinfo
+**/kurento-*_*_amd64.changes
+**/kurento-*_*.dsc
+**/kurento-*_*.tar.xz
+**/obj-x86_64-linux-gnu/
+
+
+
+### Default ignores ###
+
+# Created by https://www.toptal.com/developers/gitignore/api/cmake
+# Edit at https://www.toptal.com/developers/gitignore?templates=cmake
+
+### CMake ###
 CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+### CMake Patch ###
+# External projects
+*-prefix/
+
+# End of https://www.toptal.com/developers/gitignore/api/cmake

@@ -1,4 +1,4 @@
-kms-pointerdetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
+kurento-module-pointerdetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
   [ Saul Pablo Labajo Izquierdo ]
   * switch to gstreamer from bionic
@@ -16,8 +16,6 @@ kms-pointerdetector (6.17.0-0kurento1) testing; urgency=medium
 
   [ Juan Navarro ]
   * Prepare release 6.17.0-0kurento1
-
-  [ Kurento ]
 
  -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:44 +0200
 

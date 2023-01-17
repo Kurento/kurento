@@ -1,4 +1,4 @@
-Source: kms-core
+Source: kurento-module-core
 Priority: optional
 Maintainer: Kurento <kurento@openvidu.io>
 Build-Depends: debhelper (>= 9),
@@ -9,8 +9,8 @@ Build-Depends: debhelper (>= 9),
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
  gstreamer1.0-plugins-ugly,
- kms-cmake-utils (>= 7.0.0),
- kms-jsonrpc-dev (>= 7.0.0),
+ kurento-cmake-utils (>= 7.0.0),
+ kurento-jsonrpc-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-regex-dev,
@@ -24,25 +24,25 @@ Build-Depends: debhelper (>= 9),
  libvpx-dev,
  uuid-dev
 Standards-Version: 4.0.0
-Vcs-Git: https://github.com/Kurento/kms-core.git
-Vcs-Browser: https://github.com/Kurento/kms-core
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
 
-Package: kms-core
+Package: kurento-module-core
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends},
  gstreamer1.0-plugins-base,
- kms-jsonrpc (>= 7.0.0)
+ kurento-jsonrpc (>= 7.0.0)
 Description: Kurento Core module
  Kurento Core module - Binary libraries.
 
-Package: kms-core-dev
+Package: kurento-module-core-dev
 Architecture: any
 Section: libdevel
-Depends: kms-core (= ${binary:Version}),
- kms-cmake-utils (>= 7.0.0),
- kms-jsonrpc-dev (>= 7.0.0),
+Depends: kurento-module-core (= ${binary:Version}),
+ kurento-cmake-utils (>= 7.0.0),
+ kurento-jsonrpc-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-regex-dev,
@@ -59,9 +59,9 @@ Depends: kms-core (= ${binary:Version}),
 Description: Kurento Core module
  Kurento Core module - Development files.
 
-Package: kms-core-dbg
+Package: kurento-module-core-dbg
 Architecture: any
 Section: debug
-Depends: kms-core (= ${binary:Version})
+Depends: kurento-module-core (= ${binary:Version})
 Description: Kurento Core module
  Kurento Core module - Debugging symbols.

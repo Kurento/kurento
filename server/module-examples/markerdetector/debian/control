@@ -1,37 +1,37 @@
-Source: kms-markerdetector
+Source: kurento-module-markerdetector
 Maintainer: Kurento <kurento@openvidu.io>
 Priority: optional
 Build-Depends: debhelper (>= 9),
  cmake,
  pkg-config,
- kms-core-dev (>= 7.0.0),
- kms-elements-dev (>= 7.0.0),
- kms-filters-dev (>= 7.0.0),
+ kurento-module-core-dev (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
+ kurento-module-filters-dev (>= 7.0.0),
  libopencv-dev,
  libsoup2.4-dev,
  libtinyxml-dev
 Standards-Version: 4.0.0
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
-Vcs-Browser: https://github.com/Kurento/kms-markerdetector
-Vcs-Git: https://github.com/Kurento/kms-markerdetector.git
 
-Package: kms-markerdetector
+Package: kurento-module-markerdetector
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends},
  ${misc:Depends},
- kms-core (>= 7.0.0),
- kms-elements (>= 7.0.0),
- kms-filters (>= 7.0.0)
+ kurento-module-core (>= 7.0.0),
+ kurento-module-elements (>= 7.0.0),
+ kurento-module-filters (>= 7.0.0)
 Description: Kurento Augmented Reality marker detector
 
-Package: kms-markerdetector-dev
+Package: kurento-module-markerdetector-dev
 Architecture: any
 Section: libdevel
-Depends: kms-markerdetector (= ${binary:Version}),
- kms-core-dev (>= 7.0.0),
- kms-elements-dev (>= 7.0.0),
- kms-filters-dev (>= 7.0.0),
+Depends: kurento-module-markerdetector (= ${binary:Version}),
+ kurento-module-core-dev (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
+ kurento-module-filters-dev (>= 7.0.0),
  libopencv-dev,
  libsoup2.4-dev,
  libtinyxml-dev

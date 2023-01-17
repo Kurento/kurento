@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project("kms-cmake-utils")
+project("kurento-cmake-utils")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
 include(GNUInstallDirs) # CMAKE_INSTALL_*

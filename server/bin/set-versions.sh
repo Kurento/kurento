@@ -328,7 +328,7 @@ commit_and_tag() {
 # Edit files to set the new version
 # =================================
 
-pushd kurento-module-creator/
+pushd module-creator/
 xmlstarlet edit -S --inplace \
     --update "/_:project/_:version" \
     --value "$VERSION_JAVA" \
@@ -337,22 +337,7 @@ update_debian_changelog
 update_debian_control
 popd
 
-
-
-pushd kurento-maven-plugin/
-xmlstarlet edit -S --inplace \
-    --update "/_:project/_:version" \
-    --value "$VERSION_JAVA" \
-    pom.xml
-xmlstarlet edit -S --inplace \
-    --update "/_:project/_:dependencies/_:dependency[_:artifactId='kurento-module-creator']/_:version" \
-    --value "$VERSION_JAVA" \
-    pom.xml
-popd
-
-
-
-pushd kms-cmake-utils/
+pushd cmake-utils/
 perl -i -pe \
     "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
     CMakeLists.txt
@@ -362,7 +347,7 @@ popd
 
 
 
-pushd kms-jsonrpc/
+pushd jsonrpc/
 perl -i -pe \
     "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
     CMakeLists.txt
@@ -372,7 +357,7 @@ popd
 
 
 
-pushd kms-core/
+pushd module-core/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/core.kmd.json
@@ -385,7 +370,7 @@ popd
 
 
 
-pushd kms-elements/
+pushd module-elements/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/elements.kmd.json
@@ -398,7 +383,7 @@ popd
 
 
 
-pushd kms-filters/
+pushd module-filters/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/filters.kmd.json
@@ -411,7 +396,7 @@ popd
 
 
 
-pushd kurento-media-server/
+pushd media-server/
 perl -i -pe \
     "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
     CMakeLists.txt
@@ -424,7 +409,7 @@ popd
 
 
 
-pushd module/kms-chroma/
+pushd module-examples/chroma/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/chroma.kmd.json
@@ -437,7 +422,7 @@ popd
 
 
 
-pushd module/kms-crowddetector/
+pushd module-examples/crowddetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/crowddetector.kmd.json
@@ -450,7 +435,7 @@ popd
 
 
 
-pushd module/kms-datachannelexample/
+pushd module-examples/datachannelexample/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/kmsdatachannelexample.kmd.json
@@ -463,7 +448,7 @@ popd
 
 
 
-pushd module/kms-markerdetector/
+pushd module-examples/markerdetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/armarkerdetector.kmd.json
@@ -476,7 +461,7 @@ popd
 
 
 
-pushd module/kms-platedetector/
+pushd module-examples/platedetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/platedetector.kmd.json
@@ -489,7 +474,7 @@ popd
 
 
 
-pushd module/kms-pointerdetector/
+pushd module-examples/pointerdetector/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/pointerdetector.kmd.json
@@ -502,7 +487,7 @@ popd
 
 
 
-# Changes for kms-omni-build itself
+# Changes for server/
 perl -i -pe \
     "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?=\))/^${VERSION_C}/" \
     CMakeLists.txt
@@ -514,124 +499,87 @@ perl -i -pe \
 
 echo "Everything seems OK; proceed to commit"
 
-pushd kurento-module-creator/
+pushd module-creator/
 commit_and_tag \
     pom.xml \
     src/main/templates/maven/model_pom_xml.ftl
 popd
 
-
-
-pushd kurento-maven-plugin/
-commit_and_tag \
-    pom.xml
-popd
-
-
-
-pushd kms-cmake-utils/
+pushd cmake-utils/
 commit_and_tag \
     CMakeLists.txt
 popd
 
-
-
-pushd kms-jsonrpc/
+pushd jsonrpc/
 commit_and_tag \
     CMakeLists.txt
 popd
 
-
-
-pushd kms-core/
+pushd module-core/
 commit_and_tag \
     src/server/interface/core.kmd.json \
     cmake/Kurento/CodeGenerator.cmake
 popd
 
-
-
-pushd kms-elements/
+pushd module-elements/
 commit_and_tag \
     src/server/interface/elements.kmd.json
 popd
 
-
-
-pushd kms-filters/
+pushd module-filters/
 commit_and_tag \
     src/server/interface/filters.kmd.json
 popd
 
-
-
-pushd kurento-media-server/
+pushd media-server/
 commit_and_tag \
     CMakeLists.txt
 popd
 
-
-
-pushd module/kms-chroma/
+pushd module-examples/chroma/
 commit_and_tag \
     src/server/interface/chroma.kmd.json
 popd
 
-
-
-pushd module/kms-crowddetector/
+pushd module-examples/crowddetector/
 commit_and_tag \
     src/server/interface/crowddetector.kmd.json
 popd
 
-
-
-pushd module/kms-datachannelexample/
+pushd module-examples/datachannelexample/
 commit_and_tag \
     src/server/interface/kmsdatachannelexample.kmd.json
 popd
 
-
-
-pushd module/kms-markerdetector/
+pushd module-examples/markerdetector/
 commit_and_tag \
     src/server/interface/armarkerdetector.kmd.json
 popd
 
-
-
-pushd module/kms-platedetector/
+pushd module-examples/platedetector/
 commit_and_tag \
     src/server/interface/platedetector.kmd.json
 popd
 
-
-
-pushd module/kms-pointerdetector/
+pushd module-examples/pointerdetector/
 commit_and_tag \
     src/server/interface/pointerdetector.kmd.json
 popd
 
-
-
-# Changes for kms-omni-build itself
 commit_and_tag \
     CMakeLists.txt \
-    kurento-module-creator \
-    kurento-maven-plugin \
-    kms-cmake-utils \
-    kms-jsonrpc \
-    kms-core \
-    kms-elements \
-    kms-filters \
-    kurento-media-server \
-    module/kms-chroma \
-    module/kms-crowddetector \
-    module/kms-datachannelexample \
-    module/kms-gstreamer-plugin-sample \
-    module/kms-markerdetector \
-    module/kms-opencv-plugin-sample \
-    module/kms-platedetector \
-    module/kms-pointerdetector
+    module-creator \
+    cmake-utils \
+    jsonrpc \
+    module-core \
+    module-elements \
+    module-filters \
+    media-server \
+    module-examples/chroma \
+    module-examples/crowddetector \
+    module-examples/datachannelexample \
+    module-examples/markerdetector \
+    module-examples/platedetector \
+    module-examples/pointerdetector
 
 echo "Done!"

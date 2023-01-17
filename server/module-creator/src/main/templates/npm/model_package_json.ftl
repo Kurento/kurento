@@ -11,7 +11,7 @@ package.json
 <#if bowerGit??>
   "repository": {
     "type": "git",
-    "url": "https://github.com/${bowerGit}.git"
+    "url": "${bowerGit}"
   },
 </#if>
 <#if node_name != "kurento-client-core"

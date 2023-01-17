@@ -29,19 +29,6 @@ using namespace Glib::Threads;
 #include <type_traits>
 #include <sigc++/sigc++.h>
 #include <event2/event_struct.h>
-#if FIX_SIGC
-namespace sigc
-{
-template <typename Functor>
-struct functor_trait<Functor, false> {
-  typedef decltype (::sigc::mem_fun (std::declval<Functor &> (),
-                                     &Functor::operator() ) ) _intermediate;
-
-  typedef typename _intermediate::result_type result_type;
-  typedef Functor functor_type;
-};
-}
-#endif
 
 namespace kurento
 {

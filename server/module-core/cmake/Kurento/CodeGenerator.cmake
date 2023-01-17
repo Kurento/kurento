@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 # Call hierarchy.
-# Top level (called from Kurento modules, like kms-core)
+# Top level (called from Kurento modules, like kurento-module-core)
 # |-- generate_code
 # |   |-- generate_kurento_libraries
 # |   |   |-- generate_sources
@@ -29,8 +29,8 @@ mark_as_advanced(KURENTO_MODULES_DIR)
 set (KURENTO_MODULES_DIR_INSTALL_PREFIX kurento/modules CACHE PATH "Directory where kurento module descriptors are installed (relative to \${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}). Also .so module files are installed using this prefix, but relative to \${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})")
 mark_as_advanced(KURENTO_MODULES_DIR_INSTALL_PREFIX)
 
-set (KURENTO_CLIENT_JS_GIT https://github.com/Kurento/kurento-client-js CACHE STRING "URL of kurento-client-js git repository to get templates from")
-set (KURENTO_CLIENT_JS_BRANCH master CACHE STRING "Branch of kurento-client-js repository to get templates from")
+set (KURENTO_CLIENT_JS_GIT https://github.com/Kurento/kurento.git CACHE STRING "URL of kurento-client-js git repository to get templates from")
+set (KURENTO_CLIENT_JS_BRANCH main CACHE STRING "Branch of kurento-client-js repository to get templates from")
 
 set (MODULE_EVENTS "")
 set (MODULE_REMOTE_CLASSES "")

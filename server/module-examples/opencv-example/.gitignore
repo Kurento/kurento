@@ -1,5 +1,5 @@
 build*/
-debian/kms-opencv-plugin-sample*
+debian/kurento-module-opencv-example*
 debian/*debhelper*
 debian/files
 debian/tmp/

@@ -13,12 +13,12 @@ Copyright 2018 [Kurento]. Licensed under [Apache 2.0 License].
 
 
 
-kms-platedetector
-=================
+kurento-module-platedetector
+============================
 
 Plate detector filter element for Kurento Media Server.
 
-The kms-platedetector project contains a **plate detector filter** element for the Kurento Media Server.
+The kurento-module-platedetector project contains a **plate detector filter** element for the Kurento Media Server.
 
 
 
@@ -57,7 +57,7 @@ Usage:
 
 Issues:
 
-* [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
+* [Bug Tracker](https://github.com/Kurento/kurento/issues)
 * [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:

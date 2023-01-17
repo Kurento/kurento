@@ -1,4 +1,4 @@
-Source: kms-chroma
+Source: kurento-module-chroma
 Maintainer: Kurento <kurento@openvidu.io>
 Priority: optional
 Build-Depends: debhelper (>= 9),
@@ -7,17 +7,17 @@ Build-Depends: debhelper (>= 9),
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
- kms-core-dev (>= 7.0.0),
- kms-elements-dev (>= 7.0.0),
- kms-filters-dev (>= 7.0.0),
+ kurento-module-core-dev (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
+ kurento-module-filters-dev (>= 7.0.0),
  libopencv-dev,
  libsoup2.4-dev
 Standards-Version: 4.0.0
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
-Vcs-Browser: https://github.com/Kurento/kms-chroma
-Vcs-Git: https://github.com/Kurento/kms-chroma.git
 
-Package: kms-chroma
+Package: kurento-module-chroma
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends},
@@ -25,22 +25,22 @@ Depends: ${shlibs:Depends},
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
- kms-core (>= 7.0.0),
- kms-elements (>= 7.0.0),
- kms-filters (>= 7.0.0)
+ kurento-module-core (>= 7.0.0),
+ kurento-module-elements (>= 7.0.0),
+ kurento-module-filters (>= 7.0.0)
 Description: Kurento Chroma filter
 
-Package: kms-chroma-dev
+Package: kurento-module-chroma-dev
 Architecture: any
 Section: libdevel
-Depends: kms-chroma (= ${binary:Version}),
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev
+Depends: kurento-module-chroma (= ${binary:Version}),
+ kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev
 Description: Kurento Chroma filter - Development files
 
-Package: kms-chroma-dbg
+Package: kurento-module-chroma-dbg
 Architecture: any
 Section: debug
-Depends: kms-chroma (= ${binary:Version})
+Depends: kurento-module-chroma (= ${binary:Version})
 Description: Kurento Chroma filter - Debugging symbols

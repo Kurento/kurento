@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project("kms-core")
+project("kurento-module-core")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
 include(GNUInstallDirs) # CMAKE_INSTALL_*
@@ -24,7 +24,7 @@ endif()
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
-  message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")
+  message(FATAL_ERROR "KurentoUtils not found; please install package 'kurento-cmake-utils'")
 endif()
 
 include(CodeGenerator)
@@ -98,7 +98,7 @@ endif()
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
-set(GETTEXT_PACKAGE "kms-core")
+set(GETTEXT_PACKAGE "kurento-module-core")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")

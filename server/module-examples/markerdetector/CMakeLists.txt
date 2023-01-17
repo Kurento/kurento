@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project("kms-markerdetector")
+project("kurento-module-markerdetector")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
 # Test configuration
@@ -10,10 +10,10 @@ set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of ent
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
-  message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")
+  message(FATAL_ERROR "KurentoUtils not found; please install package 'kurento-cmake-utils'")
 endif()
 
-message("If CodeGenerator is not found, you need to install 'kms-core' from the Kurento repository")
+message("If CodeGenerator is not found, you need to install 'kurento-module-core' from the Kurento repository")
 include(CodeGenerator)
 get_values_from_model(PREFIX VALUE MODELS ${CMAKE_CURRENT_SOURCE_DIR}/src/server/interface KEYS version)
 
@@ -53,7 +53,7 @@ endif()
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
-set(GETTEXT_PACKAGE "kms-markerdetector")
+set(GETTEXT_PACKAGE "kurento-module-markerdetector")
 include(GNUInstallDirs)
 set(KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)

@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: kms-datachannelexample
+Upstream-Name: kurento-module-datachannelexample
 Upstream-Contact: Kurento <kurento@openvidu.io>
-Source: https://github.com/Kurento/kms-datachannelexample
+Source: https://github.com/Kurento/kurento
 
 Files: *
 Copyright: Copyright 2018 Kurento (https://kurento.openvidu.io/)

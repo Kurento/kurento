@@ -3,7 +3,6 @@
 
 /* Version */
 #cmakedefine PROJECT_VERSION "@PROJECT_VERSION@"
-#define FIX_SIGC @FIX_SIGC@
 
 #cmakedefine TEST_DIRECTORY "@TEST_DIRECTORY@"
 

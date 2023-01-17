@@ -1,10 +1,4 @@
-kms-filters (7.0.0-0kurento1) UNRELEASED; urgency=medium
-
-  * UNRELEASED
-
- -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:51 +0200
-
-kms-filters (7.0.0-0kurento1) testing; urgency=medium
+kurento-module-filters (7.0.0-0kurento1) UNRELEASED; urgency=medium
 
   * UNRELEASED
 

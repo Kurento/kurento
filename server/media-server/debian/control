@@ -6,10 +6,10 @@ Build-Depends: debhelper (>= 9),
  cmake,
  pkg-config,
  gstreamer1.0-plugins-good,
- kms-cmake-utils (>= 7.0.0),
- kms-core-dev (>= 7.0.0),
- kms-elements-dev (>= 7.0.0),
- kms-filters-dev (>= 7.0.0),
+ kurento-cmake-utils (>= 7.0.0),
+ kurento-module-core-dev (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
+ kurento-module-filters-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
  libboost-dev,
  libboost-filesystem-dev,
@@ -24,8 +24,8 @@ Build-Depends: debhelper (>= 9),
  libsigc++-2.0-dev,
  libwebsocketpp-dev
 Standards-Version: 4.0.0
-Vcs-Git: https://github.com/Kurento/kurento-media-server.git
-Vcs-Browser: https://github.com/Kurento/kurento-media-server
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
 
 Package: kurento-media-server
@@ -38,9 +38,9 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good-kurento,
  gstreamer1.0-plugins-ugly,
- kms-core (>= 7.0.0),
- kms-elements (>= 7.0.0),
- kms-filters (>= 7.0.0),
+ kurento-module-core (>= 7.0.0),
+ kurento-module-elements (>= 7.0.0),
+ kurento-module-filters (>= 7.0.0),
  libgstreamer-plugins-base1.0-0,
  libsrtp-kurento
 Suggests: kurento-dbg
@@ -55,10 +55,10 @@ Depends: kurento-media-server (= ${binary:Version}),
  ${misc:Depends},
  cmake,
  pkg-config,
- kms-cmake-utils (>= 7.0.0),
- kms-core-dev (>= 7.0.0),
- kms-elements-dev (>= 7.0.0),
- kms-filters-dev (>= 7.0.0),
+ kurento-cmake-utils (>= 7.0.0),
+ kurento-module-core-dev (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
+ kurento-module-filters-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
  libboost-log-dev,
  libboost-program-options-dev,
@@ -73,9 +73,9 @@ Architecture: any
 Section: debug
 Depends: kurento-media-server (= ${binary:Version}),
  ${misc:Depends},
- kms-core-dbg,
- kms-elements-dbg,
- kms-filters-dbg
+ kurento-module-core-dbg,
+ kurento-module-elements-dbg,
+ kurento-module-filters-dbg
 Description: Kurento Media Server
  Debugging symbols.
 
@@ -89,15 +89,15 @@ Depends: ${misc:Depends},
  gstreamer1.0-plugins-base-dbg,
  gstreamer1.0-plugins-good-dbg,
  gstreamer1.0-plugins-ugly-dbg,
- kms-core-dbg,
- kms-elements-dbg,
- kms-filters-dbg,
- kms-jsonrpc-dbg,
- kmsjsoncpp-dbg,
+ kurento-jsonrpc-dbg,
  kurento-media-server-dbg,
+ kurento-module-core-dbg,
+ kurento-module-elements-dbg,
+ kurento-module-filters-dbg,
  libc6-dbgsym | libc6-dbg,
  libglib2.0-0-dbgsym | libglib2.0-0-dbg,
  libgstreamer1.0-0-dbg,
+ libjsoncpp1-dbgsym,
  libnice10-dbgsym | libnice-dbg,
  libsoup2.4-1-dbgsym,
  libsrtp-kurento-dbg,

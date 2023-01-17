@@ -5,10 +5,10 @@ Build-Depends: debhelper (>= 12),
  build-essential,
  cmake,
  pkg-config,
- kms-cmake-utils,
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev,
+ kurento-cmake-utils,
+ kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev,
  libgstreamer-plugins-base1.0-dev,
  libgstreamer1.0-dev
 Standards-Version: 4.4.0
@@ -27,8 +27,8 @@ Package: {{nameKebabCase}}-dev
 Architecture: any
 Section: libdevel
 Depends: {{nameKebabCase}} (= ${binary:Version}), ${misc:Depends},
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev
+ kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev
 Description: <Up to 60 chars single line summary> (development files)
  <Long description over several lines, indented with space>.

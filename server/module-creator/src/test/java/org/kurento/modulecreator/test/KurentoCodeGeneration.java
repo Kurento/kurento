@@ -52,41 +52,41 @@ public class KurentoCodeGeneration {
 
   private static void generateJavaScriptCode() throws JsonIOException, IOException {
 
-    generateJavaScriptCodeFor("kms-core");
-    generateJavaScriptCodeFor("kms-elements");
-    generateJavaScriptCodeFor("kms-filters");
-    generateJavaScriptCodeFor("kms-platedetector");
-    generateJavaScriptCodeFor("kms-pointerdetector");
-    generateJavaScriptCodeFor("kms-crowddetector");
-    generateJavaScriptCodeFor("kms-chroma");
+    generateJavaScriptCodeFor("kurento-module-core");
+    generateJavaScriptCodeFor("kurento-module-elements");
+    generateJavaScriptCodeFor("kurento-module-filters");
+    generateJavaScriptCodeFor("kurento-module-platedetector");
+    generateJavaScriptCodeFor("kurento-module-pointerdetector");
+    generateJavaScriptCodeFor("kurento-module-crowddetector");
+    generateJavaScriptCodeFor("kurento-module-chroma");
     generateJavaScriptCodeFor("kms-example");
   }
 
   // private static void generateJavaCode() throws IOException {
-  // generateJavaCodeFor("kms-core");
-  // generateJavaCodeFor("kms-elements");
-  // generateJavaCodeFor("kms-filters");
+  // generateJavaCodeFor("kurento-module-core");
+  // generateJavaCodeFor("kurento-module-elements");
+  // generateJavaCodeFor("kurento-module-filters");
   //
   // mvnInstall("/home/mica/Data/Kurento/git/kurento-module-creator");
   // mvnInstall("/home/mica/Data/Kurento/git/kurento-maven-plugin");
   //
   // mvnInstall("/home/mica/Data/Kurento/git/kurento-java/kurento-client");
   //
-  // generateJavaCodeFor("kms-platedetector");
-  // generateJavaCodeFor("kms-pointerdetector");
-  // generateJavaCodeFor("kms-crowddetector");
-  // generateJavaCodeFor("kms-chroma");
+  // generateJavaCodeFor("kurento-module-platedetector");
+  // generateJavaCodeFor("kurento-module-pointerdetector");
+  // generateJavaCodeFor("kurento-module-crowddetector");
+  // generateJavaCodeFor("kurento-module-chroma");
   // generateJavaCodeFor("kms-example");
   // }
 
   // private static void updateGitProjects() throws IOException {
-  // updateGitProject("kms-core");
-  // updateGitProject("kms-elements");
-  // updateGitProject("kms-filters");
-  // updateGitProject("kms-platedetector");
-  // updateGitProject("kms-pointerdetector");
-  // updateGitProject("kms-crowddetector");
-  // updateGitProject("kms-chroma");
+  // updateGitProject("kurento-module-core");
+  // updateGitProject("kurento-module-elements");
+  // updateGitProject("kurento-module-filters");
+  // updateGitProject("kurento-module-platedetector");
+  // updateGitProject("kurento-module-pointerdetector");
+  // updateGitProject("kurento-module-crowddetector");
+  // updateGitProject("kurento-module-chroma");
   // updateGitProject("kms-example");
   // }
 

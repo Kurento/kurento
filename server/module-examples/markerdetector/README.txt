@@ -6,7 +6,7 @@ use the AR MarkerDetector Kurento module.
 
 To try out the module, you need to and restart kurento
 
-> dpkg -i kms-markerdetector_*.deb
+> dpkg -i kurento-module-markerdetector_*.deb
 > sudo /etc/init.d/kurento restart
 
 To download the latest binaries you can get them here:
@@ -25,8 +25,8 @@ Install the Java interface jar with maven to use it in the example
 Finally you can try the markerdetector out for example by
 modifying the kurento magic-mirror example.
 
-> git clone https://github.com/Kurento/kurento-tutorial-java.git
-> cd kurento-tutorial-java/kurento-magic-mirror
+> git clone https://github.com/Kurento/kurento.git
+> cd kurento/tutorials/java/magic-mirror/
 > gvim pom.xml # Add dependency
 
 	<dependency>
@@ -69,14 +69,14 @@ Generate module based on opencv-filter and describe the interface
 in armarkerdetector.ArMarkerdetector.kmd.json.
 
 > kurento-module-scaffold.sh ArMarkerdetector . huuhaa
-> cd ar-markerdetector
+> cd ar-markerdetector/
 > gvim src/server/interface/armarkerdetector.ArMarkerdetector.kmd.json
 
 Every time interface is changed you need to regenerate the related codes.
 
 > mv src/server/implementation src/server/implementation.backup
 > mkdir build
-> cd build
+> cd build/
 > rm -rf *
 > cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
 > cd ..
@@ -89,7 +89,7 @@ make most of the actual implementation in separate files (e.g. Process.*).
 These separate files and lib debendencies need to be added in
 src/server/CMakeLists.txt
 
-> cd src/server/implementation/objects
+> cd src/server/implementation/objects/
 > gvim ArMarkerdetectorOpenCVImpl.cpp Process.cpp Process.h
 > gvim ../../CMakeLists.txt
 
@@ -174,19 +174,19 @@ EOF
 ```
 
 Check out versions of installed packages
-> dpkg -l kms-core
-> dpkg -l kms-core-dev
-> dpkg -l kms-elements
-> dpkg -l kms-elements-dev
-> dpkg -l kms-filters
-> dpkg -l kms-filters-dev
+> dpkg -l kurento-module-core
+> dpkg -l kurento-module-core-dev
+> dpkg -l kurento-module-elements
+> dpkg -l kurento-module-elements-dev
+> dpkg -l kurento-module-filters
+> dpkg -l kurento-module-filters-dev
 > dpkg -l kurento-media-server
 
 Install latest versions
 > sudo apt-get update
-> sudo apt-get install kms-core-dev
-> sudo apt-get install kms-elements-dev
-> sudo apt-get install kms-filters-dev
+> sudo apt-get install kurento-module-core-dev
+> sudo apt-get install kurento-module-elements-dev
+> sudo apt-get install kurento-module-filters-dev
 > sudo apt-get install kurento-media-server
 
 At least for kurento-media-server it sometimes does not install

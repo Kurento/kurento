@@ -5,16 +5,15 @@
 #/ This shell script builds KMS, and/or runs it with default options if
 #/ already built.
 #/
-#/ To use, first clone the KMS omni-build repo and its submodules:
+#/ To use, first clone the Kurento repo and init its submodules:
 #/
-#/   git clone https://github.com/Kurento/kms-omni-build.git
-#/   cd kms-omni-build/
+#/   git clone https://github.com/Kurento/kurento.git
+#/   cd kurento/server/
 #/   git submodule update --init --recursive
-#/   git submodule update --remote
 #/
 #/ Then run this script directly from that directory:
 #/
-#/   bin/kms-build-run.sh
+#/   bin/build-run.sh
 #/
 #/
 #/ Arguments
@@ -58,7 +57,7 @@
 #/   name through the env vars `CC` and `CXX`. For example:
 #/
 #/     sudo apt-get update ; sudo apt-get install --yes clang-12 llvm-12
-#/     CC=clang-12 CXX=clang++-12 bin/kms-build-run.sh --clang
+#/     CC=clang-12 CXX=clang++-12 bin/build-run.sh --clang
 #/
 #/   Optional. Default: Disabled. When disabled, the compiler will be GCC.
 #/
@@ -321,7 +320,7 @@ BUILD_VARS+=(
 
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
-if [[ ! -f "$BUILD_DIR/kurento-media-server/server/kurento-media-server" ]]; then
+if [[ ! -f "$BUILD_DIR/media-server/server/kurento-media-server" ]]; then
     # If only a partial build exists (or none at all), delete it.
     rm -rf "$BUILD_DIR"
 
@@ -556,7 +555,7 @@ for RUN_VAR in "${RUN_VARS[@]}"; do
     [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
 done
 
-COMMAND+=" kurento-media-server/server/kurento-media-server \
+COMMAND+=" media-server/server/kurento-media-server \
     --conf-file='$PWD/config/kurento.conf.json' \
 "
 

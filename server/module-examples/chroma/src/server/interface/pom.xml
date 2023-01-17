@@ -23,9 +23,9 @@
         </developers>
 
         <scm>
-          <url>https://github.com/Kurento/kms-chroma</url>
-          <connection>scm:git:https://github.com/Kurento/kms-chroma.git</connection>
-          <developerConnection>scm:git:ssh://github.com/Kurento/kms-chroma.git</developerConnection>
+          <url>https://github.com/Kurento/kurento</url>
+          <connection>scm:git:https://github.com/Kurento/kurento.git</connection>
+          <developerConnection>scm:git:ssh://github.com/Kurento/kurento.git</developerConnection>
         </scm>
 
 </project>

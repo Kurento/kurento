@@ -2,7 +2,7 @@
 # File checked with ShellCheck (https://www.shellcheck.net/)
 
 # NOTE: This file must have the same contents than
-# kms-core/debian/kms-core.postinst
+# kurento-module-core/debian/kurento-module-core.postinst
 
 
 

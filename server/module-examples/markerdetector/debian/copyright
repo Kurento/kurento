@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: kms-markerdetector
+Upstream-Name: kurento-module-markerdetector
 Upstream-Contact: Kurento <kurento@openvidu.io>
-Source: https://github.com/Kurento/kms-markerdetector
+Source: https://github.com/Kurento/kurento
 
 Files: *
 Copyright: Copyright VTT 2015

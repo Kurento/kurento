@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project("kms-jsonrpc")
+project("kurento-jsonrpc")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
 include(GNUInstallDirs) # CMAKE_INSTALL_*
@@ -21,7 +21,7 @@ endif()
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
-  message(FATAL_ERROR "KurentoUtils not found; please install package 'kms-cmake-utils'")
+  message(FATAL_ERROR "KurentoUtils not found; please install package 'kurento-cmake-utils'")
 endif()
 
 include(KurentoGitHelpers)

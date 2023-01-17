@@ -94,38 +94,42 @@ source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
 
 
-# Apt config
-# ==========
+echo "# Apt config"
+# =================
 
-APT_SERVER="http://archive.ubuntu.com/ubuntu/"
+APT_MIRROR="http://archive.ubuntu.com/ubuntu/"
+#APT_MIRROR="http://mirror.tedra.es/ubuntu/"
+#APT_MIRROR="http://ubuntu.cica.es/ubuntu/"
 
 tee /etc/apt/sources.list >/dev/null <<EOF
-deb $APT_SERVER $DISTRIB_CODENAME main restricted universe multiverse
-deb $APT_SERVER $DISTRIB_CODENAME-updates main restricted universe multiverse
-deb $APT_SERVER $DISTRIB_CODENAME-backports main restricted universe multiverse
-deb $APT_SERVER $DISTRIB_CODENAME-security main restricted universe multiverse
-#
-#deb-src $APT_SERVER $DISTRIB_CODENAME main restricted universe multiverse
-#deb-src $APT_SERVER $DISTRIB_CODENAME-updates main restricted universe multiverse
-#deb-src $APT_SERVER $DISTRIB_CODENAME-backports main restricted universe multiverse
-#deb-src $APT_SERVER $DISTRIB_CODENAME-security main restricted universe multiverse
-#
-#deb http://archive.canonical.com/ubuntu $DISTRIB_CODENAME partner
-#deb-src http://archive.canonical.com/ubuntu $DISTRIB_CODENAME partner
+deb $APT_MIRROR $DISTRIB_CODENAME main restricted universe multiverse
+deb $APT_MIRROR $DISTRIB_CODENAME-updates main restricted universe multiverse
+deb $APT_MIRROR $DISTRIB_CODENAME-backports main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu/ $DISTRIB_CODENAME-security main restricted universe multiverse
+#deb http://archive.canonical.com/ubuntu/ $DISTRIB_CODENAME partner
+
+#deb-src APT_MIRROR $DISTRIB_CODENAME main restricted universe multiverse
+#deb-src APT_MIRROR $DISTRIB_CODENAME-updates main restricted universe multiverse
+#deb-src APT_MIRROR $DISTRIB_CODENAME-backports main restricted universe multiverse
+#deb-src http://security.ubuntu.com/ubuntu/ $DISTRIB_CODENAME-security main restricted universe multiverse
+#deb-src http://archive.canonical.com/ubuntu/ $DISTRIB_CODENAME partner
 EOF
 
-# Disable automatic installation of "recommended" and "suggested" dependencies
-tee /etc/apt/apt.conf.d/00recommends >/dev/null <<EOF
+# Disable automatic installation of "recommended" and "suggested" dependencies.
+tee /etc/apt/apt.conf.d/99no-recommends >/dev/null <<EOF
 APT::Install-Recommends "false";
 APT::Install-Suggests "false";
 EOF
 
-# Automatically cleaning the apt cache breaks 'd-devlibdeps' (d-shlibs) < 0.83
-# so this workaround is needed:
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916856
+# Disable IPv6, which has caused download issues in the past.
+tee /etc/apt/apt.conf.d/99force-ipv4 >/dev/null <<EOF
+Acquire::ForceIPv4 "true";
+EOF
+
+# Disable automatic cleaning of the apt cache, to keep downloaded packages.
 sed -i 's|^|//|' /etc/apt/apt.conf.d/docker-clean
 
-# Disable installation of manpages and other unneeded files
+# Disable installation of manpages and other unneeded files.
 # See https://wiki.ubuntu.com/ReducingDiskFootprint#Documentation
 mkdir -p /etc/dpkg/dpkg.cfg.d/
 tee /etc/dpkg/dpkg.cfg.d/01_nodoc >/dev/null <<EOF
@@ -142,13 +146,13 @@ EOF
 
 
 
-# Tools config
-# ============
+echo "# Tools config"
+# ===================
 
 # bash-completion
 sed -i '/bash_completion$/s/^#//g' "$HOME/.bashrc"
 
-# tzdata: Avoid interactive questions during `apt-get install`
+# tzdata: Avoid interactive questions during `apt-get install`.
 TZ="Europe/Madrid"
 ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime
 echo "$TZ" >/etc/timezone
@@ -181,27 +185,29 @@ EOF
 
 
 
-# Install basic tools
-# ===================
+echo "# Install basic tools"
+# ==========================
 
 apt-get update ; apt-get install --no-install-recommends --yes \
-    aptitude apt-file \
+    apt-file \
+    aptitude \
     bash-completion \
     git \
+    iproute2 \
+    iputils-ping \
     less \
     mlocate \
     nano \
     procps \
     tree \
-    wget \
-&& aptitude update \
-&& apt-file update \
-&& updatedb
+    wget
+
+apt-file update
 
 
 
-# Install development tools
-# =========================
+echo "# Install development tools"
+# ================================
 
 apt-get update ; apt-get install --no-install-recommends --yes \
     build-essential \
@@ -211,8 +217,8 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 
 
 
-# (Optional) Install tools for kurento-buildpackage
-# =================================================
+echo "# (Optional) Install tools for kurento-buildpackage"
+# ========================================================
 
 apt-get update ; apt-get install --no-install-recommends --yes \
     python3 python3-pip python3-setuptools python3-wheel \
@@ -226,7 +232,7 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     lsb-release
 
 git config --system user.name "Kurento"
-git config --system user.email "kurento@example.com"
+git config --system user.email "kurento@openvidu.io"
 git config --global --add safe.directory '*'
 
 if [[ "$DISTRIB_RELEASE" == "16.04" ]]; then
@@ -247,8 +253,8 @@ fi
 
 
 
-# (Optional) Add Kurento repo
-# ===========================
+echo "# (Optional) Add Kurento repo"
+# ==================================
 
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
@@ -258,7 +264,7 @@ apt-key adv \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 focal kms6" \
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME kms6" \
         >/etc/apt/sources.list.d/kurento.list
 else
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6" \
@@ -275,10 +281,10 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server-dev
 
-# Run Kurento, method 1: with service scripts
+# Run Kurento, method 1: with service scripts.
 #service kurento-media-server restart
 
-# Run Kurento, method 2: by hand
+# Run Kurento, method 2: by hand.
 #source /etc/default/kurento-media-server
 #unset GST_DEBUG_NO_COLOR
 #unset KURENTO_LOGS_PATH
@@ -286,8 +292,8 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 
 
 
-# (Optional) Install debug symbols
-# ================================
+echo "# (Optional) Install debug symbols"
+# =======================================
 
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
@@ -307,8 +313,8 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 
 
 
-# End
-# ===
+echo "# End cleanup"
+# ==================
 
 rm -rf /var/cache/apt/*
 rm -rf /var/lib/apt/lists/*
@@ -320,16 +326,16 @@ DOCKERCOMMANDS
 
 
 
-# Create Docker image
-# ===================
+echo "# Create Docker image"
+# ==========================
 
 docker commit "kurento-dev-$CFG_DISTRIB_RELEASE" "kurento-dev:$CFG_DISTRIB_RELEASE"
 docker container rm "kurento-dev-$CFG_DISTRIB_RELEASE"
 
 
 
-# Usage examples
-# ==============
+echo "# Print usage examples"
+# ===========================
 
 cat <<EOF
 To start a new dev container:
@@ -355,13 +361,12 @@ To start a new dev container:
 
 To run 'kurento-buildpackage' inside the container:
 
-    /hostdir/adm-scripts/kurento-buildpackage.sh \\
-        --allow-dirty \\
-        --dstdir /hostdir/packages \\
-        --install-files /hostdir/packages
+    /hostdir/kurento/ci-scripts/kurento-buildpackage.sh \\
+        --install-files /hostdir/packages \\
+        --dstdir /hostdir/packages
 
-To build and run Kurento from source code:
+To build and run Kurento Media Server from source code:
 
-    cd /hostdir/kms-omni-build/
-    bin/kms-build-run.sh
+    cd /hostdir/kurento/server/
+    bin/build-run.sh
 EOF

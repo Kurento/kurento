@@ -1,14 +1,14 @@
-Source: kms-cmake-utils
+Source: kurento-cmake-utils
 Priority: optional
 Maintainer: Kurento <kurento@openvidu.io>
 Build-Depends: debhelper (>= 9),
  cmake
 Standards-Version: 4.0.0
-Vcs-Git: https://github.com/Kurento/kms-cmake-utils.git
-Vcs-Browser: https://github.com/Kurento/kms-cmake-utils
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
 Homepage: https://kurento.openvidu.io/
 
-Package: kms-cmake-utils
+Package: kurento-cmake-utils
 Architecture: all
 Section: devel
 Depends: ${shlibs:Depends}, ${misc:Depends},

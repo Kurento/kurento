@@ -1,10 +1,10 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: kms-gstreamer-plugin-sample
-Upstream-Contact: Kurento <info@kurento.com>
-Source: https://github.com/Kurento/kms-gstreamer-plugin-sample
+Upstream-Name: kurento-module-gstreamer-example
+Upstream-Contact: Kurento <kurento@openvidu.io>
+Source: https://github.com/Kurento/kurento
 
 Files: *
-Copyright: Copyright 2014 Kurento <kurento@openvidu.io>
+Copyright: 2022 Kurento <kurento@openvidu.io>
 License: Apache-2.0
  On Debian systems, the complete text of the Apache version 2.0 license
  can be found in "/usr/share/common-licenses/Apache-2.0".

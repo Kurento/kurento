@@ -16,7 +16,7 @@ Starting from 6.10.0, all of these Kurento Media Server sub-projects
 - kms-jsonrpc
 - kurento-media-server
 
-have their ChangeLogs unified in [kurento-media-server/CHANGELOG](https://github.com/Kurento/kurento-media-server/blob/master/CHANGELOG.md).
+have their ChangeLogs unified in [kurento-media-server/CHANGELOG](https://github.com/Kurento/kurento/blob/main/server/media-server/CHANGELOG.md).
 
 
 ## [6.8.0] - 2018-09-26
