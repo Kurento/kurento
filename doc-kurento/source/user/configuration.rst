@@ -183,7 +183,7 @@ When this feature is used, all of the Kurento IPv4 and/or IPv6 ICE candidates ar
 **Docker**
 
 * Pass environment variables ``KMS_EXTERNAL_IPV4``, ``KMS_EXTERNAL_IPV6``.
-* If the special value ``auto`` is used, then the container will auto-discover its own public IP address by performing a DNS query to some of the well established providers (OpenDNS, Google, Cloudflare). You can review the script here: `getmyip.sh <https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/getmyip.sh>`__. In cases where these services are not reachable, the external IP parameters are left unset.
+* If the special value ``auto`` is used, then the container will auto-discover its own public IP address by performing a DNS query to some of the well established providers (OpenDNS, Google, Cloudflare). You can review the script here: `getmyip.sh <https://github.com/Kurento/kurento/blob/main/docker/kurento-media-server/getmyip.sh>`__. In cases where these services are not reachable, the external IP parameters are left unset.
 
 **Client API**
 

@@ -33,8 +33,8 @@ You also need the source code of this tutorial. Clone it from GitHub, then start
 
 .. code-block:: shell
 
-    git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-tutorial-js/kurento-platedetector/
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/javascript-browser/platedetector/
     git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
@@ -69,11 +69,11 @@ If you want to run this tutorial from a **remote web server**, then you have to 
 
 .. note::
 
-   This demo uses the **kms-platedetector** module, which must be installed in the media server. That module is available in the Kurento Apt repositories, so it is possible to install it with this command:
+   This demo uses the **kurento-module-platedetector** module, which must be installed in the media server. That module is available in the Kurento Apt repositories, so it is possible to install it with this command:
 
    .. code-block:: shell
 
-      sudo apt-get update ; sudo apt-get install kms-platedetector
+      sudo apt-get update ; sudo apt-get install kurento-module-platedetector
 
 
 Understanding this example
@@ -96,7 +96,7 @@ composed by the following `Media Element`:term: s:
    *WebRTC with plateDetector filter Media Pipeline*
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-platedetector>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/java/platedetector>`_.
 
 This example is a modified version of the
 :doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this
@@ -188,7 +188,7 @@ Dependencies
 
 The dependencies of this demo has to be obtained using `Bower`:term:. The
 definition of these dependencies are defined in the
-`bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-platedetector/bower.json>`_
+`bower.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/platedetector/bower.json>`_
 file, as follows:
 
 .. sourcecode:: js

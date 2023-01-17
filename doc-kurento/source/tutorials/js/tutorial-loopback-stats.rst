@@ -33,8 +33,8 @@ You also need the source code of this tutorial. Clone it from GitHub, then start
 
 .. code-block:: shell
 
-    git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-tutorial-js/kurento-loopback-stats/
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/javascript-browser/loopback-stats/
     git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
@@ -80,7 +80,7 @@ so any received media (from browser) is send back (to browser). Using method
 ``getStats`` the application shows all stats of element **WebRtcEndpoint**.
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-loopback-stats>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/javascript-browser/loopback-stats>`_.
 
 
 JavaScript Logic
@@ -88,7 +88,7 @@ JavaScript Logic
 
 This demo follows a *Single Page Application* architecture (`SPA`:term:). The
 interface is the following HTML page:
-`index.html <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-loopback-stats/index.html>`_.
+`index.html <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/loopback-stats/index.html>`_.
 This web page links two Kurento JavaScript libraries:
 
 * **kurento-client.js** : Implementation of the Kurento JavaScript Client.
@@ -112,7 +112,7 @@ In addition, these two JavaScript libraries are also required:
 * **demo-console** : Custom JavaScript console.
 
 The specific logic of this demo is coded in the following JavaScript page:
-`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-loopback-stats/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/loopback-stats/js/index.js>`_.
 In this file, there is a function which is called when the green button labeled
 as *Start* in the GUI is clicked.
 
@@ -224,7 +224,7 @@ this media elements is connected itself:
 Dependencies
 ============
 
-Demo dependencies are located in file `bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-loopback-stats/bower.json>`_.
+Demo dependencies are located in file `bower.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/loopback-stats/bower.json>`_.
 `Bower`:term: is used to collect them.
 
 .. sourcecode:: js

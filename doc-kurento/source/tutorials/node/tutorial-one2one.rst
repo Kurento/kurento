@@ -31,8 +31,8 @@ is hosted, install it and run it:
 
 .. sourcecode:: bash
 
-    git clone https://github.com/Kurento/kurento-tutorial-node.git
-    cd kurento-tutorial-node/kurento-one2one-call
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/javascript-node/one2one-call/
     git checkout |VERSION_TUTORIAL_NODE|
     npm install
     npm start
@@ -123,14 +123,14 @@ exchanged between client and server to establish the `WebRTC`:term: connection
 between the Kurento client and server. Specifically, the SDP negotiation
 connects the WebRtcPeer in the browser with the WebRtcEndpoint in the server.
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-one2one-call>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/javascript-node/one2one-call>`_.
 
 Application Server Logic
 ========================
 
 This demo has been developed using the **express** framework for Node.js, but
 express is not a requirement for Kurento. The main script of this demo is
-`server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/server.js>`_.
+`server.js <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-node/one2one-call/server.js>`_.
 
 In order to communicate the JavaScript client and the Node application server a
 WebSocket is used. The incoming messages to this WebSocket (variable ``ws`` in
@@ -455,9 +455,9 @@ library depends on **adapter.js**, which is a JavaScript WebRTC utility
 maintained by Google that abstracts away browser differences. Finally
 **jquery.js** is also needed in this application. These libraries are linked in
 the
-`index.html <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-node/one2one-call/static/index.html>`_
 web page, and are used in the
-`index.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/static/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-node/one2one-call/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/one2one``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
@@ -615,7 +615,7 @@ Dependencies
 Server-side dependencies of this demo are managed using :term:`NPM`. Our main
 dependency is the Kurento Client JavaScript (*kurento-client*). The relevant
 part of the
-`package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/package.json>`_
+`package.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-node/one2one-call/package.json>`_
 file for managing this dependency is:
 
 .. sourcecode:: js
@@ -627,7 +627,7 @@ file for managing this dependency is:
 
 At the client side, dependencies are managed using :term:`Bower`. Take a look to
 the
-`bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/static/bower.json>`_
+`bower.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-node/one2one-call/static/bower.json>`_
 file and pay attention to the following section:
 
 .. sourcecode:: js

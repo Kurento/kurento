@@ -57,8 +57,8 @@ langdoc-init:
 
 langdoc-client-java: langdoc-init
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-java.git
-	cd kurento-java
+	[ -d kurento ] || git clone https://github.com/Kurento/kurento.git
+	cd kurento/clients/java/
 	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JAVA|"
 	cd kurento-client || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
 	mvn --batch-mode --quiet -Psnapshot -DskipTests=true clean package \
@@ -73,8 +73,8 @@ langdoc-client-java: langdoc-init
 
 langdoc-client-js: langdoc-init
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-client-js.git
-	cd kurento-client-js
+	[ -d kurento ] || git clone https://github.com/Kurento/kurento.git
+	cd kurento/clients/javascript/client/
 	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JS|"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
@@ -83,8 +83,8 @@ langdoc-client-js: langdoc-init
 
 langdoc-utils-js: langdoc-init
 	cd $(WORKPATH)
-	git clone https://github.com/Kurento/kurento-utils-js.git
-	cd kurento-utils-js
+	[ -d kurento ] || git clone https://github.com/Kurento/kurento.git
+	cd kurento/browser/kurento-utils-js/
 	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_UTILS_JS|"
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \

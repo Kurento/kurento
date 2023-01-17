@@ -33,8 +33,8 @@ You also need the source code of this tutorial. Clone it from GitHub, then start
 
 .. code-block:: shell
 
-    git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-tutorial-js/kurento-magic-mirror/
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/javascript-browser/magic-mirror/
     git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
@@ -114,7 +114,7 @@ The media pipeline implemented is illustrated in the following picture:
    *WebRTC with filter in loopback Media Pipeline*
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-magic-mirror>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/javascript-browser/magic-mirror>`_.
 
 
 JavaScript Logic
@@ -122,7 +122,7 @@ JavaScript Logic
 
 This demo follows a *Single Page Application* architecture (`SPA`:term:). The
 interface is the following HTML page:
-`index.html <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/index.html>`_.
+`index.html <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/magic-mirror/index.html>`_.
 This web page links two Kurento JavaScript libraries:
 
 * **kurento-client.js** : Implementation of the Kurento JavaScript Client.
@@ -146,7 +146,7 @@ In addition, these two JavaScript libraries are also required:
 * **demo-console** : Custom JavaScript console.
 
 The specific logic of this demo is coded in the following JavaScript page:
-`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/magic-mirror/js/index.js>`_.
 In this file, there is a function which is called when the green button labeled
 as *Start* in the GUI is clicked.
 
@@ -260,7 +260,7 @@ Dependencies
 
 The dependencies of this demo has to be obtained using `Bower`:term:. The
 definition of these dependencies are defined in the
-`bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/bower.json>`_
+`bower.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/magic-mirror/bower.json>`_
 file, as follows:
 
 .. sourcecode:: js

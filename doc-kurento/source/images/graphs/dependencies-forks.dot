@@ -6,9 +6,13 @@ digraph dependencies_forks {
 
   rankdir = "RL";
 
-  // Kurento external libraries
-  "jsoncpp";
-  "libsrtp";
-  "openh264";
-  "libnice";
+  // Forks and external libraries.
+  {
+    rank = "same";
+    "libsrtp";
+    "openh264";
+    "gst-plugins-good";
+    "libnice";
+  }
+  "openh264-gst-plugin" -> {"openh264"};
 }

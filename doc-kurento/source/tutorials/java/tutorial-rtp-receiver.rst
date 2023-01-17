@@ -32,8 +32,8 @@ Follow these steps to run this demo application:
 
    .. code-block:: shell
 
-      git clone https://github.com/Kurento/kurento-tutorial-java.git
-      cd kurento-tutorial-java/kurento-rtp-receiver/
+      git clone https://github.com/Kurento/kurento.git
+      cd kurento/tutorials/java/rtp-receiver/
       git checkout |VERSION_TUTORIAL_JAVA|
       mvn -U clean spring-boot:run \
           -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
@@ -58,7 +58,7 @@ To communicate these entities, two WebSockets channels are used:
 1. A WebSocket is created between the Application Server and the browser client, to implement a custom signaling protocol.
 2. Another WebSocket is used to perform the communication between the Application Server and the Kurento Media Server. For this, the Application Server uses the Kurento Java Client library. This communication takes place using the **Kurento Protocol** (see :doc:`/features/kurento_protocol`).
 
-The complete source code for this tutorial can be found in `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-rtp-receiver>`__.
+The complete source code for this tutorial can be found in `GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/java/rtp-receiver>`__.
 
 
 

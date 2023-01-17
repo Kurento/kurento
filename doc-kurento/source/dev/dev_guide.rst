@@ -21,7 +21,7 @@ This is an overview of the tools and technologies used by Kurento:
 - CMake is the build tool of choice, and is used to build all modules.
 - Source code is versioned in several GitHub repositories.
 - The GStreamer multimedia framework sits at the heart of Kurento Media Server.
-- In addition to GStreamer, Kurento uses lots of other libraries, such as Boost, jsoncpp, or libnice.
+- In addition to GStreamer, Kurento uses lots of other libraries, such as Boost, jsoncpp, libsrtp, or libnice.
 
 
 
@@ -30,9 +30,9 @@ This is an overview of the tools and technologies used by Kurento:
 Code repositories
 =================
 
-Kurento source code is stored in several GitHub repositories at https://github.com/Kurento. Each one of these repositories has a specific purpose and usually contains the code required to build a shared library of the same name.
+Kurento source code belongs to the Kurento organization at https://github.com/Kurento. Additionally, several 3rd-party libraries are also forked under the same organization; each one of these repositories has a specific purpose and usually contains the code required to build a shared library of the same name.
 
-An overview of the relationships between all repos forming the Kurento Media Server:
+An overview of the relationships between all modules of Kurento Media Server:
 
 .. graphviz:: /images/graphs/dependencies-all.dot
    :align: center
@@ -44,44 +44,50 @@ As the dependency graph is not strictly linear, there are multiple possible ways
 
 Kurento depends on several Open Source libraries, the main one being GStreamer. Sometimes these libraries show specific behaviors that need to be tweaked in order to be useful for Kurento; other times there are bugs that have been fixed but the patch is not accepted at the upstream source for whatever reason. In these situations, while the official path of feature requests and/or patch submit is still tried, we have created a fork of the affected libraries.
 
-- `jsoncpp <https://github.com/Kurento/jsoncpp>`__
 - `libsrtp <https://github.com/Kurento/libsrtp>`__
 - `openh264 <https://github.com/Kurento/openh264>`__
+- `openh264-gst-plugin <https://github.com/Kurento/openh264-gst-plugin>`__
 - `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
 - `libnice <https://github.com/Kurento/libnice>`__ (produces gstreamer1.0-nice)
 
-**Main repositories**
+**Kurento monorepo**
 
-- `kurento-module-creator <https://github.com/Kurento/kurento-module-creator>`__: It is a code generation tool for generating code scaffolding for plugins. This code includes Kurento Media Server code, and Kurento client code. It has mainly Java code.
-- `kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__: Contains a set of utilities for building KMS with CMake.
-- `kms-jsonrpc <https://github.com/Kurento/kms-jsonrpc>`__: Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this repository. It has C++ code.
-- `kms-core <https://github.com/Kurento/kms-core>`__: Contains the core GStreamer code. This is the base library that is needed for other libraries. It has 80% C code and a 20% C++ code.
-- `kms-elements <https://github.com/Kurento/kms-elements>`__: Contains the main elements offering pipeline capabilities like WebRtc, Rtp, Player, Recorder, etc. It has 80% C code and a 20% C++ code.
-- `kms-filters <https://github.com/Kurento/kms-filters>`__: Contains the basic video filters included in KMS. It has 65% C code and a 35% C++ code.
-- `kurento-media-server <https://github.com/Kurento/kurento-media-server>`__: Contains the main entry point of KMS. That is, the main() function for the server executable code. This program depends on libraries located in the above repositories. It has mainly C++ code.
+The bulk of source code resides in the Kurento monorepo: https://github.com/Kurento/kurento. The media server itself exists under the ``server/`` subdir, and contains these modules:
 
-**Extra repositories**
+- ``server/module-creator``: A code generation tool for generating code scaffolding for plugins. This code includes Kurento Media Server code, and Kurento client code.
+- ``server/cmake-utils``: Contains a set of utilities for building the media server with CMake.
+- ``server/jsonrpc``: The Kurento protocol is based on JsonRpc, and makes use of a JsonRpc library contained in this module.
+- ``server/module-core``: Core GStreamer code. This is the base plugin library that is needed for other plugins.
+- ``server/module-elements``: Main elements offering pipeline capabilities like WebRTC, RTP, media player, media recorder, etc.
+- ``server/module-filters``: Basic video filters included with the media server.
+- ``server/media-server``: Main entry point of the media server. That is, the ``main()`` function for the server executable code.
 
-KMS is distributed with some basic GStreamer pipeline elements, but other elements are available in form of modules.
-These modules are *demos* of what third party modules could be written and integrated into Kurento. These are just for instructional purposes, and shouldn't be used in production servers.
+**Example plugins**
 
-- `kms-chroma <https://github.com/Kurento/kms-chroma>`__
-- `kms-crowddetector <https://github.com/Kurento/kms-crowddetector>`__
-- `kms-platedetector <https://github.com/Kurento/kms-platedetector>`__
-- `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector>`__
+Kurento Media Server is distributed with some basic GStreamer pipeline elements, but other elements are available in form of example plugins. These showcase the kind of third party modules that could be written and integrated with Kurento, and are just for instructional purposes. Don't use them in production:
 
-**Omni-Build repository**
+.. note::
 
-This repository is a special project because it is designed to build all KMS Main repositories from a single entry point. This repo brings the other KMS Main repositories as Git submodules: it makes KMS development easier because if you build this project, you don't need to manually install the libraries of the other KMS Main repositories. However, all other development and support libraries must still be installed manually.
+   These plugins were available for installation with Kurento 6.x; however, they are currently unavailable for Kurento 7.x due to breaking changes in OpenCV 4.0.
 
-- `kms-omni-build <https://github.com/Kurento/kms-omni-build>`__
+- ``server/module-examples/chroma``
+- ``server/module-examples/crowddetector``
+- ``server/module-examples/datachannelexample``
+- ``server/module-examples/markerdetector``
+- ``server/module-examples/platedetector``
+- ``server/module-examples/pointerdetector``
 
-**Client repositories**
+There are also a couple minimal samples of what can be achieved with the default scaffolding done by Kurento Module Creator (see :doc:`/user/writing_modules`):
 
-Application Servers can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their support tools made available in their respective repositories.
+- ``server/module-examples/gstreamer-example``
+- ``server/module-examples/opencv-example``
 
-- `kurento-client-js <https://github.com/Kurento/kurento-client-js>`__ (Node.js Application Servers, browser JavaScript)
-- `kurento-java <https://github.com/Kurento/kurento-java>`__ (Java Application Servers)
+**Clients**
+
+Application Servers can be developed in Java, JavaScript with Node.js, or JavaScript directly in the browser. Each of these languages have their respective client SDK:
+
+- ``clients/java``: For Application Servers written with Java technologies.
+- ``clients/javascript``: For Application Servers written with Node.js, or directly with browser JavaScript (not recommended).
 
 This is an overview of the dependency graph for Java packages:
 
@@ -89,19 +95,15 @@ This is an overview of the dependency graph for Java packages:
    :align: center
    :caption: Java dependency graph
 
-**Tutorial or demo repositories**
+**Tutorials and examples**
 
-There are several repositories that contain sample code for developers that use Kurento or want to develop a custom Kurento module. Currently these are:
+There are several repositories that contain sample applications for Kurento. Currently these are:
 
-- `kms-gstreamer-plugin-sample <https://github.com/Kurento/kms-gstreamer-plugin-sample>`__
-- `kms-opencv-plugin-sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__
-- `kms-datachannelexample <https://github.com/Kurento/kms-datachannelexample>`__
+- ``tutorials/java``
+- ``tutorials/javascript-node``
+- ``tutorials/javascript-browser``
 
-- `kurento-tutorial-java <https://github.com/Kurento/kurento-tutorial-java>`__
-- `kurento-tutorial-js <https://github.com/Kurento/kurento-tutorial-js>`__
-- `kurento-tutorial-node <https://github.com/Kurento/kurento-tutorial-node>`__
-
-A KMS developer must know how to work with KMS Fork and Main repositories and understand that each of these have a different development life cycle. The majority of development for KMS will occur at the KMS Main repositories, while it's unusual to make changes in Fork repositories except for updating their upstream versions.
+A developer intending to work on Kurento itself must know how to work with the fork and server modules, and understand that each of these have a different development life cycle. Most of the development occurs at the server, while it's unusual to make changes in forks except for updating their upstream versions.
 
 
 
@@ -160,8 +162,6 @@ To build the source code of Kurento Media Server, you have 2 options:
 * Build absolutely everything from scratch. Keeping in mind the dependency graph from :ref:`dev-code-repos`, you will need to start from the leftmost part and progress towards the right, building all projects one by one.
 
 * Start from an intermediate point. For example if you only want to build Kurento Media Server itself, and not its dependencies, you can leverage the packages that are already built in the **Kurento packages repository** (see instructions for either the :ref:`Release repo <installation-local>` or :ref:`Development repo <installation-dev-local>`).
-
-To work directly with Kurento source code, the easiest way is using the **kms-omni-build** repo, which aggregates all the other Kurento projects in the form of `git submodules <https://git-scm.com/book/en/v2/Git-Tools-Submodules>`__.
 
 In all cases, the workflow is the same. Follow these steps to end up with an environment that is appropriate for hacking on the Kurento source code:
 
@@ -228,65 +228,25 @@ Run:
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kms-omni-build.git
-   cd kms-omni-build/
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/
 
    git submodule update --init --recursive
-   git submodule update --remote
-
-.. note::
-
-   ``--recursive`` and ``--remote`` are not used together, because each individual submodule may have their own submodules that might be expected to check out some specific commit, and we don't want to update those.
-
-(Optional) If you want to work on the submodules and make commits, switch them to the tip of their branch to avoid being in a *detached HEAD*:
-
-.. code-block:: shell
-
-   git submodule foreach "git checkout master"
-
-
-
-Switching branches on kms-omni-build
-------------------------------------
-
-(Optional)
-
-*kms-omni-build* is a git repo that contains submodules. As such, you must remember that **git submodule state is not carried over when switching branches**. So simply running ``git checkout`` or ``git switch`` on *kms-omni-build* won't have the intended effect.
-
-To switch to an already existing feature branch just on a single submodule, ``cd`` into it and use *git checkout* or *git switch*.
-
-To switch to a branch on *kms-omni-build* itself and all submodules, run this:
-
-.. code-block:: shell
-
-   REF=<BranchName>
-
-   # Before checkout: Deinit submodules.
-   # Needed because submodule state is not carried over when switching branches.
-   git submodule deinit --all
-
-   git checkout $REF || true
-
-   # After checkout: Re-init submodules.
-   git submodule update --init --recursive
-   git submodule foreach "git checkout $REF || true"
-
-You can set *REF* to any git branch or tag. For example, ``REF=6.12.0`` will bring the code to the state it had in that version release.
 
 
 
 Build and run Kurento Media Server
 ----------------------------------
 
-Make sure your current directory is already *kms-omni-build*, then run this command:
+Change into the ``server/`` directory, then run this command:
 
 .. code-block:: shell
 
    export MAKEFLAGS="-j$(nproc)"
 
-   bin/kms-build-run.sh
+   bin/build-run.sh
 
-By default, the script `kms-build-run.sh <https://github.com/Kurento/kms-omni-build/blob/master/bin/kms-build-run.sh>`__ will set up the environment and settings to make a Debug build of Kurento Media Server. You can inspect that script to learn about all the other options it offers, including builds for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, selection between GCC and Clang compilers, and other modes.
+By default, the script `build-run.sh <https://github.com/Kurento/kurento/blob/main/server/bin/build-run.sh>`__ will set up the environment and settings to make a Debug build of Kurento Media Server. You can inspect that script to learn about all the other options it offers, including builds for `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__, selection between GCC and Clang compilers, and other modes.
 
 You can also set the logging level of specific categories by exporting the environment variable *GST_DEBUG* before running this script (see :doc:`/features/logging`).
 
@@ -297,7 +257,7 @@ After the build has been completed, you can change into the build directory and 
 Clean up your system
 --------------------
 
-To leave the system in a clean state, remove all KMS packages and related development libraries.
+To leave the system in a clean state, remove all Kurento packages and related development libraries.
 
 This command should be fairly safe to use; it works perfectly fine for us on a daily basis (we even use it with the option ``--yes``, which makes the process automatic and unattended). Still, please carefully review the list of packages marked for uninstalling.
 
@@ -306,10 +266,10 @@ Run:
 .. code-block:: shell
 
     PACKAGES=(
-        # KMS main components + extra modules
+        # Main modules.
         '^(kms|kurento).*'
 
-        # Kurento external libraries
+        # External libraries.
         ffmpeg
         '^gir1.2-gst.*1.5'
         gir1.2-nice-0.1
@@ -319,7 +279,7 @@ Run:
         '^openh264(-gst-plugins-bad-1.5)?'
         '^openwebrtc-gst-plugins.*'
 
-        # System development libraries
+        # System development libraries.
         '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
         '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
         uuid-dev
@@ -337,7 +297,7 @@ Run:
 Install debug symbols
 =====================
 
-Whenever working with KMS source code itself, of during any analysis of crash in either the server or any 3rd-party library, you'll want to have debug symbols installed. These provide for full information about the source file name and line where problems are happening; this information is paramount for a successful debug session, and you'll also need to provide these details when requesting support or :ref:`filing a bug report <support-community>`.
+To work with Kurento source code itself or analyze a crash in either the server or any 3rd-party library, you'll want to have debug symbols installed. These provide for full information about the source file name and line where problems are happening; this information is paramount for a successful debug session, and you'll also need to provide these details when requesting support or :ref:`filing a bug report <support-community>`.
 
 **Installing the debug symbols does not impose any extra load to the system**. So, it doesn't really hurt at all to have them installed even in production setups, where they will prove useful whenever an unexpected crash happens to bring the system down and a postmortem stack trace is automatically generated.
 
@@ -345,26 +305,22 @@ After having :doc:`installed Kurento </user/installation>`, first thing to do is
 
 .. code-block:: shell
 
-   # Install the Ubuntu ddebs repository signing key.
-   sudo apt-get update ; sudo apt-get install --yes ubuntu-dbgsym-keyring \
-   || {
-       # Fallback for Ubuntu <= 16.04 Xenial.
-       apt-key adv \
-           --keyserver keyserver.ubuntu.com \
-           --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
-   }
+   # Import the Ubuntu debug repository signing key
+   sudo apt-key adv \
+       --keyserver keyserver.ubuntu.com \
+       --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
-   # Load system version variables.
+   # Get Ubuntu version definitions
    source /etc/lsb-release
 
-   # Add the repository to Apt.
-   tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
-   # Official Ubuntu packages with debug symbols
+   # Add the repository to Apt
+   sudo tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
+   # Official Ubuntu repos with debug packages
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
    EOF
 
-Now, install the meta-package that depends on all debug symbols which are relevant to Kurento:
+Now, install all debug symbols that are relevant to KMS:
 
 .. code-block:: shell
 
@@ -402,11 +358,11 @@ Let's see a couple examples that show the difference between the same stack trac
    Segmentation fault (thread 140672899761920, pid 15217)
    Stack trace:
    [kurento::MediaElementImpl::mediaFlowInStateChanged(int, char*, KmsElementPadType)]
-   /home/kurento/kms-omni-build/kms-core/src/server/implementation/objects/MediaElementImpl.cpp:479
+   /home/kurento/server/module-core/src/server/implementation/objects/MediaElementImpl.cpp:479
    [g_signal_emit]
    /build/glib2.0-prJhLS/glib2.0-2.48.2/./gobject/gsignal.c:3443
    [cb_buffer_received]
-   /home/kurento/kms-omni-build/kms-core/src/gst-plugins/commons/kmselement.c:578
+   /home/kurento/server/module-core/src/gst-plugins/commons/kmselement.c:578
    [g_hook_list_marshal]
    /build/glib2.0-prJhLS/glib2.0-2.48.2/./glib/ghook.c:673
 
@@ -436,11 +392,11 @@ GDB from sources
 
 3. Build and run Kurento with GDB.
 
-   For this step, the easiest method is to use our launch script, *kms-build-run.sh*. It builds all sources, configures the environment, and starts up the debugger:
+   For this step, the easiest method is to use our launch script, *build-run.sh*. It builds all sources, configures the environment, and starts up the debugger:
 
    .. code-block:: shell
 
-      ./bin/kms-build-run.sh --gdb
+      bin/build-run.sh --gdb
       # [... wait for build ...]
       (gdb)
 
@@ -556,9 +512,9 @@ This is of course an extremely cumbersome process to follow during anything more
 In-place linking
 ----------------
 
-The other work method consists on changing the system library path so it points to the working copy where the fork library is being modified. Typically, this involves building the fork with its specific tool (which often is Automake), changing the environment variable *LD_LIBRARY_PATH*, and running KMS with such configuration that any required shared libraries will load the modified version instead of the one installed in the system.
+The other work method consists on changing the system library path so it points to the working copy where the fork library is being modified. Typically, this involves building the fork with its specific tool (which often is Automake), changing the environment variable *LD_LIBRARY_PATH*, and running Kurento Media Server with such configuration that any required shared libraries will load the modified version instead of the one installed in the system.
 
-This allows for the fastest development cycle, however the specific instructions to do this are very project-dependent. For example, when working on the GStreamer fork, maybe you want to run GStreamer without using any of the libraries installed in the system (see https://cgit.freedesktop.org/gstreamer/gstreamer/tree/scripts/gst-uninstalled).
+This allows for the fastest development cycle, however the specific instructions to do this are very project-dependent.
 
 [TODO: Add concrete instructions for every forked library]
 
@@ -576,19 +532,18 @@ You can easily create Debian packages (*.deb* files) for KMS itself and for any 
 kurento-buildpackage script
 ---------------------------
 
-All Kurento packages are normally built in our CI servers, using a script aptly named `kurento-buildpackage <https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh>`__. When running this tool inside any project's directory, it will configure Kurento repositories, install dependencies, and finally use *git-buildpackage* to update the *debian/changelog* file, before actually building new Deb packages.
+All Kurento packages are normally built in our CI servers, using a script aptly named `kurento-buildpackage <https://github.com/Kurento/kurento/blob/main/ci-scripts/kurento-buildpackage.sh>`__. When running this tool inside any project's directory, it will configure Kurento repositories, install dependencies, and finally use *git-buildpackage* to update the *debian/changelog* file, before actually building new Deb packages.
 
 You can also use *kurento-buildpackage* locally, to build test packages while working on any of the Kurento projects; default options will generally be good enough. However, note that the script assumes all dependencies to either be installable from current Apt repositories, or be already installed in your system. If you want to allow the script to install any Kurento dependencies that you might be missing, run it with ``--install-kurento <KurentoVersion>``, where *<KurentoVersion>* is the version of Kurento against which the project should be built.
 
-For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0. Run these commands:
+For example, say you want to build the development branch of *kurento-module-core* against Kurento 7.0.0. Run these commands:
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/adm-scripts.git
-   git clone https://github.com/Kurento/kms-core.git
-   cd kms-core/
-   ../adm-scripts/kurento-buildpackage.sh \
-       --install-kurento 6.12.0 \
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/server/module-core/
+   ../../ci-scripts/kurento-buildpackage.sh \
+       --install-kurento 7.0.0 \
        --apt-add-repo
 
 Run ``kurento-buildpackage.sh --help``, to read about what are the dependencies that you'll have to install to use this tool, and what are the command-line flags that can be used with it.
@@ -602,17 +557,18 @@ In an attempt to make it easier than ever to create Deb packages from Kurento re
 
 To use the `kurento-buildpackage Docker image <https://hub.docker.com/r/kurento/kurento-buildpackage>`__, you'll need to bind-mount the project directory onto the ``/hostdir`` path inside the container. All other options to *kurento-buildpackage* remain the same.
 
-For example, say you want to build the current *kms-core* development branch against Kurento 6.12.0, for *Ubuntu 20.04 (Focal)* systems. Run these commands:
+For example, say you want to build all Kurento packages for *Ubuntu 20.04 (Focal)*, from scratch (i.e. without jump-starting from the *apt-get* repositories), you've been saving them into ``$HOME/packages/``, and now it's the turn of *kurento-module-core*. Run these commands:
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kms-core.git
-   cd kms-core/
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/server/module-core/
    docker run --rm \
        --mount type=bind,src="$PWD",dst=/hostdir \
+       --mount type=bind,src="$HOME/packages",dst=/packages \
        kurento/kurento-buildpackage:focal \
-           --install-kurento 6.12.0 \
-           --apt-add-repo
+           --install-files /packages \
+           --dstdir /packages
 
 
 
@@ -691,28 +647,28 @@ How to add new fork libraries
 How to work with API changes
 ----------------------------
 
-What to do when you are developing a new feature that spans across KMS and the public API? This is a summary of the actions done in CI by ``adm-scripts/kurento_generate_java_module.sh`` and ``adm-scripts/kurento_maven_deploy.sh``:
+What to do when you are developing a new feature that spans across the media server and the public API? This is a summary of the actions done in CI by ``ci-scripts/kurento_generate_java_module.sh`` and ``ci-scripts/kurento_maven_deploy.sh``:
 
-1. Work on your changes, which may include changing the KMS files where the Kurento API is defined.
+1. Work on your changes, which may include changing files where the Kurento API is defined.
 
 2. Generate client SDK dependencies:
 
    .. code-block:: shell
 
-      cd <module>  # E.g. kms-filters
-      mkdir build ; cd build
+      cd server/<module>/  # E.g. server/module-filters/
+      mkdir build ; cd build/
       cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
-      cd java
-      mvn clean install
+      cd java/
+      mvn -DskipTests=true clean install
 
 3. Generate client SDK:
 
    .. code-block:: shell
 
-      cd kurento-java
-      mvn clean install
+      cd clients/java/
+      mvn -DskipTests=true clean install
 
-4. At this point, the new Java packages have been generated and installed *in the local repository*. Your Java application can now make use of any changes that were introduced in the API.
+4. At this point, the new Java packages have been generated and installed *in the local Maven cache*. Your Java application can now make use of any changes that were introduced in the API.
 
 
 

@@ -22,18 +22,17 @@ This section introduces the different types of E2E implemented to assess differe
 Functional
 ----------
 
-Functional tests are aimed to evaluate a given capability provided by Kurento. These tests have created in Java. You can find the source code in the repository `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ within `kurento-java <https://github.com/Kurento/kurento-java/>`_.  In order to run functional tests, Maven should be used as follows:
+Functional tests are aimed to evaluate a given capability provided by Kurento. These tests have created in Java. You can find the source code in the ``test/integration/`` subdir within https://github.com/Kurento/kurento. In order to run functional tests, Maven should be used as follows:
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kurento-java.git
-   cd kurento-java
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/test/integration/
    mvn \
-       --projects kurento-integration-tests/kurento-test --also-make \
+       --projects kurento-test --also-make \
        -Pintegration \
        -Dgroups=org.kurento.commons.testing.SystemFunctionalTests \
        clean verify
-
 
 By default, these tests required a local Kurento Media Server installed in the machine running the tests. In addition, Chrome and Firefox browsers are also required. For further information about running these tests, please read next section.
 
@@ -59,14 +58,14 @@ Stability tests verifies Kurento capabilities in different scenarios:
 
 - Using a lot of resources (CPU, memory) of a KMS instance.
 
-Stability tests have been also created using Java, and they are contained in the project `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_. Again, we use Maven to execute stability tests against a local KMS and using also local browsers (Chrome, Firefox):
+Stability tests have been also created using Java, and they are contained in ``test/integration/``. Again, we use Maven to execute stability tests against a local KMS and using also local browsers (Chrome, Firefox):
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kurento-java.git
-   cd kurento-java
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/test/integration/
    mvn \
-       --projects kurento-integration-tests/kurento-test --also-make \
+       --projects kurento-test --also-make \
        -Pintegration \
        -Dgroups=org.kurento.commons.testing.SystemStabilityTests \
        clean verify
@@ -74,12 +73,12 @@ Stability tests have been also created using Java, and they are contained in the
 Tutorials
 ---------
 
-The documentation of Kurento includes a number of :doc:`tutorials </user/tutorials>` which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in the project `kurento-tutorial-test <https://github.com/Kurento/kurento-tutorial-test/>`_. In order to run these tests, Maven should be used:
+The documentation of Kurento includes a number of :doc:`tutorials </user/tutorials>` which allows to understand Kurento capabilities using ready to be used simple applications. Kurento tutorials have been developed for three technologies: Java, JavaScript, and Node.js. Moreover, for some of the Java tutorials, different E2E tests have been created. These tests are available in ``test/tutorial/``. In order to run these tests, Maven should be used:
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kurento-tutorial-test
-   cd kurento-tutorial-test
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/test/tutorial/
    mvn clean verify
 
 API
@@ -89,10 +88,10 @@ Kurento provides :doc:`Java and JavaScript clients </features/kurento_client>` t
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kurento-java.git
-   cd kurento-java
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/test/integration/
    mvn \
-       --projects kurento-integration-tests/kurento-client-test --also-make \
+       --projects client-test --also-make \
        -Pintegration \
        -Dgroups=org.kurento.commons.testing.KurentoClientTests \
        clean verify
@@ -101,8 +100,8 @@ In order to run JavaScript API tests against a running instance of local KMS, th
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kurento-client-js
-   cd kurento-client-js
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/clients/javascript/client/
    npm install
    rm -f node_modules/kurento-client && ln -s .. node_modules/kurento-client
    npm test
@@ -112,14 +111,14 @@ Running Java tests
 
 Functional, stability, and Java API tests for Kurento have been created using a custom Java library called **Kurento Testing Framework** (KTF). For more details about this framework, please take a look to the next section. If you are interested only in running a group of functional or stability E2E tests in order to assess Kurento, please keep reading this section.
 
-Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. The next step is cloning the GitHub repository which contains the test sources. Most of them are located in the `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_ project, located inside of `kurento-java <https://github.com/Kurento/kurento-java/>`_. Inside this project, we need to invoke Maven to execute tests, for example as follows:
+Maven is the the way which E2E Kurento are executed. Therefore, in order to run E2E tests, first we need in have Java and Maven installed. The next step is cloning the GitHub repository which contains the test sources. Most of them are located in the ``test/integration/`` subdir within https://github.com/Kurento/kurento. Inside this project, we need to invoke Maven to execute tests, for example as follows:
 
 .. code-block:: shell
 
-   git clone https://github.com/Kurento/kurento-java.git
-   cd kurento-java
+   git clone https://github.com/Kurento/kurento.git
+   cd kurento/test/integration/
    mvn \
-       --projects kurento-integration-tests/kurento-test --also-make \
+       --projects kurento-test --also-make \
        -Pintegration \
        -Dgroups=org.kurento.commons.testing.IntegrationTests \
        -Dtest=WebRtcOneLoopbackTest \
@@ -129,16 +128,14 @@ Let's take a closer look to the Maven command:
 
 - ``mvn [...] clean verify``: Command to execute the *clean* and *verify* goals in Maven. *clean* will ensure that old build artifacts are deleted, and *verify* involves the execution of the unit and integration tests of a Maven project.
 
-- ``--projects kurento-integration-tests/kurento-test --also-make``: Maven options that select a single project for the goal, in this case *kurento-test*, and builds it together with any other dependency it might have.
+- ``--projects kurento-test --also-make``: Maven options that select a single project for the goal, in this case *kurento-test*, and builds it together with any other dependency it might have.
 
-- ``-Pintegration``: Enables the "*integration*" profile ID, as defined in the file *kurento-integration-tests/pom.xml*.
-
-- ``-Dgroups=org.kurento.commons.testing.IntegrationTests``: The Kurento E2E test suite is divided into different `JUnit 4's categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select different types of `IntegrationTests <https://github.com/Kurento/kurento-java/blob/master/kurento-commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_. The most used values for this group are:
+- ``-Dgroups=org.kurento.commons.testing.IntegrationTests``: The Kurento E2E test suite is divided into different `JUnit 4's categories <https://github.com/junit-team/junit4/wiki/categories>`_. This option allows to select different types of `IntegrationTests <https://github.com/Kurento/kurento/blob/main/clients/java/commons/src/main/java/org/kurento/commons/testing/IntegrationTests.java>`_. The most used values for this group are:
 
    - *IntegrationTests*: Parent category for all Kurento E2E tests.
    - *SystemFunctionalTests*: To run functional tests (as defined in section before).
    - *SystemStabilityTests*: To run stability tests (as defined in section before).
-   - *KurentoClientTests*: To run Java API tests (as defined in section before). If this option is used, the project should be also changed using ``--projects kurento-integration-tests/kurento-client-test``.
+   - *KurentoClientTests*: To run Java API tests (as defined in section before). If this option is used, the project should be also changed using ``--projects client-test``.
 
 - ``-Dtest=WebRtcOneLoopbackTest``: Although not mandatory, it is highly recommended, to select a test or group of test using Maven's *-Dtest* parameter. Using this command we can select a test using the Java class name.
 
@@ -222,8 +219,10 @@ For example, in order to run the complete WebRTC functional test suite against a
 
 .. code-block:: shell
 
+   cd kurento/test/integration/
+
    mvn \
-       --projects kurento-integration-tests/kurento-test --also-make \
+       --projects kurento-test --also-make \
        -Pintegration \
        -Dgroups=org.kurento.commons.testing.SystemFunctionalTests \
        -Dtest=WebRtc* \
@@ -271,8 +270,10 @@ For example, in order to run the complete WebRTC functional test suite using *do
 
 .. code-block:: shell
 
+   cd kurento/test/integration/
+
    mvn \
-       --projects kurento-integration-tests/kurento-test --also-make \
+       --projects kurento-test --also-make \
        -Pintegration \
        -Dgroups=org.kurento.commons.testing.SystemFunctionalTests \
        -Dtest=WebRtc* \
@@ -328,7 +329,7 @@ In some tests (typically in performance or stability tests), another instance of
 |                      | Following properties are honored when KMS is managed by test: *fake.kms.scope*, *test.kms.docker.image.name*, *test.kms.debug*                                                                                                                  |                                 |
 +----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------+
 
-Although available in KTF, the fake clients feature is not very used in the current tests. You can see an example in the stability test `LongStabilityCheckMemoryTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/test/java/org/kurento/test/longstability/LongStabilityCheckMemoryTest.java>`_.
+Although available in KTF, the fake clients feature is not very used in the current tests. You can see an example in the stability test `LongStabilityCheckMemoryTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/test/java/org/kurento/test/longstability/LongStabilityCheckMemoryTest.java>`_.
 
 Other test features
 -------------------
@@ -378,7 +379,7 @@ Kurento Testing Framework explained
 
 In order to assess properly Kurento from a final user perspective, a rich suite of E2E tests has been designed and implemented. To that aim, the **Kurento Testing Framework** (KTF) has been created. KTF is a part of the Kurento project aimed to carry out end-to-end (E2E) tests for Kurento. KTF has been implemented on the top of two well-known Open Source testing frameworks: `JUnit <https://junit.org/>`_ and `Selenium <https://www.seleniumhq.org/>`_.
 
-KTF provides high level capabilities to perform advanced automated testing for Kurento-based applications. KTF has been implemented in Java, and as usual it is hosted on GitHub, in the project `kurento-test <https://github.com/Kurento/kurento-java/tree/master/kurento-integration-tests/kurento-test>`_. KTF has been designed on the top of **JUnit 4**, providing a rich hierarchy of classes which are going to act as parent for JUnit 4 tests cases. This hierarchy is the following:
+KTF provides high level capabilities to perform advanced automated testing for Kurento-based applications. KTF has been implemented in Java, and as usual it is hosted on GitHub, in the project `kurento-test <https://github.com/Kurento/kurento/tree/main/test/integration/kurento-test>`_. KTF has been designed on the top of **JUnit 4**, providing a rich hierarchy of classes which are going to act as parent for JUnit 4 tests cases. This hierarchy is the following:
 
 .. figure:: ../images/ktf-class-diagram.png
    :align:   center
@@ -388,15 +389,15 @@ KTF provides high level capabilities to perform advanced automated testing for K
 
 The most important classes of this diagram are the following:
 
-- `KurentoTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoTest.java>`_: Top class of the KTF. It provides different features out-of-the-box for tests extending this class, namely:
+- `KurentoTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/base/KurentoTest.java>`_: Top class of the KTF. It provides different features out-of-the-box for tests extending this class, namely:
 
-   - Improved test lifecycle: KTF enhances the lyfecycle of JUnit 4 test cases, watching the result of tests (passed, failed). Moreover, KTF provides extra annotations to be used in different parts of the test lifecycle, such as `FailedTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/lifecycle/FailedTest.java>`_, `FinishedTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/lifecycle/FinishedTest.java>`_, `FinishedTestClass <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/lifecycle/FinishedTestClass.java>`_, `StartedTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/lifecycle/StartedTest.java>`_, `StartedTestClass <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/lifecycle/StartedTestClass.java>`_, or `SucceededTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/lifecycle/SucceededTest.java>`_.
+   - Improved test lifecycle: KTF enhances the lyfecycle of JUnit 4 test cases, watching the result of tests (passed, failed). Moreover, KTF provides extra annotations to be used in different parts of the test lifecycle, such as `FailedTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/lifecycle/FailedTest.java>`_, `FinishedTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/lifecycle/FinishedTest.java>`_, `FinishedTestClass <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/lifecycle/FinishedTestClass.java>`_, `StartedTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/lifecycle/StartedTest.java>`_, `StartedTestClass <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/lifecycle/StartedTestClass.java>`_, or `SucceededTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/lifecycle/SucceededTest.java>`_.
 
    - Reporting: As introduced before, an HTML report summarizing the results of a test suite executed with KTF is automatically created for Kurento tests (*report.html*, located by default on the *target* folder when tests are executed with Maven).
 
    - Retries mechanism: In order to detect flaky tests, a retries mechanism is present in KTF. This mechanism allows to repeat a failed test a configurable number of times.
 
-- `KurentoClientTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoClientTest.java>`_: It provides an instance of **Kurento Media Server** (KMS) together with a instance of a **Kurento Java Client** to control KMS. There are three options to run this KMS (see parameter *test.kms.scope*):
+- `KurentoClientTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/base/KurentoClientTest.java>`_: It provides an instance of **Kurento Media Server** (KMS) together with a instance of a **Kurento Java Client** to control KMS. There are three options to run this KMS (see parameter *test.kms.scope*):
 
    - Local KMS. To use this option, it is a pre-requisite to have KMS installed in the machine running this type of tests.
 
@@ -404,7 +405,7 @@ The most important classes of this diagram are the following:
 
    - KMS in a **Docker** container. To use this option, it is a pre-requisite to have `Docker <https://www.docker.com/>`_ installed in the machine running this type of tests.
 
-- `BrowserTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/BrowserTest.java>`_: This class provides wrappers of `Selenium WebDriver <https://www.seleniumhq.org/projects/webdriver/>`_ instances aimed to control a group of web browsers for tests. By default, KTF allows to use **Chrome** or **Firefox** as browsers. The scope of these browsers can be configured to use:
+- `BrowserTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/base/BrowserTest.java>`_: This class provides wrappers of `Selenium WebDriver <https://www.seleniumhq.org/projects/webdriver/>`_ instances aimed to control a group of web browsers for tests. By default, KTF allows to use **Chrome** or **Firefox** as browsers. The scope of these browsers can be configured to use:
 
    - Local browser, i.e. installed in the local machine.
 
@@ -416,7 +417,7 @@ The most important classes of this diagram are the following:
 
    Test scenario can be configured in *BrowserTest* tests in two different ways:
 
-   - Programmatically using Java. Test scenario uses JUnit 4's parameterized feature. The Java class `TestScenario <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/config/TestScenario.java>`_ is used by KTF to configure the scenario, for example as follows:
+   - Programmatically using Java. Test scenario uses JUnit 4's parameterized feature. The Java class `TestScenario <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/config/TestScenario.java>`_ is used by KTF to configure the scenario, for example as follows:
 
    .. code-block:: java
 
@@ -460,7 +461,7 @@ The most important classes of this diagram are the following:
          ]
       }
 
-- `KurentoClientBrowserTest <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/java/org/kurento/test/base/KurentoClientBrowserTest.java>`_: This class can be seen as a mixed of the previous ones, since it provides the capability to use KMS (local or *dockerized*) together with a group of browser test using a *test scenario*. Moreover, it provides a web server started with each test for testing purposed, with a custom `web page <https://github.com/Kurento/kurento-java/blob/master/kurento-integration-tests/kurento-test/src/main/resources/static/webrtc.html>`_ available to test **WebRTC** in Kurento in a easy manner. As can be seen in the diagram before, this class is the parent of a rich variety of different classes. In short, these classes are used to distinguish among different types of tests. See next section for more information.
+- `KurentoClientBrowserTest <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/java/org/kurento/test/base/KurentoClientBrowserTest.java>`_: This class can be seen as a mixed of the previous ones, since it provides the capability to use KMS (local or *dockerized*) together with a group of browser test using a *test scenario*. Moreover, it provides a web server started with each test for testing purposed, with a custom `web page <https://github.com/Kurento/kurento/blob/main/test/integration/kurento-test/src/main/resources/static/webrtc.html>`_ available to test **WebRTC** in Kurento in a easy manner. As can be seen in the diagram before, this class is the parent of a rich variety of different classes. In short, these classes are used to distinguish among different types of tests. See next section for more information.
 
 
 Test scenario in JSON

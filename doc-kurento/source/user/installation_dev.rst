@@ -153,7 +153,7 @@ Then use the ``-Psnapshot`` argument in your Maven commands, to enable the new p
 
 .. code-block:: shell
 
-   mvn dependency:get -Psnapshot -Dartifact='org.kurento:kurento-client:6.12.0-SNAPSHOT'
+   mvn dependency:get -Psnapshot -Dartifact='org.kurento:kurento-client:7.0.0-SNAPSHOT'
 
 If you don't want to change all your Maven commands, it is possible to mark the profile as active by default. This way, a ``-Psnapshot`` argument will always be implicitly added, so all calls to Maven will already use the profile:
 
@@ -220,7 +220,7 @@ Afterwards, in the same ``pom.xml``, look for the desired dependency and change 
    <dependency>
        <groupId>org.kurento</groupId>
        <artifactId>kurento-client</artifactId>
-       <version>6.12.0-SNAPSHOT</version>
+       <version>7.0.0-SNAPSHOT</version>
    </dependency>
 
 

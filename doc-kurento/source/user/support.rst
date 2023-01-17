@@ -44,7 +44,7 @@ You can file bug reports on our `Issue Tracker`_, and they will be addressed as 
 
 **Support is a volunteered effort**, and there is no guaranteed response time. If you need answers quickly, you can get in contact with us to request :ref:`Commercial Support <support-commercial>`.
 
-.. _Issue Tracker: https://github.com/Kurento/bugtracker/issues
+.. _Issue Tracker: https://github.com/Kurento/kurento/issues
 
 
 

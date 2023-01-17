@@ -197,18 +197,6 @@ Users can choose which type of media to send and record: audio, video or both.
 
 
 
-WebRTC repository
-=================
-
-This is similar to the recording tutorial, but using the repository to store metadata.
-
-.. toctree::
-   :maxdepth: 1
-
-   Java </tutorials/java/tutorial-repository>
-
-
-
 WebRTC statistics
 =================
 

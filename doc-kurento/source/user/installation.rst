@@ -81,7 +81,7 @@ If you need to insert or extract files from a Docker container, there is a varie
 These are the exact contents of the image:
 
 * A local ``apt-get`` installation of KMS, as described in :ref:`installation-local`, plus all its extra plugins (chroma, platedetector, etc).
-* Debug symbols installed, as described in :ref:`dev-dbg`. This allows getting useful stack traces in case the KMS process crashes. If this happens, please `report a bug <https://github.com/Kurento/bugtracker/issues>`__.
+* Debug symbols installed, as described in :ref:`dev-dbg`. This allows getting useful stack traces in case the KMS process crashes. If this happens, please `report a bug <https://github.com/Kurento/kurento/issues>`__.
 * All **default settings** from the local installation, as found in ``/etc/kurento/``. For details, see :doc:`/user/configuration`.
 
 
@@ -102,7 +102,7 @@ This is a good starting point, which runs the latest Kurento Media Server image 
 
 By default, KMS listens on the port **8888**. Clients wanting to control the media server using the :doc:`/features/kurento_protocol` should open a WebSocket connection to that port, either directly or by means of one of the provided :doc:`/features/kurento_client` SDKs.
 
-The `health checker script <https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh>`__ inside this Docker image does something very similar in order to check if the container is healthy.
+The `health checker script <https://github.com/Kurento/kurento/blob/main/docker/kurento-media-server/healthchecker.sh>`__ inside this Docker image does something very similar in order to check if the container is healthy.
 
 Once the container is running, you can get its log output with the `docker logs <https://docs.docker.com/engine/reference/commandline/logs/>`__ command:
 
@@ -250,9 +250,9 @@ B. **Uninstall the old Kurento version**, before installing the new one.
 
    - *kurento-media-server*
    - *kurento-module-creator*
-   - *kms-core*
-   - *kms-elements*
-   - *kms-filters*
+   - *kurento-module-core*
+   - *kurento-module-elements*
+   - *kurento-module-filters*
    - *libnice10*
    - *openh264*
    - And more
@@ -411,5 +411,5 @@ Notice how the server claims to have received a connection from the client's IP 
 .. _Amazon Web Services: https://aws.amazon.com
 .. _Coturn: https://github.com/coturn/coturn
 .. _Docker best practices: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get
-.. _healthchecker.sh: https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/healthchecker.sh
+.. _healthchecker.sh: https://github.com/Kurento/kurento/blob/main/docker/kurento-media-server/healthchecker.sh
 .. _Kurento Docker images: https://hub.docker.com/r/kurento/kurento-media-server

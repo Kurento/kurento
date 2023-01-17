@@ -1,20 +1,10 @@
-digraph dependencies_all {
+digraph dependencies_media_server {
   bgcolor = "transparent";
   fontname = "Bitstream Vera Sans";
   fontsize = 8;
   size = "12,8";
 
   rankdir = "RL";
-
-  // Forks and external libraries.
-  {
-    rank = "same";
-    "libsrtp";
-    "openh264";
-    "gst-plugins-good";
-    "libnice";
-  }
-  "openh264-gst-plugin" -> {"openh264"};
 
   // Main components.
   {
@@ -23,11 +13,11 @@ digraph dependencies_all {
     "kurento-cmake-utils";
     "kurento-jsonrpc";
   }
-  "kurento-jsonrpc" -> {"kurento-cmake-utils"};
-  "kurento-module-core" -> {"gst-plugins-good" "kurento-module-creator" "kurento-cmake-utils" "kurento-jsonrpc"};
-  "kurento-module-elements" -> {"libnice" "openh264" "openh264-gst-plugin" "kurento-module-core"};
+  "kurento-jsonrpc" -> "kurento-cmake-utils";
+  "kurento-module-core" -> {"kurento-module-creator" "kurento-cmake-utils" "kurento-jsonrpc"};
+  "kurento-module-elements" -> "kurento-module-core";
   "kurento-module-filters" -> "kurento-module-elements";
-  "kurento-media-server" -> {"libsrtp" "kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
+  "kurento-media-server" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
 
   // Example plugins.
   // Build disabled on Ubuntu >= 20.04 (due to breaking changes in OpenCV 4.0).

@@ -34,8 +34,8 @@ You also need the source code of this tutorial. Clone it from GitHub, then start
 
 .. code-block:: shell
 
-    git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-tutorial-js/kurento-hello-world-data-channel/
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/javascript-browser/hello-world-data-channel/
     git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
@@ -70,11 +70,11 @@ If you want to run this tutorial from a **remote web server**, then you have to 
 
 .. note::
 
-   This demo uses the **kms-datachannelexample** module, which must be installed in the media server. That module is available in the Kurento Apt repositories, so it is possible to install it with this command:
+   This demo uses the **kurento-module-datachannelexample** module, which must be installed in the media server. That module is available in the Kurento Apt repositories, so it is possible to install it with this command:
 
    .. code-block:: shell
 
-      sudo apt-get update ; sudo apt-get install kms-datachannelexample
+      sudo apt-get update ; sudo apt-get install kurento-module-datachannelexample
 
 
 Understanding this example
@@ -93,7 +93,7 @@ The application creates a channel between **PeerConnection** and **WebRtcEndpoin
 used for message delivery.
 
 Complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-hello-world-data-channel>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/javascript-browser/hello-world-data-channel>`_.
 
 
 JavaScript Logic
@@ -101,7 +101,7 @@ JavaScript Logic
 
 This demo follows a *Single Page Application* architecture (`SPA`:term:). The
 interface is the following HTML page:
-`index.html <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world-data-channel/index.html>`_.
+`index.html <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/hello-world-data-channel/index.html>`_.
 This web page links two Kurento JavaScript libraries:
 
 * **kurento-client.js** : Implementation of the Kurento JavaScript Client.
@@ -125,7 +125,7 @@ In addition, these two JavaScript libraries are also required:
 * **demo-console** : Custom JavaScript console.
 
 The specific logic of this demo is coded in the following JavaScript page:
-`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world-data-channel/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/hello-world-data-channel/js/index.js>`_.
 In this file, there is a function which is called when the green button labeled
 as *Start* in the GUI is clicked.
 
@@ -244,7 +244,7 @@ In the following snippet, we can see how to create the channel and the ``send`` 
 Dependencies
 ============
 
-Demo dependencies are defined in file `bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world-data-channel/bower.json>`_.
+Demo dependencies are defined in file `bower.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/hello-world-data-channel/bower.json>`_.
 They are managed using `Bower`:term:.
 
 .. sourcecode:: js

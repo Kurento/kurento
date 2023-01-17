@@ -153,10 +153,10 @@ In addition to the base features, there are some additional built-in modules pro
 
 These extra modules are provided as examples of how to extend the base features of Kurento Media Server.:
 
-* **kms-pointerdetector**: Filter that detects pointers in video streams, based on color tracking.
-* **kms-chroma**: Filter that takes a color range in the top layer and makes it transparent, revealing another image behind.
-* **kms-crowddetector**: Filter that detects people agglomeration in video streams.
-* **kms-platedetector**: Filter that detects vehicle plates in video streams.
+* **kurento-module-pointerdetector**: Filter that detects pointers in video streams, based on color tracking.
+* **kurento-module-chroma**: Filter that takes a color range in the top layer and makes it transparent, revealing another image behind.
+* **kurento-module-crowddetector**: Filter that detects people agglomeration in video streams.
+* **kurento-module-platedetector**: Filter that detects vehicle plates in video streams.
 
 .. warning::
 

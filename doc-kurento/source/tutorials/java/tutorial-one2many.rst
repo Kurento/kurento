@@ -25,8 +25,8 @@ is hosted, and then run the main class:
 
 .. sourcecode:: bash
 
-    git clone https://github.com/Kurento/kurento-tutorial-java.git
-    cd kurento-tutorial-java/kurento-one2many-call
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/java/one2many-call/
     git checkout |VERSION_TUTORIAL_JAVA|
     mvn -U clean spring-boot:run
 
@@ -116,7 +116,7 @@ exchanged between client and server to establish the `WebRTC`:term: connection
 between the Kurento client and server. Specifically, the SDP negotiation
 connects the WebRtcPeer in the browser with the WebRtcEndpoint in the server.
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2many-call>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/java/one2many-call>`_.
 
 Application Server Logic
 ========================
@@ -160,7 +160,7 @@ In the following, figure you can see a class diagram of the server side code:
    CallHandler -> UserSession; CallHandler -> KurentoClient [constraint = false]
 
 The main class of this demo is named
-`One2ManyCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/src/main/java/org/kurento/tutorial/one2manycall/One2ManyCallApp.java>`_.
+`One2ManyCallApp <https://github.com/Kurento/kurento/blob/main/tutorials/java/one2many-call/src/main/java/org/kurento/tutorial/one2manycall/One2ManyCallApp.java>`_.
 As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to your applications. In this instantiation we see
@@ -199,7 +199,7 @@ by means of requests and responses. Specifically, the main app class implements
 the interface ``WebSocketConfigurer`` to register a ``WebSocketHandler`` to
 process WebSocket requests in the path ``/call``.
 
-`CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/src/main/java/org/kurento/tutorial/one2manycall/CallHandler.java>`_
+`CallHandler <https://github.com/Kurento/kurento/blob/main/tutorials/java/one2many-call/src/main/java/org/kurento/tutorial/one2manycall/CallHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
 The central piece of this class is the method ``handleTextMessage``. This
 method implements the actions for requests, returning responses through the
@@ -459,9 +459,9 @@ maintained by Google that abstracts away browser differences. Finally
 **jquery.js** is also needed in this application.
 
 These libraries are linked in the
-`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/src/main/resources/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento/blob/main/tutorials/java/one2many-call/src/main/resources/static/index.html>`_
 web page, and are used in the
-`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/src/main/resources/static/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento/blob/main/tutorials/java/one2many-call/src/main/resources/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
@@ -541,8 +541,7 @@ Dependencies
 ============
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
-part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
+part of the *pom.xml*
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the

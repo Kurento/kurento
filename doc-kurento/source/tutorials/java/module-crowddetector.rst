@@ -17,20 +17,20 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide </user/installation>` for further
-information. In addition, the built-in module ``kms-crowddetector`` should
+information. In addition, the built-in module ``kurento-module-crowddetector`` should
 be also installed:
 
 .. sourcecode:: bash
 
-    sudo apt-get install kms-crowddetector
+    sudo apt-get install kurento-module-crowddetector
 
 To launch the application, you need to clone the GitHub project where this demo
 is hosted, and then run the main class:
 
 .. sourcecode:: bash
 
-    git clone https://github.com/Kurento/kurento-tutorial-java.git
-    cd kurento-tutorial-java/kurento-crowddetector
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/java/crowddetector/
     git checkout |VERSION_TUTORIAL_JAVA|
     mvn -U clean spring-boot:run
 
@@ -70,7 +70,7 @@ composed by the following `Media Element`:term: s:
    *WebRTC with crowdDetector filter Media Pipeline*
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-crowddetector>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/java/crowddetector>`_.
 
 This example is a modified version of the
 :doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this demo
@@ -291,8 +291,7 @@ Dependencies
 ============
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
-part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
+part of the *pom.xml*
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the

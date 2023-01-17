@@ -238,11 +238,11 @@ When ready, you should **verify the module installation**. Run Kurento twice, wi
    :emphasize-lines: 7,12,13
 
    $ /usr/bin/kurento-media-server --version
-   Kurento Media Server version: 6.12.0
+   Kurento Media Server version: 7.0.0
    Found modules:
-       'core' version 6.12.0
-       'elements' version 6.12.0
-       'filters' version 6.12.0
+       'core' version 7.0.0
+       'elements' version 7.0.0
+       'filters' version 7.0.0
        'mygstmodule' version 0.0.1~0.gd61e201
 
    $ /usr/bin/kurento-media-server --list
@@ -285,11 +285,11 @@ And verify your module is correctly loaded by Kurento:
    :emphasize-lines: 7,12,13
 
    $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --version
-   Kurento Media Server version: 6.12.0
+   Kurento Media Server version: 7.0.0
    Found modules:
-       'core' version 6.12.0
-       'elements' version 6.12.0
-       'filters' version 6.12.0
+       'core' version 7.0.0
+       'elements' version 7.0.0
+       'filters' version 7.0.0
        'mygstmodule' version 0.0.1~0.gd61e201
 
    $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --list
@@ -333,7 +333,7 @@ Finally, to actually use the module in your Maven project, you have to add the d
 
 Note that ``{modulename}`` is the name of your module in all lowercase.
 
-Then you will be able to instantiate and use the new module in your Java code. For example, Kurento's `OpenCV plugin sample <https://github.com/Kurento/kms-opencv-plugin-sample>`__ is used like this:
+Then you will be able to instantiate and use the new module in your Java code. For example, Kurento's `OpenCV plugin sample <https://github.com/Kurento/kurento/server/module-examples/opencv-example/>`__ is used like this:
 
 .. code-block:: java
 
@@ -348,7 +348,7 @@ Then you will be able to instantiate and use the new module in your Java code. F
 
 The result is, as expected, that the OpenCV plugin sample applies a :wikipedia:`Canny edge detector` to the original image:
 
-.. figure:: ../images/kms-opencv-plugin-sample.png
+.. figure:: ../images/kurento-module-opencv-example.png
    :align: center
    :alt:   Kurento's OpenCV plugin sample, applying a Canny edge detector
 
@@ -381,20 +381,20 @@ Note that ``{modulename}`` is the name of your module in all lowercase.
 Examples
 ========
 
-Simple examples for both kinds of modules are available in GitHub:
+Simple examples for both kinds of modules are available in the GitHub repo https://github.com/Kurento/kurento:
 
-* `GStreamer module <https://github.com/Kurento/kms-gstreamer-plugin-sample>`__.
-* `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample>`__.
+* ``server/module-examples/gstreamer-example``
+* ``server/module-examples/opencv-example``
 
 There are a lot of examples showing how to define methods, parameters or events in the "extra" modules that Kurento provides for demonstration purposes:
 
-* `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector/tree/master/src/server/interface>`__.
-* `kms-crowddetector <https://github.com/Kurento/kms-crowddetector/tree/master/src/server/interface>`__.
-* `kms-chroma <https://github.com/Kurento/kms-chroma/tree/master/src/server/interface>`__.
-* `kms-platedetector <https://github.com/Kurento/kms-platedetector/tree/master/src/server/interface>`__.
+* ``server/module-examples/pointerdetector/src/server/interface``
+* ``server/module-examples/crowddetector/src/server/interface``
+* ``server/module-examples/chroma/src/server/interface``
+* ``server/module-examples/platedetector/src/server/interface``
 
-Besides that, all of the Kurento main modules are developed using this methodology, so you can also have a look in these:
+Besides that, all of the Kurento main modules are developed using this methodology, so you can also have a look in these at:
 
-* `kms-core <https://github.com/Kurento/kms-core>`__.
-* `kms-elements <https://github.com/Kurento/kms-elements>`__.
-* `kms-filters <https://github.com/Kurento/kms-filters>`__.
+* ``server/module-core``
+* ``server/module-elements``
+* ``server/module-filters``

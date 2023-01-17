@@ -26,7 +26,7 @@ Did you find a bug?
 
 - **Ensure the bug was not already reported** by searching in our `Issue Tracker`_.
 
-- If you're unable to find an open issue addressing the problem, `open a new one <https://github.com/Kurento/bugtracker/issues>`__. Include a **title and clear description**, as much relevant information as possible, and a **code sample** or an **executable test case** that can be used to demonstrate the unexpected behavior.
+- If you're unable to find an open issue addressing the problem, `open a new one <https://github.com/Kurento/kurento/issues>`__. Include a **title and clear description**, as much relevant information as possible, and a **code sample** or an **executable test case** that can be used to demonstrate the unexpected behavior.
 
 - For more detailed information on submitting a bug report and creating an issue, visit our `reporting guidelines <https://doc-kurento.readthedocs.io/en/latest/user/support.html#reporting-issues>`__.
 
@@ -75,6 +75,6 @@ Kindly, the Kurento Team
 
 
 
-.. _Issue Tracker: https://github.com/Kurento/bugtracker/issues
+.. _Issue Tracker: https://github.com/Kurento/kurento/issues
 .. _Pull Requests: https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
 .. _Kurento Public Mailing List: https://groups.google.com/forum/#!forum/kurento

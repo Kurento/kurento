@@ -46,7 +46,7 @@ Debian-based distributions provide the *hardening-check* tool (package *hardenin
 Hardening in Kurento
 ====================
 
-Since version 6.7, Kurento Media Server is built with all the mentioned hardening measurements. All required flags are added in the Debian package generation step, by setting the environment variable *DEB_BUILD_MAINT_OPTIONS* to ``hardening=+all``, as described by `Debian hardening options`_. This variable is injected into the build environment by the CMake module ``kms-cmake-utils/CMake/CommonBuildFlags.cmake``, which is included by all modules of KMS.
+Since version 6.7, Kurento Media Server is built with all the mentioned hardening measurements. All required flags are added in the Debian package generation step, by setting the environment variable *DEB_BUILD_MAINT_OPTIONS* to ``hardening=+all``, as described by `Debian hardening options`_. This variable is injected into the build environment by the CMake module ``cmake-utils/CMake/CommonBuildFlags.cmake``, which is included by all modules of KMS.
 
 
 

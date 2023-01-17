@@ -29,7 +29,7 @@ JavaScript Client
 Kurento Js Utils
 ================
 
-`kurento-utils-js <https://github.com/Kurento/kurento-utils-js>`__ is a browser library that can be used to simplify creation and handling of `RTCPeerConnection <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection>`__ objects, to control the browser's `WebRTC API <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API>`__.
+**kurento-utils-js** (``browser/kurento-utils-js/``) is a browser library that can be used to simplify creation and handling of `RTCPeerConnection <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection>`__ objects, to control the browser's `WebRTC API <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API>`__.
 
 .. warning::
 

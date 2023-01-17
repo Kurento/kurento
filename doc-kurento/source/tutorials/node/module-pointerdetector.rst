@@ -16,12 +16,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide </user/installation>` for further
-information. In addition, the built-in module ``kms-pointerdetector``
+information. In addition, the built-in module ``kurento-module-pointerdetector``
 should be also installed:
 
 .. sourcecode:: bash
 
-    sudo apt-get install kms-pointerdetector
+    sudo apt-get install kurento-module-pointerdetector
 
 Be sure to have installed `Node.js`:term: in your system. In
 an Ubuntu machine, you can install it as follows:
@@ -36,8 +36,8 @@ is hosted, install it and run it:
 
 .. sourcecode:: bash
 
-    git clone https://github.com/Kurento/kurento-tutorial-node.git
-    cd kurento-tutorial-node/kurento-pointerdetector
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/javascript-node/pointerdetector/
     git checkout |VERSION_TUTORIAL_NODE|
     npm install
     npm start
@@ -89,7 +89,7 @@ composed by the following `Media Element`:term: s:
    *WebRTC with PointerDetector filter in loopback Media Pipeline*
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-pointerdetector>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/javascript-node/pointerdetector>`_.
 
 This example is a modified version of the
 :doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this
@@ -285,7 +285,7 @@ Dependencies
 
 Dependencies of this demo are managed using NPM. Our main dependency is the
 Kurento Client JavaScript (*kurento-client*). The relevant part of the
-`package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-pointerdetector/package.json>`_
+`package.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-node/pointerdetector/package.json>`_
 file for managing this dependency is:
 
 .. sourcecode:: js
@@ -295,7 +295,7 @@ file for managing this dependency is:
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
-`bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-pointerdetector/static/bower.json>`_
+`bower.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-node/pointerdetector/static/bower.json>`_
 file and pay attention to the following section:
 
 .. sourcecode:: js

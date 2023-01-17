@@ -23,8 +23,8 @@ Follow these steps to run this demo application:
 
    .. code-block:: shell
 
-      git clone https://github.com/Kurento/kurento-tutorial-java.git
-      cd kurento-tutorial-java/kurento-hello-world
+      git clone https://github.com/Kurento/kurento.git
+      cd kurento/tutorials/java/hello-world/
       git checkout |VERSION_TUTORIAL_JAVA|
       mvn -U clean spring-boot:run \
           -Dspring-boot.run.jvmArguments="-Dkms.url=ws://{KMS_HOST}:8888/kurento"
@@ -76,7 +76,7 @@ The diagram below shows a complete sequence diagram, of the interactions with th
 
    *Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo*
 
-The following sections analyze in depth the server (Java) and client-side (JavaScript) code of this application. The complete source code can be found in `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-hello-world>`_.
+The following sections analyze in depth the server (Java) and client-side (JavaScript) code of this application. The complete source code can be found in `GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/java/hello-world>`_.
 
 
 
@@ -117,7 +117,7 @@ In the following, figure you can see a class diagram of the server side code:
    HelloWorldHandler -> KurentoClient [constraint = false] HelloWorldHandler ->
    UserSession;
 
-The main class of this demo is `HelloWorldApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`__.
+The main class of this demo is `HelloWorldApp <https://github.com/Kurento/kurento/blob/main/tutorials/java/hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`__.
 
 As you can see, the *KurentoClient* is instantiated in this class as a Spring Bean. This bean is used to create **Kurento Media Pipelines**, which are used to add media capabilities to the application. In this instantiation we see that we need to specify to the client library the location of the Kurento Media Server. In this example, we assume it is located at ``localhost``, listening in port TCP 8888. If you reproduce this example, you'll need to insert the specific location of your Kurento Media Server instance there.
 
@@ -150,7 +150,7 @@ Once the *Kurento Client* has been instantiated, you are ready for communicating
 
 This web application follows a *Single Page Application* architecture (:term:`SPA`), and uses a :term:`WebSocket` to communicate with the application server, by means of requests and responses. Specifically, the main app class implements the interface ``WebSocketConfigurer`` to register a ``WebSocketHandler`` that processes WebSocket requests in the path ``/helloworld``.
 
-The class `HelloWorldHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldHandler.java>`__
+The class `HelloWorldHandler <https://github.com/Kurento/kurento/blob/main/tutorials/java/hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldHandler.java>`__
 implements ``TextWebSocketHandler`` to handle text WebSocket requests. The central piece of this class is the method ``handleTextMessage``. This method implements the actions for requests, returning responses through the WebSocket. In other words, it implements the server part of the signaling protocol depicted in the previous sequence diagram.
 
 .. code-block:: java
@@ -241,8 +241,8 @@ Client-Side Logic
 
 Let's move now to the client-side of the application. To call the previously created WebSocket service in the server-side, we use the JavaScript class ``WebSocket``. We use a specific Kurento JavaScript library called **kurento-utils.js** to simplify the WebRTC interaction with the server. This library depends on **adapter.js**, which is a JavaScript WebRTC utility maintained by Google that abstracts away browser differences.
 
-These libraries are brought to the project as Maven dependencies which download all required files from WebJars.org; they are loaded in the `index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/resources/static/index.html>`__
-page, and are used in the `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/resources/static/js/index.js>`__ file.
+These libraries are brought to the project as Maven dependencies which download all required files from WebJars.org; they are loaded in the `index.html <https://github.com/Kurento/kurento/blob/main/tutorials/java/hello-world/src/main/resources/static/index.html>`__
+page, and are used in the `index.js <https://github.com/Kurento/kurento/blob/main/tutorials/java/hello-world/src/main/resources/static/js/index.js>`__ file.
 
 In the following snippet we can see the creation of the WebSocket in the path ``/helloworld``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side. Notice that there are three incoming messages to client: ``startResponse``, ``error``, and ``iceCandidate``. Convenient actions are taken to implement each step in the communication. For example, in function ``start``, the function ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a WebRTC communication.
@@ -359,4 +359,4 @@ Dependencies
 ============
 
 This Java Spring application is implemented using :term:`Maven`. The relevant part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/pom.xml>`__ is where Kurento dependencies are declared. As the following snippet shows, we need two dependencies: the Kurento Client Java dependency (*kurento-client*) and the JavaScript Kurento utility library (*kurento-utils*) for the client-side. Other client libraries are managed with `WebJars <https://www.webjars.org/>`__.
+`pom.xml <https://github.com/Kurento/kurento/blob/main/tutorials/java/hello-world/pom.xml>`__ is where Kurento dependencies are declared. As the following snippet shows, we need two dependencies: the Kurento Client Java dependency (*kurento-client*) and the JavaScript Kurento utility library (*kurento-utils*) for the client-side. Other client libraries are managed with `WebJars <https://www.webjars.org/>`__.

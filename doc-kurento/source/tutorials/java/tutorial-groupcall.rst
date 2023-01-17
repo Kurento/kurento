@@ -24,8 +24,8 @@ is hosted, and then run the main class:
 
 .. sourcecode:: bash
 
-    git clone https://github.com/Kurento/kurento-tutorial-java.git
-    cd kurento-tutorial-java/kurento-group-call
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/java/group-call/
     git checkout |VERSION_TUTORIAL_JAVA|
     mvn -U clean spring-boot:run
 
@@ -83,7 +83,7 @@ information on it, please see this
 
 The following sections analyze in depth the server (Java) and client-side
 (JavaScript) code of this application. The complete source code can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-group-call>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/java/group-call>`_.
 
 Application Server Logic
 ========================
@@ -100,7 +100,7 @@ web server in the application and thus simplify the development process.
 
 
 The main class of this demo is
-`GroupCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/GroupCallApp.java>`_.
+`GroupCalldApp <https://github.com/Kurento/kurento/blob/main/tutorials/java/group-call/src/main/java/org/kurento/tutorial/groupcall/GroupCallApp.java>`_.
 As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to the application. In this instantiation we see that
@@ -154,7 +154,7 @@ application server by means of requests and responses. Specifically, the main
 app class implements the interface ``WebSocketConfigurer`` to register a
 ``WebSocketHandler`` to process WebSocket requests in the path ``/groupcall``.
 
-`CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/CallHandler.java>`_
+`CallHandler <https://github.com/Kurento/kurento/blob/main/tutorials/java/group-call/src/main/java/org/kurento/tutorial/groupcall/CallHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
 The central piece of this class is the method ``handleTextMessage``. This
 method implements the actions for requests, returning responses through the
@@ -287,9 +287,9 @@ maintained by Google that abstracts away browser differences. Finally
 **jquery.js** is also needed in this application.
 
 These libraries are linked in the
-`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/resources/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento/blob/main/tutorials/java/group-call/src/main/resources/static/index.html>`_
 web page, and are used in the
-`conferenceroom.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/resources/static/js/conferenceroom.js>`_.
+`conferenceroom.js <https://github.com/Kurento/kurento/blob/main/tutorials/java/group-call/src/main/resources/static/js/conferenceroom.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/groupcall``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
@@ -461,8 +461,7 @@ Dependencies
 ============
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
-part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
+part of the *pom.xml*
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the

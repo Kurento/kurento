@@ -131,7 +131,7 @@ ping
 
 In order to warrant the WebSocket connectivity between the client and the Kurento Media Server, a *keep-alive* method is implemented. This method is based on a *ping* method sent by the client, which must be replied with a *pong* message from the server. If no response is obtained in a time interval, the client will assume that the connectivity with the media server has been lost. The *interval* parameter is the time available to receive the *pong* message from the server, in milliseconds. By default this value is `240000`_ (**4 minutes**).
 
-.. _240000: https://github.com/Kurento/kurento-java/blob/6.9.0/kurento-client/src/main/java/org/kurento/client/KurentoClient.java#L55
+.. _240000: https://github.com/Kurento/kurento/blob/7.0.0/clients/java/client/src/main/java/org/kurento/client/KurentoClient.java#L55
 
 This is an example of a *ping* request:
 
@@ -733,11 +733,11 @@ In order to implement a Kurento Client you need to follow the reference document
 
 We have defined a custom IDL format based on JSON. From it, we automatically generate the client code for the Kurento Client libraries:
 
-- `KMS core <https://github.com/Kurento/kms-core/blob/master/src/server/interface/core.kmd.json>`__
+- `KMS core <https://github.com/Kurento/kurento/blob/main/server/module-core/src/server/interface/core.kmd.json>`__
 
-- `KMS elements <https://github.com/Kurento/kms-elements/tree/master/src/server/interface>`__
+- `KMS elements <https://github.com/Kurento/kurento/blob/main/server/module-elements/src/server/interface>`__
 
-- `KMS filters <https://github.com/Kurento/kms-filters/tree/master/src/server/interface>`__
+- `KMS filters <https://github.com/Kurento/kurento/blob/main/server/module-filters/src/server/interface>`__
 
 
 
@@ -762,6 +762,6 @@ needed in the server-side. For code generation it uses `Freemarker <https://free
 Where:
 
 - *CODEGEN_DIR*: Destination directory for generated files.
-- *ROM_FILE*: A space-separated list of *Kurento Media Element Description* (kmd files), or folders containing these files. For example, you can take a look to the kmd files within the `Kurento Media Server <https://github.com/Kurento/kurento-media-server/tree/master/scaffold>`__ source code.
+- *ROM_FILE*: A space-separated list of *Kurento Media Element Description* (kmd files), or folders containing these files. For example, you can take a look to the kmd files within the `Kurento Media Server <https://github.com/Kurento/kurento/tree/main/server/media-server/scaffold>`__ source code.
 - *TEMPLATES_DIR*: Directory that contains template files. As an example,
-  you can take a look to the internal `Java templates <https://github.com/Kurento/kurento-java/tree/master/kurento-client/src/main/resources/templates>`__ and `JavaScript templates <https://github.com/Kurento/kurento-client-js/tree/master/templates>`__ directories.
+  you can take a look to the internal `Java templates <https://github.com/Kurento/kurento/tree/main/clients/java/client/src/main/resources/templates>`__ and `JavaScript templates <https://github.com/Kurento/kurento/tree/main/clients/javascript/client/templates>`__ directories.

@@ -8,7 +8,7 @@ If you are facing an issue with Kurento Media Server, follow this basic check li
 
 * **Step 2**: Test with the latest (unreleased) changes by installing a nightly version: :doc:`/user/installation_dev`.
 
-* **Step 3**: Search for your issue in our `GitHub bugtracker <https://github.com/Kurento/bugtracker/issues>`__ and the `Kurento Public Mailing List <https://groups.google.com/forum/#!forum/kurento>`__.
+* **Step 3**: Search for your issue in our `GitHub bugtracker <https://github.com/Kurento/kurento/issues>`__ and the `Kurento Public Mailing List <https://groups.google.com/forum/#!forum/kurento>`__.
 
 * **Step 4**: If you want full attention from the Kurento team, get in contact with us to request :ref:`Commercial Support <support-commercial>`.
 
@@ -319,7 +319,7 @@ To run Kurento Media Server with Valgrind and find memory leaks, the process is 
 
 .. code-block:: shell
 
-   ./bin/kms-build-run.sh --valgrind-memcheck
+   bin/build-run.sh --valgrind-memcheck
 
 Also, please have a look at the information shown in :ref:`troubleshooting-crashes` about our special Docker image based on **AddressSanitizer**. Running KMS with this image might help finding memory-related issues.
 
@@ -752,7 +752,7 @@ If using Docker Compose, use ``network_mode: host`` such as this:
    version: "3.7"
    services:
      kms:
-       image: kurento/kurento-media-server:6.12.0
+       image: kurento/kurento-media-server:7.0.0
        container_name: kms
        restart: always
        network_mode: host

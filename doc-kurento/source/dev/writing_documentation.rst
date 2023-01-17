@@ -65,7 +65,7 @@ Optionally, make a bit of cleanup in case old Sphinx versions were installed:
        '^python3-sphinx.*' \
        '^sphinx.*'
 
-   pip3 freeze | grep -i '^sphinx' | xargs sudo -H pip3 uninstall
+   python3 -m pip freeze | grep -i '^sphinx' | xargs sudo -H python3 -m pip uninstall
 
 And finally, install Sphinx:
 
@@ -197,7 +197,7 @@ It is possible to include hidden comments, which work just like commented-out li
 Sphinx documentation generator
 ==============================
 
-Our Sphinx-based project is hosted in the `doc-kurento <https://github.com/Kurento/doc-kurento>`__ repository. Here, the main entry point for running Sphinx is the Makefile, based on the template that is provided for new projects by Sphinx itself. This Makefile is customized to attend our particular needs, and implements several targets:
+Our Sphinx-based project is hosted in the ``doc-kurento/`` subdir within https://github.com/Kurento/kurento. Here, the main entry point for running Sphinx is the Makefile, based on the template that is provided for new projects by Sphinx itself. This Makefile is customized to attend our particular needs, and implements several targets:
 
 * **init-workdir**. This target constitutes the first step to be run before most other targets. Our documentation source files contain substitution keywords in some parts, in the form ``| KEYWORD |``, which is expected to be substituted by some actual value during the generation process. Currently, the only keyword in use is ``VERSION``, which must be expanded to the actual version of the documentation being built.
 
@@ -209,7 +209,7 @@ Our Sphinx-based project is hosted in the `doc-kurento <https://github.com/Kuren
 
   The way this works is that the *source* folder gets copied into the *build* directory, and then the substitutions take place over this copy.
 
-* **langdoc**. This target creates the automatically generated reference documentation for each :doc:`/features/kurento_client`. Currently, this means the Javadoc and Jsdoc documentations for Java and Js clients, respectively. The Kurento client repositories are checked out in the same version as specified by the documentation version file, or in the master branch if no such version tag exists. Then, the client stubs of the :doc:`/features/kurento_modules` are automatically generated, and from the resulting source files, the appropriate documentation is automatically generated too.
+* **langdoc**. This target creates the automatically generated reference documentation for each :doc:`/features/kurento_client`. Currently, this means the Javadoc and Jsdoc documentations for Java and Js clients, respectively. The Kurento client repositories are checked out in the same version as specified by the documentation version file, or in the *main* branch if no such version tag exists. Then, the client stubs of the :doc:`/features/kurento_modules` are automatically generated, and from the resulting source files, the appropriate documentation is automatically generated too.
 
   The *langdoc* target is usually run before the *html* target, in order to end up with a complete set of HTML documents that include all the reST documentation with the Javadoc/Jsdoc sections.
 

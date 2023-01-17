@@ -42,8 +42,8 @@ Full description, with images, code samples, external links, etc. Some useful sy
 
      Something to keep in mind.
 
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/bugtracker#IssueNum <https://github.com/Kurento/bugtracker/issues/IssueNum>`__ (*Issue title*).
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kms-core#PrNum <https://github.com/Kurento/kms-core/pull/PrNum>`__ (*Pull Request title*).
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `#IssueNum <https://github.com/Kurento/kurento/issues/IssueNum>`__ (*Issue title*).
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `#PrNum <https://github.com/Kurento/kurento/pull/PrNum>`__ (*Pull Request title*).
 
 
 

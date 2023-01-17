@@ -33,8 +33,8 @@ You also need the source code of this tutorial. Clone it from GitHub, then start
 
 .. code-block:: shell
 
-    git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-tutorial-js/kurento-pointerdetector/
+    git clone https://github.com/Kurento/kurento.git
+    cd kurento/tutorials/javascript-browser/pointerdetector/
     git checkout |VERSION_TUTORIAL_JS|
     bower install
     http-server -p 8443 --ssl --cert keys/server.crt --key keys/server.key
@@ -87,7 +87,7 @@ composed by the following `Media Element`:term: s:
    *WebRTC with PointerDetector filter in loopback Media Pipeline*
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-pointerdetector>`_.
+`GitHub <https://github.com/Kurento/kurento/tree/main/tutorials/javascript-browser/pointerdetector>`_.
 
 This example is a modified version of the
 :doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this
@@ -244,7 +244,7 @@ Dependencies
 
 The dependencies of this demo has to be obtained using `Bower`:term:. The
 definition of these dependencies are defined in the
-`bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-pointerdetector/bower.json>`_
+`bower.json <https://github.com/Kurento/kurento/blob/main/tutorials/javascript-browser/pointerdetector/bower.json>`_
 file, as follows:
 
 .. sourcecode:: js
