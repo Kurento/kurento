@@ -1,0 +1,367 @@
+kms-jsonrpc (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  * UNRELEASED
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 20 Sep 2022 17:15:31 +0200
+
+kms-jsonrpc (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:31 +0000
+
+kms-jsonrpc (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Kurento ]
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:40 +0200
+
+kms-jsonrpc (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+  * Update all dependency versions to 6.15.1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:37 +0100
+
+kms-jsonrpc (6.15.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.15.0-0kurento1
+  * debian: update versions of Kurento dependencies
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 03 Nov 2020 18:04:21 +0100
+
+kms-jsonrpc (6.14.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.14.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 16 Jun 2020 17:48:03 +0200
+
+kms-jsonrpc (6.13.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.13.0-0kurento1
+  * debian/control: Add build-essential to Build-Depends
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 17 Dec 2019 13:37:53 +0100
+
+kms-jsonrpc (6.12.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.12.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 14 Oct 2019 19:12:33 +0200
+
+kms-jsonrpc (6.11.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.11.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 19 Jul 2019 19:47:53 +0200
+
+kms-jsonrpc (6.10.0-0kurento1) testing; urgency=medium
+
+  * debian: Review for 18.04 build
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:30 +0200
+
+kms-jsonrpc (6.8.0) testing; urgency=medium
+
+  * Review changelog, control, copyright
+  * Prepare release 6.8.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 26 Sep 2018 11:30:00 +0200
+
+kms-jsonrpc (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+  * Updates to debian/docs:
+    - Added file CHANGELOG.md
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kms-jsonrpc-1.0 (1.1.3) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+
+  * Changed:
+    - Old ChangeLog.md moved to the new format in this CHANGELOG.md file.
+    - CMake: Full review of all CMakeLists.txt files to tidy up and homogenize
+      code style and compiler flags.
+    - CMake: Position Independent Code flags ("-fPIC") were scattered around
+      projects, and are now removed. Instead, the more CMake-idiomatic variable
+      "CMAKE_POSITION_INDEPENDENT_CODE" is used.
+    - CMake: All projects now compile with
+      "[-std=c11|-std=c++11] -Wall -Werror -pthread".
+    - CMake: Debug builds now compile with "-g -O0" (while default CMake used
+      "-O1" for Debug builds).
+    - CMake: include() and import() commands were moved to the code areas where
+      they are actually required.
+  * Fixed:
+    - Fix warning "used uninitialized" (`-Werror=maybe-uninitialized`).
+  * Prepare release 1.1.3
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Fri, 24 Jul 2017 11:00:00 +0200
+
+kms-jsonrpc-1.0 (1.1.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * TestSerialize: Add missing include
+  * FindKmsJsonRpc: Allow importing project locally
+  * CMake: Do not add includes globally
+  * TestSerialize: initialize variables properly
+  * Prepare release 1.1.2
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 11:15:38 +0200
+
+kms-jsonrpc-1.0 (1.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Add build configuration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix style
+  * Change license to Apache 2.0
+  * Prepare release 1.1.1
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 27 May 2016 17:18:36 +0200
+
+kms-jsonrpc-1.0 (1.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * JsonRpcUtils: Add method to get a boolean parameter
+  * Update version to 1.1 due to changes in API
+  * Add ChangeLog.md
+  * Prepare release 1.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 19 Jan 2016 16:11:05 +0100
+
+kms-jsonrpc-1.0 (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 12:05:22 +0100
+
+kms-jsonrpc-1.0 (1.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * JsonSerializer: Serialize empty arrays as [] instead of as null
+  * debian: Change package name to make incompatible changes
+  * Update jsoncpp dependency
+  * JsonSerializer: Add support for std::list
+
+  [ David Fernandez ]
+  * Add int64 as data type
+
+  [ Jose Antonio Santos Cadenas ]
+  * JsonRpcUtils: Fix utils to get strings and integers
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 14:34:41 +0200
+
+kms-jsonrpc-1.0 (1.0.0~0) testing; urgency=medium
+
+  * Change package name
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 07 May 2015 17:03:29 +0200
+
+kms-jsonrpc (0.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * JsonSerializer: Indent code correctly
+  * JsonSerializer: Add support for string indexed maps
+  * Prepare release 0.2.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 15 Apr 2015 10:22:59 +0200
+
+kms-jsonrpc (0.2.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix cmake installation directory
+  * Prepare release 0.2.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 11:37:42 +0100
+
+kms-jsonrpc (0.2.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare .gitreview to work with new gerrit
+  * Prepare release 0.2.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 10:40:59 +0100
+
+kms-jsonrpc (0.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * JsonRpcHandler: make process of Value objects public
+  * JsonRpcUtils: Add utility for getting an array from params
+  * FindKmsJsonRpc: Fix path suffix for library
+  * Increase minor version due to compatible api changes
+  * JsonSerializer: Workaround a bug in JsonCpp
+  * CallException: Allow any integer error code
+  * Fix compilarion error in ubuntu 14.10
+  * Fix pre commit hook
+  * Add RpcClient
+  * JsonRpcClient: Add Event handler
+  * Disable test while generating debian package
+  * Prepare release 0.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 14:08:40 +0100
+
+kms-jsonrpc (0.1.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Remove parsing of version, it is done by cmake-utils functions
+  * Add cmake find script to allow linking against the library
+  * Fix pkgconfig configuration
+  * Let debian package install cmake configuration file
+  * Find jsonrpc library correctly
+  * Prepare release 0.1.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 06 Oct 2014 19:03:20 +0200
+
+kms-jsonrpc (0.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix development debian package
+  * Prepare release 0.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 15 Sep 2014 12:58:57 +0200
+
+kms-jsonrpc (0.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * Fix project urls
+  * JsonRpcHandler: Add pre and post process callbacks
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 0.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 16 Jul 2014 09:19:42 +0200
+
+kms-jsonrpc (0.0.6) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare next development iteration
+  * Add missing file to include files
+  * Prepare release 0.0.6
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 18 Jun 2014 18:52:56 +0200
+
+kms-jsonrpc (0.0.5) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix project name
+  * Fix pkg-config file, setting library correctly
+  * Prepare release 0.0.5
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 18 Jun 2014 12:15:13 +0200
+
+kms-jsonrpc (0.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Add include jsoncpp as a dependency in pkg config file
+  * Prepare release 0.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Jun 2014 22:47:29 +0200
+
+kms-jsonrpc (0.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Add pkg-config to build dependencies
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Jun 2014 19:33:48 +0200
+
+kms-jsonrpc (0.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add pkgconfig file
+  * Upload version to next development version
+  * Add pre-commit hook to check correct codding style
+  * Add README.md and LICENSE files
+  * Create debian package
+  * Fix project version in pkg-config file
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Jun 2014 18:44:25 +0200
+
+kms-jsonrpc (0.0.1) testing; urgency=medium
+
+  * Initial release
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Jun 2014 17:48:17 +0200

@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+# Uncomment this to enable verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DDISABLE_TESTS=TRUE
+
+.PHONY: override_dh_strip
+
+override_dh_strip:
+	dh_strip --dbg-package=kms-jsonrpc-dbg

@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: jsonrpc
+Description: Kurento JsonRpc implementation
+Version: @PROJECT_VERSION@
+URL: https://github.com/Kurento/kms-jsonrpc
+Requires: @requires@
+Requires.private: @requires_private@
+Libs: -L${libdir} -ljsonrpc
+Libs.private: @libs_private@
+CFlags: -I${includedir}

@@ -1,0 +1,39 @@
+Source: kms-jsonrpc
+Priority: optional
+Maintainer: Kurento <kurento@openvidu.io>
+Build-Depends: debhelper (>= 9),
+ build-essential,
+ cmake,
+ pkg-config,
+ kms-cmake-utils (>= 7.0.0),
+ kmsjsoncpp-dev,
+ libboost-dev,
+ libboost-test-dev
+Standards-Version: 4.0.0
+Vcs-Git: https://github.com/Kurento/kms-jsonrpc.git
+Vcs-Browser: https://github.com/Kurento/kms-jsonrpc
+Homepage: https://kurento.openvidu.io/
+
+Package: kms-jsonrpc
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Kurento JSON-RPC library
+ C++ implementation of the JSON-RPC Kurento Protocol.
+
+Package: kms-jsonrpc-dev
+Architecture: any
+Section: libdevel
+Depends: kms-jsonrpc (= ${binary:Version}),
+ libjsoncpp-dev,
+ libboost-dev,
+ libboost-test-dev
+Description: Kurento JSON-RPC library
+ C++ implementation of the JSON-RPC Kurento Protocol - Development files.
+
+Package: kms-jsonrpc-dbg
+Architecture: any
+Section: debug
+Depends: kms-jsonrpc (= ${binary:Version})
+Description: Kurento JSON-RPC library
+ C++ implementation of the JSON-RPC Kurento Protocol - Debugging symbols.
