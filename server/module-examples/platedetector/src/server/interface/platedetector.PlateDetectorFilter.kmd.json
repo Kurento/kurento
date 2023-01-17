@@ -1,0 +1,50 @@
+{
+  "remoteClasses": [
+    {
+      "name": "PlateDetectorFilter",
+      "extends": "Filter",
+      "doc": "PlateDetectorFilter interface. This type of :rom:cls:`Endpoint` detects\nvehicle plates in a video feed.",
+      "constructor":
+        {
+          "doc": "Create a :rom:cls:`PlateDetectorFilter` for the given :rom:cls:`MediaPipeline`",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the parent :rom:cls:`MediaPipeline` of this :rom:cls:`PlateDetectorFilter`",
+              "type": "MediaPipeline"
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "setPlateWidthPercentage",
+          "doc": "Configures the average width of the license plates in the image represented as an image percentage.",
+          "params": [
+            {
+              "name": "plateWidthPercentage",
+              "doc": "average width of the license plates represented as an image percentage [0..1].",
+              "type": "float"
+            }
+          ]
+        }
+      ],
+      "events": [
+        "PlateDetected"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "properties": [
+        {
+          "name": "plate",
+          "doc": "Plate identification that was detected by the filter",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "PlateDetected",
+      "doc": "Event raised by a :rom:cls:`PlateDetectorFilter` when a plate is found in the data streamed."
+    }
+  ]
+}

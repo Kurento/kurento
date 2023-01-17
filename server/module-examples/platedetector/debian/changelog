@@ -1,0 +1,338 @@
+kms-platedetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  * UNRELEASED
+
+  [ Saul Pablo Labajo Izquierdo ]
+  * switched to gstreamer from bionic
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:53 +0200
+
+kms-platedetector (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:35 +0000
+
+kms-platedetector (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Kurento ]
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:44 +0200
+
+kms-platedetector (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+  * Update all dependency versions to 6.15.1
+  * debian/control: fix dependency version for kms-filters
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:42 +0100
+
+kms-platedetector (6.15.0-0kurento1) testing; urgency=medium
+
+  * debian: Add missing "-dev" dependencies
+  * Fix build for both Ubuntu 16.04 Xenial and 18.04 Bionic
+  * Prepare release 6.15.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 04 Nov 2020 13:09:18 +0100
+
+kms-platedetector (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kms-platedetector-6.0 (6.6.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Add .build.yaml
+  * Prepare release 6.6.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 17:23:00 +0200
+
+kms-platedetector-6.0 (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change license to Apache 2.0
+  * CMakeLists: Fix compilation problems on xenial
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 31 May 2016 11:17:43 +0200
+
+kms-platedetector-6.0 (6.4.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Adapt test to new request pad signal
+  * debian/rules: Execute test in debian package generation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.4.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 25 Feb 2016 12:50:15 +0100
+
+kms-platedetector-6.0 (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 08:00:15 +0100
+
+kms-platedetector-6.0 (6.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix test files urls
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 26 Nov 2015 12:53:24 +0100
+
+kms-platedetector-6.0 (6.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 02 Oct 2015 17:28:56 +0200
+
+kms-platedetector-6.0 (6.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 01 Sep 2015 16:11:30 +0200
+
+kms-platedetector-6.0 (6.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare for 6.0.0-dev version
+  * Update .gitreview to work with new repo
+  * Update changelog for version 6.0.0
+
+  [ David Fernandez ]
+  * Remove devDependencies in package.json
+  * Adapt events code to KmsEvent
+  * Move signal logic to postConstructor function
+  * Update gstreamer dependencies
+  * Avoid install twice the tesseract dict
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use correct SPDX licence string
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 15 Jul 2015 10:19:11 +0200
+
+kms-platedetector-6.0 (6.0.0~0) testing; urgency=medium
+
+  * Prerelease for 6.0.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 18 Feb 2015 09:26:13 +0100
+
+kms-platedetector (1.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Enable tests
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 1.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 03 Feb 2015 10:47:12 +0100
+
+kms-platedetector (1.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Add Gruntfile.js file
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use templates from kurento-client-js
+
+  [ Jose Antonio Santos Cadenas ]
+  * Disable test until it is fixed
+  * Update dependencies
+  * Prepare release 1.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sun, 25 Jan 2015 23:44:08 +0100
+
+kms-platedetector (1.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Update dependencies
+  * Prepare release 1.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 08 Oct 2014 13:06:34 +0200
+
+kms-platedetector (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMakeLists.txt: Remove soup depdendency
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 25 Sep 2014 08:32:02 +0200
+
+kms-platedetector (1.0.0) testing; urgency=medium
+
+  [ Francisco Rivero ]
+  * Create plugin for plate detector filter
+
+  [ Jose Antonio Santos Cadenas ]
+  * Detect tesseract library necessary for platedetector element
+
+  [ Francisco Rivero ]
+  * Changes in Tesseract library configurations.
+
+  [ Miguel París Díaz ]
+  * Fix platedetector plugin name and description
+
+  [ Santiago Gala ]
+  * Add Source headers to files
+
+  [ Francisco Rivero ]
+  * Select candidate regions which can contain license plates.
+  * Find car license plates and read their characters
+  * Convert data structure in private structure
+  * Use structs instead of int arrays
+
+  [ Jose Antonio Santos Cadenas ]
+  * platedetector: Remove useless structure
+  * platedetector: Add trained data as part of the project
+  * platedetector: Remove unused variable
+
+  [ David Fernandez ]
+  * platedetector: Check if tesseract dictionary is installed
+  * platedetector: Put message in the bus if a plate is detected
+
+  [ Jose Antonio Santos Cadenas ]
+  * Set license to LGPL
+
+  [ Francisco Rivero ]
+  * Change data structures to GSList
+
+  [ Jose Antonio Santos Cadenas ]
+  * platedetector: Remove unneeded field in private structure
+  * Make opencv a required dependency
+  * Make tesseract a required dependency
+  * platedetector: Add missing m library linking
+
+  [ Francisco Rivero ]
+  * platedetector: Fix problems with plate size
+  * New setup for platedetector filter
+
+  [ David Fernandez ]
+  * platedetector: Avoid use of not initialized memory
+
+  [ Francisco Rivero ]
+  * platedetector: remove unused functions
+
+  [ David Fernandez ]
+  * platedetector: Change type of plate-width-percentage from int to float
+  * platedetector:Calculate kernelX if platePercentage property changes
+  * platedetector: Protect critical region
+
+  [ Santiago Carot-Nemesio ]
+  * platedetector: Fix memory leaks
+  * platedetector: Do not write out of string boundaries
+
+  [ David Fernandez ]
+  * cmake: Build platedetector filter
+  * platedetector: Use TESSDATA_PREFIX as paramater to init tesseract
+  * cmake: Change module installation directory
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove autotools
+
+  [ David Fernandez ]
+  * Create platedetector module
+  * Add .gitreview file
+  * platedetector: Modify includes in gstreamer filter
+  * Add debian package generation
+  * Add npmGit to kmd file
+
+  [ Jose Antonio Santos Cadenas ]
+  * kmd: Fix indentation
+
+  [ David Fernandez ]
+  * Add templates for pom.xml, package.json and bower.json
+
+  [ Jose Antonio Santos Cadenas ]
+  * kms.json: Fix dependencies versions
+  * Prepare relase 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Francisco Rivero <fj.riverog@gmail.com>  Wed, 24 Sep 2014 23:01:05 +0200
+
+kms-platedetector (0.0.1~rc1) testing; urgency=medium
+
+  * Initial release.
+
+ -- David Fernandez <d.fernandezlop@gmail.com>  Wed, 10 Sep 2014 12:30:01 +0200
