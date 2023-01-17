@@ -1,6 +1,0 @@
-build*/
-debian/kurento-module-opencv-example*
-debian/*debhelper*
-debian/files
-debian/tmp/
-obj-*/

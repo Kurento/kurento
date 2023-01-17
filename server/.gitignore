@@ -21,8 +21,8 @@ build-*/
 
 ### Default ignores ###
 
-# Created by https://www.toptal.com/developers/gitignore/api/cmake
-# Edit at https://www.toptal.com/developers/gitignore?templates=cmake
+# Created by https://www.toptal.com/developers/gitignore/api/cmake,maven
+# Edit at https://www.toptal.com/developers/gitignore?templates=cmake,maven
 
 ### CMake ###
 CMakeLists.txt.user
@@ -41,4 +41,23 @@ _deps
 # External projects
 *-prefix/
 
-# End of https://www.toptal.com/developers/gitignore/api/cmake
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# https://github.com/takari/maven-wrapper#usage-without-binary-jar
+.mvn/wrapper/maven-wrapper.jar
+
+# Eclipse m2e generated files
+# Eclipse Core
+.project
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# End of https://www.toptal.com/developers/gitignore/api/cmake,maven
