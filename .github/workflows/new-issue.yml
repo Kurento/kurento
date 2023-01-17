@@ -1,0 +1,99 @@
+# Workflow syntax for GitHub Actions:
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+
+# Run some verification and organizative work on each newly opened issue.
+name: New-Issue
+
+# Run only when a new issue is opened.
+# (roots/issue-closer action doesn't support other event types)
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  # Verify that the issue is valid in form.
+  validate-issue:
+    name: Validate issue
+    runs-on: ubuntu-latest
+
+    steps:
+      # Close the issue if its body doesn't match a regular expression.
+      # Action: https://github.com/marketplace/actions/issue-auto-closer
+      - id: auto-closer
+        name: Issue auto-closer
+        uses: roots/issue-closer-action@v1.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-pattern: "I agree to fill this issue template"
+          issue-close-message: >
+            Hello @${{ github.event.issue.user.login }}! :wave: we're sorry you
+            found a bug... so first of all, thank you very much for reporting
+            it.
+
+
+            However, **your report doesn't follow the [issue template](https://raw.githubusercontent.com/Kurento/kurento/main/.github/ISSUE_TEMPLATE/bug_report.md)**,
+            so it is being automatically closed. We are really sorry for that,
+            but we need all reports to follow the template, or else it won't be
+            possible to understand and help with all issues.
+
+
+            Please, create a new issue following the template, or reopen this
+            same issue to edit and provide all required information.
+
+      # Get the current Issue data, to see if "auto-closer" closed it.
+      # Action: https://github.com/marketplace/actions/github-api-request
+      # GitHub API: https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#get-an-issue
+      - id: get-issue
+        name: Get Issue Data
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/:owner/:repo/issues/:issue_number
+          owner: ${{ github.event.repository.owner.login }}
+          repo: ${{ github.event.repository.name }}
+          issue_number: ${{ github.event.issue.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Cancel the whole workflow if "auto-closer" closed the issue.
+      # Action: https://github.com/marketplace/actions/cancel-this-build
+      - name: Cancel this build
+        uses: andymckay/cancel-action@0.2
+        if: ${{ fromJson(steps.get-issue.outputs.data).state != 'open' }}
+
+  # Accept the issue by sending a thank you message and sorting it.
+  accept-issue:
+    name: Accept issue
+    runs-on: ubuntu-latest
+
+    # Wait for previous job to finish (disable parallel run).
+    needs: validate-issue
+
+    steps:
+      # Add a welcome message.
+      # Action: https://github.com/marketplace/actions/create-or-update-comment
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v1.4.3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: >
+            Hello @${{ github.event.issue.user.login }}! :wave: we're sorry you
+            found a bug... so first of all, thank you very much for reporting
+            it.
+
+
+            To know about progress, check in
+            **[Triage](https://github.com/orgs/Kurento/projects/1)**. All issues
+            are considered
+            [Backlog Candidates](https://github.com/orgs/Kurento/projects/1#column-4137933)
+            until work priorities align and the issue is selected for
+            development. It will then become part of our official
+            [Backlog](https://github.com/orgs/Kurento/projects/1#column-4140448).
+
+      # Add new issues to the Triage project.
+      # Action: https://github.com/marketplace/actions/github-project-automation
+      - name: GitHub Project Automation+
+        uses: alex-page/github-project-automation-plus@v0.3.0
+        with:
+          repo-token: ${{ secrets.NEW_ISSUE_TOKEN }}
+          project: Triage
+          column: Backlog Candidates

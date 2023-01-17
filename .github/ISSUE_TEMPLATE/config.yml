@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Community Support (Kurento Public Mailing List)
+    url: https://groups.google.com/forum/#!forum/kurento
+    about: Discussion forum where to ask and answer questions about how to use Kurento.
+  - name: Commercial Support (Kurento Team)
+    url: https://doc-kurento.readthedocs.io/en/latest/user/support.html#support-commercial
+    about: We provide priority support and consulting services. This funds our team and keeps the Kurento project alive.
