@@ -1,0 +1,84 @@
+{
+  "name": "kurento-jsonrpc",
+  "version": "6.18.1-dev",
+  "description": "Kurento RPC client library for Browser and Node.js",
+  "keywords": [
+    "kurento",
+    "mcu",
+    "sfu",
+    "rpc",
+    "mediaserver",
+    "pipe",
+    "audio",
+    "video",
+    "media",
+    "recording",
+    "stream",
+    "streaming",
+    "videoconference",
+    "broadcast",
+    "multicast",
+    "client",
+    "server",
+    "browser",
+    "chrome",
+    "edge",
+    "firefox",
+    "safari",
+    "webrtc",
+    "datachannel",
+    "sdp",
+    "ice",
+    "stun",
+    "turn",
+    "h264",
+    "h.264",
+    "opus",
+    "vp8",
+    "rtp",
+    "srtp",
+    "rtsp"
+  ],
+  "homepage": "https://kurento.openvidu.io/",
+  "license": "Apache-2.0",
+  "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
+  "contributors": [
+    "Kurento Community <kurento@googlegroups.com> (https://kurento.openvidu.io/)",
+    "Jesús Leganés-Combarro 'piranna' <piranna@gmail.com> (https://pirannafs.blogspot.com/)",
+    "Ivan Gracia <igracia@kurento.org>"
+  ],
+  "bugs": {
+    "url": "https://github.com/Kurento/bugtracker/issues",
+    "email": "kurento@googlegroups.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kurento/kurento-jsonrpc-js.git"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "nodeunit test/index.js"
+  },
+  "dependencies": {
+    "bufferutil": "^4.0.1",
+    "inherits": "^2.0.1",
+    "ws": "^7.1.0"
+  },
+  "devDependencies": {
+    "bower": "~1.8.8",
+    "browserify": "~13.1.0",
+    "coveralls": "~2.11.1",
+    "eventtarget": "0.1.0",
+    "grunt": "~1.0.1",
+    "grunt-browserify": "^5.3.0",
+    "grunt-cli": "~1.2.0",
+    "grunt-contrib-clean": "~1.0.0",
+    "grunt-jsbeautifier": "^0.2.10",
+    "grunt-jsdoc": "^2.4.0",
+    "grunt-npm2bower-sync": "^0.9.0",
+    "grunt-shell": "^2.0.0",
+    "jscoverage": "~0.6.0",
+    "minifyify": "~7.3.3",
+    "nodeunit": "^0.11.3"
+  }
+}
