@@ -1,0 +1,223 @@
+=================
+6.10.0 (Apr 2019)
+=================
+
+Kurento Media Server **6.10** is seeing the light with some important news!
+
+To install it: :doc:`/user/installation`.
+
+
+
+Hello Ubuntu Bionic
+===================
+
+Preliminary support for `Ubuntu 18.04 LTS (Bionic Beaver) <https://releases.ubuntu.com/18.04/>`__ has landed in Kurento, and all the CI machinery is already prepared to compile and generate Debian packages into a new repository.
+
+To install KMS on this version of Ubuntu, just follow the usual :doc:`installation instructions </user/installation>`:
+
+.. code-block:: shell
+
+   DISTRO="bionic"  # KMS for Ubuntu 18.04 (Bionic)
+
+   sudo apt-key adv \
+       --keyserver keyserver.ubuntu.com \
+       --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
+
+   sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+   # Kurento Media Server - Release packages
+   deb [arch=amd64] http://ubuntu.openvidu.io/|VERSION_KMS| $DISTRO kms6
+   EOF
+
+   sudo apt-get update ; sudo apt-get install kurento-media-server
+
+Mostly everything is already ported to Bionic and working properly, but **the port is not 100% finished yet**. You can track progress in this board: https://github.com/orgs/Kurento/projects/1
+
+The two biggest omissions so far are:
+
+- None of the *extra* modules have been ported yet; i.e. the example plugins that are provided for demonstration purposes, such as *kms-chroma*, *kms-crowddetector*, *kms-platedetector*, *kms-pointerdetector*.
+
+- OpenCV plugins in Kurento still uses the old C API. This still worked out fine in Ubuntu 16.04, but it doesn't any more in 18.04 for plugins that use external training resouces, such as the HAAR filters.
+
+  **Plugins that need to load external OpenCV training data files won't work**. For now, the only plugin affected by this limitation in KMS seems to be **facedetector** because it won't be able to load the newer training data sets provided by OpenCV 3.2.0 on Ubuntu 18.04. Consequently, other plugins that depend on this one, such as the **faceoverlay** filter and its FaceOverlayFilter API, won't work either.
+
+  Not much time has been invested in these two plugins, given that they are just simple demonstrations and no production application should be built upon them. Possibly the only way to solve this problem would be to re-write these plugins from scratch, using OpenCV's newer C++ API, which has support for the newer training data files provided in recent versions of OpenCV.
+
+  This issue probably affects others of the *extra* modules mentioned earlier. Those haven't even started to be ported.
+
+
+
+Hello Chrome 74
+===============
+
+Google is moving forward the security of WebRTC world by dropping support for the old DTLS 1.0 protocol. Starting from Chrome 74, DTLS 1.2 will be required for all WebRTC connections, and all endpoints that want to keep compatibility must be updated to use this version of the protocol.
+
+Our current target operating system, Ubuntu 16.04 (Xenial), provides the library OpenSSL version **1.0.2g**, which already offers support for DTLS 1.2 [#openssl]_. So, the only change that was needed to bring Kurento up to date in compatibility with Chrome was to actually make use of this newer version of the DTLS protocol.
+
+
+
+Bye Ubuntu Trusty
+=================
+
+Our resources are pretty limited here and the simpler is our CI pipeline, and the less work we need to dedicate making sure KMS works as expected in all Operating Systems, the best effort we'll be able to make improving the stability and features of the server.
+
+Our old friend **Ubuntu 14.04 LTS (Trusty Tahr)** is reaching its deprecation and End Of Life date in April 2019 (source: https://wiki.ubuntu.com/Releases) so this seems like the best time to drop support for this version of Ubuntu.
+
+Canonical is not the only one setting an end to Trusty with their lifecycle schedules; Google is also doing so because by requiring DTLS 1.2 support for WebRTC connections, Trusty is left out of the game, given that it only provides OpenSSL **1.0.1f** which doesn't support DTLS 1.2 [#openssl]_.
+
+
+
+Reducing forks to a minimum
+===========================
+
+Moving on to Ubuntu 18.04 and dropping support of Ubuntu 14.04 are efforts which pave the road for a longer-term target of dropping custom-built tools and libraries, while standarizing the dependencies that are used in the Kurento project.
+
+These are some of the objectives that we'd like to approach:
+
+- Using standard tools to create Ubuntu packages.
+
+  We're dropping the custom `compile_project.py <https://github.com/Kurento/adm-scripts/blob/3813d958fab87faf2d0d2451da94cde9cf28eb9e/kms/compile_project.py>`__ tool and instead will be pushing the use of `git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__. Our newer `kurento-buildpackage.sh <https://github.com/Kurento/adm-scripts/blob/273c6236338b3c364717ed4374f8f1467362d01b/kurento-buildpackage.sh>`__ uses *git-buildpackage* for the actual creation of Debian packages from Git repositories.
+
+- Dropping as many forks as possible. As shown in :ref:`dev-code-repos`, Kurento uses a good number of forked libraries that are packaged and distributed as part of the usual releases, via the Kurento package repositories.
+
+  Keeping all these forks alive is a tedious task, very error-prone most of the times. Some are definitely needed, such as `openh264 <https://github.com/Kurento/openh264>`__ or `usrsctp <https://github.com/Kurento/usrsctp>`__ because those are **not** distributed by Ubuntu itself so we need to do it.
+
+  Some others, such as the fork of `libsrtp <https://github.com/Kurento/libsrtp>`__, have already been dropped and we're back to using the official versions provided by Ubuntu (yay!)
+
+  Lastly, the big elephant in the room is `all <https://github.com/Kurento/gstreamer>`__ `the <https://github.com/Kurento/gst-plugins-good>`__ `GStreamer <https://github.com/Kurento/gst-plugins-bad>`__ `forks <https://github.com/Kurento/gst-plugins-ugly>`__, which are stuck in an old version of GStreamer (**1.8**) and would probably benefit hugely from moving to newer releases.
+
+  We hope that moving to Ubuntu 18.04 can ease the transition from our forks of each library to the officially provided versions.
+
+- Ultimately, a big purpose we're striving for is to **have Kurento packages included among the official ones in Ubuntu**, although that seems like a bit far away for now.
+
+
+
+Clearer Transcoding log messages
+================================
+
+Codec transcoding is always a controversial feature, because it is *needed* for some cases which cannot be resolved in any other way, but it is *undesired* because it will consume a lot of CPU power.
+
+All debug log messages related to transcoding have been reviewed to make them as clear as possible, and the section :doc:`/user/troubleshooting` has been updated accordingly.
+
+If you see that transcoding is active at some point, you may get a bit more information about why, by enabling this line:
+
+.. code-block:: shell
+
+   export GST_DEBUG="${GST_DEBUG:-3},Kurento*:5,agnosticbin*:5"
+
+in your daemon settings file, ``/etc/default/kurento-media-server``.
+
+Then look for these messages in the media server log output:
+
+* ``Upstream provided caps: (caps)``
+* ``Downstream wanted caps: (caps)``
+* ``Find TreeBin with wanted caps: (caps)``
+
+Which will end up with either of these sets of messages:
+
+* If source codec is compatible with destination:
+
+  - ``TreeBin found! Use it for (audio|video)``
+  - ``TRANSCODING INACTIVE for (audio|video)``
+
+* If source codec is **not** compatible with destination:
+
+  - ``TreeBin not found! Transcoding required for (audio|video)``
+  - ``TRANSCODING ACTIVE for (audio|video)``
+
+These messages can help understand what codec settings are being received by Kurento ("*Upstream provided caps*") and what is being expected at the other side by the stream receiver ("*Downstream wanted caps*").
+
+
+
+Recording with Matroska
+=======================
+
+It's now possible, thanks to a user contribution, to configure the RecorderEndpoint to use the Matroska multimedia container (MKV), using the H.264 codec for video.
+
+This has big implications for the robustness of the recording, because with the MP4 container format it was possible to lose the whole file if the recorder process crashed for any reason. MP4 stores its metadata only at the end of the file, so if the file gets truncated it means that it won't be playable. Matroska improves the situation here, and a truncated file will still be readable.
+
+For more information about the issues of the MP4 container, have a look a then new knowledge section: :doc:`/knowledge/h264`.
+
+
+
+New JSON settings parser
+========================
+
+Kurento uses the JSON parser that comes with the Boost C++ library; this parser accepted comments in JSON files, so we could comment out some lines when needed. The most common example of this was to force using only VP8 or H.264 video codecs in the Kurento settings file, ``/etc/kurento/modules/kurento/SdpEndpoint.conf.json``:
+
+.. code-block:: json
+
+   "videoCodecs" : [
+     {
+       "name" : "VP8/90000"
+     },
+     {
+       "name" : "H264/90000"
+     }
+   ]
+
+This is the default form of the mentioned file, allowing Kurento to use either VP8 or H.264, as needed. To disable VP8, this would change as follows:
+
+.. code-block:: text
+
+   "videoCodecs" : [
+   //  {
+   //    "name" : "VP8/90000"
+   //  },
+     {
+       "name" : "H264/90000"
+     }
+   ]
+
+And it worked fine. The Boost JSON parser would ignore all lines starting with ``//``, disregarding them as comments.
+
+However, starting from `Boost version 1.59.0 <https://www.boost.org/users/history/version_1_59_0.html>`__, the Boost JSON parser gained the great ability of not allowing comments; it was rewritten without any consideration for backwards-compatibility (yeah, it wouldn't hurt the Boost devs if they practiced a bit of "*Do NOT Break Users*" philosophy from Linus Torvalds, or at least followed Semantic Versioning...)
+
+The devised workaround has been to allow inline comment characters inside the JSON attribute fields, so the former comment can now be done like this:
+
+.. code-block:: json
+
+   "videoCodecs": [
+       { "//name": "VP8/90000" },
+       { "name": "H264/90000" }
+   ]
+
+Whenever you want to comment out some line in a JSON settings file, just append the ``//`` characters to the beginning of the field name.
+
+
+
+Code Sanitizers and Valgrind
+============================
+
+If you are developing Kurento, you'll probably benefit from running `AddressSanitizer <https://clang.llvm.org/docs/AddressSanitizer.html>`__, `ThreadSanitizer <https://clang.llvm.org/docs/ThreadSanitizer.html>`__, and other related tools that help finding memory, threading, and other kinds of bugs.
+
+`kms-cmake-utils <https://github.com/Kurento/kms-cmake-utils>`__ includes now the `arsenm/sanitizers-cmake <https://github.com/arsenm/sanitizers-cmake>`__ tool in order to integrate the CMake build system with the mentioned compiler utilities. You'll also find some useful **suppressions** for these tools in the `kms-omni-build <https://github.com/Kurento/kms-omni-build/tree/master/bin/sanitizers>`__ dir.
+
+Similarly, if you want to run KMS under Valgrind, `kms-omni-build <https://github.com/Kurento/kms-omni-build/tree/master/bin>`__ contains some utility scripts that can prove to be very handy.
+
+
+
+Special Thanks
+==============
+
+A great community is a key part of what makes any Open Source project special. From bug fixes, patches, and features, to those that help new users in the `forum / mailing list <https://groups.google.com/forum/#!forum/kurento>`__ and `GitHub issues <https://github.com/Kurento/bugtracker/issues>`__, we'd like to say: **Thanks!**
+
+Additionally, special thanks to these awesome community members for their contributions:
+
+- `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for:
+
+  - *Add API support for MKV profile for recordings* `Kurento/kms-core#14 <https://github.com/Kurento/kms-core/pull/14>`__, `Kurento/kms-elements#13 <https://github.com/Kurento/kms-elements/pull/13>`__.
+
+  - *Fixed config-interval prop type checking in basertpendpoint and rtppaytreebin* `Kurento/kms-core#15 <https://github.com/Kurento/kms-core/pull/15>`__ and `@leetal <https://github.com/leetal>`__ (Alexander Widerberg) for reporting `#321 <https://github.com/Kurento/bugtracker/issues/321>`__.
+
+  - *rtph26[45]depay: Don't handle NALs inside STAP units twice (cherry-picked from upstream)* `Kurento/gst-plugins-good#2 <https://github.com/Kurento/gst-plugins-good/pull/2>`__.
+
+
+- `@tioperez <https://github.com/tioperez>`__ (Luis Alfredo Perez Medina) for reporting `#349 <https://github.com/Kurento/bugtracker/issues/349>`__ and sharing his results with RTSP and Docker.
+
+- `@goroya <https://github.com/goroya>`__ for `Kurento/kurento-media-server#10 <https://github.com/Kurento/kurento-media-server/pull/10>`__.
+
+
+
+.. Footnotes
+
+.. [#openssl] DTLS 1.2 was added in OpenSSL 1.0.2: `Major changes between OpenSSL 1.0.1l and OpenSSL 1.0.2 [22 Jan 2015] <https://www.openssl.org/news/openssl-1.0.2-notes.html>`__.

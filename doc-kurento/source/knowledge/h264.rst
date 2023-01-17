@@ -1,0 +1,252 @@
+=================
+H.264 video codec
+=================
+
+This page is all about H.264, also known as **Advanced Video Coding (AVC)**, **MPEG-4 Part 10**, or **MPEG-4 AVC**.
+
+.. contents:: Table of Contents
+
+Sources:
+
+* `H.264 Specification`_
+* :wikipedia:`Advanced Video Coding`
+
+
+
+Profiles and Levels
+===================
+
+Profiles and Levels specify restrictions on bitstreams and hence limits on the capabilities needed to **decode** them. They may also be used to indicate interoperability points between individual decoder implementations. These parameters are defined in the **Annex A** of the `H.264 Specification`_:
+
+* Each **Profile** specifies a subset of features that shall be supported by all *decoders* conforming to that Profile.
+* Each **Level** specifies a set of limits on the values that may be taken by the parameters of the bitstream.
+
+The same set of Level definitions is used with all Profiles, but individual implementations may support a different Level for each supported Profile. For any given Profile, Levels generally correspond to decoder processing load and memory capability.
+
+While common knowledge states that bandwidth usage decreases as H.264 moves from Baseline to Main to High Profile, unfortunately this is simply not true. Users seeking to reduce bandwidth usage should test their sources (such as cameras) in place with multiple Profiles to determine which is best for their application, as manufacturer implementation and data savings vary widely. For example, switching to High Profile in some cameras may increase bitrate, making network congestion issues worse.
+
+The Profile and Level of an H.264 stream is usually given by a 3-byte hexadecimal value called **Sequence Parameter Set** (*SPS*):
+
+1. **profile_idc**
+
+2. **profile-iop**
+
+   - *constraint_set0_flag*: Full compliance with Baseline Profile
+   - *constraint_set1_flag*: Full compliance with Main Profile
+   - *constraint_set2_flag*: Full compliance with Extended Profile
+   - *constraint_set3_flag*
+   - *constraint_set4_flag*
+   - *constraint_set5_flag*
+   - *reserved_zero_2bits* (2 bits, always 0)
+
+3. **level_idc**
+
+The *profile-iop* is a set of binary flags that change the meaning of the other two bytes. Their meaning are defined together with the different Profiles, and also in the `H.264 Specification`_: *Section 7.4.2.1.1 Sequence parameter set data semantics*.
+
+
+
+Profiles
+--------
+
+These are the first five, most commonly used Profiles:
+
++----------------------+----------------------------+
+| Profile name         | Parameters                 |
++======================+============================+
+| Baseline             | *profile_idc* = 66 = 0x42, |
+|                      | *constraint_set1_flag* = 0 |
++----------------------+----------------------------+
+| Constrained Baseline | *profile_idc* = 66 = 0x42, |
+|                      | *constraint_set1_flag* = 1 |
++----------------------+----------------------------+
+| Main                 | *profile_idc* = 77 = 0x4D  |
++----------------------+----------------------------+
+| Extended             | *profile_idc* = 88 = 0x58  |
++----------------------+----------------------------+
+| High                 | *profile_idc* = 100 = 0x64 |
++----------------------+----------------------------+
+
+There are more Profiles which specify higher capabilities, such as *High 10*, *High 4:2:2*, *High 4:4:4* or *CAVLC 4:4:4*. These are properly defined in the H.264 Specification.
+
+
+
+Levels
+------
+
+The *Baseline*, *Constrained Baseline*, *Main*, and *Extended* Profiles share a set of Levels. These specify some numeric parameters related to the decoding bitrates, timings, motion vectors, and other algorithmic constrains that define the capabilities required by the decoder. The Specification contains a table where multiple Levels are defined: *1*, *1b*, *1.1*, *1.2*, *1.3*, *2*, *2.1*, ..., up to *6.2*.
+
+Profiles which are higher than the ones mentioned also have their own defined set of shared Levels.
+
+
+
+NAL Units (NALU)
+================
+
+Sources:
+
+* https://en.wikipedia.org/wiki/Network_Abstraction_Layer
+* https://stackoverflow.com/questions/24884827/possible-locations-for-sequence-picture-parameter-sets-for-h-264-stream/24890903#24890903
+
+An H.264 video is organized into Network Abstraction Layer Units ("NAL units" or "NALU") that help transporting it with optimal performance depending on whether the transport is stream-oriented or packet-oriented:
+
+* For stream-oriented transports: the **Byte-Stream Format**. The NAL units are delivered as a continuous stream of bytes, which means that some boundary mechanism will be needed for the receiver to detect when one unit ends and the next one starts. This is done with the typical method of adding a unique byte pattern before each unit: The receiver will scan the incoming stream, searching for this **3-byte start code prefix**, and finding one will mark the beginning of a new unit.
+
+* For packet-oriented transports: the **Packet-Transport Format**. This is the preferred method for the **Advanced Video Coding (AVC)** standard, and it builds upon the fact that all data is carried in packets that are already framed by the system transport protocol (such as RTP/UDP), so start code prefix patterns are not needed for identification of the boundaries of NAL units.
+
+The NAL units can contain either actual data video (*VCL units*) or codec metadata (*non-VCL units*). Some of the most important types of NAL units are:
+
+* **Sequence Parameter Set (SPS)**: This non-VCL NALU contains information required to configure the decoder such as profile, level, resolution, frame rate.
+* **Picture Parameter Set (PPS)**: Similar to the SPS, this non-VCL NALU contains information on entropy coding mode, slice groups, motion prediction, quantization parameters (QP), and deblocking filters.
+* **Instantaneous Decoder Refresh (IDR)**: This VCL NALU is a self contained image slice. That is, an IDR can be decoded and displayed without referencing any other NALU save SPS and PPS.
+* **Access Unit Delimiter (AUD)**: An AUD is an optional NALU that can be use to delimit frames in an elementary stream. It is not required (unless otherwise stated by the container/protocol, like TS), and is often not included in order to save space, but it can be useful to finds the start of a frame without having to fully parse each NALU.
+
+
+
+SPS, PPS
+========
+
+A large number of NAL units are combined to form a single video frame; the metadata of such frame would be transmitted in a **Picture Parameter Set (PPS)**. Likewise, a set of PPS would form an actual video sequence, and the metadata for it would be transmitted in a **Sequence Parameter Set (SPS)**. Both PPS and SPS can be sent well ahead of the actual units that will refer to them; then, each individual unit will just contain an index pointing to the corresponding parameter set, so the receiver is able to successfully decode the video.
+
+Details about the exact contents of PPS and SPS packets can be found in the `H.264 Specification`_ sections "*Sequence parameter set data syntax*" and "*Picture parameter set RBSP syntax*".
+
+Parameter sets can be sent in-band with the actual video, or sent out-of-band via some channel which might be more reliable than the transport of the video itself. This second option makes sense for transports where it is possible that some corruption or information loss might happen; losing a *PPS* could prevent decoding of a whole frame, and losing an *SPS* would be worse as it could render a whole chunk of the video impossible to decode, so it is important to transmit these parameter sets via the most reliable channel.
+
+
+
+GStreamer caps
+==============
+
+Whenever using H.264 as the video codec in Kurento, we'll see log messages such as this one:
+
+.. code-block:: text
+
+   caps: video/x-h264, stream-format=(string)avc, alignment=(string)au,
+   codec_data=(buffer)0142c01fffe1000e6742c01f8c8d40501e900f08846a01000468ce3c80,
+   level=(string)3.1, profile=(string)constrained-baseline, width=(int)640,
+   height=(int)480, framerate=(fraction)0/1, interlace-mode=(string)progressive,
+   chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8,
+   parsed=(boolean)true
+
+This describes in detail all aspects of the encoded video; some of them are universal properties of any video (such as the width, height and framerate), while others are highly specific to the H.264 encoding.
+
+* **stream-format**: Indicates if the H.264 video is stream-oriented (*stream-format* = *byte-stream*) or packet-oriented (*stream-format* = *avc*). For *byte-stream* videos the required parameter sets will be sent in-band with the video, but for *avc* the video metadata is conveyed via an additional *caps* field named *codec_data*.
+
+* **codec_data**: Only present when the video is packet oriented (*stream-format* = *avc*), this value represents an **AVCDecoderConfigurationRecord** struct.
+
+* Other information such as *level*, *profile*, *width*, *height*, *framerate*, *interlace-mode*, and the various *chroma* and *luma* settings, are just duplicated values that were extracted from the *codec_data* by an H.264 parser (namely the **h264parse** GStreamer element). This is also indicated by means of setting the field *parsed=true*.
+
+
+
+GStreamer "codec_data"
+======================
+
+GStreamer passes a *codec_data* field in its *caps* when the H.264 video is using the *avc* stream format. This field is printed in debug logs as a long hexadecimal sequence, but in reality it is an instance of an *AVCDecoderConfigurationRecord*, defined in the standard `ISO/IEC 14496-15`_ (aka. *MPEG-4*) as follows:
+
+.. code-block:: text
+
+   aligned(8) class AVCDecoderConfigurationRecord {
+       unsigned int(8) configurationVersion = 1;
+       unsigned int(8) AVCProfileIndication;
+       unsigned int(8) profile_compatibility;
+       unsigned int(8) AVCLevelIndication;
+       bit(6) reserved = ‘111111'b;
+       unsigned int(2) lengthSizeMinusOne;
+       bit(3) reserved = ‘111'b;
+       unsigned int(5) numOfSequenceParameterSets;
+       for (i=0; i< numOfSequenceParameterSets; i++) {
+           unsigned int(16) sequenceParameterSetLength ;
+           bit(8*sequenceParameterSetLength) sequenceParameterSetNALUnit;
+       }
+       unsigned int(8) numOfPictureParameterSets;
+       for (i=0; i< numOfPictureParameterSets; i++) {
+           unsigned int(16) pictureParameterSetLength;
+           bit(8*pictureParameterSetLength) pictureParameterSetNALUnit;
+       }
+       if( profile_idc  ==  100  ||  profile_idc  ==  110  ||
+           profile_idc  ==  122  ||  profile_idc  ==  144 )
+       {
+           bit(6) reserved = ‘111111'b;
+           unsigned int(2) chroma_format;
+           bit(5) reserved = ‘11111'b;
+           unsigned int(3) bit_depth_luma_minus8;
+           bit(5) reserved = ‘11111'b;
+           unsigned int(3) bit_depth_chroma_minus8;
+           unsigned int(8) numOfSequenceParameterSetExt;
+           for (i=0; i< numOfSequenceParameterSetExt; i++) {
+               unsigned int(16) sequenceParameterSetExtLength;
+               bit(8*sequenceParameterSetExtLength) sequenceParameterSetExtNALUnit;
+           }
+       }
+   }
+
+* **AVCProfileIndication**: profile code as defined in `H.264 Specification`_ (*profile_idc*).
+* **profile_compatibility**: byte which occurs between the *profile_idc* and *level_idc* in a sequence parameter set (SPS), as defined in H.264 Specification. (*constraint_setx_flag*)
+* **AVCLevelIndication**: level code as defined in H.264 Specification (*level_idc*).
+* **lengthSizeMinusOne**: length in bytes of the *NALUnitLength* field in an AVC video sample or AVC parameter set sample of the associated stream minus one. For example, a size of one byte is indicated with a value of 0. The value of this field shall be one of 0, 1, or 3 corresponding to a length encoded with 1, 2, or 4 bytes, respectively.
+* **numOfSequenceParameterSets**: number of SPSs that are used as the initial set of SPSs for decoding the AVC elementary stream.
+* **sequenceParameterSetLength**: length in bytes of the SPS NAL unit as defined in H.264 Specification.
+* **sequenceParameterSetNALUnit**: a SPS NAL unit, as specified in H.264 Specification. SPSs shall occur in order of ascending parameter set identifier with gaps being allowed.
+* **numOfPictureParameterSets**: number of picture parameter sets (PPSs) that are used as the initial set of PPSs for decoding the AVC elementary stream.
+* **pictureParameterSetLength**: length in bytes of the PPS NAL unit as defined in H.264 Specification.
+* **pictureParameterSetNALUnit**: a PPS NAL unit, as specified in H.264 Specification. PPSs shall occur in order of ascending parameter set identifier with gaps being allowed.
+* **chroma_format**: *chroma_format* indicator as defined by the *chroma_format_idc* parameter in H.264 Specification.
+* **bit_depth_luma_minus8**: bit depth of the samples in the Luma arrays. For example, a bit depth of 8 is indicated with a value of zero (bit depth = 8 + *bit_depth_luma_minus8*). The value of this field shall be in the range of 0 to 4, inclusive.
+* **bit_depth_chroma_minus8**: bit depth of the samples in the Chroma arrays. For example, a bit depth of 8 is indicated with a value of zero (bit depth = 8 + *bit_depth_chroma_minus8*). The value of this field shall be in the range of 0 to 4, inclusive.
+* **numOfSequenceParameterSetExt**: number of Sequence Parameter Set Extensions that are used for decoding the AVC elementary stream.
+* **sequenceParameterSetExtLength**: length in bytes of the SPS Extension NAL unit as defined in H.264 Specification.
+* **sequenceParameterSetExtNALUnit**: a SPS Extension NAL unit, as specified in H.264 Specification.
+
+
+
+Example mapping
+---------------
+
+Let's "translate" a sample *codec_data* into its components, to show the meaning of each field:
+
+.. code-block:: text
+
+   codec_data=(buffer)0142c01fffe1000e6742c01f8c8d40501e900f08846a01000468ce3c80
+
+This would map to an *AVCDecoderConfigurationRecord* struct as follows:
+
+.. code-block:: text
+
+   0142c01fffe1000e6742c01f8c8d40501e900f08846a01000468ce3c80
+   01                                                         -> configurationVersion = 0x01 = 1
+     42                                                       -> AVCProfileIndication = 0x42 = 66
+       c0                                                     -> profile_compatibility = 0xC0
+         1f                                                   -> AVCLevelIndication = 0x1F = 31
+           ff                                                 -> lengthSizeMinusOne = 0b11 = 3
+             e1                                               -> numOfSequenceParameterSets = 0b00001 = 1
+               000e                                           -> sequenceParameterSetLength = 0x000E = 14
+                   6742c01f8c8d40501e900f08846a               -> 1x14 bytes sequenceParameterSetNALUnit
+                                               01             -> numOfPictureParameterSets = 0x01 = 1
+                                                 0004         -> pictureParameterSetLength = 0x0004 = 4
+                                                     68ce3c80 -> 1x4 bytes pictureParameterSetNALUnit
+
+This is the mapping for the first bytes of the Sequence Parameter Set NAL Unit:
+
+.. code-block:: text
+
+   6742c01f8c8d40501e900f08846a
+   67                           -> Header = 0x67 = 0b0110_0111
+                                   forbidden_zero_bit = 0b0 = 0
+                                   nal_ref_idc = 0b11 = 3
+                                   nal_unit_type = 0b00111 = 7
+     42                         -> profile_idc = 0x42 = 66
+       c0                       -> constraint_setx_flag = 0xC0 = 0b1100_0000
+                                   constraint_set0_flag = 1
+                                   constraint_set1_flag = 1
+         1f                     -> level_idc = 0x1F = 31
+           ...                  -> Chroma, luma, scaling and more information
+
+Note how the fields *profile_idc*, *constraint_setx_flag*, and *level_idc* get duplicated outside of this structure, in the *codec_data*'s *AVCProfileIndication*, *profile_compatibility*, and *AVCLevelIndication*, respectively.
+
+In this example case, according to the definitions from `H.264 Specification`_ (Annex A.2.1 Baseline profile), a *profile_idc* of 66 with *constraint_set0_flag* and *constraint_set1_flag* = 1 corresponds to the H.264 **Constrained Baseline profile**; and *level_idc* = 31 which means **Level 3.1**.
+
+
+
+.. External links
+
+.. _H.264 Specification: https://www.itu.int/rec/T-REC-H.264/
+.. _ISO/IEC 14496-15: https://mpeg.chiariglione.org/tags/isoiec-14496-15

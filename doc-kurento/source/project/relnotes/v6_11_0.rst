@@ -1,0 +1,99 @@
+==================
+6.11.0 (July 2019)
+==================
+
+Kurento Media Server **6.11** has been released! This new version brings several improvements and fixes that have happened while we work on moving KMS to use the newer GStreamer 1.14 in Ubuntu Bionic.
+
+To install it: :doc:`/user/installation`.
+
+
+
+New SDP syntax for WebRTC DataChannels
+======================================
+
+Firefox moved to the newer :term:`SDP` syntax for SCTP (WebRTC DataChannels), and soon enough Chrome will also do the same. It was just a matter of time until support for DataChannels was totally broken (and it already started to be with Firefox), so this was a much needed update in Kurento.
+
+This article explains the change: `How to avoid Data Channel breaking <https://blog.mozilla.org/webrtc/how-to-avoid-data-channel-breaking/>`__.
+
+Old style SDP syntax was like this:
+
+.. code-block:: text
+
+   m=application 54111 DTLS/SCTP 5000
+   a=sctpmap:5000 webrtc-datachannel 16
+
+The new syntax is *same same, but different*:
+
+.. code-block:: text
+
+   m=application 54111 UDP/DTLS/SCTP webrtc-datachannel
+   a=sctp-port:5000
+
+And the fix was implemented in `this pull request <https://github.com/Kurento/kms-core/pull/16>`__. We're maintaining backwards compatibility, just like the Mozilla article explains: *old offer results in old answer, and new offer results in new answer*.
+
+
+
+Tutorials fix for Node.js 10.x LTS
+==================================
+
+We had received several reports of the :doc:`/user/tutorials` not working properly with the latest Node.js *Long Term Support* release, **10.x**. This was due to some very outdated dependencies listed in our ``package.json`` files.
+
+This issue should now be fixed, as the broken dependencies have been cleaned up, removing unneeded ones (``utf-8-validate``) and updating the others (``bufferutil``, ``ws``) to latest versions.
+
+
+
+Thanks
+------
+
+* `@VuThuyThuy97 <https://github.com/VuThuyThuy97>`__ for `Kurento/bugtracker#362 <https://github.com/Kurento/bugtracker/issues/362>`__ (npm install error: Node-gyp rebuild).
+* `@oisnot <https://github.com/oisnot>`__ for `Kurento/kurento-jsonrpc-js#2 <https://github.com/Kurento/kurento-jsonrpc-js/pull/2>`__ (npm install kurento-client failed because this package used ancient p...)
+* `@alQlagin <https://github.com/alQlagin>`__ (Alex Kulagin) for `Kurento/kurento-jsonrpc-js#3 <https://github.com/Kurento/kurento-jsonrpc-js/pull/3>`__ (Remove blocking dependency).
+* `@yonghongren <https://github.com/yonghongren>`__ (Yonghong Ren) for `Kurento/kurento-jsonrpc-js#4 <https://github.com/Kurento/kurento-jsonrpc-js/pull/4>`__ (update utf-8-validate to the latest).
+* `@sm2017 <https://github.com/sm2017>`__ for `Kurento/bugtracker#386 <https://github.com/Kurento/bugtracker/issues/386>`__, `Kurento/kurento-jsonrpc-js#5 <https://github.com/Kurento/kurento-jsonrpc-js/pull/5>`__ (Upgraded dependencies).
+
+
+
+Spring Boot 2 and Java 8
+========================
+
+We've updated the Kurento Java client and tutorials, to make use of Spring Boot 2. This has forced us to leave Java 7 behind, and now Java 8 is the new standard version on which Kurento and OpenVidu projects will be developed and deployed.
+
+
+
+Fix GStreamer memory leaks
+==========================
+
+The *gst-plugins-bad* module was leaking some memory for each new DTLS connection that was established. This meant that each and every WebRTC session was leaking memory!
+
+After some effort spent with debuggers and delving into the library's code, a very simple merge request was issued to the upstream project, which got accepted right away: `gstreamer/gst-plugins-bad!422 <https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/merge_requests/422>`__ (Fix leaked dtlscertificate in dtlsagent).
+
+The memory increments got hugely reduced, but there is still some continuous increase on used memory (this time it is 10x smaller than previously, but it is still there). We'll keep working on this, and should find out more about the remaining leaks during next weeks.
+
+
+
+More thanks
+===========
+
+There were many other changes and fixes contributed by users; these maybe didn't have an impact big enough to be featured in these Release Notes, but nevertheless their authors merit our sincere appreciation and thanks for sharing their work with the greater community:
+
+**kurento-utils-js**
+
+* `@fishg <https://github.com/fishg>`__ for `Kurento/kurento-utils-js#23 <https://github.com/Kurento/kurento-utils-js/pull/23>`__ (fix WebRtcPeerRecvonly mode in safari).
+* `@aenriquezgentile <https://github.com/aenriquezgentile>`__ for `Kurento/kurento-utils-js#24 <https://github.com/Kurento/kurento-utils-js/pull/24>`__ (Updating uuid to 3.2.1 version).
+* `@rpuerta85 <https://github.com/rpuerta85>`__ for `Kurento/kurento-utils-js#25 <https://github.com/Kurento/kurento-utils-js/pull/25>`__ (Enable to make it work on IE using Temasys Plugin).
+* `@kindritskyiMax <https://github.com/kindritskyiMax>`__ (Kindritskiy Maksym) for `Kurento/kurento-utils-js#26 <https://github.com/Kurento/kurento-utils-js/pull/26>`__ (allow usage in node).
+* `@solomax <https://github.com/solomax>`__ (Maxim Solodovnik) for `Kurento/kurento-utils-js#28 <https://github.com/Kurento/kurento-utils-js/pull/28>`__ (Safari 12 support).
+
+**kurento-client-js**
+
+* `@tomhouman <https://github.com/tomhouman>`__ (Tom Houman) for `Kurento/kurento-client-js#2 <https://github.com/Kurento/kurento-client-js/pull/2>`__ (Websocket connection options).
+
+**kurento-tutorial-js**
+
+* `@xenyou <https://github.com/xenyou>`__ (Yoshihiro Kikuchi) for `Kurento/kurento-tutorial-js#3 <https://github.com/Kurento/kurento-tutorial-js/pull/3>`__ (fix kurento-recorder demo to record video).
+* `@neilyoung <https://github.com/neilyoung>`__ for `Kurento/kurento-tutorial-js#5 <https://github.com/Kurento/kurento-tutorial-js/pull/5>`__ (Fixed stat E2E latency ms display issue).
+* `@soogly <https://github.com/soogly>`__ for `Kurento/kurento-tutorial-js#7 <https://github.com/Kurento/kurento-tutorial-js/pull/7>`__ (Issue with needless parameter).
+
+**kurento-tutorial-java**
+
+* `@Kr0oked <https://github.com/Kr0oked>`__ (Philipp Bobek) for `Kurento/kurento-tutorial-java#8 <https://github.com/Kurento/kurento-tutorial-java/pull/8>`__ (fix typo).

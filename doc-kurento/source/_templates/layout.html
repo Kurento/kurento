@@ -1,0 +1,33 @@
+{% extends "!layout.html" %}
+
+<!--
+  Override the Read the Docs version, which could also be "stable" or "latest".
+  We always want the real, actual version, so "stable" shows e.g. "6.12.0".
+-->
+{% set current_version = version %}
+
+<!--
+  Add a custom header to all pages, trying to redirect novice users to OpenVidu.
+-->
+{% block document %}
+<!--
+  "admonition" is the class of Warning messages with the current RTD theme.
+  Obtained by directly checking the HTML sources of an already existing block.
+-->
+<div class="admonition warning">
+  <p class="admonition-title">Warning</p>
+  <p>
+    Kurento is a low-level platform to create WebRTC applications from scratch.
+    You will be responsible of managing STUN/TURN servers, networking,
+    scalability, etc. If you are new to WebRTC, we recommend using
+    <a target="_blank" href="https://openvidu.io/">OpenVidu</a> instead.
+  </p>
+  <p>
+    <strong>
+      <a target="_blank" href="https://openvidu.io/">OpenVidu</a> is an easier
+      to use, higher-level, Open Source platform based on Kurento.
+    </strong>
+  </p>
+</div>
+{{ super() }}
+{% endblock %}

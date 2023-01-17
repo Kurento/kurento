@@ -1,0 +1,33 @@
+digraph filters {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  edge [
+    arrowtail = "empty";
+    dir = "back";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+  ]
+
+  node [
+    fillcolor = "#E7F2FA";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+    shape = "rect";
+    style = "dashed";
+  ]
+
+  "MediaObject" -> "MediaElement";
+
+  "MediaElement" -> "Filter";
+
+  node [ style = "filled" ]
+
+  "Filter" -> "FaceOverlayFilter";
+  "Filter" -> "GStreamerFilter";
+  "Filter" -> "ImageOverlayFilter";
+  "Filter" -> "OpenCVFilter";
+  "Filter" -> "ZBarFilter";
+}

@@ -1,0 +1,9 @@
+*~
+*.pyc
+.DS_Store
+.classpath
+.project
+.settings
+npm-debug.log
+build/
+python_modules/

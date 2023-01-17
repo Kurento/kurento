@@ -1,0 +1,43 @@
+digraph endpoints {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  edge [
+    arrowtail = "empty";
+    dir = "back";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+  ]
+
+  node [
+    fillcolor = "#E7F2FA";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+    shape = "rect";
+    style = "dashed";
+  ]
+
+  "MediaObject" -> "MediaElement";
+
+  "MediaElement" -> "Endpoint";
+
+  "Endpoint" -> "SessionEndpoint";
+  "Endpoint" -> "UriEndpoint";
+
+  "SessionEndpoint" -> "HttpEndpoint";
+  "SessionEndpoint" -> "SdpEndpoint";
+
+  "SdpEndpoint" -> "BaseRtpEndpoint";
+
+  node [ style = "filled" ]
+
+  "HttpEndpoint" -> "HttpPostEndpoint";
+
+  "BaseRtpEndpoint" -> "RtpEndpoint";
+  "BaseRtpEndpoint" -> "WebRtcEndpoint";
+
+  "UriEndpoint" -> "PlayerEndpoint";
+  "UriEndpoint" -> "RecorderEndpoint";
+}

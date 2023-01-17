@@ -1,0 +1,73 @@
+================
+6.8.1 (Oct 2018)
+================
+
+Release 6.8.0 contained a critical bug that was immediately patched into 6.8.1, so these Release Notes include changes from both versions.
+
+This release goes hand-in-hand with a new version of **OpenVidu**, Kurento's sister project. Check `OpenVidu 2.5.0 Release Notes <https://medium.com/@openvidu/openvidu-2-5-0-voice-and-video-filters-45c0fb8e52e0>`__ if you are interested in building any of the common use cases that are covered by that project, such as conference calls and video chat rooms.
+
+
+
+Added
+=====
+
+- Log messages that come from *GLib*-based libraries are now integrated into the general Kurento logging system.
+
+  Previous to this addition, the only way to obtain debug logs from the *libnice* library was to run KMS directly on console; even after enabling debug logging, the relevant messages would not appear in the Kurento logs because *libnice* was just printing its messages in the standard output.
+
+  Starting from KMS 6.8.0, all messages will be redirected to Kurento logs, located at ``/var/log/kurento-media-server/``. Remember that specific 3rd-party libraries such as *libnice* still require that their logging functions are explicitly enabled; check :ref:`logging-libnice` for more details.
+
+- **Hub** and **HubPort** elements now support for DATA streams. This means that a WebRTC DataChannels stream can be processed through a *Hub*, for example a **Composite**, and the DATA stream will be available for the element to process.
+
+- Thanks to the previous addition, **Composite** element has now support for merging multiple DataChannel streams.
+
+- **GStreamerFilter** is now able to set its inner element's properties "on the fly" during runtime. For example, if you used a **coloreffects** filter, before this addition you would need to configure the video parameters beforehand, and they would stay the same during the whole execution of the Kurento pipeline. Now, it is possible to change the filter's properties at any time, during the execution of the pipeline.
+
+  The OpenVidu project is using this capability to offer real-time audio/video filtering during WebRTC calls; check `Voice and video filters <https://openvidu.io/docs/advanced-features/filters/>`__ for more details.
+
+
+
+Changed
+=======
+
+- Output logs now use standard format ISO 8601 for all timestamps. This affects both log files names, and their contents:
+
+  Log files will now be named such as this:
+
+  .. code-block:: text
+
+     2018-06-14T194426.00000.pid13006.log
+
+  And each individual log message will contain timestamps of this form:
+
+  .. code-block:: text
+
+     2018-06-14T19:44:26,918243
+
+- ``disableRequestCache`` is now exposed in settings file (*kurento.conf.json*). This can be used to disable the RPC Request Cache for troubleshooting or debugging purposes.
+
+- Clearer log messages about what is going on when the maximum resource usage threshold is reached.
+
+- System service configuration file ``/etc/default/kurento-media-server`` now contains more useful examples and explanations for each option.
+
+- **libnice** has been updated from the old version 0.1.13 to the newer **0.1.15** (snapshot - not officially released yet). This should help with fixing a crash issue that KMS has been suffering lately. For more details, see "*Known Issues*" below.
+
+
+
+Fixed
+=====
+
+- System service init files will now **append** to the error log file ``/var/log/kurento-media-server/errors.log``, instead of truncating it on each restart.
+
+
+
+Known Issues
+============
+
+- *libnice* is a 3rd-party library used by Kurento, which in the last months has been suffering of a serious bug that caused crashes in some specific conditions. There are several places where this issue has been discussed, such as the `issue #247 <https://github.com/Kurento/bugtracker/issues/247>`__ in Kurento, the `issue #33 <https://gitlab.freedesktop.org/libnice/libnice/issues/33>`__, and the `mail topic <https://groups.google.com/d/topic/kurento/_rf1ANq5Cm8/discussion>`__ in the Kurento List.
+
+  In our release **6.8.1** we have upgraded *libnice* to the development/snapshot build that will at some point become the official **libnice 0.1.15**; this seems to work much better than the older version 0.1.13 that we had been using so far in all previous releases of Kurento Media Server.
+
+  We haven't been able to repeat the crash with this latest version of *libnice*, however we'll wait until this new version has been tested more extensively, and only then will consider this issue as closed.
+
+  If you are interested or have been affected by this issue, note that in the days previous to writing these Release Notes there has been some movement in the issue #33 from the *libnice* project. Hopefully we are closer to a definite fix for this!

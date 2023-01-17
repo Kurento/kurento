@@ -1,0 +1,102 @@
+===================
+6.16.0 (March 2021)
+===================
+
+To install Kurento Media Server: :doc:`/user/installation`.
+
+
+
+Added
+=====
+
+ICE-TCP setting
+---------------
+
+`ICE-TCP <https://tools.ietf.org/html/rfc6544>`__ is what allows WebRTC endpoints to exchange ICE candidates that use the TCP protocol; in other words, the feature of using TCP instead of UDP for WebRTC communications.
+
+Kurento had this setting enabled and it was hardcoded, so users were not able to easily change whether TCP should be used or not for ICE candidate exchange (the part of WebRTC that finds connectivity between peers). Thanks to this addition, it is now possible to use the **IceTcp** setting and disable ICE-TCP when desired.
+
+So when should you use this setting? Well, for the most majority of cases the previous default was the best choice, but if you have a well known scenario and you are 100% sure that UDP will work, then disabling TCP will provide for slightly faster times when establishing WebRTC sessions. I.e., with ICE-TCP disabled, the time between joining a call and actually seeing the video will be smaller.
+
+Of course, if you cannot guarantee that UDP will work in your network, then **you should leave this setting enabled**; otherwise, UDP might fail and there would be no TCP fallback for WebRTC to work.
+
+Thanks to `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for `Kurento/kms-elements#26 <https://github.com/Kurento/kms-elements/pull/26>`__ (*Add niceAgentIceTcp configuration option and API methods for it*).
+
+**Local install**
+
+* Set value ``iceTcp`` to 1 (ON) or 0 (OFF) in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``.
+
+**Docker**
+
+* Set environment variable ``KMS_ICE_TCP`` to 1 (ON) or 0 (OFF).
+
+**Client API**
+
+* Java: `setIceTcp <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setIceTcp-boolean->`__.
+* JavaScript: `setIceTcp <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setIceTcp>`__.
+
+
+
+Packet loss correction in Recorder
+----------------------------------
+
+*RecorderEndpoint* has gained **a new configuration file**: ``/etc/kurento/modules/kurento/RecorderEndpoint.conf.ini``, where static settings can be written in the same manner than for other modules, such as *PlayerEndpoint* or *WebRtcEndpoint*.
+
+For now, this file contains a single parameter: ``gapsFix``, allowing users to decide which of the packet loss correction techniques they want to use for the recordings. Packet loss causes gaps in the input streams, and this can happen for example when an RTP or WebRTC media flow suffers from network congestion and some packets don't arrive at the media server.
+
+Currently there are two of such techniques implemented:
+
+* ``NONE``: Do not fix gaps.
+
+  Leave the stream as-is, and store it with any gaps that the stream might have. Some players are clever enough to adapt to this during playback, so that the gaps are reduced to a minimum and no problems are perceived by the user; other players are not so sophisticated, and will struggle trying to decode a file that contains gaps. For example, trying to play such a file directly with Chrome will cause lipsync issues (audio and video will fall out of sync).
+
+  This is the best choice if you need consistent durations across multiple simultaneous recordings, or if you are anyway going to post-process the recordings (e.g. with an extra FFmpeg step).
+
+* ``GENPTS``: Adjust timestamps to generate a smooth progression over all frames.
+
+  This technique rewrites the timestamp of all frames, so that gaps are suppressed. It provides the best playback experience for recordings that need to be played as-is (i.e. they won't be post-processed). However, fixing timestamps might cause a change in the total duration of a file. So different recordings from the same session might end up with slightly different durations.
+
+See the `extended description of GapsFixMethod <https://doc-kurento.readthedocs.io/en/latest/_static/client-javadoc/org/kurento/client/GapsFixMethod.html>`__ for more details about these settings.
+
+Also have a look at  :doc:`/user/intro` for an intro to all of the available Kurento modules.
+
+
+
+Changed
+=======
+
+ErrorEvent Type
+---------------
+
+Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/ErrorEvent.html>`__, `JavaScript <../../_static/client-jsdoc/module-core.html#event:Error>`__.
+
+The ``ErrorEvent`` can be emitted from any of the Kurento *MediaElement* objects (see :doc:`/features/kurento_modules` for more details). This Event has a **Type** string field that contains an error identifier, but until now it was mostly unused and all errors were identified as ``UNEXPECTED_ELEMENT_ERROR``. On top of this, most errors were actually not being handled at all by the *MediaElement* where they occurred, so they would end up in the general handler of the *MediaPipeline*, with the *Type* identifier set to ``UNEXPECTED_PIPELINE_ERROR``.
+
+This now changes to provide better and more informational errors, so when possible the *ErrorEvent* will be emitted from the actual *MediaElement* where the error is taking place. Existing applications will continue to work, but the general recommendation holds that **Applications should subscribe to the Error event from all of Kurento objects**.
+
+Some new *Type* identifiers have been added to the Error event:
+
+* ``RESOURCE_ERROR_OPEN``: Indicates that there was a problem when trying to open a local file or resource. This will typically happen when, for example, the *PlayerEndpoint* tries to open a file for which it does not have read permissions from the filesystem.
+
+* ``RESOURCE_ERROR_WRITE``: Similar to the previous one, this identifier marks an error writing to some file. This error could be seen when the *RecorderEndpoint* in Kurento lacks write permissions to the target path.
+
+* ``RESOURCE_ERROR_NO_SPACE_LEFT``: This error will mostly happen when a *RecorderEndpoint* is writing a recording but the disk becomes full. This is a common thing to happen if you don't have additional free space monitoring on your servers, so you should listen for this error from the *RecorderEndpoint* if you use it in any of your applications.
+
+* ``STREAM_ERROR_DECODE``: This error tends to happen when the sending side has transmitted an invalid encoded stream, and Kurento Media Server is trying to decode it but the underlying GStreamer library is unable to do so. This could happen, for example, when using a *PlayerEndpoint* (which by default decodes the input stream), or when *Transcoding* has been enabled due to incompatible codecs negotiated by different *WebRtcEndpoints*. When getting this error, you should review the settings of the sender, because there might be something wrong with its encoder configuration.
+
+* ``STREAM_ERROR_FAILED``: A generic error that is originated from the underlying GStreamer library when any data flow issue occurs. KMS debug logs should be checked because chances are that more descriptive information has been printed in there.
+
+
+
+Other changes
+=============
+
+This list includes other changes and fixes contributed by users and/or fellow developers, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
+
+**kms-core**
+
+* `@heirecka <https://github.com/heirecka>`__ (Heiko Becker) for `Kurento/kms-core#25 <https://github.com/Kurento/kms-core/pull/25>`__ (*Include <string> for std::string*).
+
+**kurento-client-js**
+
+* `@stasee <https://github.com/stasee>`__ for `Kurento/kurento-client-js#3 <https://github.com/Kurento/kurento-client-js/pull/3>`__ (* Fix for invalid subscriptions*).

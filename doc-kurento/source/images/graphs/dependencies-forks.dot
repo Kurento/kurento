@@ -1,0 +1,14 @@
+digraph dependencies_forks {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  rankdir = "RL";
+
+  // Kurento external libraries
+  "jsoncpp";
+  "libsrtp";
+  "openh264";
+  "libnice";
+}

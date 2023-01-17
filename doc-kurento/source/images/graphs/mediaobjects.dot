@@ -1,0 +1,52 @@
+digraph mediaobjects {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  node [
+    fillcolor = "#E7F2FA";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+    shape = "rect";
+    style = "filled";
+  ]
+
+  edge [
+    arrowtail = "empty";
+    dir = "back";
+    fontname = "Bitstream Vera Sans";
+    fontsize = 8;
+  ]
+
+  "MediaObject" [
+    label = "{MediaObject|"
+      + "+ getMediaPipeline() : MediaPipeline\l"
+      + "+ getParent() : MediaObject[]\l}";
+    labelurl = "MediaObject";
+  ]
+
+  "MediaElement" [
+    label = "{MediaElement|"
+      + "+ connect(...) : void\l"
+      + "+ getMediaSinks(...) : MediaSink[]\l"
+      + "+ getMediaSrcs(...) : MediaSource[]\l}";
+    urllabel = "MediaElement";
+  ]
+
+  "MediaObject" -> "MediaPipeline";
+  "MediaObject" -> "MediaElement";
+  "MediaObject" -> "Hub";
+
+  "MediaObject" -> "MediaObject" [label = "parent", constraint = false, dir = normal, arrowhead = "vee"];
+
+  "MediaObject" -> "MediaPipeline" [label = "pipeline", constraint = false, dir = normal, arrowhead = "vee"];
+
+  "MediaPipeline" -> "MediaElement" [headlabel = "*" label = "elements", constraint = false, dir = normal, arrowhead = "vee"];
+
+  "MediaElement" -> "Endpoint";
+  "MediaElement" -> "Filter";
+  "MediaElement" -> "HubPort";
+
+  "Hub" -> "HubPort" [headlabel = "*", constraint = false, dir = normal, arrowhead = "vee"];
+}

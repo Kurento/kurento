@@ -1,0 +1,285 @@
+=======================
+6.18.0 (September 2022)
+=======================
+
+One of the latest (if not the last) releases of the 6.x branch of Kurento; this one brings several deprecations that pave the way for introduction of the upcoming Kurento 7.0.
+
+To install Kurento Media Server: :doc:`/user/installation`.
+
+.. contents:: Table of Contents
+
+
+
+Added
+=====
+
+FLV Recording Profile for RTMP
+------------------------------
+
+The *RecorderEndpoint* gained a new **FLV** recording profile, which means that the resulting files can be used directly for RTMP streaming.
+
+Thanks to `@alex1712 <https://github.com/alex1712>`__ (Alex) for `Kurento/kms-core#24 <https://github.com/Kurento/kms-core/pull/24>`__ and `Kurento/kms-elements#30 <https://github.com/Kurento/kms-elements/pull/30>`__ (*FLV media profile*).
+
+
+
+Explicit network interface for WebSocket
+----------------------------------------
+
+Up until now, the media server would open a WebSocket listening on port 8888 on all network interfaces. Any application wanting to control the media server, by means of the :doc:`Kurento Protocol </features/kurento_protocol>`, would just connect to this port and start sending RPC requests.
+
+However, some users need to be able to configure the exact interface where this control port is opened; now this can be done in the static configuration files.
+
+Thanks to `@Craeckie <https://github.com/Craeckie>`__ for `Kurento/kurento-media-server#21 <https://github.com/Kurento/kurento-media-server/pull/21>`__ (*WebSocketTransport: allow to set listen address in config*).
+
+
+
+Differentiated Services Code Point (DSCP) for WebRTC QoS
+--------------------------------------------------------
+
+Networks can provide different favorable routings for individual IPv4 and IPv6 packets, based on the *Differentiated Services* (DS) field of the IP header. This kind of *Quality of Service* (QoS) enhancement is enabled by setting the DS field to one of the *Differentiated Services Code Point* (DSCP) values that have been specified for usage with WebRTC, as defined by :rfc:`8837`.
+
+At least some web browsers (i.e. Chrome) are able to set the DS field on its outbound packets, and now Kurento is also able to do the same thanks to this addition.
+
+You can set a global DSCP value for all WebRtcEndpoints in the static configuration file, ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Alternatively, it is also possible to set the DSCP value separately for each endpoint, with the ``qosDscp()`` method of the WebRtcEndpoint Builder class.
+
+Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#41 <https://github.com/Kurento/kms-elements/pull/41>`__ (*Feature/webrtc qos dscp*).
+
+
+
+Changed
+=======
+
+WebRTC DTLS Quick Connection
+----------------------------
+
+There was a design issue in the way Kurento established the WebRTC communications channel, that led it to mistakenly send the initial DTLS handshake packets before ICE had established a working network socket, leading to the dropping of such handshake packets.
+
+Thankfully, DTLS doesn't give up as soon as some packets are dropped; instead, it just follows a progressively larger timeout scheme. Eventually the ICE protocol would establish a working socket, and one of the DTLS reattempts would finally be able to travel through it. However, this whole delay meant that WebRTC connections were taking much more time than what they really should.
+
+Thanks to this change, now the DTLS handshake will be put on hold until ICE has finished its work and the network socket is well established and ready for comms; this way, the very first DTLS packets will already reach their destination, thus speeding up the whole process:
+
+.. video:: ../../_static/project/relnotes/v6_18_0/connection.mp4
+
+*Comparison of connection speed (top: before; bottom: after)*
+
+Thanks to `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kms-elements#37 <https://github.com/Kurento/kms-elements/pull/37>`__ (*WebRTC DTLS handshake quick connection*) and `Kurento/kms-elements#38 <https://github.com/Kurento/kms-elements/pull/38>`__ (*dtls server quick connection fix*).
+
+
+
+Deprecated: OpenCV extra modules
+================================
+
+Kurento has always included several Computer Vision plugins and extension modules, for demonstration purposes. These were used to showcase the powerful, dynamic plug-and-play capabilities of Kurento Pipelines, providing a very visual and somewhat fancy way to convey how easy it is to manipulate video images in real time, with Kurento and OpenCV.
+
+However, Kurento's OpenCV modules had been written against the old, C-based API of OpenCV 2.0. Over time, OpenCV 3.0 evolved into a more modern C++ based API, while keeping some backwards-compatibility with older C code. This was enough for us to keep publishing the Kurento demonstration plugins on Ubuntu 16.04 "Xenial" and Ubuntu 18.04 "Bionic". However, on 2020 the release of Ubuntu 20.04 "Focal", **OpenCV 4.0 marks the point where the Kurento plugin code doesn't compile and must be retired**.
+
+The list of modules marked for retirement is as follows:
+
+* Plugins that came included in *kms-filters* module:
+
+  - facedetector
+  - faceoverlay
+  - imageoverlay
+  - logooverlay
+  - movementdetector
+
+* Plugins that were offered as additional installable modules:
+
+  - kms-chroma
+  - kms-crowddetector
+  - kms-datachannelexample
+  - kms-markerdetector
+  - kms-platedetector
+  - kms-pointerdetector
+
+Starting with support for OpenCV 4.0, the old OpenCV 2.0 based plugin code cannot be compiled any more. Kurento project maintainers do not have the time, knowledge, or scheduling bandwidth to migrate these plugins into modern OpenCV 4.0 style code, so they will get discontinued until/unless some open-source community members can offer some help with porting them. If you'd like to see these plugins alive, and would be able to give us a hand, please contact us! :-)
+
+These removals will be effective starting from the next major release, Kurento 7.0.
+
+
+
+Deprecated: Renamed API methods
+===============================
+
+This section details all API deprecations that occur with the intention of paving the way for a cleaned up API in Kurento 7.0.
+
+By following the renames detailed here, you should be able to make the jump to newer versions of Kurento without requiring any rewrites at the logic level.
+
+
+
+timestamp -> timestampMillis
+----------------------------
+
+Several object classes contained a ``timestamp`` field, which wasn't fine-grained enough, so the ``timestampMillis`` field was introduced to replace the former.
+
+These classes are ``Stats`` (common parent of all Stats classes), and ``RaiseBase`` (common parent of all ``Event`` classes).
+
+* Old: ``timestamp`` - Seconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC)
+
+  New: ``timestampMillis`` - Milliseconds elapsed since the UNIX Epoch (Jan 1, 1970, UTC)
+
+
+
+MediaObject and MediaElement
+----------------------------
+
+These changes are located in the parent classes of all Kurento elements, so all Kurento classes are affected, such as ``RtpEndpoint``, ``WebRtcEndpoint``, ``PlayerEndpoint``, ``RecorderEndpoint``, etc.
+
+
+
+Media Events
+~~~~~~~~~~~~
+
+A series of deprecations and renamings that normalize all events into the same naming convention.
+
+* Old: ``MediaFlowOutStateChange`` event
+
+  New: ``MediaFlowOutStateChanged`` event
+
+* Old: ``MediaFlowInStateChange`` event
+
+  New: ``MediaFlowInStateChanged`` event
+
+* Old: ``MediaTranscodingStateChange`` event
+
+  New: ``MediaTranscodingStateChanged`` event
+
+
+
+childs -> children
+~~~~~~~~~~~~~~~~~~
+
+* Old: ``MediaObject.getChilds()``
+
+  New: ``MediaObject.getChildren()``
+
+
+
+setOutputBitrate -> minOutputBitrate, maxOutputBitrate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All ``MediaElement``-derived classes had a ``setOutputBitrate()`` method that could be used to set a specific target bitrate for the video stream. Instead, use the setters to specify a minimum and maximum desired target. To replicate the same behavior that ``setOutputBitrate()`` had, just provide the same value as both min and max.
+
+* Old: ``setOutputBitrate()``
+
+  New: ``setMinOutputBitrate()``, ``setMaxOutputBitrate()``
+
+
+
+minOuputBitrate, maxOuputBitrate -> minOutputBitrate, maxOutputBitrate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These changes fix a typo in the original property names.
+
+* Old: ``getMinOuputBitrate()``, ``setMinOuputBitrate()``
+
+  New: ``getMinOutputBitrate()``, ``setMinOutputBitrate()``
+
+* Old: ``getMaxOuputBitrate()``, ``getMaxOuputBitrate()``
+
+  New: ``setMaxOutputBitrate()``, ``setMaxOutputBitrate()``
+
+
+
+WebRtcEndpoint
+--------------
+
+ICE Events
+~~~~~~~~~~
+
+A series of deprecations and renamings that normalize all events into the same naming convention.
+
+* Old: ``OnIceCandidate`` event
+
+  New: ``IceCandidateFound`` event
+
+* Old: ``OnIceGatheringDone`` event
+
+  New: ``IceGatheringDone`` event
+
+* Old: ``OnIceComponentStateChanged``, ``IceComponentStateChange`` events
+
+  New: ``IceComponentStateChanged`` event
+
+* Old: ``OnDataChannelOpened``, ``DataChannelOpen`` events
+
+  New: ``DataChannelOpened`` event
+
+* Old: ``OnDataChannelClosed``, ``DataChannelClose`` event
+
+  New: ``DataChannelClosed`` event
+
+
+
+externalAddress -> externalIPv4, externalIPv6
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Old: ``externalAddress`` setting
+
+  New: ``externalIPv4``, ``externalIPv6`` settings
+
+* Old: ``getExternalAddress()``
+
+  New: ``getExternalIPv4()``, ``getExternalIPv6()``
+
+* Old: ``setExternalAddress()``
+
+  New: ``setExternalIPv4()``, ``setExternalIPv6()``
+
+
+
+IceCandidatePair
+----------------
+
+Unifies all Kurento "Id" members under the same naming convention.
+
+* Old: ``streamID``
+
+  New: ``streamId``
+
+* Old: ``componentID``
+
+  New: ``componentId``
+
+
+
+Stats
+-----
+
+inputAudioLatency, inputVideoLatency -> inputLatency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Old: ``ElementStats.inputAudioLatency``, ``ElementStats.inputVideoLatency`` - Average latency, in nanoseconds.
+
+  New: ``ElementStats.inputLatency`` - Array of average latencies (``MediaLatencyStat[]``), in nanoseconds.
+
+
+
+audioE2ELatency, videoE2ELatency -> E2ELatency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Old: ``EndpointStats.audioE2ELatency``, ``EndpointStats.videoE2ELatency`` - End-to-end latency, in nanoseconds.
+
+  New: ``EndpointStats.E2ELatency`` - Array of average latencies (``MediaLatencyStat[]``), in nanoseconds.
+
+
+
+Fixed
+=====
+
+* `#289 <https://github.com/Kurento/bugtracker/issues/289>`__ (*Kurento scaffolder produces not compilable code if using a wrong name*).
+* `#470 <https://github.com/Kurento/bugtracker/issues/470>`__ (*kmsaudiomixer outputs silence after running for 2 hours*).
+* `#616 <https://github.com/Kurento/bugtracker/issues/616>`__ (*Kurento Media Server not sending relay candidates, although configured, unless ANSWER is received or OFFER is processed*).
+* `#622 <https://github.com/Kurento/bugtracker/issues/622>`__ (*externalIpv4 and externalIpv6 affect all candidates instead of just host*).
+* `#631 <https://github.com/Kurento/bugtracker/issues/631>`__ (*Kurento overwrites PPID of data channel packets as type "String" even when sent as "Binary"*).
+
+
+
+Other changes
+=============
+
+This list includes other changes and fixes contributed by users and/or fellow developers, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
+
+* `@dpocock <https://github.com/dpocock>`__ (Daniel Pocock) for `Kurento/kms-elements#35 <https://github.com/Kurento/kms-elements/pull/35>`__ (*CMakeLists.txt: explicitly list the Boost libraries required for linking*).
+* `@DorianScholz <https://github.com/DorianScholz>`__ (Dorian Scholz) for `Kurento/kms-elements#42 <https://github.com/Kurento/kms-elements/pull/42>`__ (*data channel: do not overwrite ppid if it was successfully parsed from received data*).
+* `@slabajo <https://github.com/slabajo>`__ (Saúl Labajo) for `Kurento/kurento-client-js#13 <https://github.com/Kurento/kurento-client-js/pull/13>`__ (*Fix memory leak in JavaScript Client*).

@@ -1,0 +1,126 @@
+======================
+6.13.0 (December 2019)
+======================
+
+Kurento Media Server **6.13.0** has been released! It comes with some new API methods that allow to query Kurento about its own resource usage, as well as some new configuration parameters that can be used to fine-tune some aspects of how the server chooses ICE candidates during WebRTC initialization.
+
+To install Kurento Media Server: :doc:`/user/installation`.
+
+These Release Notes were also posted on the `Kurento blog <https://kurento.openvidu.io/blog/kurento-613-felices-fiestas>`__.
+
+
+
+Added
+=====
+
+* **WebRTC**: Add ``externalAddress`` to WebRtcEndpoint config & client API.
+
+  Allows to specify an external IP address, so Kurento doesn't need to auto-discover it during WebRTC initialization. This saves time, and also removes the need for configuring external STUN or TURN servers.
+
+  The effect of this parameter is that all local ICE candidates that are gathered will be mangled to contain the provided external IP address instead of the local one, before being sent to the remote peer. Thanks to this, remote peers are able to know about the external or public IP address of Kurento.
+
+  Use this parameter if you know beforehand what will be the external or public IP address of the media server (e.g. because your deployment has an static IP), although keep in mind that some types of networks will still need you to install a TURN server. Best thing to do is to try with this option enabled, and if WebRTC fails, then default to the standard method of installing and configuring Coturn.
+
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalAddress-java.lang.String->`__, `JavaScript <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalAddress>`__.
+
+* **WebRTC**: Add ``networkInterfaces`` to WebRtcEndpoint config & client API.
+
+  If you know which network interfaces should be used to perform ICE (for WebRTC connectivity), you can define them here. Doing so has several advantages:
+
+  - The WebRTC ICE gathering process will be much quicker. Normally, it needs to gather local candidates for all of the network interfaces, but this step can be made faster if you limit it to only the interface that you know will work.
+
+  - It will ensure that the media server always decides to use the correct network interface. With WebRTC ICE gathering it's possible that, under some circumstances (in systems with virtual network interfaces such as "docker0") the ICE process ends up choosing the wrong local IP.
+
+  There is the long-running issue of how libnice gathers all possible local IP addresses for its ICE candidates, which introduces latency or connectivity problems for some many-networks deployments (like Amazon EC2, or Docker/Kubernetes): Kurento generates too many ICE candidates, and that results in the situation that sometimes (quite often, in practice) it fails to choose correct pair of ICE candidates and uses those ones from private networks, leading to non-obvious bugs and video stability problems.
+
+  More rationale for this feature can be found here: `Kurento/bugtracker#278 <https://github.com/Kurento/bugtracker/issues/278>`__ (*RFC: Add WebRtcEndpoint.externalIPs configuration parameter*).
+
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__, `JavaScript <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__.
+
+* **WebRTC** / **RTP**: Add ``mtu`` to BaseRtpEndpoint config & client API.
+
+  Allows configuring the network MTU that Kurento will use for RTP transmissions, in both RtpEndpoint and WebRtcEndpoint. This parameter ends up configured in the GStreamer RTP payloader (``rtpvp8pay``, ``rtph264pay``).
+
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.
+
+* **RTP**: Add support for ``a=rtcp:{Port}`` in SDP messages.
+
+  Allows a remote peer using non-consecutive RTCP ports. Normally, the RTCP port is just RTP+1, but with an ``a=rtcp`` attribute, the RTCP port can be set to anything.
+
+  Eg. with this SDP media line:
+
+  .. code-block:: text
+
+     m=video 5004 RTP/AVP 96
+
+  RTP listen port is set to 5004, and RTCP listen port is implicitly set to 5005.
+
+  However, with these SDP media lines:
+
+  .. code-block:: text
+
+     m=video 5004 RTP/AVP 96
+     a=rtcp:5020
+
+  RTP listen port is set to 5004, but RTCP listen port is 5020.
+
+  This allows interoperation with other RTP endpoints that require using arbitrary RTCP ports.
+
+* **ServerManager**: Add ``getCpuCount()`` and ``getUsedCpu()`` methods to the client API.
+
+  These new methods can be called to obtain information about the number of CPU cores that are being used by Kurento, together with the average CPU usage that is being used in a given time interval:
+
+  .. code-block:: java
+
+     import org.kurento.client.KurentoClient;
+     [...]
+     private KurentoClient kurento;
+     [...]
+     ServerManager sm = kurento.getServerManager();
+     log.info("CPU COUNT: {}", sm.getCpuCount()); // Allowed CPUs available to use by Kurento
+     log.info("CPU USAGE: {}", sm.getUsedCpu(1000)); // Average CPU usage over 1 second
+     log.info("RAM USAGE: {}", sm.getUsedMemory()); // Resident memory used by the Kurento process
+
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedCpu-int->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedCpu>`__.
+
+
+
+Changed
+=======
+
+* **kurento-utils.js**: Dropped use of legacy ``offerToReceiveAudio`` / ``offerToReceiveVideo`` in `RTCPeerConnection.createOffer() <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createOffer>`__, in favor of the **Transceiver API**.
+
+  This was needed because Safari does not implement the legacy attributes. As of this writing, all of Firefox, Chrome and Safari have good working support for RTCPeerConnection transceivers, with `RTCPeerConnection.addTransceiver() <https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTransceiver>`__.
+
+* **WebRTC**: Don't ERROR or WARN with unresolved mDNS candidates during WebRTC ICE candidate gathering.
+
+  mDNS candidates from outside networks (such as the other peer's local networks) will be unresolvable in our local networks. This is, after all, the main purpose of mDNS! To conceal your local IPs behind a random hostname, such that others cannot resolve it into an IP address.
+
+  In other words, mDNS candidates are only of type "host", and are only useful with Local LAN WebRTC connections. It makes no sense to show an error or a warning each and every time an mDNS candidate cannot be resolved, because the majority of use cases involve remote WebRTC connections.
+
+* **WebRTC** / **RTP**: Change default ``maxVideoRecvBandwidth`` to 0 ("unlimited").
+
+  It doesn't make much sense that Kurento purposely limits the incoming bitrate to such a low value. Better leave it to negotiate the best bitrate by using congestion control (REMB).
+
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/SdpEndpoint.html#setMaxVideoRecvBandwidth-int->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.SdpEndpoint.html#setMaxVideoRecvBandwidth>`__.
+
+* **ServerManager**: The client API method ``getUsedMemory()`` now returns **resident (RSS)** instead of **virtual (VSZ)** memory.
+
+  Resident memory is a more useful measurement because it tells the physical used memory, which is usually what users want to know about their server. Giving virtual size here wouldn't be of much use, as the server (or any of its libraries) could map a huge area, then not use it, and the reported VSZ would be huge for no real benefit.
+
+  RSS gives a good view about how many MB are being used by KMS at any given time. This is also what users check on ``htop`` or ``top`` so see how much memory is used by KMS. However, keep in mind that if you are trying to establish whether Kurento Media Server has a memory leak, then neither ``top`` nor ``ps`` are the right tool for the job; `Valgrind <https://valgrind.org/>`__ is.
+
+  Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/ServerManager.html#getUsedMemory-->`__, `JavaScript <../../_static/client-jsdoc/module-core_abstracts.ServerManager.html#.getUsedMemory>`__.
+
+* **Documentation**: Rewritten all the ``{Min,Max}`` bandwidth / bitrate texts for `BaseRtpEndpoint <../../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html>`__ and `WebRtcEndpoint <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html>`__.
+
+  Kurento defaults to a very conservative maximum bitrate for outgoing streams; most applications will want to raise this value, but API documentation was not very clear so these sections needed a good review.
+
+
+
+Fixed
+=====
+
+* **Node.js tutorials**: Fix broken usage of the WebSocket module.
+
+  The dependency package **ws** had introduced since version 3.0.0 a breaking change in the ``connection`` event handler. We are now using latest versions of this package, so the tutorial code needed to be updated for this change.

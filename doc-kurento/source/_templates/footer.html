@@ -1,0 +1,13 @@
+{% extends "!footer.html" %}
+{% block extrafooter %}
+  {{ super() }}
+  <br>
+  <br>
+  <p>
+    Kurento has been supported under Project LERNIM (RTC-2016-4674-7), co-funded by the <em>Ministry of Economy, Finance and Competitiveness</em> of Spain, as well as by the <em>European Regional Development Fund</em>, whose main goal is to promote technological development, innovation and high-quality research.
+  </p>
+  <p align="center">
+    <img width="340px" src="{{ pathto('_static/footer-ministerio-economia-400-optimized.png', 1) }}">
+    <img width="340px" src="{{ pathto('_static/footer-european-union-400-optimized.png', 1) }}">
+  </p>
+{% endblock %}

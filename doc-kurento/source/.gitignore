@@ -1,0 +1,3 @@
+# Paths that should be committed in 'doc-kurento-readthedocs'
+# but should be ignored in 'doc-kurento':
+langdoc/

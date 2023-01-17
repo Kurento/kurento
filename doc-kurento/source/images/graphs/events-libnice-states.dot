@@ -1,0 +1,36 @@
+// libnice state transition diagram for NiceComponentState
+digraph NiceComponentState {
+  bgcolor = "transparent";
+
+  rankdir = "TB";
+
+  node [shape = "doublecircle"];
+
+  "DISCONNECTED";
+
+  node [shape = "circle"];
+
+  // Successful path -> green
+  edge [color = "chartreuse3"];
+
+  "DISCONNECTED" -> "GATHERING" [label = "nice_agent_gather_candidates"];
+  "GATHERING" -> "CONNECTING" [label = "nice_agent_set_remote_candidates"];
+  "CONNECTING" -> "CONNECTED" [label = "At least one candidate pair succeeds"];
+  "CONNECTED" -> "READY" [label = "All candidate pairs checks finished"];
+
+  // Normal control flow -> black
+  edge [color = "black"];
+
+  "READY" -> "CONNECTED" [label = "Selected candidate pair fails"];
+  "FAILED" -> "CONNECTING" [xlabel = "nice_agent_set_remote_candidates"];
+  "DISCONNECTED" -> "CONNECTING" [label = "nice_agent_set_remote_candidates"];
+
+  // Failure paths -> gray
+  edge [xlabel = "Failure", color = "gray"];
+
+  "DISCONNECTED" -> "FAILED";
+  "GATHERING" -> "FAILED";
+  "CONNECTING" -> "FAILED";
+  "CONNECTED" -> "FAILED";
+  "READY" -> "FAILED";
+}

@@ -1,0 +1,29 @@
+digraph dependencies_kms {
+  bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  size = "12,8";
+
+  rankdir = "RL";
+
+  // Main components.
+  {
+    rank = "same";
+    "kurento-module-creator";
+    "kms-cmake-utils";
+    "kms-jsonrpc";
+  }
+  "kms-jsonrpc" -> "kms-cmake-utils";
+  "kms-core" -> {"kurento-module-creator" "kms-cmake-utils" "kms-jsonrpc"};
+  "kms-elements" -> "kms-core";
+  "kms-filters" -> "kms-elements";
+  "kurento-media-server" -> {"kms-core" "kms-elements" "kms-filters"};
+
+  // Extra modules.
+  // Build disabled on Ubuntu >= 20.04 (due to breaking changes in OpenCV 4.0).
+  //"kms-chroma" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-crowddetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-datachannelexample" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-platedetector" -> {"kms-core" "kms-elements" "kms-filters"};
+  //"kms-pointerdetector" -> {"kms-core" "kms-elements" "kms-filters"};
+}
