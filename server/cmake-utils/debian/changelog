@@ -1,0 +1,314 @@
+kms-cmake-utils (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  [ Kurento ]
+  * UNRELEASED
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 20 Sep 2022 17:15:31 +0200
+
+kms-cmake-utils (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:30 +0000
+
+kms-cmake-utils (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Kurento ]
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:40 +0200
+
+kms-cmake-utils (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:37 +0100
+
+kms-cmake-utils (6.15.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.15.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 03 Nov 2020 18:04:20 +0100
+
+kms-cmake-utils (6.14.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.14.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 16 Jun 2020 17:48:03 +0200
+
+kms-cmake-utils (6.13.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.13.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 17 Dec 2019 13:37:52 +0100
+
+kms-cmake-utils (6.12.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.12.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Mon, 14 Oct 2019 19:12:33 +0200
+
+kms-cmake-utils (6.11.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.11.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 19 Jul 2019 19:47:53 +0200
+
+kms-cmake-utils (6.10.0-0kurento1) testing; urgency=medium
+
+  * debian: Review for 18.04 build
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Thu, 04 Apr 2019 10:32:30 +0200
+
+kms-cmake-utils (6.8.0) testing; urgency=medium
+
+  * Prepare release 6.8.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 26 Sep 2018 11:30:00 +0200
+
+kms-cmake-utils (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+  * Updates to debian/docs:
+    - Added file CHANGELOG.md
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kms-cmake-utils (1.4.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+
+  * Added:
+    - New CMake module "DpkgBuildFlags", which allows to query the
+      `dpkg-buildflags` command and retrieve the compilation flags that will be
+      used to generate Debian packages. All projects now compile with these flags.
+  * Changed:
+    - Old ChangeLog.md moved to the new format in the CHANGELOG.md file.
+    - Full review of all CMake files to tidy up and homogenize code style.
+  * Prepare release 1.4.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Fri, 24 Jul 2017 11:00:00 +0200
+
+kms-cmake-utils (1.3.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMakeListst: Use relative directory instead of absolute
+  * GenerigFind: Allow forcing the search of libraries all the time
+  * GenericFind: Fix inclusion of more components
+  * Search for local libraries if build directory changes
+  * GenericFind: Do not print warning if library is not required
+  * GenericFind: Force research of local executables
+  * GenericFind: Delete cache variables when searching again
+  * Prepare release 1.3.2
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 30 Sep 2016 11:10:44 +0200
+
+kms-cmake-utils (1.3.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change license to Apache 2.0
+  * Prepare release 1.3.1
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 27 May 2016 17:15:30 +0200
+
+kms-cmake-utils (1.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * debian/control: Remove unused variable
+  * Add build configuration
+
+  [ David Fernandez ]
+  * TestHelpers: Add test to target all if GENERATE_TESTS is true
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 1.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 24 Feb 2016 16:34:56 +0100
+
+kms-cmake-utils (1.2.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix warnings when using cmake 3.0
+  * GenericFind: Missing "" to avoid problems with empty variables
+  * Prepare release 1.2.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 11:52:09 +0100
+
+kms-cmake-utils (1.2.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix how version is got from git
+
+  [ David Fernandez ]
+  * Define an enviroment variable if the test is runing with valgrind
+
+  [ Jose Antonio Santos Cadenas ]
+  * GenericFind: Return proper error if library is not found
+  * Prepare release 1.2.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 12:38:56 +0200
+
+kms-cmake-utils (1.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare .gitreview to work with new gerrit
+  * KurentoGitHelpers: Do not show errors if git repository is not found
+  * KurentoGitHelpers: Change the way version is get from git repository
+  * VersionHelpers: Fix next version calculation
+  * VersionHelpers: Add next_minor and next_patch version calculation
+  * VersionHelpers: Process only major number versions correctly
+  * Add tests for version parsing
+  * Add a target that just builds all tests
+  * Prepare release 1.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 19 Mar 2015 17:33:47 +0100
+
+kms-cmake-utils (1.1.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 1.1.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 09:53:59 +0100
+
+kms-cmake-utils (1.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Update .gitreview to upload changes to master
+  * Make installation directory dependant on cmake version
+  * TestHelpers: Allow configuring valgrind num-callers parameter
+  * Prepare release 1.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 05 Feb 2015 16:50:20 +0100
+
+kms-cmake-utils (1.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * GenericFind: Add support for COMPONENTS on generic_find function
+  * Remove debug trace
+  * VersionHelpers: Try to match Boost versions with standard format version
+  * GenericFind: Improvements to avoid processing multiple times the same require
+  * TestHelpers: Improve valgrind test execution
+  * TestHelpers: Allow passing arguments to test programs
+  * Prepare release 1.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 13:11:51 +0100
+
+kms-cmake-utils (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Improve how version is got from git
+  * Add functions to check libraries using semantic versions
+  * Fix installation of GnericFind.cmake
+  * Fix definition of output variables for version parsing
+  * Fix version checking when specific version is requested
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 06 Oct 2014 18:57:33 +0200
+
+kms-cmake-utils (1.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Improve glibhelpers cmake utility
+  * Avoid name collisions on enum generation
+  * Fix copy paste issue
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 23 Jul 2014 16:05:31 +0200
+
+kms-cmake-utils (0.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare next development iteration
+  * Fix problem in find package
+  * Prepare relase 0.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 16 Jun 2014 17:02:38 +0200
+
+kms-cmake-utils (0.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add git ignore file
+  * Move cmake files to CMake folder
+  * Create FindKurentoHelpers to allow determine if the helpers are intalled
+  * Rename TestHelper to TestHelpers
+  * Let Modules installation directory configurable
+  * Add GitHelpers to get version and install hooks
+  * Change version variable name
+  * Prepare development of version 1.0.0
+  * Install KurentoGitHelpers.cmake
+  * Fix function that gets the git directory
+  * Prepare release 0.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 16 Jun 2014 16:38:23 +0200
+
+kms-cmake-utils (0.0.1) testing; urgency=medium
+
+  * Initial release
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 11 Jun 2014 19:25:49 +0200
