@@ -1,0 +1,73 @@
+{
+  "name": "kurento-chroma",
+  "version": "6.18.1-dev",
+  "description": "Kurento Browser JavaScript Tutorial: Chroma",
+  "keywords": [
+    "kurento",
+    "mcu",
+    "sfu",
+    "rpc",
+    "mediaserver",
+    "pipe",
+    "audio",
+    "video",
+    "media",
+    "recording",
+    "stream",
+    "streaming",
+    "videoconference",
+    "broadcast",
+    "multicast",
+    "client",
+    "server",
+    "browser",
+    "chrome",
+    "edge",
+    "firefox",
+    "safari",
+    "webrtc",
+    "datachannel",
+    "sdp",
+    "ice",
+    "stun",
+    "turn",
+    "h264",
+    "h.264",
+    "opus",
+    "vp8",
+    "rtp",
+    "srtp",
+    "rtsp"
+  ],
+  "homepage": "https://kurento.openvidu.io/",
+  "license": "Apache-2.0",
+  "authors": [
+    "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
+    "Kurento Community <kurento@googlegroups.com> (https://kurento.openvidu.io/)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kurento/kurento-tutorial-js.git"
+  },
+  "main": "index.html",
+  "moduleType": [
+    "globals"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "webrtc-adapter": "v7.4.0",
+    "bootstrap": "~3.3.0",
+    "demo-console": "1.5.1",
+    "ekko-lightbox": "~3.3.0",
+    "kurento-client": "git+https://github.com/Kurento/kurento-client-bower.git",
+    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git",
+    "kurento-module-chroma": "git+https://github.com/Kurento/kurento-module-chroma-bower.git"
+  }
+}
