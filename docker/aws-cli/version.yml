@@ -1,5 +1,0 @@
-image:
-  name: kurento/awscli
-  version: 0.1.0
-  extra_tags:
-    - latest

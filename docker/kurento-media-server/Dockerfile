@@ -26,7 +26,7 @@
 #
 # --build-arg KMS_VERSION=<KmsVersion>
 #
-#   <KmsVersion> is like "6.12.0".
+#   <KmsVersion> is like "7.0.0".
 #   Alternatively, "dev" is used to build a nightly version of Kurento.
 #
 #   Optional. Default: "dev".
@@ -114,12 +114,12 @@ RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommend
 # These might not be all available, so install separately and allow errors.
 RUN apt-get $APT_ARGS update && \
     for PACKAGE in \
-        kms-chroma \
-        kms-crowddetector \
-        kms-datachannelexample \
-        kms-markerdetector \
-        kms-platedetector \
-        kms-pointerdetector ; \
+        kurento-module-chroma \
+        kurento-module-crowddetector \
+        kurento-module-datachannelexample \
+        kurento-module-markerdetector \
+        kurento-module-platedetector \
+        kurento-module-pointerdetector ; \
     do \
         apt-get $APT_ARGS install --no-install-recommends --yes "$PACKAGE" || true ; \
     done \

@@ -3,7 +3,7 @@
 # This Docker image is used to generate Debian packages from Kurento projects.
 # It runs [kurento-buildpackage.sh][1] from a properly configured system.
 #
-# [1]: https://github.com/Kurento/adm-scripts/blob/master/kurento-buildpackage.sh
+# [1]: https://github.com/Kurento/kurento/blob/main/ci-scripts/kurento-buildpackage.sh
 #
 #
 # Build command
@@ -25,12 +25,12 @@
 # Run command
 # -----------
 #
-# git clone https://github.com/Kurento/kms-core.git
-# cd kms-core/
+# git clone https://github.com/Kurento/kurento.git
+# cd kurento/server/module-core/
 # docker run --rm \
 #     --mount type=bind,src="$PWD",dst=/hostdir \
 #     kurento/kurento-buildpackage:xenial \
-#         --install-kurento 6.12.0 \
+#         --install-kurento 7.0.0 \
 #         --apt-add-repo \
 #         [kurento-buildpackage arguments...]
 #
@@ -60,7 +60,7 @@ ARG UBUNTU_CODENAME
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     LANG=C.UTF-8 \
-    PATH="/adm-scripts:${PATH}"
+    PATH="/ci-scripts:${PATH}"
 
 # Configure Apt:
 # * Disable installation of recommended and suggested packages

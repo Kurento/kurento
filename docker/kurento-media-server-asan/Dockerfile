@@ -28,7 +28,7 @@
 #
 # --build-arg KMS_VERSION=<KmsVersion>
 #
-#   <KmsVersion> is like "6.12.0".
+#   <KmsVersion> is like "7.0.0".
 #   Alternatively, "dev" is used to build a nightly version of Kurento.
 #
 #   Optional. Default: "dev".

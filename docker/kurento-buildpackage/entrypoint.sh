@@ -22,26 +22,28 @@ if [[ "${APT_KEEP_CACHE:-}" == "true" ]]; then
     fi
 fi
 
-# Find or clone 'adm-scripts'
-ADM_SCRIPTS_PATH="/adm-scripts"
-if [[ -e "$ADM_SCRIPTS_PATH/kurento-buildpackage.sh" ]]; then
-    echo "[Docker entrypoint] Kurento adm-scripts found in $ADM_SCRIPTS_PATH"
+# Find or clone 'ci-scripts'
+KURENTO_SCRIPTS_PATH="/ci-scripts"
+if [[ -e "$KURENTO_SCRIPTS_PATH/kurento-buildpackage.sh" ]]; then
+    echo "[Docker entrypoint] Kurento ci-scripts found in $KURENTO_SCRIPTS_PATH"
 else
-    echo "[Docker entrypoint] Kurento adm-scripts not found in $ADM_SCRIPTS_PATH"
-    echo "[Docker entrypoint] Clone adm-scripts from Git repo..."
-    git clone https://github.com/Kurento/adm-scripts.git "$ADM_SCRIPTS_PATH"
+    echo "[Docker entrypoint] Kurento ci-scripts not found in $KURENTO_SCRIPTS_PATH"
+    echo "[Docker entrypoint] Getting ci-scripts from Git repo..."
+    git clone --depth 1 https://github.com/Kurento/kurento.git /tmp/kurento
+    mkdir -p "$KURENTO_SCRIPTS_PATH"
+    cp -a /tmp/kurento/ci-scripts/* "$KURENTO_SCRIPTS_PATH"
 fi
 
 # Check the environment
 if [[ -d /hostdir ]]; then
     rm -rf /build
     cp -a /hostdir /build
-    cd /build
+    cd /build/
 fi
 
 # Build packages for current dir
 # Note: "$@" expands to all quoted arguments, as passed to this script
-"$ADM_SCRIPTS_PATH/kurento-buildpackage.sh" "$@"
+"$KURENTO_SCRIPTS_PATH/kurento-buildpackage.sh" "$@"
 
 # Get generated packages out from the Docker container
 if [[ -d /hostdir ]]; then

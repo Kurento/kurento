@@ -77,14 +77,13 @@ Usage:
 
 Issues:
 
-* [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
+* [Bug Tracker](https://github.com/Kurento/kurento/issues)
 * [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:
 
 * [Kurento Blog](https://kurento.openvidu.io/blog)
 * [Google Groups](https://groups.google.com/forum/#!forum/kurento)
-* [Kurento RoadMap](https://github.com/Kurento/kurento-media-server/blob/master/ROADMAP.md)
 
 Training:
 

@@ -19,7 +19,7 @@
 
 ## About this image
 
-Image source: [kurento-media-server/Dockerfile](https://github.com/Kurento/kurento-docker/blob/master/kurento-media-server/Dockerfile).
+Image source: [kurento-media-server/Dockerfile](https://github.com/Kurento/kurento/blob/main/docker/kurento-media-server/Dockerfile).
 
 This Docker image can be used to run Kurento Media Server (*KMS*) on any **x86** platform. It cannot be used on other architectures, such as ARM.
 
@@ -82,14 +82,13 @@ Usage:
 
 Issues:
 
-* [Bug Tracker](https://github.com/Kurento/bugtracker/issues)
+* [Bug Tracker](https://github.com/Kurento/kurento/issues)
 * [Support](https://doc-kurento.readthedocs.io/en/latest/user/support.html)
 
 News:
 
 * [Kurento Blog](https://kurento.openvidu.io/blog)
 * [Google Groups](https://groups.google.com/forum/#!forum/kurento)
-* [Kurento RoadMap](https://github.com/Kurento/kurento-media-server/blob/master/ROADMAP.md)
 
 Training:
 

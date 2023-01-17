@@ -53,7 +53,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 # * jq, jshon: For some JavaScript tools and jobs
 # * rsync: For remote copies
 #
-# Tools used by kurento-java/kurento-integration-tests/kurento-test:
+# Tools used by test/integration/kurento-test:
 # * ffmpeg: For different integration testst that generate an RTP stream
 # * libmediainfo-dev: MediaInfoLibrary class
 # * netcat: KmsService class, to check if KMS port is already in use
