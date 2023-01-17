@@ -37,7 +37,7 @@
 #/
 #/ KURENTO_SCRIPTS_HOME
 #/
-#/   Jenkins path to 'adm-scripts', containing all Kurento CI scripts.
+#/   Jenkins path to 'ci-scripts', containing all Kurento CI scripts.
 
 
 

@@ -29,7 +29,7 @@
 #/
 #/   Git branch or tag that should be checked out, if `JOB_GIT_NAME` does not
 #/   exist. If this fails too, then `JOB_DISTRO` will be used, and failing that,
-#/   `master` will be used as a last recourse.
+#/   `main` will be used as a last recourse.
 #/
 #/   Optional.
 #/
@@ -46,7 +46,7 @@
 #/
 #/ KURENTO_SCRIPTS_HOME
 #/
-#/   Jenkins path to 'adm-scripts', containing all Kurento CI scripts.
+#/   Jenkins path to 'ci-scripts', containing all Kurento CI scripts.
 
 
 
@@ -121,7 +121,7 @@ fi
 
 docker run --pull always --rm \
     --mount type=bind,src="$PWD",dst=/hostdir \
-    --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
+    --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     --env ARGS \
     --env BOOST_TEST_LOG_LEVEL \
     --env BOOST_TEST_RUN_FILTERS \

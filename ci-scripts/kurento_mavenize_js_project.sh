@@ -30,12 +30,12 @@ set -o xtrace
 [[ -n "${3:-}" ]] && ASSEMBLY_FILE="$3"
 
 # Validate parameters
-[[ -z "$PROJECT_NAME" ]] && {
+[[ -z "${PROJECT_NAME:-}" ]] && {
   log "ERROR: Undefined variable: PROJECT_NAME"
   exit 1
 }
 
-if [[ -n "$MAVEN_SHELL_SCRIPT" ]]; then
+if [[ -n "${MAVEN_SHELL_SCRIPT:-}" ]]; then
 cat >maven_script.sh <<EOF
 #!/usr/bin/env bash
 # Shell options for strict error checking
@@ -62,7 +62,7 @@ fi
 
 chmod +x maven_script.sh
 
-[[ -z "$ASSEMBLY_FILE" ]] && ASSEMBLY_FILE="assembly.xml"
+[[ -z "${ASSEMBLY_FILE:-}" ]] && ASSEMBLY_FILE="assembly.xml"
 
 # Validate project structure
 [[ -f package.json ]] || {
@@ -133,7 +133,7 @@ cat >pom.xml <<EOF
   </developers>
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/Kurento/bugtracker/issues</url>
+    <url>https://github.com/Kurento/kurento/issues</url>
   </issueManagement>
   <licenses>
     <license>

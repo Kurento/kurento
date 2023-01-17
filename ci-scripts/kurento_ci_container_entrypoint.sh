@@ -20,7 +20,7 @@ RUN_COMMANDS=("$@")
 
 echo "[kurento_ci_container_entrypoint] Preparing environment..."
 
-# Add "adm-scripts" to PATH
+# Add ci-scripts/ to PATH
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 export PATH="$BASEPATH:$PATH"
 

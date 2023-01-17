@@ -52,7 +52,7 @@ docker run --pull always \
     --name "$BUILD_TAG" \
     --rm \
     -v "$WORKSPACE":/opt/kurento \
-    -v "$KURENTO_SCRIPTS_HOME":/opt/adm-scripts \
+    -v "$KURENTO_SCRIPTS_HOME":/opt/ci-scripts \
     -v "$HOME/.ssh":/root/.ssh:ro \
     -v "$HOME/.gitconfig":/root/.gitconfig \
     -v "$PWD/.root-config":/root/.ssh/config \

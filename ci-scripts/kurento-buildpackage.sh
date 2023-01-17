@@ -17,11 +17,11 @@
 #/
 #/   Install dependencies that are required to build the package, using the
 #/   Kurento package repository for those packages that need it. This is useful
-#/   for quickly building a specific component of Kurento (e.g. "kms-core")
+#/   for quickly building a specific component of Kurento (e.g. "kurento-module-core")
 #/   without also having to build all of its dependencies.
 #/
 #/   <KurentoVersion> indicates which Kurento repo should be used to download
-#/   packages from. E.g.: "6.12.0", or "dev" for nightly builds. Typically, you
+#/   packages from. E.g.: "7.0.0", or "dev" for nightly builds. Typically, you
 #/   will provide an actual version number when also using '--release', and just
 #/   use "dev" otherwise.
 #/
@@ -158,7 +158,7 @@
 #/     openssh-client \
 #/     equivs \
 #/     coreutils
-#/ sudo pip3 install --upgrade gbp
+#/ sudo python3 -m pip install --upgrade gbp
 
 
 
@@ -327,10 +327,6 @@ source /etc/lsb-release
 
 # Extra options for all apt-get invocations
 APT_ARGS=()
-# NOTE: `${arr[@]+"${arr[@]}"}` is required with Bash < 4.4 (Ubuntu 16.04) to
-# avoid a bug with `set -o nounset` and empty arrays. Bash >= 4.4 (Ubuntu 18.04)
-# fixed it and can use the normal expansion: `"${APT_ARGS[@]}"`.
-# See: https://stackoverflow.com/a/61551944
 
 
 
@@ -412,7 +408,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
         dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
             log "Try to install remaining dependencies"
-            apt-get update ; apt-get ${APT_ARGS[@]+"${APT_ARGS[@]}"} install --fix-broken --no-remove --yes
+            apt-get update ; apt-get "${APT_ARGS[@]}" install --fix-broken --no-remove --yes
         }
     else
         log "No '.deb' package files are present!"
@@ -450,7 +446,7 @@ log "Install build dependencies"
     export DEBIAN_FRONTEND=noninteractive
 
     apt-get update ; mk-build-deps --install --remove \
-        --tool="apt-get ${APT_ARGS[*]+"${APT_ARGS[*]}"} -o Debug::pkgProblemResolver=yes --target-release 'a=${DISTRIB_CODENAME}-backports' --no-install-recommends --no-remove --yes" \
+        --tool="apt-get ${APT_ARGS[*]} -o Debug::pkgProblemResolver=yes --target-release 'a=$DISTRIB_CODENAME-backports' --no-install-recommends --no-remove --yes" \
         ./debian/control
 )
 
@@ -477,7 +473,7 @@ log "Install build dependencies"
 #
 # --ignore-branch allows building from a tag or a commit.
 #   If not set, GBP would enforce that the current branch is the
-#   "debian-branch" specified in 'gbp.conf' (or 'master', by default).
+#   "debian-branch" specified in 'gbp.conf' (or 'main', by default).
 #
 # --git-upstream-tree=SLOPPY generates the source tarball from the current
 #   state of the working directory.
@@ -493,48 +489,68 @@ log "Install build dependencies"
 # Update debian/changelog
 # -----------------------
 
-# A Debian/Ubuntu package repository stores all packages for all components
-# and distributions under the same 'pool/' directory. The assumption is that
-# two packages with same (name, version, arch) will be exactly the same (MD5).
-#
-# In our case this is still not true, so we need to differenciate equal packages
-# between Ubuntu distributions. For that, the distro version is appended to
-# our package version.
-#
-# This is based on the version scheme used by Firefox packages on Ubuntu:
-#
-#   Ubuntu Xenial: 65.0+build2-0ubuntu0.16.04.1
-#   Ubuntu Bionic: 65.0+build2-0ubuntu0.18.04.1
-#
-# In which "16.04" or "18.04" is appended to the usual package version.
+(
+    # A Debian/Ubuntu package repository stores all packages for all components
+    # and distributions under the same 'pool/' directory. The assumption is that
+    # two packages with same (name, version, arch) will be exactly the same (MD5).
+    #
+    # In our case this is still not true, so we need to differentiate equal
+    # packages between Ubuntu distributions. For that, the distro version is
+    # appended to our package version.
+    #
+    # This is based on the version scheme used by Firefox packages on Ubuntu:
+    #
+    #   Ubuntu Xenial: 65.0+build2-0ubuntu0.16.04.1
+    #   Ubuntu Bionic: 65.0+build2-0ubuntu0.18.04.1
+    #
+    # Where "16.04" or "18.04" is appended to the base version.
+    PACKAGE_VERSION="$(dpkg-parsechangelog --show-field Version)"
+    DCH_VERSION="$PACKAGE_VERSION.$DISTRIB_RELEASE"
 
-PACKAGE_VERSION="$(dpkg-parsechangelog --show-field Version)"
+    # debchange (dch) requires an email being set on the system.
+    if [[ -z "${DEBFULLNAME:-}${NAME:-}" || -z "${DEBEMAIL:-}${EMAIL:-}" ]]; then
+        DEBFULLNAME="$(git config --default 'Kurento' --get user.name)"; export DEBFULLNAME
+        DEBEMAIL="$(git config --default 'kurento@openvidu.io' --get user.email)"; export DEBEMAIL
+    fi
 
-# debchange (dch) requires an email being set on the system.
-if [[ -z "${EMAIL:-}${DEBEMAIL:-}" ]]; then
-    export DEBFULLNAME="Kurento"
-    export DEBEMAIL="kurento@openvidu.io"
-fi
+    if [[ "$CFG_RELEASE" == "true" ]]; then
+        log "Update debian/changelog for a RELEASE version build"
 
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    log "Update debian/changelog for a RELEASE version build"
-    gbp dch \
-        --ignore-branch \
-        --git-author \
-        --spawn-editor=never \
-        --new-version="${PACKAGE_VERSION}.${DISTRIB_RELEASE}" \
-        --release \
-        ./debian/
-else
-    log "Update debian/changelog for a NIGHTLY snapshot build"
-    gbp dch \
-        --ignore-branch \
-        --git-author \
-        --spawn-editor=never \
-        --new-version="${PACKAGE_VERSION}.${DISTRIB_RELEASE}" \
-        --snapshot --snapshot-number="$CFG_TIMESTAMP" \
-        ./debian/
-fi
+        # gbp dch \
+        #     --ignore-branch \
+        #     --git-author \
+        #     --spawn-editor=never \
+        #     --new-version="$DCH_VERSION" \
+        #     --release \
+        #     ./debian/
+
+        # Add the release message to the currently opened changelog entry.
+        dch "Prepare release $PACKAGE_VERSION"
+
+        # Close the current changelog entry and mark it as released.
+        dch \
+            --release \
+            --distribution "testing" --force-distribution \
+            ""
+    else
+        log "Update debian/changelog for a NIGHTLY snapshot build"
+
+        # gbp dch \
+        #     --ignore-branch \
+        #     --git-author \
+        #     --spawn-editor=never \
+        #     --new-version="$DCH_VERSION" \
+        #     --snapshot --snapshot-number="$CFG_TIMESTAMP" \
+        #     ./debian/
+
+        SNAPSHOT_TIME="$CFG_TIMESTAMP"
+        SNAPSHOT_HASH="$(git rev-parse --short HEAD 2>/dev/null)"
+
+        dch \
+            --newversion "$DCH_VERSION~$SNAPSHOT_TIME${SNAPSHOT_HASH:+".git$SNAPSHOT_HASH"}" \
+            ""
+    fi
+)
 
 
 
@@ -542,10 +558,6 @@ fi
 # ---------------------
 
 GBP_ARGS=()
-# NOTE: `${arr[@]+"${arr[@]}"}` is required with Bash < 4.4 (Ubuntu 16.04) to
-# avoid a bug with `set -o nounset` and empty arrays. Bash >= 4.4 (Ubuntu 18.04)
-# fixed it and can use the normal expansion: `"${GBP_ARGS[@]}"`.
-# See: https://stackoverflow.com/a/61551944
 
 # `dpkg-buildpackage`: don't sign packages
 GBP_ARGS+=("-uc")
@@ -585,7 +597,7 @@ fi
 # Also, use `--preserve-env` to pass all of our CTEST_* or GST_* environment
 # variables (for Check and GStreamer, respectively) to debian/rules, and
 # ultimately to the corresponding tools when they run.
-GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
+# GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
 
 # Print logs from tests
 export BOOST_TEST_LOG_LEVEL=test_suite
@@ -594,12 +606,15 @@ export CTEST_OUTPUT_ON_FAILURE=1
 # GStreamer: Don't log with colors (avoid ANSI escape codes in test output)
 export GST_DEBUG_NO_COLOR=1
 
-gbp buildpackage \
-    --git-ignore-new \
-    --git-ignore-branch \
-    --git-upstream-tree=SLOPPY \
-    --git-builder="$GBP_BUILDER" \
-    ${GBP_ARGS[@]+"${GBP_ARGS[@]}"}
+# gbp buildpackage \
+#     --git-ignore-new \
+#     --git-ignore-branch \
+#     --git-upstream-tree=SLOPPY \
+#     --git-builder="$GBP_BUILDER" \
+#     "${GBP_ARGS[@]}"
+
+dpkg-buildpackage \
+    "${GBP_ARGS[@]}"
 
 
 

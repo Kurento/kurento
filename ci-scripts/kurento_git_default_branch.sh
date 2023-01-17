@@ -78,5 +78,5 @@ fi
 if [[ -n "$BRANCH" ]]; then
     echo "$BRANCH"
 else
-    echo "master"
+    echo "main"
 fi

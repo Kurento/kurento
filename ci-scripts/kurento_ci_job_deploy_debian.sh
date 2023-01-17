@@ -54,7 +54,7 @@
 #/
 #/ KURENTO_SCRIPTS_HOME
 #/
-#/   Jenkins path to 'adm-scripts', containing all Kurento CI scripts.
+#/   Jenkins path to 'ci-scripts', containing all Kurento CI scripts.
 
 
 
@@ -134,7 +134,7 @@ chmod 0400 secret.pem
 
 docker run --pull always --rm -i \
     --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
-    --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
+    --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     buildpack-deps:xenial-scm /bin/bash <<DOCKERCOMMANDS
 
 # Bash options for strict error checking.
@@ -161,7 +161,7 @@ scp -o StrictHostKeyChecking=no -i secret.pem \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
 scp -o StrictHostKeyChecking=no -i secret.pem \
-    /adm-scripts/kurento_ci_aptly_repo_publish.sh \
+    /ci-scripts/kurento_ci_aptly_repo_publish.sh \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
 ssh -n -o StrictHostKeyChecking=no -i secret.pem \

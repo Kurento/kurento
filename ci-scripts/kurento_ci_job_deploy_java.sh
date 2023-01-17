@@ -19,7 +19,7 @@
 #/
 #/ * Variable(s) from job parameters (with "This project is parameterized"):
 #/
-#/ JOB_GIT_NAME (not required, only used to enforce "master", see below)
+#/ JOB_GIT_NAME (not required, only used to enforce "main", see below)
 #/
 #/   Git branch or tag that should be checked out, if it exists.
 #/
@@ -28,7 +28,7 @@
 #/
 #/ KURENTO_SCRIPTS_HOME
 #/
-#/   Jenkins path to 'adm-scripts', containing all Kurento CI scripts.
+#/   Jenkins path to 'ci-scripts', containing all Kurento CI scripts.
 
 
 
@@ -57,7 +57,7 @@ set -o xtrace
 # repositories, then we'd want to build experimental branches for them. But
 # for now, just skip and avoid polluting the default builds repositories.
 GIT_DEFAULT="$(kurento_git_default_branch.sh)"
-JOB_GIT_NAME="${JOB_GIT_NAME:-master}"
+JOB_GIT_NAME="${JOB_GIT_NAME:-main}"
 if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
     log "Skip building from experimental branch '$JOB_GIT_NAME'"
     exit 0

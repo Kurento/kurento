@@ -122,7 +122,7 @@ Resources:
         config:
           files:
             "/opt/cfn-setup.sh":
-              source: "https://raw.githubusercontent.com/Kurento/adm-scripts/master/AWS/cfn-setup.sh"
+              source: "https://raw.githubusercontent.com/Kurento/kurento/main/ci-scripts/AWS/cfn-setup.sh"
               context:
                 KmsVersion: "|RELEASE|"
                 TurnUser: !Ref "TurnUser"
@@ -161,8 +161,8 @@ Resources:
 
           # Install and run the CloudFormation helper scripts.
           # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
-          apt-get update ; apt-get install --yes python python-pip
-          pip install "https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz"
+          apt-get update ; apt-get install --no-install-recommends --yes python python-pip
+          python -m pip install "https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz"
 
           # Trigger the CloudFormation init helper.
           /usr/local/bin/cfn-init --verbose --stack "${AWS::StackId}" --resource "KurentoMediaServer" --region "${AWS::Region}"

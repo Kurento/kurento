@@ -155,9 +155,9 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 
 # Download KMS source code
 {
-    git clone https://github.com/Kurento/kms-omni-build.git
+    git clone https://github.com/Kurento/kurento.git
 
-    cd kms-omni-build/
+    cd kurento/server/
 
     if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
         echo "Switch to development branch"
@@ -180,13 +180,11 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 
     # After checkout: Re-init submodules.
     git submodule update --init --recursive
-    git submodule update --remote
-    git submodule foreach "git checkout $REF || true"
 }
 
 # Build and run KMS
 export MAKEFLAGS="-j$(nproc)"
-./bin/kms-build-run.sh --build-only
+bin/build-run.sh --build-only
 
 echo "Done! Everything got installed and built successfully"
 

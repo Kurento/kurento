@@ -23,14 +23,14 @@
 #/ --repo-name <RepoName>
 #/
 #/   Name of the repository that will be created or updated.
-#/   E.g.: "kurento-xenial-6.12.0", "kurento-xenial-test-branch"
+#/   E.g.: "kurento-xenial-7.0.0", "kurento-xenial-test-branch"
 #/
 #/   Required. Default: None.
 #/
 #/ --publish-name <PublishName>
 #/
 #/   Name of the Aptly publishing endpoint that should be used.
-#/   E.g.: "6.12.0", "test-branch"
+#/   E.g.: "7.0.0", "test-branch"
 #/
 #/   The repository URL will be like:
 #/

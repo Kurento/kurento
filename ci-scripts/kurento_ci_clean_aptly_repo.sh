@@ -104,7 +104,7 @@ echo "CFG_PUBLISH_NAME=$CFG_PUBLISH_NAME"
 # https://www.aptly.info/doc/aptly/snapshot/
 # aptly snapshot drop ...
 # E.g.:
-# aptly snapshot drop snap-kurento-trusty-6.12.0
+# aptly snapshot drop snap-kurento-focal-7.0.0
 
 # https://www.aptly.info/doc/aptly/repo/
 # aptly repo drop kurento-experimental-${DISTRIBUTION}
@@ -152,7 +152,7 @@ chmod 0400 secret.pem
 
 docker run --pull always --rm -i \
     --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
-    --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/adm-scripts \
+    --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     buildpack-deps:xenial-scm /bin/bash <<EOF
 
 # Bash options for strict error checking
@@ -163,7 +163,7 @@ set -o xtrace
 
 # Exit trap, used to clean up
 on_exit() {
-	# TODO: Maybe a more descriptive message?
+    # TODO: Maybe a more descriptive message?
     echo "There was an error running the script."
 }
 trap on_exit EXIT

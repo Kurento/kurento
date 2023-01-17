@@ -23,7 +23,7 @@ set -o xtrace
 # Maybe in the future we might have something like experimental Maven or NPM
 # repositories, then we'd want to build experimental branches for them. But
 # for now, just skip and avoid polluting the default builds repositories.
-JOB_GIT_NAME="${JOB_GIT_NAME:-master}"
+JOB_GIT_NAME="${JOB_GIT_NAME:-main}"
 GIT_DEFAULT="$(kurento_git_default_branch.sh)"
 if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
   log "Skip building from experimental branch '$JOB_GIT_NAME'"
@@ -31,7 +31,7 @@ if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
 fi
 
 rm -rf build
-mkdir build ; cd build
+mkdir build ; cd build/
 cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
   log "ERROR: Command failed: cmake"
   exit 1
@@ -42,7 +42,7 @@ cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE |
   exit 1
 }
 
-# FIXME - When generating for the kms-filters module, the JSON keys in
+# FIXME - When generating for the kurento-module-filters module, the JSON keys in
 # 'js/src/filters.kmd.json' change ordering each time this job runs. So the git
 # commit history is polluted with meaningless variations in key order.
 # I haven't found the cause for this issue, and it is really a time sink without

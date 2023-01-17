@@ -29,14 +29,14 @@ kurento_check_version.sh false || {
 # repositories, then we'd want to build experimental branches for them. But
 # for now, just skip and avoid polluting the default builds repositories.
 GIT_DEFAULT="$(kurento_git_default_branch.sh)"
-JOB_GIT_NAME="${JOB_GIT_NAME:-master}"
+JOB_GIT_NAME="${JOB_GIT_NAME:-main}"
 if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
   log "Skip building from experimental branch '$JOB_GIT_NAME'"
   exit 0
 fi
 
 rm -rf build
-mkdir build ; cd build
+mkdir build ; cd build/
 cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
   log "ERROR: Command failed: cmake"
   exit 1

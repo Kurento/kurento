@@ -22,7 +22,7 @@
 #/
 #/ OPENVIDU_ADM_SCRIPTS_HOME
 #/
-#/   Jenkins path to 'adm-scripts', containing all OpenVidu CI scripts.
+#/   Jenkins path to 'ci-scripts', containing all OpenVidu CI scripts.
 
 
 

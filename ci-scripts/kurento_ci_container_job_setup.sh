@@ -86,7 +86,7 @@ CONTAINER_HTTP_KEY=/opt/http.key
 CONTAINER_MAVEN_LOCAL_REPOSITORY=/root/.m2
 CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_TEST_CONFIG_JSON=/opt/scenario.conf.json
-CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
+CONTAINER_CI_SCRIPTS=/opt/ci-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
 CONTAINER_GNUPG_KEY=/opt/gnupg_key
 CONTAINER_NPM_CONFIG=/root/.npmrc
@@ -144,11 +144,11 @@ fi
 docker run --pull always \
   --rm \
   --name $BUILD_TAG-TEST-FILES-$(date +"%s") \
-  -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
+  -v $KURENTO_SCRIPTS_HOME:$CONTAINER_CI_SCRIPTS \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
   -w $CONTAINER_TEST_FILES \
   kurento/svn-client:1.0.0 \
-  /opt/adm-scripts/kurento_update_test_files.sh || {
+  /opt/ci-scripts/kurento_update_test_files.sh || {
     echo "[kurento_ci_container_job_setup] ERROR: Command failed: docker run kurento_update_test_files"
     exit $?
   }
@@ -192,7 +192,7 @@ docker run --pull always \
   $([ "$DETACHED" = "true" ] && echo "-d" || echo "--rm") \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
-  -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
+  -v $KURENTO_SCRIPTS_HOME:$CONTAINER_CI_SCRIPTS \
   -v $WORKSPACE$([ -n "$PROJECT_DIR" ] && echo "/$PROJECT_DIR"):$CONTAINER_WORKSPACE \
   $([ -f "$MAVEN_SETTINGS" ] && echo "-v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS") \
   -v $MAVEN_LOCAL_REPOSITORY:$CONTAINER_MAVEN_LOCAL_REPOSITORY \
@@ -249,7 +249,7 @@ docker run --pull always \
   -w "$CONTAINER_WORKSPACE" \
   --entrypoint /bin/bash \
   $CONTAINER_IMAGE \
-  "${CONTAINER_ADM_SCRIPTS}/kurento_ci_container_entrypoint.sh" "${RUN_COMMANDS[@]}"
+  "${CONTAINER_CI_SCRIPTS}/kurento_ci_container_entrypoint.sh" "${RUN_COMMANDS[@]}"
 
 status=$?
 
