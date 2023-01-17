@@ -1,0 +1,6 @@
+.gitreview
+obj-x86_64-linux-gnu
+debian/files
+debian/kurento-adm-scripts.debhelper.log
+debian/kurento-adm-scripts.substvars
+debian/kurento-adm-scripts/

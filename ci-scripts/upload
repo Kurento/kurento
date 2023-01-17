@@ -1,0 +1,98 @@
+#!/bin/bash -x
+# PARAM API
+#  repo
+#       Name of the repo where package is uploaded
+#  dist
+#       Distribution where package is uploaded
+#  comp
+#      Component where package is uploaded. Component main is assigned
+#      if this parameter is not provided
+#  name
+#      Name of file given to package
+#
+# Get dist param from query string
+CMD=$(echo $QUERY_STRING | grep 'cmd=' | sed 's/QUERY_STRING=//g' | sed 's/^.*cmd=\([^\&]*\).*$/\1/g')
+REPO=$(echo $QUERY_STRING | grep 'repo=' | sed 's/QUERY_STRING=//g' | sed 's/^.*repo=\([^\&]*\).*$/\1/g')
+DIST=$(echo $QUERY_STRING | grep 'dist=' | sed 's/QUERY_STRING=//g' | sed 's/^.*dist=\([^\&]*\).*$/\1/g')
+COMP=$(echo $QUERY_STRING | grep 'comp=' | sed 's/QUERY_STRING=//g' | sed 's/^.*comp=\([^\&]*\).*$/\1/g')
+NAME=$(echo $QUERY_STRING | grep 'name=' | sed 's/QUERY_STRING=//g' | sed 's/^.*name=\([^\&]*\).*$/\1/g')
+
+[ -z "$CMD" ] && CMD=add
+[ -z "$REPO" ] && REPO=ubuntu-pub
+if [ -z "$DIST" -o -z "$COMP" ]; then
+    STATUS="Status: 400 Bad Request"
+    TITLE="400 Bad Request"
+    BODY="<h1>MISSING PARAMETERS</h1><p>Parameters dist & comp must be provided for package upload"
+else
+  if [ "$CMD" = 'add' ]; then
+    mkdir -p /tmp/$DIST/$COMP
+    UPLOAD_FILE=$( { [ -n "$NAME" ] && echo /tmp/$DIST/$COMP/$NAME; } || mktemp --suffix .deb )
+    cat - > $UPLOAD_FILE
+    if echo $REPO | grep -qiv priv ; then
+      echo "Upload to reprepro" > $UPLOAD_FILE.reprepro.msg
+      reprepro -b .. --waitforlock 10 -C $COMP includedeb $DIST $UPLOAD_FILE >> $UPLOAD_FILE.reprepro.msg 2>&1
+      result=$?
+      echo "" > $UPLOAD_FILE.aptly.msg
+      echo "Upload to aptly" >> $UPLOAD_FILE.aptly.msg
+    else
+      echo "DO NOT Upload to reprepro for private repo: $REPO" > $UPLOAD_FILE.reprepro.msg
+      result=0
+    fi
+    BODY=$(cat $UPLOAD_FILE.reprepro.msg)
+    #tsp -C
+    # Upload aptly tu ubuntu in background because pararllel uploads are not possible.
+    # Requires package task-spooler
+    pkg_name=$(dpkg --info $UPLOAD_FILE | grep "Package:" |awk '{print $2}')
+    purge_id=$(tsp aptly repo remove $REPO $REPO-$DIST-$COMP $pkg_name)
+    tsp -w $purge_id
+    add_id=$(tsp aptly repo add $REPO-$DIST-$COMP $UPLOAD_FILE)
+    tsp -w $add_id
+    BODY+=$(echo ' --- Aptly add package:')
+    BODY+=$(tsp -c $add_id)
+    add_res=$?
+    tsp -r $add_id
+    [ "$result" -eq 0 ] && result=$add_res
+    rm -f $UPLOAD_FILE.*
+  elif [ "$CMD" = 'publish' ]; then
+    BODY+=$(echo ' --- Aptly publish:')
+    # Delete scheduled updates before inserting new one
+    for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update -force-overwrite=false $DIST s3:$REPO:" | awk '{print $1}'); do
+      tsp -r $task
+    done
+    # This task can be removed any time by future uploads
+    publish_id=$(tsp aptly publish update $DIST s3:$REPO:)
+    #tsp -w $publish_id  # This command blocks if task is removed
+    until [ "$(tsp -s $publish_id)" = 'finished' -o $? -ne 0 ]; do
+      sleep 10
+    done
+    BODY+=$(tsp -c $publish_id)
+    result=$?
+    [ $result -eq 255 ] && result=0 # task removed by other upload ==> success
+    tsp -r $publish_id
+  elif [ "$CMD" = 'touch' ]; then
+    BODY="OK"
+    result=0
+  else
+    BODY=""
+    result=1
+  fi
+
+  if [ "$result" -eq 0 ]; then
+      STATUS="Status: 200 OK"
+      TITLE="REQUEST ACCEPTED"
+  else
+      STATUS="Status: 500 OK"
+      TITLE="500 Internal Server ERROR"
+  fi
+fi
+echo $STATUS
+echo "Content-type: text/html"
+echo ""
+echo "<html>"
+echo "<head>"
+echo "<title>$TITLE</title>"
+echo "</head>"
+echo "<body>"
+echo "$BODY"
+echo "</body>"
+echo "</html>"

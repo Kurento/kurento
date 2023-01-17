@@ -1,0 +1,243 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Kurento Media Server template for AWS CloudFormation"
+
+Parameters:
+  KeyName:
+    Description: "Name of an existing EC2 KeyPair for SSH access to the EC2 instance"
+    Type: "AWS::EC2::KeyPair::KeyName"
+
+  InstanceType:
+    Description: "EC2 instance type used for Kurento Media Server"
+    Type: String
+    Default: c5.xlarge
+    AllowedValues:
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - m4.16xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.8xlarge
+      - m5.12xlarge
+      - m5.16xlarge
+      - m5.24xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.12xlarge
+      - c5.18xlarge
+      - c5.24xlarge
+    ConstraintDescription: "Must be a valid EC2 instance type"
+
+  TurnUser:
+    Description: "Username for the static TURN credentials"
+    Type: String
+    Default: "kurento"
+
+  TurnPassword:
+    Description: "Password for the static TURN credentials"
+    Type: String
+    Default: "kurento"
+    NoEcho: True
+
+# AMI IDs obtanied from the Ubuntu Cloud Image Finder
+# https://cloud-images.ubuntu.com/locator/
+#
+# Parameters:
+# * Cloud: Amazon AWS
+# * Version: 16.04 (Ubuntu Xenial)
+# * Arch: amd64
+# * Instance Type: hvm-ssd
+#
+# Last update: Release 20210429
+Mappings:
+  RegionMap:
+    af-south-1:
+      AMI: ami-0becdd21957bf5764
+    ap-east-1:
+      AMI: ami-013f864ad81b818d1
+    ap-northeast-1:
+      AMI: ami-0d53808c8c345ed07
+    ap-northeast-2:
+      AMI: ami-08508144e576d5b64
+    ap-northeast-3:
+      AMI: ami-0eab055d8530dd456
+    ap-south-1:
+      AMI: ami-0860c9429baba6ad2
+    ap-southeast-1:
+      AMI: ami-0f9d733050c9f5365
+    ap-southeast-2:
+      AMI: ami-09b1eb4f62e1813d0
+    ca-central-1:
+      AMI: ami-0d833a36f4aa82e6b
+    eu-central-1:
+      AMI: ami-0a86f18b52e547759
+    eu-north-1:
+      AMI: ami-06a87e44ba65501d1
+    eu-south-1:
+      AMI: ami-063c648dab7687f2b
+    eu-west-1:
+      AMI: ami-038d7b856fe7557b3
+    eu-west-2:
+      AMI: ami-066ca69d74f59fe1d
+    eu-west-3:
+      AMI: ami-08be160f24365b105
+    me-south-1:
+      AMI: ami-091a3b1243690debd
+    sa-east-1:
+      AMI: ami-08c8994979459a12a
+    us-east-1:
+      AMI: ami-0ee02acd56a52998e
+    us-east-2:
+      AMI: ami-0d563aeddd4be7fff
+    us-west-1:
+      AMI: ami-0ce448b1704085256
+    us-west-2:
+      AMI: ami-0dd273d94ed0540c0
+
+Resources:
+  KurentoMediaServer:
+    Type: "AWS::EC2::Instance"
+    Metadata:
+      Comment: Install and configure KMS
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            "/opt/cfn-setup.sh":
+              source: "https://raw.githubusercontent.com/Kurento/adm-scripts/master/AWS/cfn-setup.sh"
+              context:
+                KmsVersion: "|RELEASE|"
+                TurnUser: !Ref "TurnUser"
+                TurnPassword: !Ref "TurnPassword"
+              mode: "000555"
+              owner: "root"
+              group: "root"
+          commands:
+            setup:
+              command: "/opt/cfn-setup.sh"
+
+    Properties:
+      ImageId: !FindInMap ["RegionMap", !Ref "AWS::Region", "AMI"]
+      InstanceType: !Ref "InstanceType"
+      KeyName: !Ref "KeyName"
+      SecurityGroups:
+        - !Ref "KurentoMediaServerSecurityGroup"
+      Tags:
+        - Key: "Name"
+          Value: !Ref "AWS::StackName"
+
+      # Pass a shell script to the Ubuntu AMI's user data (for `cloud-init`).
+      # Note that `sudo` is not needed: `cloud-init` already runs as root.
+      # Log file for debug: /var/log/cloud-init-output.log
+      # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-shell-scripts
+      UserData:
+        Fn::Base64: !Sub |
+          #!/usr/bin/env bash
+
+          # Bash options for strict error checking.
+          set -o errexit -o errtrace -o pipefail -o nounset
+          shopt -s inherit_errexit 2>/dev/null || true
+
+          # Trace all commands (to stderr).
+          set -o xtrace
+
+          # Install and run the CloudFormation helper scripts.
+          # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
+          apt-get update ; apt-get install --yes python python-pip
+          pip install "https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz"
+
+          # Trigger the CloudFormation init helper.
+          /usr/local/bin/cfn-init --verbose --stack "${AWS::StackId}" --resource "KurentoMediaServer" --region "${AWS::Region}"
+
+          # Signal the WaitCondition resource with the return code from `cfn-init`.
+          /usr/local/bin/cfn-signal --exit-code $? --stack "${AWS::StackId}" --resource "WaitCondition" --region "${AWS::Region}"
+
+  KurentoMediaServerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "KurentoSecurityGroup ${AWS::StackName}"
+      GroupDescription: "SSH and Kurento + Coturn WebRTC ports"
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: "Allow SSH (IPv4)"
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIpv6: ::/0
+          Description: "Allow SSH (IPv6)"
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIp: 0.0.0.0/0
+          Description: "WebRTC port range for Kurento Media Server (IPv4 TCP)"
+          IpProtocol: tcp
+          FromPort: 40000
+          ToPort: 57000
+        - CidrIpv6: ::/0
+          Description: "WebRTC port range for Kurento Media Server (IPv6 TCP)"
+          IpProtocol: tcp
+          FromPort: 40000
+          ToPort: 57000
+        - CidrIp: 0.0.0.0/0
+          Description: "WebRTC port range for Kurento Media Server (IPv4 UDP)"
+          IpProtocol: udp
+          FromPort: 40000
+          ToPort: 57000
+        - CidrIpv6: ::/0
+          Description: "WebRTC port range for Kurento Media Server (IPv6 UDP)"
+          IpProtocol: udp
+          FromPort: 40000
+          ToPort: 57000
+        - CidrIp: 0.0.0.0/0
+          Description: "TURN UDP relay port range for Coturn (IPv4)"
+          IpProtocol: udp
+          FromPort: 57001
+          ToPort: 65535
+        - CidrIpv6: ::/0
+          Description: "TURN UDP relay port range for Coturn (IPv6)"
+          IpProtocol: udp
+          FromPort: 57001
+          ToPort: 65535
+
+  WaitCondition:
+    Type: "AWS::CloudFormation::WaitCondition"
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+        Count: 1
+
+Outputs:
+  InstanceId:
+    Description: "ID of the EC2 instance"
+    Value:
+      Ref: KurentoMediaServer
+
+  KurentoURL:
+    Value: !Sub "ws://${KurentoMediaServer.PublicIp}:8888/kurento"
+    Description: "URL of the Kurento Media Server JSON-RPC API endpoint"
+
+  PublicDnsName:
+    Description: "Public DNS name of the EC2 instance"
+    Value: !GetAtt "KurentoMediaServer.PublicDnsName"
+
+  PublicIp:
+    Description: "Public IP address of the EC2 instance"
+    Value: !GetAtt "KurentoMediaServer.PublicIp"
