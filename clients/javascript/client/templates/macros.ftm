@@ -1,0 +1,189 @@
+<#macro join sequence separator empty_vaue="" list_ending="">
+  <#if sequence?has_content>
+    <#list sequence as item>
+      <#lt>${item}<#rt>
+      <#if item != sequence?last>
+        <#lt>${separator}<#rt>
+      </#if>
+    </#list>
+    <#lt>${list_ending}<#rt>
+  <#else>
+    <#lt>${empty_vaue}<#rt>
+  </#if>
+</#macro>
+
+<#function namepath name>
+  <#list module.remoteClasses as remoteClass>
+    <#if remoteClass.name == name>
+      <#local module_namespace=module_name>
+      <#if remoteClass.abstract>
+        <#local module_namespace=module_namespace+"/abstracts">
+      </#if>
+      <#return "module:"+module_namespace+"."+name>
+    </#if>
+  </#list>
+
+  <#if module.complexTypes??>
+    <#list module.complexTypes as complexType>
+      <#if complexType.name == name>
+        <#local module_namespace=module_name+"/complexTypes">
+        <#return "module:"+module_namespace+"."+name>
+      </#if>
+    </#list>
+  </#if>
+
+  <#if module.imports??>
+    <#list module.imports as import>
+      <#list import.module.remoteClasses as remoteClass>
+        <#if remoteClass.name == name>
+          <#local module_namespace=import.name>
+          <#if remoteClass.abstract>
+            <#local module_namespace=module_namespace+"/abstracts">
+          </#if>
+          <#return "module:"+module_namespace+"."+name>
+        </#if>
+      </#list>
+
+      <#if import.complexTypes??>
+        <#list import.complexTypes as complexType>
+          <#if complexType.name == name>
+            <#local module_namespace=module_name+"/complexTypes">
+            <#return "module:"+module_namespace+"."+name>
+          </#if>
+        </#list>
+      </#if>
+    </#list>
+  </#if>
+
+  <#switch name>
+    <#case "boolean">
+      <#return "external:Boolean">
+    <#case "float">
+      <#return "external:Number">
+    <#case "int">
+      <#return "external:Integer">
+  </#switch>
+
+  <#return "external:"+name>
+</#function>
+
+<#macro checkTypeOptions param>
+  <#if param.type.isList() || !param.optional>
+    <#lt>, {<#if param.type.isList()>isArray: true<#if !param.optional>, </#if></#if><#if !param.optional>required: true</#if>}<#rt>
+  </#if>
+</#macro>
+
+<#macro arguments params=[]>
+  var transaction = (arguments[0] instanceof Transaction)
+                  ? Array.prototype.shift.apply(arguments)
+                  : undefined;
+
+  <#if params?has_content>
+    <#list params as param>
+      <#if param.optional>
+  callback = arguments[arguments.length-1] instanceof Function
+           ? Array.prototype.pop.call(arguments)
+           : undefined;
+
+  switch(arguments.length){
+        <#local params_min=0>
+        <#local params_max=params?size>
+        <#list params as param>
+          <#if param.optional>
+    case ${param_index}: ${param.name} = undefined;
+          <#else>
+            <#local params_min=params_min+1>
+          </#if>
+        </#list>
+    break;
+    case ${params_max}: 
+    break;
+
+    default:
+      var error = new RangeError('Number of params ('+arguments.length+') not in range [${params_min}-${params_max}]');
+          error.length = arguments.length;
+          error.min = ${params_min};
+          error.max = ${params_max};
+
+      throw error;
+  }
+
+        <#break>
+      </#if>
+    </#list>
+  //  <#list params as param>
+  // checkType('${param.type.name}', '${param.name}', ${param.name}<@checkTypeOptions param=param/>);
+  //  </#list>
+
+  var params = {
+    <#list params as param>
+    ${param.name}: ${param.name}<#if param_has_next>,</#if>
+    </#list>
+  };
+  <#else>
+  var usePromise = false;
+  
+  if (callback == undefined) {
+    usePromise = true;
+  }
+  
+  if(!arguments.length) callback = undefined;
+  </#if>
+
+  callback = (callback || noop).bind(this)
+
+</#macro>
+
+<#function splitMaxLength line width>
+  <#assign result=[]>
+
+  <#assign indent=''>
+  <#assign docLine=indent>
+
+  <#list line?matches("\\S+|\\s+", "r") as token>
+    <#if token_index==0>
+      <#if token?matches("\\s+")>
+        <#assign indent=token>
+      </#if>
+    <#elseif docLine != indent && (docLine?length + token?length > width)>
+      <#assign result=result+[docLine]>
+      <#assign docLine=indent>
+
+      <#if token?matches("\\s+")>
+        <#break>
+      </#if>
+    </#if>
+
+    <#assign docLine=docLine+token>
+  </#list>
+
+  <#if docLine != indent>
+    <#assign result=result+[docLine]>
+  </#if>
+
+  <#return result>
+</#function>
+
+<#macro docstring doc namepath indent=0>
+  <#if doc??>
+    <#list sphinxLinks(doc, namepath)?split("\n") as line>
+      <#list splitMaxLength(line, 77-indent) as docLine>
+ *<#list 0..indent as i> </#list>${docLine}
+      </#list>
+    </#list>
+  </#if>
+</#macro>
+
+<#macro paramType param>
+  <#lt>{<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if><#rt>
+</#macro>
+
+<#function hasSetters remoteClass>
+  <#list remoteClass.properties as property>
+    <#if !(property.final || property.readOnly)>
+      <#return true>
+    </#if>
+  </#list>
+
+  <#return false>
+</#function>

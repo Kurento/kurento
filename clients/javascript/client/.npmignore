@@ -1,0 +1,14 @@
+dist/
+doc/
+scripts/
+templates/
+test/
+test_reconnect/
+.gitignore
+.gitreview
+assembly.xml
+bower.json
+Gruntfile.js
+pom.xml
+README_bower.md
+README.md

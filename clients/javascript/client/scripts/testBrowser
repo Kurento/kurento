@@ -1,0 +1,131 @@
+#!/usr/bin/env node
+
+var http = require('http')
+
+var webdriver = require('selenium-webdriver')
+
+var outputFile = require('fs-extra').outputFile
+var Server     = require('node-static').Server
+var tasks      = require('grunt').tasks
+
+var parseString = require('xml2js').parseString;
+
+var QUnit = require('qunit-cli');
+
+
+const package_name = require('../package.json').name
+
+const PORT = 8080
+const REPORTS_DIR='reports'
+const TIMEOUT=120
+
+
+function onerror(error)
+{
+  if(error)
+  {
+    console.trace(error)
+    process.exit(-1)
+  }
+}
+
+function writeReport(type, data, callback)
+{
+  callback = callback || onerror
+
+  if(!data) return callback("There's no "+type+' report data')
+
+  const path = REPORTS_DIR+'/'+package_name+'.'+type
+
+  outputFile(path, data, function(error)
+  {
+    if(error) return callback(error);
+
+    console.log(type + ' report saved at ' + path);
+
+    callback(null, data)
+  });
+}
+
+function waitReport(driver, id, callback)
+{
+  var elem = driver.findElement({id: id})
+
+  driver
+      .wait(webdriver.until.elementIsVisible(elem), TIMEOUT*1000)
+      .then(elem.getAttribute.bind(elem, 'value'))
+      .then(function(data)
+      {
+        var ext = id == 'junit' ? 'xml' : id;
+        writeReport(ext, data, callback)
+      })
+}
+
+function runTest(browser)
+{
+  var driverBuilder = new webdriver.Builder().forBrowser(browser)
+
+  if (browser == "chrome") {
+    var capabilities = webdriver.Capabilities.chrome();
+    capabilities.set('chromeOptions', {
+      'args': ['--headless', '--disable-gpu','--no-sandbox']
+    })
+    driverBuilder.withCapabilities(capabilities)
+  }
+
+  var driver = driverBuilder.build()
+
+  var ws_uri = QUnit.config.ws_uri;
+  if (ws_uri == undefined) {
+    ws_uri = 'ws://127.0.0.1:8888/kurento';
+  };
+
+  driver.get('http://localhost:'+PORT+'/test/index.html?ws_uri=' + ws_uri)
+
+  waitReport(driver, 'junit', function(error, data)
+  {
+    if(error) return onerror(error)
+
+    parseString(data, function(error, result)
+    {
+      if(error) return onerror(error)
+
+      // Set process exit code if test didn't passed
+      var $ = result.testsuites.$
+      var code = parseInt($.failures) + parseInt($.errors)
+      if(code)
+        process.exit(code)
+    });
+  })
+  waitReport(driver, 'lcov')
+
+  return driver.quit()
+}
+
+
+tasks(['jsdoc', 'coverage'], {}, function()
+{
+  var file = new Server();
+
+  var server = http.createServer(function(request, response)
+  {
+    var listener = file.serve.bind(file, request, response)
+
+    request.addListener('end', listener).resume()
+  }).listen(PORT);
+
+  runTest('chrome').then(function() //server.close.bind(server))
+//  runTest('firefox').then(function()
+  {
+    server.close()
+
+    // This should not be needed, but seems Grunt *sometimes* (some plugins?)
+    // left pending events on the Node.js event loop, so it can't be able to
+    // exit naturally by itself. The solution they are using is exit explicity:
+    //
+    // https://github.com/gruntjs/grunt/blob/21dc5499abe1e789b26af0893ef80830c48b32a0/lib/grunt.js#L149-L155
+    //
+    // Grunt guys are a gang of assholes with no good taste nor proud ¬¬
+    process.exit(0)
+  })
+})

@@ -1,0 +1,278 @@
+<#switch remoteClass.name>
+  <#case "Hub">
+
+/**
+ * Create a new instance of a {module:core~HubPort} attached to this {module:core~Hub}
+ *
+ * @param {module:core/abstract.Hub~createHubCallback} callback
+ *
+ * @return {external:Promise}
+ */
+Hub.prototype.createHubPort = function(callback){
+  <@arguments/>
+  var mediaObject = new HubPort()
+
+  mediaObject.on('_rpc', this.emit.bind(this, '_rpc'));
+
+  var params =
+  {
+    type: 'HubPort',
+    constructorParams: {hub: this}
+  };
+
+  Object.defineProperty(params, 'object', {value: mediaObject});
+
+  this.emit('_create', transaction, params, callback);
+
+  return mediaObject
+};
+/**
+ * @callback core/abstract.Hub~createHubCallback
+ * @param {external:Error} error
+ * @param {module:core/abstract.HubPort} result
+ *  The created HubPort
+ */
+
+  <#break>
+  <#case "MediaObject">
+
+function throwRpcNotReady()
+{
+  throw new SyntaxError('RPC result is not ready, use .then() method instead');
+};
+
+/**
+ * Send a command to a media object
+ *
+ * @param {external:String} method - Command to be executed by the server
+ * @param {module:core/abstract.MediaObject.constructorParams} [params]
+ * @param {module:core/abstract.MediaObject~invokeCallback} callback
+ *
+ * @return {external:Promise}
+ */
+Object.defineProperty(MediaObject.prototype, '_invoke',
+{
+  enumerable: true,
+  value: function(transaction, method, params, callback){
+    var self = this;
+
+    // Fix optional parameters
+    if(params instanceof Function)
+    {
+      if(callback)
+        throw new SyntaxError("Nothing can be defined after the callback");
+
+      callback = params;
+      params = undefined;
+    };
+
+    var promise;
+    var error = this._createError;
+    if(error)
+      promise = Promise.reject(error)
+    else
+    {
+      promise = new Promise(function(resolve, reject)
+      {
+        // Generate request parameters
+        var params2 =
+        {
+          object: self,
+          operation: method
+        };
+
+        if(params)
+          params2.operationParams = params;
+
+        function callback(error, result)
+        {
+          if(error) return reject(error);
+
+          var value = result.value;
+          if(value === undefined)
+            value = self
+
+          resolve(value);
+        }
+
+        // Do request
+        self.emit('_rpc', transaction, 'invoke', params2, callback);
+      });
+    }
+
+    return promiseCallback(promise, callback, this)
+  }
+})
+/**
+ * @callback core/abstract.MediaObject~invokeCallback
+ * @param {external:Error} error
+ */
+
+/**
+ * Explicity release a {@link module:core/abstract.MediaObject MediaObject} from memory
+ *
+ * All its descendants will be also released and collected
+ *
+ * @param {module:core/abstract.MediaObject~releaseCallback} callback
+ *
+ * @return {external:Promise}
+ */
+MediaObject.prototype.release = function(callback){
+  <@arguments/>
+  var self = this;
+
+  var promise;
+  var error = this._createError;
+  if(error)
+    promise = Promise.reject(error)
+  else
+    promise = new Promise(function(resolve, reject)
+    {
+      var params =
+      {
+        object: self
+      };
+
+      function callback(error)
+      {
+        if(error) return reject(error);
+
+        // Object was sucessfully released on the server,
+        // remove it from cache and all its events
+        Object.keys(self._events).forEach(function(event)
+        {
+          if(event[0] == '_'
+          || event == 'newListener'
+          || event == 'removeListener'
+          || event == 'release')
+            return;
+
+          self.removeAllListeners(event);
+        })
+        self.emit('release');
+
+        resolve();
+      }
+
+      self.emit('_rpc', transaction, 'release', params, callback);
+    });
+
+  return disguise(promiseCallback(promise, callback), this)
+};
+/**
+ * @callback core/abstract.MediaObject~releaseCallback
+ * @param {external:Error} error
+ */
+
+
+// Promise interface ("thenable")
+
+MediaObject.prototype.then = function(onFulfilled, onRejected){
+  if(this.id != null)
+    var promise = Promise.resolve(disguise.unthenable(this))
+  else if(this.id === null)
+    var promise = Promise.reject()
+  else {
+    var self = this
+
+    var promise = new Promise(function(resolve, reject) {
+      return self.once('_id', function(error, id) {
+        if(error) return reject(error);
+
+        resolve(disguise.unthenable(self));
+      })
+    })
+  }
+
+  promise = promise.then(onFulfilled ? onFulfilled.bind(this) :
+function(result){return Promise.resolve(result)},
+                         onRejected  ? onRejected .bind(this) :
+function(error) {return Promise.reject(error)});
+
+  return disguise(promise, this);
+}
+
+MediaObject.prototype.catch = function(onRejected)
+{
+  this.then(null, onRejected);
+}
+
+Object.defineProperty(MediaObject.prototype, 'commited',
+{
+  get: function(){return this.id !== undefined;}
+});
+
+  <#break>
+  <#case "MediaPipeline">
+
+/**
+ * Connect the source of a media to the sink of the next one
+ *
+ * @param {...module:core/abstract~MediaObject} media - A media to be connected
+ * @callback {module:MediaPipeline~connectCallback} [callback]
+ *
+ * @return {external:Promise}
+ *
+ * @throws {SyntaxError}
+ */
+MediaPipeline.prototype.connect = function(media, callback){
+  // Fix lenght-variable arguments
+  if(!(media instanceof Array))
+  {
+    media = Array.prototype.slice.call(arguments, 0);
+    callback = (typeof media[media.length - 1] === 'function')
+             ? media.pop()
+             : undefined;
+  }
+
+  callback = (callback || noop).bind(this)
+
+  // Check if we have enought media components
+  if(media.length < 2)
+    throw new SyntaxError('Need at least two media elements to connect');
+
+  return media[0].connect(media.slice(1), callback)
+};
+/**
+ * @callback MediaPipeline~connectCallback
+ * @param {external:Error} error
+ */
+
+  <#break>
+  <#case "MediaSource">
+
+/**
+ * Disconnect this source pad from the specified sink pad
+ *
+ * @public
+ *
+ * @param {...module:core/abstract.MediaSink} sink - Sink to be disconnected
+ * @param {module:core/abstract.MediaSource~disconnectCallback} callback
+ *
+ * @return {external:Promise}
+ */
+MediaSource.prototype.disconnect = function(sink, callback){
+  var transaction = (arguments[0] instanceof Transaction)
+                  ? Array.prototype.shift.apply(arguments)
+                  : undefined;
+
+  if(arguments.length === 1) callback = undefined;
+
+  // checkType('MediaSink', 'sink', sink, {required: true});
+
+  var params =
+  {
+    src: this
+  };
+
+  callback = (callback || noop).bind(this)
+
+  return disguise(sink._invoke(transaction, 'disconnect', params, callback), this)
+};
+/**
+ * @callback module:core/abstract.MediaSource~disconnectCallback
+ * @param {external:Error} error
+ */
+
+  <#break>
+</#switch>

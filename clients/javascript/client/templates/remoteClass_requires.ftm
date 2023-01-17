@@ -1,0 +1,23 @@
+<#switch remoteClass.name>
+  <#case "Hub">
+
+var HubPort = require('../HubPort');
+  <#break>
+  <#case "MediaElement">
+
+var each = require('async').each
+
+var promiseCallback = require('promisecallback');
+  <#break>
+  <#case "MediaObject">
+
+var promiseCallback = require('promisecallback');
+  <#break>
+  <#case "MediaPipeline">
+
+var MediaObjectCreator  = kurentoClient.MediaObjectCreator;
+var TransactionsManager = kurentoClient.TransactionsManager;
+
+var transactionOperation = TransactionsManager.transactionOperation;
+  <#break>
+</#switch>

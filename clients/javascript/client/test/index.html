@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>JavaScript Kurento Client</title>
+    <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+
+    <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+
+    <script src="../node_modules/qunit-assert-canvas/qunit-assert-canvas.js"></script>
+    <script src="../node_modules/qunit-reporter-junit/qunit-reporter-junit.js"></script>
+    <script src="../node_modules/qunit-reporter-lcov/qunit-reporter-lcov.js"></script>
+
+    <script src="../node_modules/wock/dist/wock.js"></script>
+
+    <script src="../dist_test/kurento-client.test.js"></script>
+  </head>
+  <body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <textarea id="junit" readonly style="width: 100%;visibility:hidden"></textarea>
+    <textarea id="lcov"  readonly style="width: 100%;visibility:hidden"></textarea>
+
+    <script src="_common.js"></script>
+    <script src="_proxy.js"></script>
+
+    <script src="MediaObjectCreator.js"></script>
+    <script src="ServerManager.js"></script>
+    <script src="transactions/Transaction.js"></script>
+
+    <script src="reconnect.js"></script>
+
+    <script src="core/MediaElement.js"></script>
+    <script src="core/MediaObject.js"></script>
+    <script src="core/MediaPipeline.js"></script>
+
+    <script src="elements/Composite.js"></script>
+    <script src="elements/HttpPostEndpoint.js"></script>
+    <script src="elements/PlayerEndpoint.js"></script>
+    <script src="elements/RecorderEndpoint.js"></script>
+    <script src="elements/RtpEndpoint.js"></script>
+    <script src="elements/WebRtcEndpoint.js"></script>
+
+    <script src="filters/FaceOverlayFilter.js"></script>
+    <script src="filters/GStreamerFilter.js"></script>
+    <script src="filters/ZBarFilter.js"></script>
+  </body>
+</html>
