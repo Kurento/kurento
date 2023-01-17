@@ -1,0 +1,6 @@
+build*/
+debian/kms-opencv-plugin-sample*
+debian/*debhelper*
+debian/files
+debian/tmp/
+obj-*/
