@@ -1,0 +1,38 @@
+{
+  "remoteClasses": [
+    {
+      "name": "Dispatcher",
+      "extends": "Hub",
+      "doc": "A :rom:cls:`Hub` that allows routing between arbitrary port pairs",
+      "constructor":
+        {
+          "doc": "Create a :rom:cls:`Dispatcher` belonging to the given pipeline.",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the dispatcher belongs",
+              "type": "MediaPipeline"
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "connect",
+          "doc": "Connects each corresponding :rom:enum:`MediaType` of the given source port with the sink port.",
+          "params": [
+            {
+              "name": "source",
+              "doc": "Source port to be connected",
+              "type": "HubPort"
+            },
+            {
+              "name": "sink",
+              "doc": "Sink port to be connected",
+              "type": "HubPort"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

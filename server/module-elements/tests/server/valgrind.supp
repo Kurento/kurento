@@ -1,0 +1,372 @@
+# G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind -v --leak-check=yes --log-file=valgrind.log --xml-file=valgrind.xml --xml=yes --suppressions=../valgrind.supp sever/kurento <command line options for kurento>
+{
+   Glib type register static
+   Memcheck:Leak
+   ...
+   fun:g_type_register_static
+   ...
+}
+{
+   Glib type interface static registration
+   Memcheck:Leak
+   ...
+   fun:g_type_add_interface_static
+   ...
+}
+{
+   Glib type register fundamental
+   Memcheck:Leak
+   ...
+   fun:g_type_register_fundamental
+   ...
+}
+{
+   Glib type class ref
+   Memcheck:Leak
+   ...
+   fun:g_type_class_ref
+   ...
+}
+{
+   Glib init ctor
+   Memcheck:Leak
+   ...
+   fun:gobject_init_ctor
+   ...
+}
+{
+   Quark from static string
+   Memcheck:Leak
+   ...
+   fun:g_quark_from_static_string
+   ...
+}
+{
+   Static pad Template
+   Memcheck:Leak
+   ...
+   fun:gst_static_pad_template_get
+   ...
+}
+{
+   Gstreamer load plugin
+   Memcheck:Leak
+   ...
+   fun:gst_plugin_feature_load
+   ...
+}
+{
+   Gstreamer load plugin file
+   Memcheck:Leak
+   ...
+   fun:gst_plugin_load_file
+   ...
+}
+{
+   Gstreamer statuc_caps_get
+   Memcheck:Leak
+   ...
+   fun:gst_static_caps_get
+   ...
+}
+{
+   Glib dns lookup
+   Memcheck:Param
+   sendmsg(mmsg[0].msg_hdr)
+   fun:sendmmsg
+   fun:__libc_res_nsend
+   fun:__libc_res_nquery
+   ...
+}
+{
+   Lib orc program_new_from_static
+   Memcheck:Leak
+   ...
+   fun:orc_program_new_from_static_bytecode
+   ...
+}
+{
+   Gmodule load_module
+   Memcheck:Leak
+   ...
+   fun:g_module_close
+   ...
+   fun:g_tls_certificate_new_from_file
+   ...
+}
+{
+   GThread pool
+   Memcheck:Leak
+   ...
+   fun:g_system_thread_new
+   ...
+   fun:g_thread_pool_push
+   ...
+}
+{
+  Clock with no gst_deinit
+  Memcheck:Leak
+  ...
+  fun:g_system_thread_new
+  fun:g_thread_new_internal
+  fun:gst_system_clock_id_wait_async
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  fun:EVP_EncodeBlock
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:g_hash_table_lookup
+  fun:rtp_session_process_rtcp
+  fun:gst_rtp_session_chain_recv_rtcp
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:rtp_session_process_rtcp
+  fun:gst_rtp_session_chain_recv_rtcp
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:on_key_received
+  fun:ffi_call_unix64
+  fun:ffi_cal
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_sqr4x_mont
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_sqr4x_mont
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_mul4x_mont
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_mul4x_mont_gather5
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:md5_block_asm_data_order
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:sha1_block_data_order_avx
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:dtls1_read_bytes
+  fun:ssl3_read_internal
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:export_srtp_keys
+  fun:openssl_poll
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:srtp_stream_init_keys
+  fun:srtp_stream_init
+  fun:srtp_add_stream
+  fun:srtp_create
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:aes_encrypt
+  fun:aes_icm_encrypt_ismacryp
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:kms_rtcp_demux_chain
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:gst_rtp_session_chain_recv_rtcp
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Srtp uninitialized encode
+  Memcheck:Value8
+  ...
+  fun:g_base64_encode
+  fun:on_key_received
+  ...
+  fun:ffi_call
+  ...
+}
+{
+  Srtp uninitialized encode
+  Memcheck:Value8
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:gst_structure_foreach
+  fun:gst_caps_is_equal_fixed
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:ffi_call
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:kms_remb_remote_destroy
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:gst_structure_foreach
+  fun:gst_caps_is_equal_fixed
+  ...
+  fun:gst_funnel_sink_event
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:octet_string_is_eq
+  fun:srtp_unprotect_rtcp
+  fun:gst_srtp_dec_decode_buffer
+  fun:gst_srtp_dec_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:kms_rtcp_demux_chain
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:rtp_session_process_rtcp
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:md5_block_asm_data_order
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:sha1_block_data_order_avx
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:dtls1_read_bytes
+  fun:ssl3_read_internal
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:rtp_session_process_rtcp
+  fun:gst_rtp_session_chain_recv_rtcp
+  ...
+}
+#This should be ignored in a better way
+{
+  Libcrypto uninitialized
+  Memcheck:Param
+  sendmsg(msg.msg_iov[0])
+  ...
+  fun:g_socket_send_message
+  ...
+  fun:nice_agent_send_messages_nonblocking_internal
+  ...
+}
+{
+  Quark init
+  Memcheck:Leak
+  ...
+  fun:g_quark_init
+  ...
+}

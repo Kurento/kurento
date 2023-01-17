@@ -1,0 +1,23 @@
+{
+  "complexTypes": [
+    {
+      "name": "MediaProfileSpecType",
+      "doc": "Media profile, used by the RecorderEndpoint builder to specify the codecs and media container that should be used for the recordings.",
+      "typeFormat": "ENUM",
+      "values": [
+        "WEBM",
+        "MKV",
+        "MP4",
+        "WEBM_VIDEO_ONLY",
+        "WEBM_AUDIO_ONLY",
+        "MKV_VIDEO_ONLY",
+        "MKV_AUDIO_ONLY",
+        "MP4_VIDEO_ONLY",
+        "MP4_AUDIO_ONLY",
+        "JPEG_VIDEO_ONLY",
+        "KURENTO_SPLIT_RECORDER",
+        "FLV"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "remoteClasses": [
+    {
+      "name": "HttpPostEndpoint",
+      "extends": "HttpEndpoint",
+      "doc": "An :rom:cls:`HttpPostEndpoint` contains SINK pads for AUDIO and VIDEO, which provide access to an HTTP file upload function\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSources <MediaSource>` are accessed through the HTTP POST method.",
+      "constructor":
+        {
+          "doc": "Builder for the :rom:cls:`HttpPostEndpoint`.",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "disconnectionTimeout",
+              "doc": "This is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 2
+            },
+            {
+              "name": "useEncodedMedia",
+              "doc": "Feed the input media as-is to the Media Pipeline, instead of first decoding it.
+              <p>
+              When this property is not enabled, the input media gets always decoded into a raw format before being processed by the rest of the Media Pipeline; this is done to ensure that Kurento is able to keep track of lost keyframes among other quality-control measurements. Of course, having to decode the media has a cost in terms of CPU usage, but ensures that the output streaming will be robust and reliable.
+              </p>
+              <p>
+              When this property is enabled, the explained behavior gets disabled. Instead, The endpoint will provide any input media directly to the Media Pipeline, without prior decoding. Enabling this mode of operation could have a severe effect on stability, because lost video keyframes will not be regenerated; however, avoiding a full cycle of decoding and encoding can be very useful for certain applications, because it improves performance by greatly reducing the CPU processing load.
+              </p>
+              <p>
+              Keep in mind that if this property is enabled, the original source media MUST already have an encoding format which is compatible with the destination target. For example: given a pipeline which uses this endpoint to read a file and then streams it to a WebRTC browser such as Chrome, then the file must already be encoded with a VP8 or H.264 codec profile which Chrome is able to decode. Note that for this example, most browsers don't support ANY combination of H.264 encoding options; instead, they tend to support only a very specific subset of the codec features (also known as 'profiles').
+              </p>
+              <p>
+              We strongly recommend to avoid using this option, because correct behavior cannot be guaranteed.
+              </p>
+              ",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            }
+          ]
+        },
+      "events": [
+        "EndOfStream"
+      ]
+    },
+    {
+      "name": "HttpEndpoint",
+      "abstract": true,
+      "extends": "SessionEndpoint",
+      "doc": "Endpoint that enables Kurento to work as an HTTP server, allowing peer HTTP clients to access media.",
+      "methods": [
+        {
+          "name": "getUrl",
+          "doc": "Obtains the URL associated to this endpoint",
+          "params": [],
+          "return": {
+            "doc": "The url as a String",
+            "type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

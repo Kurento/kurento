@@ -1,0 +1,7 @@
+*~
+*kdev4
+.idea
+build
+obj-x86_64-linux-gnu
+.excludes
+CMakeLists.txt.user

@@ -1,0 +1,69 @@
+Source: kms-elements
+Priority: optional
+Maintainer: Kurento <kurento@openvidu.io>
+Build-Depends: debhelper (>= 9),
+ build-essential,
+ cmake,
+ ffmpeg | libav-tools,
+ gstreamer1.0-nice,
+ gstreamer1.0-plugins-bad,
+ gstreamer1.0-plugins-good,
+ gstreamer1.0-x,
+ kms-cmake-utils (>= 7.0.0),
+ kms-core-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
+ libboost-filesystem-dev,
+ libboost-system-dev,
+ libboost-test-dev,
+ libglibmm-2.4-dev,
+ libgstreamer1.0-dev,
+ libgstreamer-plugins-bad1.0-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libnice-dev,
+ libsigc++-2.0-dev,
+ libsoup2.4-dev,
+ libssl-dev
+Standards-Version: 4.0.0
+Vcs-Git: https://github.com/Kurento/kms-elements.git
+Vcs-Browser: https://github.com/Kurento/kms-elements
+Homepage: https://kurento.openvidu.io/
+
+Package: kms-elements
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ gstreamer1.0-nice,
+ kms-core (>= 7.0.0),
+ libgstreamer-plugins-bad1.0-0,
+ libsoup2.4-1,
+ openh264-gst-plugin
+Description: Kurento Elements module
+ Kurento Elements module - Binary libraries.
+
+Package: kms-elements-dev
+Architecture: any
+Section: libdevel
+Depends: kms-elements (= ${binary:Version}),
+ kms-cmake-utils (>= 7.0.0),
+ kms-core-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
+ libboost-filesystem-dev,
+ libboost-system-dev,
+ libboost-test-dev,
+ libglibmm-2.4-dev,
+ libgstreamer1.0-dev,
+ libgstreamer-plugins-bad1.0-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libnice-dev,
+ libsigc++-2.0-dev,
+ libsoup2.4-dev,
+ libssl-dev
+Description: Kurento Elements module
+ Kurento Elements module - Development files.
+
+Package: kms-elements-dbg
+Architecture: any
+Section: debug
+Depends: kms-elements (= ${binary:Version})
+Description: Kurento Elements module
+ Kurento Elements module - Debugging symbols.

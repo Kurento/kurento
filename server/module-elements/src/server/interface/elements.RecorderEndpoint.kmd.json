@@ -1,0 +1,393 @@
+{
+  "remoteClasses": [
+    {
+      "name": "RecorderEndpoint",
+      "extends": "UriEndpoint",
+      "doc": "Provides functionality to store media contents.
+<p>
+  RecorderEndpoint can store media into local files or send it to a remote
+  network storage. When another :rom:cls:`MediaElement` is connected to a
+  RecorderEndpoint, the media coming from the former will be muxed into the
+  selected recording format and stored in the designated location.
+</p>
+<p>
+  These parameters must be provided to create a RecorderEndpoint, and they
+  cannot be changed afterwards:
+</p>
+<ul>
+  <li>
+    <strong>Destination URI</strong>, where media will be stored. These formats
+    are supported:
+    <ul>
+      <li>
+        File: A file path that will be written into the local file system.
+        Example:
+        <ul>
+          <li><code>file:///path/to/file</code></li>
+        </ul>
+      </li>
+      <li>
+        HTTP: A POST request will be used against a remote server. The server
+        must support using the <i>chunked</i> encoding mode (HTTP header
+        <code>Transfer-Encoding: chunked</code>). Examples:
+        <ul>
+          <li><code>http(s)://{host}/path/to/file</code></li>
+          <li>
+            <code>
+              http(s)://{username}:{password}@{host}:{port}/path/to/file
+            </code>
+          </li>
+        </ul>
+      </li>
+      <li>
+        Relative URIs (with no schema) are supported. They are completed by
+        prepending a default URI defined by property <i>defaultPath</i>. This
+        property is defined in the configuration file
+        <i>/etc/kurento/modules/kurento/UriEndpoint.conf.ini</i>, and the
+        default value is <code>file:///var/lib/kurento/</code>
+      </li>
+      <li>
+        <strong>
+          NOTE: Special characters must be
+          <a href='https://en.wikipedia.org/wiki/Query_string#URL_encoding'>
+            URL-encoded
+          </a>
+          in <code>{username}</code> and <code>{password}</code> fields.
+        </strong>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <strong>Media Profile</strong> (:rom:enum:`MediaProfileSpecType`), which
+    determines the video and audio encoding. See below for more details.
+  </li>
+  <li>
+    <strong>EndOfStream</strong> (optional), a parameter that dictates if the
+    recording should be automatically stopped once the EOS event is detected.
+  </li>
+</ul>
+<p>
+  Note that
+  <strong>
+    RecorderEndpoint requires write permissions to the destination
+  </strong>
+  ; otherwise, the media server won't be able to store any information, and an
+  :rom:evt:`Error` will be fired. Make sure your application subscribes to this
+  event, otherwise troubleshooting issues will be difficult.
+</p>
+<ul>
+  <li>
+    To write local files (if you use <code>file://</code>), the system user that
+    is owner of the media server process needs to have write permissions for the
+    requested path. By default, this user is named '<code>kurento</code>'.
+  </li>
+  <li>
+    To record through HTTP, the remote server must be accessible through the
+    network, and also have the correct write permissions for the destination
+    path.
+  </li>
+</ul>
+<p>
+  Recording will start as soon as the user invokes the
+  <code>record()</code> method. The recorder will then store, in the location
+  indicated, the media that the source is sending to the endpoint. If no media
+  is being received, or no endpoint has been connected, then the destination
+  will be empty. The recorder starts storing information into the file as soon
+  as it gets it.
+</p>
+<p>
+  <strong>Recording must be stopped</strong> when no more data should be stored.
+  This is done with the <code>stopAndWait()</code> method, which blocks and
+  returns only after all the information was stored correctly.
+</p>
+<p>
+  The source endpoint can be hot-swapped while the recording is taking place.
+  The recorded file will then contain different feeds. When switching video
+  sources, if the new video has different size, the recorder will retain the
+  size of the previous source. If the source is disconnected, the last frame
+  recorded will be shown for the duration of the disconnection, or until the
+  recording is stopped.
+</p>
+<p>
+  <strong>
+    NOTE: It is recommended to start recording only after media arrives.
+  </strong>
+  For this, you may use the <code>MediaFlowInStateChanged</code> and
+  <code>MediaFlowOutStateChanged</code>
+  events of your endpoints, and synchronize the recording with the moment media
+  comes into the Recorder.
+</p>
+<p>
+  <strong>
+    WARNING: All connected media types must be flowing to the RecorderEndpoint.
+  </strong>
+  If you used the default <code>connect()</code> method, it will assume both
+  AUDIO and VIDEO. Failing to provide both kinds of media will result in the
+  RecorderEndpoint creating an empty file and buffering indefinitely; the
+  recorder waits until all kinds of media start arriving, in order to
+  synchronize them appropriately.<br />
+  For audio-only or video-only recordings, make sure to use the correct,
+  media-specific variant of the <code>connect()</code> method.
+</p>
+<p>For example:</p>
+<ol>
+  <li>
+    When a web browser's video arrives to Kurento via WebRTC, your
+    WebRtcEndpoint will emit a <code>MediaFlowOutStateChanged</code> event.
+  </li>
+  <li>
+    When video starts flowing from the WebRtcEndpoint to the RecorderEndpoint,
+    the RecorderEndpoint will emit a <code>MediaFlowInStateChanged</code> event.
+    You should start recording at this point.
+  </li>
+  <li>
+    You should only start recording when RecorderEndpoint has notified a
+    <code>MediaFlowInStateChanged</code> for ALL streams. So, if you record
+    AUDIO+VIDEO, your application must receive a
+    <code>MediaFlowInStateChanged</code> event for audio, and another
+    <code>MediaFlowInStateChanged</code> event for video.
+  </li>
+</ol>
+      ",
+      "constructor":
+        {
+          "doc": "Builder for the :rom:cls:`RecorderEndpoint`",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "uri",
+              "doc": "URI where the recording will be stored. It must be accessible from the media server process itself:
+              <ul>
+                <li>Local server resources: The user running the Kurento Media Server must have write permission over the file.</li>
+                <li>Network resources: Must be accessible from the network where the media server is running.</li>
+              </ul>",
+              "type": "String"
+            },
+            {
+              "name": "mediaProfile",
+              "doc": "Selects the media format used for recording.
+<p>
+  The media profile allows you to specify which codecs and media container will
+  be used for the recordings. This is currently the only way available to tell
+  Kurento about which codecs should be used.
+</p>
+<p>
+  Watch out for these important remarks:
+</p>
+<ul>
+  <li>
+    If the format of incoming media differs from the recording profile, media
+    will need to be transcoded. Transcoding always incurs in noticeable CPU
+    load, so it is always good trying to avoid it. For instance, if a
+    VP8-encoded video (from WebRTC) is recorded with an MP4 recording profile
+    (which means H.264 encoding), the video needs to be transcoded from VP8 to
+    H.264. On the other hand, recording with the WEBM profile would allow to
+    store the video as-is with its VP8 encoding.
+  </li>
+  <li>
+    If you intend to record audio-only or video-only media, select the
+    appropriate <code>_AUDIO_ONLY</code> or <code>_VIDEO_ONLY</code> profile.
+    For example, to record a WebRTC screen capture (as obtained from a web
+    browser's call to <code>MediaDevices.getDisplayMedia()</code>), choose
+    <code>WEBM_VIDEO_ONLY</code> instead of just <code>WEBM</code>.
+  </li>
+</ul>
+              ",
+              "type": "MediaProfileSpecType",
+              "optional": true,
+              "defaultValue": "WEBM"
+            },
+            {
+              "name": "stopOnEndOfStream",
+              "doc": "Forces the recorder endpoint to finish processing data when an End Of Stream (EOS) is detected in the stream",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "record",
+          "doc": "Starts storing media received through the sink pad.",
+          "params": []
+        },
+        {
+          "name": "stopAndWait",
+          "doc": "Stops recording and does not return until all the content has been written to the selected uri. This can cause timeouts on some clients if there is too much content to write, or the transport is slow",
+          "params": []
+        }
+      ],
+      "events": [
+        "Recording",
+        "Paused",
+        "Stopped"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "Recording",
+      "extends": "Media",
+      "doc": "Fired when the recoding effectively starts. ie: Media is received by the recorder, and <code>record()</code> method has been called.",
+      "properties": []
+    },
+    {
+      "name": "Paused",
+      "extends": "Media",
+      "doc": "Fired when the recorder goes to pause state",
+      "properties": []
+    },
+    {
+      "name": "Stopped",
+      "extends": "Media",
+      "doc": "Fired when the recorder has been stopped and all the media has been written to storage.",
+      "properties": []
+    }
+  ],
+  "complexTypes": [
+    {
+      "name": "GapsFixMethod",
+      "typeFormat": "ENUM",
+      "doc": "How to fix gaps when they are found in the recorded stream.
+<p>
+Gaps are typically caused by packet loss in the input streams, such as when an
+RTP or WebRTC media flow suffers from network congestion and some packets don't
+arrive at the media server.
+</p>
+<p>Different ways of handling gaps have different tradeoffs:</p>
+<ul>
+  <li>
+    <strong>NONE</strong>: Do not fix gaps.
+    <p>
+      Leave the stream as-is, and store it with any gaps that the stream might
+      have. Some players are clever enough to adapt to this during playback, so
+      that the gaps are reduced to a minimum and no problems are perceived by
+      the user; other players are not so sophisticated, and will struggle trying
+      to decode a file that contains gaps. For example, trying to play such a
+      file directly with Chrome will cause lipsync issues (audio and video will
+      fall out of sync).
+    </p>
+    <p>
+      This is the best choice if you need consistent durations across multiple
+      simultaneous recordings, or if you are anyway going to post-process the
+      recordings (e.g. with an extra FFmpeg step).
+    </p>
+    <p>
+      For example, assume a session length of 15 seconds: packets arrive
+      correctly during the first 5 seconds, then there is a gap, then data
+      arrives again for the last 5 seconds. Also, for simplicity, assume 1 frame
+      per second. With no fix for gaps, the RecorderEndpoint will store each
+      frame as-is, with these timestamps:
+    </p>
+    <pre>
+      frame 1  - 00:01
+      frame 2  - 00:02
+      frame 3  - 00:03
+      frame 4  - 00:04
+      frame 5  - 00:05
+      frame 11 - 00:11
+      frame 12 - 00:12
+      frame 13 - 00:13
+      frame 14 - 00:14
+      frame 15 - 00:15
+    </pre>
+    <p>
+      Notice how the frames between 6 to 10 are missing, but the last 5 frames
+      still conserve their original timestamp. The total length of the file is
+      detected as 15 seconds by most players, although playback could stutter or
+      hang during the missing section.
+    </p>
+  </li>
+  <li>
+    <strong>GENPTS</strong>: Adjust timestamps to generate a smooth progression
+    over all frames.
+    <p>
+      This technique rewrites the timestamp of all frames, so that gaps are
+      suppressed. It provides the best playback experience for recordings that
+      need to be played as-is (i.e. they won't be post-processed). However,
+      fixing timestamps might cause a change in the total duration of a file. So
+      different recordings from the same session might end up with slightly
+      different durations.
+    </p>
+    <p>
+      In our example, the RecorderEndpoint will change all timestamps that
+      follow a gap in the stream, and store each frame as follows:
+    </p>
+    <pre>
+      frame 1  - 00:01
+      frame 2  - 00:02
+      frame 3  - 00:03
+      frame 4  - 00:04
+      frame 5  - 00:05
+      frame 11 - 00:06
+      frame 12 - 00:07
+      frame 13 - 00:08
+      frame 14 - 00:09
+      frame 15 - 00:10
+    </pre>
+    <p>
+      Notice how the frames between 6 to 10 are missing, and the last 5 frames
+      have their timestamps corrected to provide a smooth increment over the
+      previous ones. The total length of the file is detected as 10 seconds, and
+      playback should be correct throughout the whole file.
+    </p>
+  </li>
+  <li>
+    <strong>FILL_IF_TRANSCODING</strong>: (NOT IMPLEMENTED YET).
+    <p>This is a proposal for future improvement of the RecorderEndpoint.</p>
+    <p>
+      It is possible to perform a dynamic adaptation of audio rate and add frame
+      duplication to the video, such that the missing parts are filled with
+      artificial data. This has the advantage of providing a smooth playback
+      result, and at the same time conserving all original timestamps.
+    </p>
+    <p>
+      However, the main issue with this method is that it requires accessing the
+      decoded media; i.e., transcoding must be active. For this reason, the
+      proposal is to offer this option to be enabled only when transcoding would
+      still happen anyways.
+    </p>
+    <p>
+      In our example, the RecorderEndpoint would change all missing frames like
+      this:
+    </p>
+    <pre>
+      frame 1  - 00:01
+      frame 2  - 00:02
+      frame 3  - 00:03
+      frame 4  - 00:04
+      frame 5  - 00:05
+      fake frame - 00:06
+      fake frame - 00:07
+      fake frame - 00:08
+      fake frame - 00:09
+      fake frame - 00:10
+      frame 11 - 00:11
+      frame 12 - 00:12
+      frame 13 - 00:13
+      frame 14 - 00:14
+      frame 15 - 00:15
+    </pre>
+    <p>
+      This joins the best of both worlds: on one hand, the playback should be
+      smooth and even the most basic players should be able to handle the
+      recording files without issue. On the other, the total length of the file
+      is left unmodified, so it matches with the expected duration of the
+      sessions that are being recorded.
+    </p>
+  </li>
+</ul>
+      ",
+      "values": [
+        "NONE",
+        "GENPTS",
+        "FILL_IF_TRANSCODING"
+      ]
+    }
+  ]
+}

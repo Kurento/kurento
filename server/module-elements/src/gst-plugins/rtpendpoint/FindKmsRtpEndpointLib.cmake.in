@@ -1,0 +1,111 @@
+# - Try to find KmsRtpEndpointLib library
+
+#=============================================================================
+# Copyright 2015 Kurento
+#
+#=============================================================================
+
+set(PACKAGE_VERSION "@PROJECT_VERSION@")
+set(KmsRtpEndpointLib_VERSION ${PACKAGE_VERSION})
+
+
+
+# Set include directories
+# =======================
+
+find_path(KmsRtpEndpointLib_INCLUDE_DIR
+  NAMES
+    @FIND_HEADERS@
+  PATH_SUFFIXES
+    src/gst-plugins
+    @CUSTOM_PREFIX@
+)
+
+set(KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
+
+if(TARGET kmsrtpendpointlib)
+  set(KmsRtpEndpointLib_GENERATED_INCLUDE_DIR "${KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins")
+else()
+  find_path(KmsRtpEndpointLib_GENERATED_INCLUDE_DIR
+    NAMES
+      rtpendpoint/kms-rtp-marshal.h
+    PATH_SUFFIXES
+      ${KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins
+      @CUSTOM_PREFIX@
+  )
+endif()
+
+set(KmsRtpEndpointLib_INCLUDE_DIRS ${KmsRtpEndpointLib_INCLUDE_DIR} ${KmsRtpEndpointLib_GENERATED_INCLUDE_DIR}
+  CACHE INTERNAL "Include directories for KmsRtpEndpointLib library"
+)
+
+
+
+# Set path to library
+# ===================
+
+if(TARGET kmsrtpendpointlib)
+  #Just get the target for the library
+  set(KmsRtpEndpointLib_LIBRARY kmsrtpendpointlib)
+else()
+  find_library(KmsRtpEndpointLib_LIBRARY
+    NAMES
+      kmsrtpendpointlib
+    PATH_SUFFIXES
+      ${KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins/rtpendpoint
+  )
+endif()
+
+set(KmsRtpEndpointLib_LIBRARIES ${KmsRtpEndpointLib_LIBRARY}
+  CACHE INTERNAL "Libraries for KmsRtpEndpointLib"
+)
+
+
+
+# Set output variables
+# ====================
+
+include(GenericFind)
+
+set(REQUIRED_LIBS "@REQUIRED_LIBS@")
+foreach(LIB ${REQUIRED_LIBS})
+  string(FIND ${LIB} " " POS)
+
+  if(${POS} GREATER 0)
+    string(SUBSTRING ${LIB} 0 ${POS} LIB_NAME)
+    string(SUBSTRING ${LIB} ${POS} -1 LIB_VERSION)
+    string(STRIP ${LIB_NAME} LIB_NAME)
+    string(STRIP ${LIB_VERSION} LIB_VERSION)
+    generic_find(LIBNAME ${LIB_NAME} REQUIRED VERSION "${LIB_VERSION}")
+  else()
+    generic_find(LIBNAME ${LIB_NAME} REQUIRED)
+  endif()
+  list(APPEND REQUIRED_LIBRARIES ${${LIB_NAME}_LIBRARIES})
+  list(APPEND REQUIRED_INCLUDE_DIRS ${${LIB_NAME}_INCLUDE_DIRS})
+endforeach()
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(KmsRtpEndpointLib
+  FOUND_VAR
+    KmsRtpEndpointLib_FOUND
+  REQUIRED_VARS
+    KmsRtpEndpointLib_VERSION
+    KmsRtpEndpointLib_INCLUDE_DIR
+    KmsRtpEndpointLib_GENERATED_INCLUDE_DIR
+    KmsRtpEndpointLib_INCLUDE_DIRS
+    KmsRtpEndpointLib_LIBRARY
+    KmsRtpEndpointLib_LIBRARIES
+  VERSION_VAR
+    KmsRtpEndpointLib_VERSION
+)
+
+mark_as_advanced(
+  KmsRtpEndpointLib_FOUND
+  KmsRtpEndpointLib_VERSION
+  KmsRtpEndpointLib_INCLUDE_DIR
+  KmsRtpEndpointLib_GENERATED_INCLUDE_DIR
+  KmsRtpEndpointLib_INCLUDE_DIRS
+  KmsRtpEndpointLib_LIBRARY
+  KmsRtpEndpointLib_LIBRARIES
+)

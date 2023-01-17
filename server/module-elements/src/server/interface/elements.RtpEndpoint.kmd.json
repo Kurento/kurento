@@ -1,0 +1,171 @@
+{
+  "remoteClasses": [
+    {
+      "name": "RtpEndpoint",
+      "extends": "BaseRtpEndpoint",
+      "doc": "
+Endpoint that provides bidirectional content delivery capabilities through the
+RTP or SRTP protocols.
+<p>
+  An :rom:cls:`RtpEndpoint` contains paired sink and source :rom:cls:`MediaPad`
+  for audio and video. This endpoint inherits from :rom:cls:`BaseRtpEndpoint`.
+</p>
+<p>
+  In order to establish RTP/SRTP communications, peers first engage in an SDP
+  Offer/Answer negotiation process, where one of the peers (the offerer) sends
+  an SDP Offer, while the other peer (the answerer) responds with an SDP Answer.
+  This endpoint can work in both roles.
+</p>
+<ul>
+  <li>
+    <b>As offerer</b>: The negotiation process is initiated by the media server.
+    <ul>
+      <li>
+        Kurento generates the SDP Offer through the
+        <code>generateOffer()</code> method. This offer must then be sent to the
+        remote peer (the answerer) through the signaling channel.
+      </li>
+      <li>
+        The remote peer process the SDP Offer, and generates an SDP Answer. This
+        answer is then sent back to the media server.
+      </li>
+      <li>
+        Upon receiving the SDP Answer, this endpoint must process it with the
+        <code>processAnswer()</code> method.
+      </li>
+    </ul>
+  </li>
+  <li>
+    <b>As answerer</b>: The negotiation process is initiated by the remote peer.
+    <ul>
+      <li>
+        The remote peer, acting as offerer, generates an SDP Offer and sends it
+        to this endpoint.
+      </li>
+      <li>
+        This endpoint processes the SDP Offer with the
+        <code>processOffer()</code> method. The result of this method will be a
+        string, containing an SDP Answer.
+      </li>
+      <li>
+        The SDP Answer must then be sent back to the offerer, so it can be
+        processed by it.
+      </li>
+    </ul>
+  </li>
+</ul>
+<p>
+  In case of unidirectional connections (i.e. only one peer is going to send
+  media), the process is simpler, as only the sender needs to process an SDP
+  Offer. On top of the information about media codecs and types, the SDP must
+  contain the IP of the remote peer, and the port where it will be listening.
+  This way, the SDP can be mangled without needing to go through the exchange
+  process, as the receiving peer does not need to process any answer.
+</p>
+<h2>Bitrate management</h2>
+<p>
+  Check the documentation of :rom:cls:`BaseRtpEndpoint` for detailed information
+  about bitrate management.
+</p>
+      ",
+      "constructor":
+        {
+          "doc": "Builder for the :rom:cls:`RtpEndpoint`",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "crypto",
+              "doc": "SDES-type param. If present, this parameter indicates that the communication will be encrypted. By default no encryption is used.",
+              "type": "SDES",
+              "optional": true,
+              "defaultValue": {}
+            },
+            {
+              "name": "useIpv6",
+              "doc": "This configures the endpoint to use IPv6 instead of IPv4.",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            }
+          ]
+        },
+      "events": [
+        "OnKeySoftLimit"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "OnKeySoftLimit",
+      "doc": "Fired when encryption is used and any stream reached the soft key usage limit, which means it will expire soon.",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "mediaType",
+          "doc": "The media stream",
+          "type": "MediaType"
+        }
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "name": "CryptoSuite",
+      "typeFormat": "ENUM",
+      "doc": "Describes the encryption and authentication algorithms",
+      "values": [
+        "AES_128_CM_HMAC_SHA1_32",
+        "AES_128_CM_HMAC_SHA1_80",
+        "AES_256_CM_HMAC_SHA1_32",
+        "AES_256_CM_HMAC_SHA1_80"
+      ]
+    },
+    {
+      "typeFormat": "REGISTER",
+      "name": "SDES",
+      "doc": "Security Descriptions for Media Streams",
+      "properties": [
+        {
+          "name": "key",
+          "doc": "<p>Master key and salt (plain text)</p>
+          <p>
+          This field provides the the cryptographic master key appended with the master salt, in plain text format. This allows to provide a key that is composed of readable ASCII characters.
+          </p>
+          <p>
+          The expected length of the key (as provided to this parameter) is determined by the crypto-suite for which the key applies (30 characters for AES_CM_128, 46 characters for AES_CM_256). If the length does not match the expected value, the key will be considered invalid.
+          </p>
+          <p>
+          If no key is provided, a random one will be generated using the `getrandom` system call.
+          </p>",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "keyBase64",
+          "doc": "<p>Master key and salt (base64 encoded)</p>
+          <p>
+          This field provides the cryptographic master key appended with the master salt, encoded in base64. This allows to provide a binary key that is not limited to the ASCII character set.
+          </p>
+          <p>
+          The expected length of the key (after being decoded from base64) is determined by the crypto-suite for which the key applies (30 bytes for AES_CM_128, 46 bytes for AES_CM_256). If the length does not match the expected value, the key will be considered invalid.
+          </p>
+          <p>
+          If no key is provided, a random one will be generated using the `getrandom` system call.
+          </p>",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "crypto",
+          "doc": "Selects the cryptographic suite to be used. For available values, please see the CryptoSuite enum.",
+          "type": "CryptoSuite",
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

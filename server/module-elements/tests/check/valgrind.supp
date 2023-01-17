@@ -1,0 +1,427 @@
+# G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind -v --leak-check=yes --log-file=valgrind.log --xml-file=valgrind.xml --xml=yes --suppressions=../valgrind.supp sever/kurento <command line options for kurento>
+{
+   Glib type register static
+   Memcheck:Leak
+   ...
+   fun:g_type_register_static
+   ...
+}
+{
+   Glib type interface static registration
+   Memcheck:Leak
+   ...
+   fun:g_type_add_interface_static
+   ...
+}
+{
+   Glib type register fundamental
+   Memcheck:Leak
+   ...
+   fun:g_type_register_fundamental
+   ...
+}
+{
+   Glib type class ref
+   Memcheck:Leak
+   ...
+   fun:g_type_class_ref
+   ...
+}
+{
+   Glib init ctor
+   Memcheck:Leak
+   ...
+   fun:gobject_init_ctor
+   ...
+}
+{
+   Quark from static string
+   Memcheck:Leak
+   ...
+   fun:g_quark_from_static_string
+   ...
+}
+{
+   Static pad Template
+   Memcheck:Leak
+   ...
+   fun:gst_static_pad_template_get
+   ...
+}
+{
+   Gstreamer load plugin
+   Memcheck:Leak
+   ...
+   fun:gst_plugin_feature_load
+   ...
+}
+{
+   Gstreamer load plugin file
+   Memcheck:Leak
+   ...
+   fun:gst_plugin_load_file
+   ...
+}
+{
+   Gstreamer statuc_caps_get
+   Memcheck:Leak
+   ...
+   fun:gst_static_caps_get
+   ...
+}
+{
+   Glib dns lookup
+   Memcheck:Param
+   sendmsg(mmsg[0].msg_hdr)
+   fun:sendmmsg
+   fun:__libc_res_nsend
+   fun:__libc_res_nquery
+   ...
+}
+{
+   Lib orc program_new_from_static
+   Memcheck:Leak
+   ...
+   fun:orc_program_new_from_static_bytecode
+   ...
+}
+{
+   Gmodule load_module
+   Memcheck:Leak
+   ...
+   fun:g_module_close
+   ...
+   fun:g_tls_certificate_new_from_file
+   ...
+}
+{
+   GThread pool
+   Memcheck:Leak
+   ...
+   fun:g_system_thread_new
+   ...
+   fun:g_thread_pool_push
+   ...
+}
+{
+  Clock with no gst_deinit
+  Memcheck:Leak
+  ...
+  fun:g_system_thread_new
+  fun:g_thread_new_internal
+  fun:gst_system_clock_id_wait_async
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  fun:EVP_EncodeBlock
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_sqr4x_mont
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_mul4x_mont
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_mul4x_mont_gather5
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:md5_block_asm_data_order
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:sha1_block_data_order_avx
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:dtls1_read_bytes
+  fun:ssl3_read_internal
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:export_srtp_keys
+  fun:openssl_poll
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:srtp_stream_init_keys
+  fun:srtp_stream_init
+  fun:srtp_add_stream
+  fun:srtp_create
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:aes_encrypt
+  fun:aes_icm_encrypt_ismacryp
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:kms_rtcp_demux_chain
+  ...
+  fun:sink_chain
+  ...
+}
+#   fun:g_base64_encode_step
+#   fun:g_base64_encode
+#   fun:on_key_received
+#   fun:ffi_call_unix64
+{
+  Srtp uninitialized encode
+  Memcheck:Value8
+  ...
+  fun:g_base64_encode
+  fun:on_key_received
+  ...
+  fun:ffi_call
+  ...
+}
+{
+  Srtp uninitialized encode
+  Memcheck:Value8
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:gst_rtp_session_chain_recv_rtcp
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:octet_string_is_eq
+  fun:srtp_unprotect_rtcp
+  fun:gst_srtp_dec_decode_buffer
+  fun:gst_srtp_dec_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:kms_rtcp_demux_chain
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:ffi_call
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:rtp_session_process_rtcp
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:md5_block_asm_data_order
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:sha1_block_data_order_avx
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:dtls1_read_bytes
+  fun:ssl3_read_internal
+  ...
+}
+#This should be ignored in a better way
+{
+  Libcrypto uninitialized
+  Memcheck:Param
+  sendmsg(msg.msg_iov[0])
+  ...
+  fun:g_socket_send_message
+  ...
+  fun:nice_agent_send_messages_nonblocking_internal
+  ...
+}
+#Supressions for httpendpoint test
+{
+  LibGio
+  Memcheck:Leak
+  ...
+  fun:g_socket_create_source
+  fun:_g_socket_read_with_control_messages
+  fun:_g_dbus_worker_do_read_unlocked
+  fun:_g_dbus_worker_do_read_cb
+  fun:g_simple_async_result_complete
+  fun:complete_in_idle_cb
+  fun:g_main_context_dispatch
+  fun:g_main_context_iterate.isra.24
+  fun:g_main_loop_run
+  fun:gdbus_shared_thread_func
+  ...
+}
+{
+  LibSoup
+  Memcheck:Leak
+  ...
+  fun:try_implementation
+  fun:_g_io_module_get_default
+  fun:soup_proxy_resolver_default_constructed
+  ...
+}
+{
+  LibDconfSettings
+  Memcheck:Leak
+  ...
+  fun:_g_dbus_worker_new
+  fun:initable_init
+  fun:g_bus_get_sync
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libdconfsettings.so
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libdconfsettings.so
+  fun:g_main_context_dispatch
+  fun:g_main_context_iterate.isra.24
+  fun:g_main_context_iteration
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libdconfsettings.so
+  ...
+}
+{
+  LibProxy
+  Memcheck:Leak
+  ...
+  fun:tls_get_addr_tail
+  fun:__cxa_get_globals
+  fun:__cxa_throw
+  obj:/usr/lib/x86_64-linux-gnu/libproxy.so.1.0.0
+  obj:/usr/lib/x86_64-linux-gnu/libproxy.so.1.0.0
+  obj:/usr/lib/x86_64-linux-gnu/libproxy.so.1.0.0
+  fun:px_proxy_factory_get_proxies
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libgiolibproxy.so
+  ...
+}
+#Supressions for recoder test
+{
+  LibPango textoverlay element
+  Memcheck:Leak
+  ...
+  fun:FcPatternObjectInsertElt
+  ...
+  fun:itemize_state_process_run
+  fun:pango_itemize_with_base_dir
+  fun:pango_layout_check_lines
+  fun:pango_layout_get_extents_internal
+  fun:pango_layout_get_pixel_extents
+  fun:gst_base_text_overlay_render_text
+  fun:gst_base_text_overlay_video_chain
+  fun:gst_pad_push_data
+  ...
+}
+{
+  LibPixman textoverlay element
+  Memcheck:Leak
+  ...
+  fun:tls_get_addr_tail
+  obj:/usr/lib/x86_64-linux-gnu/libpixman-1.so.0.30.2
+  fun:pixman_image_composite32
+  fun:pixman_glyph_cache_insert
+  ...
+}
+{
+  LibFontconfig textoverlay element
+  Memcheck:Leak
+  ...
+  fun:FcPatternObjectInsertElt
+  fun:FcPatternObjectAddWithBinding
+  fun:FcPatternAppend
+  fun:FcEndElement
+  obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.0
+  obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.0
+  obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.0
+  obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.0
+  fun:XML_ParseBuffer
+  fun:FcConfigParseAndLoad
+  fun:FcConfigParseAndLoad
+  fun:FcEndElement
+  ...
+}
+#Supressions for player test
+{
+  LibSoup
+  Memcheck:Leak
+  ...
+  fun:soup_proxy_resolver_default_constructed
+  ...
+  fun:soup_session_add_feature_by_type
+  ...
+}
+{
+  Quark init
+  Memcheck:Leak
+  ...
+  fun:g_quark_init
+  ...
+}

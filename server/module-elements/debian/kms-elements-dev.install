@@ -1,0 +1,7 @@
+usr/include/kurento/modules/*/*.hpp
+usr/include/kurento/rtpendpoint/*.h
+usr/include/kurento/webrtcendpoint/*.h
+usr/lib/*/*.so
+usr/lib/*/pkgconfig/*.pc
+usr/share/cmake/Kurento/*.cmake
+usr/share/kurento/modules/*.kmd.json

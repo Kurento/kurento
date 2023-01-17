@@ -1,0 +1,64 @@
+{
+  "remoteClasses": [
+    {
+      "name": "Mixer",
+      "extends": "Hub",
+      "doc": "A :rom:cls:`Hub` that allows routing of video between arbitrary port pairs and mixing of audio among several ports",
+      "constructor":
+        {
+          "doc": "Create a :rom:cls:`Mixer` belonging to the given pipeline.",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the Mixer belongs",
+              "type": "MediaPipeline"
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "connect",
+          "doc": "Connects each corresponding :rom:enum:`MediaType` of the given source port with the sink port.",
+          "params": [
+            {
+              "name": "media",
+              "doc": "The sort of media stream to be connected",
+              "type": "MediaType"
+            },
+            {
+              "name": "source",
+              "doc": "Source port to be connected",
+              "type": "HubPort"
+            },
+            {
+              "name": "sink",
+              "doc": "Sink port to be connected",
+              "type": "HubPort"
+            }
+          ]
+        },
+        {
+          "name": "disconnect",
+          "doc": "Disonnects each corresponding :rom:enum:`MediaType` of the given source port from the sink port.",
+          "params": [
+            {
+              "name": "media",
+              "doc": "The sort of media stream to be disconnected",
+              "type": "MediaType"
+            },
+            {
+              "name": "source",
+              "doc": "Audio source port to be disconnected",
+              "type": "HubPort"
+            },
+            {
+              "name": "sink",
+              "doc": "Audio sink port to be disconnected",
+              "type": "HubPort"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
