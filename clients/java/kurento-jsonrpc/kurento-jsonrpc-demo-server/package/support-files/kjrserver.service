@@ -1,0 +1,10 @@
+[Unit]
+Description=KJRServer daemon
+After=network.target
+
+[Service]
+User=nobody
+ExecStart=/usr/bin/kjrserver
+
+[Install]
+WantedBy=default.target

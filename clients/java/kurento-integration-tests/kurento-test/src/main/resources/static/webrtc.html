@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>WebRTC test</title>
+
+<!-- WebJars -->
+<script src="/webjars/webrtc-adapter/release/adapter.js"></script>
+
+<!-- JAR from Maven -->
+<script src="/js/kurento-utils.js"></script>
+
+<!-- Local -->
+<script src="./lib/Console.js"></script>
+<script src="./lib/webrtc.js"></script>
+</head>
+<body>
+	<div style="clear: left; margin: 5px;">
+		<h1 id="testTitle">WebRTC test</h1>
+		<h2 id="testName"></h2>
+	</div>
+	<div style="float: left; margin: 5px;">
+		<h3>Local stream</h3>
+		<video id="local" width="480px" height="360px" autoplay
+			poster="./img/webrtc.png" style="border: solid gray 1px;"></video>
+	</div>
+	<div style="float: left; margin: 5px;">
+		<h3>Remote stream</h3>
+		<video id="video" width="480px" height="360px" autoplay
+			poster="./img/webrtc.png" style="border: solid gray 1px;"></video>
+	</div>
+	<div style="clear: left; margin: 5px;">
+		<label for="output">Status</label> <input id="status" name="status"
+			style="width: 200px;"> <label for="currentTime">Current
+			Time</label> <input id="currentTime" name="currentTime"> <label
+			for="local-color">Local color</label> <input id="local-color"
+			style="width: 97px;"></input> <label for="video-color">Remote
+			color</label> <input id="video-color" style="width: 97px;"></input> <label
+			for="x">x</label> <input id="x" style="width: 30px;" value="0">
+		<label for="y">y</label> <input id="y" style="width: 30px;" value="0"><br>
+		<label for="datachannel-state">DataChannel state</label> <input
+			id="datachannel-state" style="width: 97px;"> <label
+			for="datachannel-received">DataChannel received</label> <input
+			id="datachannel-received" style="width: 250px;"><br>
+		<audio id="audioTest" loop="loop"></audio>
+		<label for="output">Console</label>
+		<div id="console"
+			style="border: solid gray 1px; overflow-y: auto; width: 970px; height: 180px;"></div>
+		<canvas id="canvas"></canvas>
+	</div>
+</body>
+</html>

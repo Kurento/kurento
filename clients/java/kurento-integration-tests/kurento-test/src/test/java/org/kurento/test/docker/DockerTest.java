@@ -1,0 +1,63 @@
+/*
+ * (C) Copyright 2016 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package org.kurento.test.docker;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import org.kurento.commons.PropertiesManager;
+import org.kurento.test.base.KurentoTest;
+
+public class DockerTest extends KurentoTest {
+
+  @Test
+  public void executionContainerized() {
+
+    boolean shouldBeInContainer =
+        PropertiesManager.getProperty("test.docker.shouldBeInContainer", false);
+
+    Docker docker = Docker.getSingleton();
+
+    boolean isRunningInContainer = docker.isRunningInContainer();
+
+    assertEquals(
+        "shouldBeInContainer=" + shouldBeInContainer + " and isRunningInContainer="
+            + isRunningInContainer + " should be equals",
+        shouldBeInContainer, isRunningInContainer);
+  }
+
+  @Test
+  public void dockerContainerName() {
+
+    String expectedContainerName =
+        PropertiesManager.getProperty("test.docker.expectedContainerName");
+
+    if (expectedContainerName != null) {
+
+      Docker docker = Docker.getSingleton();
+
+      assertTrue("Tests should be running in a docker container", docker.isRunningInContainer());
+
+      assertEquals("Container name is not retrieved correctly", expectedContainerName,
+          docker.getContainerName());
+
+    }
+  }
+
+}

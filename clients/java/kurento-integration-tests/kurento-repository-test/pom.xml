@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Maven coordinates -->
+	<parent>
+		<groupId>org.kurento</groupId>
+		<artifactId>kurento-integration-tests</artifactId>
+		<version>7.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>kurento-repository-test</artifactId>
+	<packaging>jar</packaging>
+
+	<!-- Project-level information -->
+	<name>Kurento Integration tests - Repository</name>
+	<description>Tests for the Kurento Repository project.</description>
+
+	<!-- Project configuration -->
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-repository-server</artifactId>
+			<version>6.14.0</version>
+		</dependency>
+	</dependencies>
+
+</project>

@@ -1,0 +1,44 @@
+<#macro comment doc params=[] return={}>
+/**
+ *
+    <#t><#if doc??>
+        <#t><#list doc?split("\n") as x><#assign line = sphinxLinks(x) ><#rt>
+			<#lt><#if (line != "") > * ${line}
+			<#lt></#if><#rt>
+        <#lt></#list><#rt>
+    <#t></#if><#rt>
+    <#lt><#if (params?? && params?size > 0) >
+ *
+    <#lt></#if><#rt>
+    <#t><#list params as param>
+<#lt> * @param ${param.name}
+<#if param.doc??><#list param.doc?split("\n") as x><#rt>
+ *       ${sphinxLinks(x)}
+</#list></#if></#list><#rt>
+<#if return.doc??> * @return ${sphinxLinks(return.doc)}</#if><#rt>
+ *
+ **/
+</#macro>
+
+<#macro comment_set_get doc type>
+/**
+ *
+    <#lt><#assign first = true><#rt>
+    <#t><#if doc??>
+        <#t><#list doc?split("\n") as x><#assign line = sphinxLinks(x) ><#rt>
+			<#lt><#if (line != "") >
+				<#lt><#if (first) >
+					<#lt><#if (line != "@deprecated") >
+						<#lt> * ${type} ${line}
+						<#lt><#assign first = false><#rt>
+					<#else>
+						<#lt> * ${line}
+					<#lt></#if><#rt>
+				<#lt><#else> * ${line}
+				<#lt></#if><#rt>
+			<#lt></#if><#rt>
+        <#lt></#list><#rt>
+    <#t></#if><#rt>
+ *
+ **/
+</#macro>

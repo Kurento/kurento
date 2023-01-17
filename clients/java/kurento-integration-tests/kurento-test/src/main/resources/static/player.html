@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTTP test</title>
+<script src="./lib/Console.js"></script>
+<script src="./lib/color.js"></script>
+<script type="text/javascript">
+	var video;
+	window.onload = function() {
+		video = document.getElementById("video");
+		console = new Console("console", console);
+		setInterval(updateCurrentTime, 100);
+	}
+
+	function updateCurrentTime() {
+		document.getElementById("currentTime").value = video.currentTime;
+	}
+
+	function addEventListener(type, callback) {
+		video.addEventListener(type, callback, false);
+	}
+
+	function play(url) {
+		console.info("Playing " + url);
+		showSpinner(video);
+		video.src = url;
+		video.play();
+	}
+
+	function showSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			arguments[i].poster = './img/transparent-1px.png';
+			arguments[i].style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		}
+	}
+
+	function hideSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			arguments[i].src = '';
+			arguments[i].poster = './img/html5.png';
+			arguments[i].style.background = '';
+		}
+	}
+
+	function log(text) {
+		document.getElementById("status").value = text;
+	}
+
+	function videoEvent(e) {
+		if (!e) {
+			e = window.event;
+		}
+		log(e.type);
+	}
+
+	function terminate() {
+		// Player without control protocol does not need to terminate
+	}
+
+	function addTestName(testName) {
+		document.getElementById("testName").innerHTML = testName;
+	}
+</script>
+</head>
+<body>
+	<div style="clear: left; margin: 5px;">
+		<h1>HTTP test</h1>
+		<h2 id="testName"></h2>
+		<video id="video" autoplay width="480px" height="360px"
+			poster="./img/html5.png" style="border: solid gray 1px;">
+		</video>
+	</div>
+	<div style="clear: left; margin: 5px;">
+		<label for="status">Status</label> <input id="status" name="status" />
+		<label for="currentTime">Current Time</label> <input id="currentTime"
+			name="currentTime" /> <label for="color">Color</label> <input
+			id="color"></input> <label for="x">x</label> <input id="x"
+			style="width: 30px;" value="0" /> <label for="y">y</label> <input
+			id="y" style="width: 30px;" value="0" /> <br /> <label for="output">Console</label>
+		<div id="console"
+			style="border: solid gray 1px; overflow-y: auto; width: 970px; height: 180px;"></div>
+	</div>
+</body>
+</html>

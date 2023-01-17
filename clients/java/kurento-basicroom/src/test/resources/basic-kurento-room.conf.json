@@ -1,0 +1,9 @@
+{
+   "ws": {
+     "port": "8891",
+     "path": "kurento-room"
+   },
+   "kms": {
+      "uri": "ws://192.168.0.1:8888/kurento"
+   }
+}
