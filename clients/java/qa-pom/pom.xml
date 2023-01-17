@@ -1,0 +1,178 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Maven coordinates -->
+	<groupId>org.kurento</groupId>
+	<artifactId>kurento-qa-pom</artifactId>
+	<version>6.18.0</version>
+	<packaging>pom</packaging>
+
+	<!-- Project-level information -->
+	<name>Kurento QA POM</name>
+	<description>
+		Quality Assurance pom for Kurento Java projects.
+		Provides a profile for quality assurance, to be used during maven builds.
+	</description>
+	<url>https://kurento.openvidu.io/</url>
+	<scm>
+		<url>https://github.com/Kurento/kurento-qa-pom</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-qa-pom.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento-qa-pom.git</developerConnection>
+	</scm>
+
+	<!-- Organization-level information -->
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>Kurento Community</name>
+			<organization>Kurento</organization>
+			<organizationUrl>https://kurento.openvidu.io/</organizationUrl>
+		</developer>
+	</developers>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/Kurento/bugtracker/issues</url>
+	</issueManagement>
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<mailingLists>
+		<mailingList>
+			<name>Kurento List</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+	</mailingLists>
+	<organization>
+		<name>Kurento</name>
+		<url>https://kurento.openvidu.io/</url>
+	</organization>
+
+	<!-- Project configuration -->
+
+	<properties>
+		<version.qa.config>${project.version}</version.qa.config>
+
+		<!-- maven-resources-plugin -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- maven-compiler-plugin -->
+		<!-- REVIEW: Starting from Java-9, change to use the new <release> parameter. -->
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+
+		<!-- maven-eclipse-plugin -->
+		<downloadSources>true</downloadSources>
+		<downloadJavadocs>true</downloadJavadocs>
+
+		<!-- maven-pmd-plugin -->
+		<targetJdk>${maven.compiler.target}</targetJdk>
+
+		<version.pmd.plugin>3.6</version.pmd.plugin>
+		<version.checkstyle.plugin>2.17</version.checkstyle.plugin>
+		<version.findbugs.plugin>3.0.4</version.findbugs.plugin>
+		<version.puppycrawl.checkstyle>8.29</version.puppycrawl.checkstyle>
+		<version.eclipse.plugin>2.10</version.eclipse.plugin>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>${version.eclipse.plugin}</version>
+				<configuration>
+					<useProjectReferences>false</useProjectReferences>
+					<additionalConfig>
+						<file>
+							<name>.settings/org.eclipse.jdt.ui.prefs</name>
+							<location>qa-config/eclipse/org.eclipse.jdt.ui.prefs</location>
+						</file>
+						<file>
+							<name>.settings/org.eclipse.jdt.core.prefs</name>
+							<location>qa-config/eclipse/org.eclipse.jdt.core.prefs</location>
+						</file>
+					</additionalConfig>
+					<workspaceActiveCodeStyleProfileName>Kurento Java Conventions</workspaceActiveCodeStyleProfileName>
+					<workspaceCodeStylesURL>qa-config/eclipse/formatter.xml</workspaceCodeStylesURL>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>qa</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-pmd-plugin</artifactId>
+						<version>${version.pmd.plugin}</version>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-checkstyle-plugin</artifactId>
+						<version>${version.checkstyle.plugin}</version>
+						<dependencies>
+							<dependency>
+								<groupId>com.puppycrawl.tools</groupId>
+								<artifactId>checkstyle</artifactId>
+								<version>${version.puppycrawl.checkstyle}</version>
+							</dependency>
+							<dependency>
+								<groupId>org.kurento</groupId>
+								<artifactId>kurento-qa-config</artifactId>
+								<version>${version.qa.config}</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>validate</id>
+								<phase>validate</phase>
+								<configuration>
+									<configLocation>qa-config/kurento_checks.xml</configLocation>
+									<headerLocation>qa-config/headerFile</headerLocation>
+									<encoding>UTF-8</encoding>
+									<consoleOutput>true</consoleOutput>
+									<failsOnError>true</failsOnError>
+									<linkXRef>false</linkXRef>
+									<excludes>**/generated-sources/**/*</excludes>
+								</configuration>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>findbugs-maven-plugin</artifactId>
+						<version>${version.findbugs.plugin}</version>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<modules>
+		<module>kurento-qa-config</module>
+	</modules>
+
+	<!--
+	Kurento projects don't define a <distributionManagement> section with the
+	repositories used for deployment. Instead, CI injects a `settings.xml` file
+	with a "deploy" profile that configures maven-deploy-plugin through properties
+	`altSnapshotDeploymentRepository` and `altReleaseDeploymentRepository`.
+	Refer to Jenkins Managed File "Kurento GitHub Maven settings.xml".
+	<distributionManagement></distributionManagement>
+	-->
+
+</project>
