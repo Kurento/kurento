@@ -1,0 +1,67 @@
+Source: kms-core
+Priority: optional
+Maintainer: Kurento <kurento@openvidu.io>
+Build-Depends: debhelper (>= 9),
+ build-essential,
+ cmake,
+ gstreamer1.0-libav,
+ gstreamer1.0-plugins-bad,
+ gstreamer1.0-plugins-base,
+ gstreamer1.0-plugins-good,
+ gstreamer1.0-plugins-ugly,
+ kms-cmake-utils (>= 7.0.0),
+ kms-jsonrpc-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
+ libboost-filesystem-dev,
+ libboost-regex-dev,
+ libboost-system-dev,
+ libboost-test-dev,
+ libboost-thread-dev,
+ libglibmm-2.4-dev,
+ libgstreamer1.0-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libsigc++-2.0-dev,
+ libvpx-dev,
+ uuid-dev
+Standards-Version: 4.0.0
+Vcs-Git: https://github.com/Kurento/kms-core.git
+Vcs-Browser: https://github.com/Kurento/kms-core
+Homepage: https://kurento.openvidu.io/
+
+Package: kms-core
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ gstreamer1.0-plugins-base,
+ kms-jsonrpc (>= 7.0.0)
+Description: Kurento Core module
+ Kurento Core module - Binary libraries.
+
+Package: kms-core-dev
+Architecture: any
+Section: libdevel
+Depends: kms-core (= ${binary:Version}),
+ kms-cmake-utils (>= 7.0.0),
+ kms-jsonrpc-dev (>= 7.0.0),
+ kurento-module-creator (>= 7.0.0),
+ libboost-filesystem-dev,
+ libboost-regex-dev,
+ libboost-system-dev,
+ libboost-test-dev,
+ libboost-thread-dev,
+ libglibmm-2.4-dev,
+ libgstreamer1.0-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libsigc++-2.0-dev,
+ libvpx-dev,
+ libxml2-utils,
+ uuid-dev
+Description: Kurento Core module
+ Kurento Core module - Development files.
+
+Package: kms-core-dbg
+Architecture: any
+Section: debug
+Depends: kms-core (= ${binary:Version})
+Description: Kurento Core module
+ Kurento Core module - Debugging symbols.

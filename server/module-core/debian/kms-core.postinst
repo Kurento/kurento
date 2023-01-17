@@ -1,0 +1,39 @@
+#!/bin/bash
+# File checked with ShellCheck (https://www.shellcheck.net/)
+
+# NOTE: This file must have the same contents than
+# kurento-media-server/debian/kurento-media-server.postinst
+
+
+
+# Bash options for strict error checking
+set -o errexit -o errtrace -o pipefail -o nounset
+
+# Trace all commands
+set -o xtrace
+
+
+
+# Settings
+HOME_DIR="/var/lib/kurento"
+
+
+
+# Create the kurento user
+if ! id kurento >/dev/null 2>&1; then
+    adduser \
+        --system --group \
+        --home "$HOME_DIR" \
+        --disabled-password \
+        kurento
+fi
+
+
+
+# Prepare the kurento home directory
+mkdir -p "$HOME_DIR"
+chown -R kurento "$HOME_DIR"
+chmod 777 "$HOME_DIR"
+
+#DEBHELPER#
+exit 0

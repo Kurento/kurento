@@ -1,0 +1,63 @@
+{
+   GstInit
+   Memcheck:Leak
+   ...
+   fun:gst_init
+   ...
+}
+{
+   Glib init ctor
+   Memcheck:Leak
+   ...
+   fun:gobject_init_ctor
+   ...
+}
+{
+  GstInitCheck
+  Memcheck:Leak
+  ...
+  fun:gst_init_check
+  ...
+}
+{
+  Plugin loader
+  Memcheck:Leak
+  ...
+  fun:_gst_plugin_loader_client_run
+  ...
+}
+{
+  Plugin loader
+  Memcheck:Leak
+  ...
+  fun:gst_plugin_register_func
+  ...
+}
+{
+  Class initializers
+  Memcheck:Leak
+  ...
+  fun:g_type_class_ref
+  ...
+}
+{
+  Thread pool push
+  Memcheck:Leak
+  ...
+  fun:g_thread_pool_push
+  ...
+}
+{
+  Register static
+  Memcheck:Leak
+  ...
+  fun:g_type_register_static
+  ...
+}
+{
+  Quark init
+  Memcheck:Leak
+  ...
+  fun:g_quark_init
+  ...
+}

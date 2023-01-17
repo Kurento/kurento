@@ -1,0 +1,14 @@
+\.*
+*~
+*.la
+*.lo
+*kdev4
+Makefile
+sub
+COPYING
+tests/examples/webrtc_http_server
+build
+CMakeLists.txt.user
+kms-core.json
+manifest.json
+code_analysis

@@ -1,0 +1,7 @@
+usr/include/kurento/commons/*.h
+usr/include/kurento/commons/sdpagent/*.h
+usr/include/kurento/modules/*/*.hpp
+usr/lib/*/*.so
+usr/lib/*/pkgconfig/*.pc
+usr/share/cmake/Kurento/*.cmake
+usr/share/kurento/modules/*.kmd.json

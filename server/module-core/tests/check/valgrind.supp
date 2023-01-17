@@ -1,0 +1,133 @@
+# G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind -v --leak-check=yes --log-file=valgrind.log --xml-file=valgrind.xml --xml=yes --suppressions=../valgrind.supp sever/kurento <command line options for kurento>
+
+{
+  Glib g_signal_new
+  Memcheck:Leak
+  ...
+  fun:g_signal_new
+  ...
+}
+{
+   Glib init ctor
+   Memcheck:Leak
+   ...
+   fun:gobject_init_ctor
+   ...
+}
+{
+  Register static
+  Memcheck:Leak
+  ...
+  fun:g_type_register_static
+  ...
+}
+{
+  GObject register fundamental
+  Memcheck:Leak
+  ...
+  fun:g_type_register_fundamental
+  ...
+}
+{
+  GstCheck init
+  Memcheck:Leak
+  ...
+  fun:gst_init_check
+  fun:gst_init
+  fun:gst_check_init
+  fun:main
+}
+{
+  gst_init_check
+  Memcheck:Leak
+  ...
+  fun:g_option_context_parse
+  fun:gst_init_check
+  fun:main
+}
+{
+  Thread pool push
+  Memcheck:Leak
+  ...
+  fun:_dl_allocate_tls
+  fun:pthread_create@@GLIBC_2.*
+  fun:g_system_thread_new
+  ...
+  fun:g_thread_pool_push
+  ...
+}
+{
+  GModule init
+  Memcheck:Leak
+  ...
+  fun:g_module_open
+  ...
+}
+{
+  Videotestsrc
+  Memcheck:Leak
+  fun:malloc
+  fun:orc_program_new
+  ...
+}
+{
+  VideoTestSrc
+  Memcheck:Leak
+  fun:malloc
+  fun:strdup
+  fun:orc_program_add_source_full
+  fun:orc_bytecode_parse_function
+  fun:orc_program_new_from_static_bytecode
+  ...
+}
+{
+  VideoTestSrc
+  Memcheck:Leak
+  fun:malloc
+  fun:strdup
+  fun:orc_program_add_destination_full
+  fun:orc_bytecode_parse_function
+  fun:orc_program_new_from_static_bytecode
+  ...
+}
+{
+  Module loading
+  Memcheck:Leak
+  ...
+  fun:gst_plugin_load_file
+  fun:gst_plugin_load_by_name
+  fun:gst_plugin_feature_load
+  fun:gst_element_factory_create
+  fun:gst_element_factory_make
+  ...
+}
+{
+  kms generic structure init
+  Memecheck:Leak
+  ...
+  fun:_priv_kms_generic_structure_initialize
+  ...
+}
+{
+  Thread pool push
+  Memcheck:Leak
+  ...
+  fun:g_thread_pool_push
+  ...
+}
+{
+  Quark init
+  Memcheck:Leak
+  ...
+  fun:g_quark_init
+  ...
+}
+{
+  FFmpeg init
+  Memcheck:Leak
+  ...
+  fun:gst_ffmpeg_cfg_init
+  fun:gst_ffmpegvidenc_register
+  fun:plugin_init
+  ...
+}
