@@ -1,0 +1,28 @@
+{
+  "name": "kurento-magic-mirror",
+  "description": "Kurento Browser JavaScript Tutorial",
+  "authors": [
+    "Kurento <kurento@openvidu.io>"
+  ],
+  "main": "index.html",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "ALv2",
+  "homepage": "https://kurento.openvidu.io/",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "webrtc-adapter": "v7.4.0",
+    "bootstrap": "~3.3.0",
+    "ekko-lightbox": "~3.3.0",
+    "demo-console": "1.5.1",
+    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "kurento-pointerdetector",
+  "version": "6.18.1-dev",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd static && bower install"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.3.5",
+    "express": "^4.17.0",
+    "express-session": "^1.17.0",
+    "minimist": "^1.1.1",
+    "ws": "^7.1.0",
+    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
+    "kurento-module-pointerdetector": "git+https://github.com/Kurento/kurento-module-pointerdetector-js.git"
+  },
+  "devDependencies": {
+    "bower": "^1.4.1"
+  }
+}

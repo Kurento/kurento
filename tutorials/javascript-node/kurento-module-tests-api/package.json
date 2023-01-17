@@ -1,0 +1,47 @@
+{
+  "name": "kurento-module-tests-api",
+  "version": "6.18.1-dev",
+  "description": "Kurento Module Tests API",
+  "homepage": "https://kurento.openvidu.io/",
+  "license": "ALv2",
+  "author": "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)",
+  "contributors": [
+    {
+      "name": "Raul Benitez 'rbenitez'",
+      "email": "raulbenitezmejias@gmail.com"
+    }
+  ],
+  "scripts": {
+    "test": "scripts/test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Kurento/kurento-tutorial-node"
+  },
+  "bugs": {
+    "email": "kurento@googlegroups.com"
+  },
+  "keywords": [
+    "API",
+    "Kurento",
+    "WebRTC"
+  ],
+  "dependencies": {
+    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
+    "kurento-module-chroma": "git+https://github.com/Kurento/kurento-module-chroma-js.git",
+    "kurento-module-crowddetector": "git+https://github.com/Kurento/kurento-module-crowddetector-js.git",
+    "kurento-module-platedetector": "git+https://github.com/Kurento/kurento-module-platedetector-js.git",
+    "kurento-module-pointerdetector": "git+https://github.com/Kurento/kurento-module-pointerdetector-js.git"
+  },
+  "devDependencies": {
+    "fs-extra": "^0.20.1",
+    "node-static": "^0.7.6",
+    "qunit-cli": "KurentoForks/qunit-cli#0.2.1",
+    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit#1.0.3",
+    "qunit-reporter-lcov": "^1.0.2",
+    "qunitjs": "1.18.0",
+    "xml2js": "^0.4.9",
+    "wock": "^0.1.1",
+    "dockerode": "2.2.6"
+  }
+}
