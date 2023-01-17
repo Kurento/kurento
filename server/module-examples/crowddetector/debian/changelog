@@ -1,0 +1,287 @@
+kms-crowddetector (7.0.0-0kurento1) UNRELEASED; urgency=medium
+
+  * UNRELEASED
+
+  [ Saul Pablo Labajo Izquierdo ]
+  * swithed to gstreamer from bionic
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jul 2021 13:10:52 +0200
+
+kms-crowddetector (6.18.0-0kurento1) testing; urgency=medium
+
+  [ Kurento ]
+  * Prepare release 6.18.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 14 Sep 2022 14:04:34 +0000
+
+kms-crowddetector (6.17.0-0kurento1) testing; urgency=medium
+
+  [ Juan Navarro ]
+  * Prepare release 6.17.0-0kurento1
+
+  [ Kurento ]
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 30 Mar 2022 13:59:42 +0200
+
+kms-crowddetector (6.16.0-0kurento1) testing; urgency=medium
+
+  * Prepare release 6.16.0-0kurento1
+  * Update all dependency versions to 6.15.1
+  * debian/control: fix dependency version for kms-filters
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Fri, 26 Feb 2021 12:01:40 +0100
+
+kms-crowddetector (6.15.0-0kurento1) testing; urgency=medium
+
+  * Fix build for both Ubuntu 16.04 Xenial and 18.04 Bionic
+  * Prepare release 6.15.0-0kurento1
+
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 04 Nov 2020 13:06:18 +0100
+
+kms-crowddetector (6.7.0) testing; urgency=medium
+
+  [ Juan Navarro Moreno ]
+  * Remove version numbers from package names
+  * Align all version numbers of KMS-related modules
+  * Updates to debian/control:
+    - Maintainer: Kurento <kurento@openvidu.io>
+    - Standards-Version: 4.0.0
+    - Homepage: www.kurento.org (let server redirect to HTTPS if available)
+    - Vcs-Git: https://github.com/Kurento/*.git (use secure URL)
+    - Section: libs|libdevel|devel|debug|video (set appropriate one for
+      each binary package)
+    - Description: Review description text
+  * Updates to debian/copyright:
+    - Refer to '/usr/share/common-licenses/Apache-2.0' rather than
+      quoting the license text.
+  * Updates to debian/docs:
+    - Added file CHANGELOG.md
+  * Prepare release 6.7.0
+
+ -- Juan Navarro Moreno <juan.navarro@gmx.es>  Wed, 25 Jan 2018 13:05:00 +0100
+
+kms-crowddetector-6.0 (6.6.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Add .build.yaml
+  * Prepare release 6.6.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 17:27:41 +0200
+
+kms-crowddetector-6.0 (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Fix error in plugin description
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change license to Apache 2.0
+  * CMakeLists: Fix compilation problems on xenial
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 31 May 2016 09:35:13 +0200
+
+kms-crowddetector-6.0 (6.4.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * crowddetector: Do not use deprecated signal
+
+  [ David Fernandez ]
+  * debian/rules: Execute test in debian package generation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.4.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 25 Feb 2016 12:53:14 +0100
+
+kms-crowddetector-6.0 (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 08:08:13 +0100
+
+kms-crowddetector-6.0 (6.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix test files urls
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 26 Nov 2015 13:03:08 +0100
+
+kms-crowddetector-6.0 (6.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 02 Oct 2015 17:38:16 +0200
+
+kms-crowddetector-6.0 (6.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 01 Sep 2015 16:29:11 +0200
+
+kms-crowddetector-6.0 (6.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Enable tests
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for 6.0.0-dev version
+  * Update .gitreview to work with new repo
+
+  [ David Fernandez ]
+  * Remove devDependencies in package.json
+  * Adapt events code to KmsEvent
+  * Move signal logic to postConstructor function
+  * Update gstreamer dependencies
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use correct SPDX licence string
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 15 Jul 2015 10:25:46 +0200
+
+kms-crowddetector-6.0 (6.0.0~0) testing; urgency=medium
+
+  * Prerelease for 6.0.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Feb 2015 11:18:15 +0100
+
+kms-crowddetector (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Add Gruntfile.js file
+  * Change parameters order sending CrowdDetectorOccupancy event
+  * Remove image ROI after proccesing
+  * Add property to define the processing width
+  * Fix bug: Drawing into roi limits
+  * Not drawing mixing high and low speed crowded regions
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use templates from kurento-client-js instead of kurento-module-creator
+
+  [ Jose Antonio Santos Cadenas ]
+  * Disable test until they are fixed
+  * Update dependencies
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 28 Jan 2015 09:23:08 +0100
+
+kms-crowddetector (1.0.0) testing; urgency=medium
+
+  [ Francisco Rivero ]
+  * Detects crowded areas based on movement detection
+  * Differentiate between static crowd and people or things moving fluently
+  * Set ROIs with external structure.
+
+  [ Jose Antonio Santos Cadenas ]
+  * crowddetector: Copy the value of the set structure
+  * crowddetector: Fix problem with empty rois
+  * crowdetector: Fix problems painting filter results
+
+  [ Francisco Rivero ]
+  * Extract info about occupied pixels in each roi.
+  * Adapt variables to C naming convention.
+  * crowdetector: Add data structure to store information of each roi
+  * crowdetector: analyze occupancy and fluidity of each roi
+
+  [ Jose Antonio Santos Cadenas ]
+  * crowddetector: Fix identation
+
+  [ Francisco Rivero ]
+  * crowddetector: Add optical flow
+  * crowddetector: Analyze optical flow to get the direction of movement in each roi
+  * crowddetector: Send messages to the bus
+
+  [ David Fernandez ]
+  * crowddetector: remove the possibility to disable some events
+
+  [ Jose Antonio Santos Cadenas ]
+  * crowddetector: Initialize variables properly
+
+  [ Santiago Carot-Nemesio ]
+  * kmscrowddetector: Suppress untinitialized memory warnings
+
+  [ Jose Antonio Santos Cadenas ]
+  * cmake: Add compilation for crowddetector filter
+
+  [ David Fernandez ]
+  * crowddetector: Accept relative points instead of absolute points
+  * cmake: Change module installation directory
+  * crowddetector: Add math library dependency
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove autotools
+
+  [ David Fernandez ]
+  * Create crowd detector module
+  * Fix errors
+  * Adapt filter to use namespaces
+  * Improve filter performance using a resized image
+  * Fix bad include in test
+  * Add .gitreview file
+  * crowddetector: Modify includes in gstreamer filter
+  * Add debian package generation
+  * Add npmGit to kmd file
+  * Style review
+  * Add templates for pom.xml, package.json and bower.json
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix dependencies versions
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Francisco Rivero <fj.riverog@gmail.com>  Wed, 24 Sep 2014 22:59:21 +0200
+
+kms-crowddetector (0.0.1~rc1) testing; urgency=medium
+
+  * Initial release.
+
+ -- David Fernandez <d.fernandezlop@gmail.com>  Wed, 10 Sep 2014 12:15:05 +0200

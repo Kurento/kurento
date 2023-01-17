@@ -1,0 +1,27 @@
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${OPENCV_INCLUDE_DIRS}
+  ${SOUP_INCLUDE_DIRS}
+)
+
+set(CROWDDETECTOR_SOURCES
+  crowddetector.c
+  kmscrowddetector.c kmscrowddetector.h
+)
+
+add_library(crowddetector MODULE ${CROWDDETECTOR_SOURCES})
+
+target_link_libraries(crowddetector
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_VIDEO_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
+
+install(
+  TARGETS crowddetector
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
