@@ -1,0 +1,37 @@
+Source: kms-gstreamer-plugin-sample
+Maintainer: Kurento <kurento@openvidu.io>
+Priority: optional
+Build-Depends: debhelper (>= 12),
+ build-essential,
+ cmake,
+ pkg-config,
+ kms-cmake-utils,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libboost-dev,
+ libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
+ libopencv-dev
+Standards-Version: 4.4.0
+Homepage: https://kurento.openvidu.io/
+Vcs-Browser: https://github.com/Kurento/kms-gstreamer-plugin-sample
+Vcs-Git: https://github.com/Kurento/kms-gstreamer-plugin-sample.git
+
+Package: kms-gstreamer-plugin-sample
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Kurento GStreamer filter plugin sample
+
+Package: kms-gstreamer-plugin-sample-dev
+Architecture: any
+Section: libdevel
+Depends: kms-gstreamer-plugin-sample (= ${binary:Version}), ${misc:Depends},
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libboost-dev,
+ libgstreamer1.0-dev,
+ libopencv-dev
+Description: Kurento GStreamer filter plugin sample (development files)
