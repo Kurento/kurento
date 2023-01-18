@@ -2,15 +2,19 @@
 
 
 
-# Kurento Media Server with AddressSanitizer
+# Kurento Media Server
 
-This Docker image contains a special build of Kurento Media Server with [AddressSanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer), the memory error detector that comes built-in with GCC, the C and C++ compiler that Kurento uses.
+| :house:[Homepage](https://kurento.openvidu.io/) | :books:[Documentation](https://kurento.openvidu.io/documentation) | [![Docker Pulls](https://img.shields.io/docker/pulls/kurento/kurento-media-server?color=blue&label=Docker&logo=docker&logoColor=blue)](https://hub.docker.com/r/kurento/kurento-media-server) |
+| --- | --- | --- |
+| [![GitHub commits](https://img.shields.io/github/commits-difference/Kurento/kurento?base=eabf6de352fb927df91baa2ec26794dac8c64d78&head=HEAD&label=Commits&logo=github)](https://github.com/Kurento/kurento/graphs/commit-activity) | [![GitHub contributors](https://img.shields.io/github/contributors/Kurento/kurento?label=Contributors&logo=github)](https://github.com/Kurento/kurento/graphs/contributors) | ![Stack Exchange questions](https://img.shields.io/stackexchange/stackoverflow/t/kurento?color=orange&label=Stack%20Overflow&logo=stackoverflow&logoColor=orange) |
 
-This memory error detector helps finding about out-of-bounds accesses, use-after-free errors, and other types of programming mistakes that can cause memory corruption and crashes.
+Kurento Media Server is responsible for media transmission, processing, loading and recording. It is implemented in low level technologies based on the GStreamer multimedia toolkit, and provides the following features:
 
-Usage information for the Kurento Media Server Docker images is in the appropriate page in Docker Hub:
-
-[kurento/kurento-media-server](https://hub.docker.com/r/kurento/kurento-media-server)
+* Networked streaming protocols, including HTTP, RTP and WebRTC.
+* Group communications (MCU and SFU functionality) supporting both media mixing and media routing/dispatching.
+* Generic support for Computer Vision and Augmented Reality filters (OpenCV).
+* Media storage supporting writing operations for WebM and MP4 and playback in all formats supported by GStreamer.
+* Automatic media transcoding between any of the codecs supported by GStreamer including VP8, H.264, H.263, AMR, OPUS, Speex, G.711, etc.
 
 
 
