@@ -25,14 +25,14 @@
 #/   Check the Debian Policy for the syntax of this field:
 #/      https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
 #/
-#/   For Kurento packages, <DebianVersion> should be like "0kurento1":
+#/   For Kurento packages, <DebianVersion> should be like "1kurento1":
 #/   - The "0" indicates upstream package version, typically 0 meaning that the
 #/     package doesn't exist in upstream distribution (Ubuntu).
 #/   - The "1" indicates the package revision from Kurento. If the same version
 #/     of some software is repackaged, this should be incremented, e.g.
-#/     "0kurento2".
+#/     "1kurento2".
 #/
-#/   Optional. Default: "0kurento1".
+#/   Optional. Default: "1kurento1".
 #/
 #/ --release
 #/
@@ -108,7 +108,7 @@ set -o xtrace
 # --------------------
 
 CFG_VERSION=""
-CFG_DEBIAN="0kurento1"
+CFG_DEBIAN="1kurento1"
 CFG_RELEASE="false"
 CFG_NEWDEVELOPMENT="false"
 CFG_COMMIT="false"

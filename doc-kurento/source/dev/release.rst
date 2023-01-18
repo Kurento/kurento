@@ -35,11 +35,11 @@ General considerations
   - A support branch for the ``1.1`` minor release would be called ``1.1.x``.
   - A support branch for the whole ``1`` major release would be called ``1.1.x``.
 
-* Contrary to the project version, Debian package versions don't contain development suffixes, and should always be of the form ``1.0.0-0kurento1``:
+* Contrary to the project version, Debian package versions don't contain development suffixes, and should always be of the form ``1.0.0-1kurento1``:
 
   - The first part (*1.0.0*) is the project's **base version number**.
 
-  - The second part (*0kurento1*) is the **Debian package revision**:
+  - The second part (*1kurento1*) is the **Debian package revision**:
 
     - The number prefix (in this example: *0*) indicates the version relative to other same-name packages provided by the base system. When this number is *0*, it means that the package is original and only exists in Kurento, not in Debian or Ubuntu itself. This is typically the case for the projects owned or forked for the Kurento project.
 
@@ -47,7 +47,7 @@ General considerations
 
     **Example**:
 
-    Imagine that version *1.0.0* of your code is released for the first time. The full Debian package version will be: *1.0.0-0kurento1*. Later, you realize the package doesn't install correctly in some machines, because of a bug in the package's post-install script. You fix it, and now it's time to re-publish! But the project's source code itself has not changed at all, only the packaging files (in ``/debian/`` dir); thus, the *base version* will remain *1.0.0*, and only the *Debian revision* needs to change. The new package's full version will be *1.0.0-0kurento2*.
+    Imagine that version *1.0.0* of your code is released for the first time. The full Debian package version will be: *1.0.0-1kurento1*. Later, you realize the package doesn't install correctly in some machines, because of a bug in the package's post-install script. You fix it, and now it's time to re-publish! But the project's source code itself has not changed at all, only the packaging files (in ``/debian/`` dir); thus, the *base version* will remain *1.0.0*, and only the *Debian revision* needs to change. The new package's full version will be *1.0.0-1kurento2*.
 
   Please check the `Debian Policy Manual`_ and `this Ask Ubuntu answer`_ for more information about the package versions.
 
@@ -67,9 +67,9 @@ General considerations
 
   If the last Kurento release was **1.0.0**, then the next development version would be **1.0.1-dev** (or *1.0.1-SNAPSHOT* for Java components).
 
-  Later, the time comes to release this new development. If the new code only includes bug fixes and patches, then the version number *1.0.1* is already good. However, maybe this new release ended up including new functionality, which according to Semantic Versioning should be accompanied with a bump in the *.MINOR* version number, so the next release version number should be *1.1.0*. The Debian package version is reset accordingly, so the full Debian version is **1.1.0-0kurento1**.
+  Later, the time comes to release this new development. If the new code only includes bug fixes and patches, then the version number *1.0.1* is already good. However, maybe this new release ended up including new functionality, which according to Semantic Versioning should be accompanied with a bump in the *.MINOR* version number, so the next release version number should be *1.1.0*. The Debian package version is reset accordingly, so the full Debian version is **1.1.0-1kurento1**.
 
-  If you are re-packaging an already published version, without changes in the project's code itself, then just increment the Debian package revision: *0kurento1* becomes *0kurento2*, and so on.
+  If you are re-packaging an already published version, without changes in the project's code itself, then just increment the Debian package revision: *1kurento1* becomes *1kurento2*, and so on.
 
 
 
@@ -252,7 +252,7 @@ Release steps
 
       # Change here.
       NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
-      NEW_DEBIAN="<DebianRevision>"  # Eg.: 0kurento1
+      NEW_DEBIAN="<DebianRevision>"  # Eg.: 1kurento1
 
       function do_release {
           local PACKAGE_VERSION="$NEW_VERSION-$NEW_DEBIAN"
@@ -315,7 +315,7 @@ The version number (as opposed to the Debian revision) is only changed when the 
 
    # Change here.
    NEW_VERSION="<NextVersion>"   # Eg.: 1.0.1
-   NEW_DEBIAN="<DebianRevision>" # Eg.: 0kurento1
+   NEW_DEBIAN="<DebianRevision>" # Eg.: 1kurento1
 
    function do_release {
        local PACKAGE_VERSION="$NEW_VERSION-$NEW_DEBIAN"
@@ -500,7 +500,7 @@ Release steps
 
    # Change here.
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
-   NEW_DEBIAN="<DebianRevision>"  # Eg.: 0kurento1
+   NEW_DEBIAN="<DebianRevision>"  # Eg.: 1kurento1
 
    cd server/
 
@@ -524,7 +524,7 @@ New Development
 
    # Change here.
    NEW_VERSION="<NextVersion>"   # Eg.: 1.0.1
-   NEW_DEBIAN="<DebianRevision>" # Eg.: 0kurento1
+   NEW_DEBIAN="<DebianRevision>" # Eg.: 1kurento1
 
    cd server/
 

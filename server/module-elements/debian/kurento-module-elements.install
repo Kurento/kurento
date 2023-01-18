@@ -1,4 +1,4 @@
 etc/kurento/modules/kurento/*
-usr/lib/*/gstreamer-1.0/lib*.so
+usr/lib/*/gstreamer-*/lib*.so
 usr/lib/*/kurento/*/*.so
 usr/lib/*/lib*.so.*

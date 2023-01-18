@@ -1,9 +1,9 @@
 Source: kurento-module-pointerdetector
 Maintainer: Kurento <kurento@openvidu.io>
 Priority: optional
-Build-Depends: debhelper (>= 9),
+Build-Depends:
  cmake,
- pkg-config,
+ debhelper-compat (= 13),
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
@@ -11,38 +11,49 @@ Build-Depends: debhelper (>= 9),
  kurento-module-elements-dev (>= 7.0.0),
  kurento-module-filters-dev (>= 7.0.0),
  libopencv-dev,
- libsoup2.4-dev
-Standards-Version: 4.0.0
+ libsoup2.4-dev,
+ pkg-config,
+Standards-Version: 4.5.1
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kurento
 Vcs-Git: https://github.com/Kurento/kurento.git
-Homepage: https://kurento.openvidu.io/
+Rules-Requires-Root: no
 
 Package: kurento-module-pointerdetector
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends},
+Depends:
  ${misc:Depends},
+ ${shlibs:Depends},
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
  kurento-module-core (>= 7.0.0),
  kurento-module-elements (>= 7.0.0),
- kurento-module-filters (>= 7.0.0)
+ kurento-module-filters (>= 7.0.0),
+Breaks:
+ kms-pointerdetector-6.0,
+ kms-pointerdetector,
+Replaces:
+ kms-pointerdetector-6.0,
+ kms-pointerdetector,
 Description: Kurento Pointer Detector filter
 
 Package: kurento-module-pointerdetector-dev
 Architecture: any
 Section: libdevel
-Depends: kurento-module-pointerdetector (= ${binary:Version}),
+Depends:
+ ${misc:Depends},
  kurento-module-core-dev,
  kurento-module-elements-dev,
  kurento-module-filters-dev,
+ kurento-module-pointerdetector (= ${binary:Version}),
  libopencv-dev,
- libsoup2.4-dev
+ libsoup2.4-dev,
+Breaks:
+ kms-pointerdetector-6.0-dev,
+ kms-pointerdetector-dev,
+Replaces:
+ kms-pointerdetector-6.0-dev,
+ kms-pointerdetector-dev,
 Description: Kurento Pointer Detector filter - Development files
-
-Package: kurento-module-pointerdetector-dbg
-Architecture: any
-Section: debug
-Depends: kurento-module-pointerdetector (= ${binary:Version})
-Description: Kurento Pointer Detector filter - Debug symbols

@@ -559,9 +559,16 @@ log "Install build dependencies"
 
 GBP_ARGS=()
 
-# `dpkg-buildpackage`: don't sign packages
-GBP_ARGS+=("-uc")
-GBP_ARGS+=("-us")
+GBP_ARGS+=(
+    # (-b) Build a binary-only package, skipping `dpkg-source`.
+    "--build=binary"
+
+    # (-uc) Do not sign the .buildinfo and .changes files.
+    "--unsigned-changes"
+
+    # (-us) Do not sign the source package.
+    "--unsigned-source"
+)
 
 # Debhelper and all dpkg-related tools: Parallelize build jobs
 # This can be overriden with DEB_BUILD_OPTIONS. For example:
@@ -571,17 +578,17 @@ if [[ ! "${DEB_BUILD_OPTIONS:-}" =~ "parallel" ]]; then
 fi
 
 if [[ "$CFG_ALLOW_DIRTY" == "true" ]]; then
-    # `dpkg-buildpackage`: build a Binary-only package,
-    # skipping `dpkg-source` source tarball altogether
-    #GBP_ARGS+=("-b")
-
-    # `dpkg-source`: generate the source tarball by ignoring
-    # ALL changed files in the working directory
-    GBP_ARGS+=("--source-option=--extend-diff-ignore=.*")
+    GBP_ARGS+=(
+        # Generate the source tarball by ignoring ALL changed files
+        # in the working directory.
+        "--source-option=--extend-diff-ignore=.*"
+    )
 elif [[ "$CFG_INSTALL_FILES" == "true" ]]; then
-    # `dpkg-source`: generate the source tarball by ignoring
-    # '*.deb' and '*.ddeb' files inside $CFG_INSTALL_FILES_DIR
-    GBP_ARGS+=("--source-option=--extend-diff-ignore=.*\.d?deb$")
+    GBP_ARGS+=(
+        # Generate the source tarball by ignoring '*.deb' and '*.ddeb' files
+        # inside $CFG_INSTALL_FILES_DIR.
+        "--source-option=--extend-diff-ignore=.*\.d?deb$"
+    )
 fi
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
@@ -613,8 +620,7 @@ export GST_DEBUG_NO_COLOR=1
 #     --git-builder="$GBP_BUILDER" \
 #     "${GBP_ARGS[@]}"
 
-dpkg-buildpackage \
-    "${GBP_ARGS[@]}"
+dpkg-buildpackage "${GBP_ARGS[@]}"
 
 
 

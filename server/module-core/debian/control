@@ -1,9 +1,9 @@
 Source: kurento-module-core
-Priority: optional
 Maintainer: Kurento <kurento@openvidu.io>
-Build-Depends: debhelper (>= 9),
- build-essential,
+Priority: optional
+Build-Depends:
  cmake,
+ debhelper-compat (= 13),
  gstreamer1.0-libav,
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
@@ -18,31 +18,42 @@ Build-Depends: debhelper (>= 9),
  libboost-test-dev,
  libboost-thread-dev,
  libglibmm-2.4-dev,
- libgstreamer1.0-dev,
  libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
  libsigc++-2.0-dev,
  libvpx-dev,
- uuid-dev
-Standards-Version: 4.0.0
+ uuid-dev,
+Standards-Version: 4.5.1
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kurento
 Vcs-Git: https://github.com/Kurento/kurento.git
-Homepage: https://kurento.openvidu.io/
+Rules-Requires-Root: no
 
 Package: kurento-module-core
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends},
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
  gstreamer1.0-plugins-base,
- kurento-jsonrpc (>= 7.0.0)
-Description: Kurento Core module
- Kurento Core module - Binary libraries.
+ kurento-jsonrpc (>= 7.0.0),
+Breaks:
+ kms-core-6.0,
+ kms-core,
+Replaces:
+ kms-core-6.0,
+ kms-core,
+Description: Core module for use by Kurento Media Server
+ Kurento core module - Shared library.
 
 Package: kurento-module-core-dev
 Architecture: any
 Section: libdevel
-Depends: kurento-module-core (= ${binary:Version}),
+Depends:
+ ${misc:Depends},
  kurento-cmake-utils (>= 7.0.0),
  kurento-jsonrpc-dev (>= 7.0.0),
+ kurento-module-core (= ${binary:Version}),
  kurento-module-creator (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-regex-dev,
@@ -50,18 +61,17 @@ Depends: kurento-module-core (= ${binary:Version}),
  libboost-test-dev,
  libboost-thread-dev,
  libglibmm-2.4-dev,
- libgstreamer1.0-dev,
  libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
  libsigc++-2.0-dev,
  libvpx-dev,
  libxml2-utils,
- uuid-dev
-Description: Kurento Core module
- Kurento Core module - Development files.
-
-Package: kurento-module-core-dbg
-Architecture: any
-Section: debug
-Depends: kurento-module-core (= ${binary:Version})
-Description: Kurento Core module
- Kurento Core module - Debugging symbols.
+ uuid-dev,
+Breaks:
+ kms-core-6.0-dev,
+ kms-core-dev,
+Replaces:
+ kms-core-6.0-dev,
+ kms-core-dev,
+Description: Core module for use by Kurento Media Server
+ Kurento core module - Development files.

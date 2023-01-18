@@ -1,62 +1,72 @@
 Source: kurento-module-filters
-Priority: optional
 Maintainer: Kurento <kurento@openvidu.io>
-Build-Depends: debhelper (>= 9),
- build-essential,
+Priority: optional
+Build-Depends:
  cmake,
+ debhelper-compat (= 13),
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-good,
  kurento-cmake-utils (>= 7.0.0),
  kurento-module-core-dev (>= 7.0.0),
- kurento-module-elements-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
  libboost-filesystem-dev,
  libboost-system-dev,
  libglibmm-2.4-dev,
- libgstreamer1.0-dev,
  libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
  libopencv-dev,
  libsigc++-2.0-dev,
  libsoup2.4-dev,
- opencv-data
-Standards-Version: 4.0.0
+ opencv-data,
+Standards-Version: 4.5.1
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kurento
 Vcs-Git: https://github.com/Kurento/kurento.git
-Homepage: https://kurento.openvidu.io/
+Rules-Requires-Root: no
 
 Package: kurento-module-filters
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends},
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
  ca-certificates,
  kurento-module-elements (>= 7.0.0),
  libsoup2.4-1,
- opencv-data
+ opencv-data,
+Breaks:
+ kms-filters-6.0,
+ kms-filters,
+Replaces:
+ kms-filters-6.0,
+ kms-filters,
 Description: Kurento Filters module
  Kurento Filters module - Binary libraries.
 
 Package: kurento-module-filters-dev
 Architecture: any
 Section: libdevel
-Depends: kurento-module-filters (= ${binary:Version}),
+Depends:
+ ${misc:Depends},
  kurento-cmake-utils (>= 7.0.0),
  kurento-module-core-dev (>= 7.0.0),
- kurento-module-elements-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
+ kurento-module-elements-dev (>= 7.0.0),
+ kurento-module-filters (= ${binary:Version}),
  libboost-filesystem-dev,
  libboost-system-dev,
  libglibmm-2.4-dev,
- libgstreamer1.0-dev,
  libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
  libopencv-dev,
  libsigc++-2.0-dev,
- libsoup2.4-dev
+ libsoup2.4-dev,
+Breaks:
+ kms-filters-6.0-dev,
+ kms-filters-dev,
+Replaces:
+ kms-filters-6.0-dev,
+ kms-filters-dev,
 Description: Kurento Filters module
  Kurento Filters module - Development files.
-
-Package: kurento-module-filters-dbg
-Architecture: any
-Section: debug
-Depends: kurento-module-filters (= ${binary:Version})
-Description: Kurento Filters module
- Kurento Filters module - Debugging symbols.

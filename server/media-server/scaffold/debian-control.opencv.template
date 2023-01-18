@@ -1,17 +1,17 @@
 Source: {{nameKebabCase}}
 Maintainer: {{debianOwner}}
 Priority: optional
-Build-Depends: debhelper (>= 12),
- build-essential,
+Build-Depends:
  cmake,
- pkg-config,
+ debhelper-compat (= 13),
  kurento-cmake-utils,
  kurento-module-core-dev,
  kurento-module-elements-dev,
  kurento-module-filters-dev,
  libgstreamer1.0-dev,
- libopencv-dev
-Standards-Version: 4.4.0
+ libopencv-dev,
+ pkg-config,
+Standards-Version: 4.5.1
 Homepage: https://www.example.com/
 #Vcs-Browser: https://git.example.com/{{nameKebabCase}}
 #Vcs-Git: https://git.example.com/{{nameKebabCase}}.git
@@ -19,16 +19,20 @@ Homepage: https://www.example.com/
 Package: {{nameKebabCase}}
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
 Description: <Up to 60 chars single line summary>
  <Long description over several lines, indented with space>.
 
 Package: {{nameKebabCase}}-dev
 Architecture: any
 Section: libdevel
-Depends: {{nameKebabCase}} (= ${binary:Version}), ${misc:Depends},
+Depends:
+ ${misc:Depends},
+ {{nameKebabCase}} (= ${binary:Version}),
  kurento-module-core-dev,
  kurento-module-elements-dev,
- kurento-module-filters-dev
+ kurento-module-filters-dev,
 Description: <Up to 60 chars single line summary> (development files)
  <Long description over several lines, indented with space>.

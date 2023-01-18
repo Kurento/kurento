@@ -1,4 +1,4 @@
-kurento-media-server (7.0.0-0kurento1) UNRELEASED; urgency=medium
+kurento-media-server (7.0.0-1kurento1) UNRELEASED; urgency=medium
 
   [ Mario Jr ]
   * GStreamer 1.14 port

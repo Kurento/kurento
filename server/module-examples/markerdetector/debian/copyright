@@ -4,4 +4,10 @@ Upstream-Contact: Kurento <kurento@openvidu.io>
 Source: https://github.com/Kurento/kurento
 
 Files: *
+Copyright: 2023 Kurento
+License: Apache-2.0
+ On Debian systems, the full text of the Apache-2.0 license
+ can be found in the file '/usr/share/common-licenses/Apache-2.0'
+
+Files: alvar-2.0.0-src-opencv3
 Copyright: Copyright VTT 2015

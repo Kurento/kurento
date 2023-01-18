@@ -6,10 +6,11 @@ build-*/
 
 # Debian packaging (debhelper)
 **/debian/.debhelper/
-**/debian/*/
+**/debian/debhelper-build-stamp
 **/debian/files
 **/debian/kurento-*.debhelper.log
 **/debian/kurento-*.substvars
+**/debian/kurento-*/
 **/debian/tmp/
 **/kurento-*_*_amd64.buildinfo
 **/kurento-*_*_amd64.changes

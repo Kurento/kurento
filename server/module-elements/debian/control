@@ -1,9 +1,9 @@
 Source: kurento-module-elements
-Priority: optional
 Maintainer: Kurento <kurento@openvidu.io>
-Build-Depends: debhelper (>= 9),
- build-essential,
+Priority: optional
+Build-Depends:
  cmake,
+ debhelper-compat (= 13),
  ffmpeg | libav-tools,
  gstreamer1.0-nice,
  gstreamer1.0-plugins-bad,
@@ -16,54 +16,64 @@ Build-Depends: debhelper (>= 9),
  libboost-system-dev,
  libboost-test-dev,
  libglibmm-2.4-dev,
- libgstreamer1.0-dev,
  libgstreamer-plugins-bad1.0-dev,
  libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
  libnice-dev,
  libsigc++-2.0-dev,
  libsoup2.4-dev,
- libssl-dev
-Standards-Version: 4.0.0
+ libssl-dev,
+Standards-Version: 4.5.1
+Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kurento
 Vcs-Git: https://github.com/Kurento/kurento.git
-Homepage: https://kurento.openvidu.io/
+Rules-Requires-Root: no
 
 Package: kurento-module-elements
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends},
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
  gstreamer1.0-nice,
  kurento-module-core (>= 7.0.0),
  libgstreamer-plugins-bad1.0-0,
  libsoup2.4-1,
- openh264-gst-plugin
+ openh264-gst-plugin,
+Breaks:
+ kms-elements-6.0,
+ kms-elements,
+Replaces:
+ kms-elements-6.0,
+ kms-elements,
 Description: Kurento Elements module
  Kurento Elements module - Binary libraries.
 
 Package: kurento-module-elements-dev
 Architecture: any
 Section: libdevel
-Depends: kurento-module-elements (= ${binary:Version}),
+Depends:
+ ${misc:Depends},
  kurento-cmake-utils (>= 7.0.0),
  kurento-module-core-dev (>= 7.0.0),
  kurento-module-creator (>= 7.0.0),
+ kurento-module-elements (= ${binary:Version}),
  libboost-filesystem-dev,
  libboost-system-dev,
  libboost-test-dev,
  libglibmm-2.4-dev,
- libgstreamer1.0-dev,
  libgstreamer-plugins-bad1.0-dev,
  libgstreamer-plugins-base1.0-dev,
+ libgstreamer1.0-dev,
  libnice-dev,
  libsigc++-2.0-dev,
  libsoup2.4-dev,
- libssl-dev
+ libssl-dev,
+Breaks:
+ kms-elements-6.0-dev,
+ kms-elements-dev,
+Replaces:
+ kms-elements-6.0-dev,
+ kms-elements-dev,
 Description: Kurento Elements module
  Kurento Elements module - Development files.
-
-Package: kurento-module-elements-dbg
-Architecture: any
-Section: debug
-Depends: kurento-module-elements (= ${binary:Version})
-Description: Kurento Elements module
- Kurento Elements module - Debugging symbols.
