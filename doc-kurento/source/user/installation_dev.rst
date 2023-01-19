@@ -63,7 +63,7 @@ Open a terminal and run these commands:
       # Add the repository to Apt
       sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
       # Kurento Media Server - Nightly packages
-      deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6
+      deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME main
       EOF
 
 3. Install KMS:

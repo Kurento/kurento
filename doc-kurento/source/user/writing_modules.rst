@@ -170,9 +170,9 @@ Before being able to use your new module, its binary files must be installed to 
 
    .. warning::
 
-      To avoid C++ issues with ABI compatibility (which are usually caused by mixing compiler versions) you should build your module on the same system that Kurento was built. For example, if you run Kurento on Ubuntu 18.04, you should compile your module also on Ubuntu 18.04.
+      To avoid C++ issues with ABI compatibility (which are usually caused by mixing compiler versions) you should build your module on the same system that Kurento was built. For example, if you run Kurento on Ubuntu 20.04, you should compile your module also on Ubuntu 20.04.
 
-      Do not mix system versions. For example, do not compile your module on Ubuntu 18.04, and then try to install it for Kurento on Ubuntu 16.04.
+      Do not mix system versions. For example, do not build your module on Ubuntu 20.04, and then try to install it on Ubuntu 18.04.
 
 2. Use the module from client applications. Technically this step is optional, but unless your application directly implements the :doc:`Kurento Protocol </features/kurento_protocol>`, you will want to use the client-side SDK that gets auto-generated from the Kurento Module Descriptor files (``*.kmd.json``).
 

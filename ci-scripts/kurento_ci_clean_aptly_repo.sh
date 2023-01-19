@@ -17,7 +17,7 @@
 #/ --distro-name <DistroName>
 #/
 #/   Name of the Ubuntu distribution for which the repo will be purge.
-#/   E.g.: "xenial", "bionic"
+#/   E.g.: "focal".
 #/
 
 
@@ -98,7 +98,7 @@ echo "CFG_PUBLISH_NAME=$CFG_PUBLISH_NAME"
 # https://www.aptly.info/doc/aptly/publish/
 # aptly publish drop ${DISTRIBUTION} s3:ubuntu:${DISTRIBUTION}
 # E.g.:
-# aptly publish drop bionic s3:ubuntu:agnostic-caps-intersect
+# aptly publish drop focal s3:ubuntu:agnostic-caps-intersect
 
 # Probably, snapshots should be dropped too before repos
 # https://www.aptly.info/doc/aptly/snapshot/
@@ -153,7 +153,7 @@ chmod 0400 secret.pem
 docker run --pull always --rm -i \
     --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
-    buildpack-deps:xenial-scm /bin/bash <<EOF
+    buildpack-deps:20.04-scm /bin/bash <<EOF
 
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset

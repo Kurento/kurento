@@ -85,7 +85,7 @@ RUN_COMMANDS=(
     "kurento_check_version.sh true || { echo 'WARNING: Command failed: kurento_check_version (tagging enabled)'; }"
 )
 
-export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:xenial"
+export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:focal"
 "${KURENTO_SCRIPTS_HOME}/kurento_ci_container_job_setup.sh" "${RUN_COMMANDS[@]}"
 
 

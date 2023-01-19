@@ -13,7 +13,7 @@
 #/
 #/ <DistribRelease>
 #/
-#/   Version number of the target Ubuntu system. E.g. "16.04" for Ubuntu Xenial.
+#/   Version number of the target Ubuntu system. E.g. "20.04" for Ubuntu Focal.
 #/
 #/   Required. As of this writing, Kurento 6.x works with Ubuntu 16.04 and 18.04,
 #/   while Kurento 7.x works with Ubuntu 20.04.
@@ -264,10 +264,10 @@ apt-key adv \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME kms6" \
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME main" \
         >/etc/apt/sources.list.d/kurento.list
 else
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6" \
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME km6" \
         >/etc/apt/sources.list.d/kurento.list
     echo "#deb [arch=amd64] http://ubuntu.openvidu.io/6.18.0 $DISTRIB_CODENAME kms6" \
         >>/etc/apt/sources.list.d/kurento.list

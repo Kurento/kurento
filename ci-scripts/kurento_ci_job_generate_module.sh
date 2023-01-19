@@ -135,7 +135,7 @@ RUN_COMMANDS=(
     "$GEN_SCRIPT"
 )
 
-export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:xenial"
+export CONTAINER_IMAGE="kurento/kurento-ci-buildtools:focal"
 "${KURENTO_SCRIPTS_HOME}/kurento_ci_container_job_setup.sh" "${RUN_COMMANDS[@]}"
 
 

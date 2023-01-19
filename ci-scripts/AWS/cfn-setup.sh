@@ -34,7 +34,7 @@ source /etc/lsb-release
 # Add the repository to Apt.
 tee /etc/apt/sources.list.d/kurento.list >/dev/null <<EOF
 # Kurento Media Server - Release packages
-deb [arch=amd64] http://ubuntu.openvidu.io/{{KmsVersion}} ${DISTRIB_CODENAME} kms6
+deb [arch=amd64] http://ubuntu.openvidu.io/{{KmsVersion}} ${DISTRIB_CODENAME} main
 EOF
 
 # Install.

@@ -24,8 +24,6 @@ echo "[kurento_ci_container_entrypoint] Preparing environment..."
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 export PATH="$BASEPATH:$PATH"
 
-DIST=$(lsb_release -c)
-DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
 export DEBIAN_FRONTEND=noninteractive
 
 echo "[kurento_ci_container_entrypoint] Show environment..."
@@ -42,11 +40,6 @@ StrictHostKeyChecking no
 User $KURENTO_SSH_USER
 IdentityFile /root/.ssh/git_id_rsa
 EOF
-    if [ "$DIST" = "xenial" ]; then
-        tee --append /root/.ssh/config >/dev/null <<EOF
-KexAlgorithms +diffie-hellman-group1-sha1
-EOF
-    fi
 fi
 
 if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then

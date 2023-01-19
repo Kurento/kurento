@@ -91,9 +91,7 @@ log "CFG_FALLBACK=$CFG_FALLBACK"
 
 # Before checkout: Deinit submodules.
 # Needed because submodule state is not carried over when switching branches.
-# TODO UPGRADE: Change when dropping support for Xenial.
-git submodule deinit . || true
-#git submodule deinit --all
+git submodule deinit --all
 
 BRANCH_NAME="refs/remotes/origin/${CFG_NAME}"
 TAG_NAME="refs/tags/${CFG_NAME}"

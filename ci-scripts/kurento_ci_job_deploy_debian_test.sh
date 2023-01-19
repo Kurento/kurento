@@ -20,7 +20,7 @@
 #/ JOB_DISTRO
 #/
 #/   Name of the Ubuntu distribution where this job is run.
-#/   E.g.: "xenial", "bionic".
+#/   E.g.: "focal".
 #/
 #/ JOB_DEPLOY_NAME
 #/
@@ -123,7 +123,7 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     source /etc/lsb-release
 
     tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-deb [arch=amd64] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME kms6
+deb [arch=amd64] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME main
 EOF
 }
 
@@ -172,9 +172,7 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 
     # Before checkout: Deinit submodules.
     # Needed because submodule state is not carried over when switching branches.
-    # TODO UPGRADE: Change when dropping support for Xenial.
-    git submodule deinit . || true
-    #git submodule deinit --all
+    git submodule deinit --all
 
     git checkout "$REF" || true
 

@@ -81,7 +81,7 @@ ANYTHING that you think might be relevant or useful.
 ### About Kurento Media Server
 
 * Kurento version:  <!-- E.g. 7.0.0, nightly -->
-* Server OS:          <!-- E.g. Ubuntu 16.04 (Xenial), 18.04 (Bionic), etc. -->
+* Server OS:          <!-- E.g. Ubuntu 20.04 (Focal) -->
 * Installation method:
     <!-- Fill with an 'x' in the boxes that apply. -->
   - [] [apt-get]
@@ -104,7 +104,7 @@ ANYTHING that you think might be relevant or useful.
 ### About end-user clients
 
 * Device(s):    <!-- E.g. PC, Mac, Android, iPhone, etc. -->
-* OS(es):        <!-- E.g. Ubuntu 18.04, Windows 10, iOS 12, etc. -->
+* OS(es):        <!-- E.g. Ubuntu 20.04, Windows 10, iOS 12, etc. -->
 * Browser(s):  <!-- E.g. Firefox 74, Chrome 80, Safari 12.0, etc. -->
 
 

@@ -39,7 +39,7 @@
 #/ JOB_DISTRO
 #/
 #/   Name of the Ubuntu distribution where this job is run.
-#/   E.g.: "xenial", "bionic".
+#/   E.g.: "focal".
 #/
 #/
 #/ * Variable(s) from job Custom Tools (with "Install custom tools"):
@@ -73,11 +73,6 @@ set -o xtrace
 
 # Arguments to kurento-buildpackage.
 KURENTO_BUILDPACKAGE_ARGS=()
-# NOTE: `${arr[@]+"${arr[@]}"}` is required with Bash < 4.4 (Ubuntu 16.04) to
-# avoid a bug with `set -o nounset` and empty arrays. Bash >= 4.4 (Ubuntu 18.04)
-# fixed it and can use the normal expansion: `"${KURENTO_BUILDPACKAGE_ARGS[@]}"`.
-# See: https://stackoverflow.com/a/61551944
-
 
 if [[ "$JOB_RELEASE" == "true" ]]; then
     KURENTO_BUILDPACKAGE_ARGS+=("--release")
@@ -135,7 +130,7 @@ docker run --pull always --rm \
         --install-files . \
         --apt-proxy 'http://proxy.openvidu.io:3142' \
         --timestamp "$JOB_TIMESTAMP" \
-        ${KURENTO_BUILDPACKAGE_ARGS[@]+"${KURENTO_BUILDPACKAGE_ARGS[@]}"}
+        "${KURENTO_BUILDPACKAGE_ARGS[@]}"
 
 
 

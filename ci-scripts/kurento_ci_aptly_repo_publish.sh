@@ -16,14 +16,14 @@
 #/ --distro-name <DistroName>
 #/
 #/   Name of the Ubuntu distribution for which the repo will be created or
-#/   updated. E.g.: "xenial", "bionic".
+#/   updated. E.g.: "focal".
 #/
 #/   Required. Default: None.
 #/
 #/ --repo-name <RepoName>
 #/
 #/   Name of the repository that will be created or updated.
-#/   E.g.: "kurento-xenial-7.0.0", "kurento-xenial-test-branch"
+#/   E.g.: "kurento-focal-7.0.0", "kurento-focal-feature-branch"
 #/
 #/   Required. Default: None.
 #/
@@ -34,7 +34,7 @@
 #/
 #/   The repository URL will be like:
 #/
-#/       http://ubuntu.openvidu.io/<PublishName> <DistroName> kms6
+#/       http://ubuntu.openvidu.io/<PublishName> <DistroName> main
 #/
 #/   Required. Default: None.
 #/
@@ -147,8 +147,7 @@ echo "CFG_RELEASE=$CFG_RELEASE"
 REPO_EXISTS="$(aptly repo list -raw | grep --count "$CFG_REPO_NAME")" || true
 if [[ "$REPO_EXISTS" == "0" ]]; then
     echo "Create new repo: $CFG_REPO_NAME"
-    aptly repo create -distribution="$CFG_DISTRO_NAME" -component=kms6 "$CFG_REPO_NAME"
-    # TODO FIXME: For Kurento 7.0, change to `-component=main`.
+    aptly repo create -distribution="$CFG_DISTRO_NAME" -component=main "$CFG_REPO_NAME"
 fi
 
 

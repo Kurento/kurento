@@ -24,7 +24,7 @@
 #/ JOB_DISTRO
 #/
 #/   Name of the Ubuntu distribution where this job is run.
-#/   E.g.: "xenial", "bionic".
+#/   E.g.: "focal".
 #/
 #/ JOB_DEPLOY_NAME
 #/

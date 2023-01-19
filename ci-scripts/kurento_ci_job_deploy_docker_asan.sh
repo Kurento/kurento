@@ -24,7 +24,7 @@
 #/ JOB_DISTRO
 #/
 #/   Name of the Ubuntu distribution where this job is run.
-#/   E.g.: "xenial", "bionic".
+#/   E.g.: "focal".
 #/
 #/ JOB_DEPLOY_NAME
 #/
@@ -113,13 +113,7 @@ fi
 
 # Select the GCC version to install, based on what is available for the system.
 # Source: https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test
-if [[ "$JOB_DISTRO" == "xenial" ]]; then
-    DOCKER_GCC_VERSION="9"
-    log "Ubuntu 16.04 (Xenial) --> Use GCC $DOCKER_GCC_VERSION"
-elif [[ "$JOB_DISTRO" == "bionic" ]]; then
-    DOCKER_GCC_VERSION="11"
-    log "Ubuntu 18.04 (Bionic) --> Use GCC $DOCKER_GCC_VERSION"
-elif [[ "$JOB_DISTRO" == "focal" ]]; then
+if [[ "$JOB_DISTRO" == "focal" ]]; then
     DOCKER_GCC_VERSION="11"
     log "Ubuntu 20.04 (Focal) --> Use GCC $DOCKER_GCC_VERSION"
 elif [[ "$JOB_DISTRO" == "jammy" ]]; then

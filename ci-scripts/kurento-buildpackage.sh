@@ -126,7 +126,7 @@
 #/
 #/   <ProxyUrl> is set to Apt option "Acquire::http::Proxy".
 #/
-#/   Doc: https://manpages.ubuntu.com/manpages/bionic/en/man1/apt-transport-http.1.html
+#/   Doc: https://manpages.ubuntu.com/manpages/man1/apt-transport-http.1.html
 #/
 #/
 #/
@@ -321,8 +321,8 @@ log "CFG_APT_PROXY_URL=$CFG_APT_PROXY_URL"
 # --------------------------
 
 # Get Ubuntu version definitions. This brings variables such as:
-#     DISTRIB_CODENAME="bionic"
-#     DISTRIB_RELEASE="18.04"
+#     DISTRIB_CODENAME="focal"
+#     DISTRIB_RELEASE="20.04"
 source /etc/lsb-release
 
 # Extra options for all apt-get invocations
@@ -332,35 +332,6 @@ APT_ARGS=()
 
 # Initial apt-get setup
 # ---------------------
-
-# HACK - UBUNTU 18.04 BIONIC - Install both libcurl3 and libcurl4
-# Our projects depend on OpenSSL 1.0, but Bionic comes with 1.1. This manifests
-# in the "libcurl4" package, which depends on OpenSSL 1.1. Other tools, such as
-# CMake, depend on libcurl4, while the OpenSSL-1.0 version of the libraries
-# we need end up depending on libcurl3. But libcurl3 and libcurl4 conflict and
-# cannot be installed at the same time...
-# In order to build the Kurento projects on Ubuntu Bionic, we depend on libcurl3
-# and install a custom dummy libcurl4 package to satisfy CMake's dependency.
-if [[ ${DISTRIB_RELEASE%%.*} -eq 18 ]]; then
-    apt-get update
-    pushd /tmp
-
-    # Remove conflict from libcurl4
-    apt-get download libcurl4
-    dpkg-deb -R libcurl4_*.deb libcurl4/
-    sed -i '/^Conflicts: libcurl3/d' libcurl4/DEBIAN/control
-    dpkg-deb -b libcurl4 libcurl4-custom.deb
-    dpkg -i libcurl4-custom.deb
-
-    # Remove conflict from libcurl3 and leave this as the installed version
-    apt-get download libcurl3
-    dpkg-deb -R libcurl3_*.deb libcurl3/
-    sed -i '/^Conflicts: libcurl4/d' libcurl3/DEBIAN/control
-    dpkg-deb -b libcurl3 libcurl3-custom.deb
-    dpkg -i libcurl3-custom.deb
-
-    popd # /tmp
-fi
 
 # If requested, use an Apt proxy
 if [[ -n "$CFG_APT_PROXY_URL" ]]; then
@@ -373,7 +344,7 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
 
     REPO="$CFG_INSTALL_KURENTO_VERSION"
 
-    if KURENTO_LIST="$(grep --recursive --files-with-matches --include='*.list' "ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" /etc/apt/)"; then
+    if KURENTO_LIST="$(grep --recursive --files-with-matches --include='*.list' "ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main" /etc/apt/)"; then
         log "Found Kurento repository line for apt-get:"
         log "$KURENTO_LIST"
     else
@@ -383,7 +354,7 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
             apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
             log "Add Kurento repository line for apt-get"
-            echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6" \
+            echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main" \
                 | tee -a /etc/apt/sources.list.d/kurento.list
         else
             log "ERROR: Could not find Kurento repository line for apt-get"
@@ -394,7 +365,7 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
             log "Suggested solution 2:"
             log "    Run commands:"
             log "    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83"
-            log "    $ echo 'deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME kms6' | sudo tee -a /etc/apt/sources.list.d/kurento.list"
+            log "    $ echo 'deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main' | sudo tee -a /etc/apt/sources.list.d/kurento.list"
             log ""
             exit 1
         fi
@@ -439,7 +410,7 @@ log "Install build dependencies"
 # * DEBIAN_FRONTEND: In clean Ubuntu systems 'tzdata' might not be installed
 #   yet, but it may be now, so make sure interactive prompts are disabled.
 # * Debug::pkgProblemResolver=yes: Show details about the dependency resolution.
-#   Doc: http://manpages.ubuntu.com/manpages/bionic/man5/apt.conf.5.html
+#   Doc: http://manpages.ubuntu.com/manpages/man5/apt.conf.5.html
 # * --target-release '*-backports': Prefer installing newer versions of packages
 #   from the backports repository.
 (
@@ -498,12 +469,12 @@ log "Install build dependencies"
     # packages between Ubuntu distributions. For that, the distro version is
     # appended to our package version.
     #
-    # This is based on the version scheme used by Firefox packages on Ubuntu:
+    # This is based on the version scheme used by Firefox packages on Ubuntu,
+    # where the release number (e.g. 16.04 or 18.04) is appended to the version.
     #
     #   Ubuntu Xenial: 65.0+build2-0ubuntu0.16.04.1
     #   Ubuntu Bionic: 65.0+build2-0ubuntu0.18.04.1
     #
-    # Where "16.04" or "18.04" is appended to the base version.
     PACKAGE_VERSION="$(dpkg-parsechangelog --show-field Version)"
     DCH_VERSION="$PACKAGE_VERSION.$DISTRIB_RELEASE"
 

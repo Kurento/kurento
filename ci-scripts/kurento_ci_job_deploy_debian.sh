@@ -40,7 +40,7 @@
 #/ JOB_DISTRO
 #/
 #/   Name of the Ubuntu distribution where this job is run.
-#/   E.g.: "xenial", "bionic".
+#/   E.g.: "focal".
 #/
 #/
 #/ * Variable(s) from job files (with "Provide Configuration files"):
@@ -135,7 +135,7 @@ chmod 0400 secret.pem
 docker run --pull always --rm -i \
     --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
-    buildpack-deps:xenial-scm /bin/bash <<DOCKERCOMMANDS
+    buildpack-deps:20.04-scm /bin/bash <<DOCKERCOMMANDS
 
 # Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset

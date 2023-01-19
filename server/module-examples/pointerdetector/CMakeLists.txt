@@ -33,7 +33,7 @@ common_buildflags_set()
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 
 # FIXME Disable error from deprecated "soup_session_sync_new" in libsoup
-# Introduced for Ubuntu 18.04
+# (Since Ubuntu 18.04)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
 
 # FIXME Disable error when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered

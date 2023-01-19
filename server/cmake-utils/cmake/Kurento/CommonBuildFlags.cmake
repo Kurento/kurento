@@ -50,7 +50,7 @@ function(common_buildflags_set)
 
   # The environment variable 'DEB_BUILD_OPTIONS' is used to instruct
   # `dpkg-buildflags` to use all available security hardening features.
-  # See https://manpages.ubuntu.com/manpages/bionic/en/man1/dpkg-buildflags.1.html
+  # See https://manpages.ubuntu.com/manpages/man1/dpkg-buildflags.1.html
   set(ENV{DEB_BUILD_OPTIONS} "hardening=+all")
   dpkg_buildflags_get_cflags(DPKG_CFLAGS)
   dpkg_buildflags_get_cxxflags(DPKG_CXXFLAGS)

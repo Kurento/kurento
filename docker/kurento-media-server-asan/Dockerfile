@@ -22,9 +22,9 @@
 #
 # --build-arg UBUNTU_CODENAME=<UbuntuCodename>
 #
-#   <UbuntuCodename> is like "xenial", "bionic", etc.
+#   <UbuntuCodename> is like "focal".
 #
-#   Optional. Default: "xenial".
+#   Optional. Default: "focal".
 #
 # --build-arg KMS_VERSION=<KmsVersion>
 #
@@ -47,7 +47,7 @@
 #   executions of `apt-get`.
 #
 #   Example: To Use an Apt package proxy
-#   Doc: http://manpages.ubuntu.com/manpages/bionic/en/man1/apt-transport-http.1.html#options
+#   Doc: http://manpages.ubuntu.com/manpages/man1/apt-transport-http.1.html#options
 #
 #       APT_ARGS='-o Acquire::http::Proxy=http://user:pass@host:port/'
 #
@@ -69,7 +69,7 @@
 
 
 # Global arguments for FROM.
-ARG UBUNTU_CODENAME="xenial"
+ARG UBUNTU_CODENAME="focal"
 ARG KMS_IMAGE="kurento/kurento-media-server:dev"
 
 
@@ -99,7 +99,7 @@ ENV LANG="C.UTF-8"
 
 # Install tools:
 # * git: For `git clone` in `build.sh`.
-# * gnupg: For `apt-key adv` (since Ubuntu 18.04).
+# * gnupg: For `apt-key adv` (Since Ubuntu 18.04).
 RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         git \
         gnupg \
@@ -107,7 +107,7 @@ RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommend
 
 # Add Kurento Apt package repository.
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
- && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} kms6" >/etc/apt/sources.list.d/kurento.list
+ && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
 
 # Install development tools.
 RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
@@ -116,7 +116,7 @@ RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommend
         maven-debian-helper \
  && rm -rf /var/lib/apt/lists/*
 
-# Install latest GCC (GCC 9 in Ubuntu 16.04 "Xenial").
+# Install latest GCC.
 # This is done to use the latest AddressSanitizer, which is always a good idea
 # because it will have better detection capabilities and bugs resolved.
 RUN echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
@@ -150,7 +150,7 @@ FROM ${KMS_IMAGE}
 
 ARG UBUNTU_CODENAME
 
-# Install latest GCC runtime (GCC 9 in Ubuntu 16.04 "Xenial").
+# Install latest GCC runtime.
 RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
         gnupg \
  && echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \

@@ -19,11 +19,11 @@
 #
 # --build-arg UBUNTU_CODENAME=<UbuntuCodename>
 #
-#   <UbuntuCodename> is like "xenial", "bionic", etc.
+#   <UbuntuCodename> is like "focal".
 #
-#   Optional. Default: "xenial".
+#   Optional. Default: "focal".
 
-ARG UBUNTU_CODENAME=xenial
+ARG UBUNTU_CODENAME=focal
 
 FROM kurento/kurento-buildpackage:${UBUNTU_CODENAME}
 

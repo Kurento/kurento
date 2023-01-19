@@ -17,9 +17,9 @@
 #
 # --build-arg UBUNTU_CODENAME=<UbuntuCodename>
 #
-#   <UbuntuCodename> is like "xenial", "bionic", etc.
+#   <UbuntuCodename> is like "focal".
 #
-#   Optional. Default: "xenial".
+#   Optional. Default: "focal".
 #
 #
 # Run command
@@ -29,7 +29,7 @@
 # cd kurento/server/module-core/
 # docker run --rm \
 #     --mount type=bind,src="$PWD",dst=/hostdir \
-#     kurento/kurento-buildpackage:xenial \
+#     kurento/kurento-buildpackage:focal \
 #         --install-kurento 7.0.0 \
 #         --apt-add-repo \
 #         [kurento-buildpackage arguments...]
@@ -46,7 +46,7 @@
 #
 # Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
-ARG UBUNTU_CODENAME=xenial
+ARG UBUNTU_CODENAME=focal
 
 FROM ubuntu:${UBUNTU_CODENAME}
 
@@ -103,15 +103,7 @@ RUN git config --system user.name "Kurento" \
  && git config --global --add safe.directory '*'
 
 # Install the Git-BuildPackage tool for creation of .deb files.
-RUN if [ "$UBUNTU_CODENAME" = "xenial" ]; then \
-        apt-get purge --auto-remove --yes python3-pip \
-        && wget -O /tmp/get-pip.py https://bootstrap.pypa.io/pip/3.5/get-pip.py \
-        && python3 /tmp/get-pip.py \
-        && python3 -m pip install --upgrade nosexcover \
-        && python3 -m pip install --upgrade --use-deprecated=legacy-resolver gbp==0.9.10 ; \
-    else \
-        python3 -m pip install --upgrade gbp ; \
-    fi
+RUN python3 -m pip install --upgrade gbp
 
 # APT_KEEP_CACHE
 #
