@@ -24,7 +24,7 @@ an Ubuntu machine, you can install it as follows:
 
 .. sourcecode:: bash
 
-   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+   curl -sSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
    sudo apt-get install -y nodejs
 
 To launch the application, you need to clone the GitHub project where this demo

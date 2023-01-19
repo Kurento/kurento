@@ -13,7 +13,7 @@ Installation instructions
 Be sure to have installed [Node.js] in your system:
 
 ```bash
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+curl -sSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
@@ -64,4 +64,3 @@ npm start -- --as_uri=https://localhost:8081/
 
 Please notice that the double dash separator (```--```) is [on
 purpose](https://www.npmjs.org/doc/cli/npm-run-script.html#description).
-

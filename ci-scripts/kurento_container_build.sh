@@ -84,7 +84,7 @@ commit="$(git rev-parse --short HEAD)"
 [[ -z "${IMAGE_NAMESPACE:-}" ]] && IMAGE_NAMESPACE="${image_namespace:-}"
 [[ -z "${IMAGE_AUTHORS:-}" ]] && IMAGE_AUTHORS="${image_authors:-}"
 [[ -z "${TAG:-}" ]] && TAG="${image_version:-}"
-[[ -z "${EXTRA_TAGS:-}" ]] && EXTRA_TAGS="${image_extra_tags[@]}"
+[[ -z "${EXTRA_TAGS:-}" ]] && EXTRA_TAGS="${image_extra_tags[*]}"
 
 IMAGE_NAME="${IMAGE_NAME_PREFIX:-}${IMAGE_NAME}${IMAGE_NAME_SUFFIX:-}"
 
@@ -100,7 +100,7 @@ if [[ -f generate.sh ]]; then
     ./generate.sh "${image_parent_version}" "${image_namespace}" "${image_authors}"
 fi
 
-# If there's a kurento-generate.sh script, assume we need to fix the FROM line inside the Dockerfie
+# If there's a kurento-generate.sh script, assume we need to fix the FROM line inside the Dockerfile
 # in order to use our own generates Docker Images
 if [[ -f kurento-generate.sh ]]; then
     log "Applying Kurento customization..."

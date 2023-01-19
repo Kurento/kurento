@@ -21,7 +21,7 @@ instructions.
 Be sure to have installed [Node.js] in your system:
 
 ```bash
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+curl -sSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
@@ -90,4 +90,3 @@ append a *ws_uri* parameter pointing to the alternative WebSocket endpoint:
 ```bash
 node_modules/.bin/qunit-cli -c kurentoClient:. -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js --ws_uri=ws://localhost:8080
 ```
-

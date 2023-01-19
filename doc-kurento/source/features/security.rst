@@ -107,7 +107,7 @@ WebRTC requires HTTPS, so your JavaScript application must be served by a secure
 
 .. code-block:: shell
 
-   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+   curl -sSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
    sudo apt-get install nodejs
    sudo npm install -g http-server
 

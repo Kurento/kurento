@@ -22,7 +22,7 @@ Install :term:`Node.js`, :term:`Bower`, and a web server in your system:
 
 .. code-block:: shell
 
-   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+   curl -sSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
    sudo apt-get install -y nodejs
    sudo npm install -g bower
    sudo npm install -g http-server

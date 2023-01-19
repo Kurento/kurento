@@ -14,7 +14,7 @@ Installation instructions
 Be sure to have installed Node.js and Bower in your system:
 
 ```bash
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+curl -sSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo npm install -g bower
 ```
@@ -79,4 +79,3 @@ All demos accept following parameters:
 
 Other parameters specific to each demo can be found defined at the top of their
 index.js file.
-

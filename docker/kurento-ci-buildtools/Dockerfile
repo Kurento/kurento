@@ -33,15 +33,15 @@ FROM kurento/kurento-buildpackage:${UBUNTU_CODENAME}
 ENV APT_KEEP_CACHE="false"
 
 # Install Node, NPM, and Bower (fox JavaScript-based projects)
-# - Tested Node version: 8.x (10.x might introduce breaking changes)
-# - Tested NPM version: 6.14.5 (newer versions should probably work fine)
+# - Tested Node version: 18.
+# - Tested NPM version: 8.
 RUN apt-get update && apt-get install --no-install-recommends --yes \
         wget \
- && wget --no-verbose -O - https://deb.nodesource.com/setup_8.x | bash - \
+ && wget --no-verbose -O - https://deb.nodesource.com/setup_18.x | bash - \
  && apt-get update && apt-get install --no-install-recommends --yes \
         nodejs \
  && rm -rf /var/lib/apt/lists/* \
- && npm install -g npm@6.14.5 \
+ && npm install -g 'npm@^8' \
  && npm install -g bower \
  && npm cache clean --force
 
