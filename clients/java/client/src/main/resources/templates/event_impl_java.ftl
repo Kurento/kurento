@@ -15,8 +15,8 @@ import org.kurento.client.*;
 public class ${event.name}Event <#if event.extends??>extends ${event.extends.name}Event<#else>implements Event</#if> {
 
 <#list event.properties as property>
-	<#lt><@comment property.doc />
-	private ${getJavaObjectType(property.type, false)} ${property.name};
+  <#lt><@comment property.doc />
+  private ${getJavaObjectType(property.type, false)} ${property.name};
 </#list>
 
   <@comment event.doc event.parentProperties + event.properties />
@@ -30,18 +30,18 @@ public class ${event.name}Event <#if event.extends??>extends ${event.extends.nam
      </#list>
   }
 
-	<#list event.properties as property>
-	<#assign par=[] />
-	<#lt><@comment "Getter for the ${property.name} property" par property />
-	public ${getJavaObjectType(property.type,false)} get${property.name?cap_first}() {
-		return ${property.name};
-	}
+  <#list event.properties as property>
+  <#assign par=[] />
+  <#lt><@comment "Getter for the ${property.name} property" par property />
+  public ${getJavaObjectType(property.type,false)} get${property.name?cap_first}() {
+    return ${property.name};
+  }
 
     <#assign par=[property] />
     <#lt><@comment "Setter for the ${property.name} property" par />
-	public void set${property.name?cap_first}(${getJavaObjectType(property.type,false)} ${property.name}) {
-		this.${property.name} = ${property.name};
-	}
+  public void set${property.name?cap_first}(${getJavaObjectType(property.type,false)} ${property.name}) {
+    this.${property.name} = ${property.name};
+  }
 
     </#list>
 }

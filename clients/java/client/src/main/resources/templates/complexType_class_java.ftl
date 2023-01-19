@@ -17,36 +17,36 @@ public class ${complexType.name} <#if complexType.extends??>extends ${complexTyp
     private ${getJavaObjectType(property.type,property.optional)} ${property.name};
    </#list>
 
-	<#assign merged =  complexType.properties + complexType.parentProperties />
-	<#list merged as property>
-		<#if !property.optional>
- 			<@comment "Default private constructor of ${complexType.name} for serialization with Jackson" />
-			protected ${complexType.name}() {
-				super();
-			}
-			<#break>
-		</#if>
-	</#list>
+  <#assign merged =  complexType.properties + complexType.parentProperties />
+  <#list merged as property>
+    <#if !property.optional>
+      <@comment "Default private constructor of ${complexType.name} for serialization with Jackson" />
+      protected ${complexType.name}() {
+        super();
+      }
+      <#break>
+    </#if>
+  </#list>
 
     <@comment "Create a ${complexType.name}" />
     public ${complexType.name}(<#rt>
      <#assign first=true>
      <#lt><#list complexType.parentProperties as property><#rt>
-    	<#if !property.optional>
-    		<#lt><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
-    	</#if>
+      <#if !property.optional>
+        <#lt><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
+      </#if>
     </#list>
     <#lt><#list complexType.properties as property>
-    	<#if !property.optional>
-    		<#lt><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
-    	</#if>
+      <#if !property.optional>
+        <#lt><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
+      </#if>
     <#lt></#list>) {
 
-	super(<#list complexType.parentProperties as property>
-		<#if !property.optional>
-			<#lt>${property.name}<#if property_has_next>, </#if><#rt>
-		</#if>
-	<#lt></#list>);
+  super(<#list complexType.parentProperties as property>
+    <#if !property.optional>
+      <#lt>${property.name}<#if property_has_next>, </#if><#rt>
+    </#if>
+  <#lt></#list>);
 
      <#list complexType.properties as property>
         <#if !property.optional>
@@ -58,12 +58,12 @@ public class ${complexType.name} <#if complexType.extends??>extends ${complexTyp
     <#list complexType.properties as property>
     <@comment "get " + property.doc />
     public ${getJavaObjectType(property.type,property.optional)} get${property.name?cap_first}(){
-    	return ${property.name};
+      return ${property.name};
     }
 
     <@comment "set " + property.doc />
     public void set${property.name?cap_first}(${getJavaObjectType(property.type,property.optional)} ${property.name}){
-    	this.${property.name} = ${property.name};
+      this.${property.name} = ${property.name};
     }
 
     </#list>

@@ -1,6 +1,6 @@
 {
   "metadata" : {
-  	"publicIp" : "127.0.0.1"
+    "publicIp" : "127.0.0.1"
   },
   "mediaServer" : {
     "net" : {

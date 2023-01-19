@@ -15,9 +15,9 @@ public class KurentoModuleInfo {
 <#else>
 public class ${module.name?cap_first}ModuleInfo {
 </#if>
-	public static String getPackageName () {
+  public static String getPackageName () {
 
-		return "${module.code.api.java.packageName}";
-	}
+    return "${module.code.api.java.packageName}";
+  }
 }
 </#if>
