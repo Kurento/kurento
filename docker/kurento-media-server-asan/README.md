@@ -4,6 +4,12 @@
 
 # Kurento Media Server with AddressSanitizer
 
+| [Homepage](https://kurento.openvidu.io/) | [Documentation](https://kurento.openvidu.io/documentation) | [![Docker Pulls](https://img.shields.io/docker/pulls/kurento/kurento-media-server?color=blue&label=Docker&logo=docker&logoColor=blue)](https://hub.docker.com/r/kurento/kurento-media-server) |
+| --- | --- | --- |
+| [![GitHub commits](https://img.shields.io/github/commits-difference/Kurento/kurento?base=eabf6de352fb927df91baa2ec26794dac8c64d78&head=HEAD&label=Commits&logo=github)](https://github.com/Kurento/kurento/graphs/commit-activity) | [![GitHub contributors](https://img.shields.io/github/contributors/Kurento/kurento?label=Contributors&logo=github)](https://github.com/Kurento/kurento/graphs/contributors) | [![Stack Exchange questions](https://img.shields.io/stackexchange/stackoverflow/t/kurento?color=orange&label=Stack%20Overflow&logo=stackoverflow&logoColor=orange)](https://stackoverflow.com/questions/tagged/kurento) |
+
+Image source: [Dockerfile](https://github.com/Kurento/kurento/blob/main/docker/kurento-media-server-asan/Dockerfile).
+
 This Docker image contains a special build of Kurento Media Server with [AddressSanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer), the memory error detector that comes built-in with GCC, the C and C++ compiler that Kurento uses.
 
 This memory error detector helps finding about out-of-bounds accesses, use-after-free errors, and other types of programming mistakes that can cause memory corruption and crashes.
@@ -24,9 +30,8 @@ All source code belonging to the Kurento project can be found in the [Kurento Gi
 
 ## FIWARE Platform
 
-[![FIWARE Chapter](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/media-streams.svg)](https://www.fiware.org/developers/catalogue/)
-[![FIWARE Member Status](https://nexus.lab.fiware.org/static/badges/statuses/kurento.svg)](https://www.fiware.org/developers/catalogue/)
-:mortar_board: [FIWARE Academy](https://fiware-academy.readthedocs.io/en/latest/processing/kurento)
+| [![FIWARE Chapter](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/media-streams.svg)](https://www.fiware.org/developers/catalogue/) | [![FIWARE Member Status](https://nexus.lab.fiware.org/static/badges/statuses/kurento.svg)](https://www.fiware.org/developers/catalogue/) | :mortar_board: [FIWARE Academy](https://fiware-academy.readthedocs.io/en/latest/processing/kurento) |
+| --- | --- | --- |
 
 The Kurento project is part of [FIWARE]. For more information check the FIWARE documentation for [Real-Time Media Stream Processing](https://fiwaretourguide.readthedocs.io/en/latest/processing/kurento/introduction/).
 
@@ -48,7 +53,7 @@ Kurento has been rated within [FIWARE] as follows:
 
 Kurento is also part of the [NUBOMEDIA](https://nubomedia.readthedocs.io/en/latest/) research initiative.
 
-The Open API specification, also known as [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_api.html), is available at [Stream-oriented Open API](http://docs.streamoriented.apiary.io/).
+The Open API specification, also known as [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_protocol.html), is available at [Stream-oriented Open API](http://docs.streamoriented.apiary.io/).
 
 [FIWARE]: https://www.fiware.org/
 
@@ -66,7 +71,7 @@ Usage:
 
 * [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html)
 * [Docker Image](https://hub.docker.com/r/kurento/kurento-media-server)
-* [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contribute.html)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contributing.html)
 * [Developer Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html)
 
 Issues:
@@ -77,7 +82,7 @@ Issues:
 News:
 
 * [Kurento Blog](https://kurento.openvidu.io/blog)
-* [Community Discussion](https://groups.google.com/forum/#!forum/kurento)
+* [Community Discussion](https://groups.google.com/g/kurento)
 
 Training:
 

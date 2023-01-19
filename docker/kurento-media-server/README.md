@@ -4,9 +4,13 @@
 
 # Kurento Media Server
 
-Image source: [kurento-media-server/Dockerfile](https://github.com/Kurento/kurento/blob/main/docker/kurento-media-server/Dockerfile).
+| [Homepage](https://kurento.openvidu.io/) | [Documentation](https://kurento.openvidu.io/documentation) | [![Docker Pulls](https://img.shields.io/docker/pulls/kurento/kurento-media-server?color=blue&label=Docker&logo=docker&logoColor=blue)](https://hub.docker.com/r/kurento/kurento-media-server) |
+| --- | --- | --- |
+| [![GitHub commits](https://img.shields.io/github/commits-difference/Kurento/kurento?base=eabf6de352fb927df91baa2ec26794dac8c64d78&head=HEAD&label=Commits&logo=github)](https://github.com/Kurento/kurento/graphs/commit-activity) | [![GitHub contributors](https://img.shields.io/github/contributors/Kurento/kurento?label=Contributors&logo=github)](https://github.com/Kurento/kurento/graphs/contributors) | [![Stack Exchange questions](https://img.shields.io/stackexchange/stackoverflow/t/kurento?color=orange&label=Stack%20Overflow&logo=stackoverflow&logoColor=orange)](https://stackoverflow.com/questions/tagged/kurento) |
 
-This Docker image can be used to run Kurento Media Server (*KMS*) on any **x86** platform. It cannot be used on other architectures, such as ARM.
+Image source: [Dockerfile](https://github.com/Kurento/kurento/blob/main/docker/kurento-media-server/Dockerfile).
+
+This Docker image can be used to run Kurento Media Server on **x86** platforms. It cannot be used on other architectures, such as ARM.
 
 Usage instructions are detailed in the [Kurento Media Server documentation](https://doc-kurento.readthedocs.io/) page:
 
@@ -25,9 +29,8 @@ All source code belonging to the Kurento project can be found in the [Kurento Gi
 
 ## FIWARE Platform
 
-[![FIWARE Chapter](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/media-streams.svg)](https://www.fiware.org/developers/catalogue/)
-[![FIWARE Member Status](https://nexus.lab.fiware.org/static/badges/statuses/kurento.svg)](https://www.fiware.org/developers/catalogue/)
-:mortar_board: [FIWARE Academy](https://fiware-academy.readthedocs.io/en/latest/processing/kurento)
+| [![FIWARE Chapter](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/media-streams.svg)](https://www.fiware.org/developers/catalogue/) | [![FIWARE Member Status](https://nexus.lab.fiware.org/static/badges/statuses/kurento.svg)](https://www.fiware.org/developers/catalogue/) | :mortar_board: [FIWARE Academy](https://fiware-academy.readthedocs.io/en/latest/processing/kurento) |
+| --- | --- | --- |
 
 The Kurento project is part of [FIWARE]. For more information check the FIWARE documentation for [Real-Time Media Stream Processing](https://fiwaretourguide.readthedocs.io/en/latest/processing/kurento/introduction/).
 
@@ -49,7 +52,7 @@ Kurento has been rated within [FIWARE] as follows:
 
 Kurento is also part of the [NUBOMEDIA](https://nubomedia.readthedocs.io/en/latest/) research initiative.
 
-The Open API specification, also known as [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_api.html), is available at [Stream-oriented Open API](http://docs.streamoriented.apiary.io/).
+The Open API specification, also known as [Kurento Protocol](https://doc-kurento.readthedocs.io/en/latest/features/kurento_protocol.html), is available at [Stream-oriented Open API](http://docs.streamoriented.apiary.io/).
 
 [FIWARE]: https://www.fiware.org/
 
@@ -67,7 +70,7 @@ Usage:
 
 * [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html)
 * [Docker Image](https://hub.docker.com/r/kurento/kurento-media-server)
-* [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contribute.html)
+* [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contributing.html)
 * [Developer Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html)
 
 Issues:
@@ -78,7 +81,7 @@ Issues:
 News:
 
 * [Kurento Blog](https://kurento.openvidu.io/blog)
-* [Community Discussion](https://groups.google.com/forum/#!forum/kurento)
+* [Community Discussion](https://groups.google.com/g/kurento)
 
 Training:
 
@@ -115,4 +118,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-
