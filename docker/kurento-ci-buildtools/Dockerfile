@@ -41,6 +41,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
  && apt-get update && apt-get install --no-install-recommends --yes \
         nodejs \
  && rm -rf /var/lib/apt/lists/* \
+ && npm config set color false \
  && npm install -g 'npm@^8' \
  && npm install -g bower \
  && npm cache clean --force
