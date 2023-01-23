@@ -54,9 +54,10 @@
 # Shell setup
 # -----------
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
+# Absolute Canonical Path to the directory that contains this script.
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
 # shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+source "$SELF_DIR/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
 
@@ -71,11 +72,11 @@ set -o xtrace
 if [[ -n "${DOCKERFILE:-}" ]]; then
     FOLDER="$(dirname "$DOCKERFILE")"
 else
-    FOLDER="$PWD"
+    FOLDER="$SELF_DIR"
 fi
 
 # shellcheck source=parse_yaml.sh
-. parse_yaml.sh
+. "$SELF_DIR/parse_yaml.sh"
 eval $(parse_yaml "$FOLDER/version.yml" "")
 commit="$(git rev-parse --short HEAD)"
 
@@ -87,29 +88,7 @@ commit="$(git rev-parse --short HEAD)"
 [[ -z "${EXTRA_TAGS:-}" ]] && EXTRA_TAGS="${image_extra_tags[*]}"
 
 IMAGE_NAME="${IMAGE_NAME_PREFIX:-}${IMAGE_NAME}${IMAGE_NAME_SUFFIX:-}"
-
 BUILD_NAME="$(echo "$IMAGE_NAME" | cut -d/ -f2)"
-
-# If there's a generate.sh script, assume we need to dynamically generate the Dockerfile using it
-# This is the case of selenium images
-if [[ -f generate.sh ]]; then
-    log "Generating Dockerfile..."
-    [[ -z "${image_parent_version}" ]] && image_parent_version="$TAG"
-    [[ -z "${image_namespace}" ]] && image_namespace="kurento"
-    [[ -z "${image_authors}" ]] && image_authors="Kurento Team"
-    ./generate.sh "${image_parent_version}" "${image_namespace}" "${image_authors}"
-fi
-
-# If there's a kurento-generate.sh script, assume we need to fix the FROM line inside the Dockerfile
-# in order to use our own generates Docker Images
-if [[ -f kurento-generate.sh ]]; then
-    log "Applying Kurento customization..."
-    if [[ $FOLDER == *"Debug"* ]]; then
-        ./kurento-generate.sh "${image_parent_version}" "${image_namespace}" "${image_authors}"
-    else
-        ./kurento-generate.sh
-    fi
-fi
 
 # Build using a tag composed of the original tag and the short commit id
 for BUILD_ARG in ${BUILD_ARGS:-}; do
@@ -156,11 +135,6 @@ if [[ "$PUSH_IMAGES" == "yes" ]]; then
     done
 
     docker logout
-fi
-
-# Remove dangling images
-if [ "$(docker images -f "dangling=true" -q | wc -l)" -ne 0 ]; then
-    docker rmi "$(docker images -f "dangling=true" -q)" || exit 0
 fi
 
 
