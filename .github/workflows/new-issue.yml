@@ -1,7 +1,5 @@
-# Workflow syntax for GitHub Actions:
-# https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
-
-# Run some verification and organizative work on each newly opened issue.
+# New Issue workflow.
+# Verifies each newly opened issue, and either files or closes it.
 name: New-Issue
 
 # Run only when a new issue is opened.
