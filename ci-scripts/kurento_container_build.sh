@@ -72,7 +72,7 @@ set -o xtrace
 if [[ -n "${DOCKERFILE:-}" ]]; then
     FOLDER="$(dirname "$DOCKERFILE")"
 else
-    FOLDER="$SELF_DIR"
+    FOLDER="$PWD"
 fi
 
 # shellcheck source=parse_yaml.sh
