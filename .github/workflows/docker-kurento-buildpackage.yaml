@@ -21,6 +21,9 @@ jobs:
         jobDistro: ${{ fromJson(github.event.inputs.jobDistros) }}
     timeout-minutes: 30
     steps:
+      - name: Set JOB_TIMESTAMP
+        run: echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
+
       # Action: https://github.com/marketplace/actions/checkout
       - name: Checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -33,7 +36,9 @@ jobs:
         env:
           PUSH_IMAGES: "yes"
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
-          TAG: "${{ matrix.jobDistro }}"
+          TAG: "${{ matrix.jobDistro }}-${{ env.JOB_TIMESTAMP }}"
+          # Moving tags, example: "1.2.3", "1.2", "1", "latest"
+          EXTRA_TAGS: "${{ matrix.jobDistro }}"
           TAG_COMMIT: "no"
           KURENTO_DOCKERHUB_USERNAME: ${{ secrets.KURENTO_DOCKERHUB_USERNAME }}
           KURENTO_DOCKERHUB_TOKEN: ${{ secrets.KURENTO_DOCKERHUB_TOKEN }}
