@@ -19,6 +19,7 @@ jobs:
     strategy:
       matrix:
         jobDistro: ${{ fromJson(github.event.inputs.jobDistros) }}
+    timeout-minutes: 30
     steps:
       # Action: https://github.com/marketplace/actions/checkout
       - name: Checkout
@@ -34,5 +35,7 @@ jobs:
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
           TAG: "${{ matrix.jobDistro }}"
           TAG_COMMIT: "no"
+          KURENTO_DOCKERHUB_USERNAME: ${{ secrets.KURENTO_DOCKERHUB_USERNAME }}
+          KURENTO_DOCKERHUB_TOKEN: ${{ secrets.KURENTO_DOCKERHUB_TOKEN }}
         working-directory: docker/kurento-buildpackage/
         run: kurento_container_build.sh
