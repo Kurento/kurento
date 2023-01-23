@@ -1,15 +1,41 @@
-name: "docker/kurento-buildpackage"
+name: "docker: kurento ci tools"
 
 on:
-  # Manual trigger.
-  workflow_dispatch:
+  # Trigger from other workflow.
+  workflow_call:
     inputs:
+      jobTool:
+        description: "Which tool to build"
+        required: true
+        type: choice
+        default: "kurento-buildpackage"
+        options:
+          - kurento-buildpackage
+          - kurento-ci-buildtools
       jobDistros:
         description: "List of Ubuntu codenames"
         required: true
-        type: string
-
         # There is no "list" type, so use a raw JSON array and `fromJson()`.
+        type: string
+        #default: '["xenial", "bionic", "focal"]'
+        default: '["focal"]'
+
+  # Manual trigger.
+  workflow_dispatch:
+    inputs:
+      jobTool:
+        description: "Which tool to build"
+        required: true
+        type: choice
+        default: "kurento-buildpackage"
+        options:
+          - kurento-buildpackage
+          - kurento-ci-buildtools
+      jobDistros:
+        description: "List of Ubuntu codenames"
+        required: true
+        # There is no "list" type, so use a raw JSON array and `fromJson()`.
+        type: string
         #default: '["xenial", "bionic", "focal"]'
         default: '["focal"]'
 
@@ -40,7 +66,15 @@ jobs:
           # Moving tags, example: "1.2.3", "1.2", "1", "latest"
           EXTRA_TAGS: "${{ matrix.jobDistro }}"
           TAG_COMMIT: "no"
-          KURENTO_DOCKERHUB_USERNAME: ${{ secrets.KURENTO_DOCKERHUB_USERNAME }}
-          KURENTO_DOCKERHUB_TOKEN: ${{ secrets.KURENTO_DOCKERHUB_TOKEN }}
-        working-directory: docker/kurento-buildpackage/
+          KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
+          KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
+        working-directory: docker/${{ github.event.inputs.jobTool }}/
         run: kurento_container_build.sh
+
+  post-build:
+    if: ${{ github.event.inputs.jobTool == "kurento-buildpackage" }}
+    needs: build
+    uses: ./.github/workflows/docker-kurento-buildpackage.yaml
+    with:
+      jobTool: kurento-ci-buildtools
+      jobDistros: ${{ github.event.inputs.jobDistros }}
