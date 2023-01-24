@@ -3,6 +3,7 @@ name: "docker/kurento-ci-buildtools"
 on:
   # Manual trigger.
   workflow_dispatch:
+    inputs:
       jobDistros:
         description: "List of Ubuntu codenames"
         required: true
