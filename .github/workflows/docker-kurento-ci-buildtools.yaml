@@ -1,4 +1,4 @@
-name: "docker/kurento-buildpackage"
+name: "docker/kurento-ci-buildtools"
 
 on:
   # Manual trigger.
@@ -41,5 +41,5 @@ jobs:
           TAG_COMMIT: "no"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
-        working-directory: docker/kurento-buildpackage/
+        working-directory: docker/kurento-ci-buildtools/
         run: kurento_container_build.sh

@@ -72,7 +72,7 @@ set -o xtrace
 if [[ -n "${DOCKERFILE:-}" ]]; then
     FOLDER="$(dirname "$DOCKERFILE")"
 else
-    FOLDER="$SELF_DIR"
+    FOLDER="$PWD"
 fi
 
 # shellcheck source=parse_yaml.sh
@@ -122,7 +122,7 @@ df -h
 
 # Push
 if [[ "$PUSH_IMAGES" == "yes" ]]; then
-    docker login -u "$KURENTO_DOCKERHUB_USER" -p "$KURENTO_DOCKERHUB_PASSWD"
+    docker login -u "$KURENTO_DOCKERHUB_USERNAME" -p "$KURENTO_DOCKERHUB_TOKEN"
 
     docker push "${IMAGE_NAME}:${TAG}"
 
