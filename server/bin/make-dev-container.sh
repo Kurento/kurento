@@ -264,7 +264,12 @@ apt-key adv \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME main" \
+    # Repo for Kurento 7 monorepo.
+    # echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME main" \
+    #     >/etc/apt/sources.list.d/kurento.list
+
+    # Repo for Kurento 7 multirepo.
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME kms6" \
         >/etc/apt/sources.list.d/kurento.list
 else
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME km6" \
@@ -308,8 +313,11 @@ deb http://ddebs.ubuntu.com $DISTRIB_CODENAME main restricted universe multivers
 deb http://ddebs.ubuntu.com $DISTRIB_CODENAME-updates main restricted universe multiverse
 EOF
 
-apt-get update ; apt-get install --no-install-recommends --yes \
-    kurento-dbg
+# The debug packages repository fails very often due to bad server state.
+# Try to update, and only if it works install debug symbols.
+if apt-get update; then
+    apt-get install --no-install-recommends --yes kurento-dbg
+fi
 
 
 

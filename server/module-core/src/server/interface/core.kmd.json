@@ -62,11 +62,12 @@
     to this <code>MediaObject</code> instance.
   </li>
 </ul>
-<p></p>
+<br />
+<br />
 <h4>Events</h4>
 <ul>
   <li>
-    <strong>:rom:evt:`Error`<strong>: reports asynchronous error events. It is recommended to
+    <strong>:rom:evt:`Error`</strong>: reports asynchronous error events. It is recommended to
     always subscribe a listener to this event, as regular error from the
     pipeline will be notified through it, instead of through an exception when
     invoking a method.

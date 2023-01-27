@@ -562,9 +562,12 @@ For example, say you want to build all Kurento packages for *Ubuntu 20.04 (Focal
 .. code-block:: shell
 
    git clone https://github.com/Kurento/kurento.git
-   cd kurento/server/module-core/
+
+   cd kurento/
+
    docker run --rm \
-       --mount type=bind,src="$PWD",dst=/hostdir \
+       --mount type=bind,src=server/module-core,dst=/hostdir \
+       --mount type=bind,src=ci-scripts,dst=/ci-scripts \
        --mount type=bind,src="$HOME/packages",dst=/packages \
        kurento/kurento-buildpackage:focal \
            --install-files /packages \
