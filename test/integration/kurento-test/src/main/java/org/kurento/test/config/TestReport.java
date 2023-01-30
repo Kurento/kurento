@@ -96,7 +96,7 @@ public class TestReport {
   }
 
   public void initPage() {
-    String kurentoLogoPng = "http://files.openvidu.io/img/kurento.png";
+    String kurentoLogoPng = "https://raw.githubusercontent.com/Kurento/test-files/main/img/kurento.png";
     appendHtml("<link rel='shortcut icon' href='" + kurentoLogoPng + "' type='image/png' />");
     appendHtml(
         "<script src='https://cdn.rawgit.com/eligrey/FileSaver.js/1.3.2/FileSaver.js'></script>");

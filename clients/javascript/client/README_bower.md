@@ -91,7 +91,7 @@ file from its URL and stream it over HTTP :
 
    ```Javascript
    pipeline.create('PlayerEndpoint',
-   {uri: "http://files.openvidu.io/video/format/small.webm"},
+   {uri: "https://raw.githubusercontent.com/Kurento/test-files/main/video/format/small.webm"},
    function(error, player)
    {
      ...

@@ -123,7 +123,7 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
 
       //String appServerUrl = System.getProperty("app.server.url",
       //    MagicMirrorApp.DEFAULT_APP_SERVER_URL);
-      String appServerUrl = "http://files.openvidu.io";
+      String appServerUrl = "https://raw.githubusercontent.com/Kurento/test-files/main";
       faceOverlayFilter.setOverlayedImage(appServerUrl + "/img/mario-wings.png", -0.35F, -1.2F,
           1.6F, 1.6F);
 

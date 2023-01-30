@@ -44,7 +44,7 @@ public class Ffmpeg {
 
   private static Logger log = LoggerFactory.getLogger(Ffmpeg.class);
 
-  private static final String HTTP_TEST_FILES = "http://files.openvidu.io";
+  private static final String HTTP_TEST_FILES = "https://raw.githubusercontent.com/Kurento/test-files/main";
   private static final String PESQ_RESULTS = "pesq_results.txt";
   private static final String RECORDED_WAV = KurentoTest.getDefaultOutputFile("recorded.wav");
 

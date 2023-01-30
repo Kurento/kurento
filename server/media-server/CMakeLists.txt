@@ -8,6 +8,7 @@ include(GNUInstallDirs) # CMAKE_INSTALL_*
 # Test configuration
 set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
+set(TEST_FILES_LOCATION "https://raw.githubusercontent.com/Kurento/test-files/main" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
 find_package(KurentoUtils)
@@ -51,7 +52,6 @@ generic_find(LIBNAME KMSCORE VERSION ^7.0.0-dev REQUIRED)
 
 # Generate file "config.h"
 set(TEST_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
-set(TEST_FILES_LOCATION "http://files.openvidu.io" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")

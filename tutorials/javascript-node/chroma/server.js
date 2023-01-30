@@ -262,7 +262,7 @@ function connectMediaElements(webRtcEndpoint, filter, callback) {
         }
 
         // const appServerUrl = url.format(asUrl);
-        const appServerUrl = "http://files.openvidu.io";
+        const appServerUrl = "https://raw.githubusercontent.com/Kurento/test-files/main";
         filter.setBackground(appServerUrl + '/img/mario.jpg', function(error) {
             if (error) {
                 return callback(error);

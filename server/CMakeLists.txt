@@ -8,9 +8,9 @@ message(STATUS "CMake project: ${PROJECT_NAME}")
 #cmake_policy(SET CMP0058 OLD)
 
 # Test configuration
-set(TEST_FILES_LOCATION "http://files.openvidu.io" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
+set(TEST_FILES_LOCATION "https://raw.githubusercontent.com/Kurento/test-files/main" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 
 enable_testing()

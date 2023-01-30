@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,7 +27,7 @@ import org.kurento.client.WebRtcEndpoint;
 
 /**
  * Media Pipeline (connection of Media Elements) for the advanced one to one video communication.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 5.0.0
@@ -60,7 +60,7 @@ public class CallMediaPipeline {
 
     // String appServerUrl = System.getProperty("app.server.url",
     //    One2OneCallAdvApp.DEFAULT_APP_SERVER_URL);
-    String appServerUrl = "http://files.openvidu.io";
+    String appServerUrl = "https://raw.githubusercontent.com/Kurento/test-files/main";
     FaceOverlayFilter faceOverlayFilterCaller = new FaceOverlayFilter.Builder(pipeline).build();
     faceOverlayFilterCaller.setOverlayedImage(appServerUrl + "/img/mario-wings.png", -0.35F, -1.2F,
         1.6F, 1.6F);

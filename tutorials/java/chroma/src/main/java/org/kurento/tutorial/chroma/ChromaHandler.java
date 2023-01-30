@@ -123,7 +123,7 @@ public class ChromaHandler extends TextWebSocketHandler {
       ChromaFilter chromaFilter = new ChromaFilter.Builder(pipeline, new WindowParam(5, 5, 40, 40))
       .build();
       //String appServerUrl = System.getProperty("app.server.url", ChromaApp.DEFAULT_APP_SERVER_URL);
-      String appServerUrl = "http://files.openvidu.io";
+      String appServerUrl = "https://raw.githubusercontent.com/Kurento/test-files/main";
       chromaFilter.setBackground(appServerUrl + "/img/mario.jpg");
 
       webRtcEndpoint.connect(chromaFilter);

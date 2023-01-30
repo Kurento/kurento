@@ -242,7 +242,7 @@ function createMediaElements(pipeline, ws, callback) {
             }
 
             // const appServerUrl = url.format(asUrl);
-            const appServerUrl = "http://files.openvidu.io";
+            const appServerUrl = "https://raw.githubusercontent.com/Kurento/test-files/main";
             faceOverlayFilter.setOverlayedImage(appServerUrl + '/img/mario-wings.png',
                     -0.35, -1.2, 1.6, 1.6, function(error) {
                 if (error) {
