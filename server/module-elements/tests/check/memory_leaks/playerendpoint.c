@@ -22,7 +22,7 @@
 #include "kmsuriendpointstate.h"
 
 #define ITERATIONS 1
-#define VIDEO_PATH BINARY_LOCATION "/video/small.webm"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/small.webm"
 
 static int iterations = ITERATIONS;
 

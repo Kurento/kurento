@@ -25,7 +25,7 @@
 #include "kmshttpendpointmethod.h"
 
 #define WAIT_TIMEOUT 3
-#define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/format/small.webm"
 
 static GMainLoop *loop = NULL;
 static KmsHttpEndpointMethod method;

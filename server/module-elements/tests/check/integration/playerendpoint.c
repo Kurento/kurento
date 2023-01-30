@@ -29,7 +29,7 @@
 #define KMS_KEY_SINK_ID "kms-key-sink-id"
 #define KMS_KEY_SINK_PAD_NAME_ID "kms-key-sink-pad-name-id"
 
-#define VIDEO_PATH BINARY_LOCATION "/video/small.webm"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/small.webm"
 
 static GstElement *pipeline;
 

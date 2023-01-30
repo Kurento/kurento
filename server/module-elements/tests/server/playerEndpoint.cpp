@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #define BOOST_TEST_STATIC_LINK
 #define BOOST_TEST_PROTECTED_VIRTUAL
@@ -37,7 +40,7 @@ std::string mediaPipelineId;
 ModuleManager moduleManager;
 
 #define EXPECTED_LEN 1.0
-#define PLAYED_FILE "http://files.openvidu.io/video/format/small.webm"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/format/small.webm"
 #define TIME (15 * G_TIME_SPAN_SECOND)
 
 struct GF {
@@ -71,7 +74,7 @@ createPlayerEndpoint ()
   Json::Value constructorParams;
 
   constructorParams ["mediaPipeline"] = mediaPipelineId;
-  constructorParams ["uri"] = PLAYED_FILE;
+  constructorParams ["uri"] = VIDEO_PATH;
 
   playerEndpoint = moduleManager.getFactory ("PlayerEndpoint")->createObject (
                      config, "",

@@ -1,5 +1,5 @@
-#ifndef __GST_KURENTO_CORE_CONFIG_H__
-#define __GST_KURENTO_CORE_CONFIG_H__
+#ifndef __KURENTO_MODULE_CORE_CONFIG_H__
+#define __KURENTO_MODULE_CORE_CONFIG_H__
 
 /* Version */
 #cmakedefine VERSION "@VERSION@"
@@ -24,4 +24,4 @@
 
 #cmakedefine HAS_STD_REGEX_REPLACE @HAS_STD_REGEX_REPLACE@
 
-#endif /* __GST_KURENTO_CORE_CONFIG_H__ */
+#endif /* __KURENTO_MODULE_CORE_CONFIG_H__ */

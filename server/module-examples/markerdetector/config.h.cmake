@@ -1,5 +1,5 @@
-#ifndef __AR_MARKERDETECTOR_CONFIG_H__
-#define __AR_MARKERDETECTOR_CONFIG_H__
+#ifndef __KURENTO_MODULE_MARKERDETECTOR_CONFIG_H__
+#define __KURENTO_MODULE_MARKERDETECTOR_CONFIG_H__
 
 /* Version */
 #cmakedefine VERSION "@VERSION@"
@@ -13,4 +13,4 @@
 /* Library installation directory */
 #cmakedefine KURENTO_MODULES_SO_DIR "@KURENTO_MODULES_SO_DIR@"
 
-#endif /* __AR_MARKERDETECTOR_CONFIG_H__ */
+#endif /* __KURENTO_MODULE_MARKERDETECTOR_CONFIG_H__ */

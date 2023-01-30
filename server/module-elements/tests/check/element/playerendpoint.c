@@ -24,13 +24,13 @@
 
 #include <kmstestutils.h>
 
-#define VIDEO_PATH BINARY_LOCATION "/video/filter/fiwarecut.webm"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/filter/fiwarecut.webm"
 #define VIDEO_LENGTH 30
 
-#define VIDEO_PATH2 BINARY_LOCATION "/video/format/sintel.webm"
+#define VIDEO_PATH2 TEST_FILES_LOCATION "/video/format/sintel.webm"
 #define VIDEO_LENGTH2 52
 
-#define VIDEO_PATH3 BINARY_LOCATION "/video/format/small.webm"
+#define VIDEO_PATH3 TEST_FILES_LOCATION "/video/format/small.webm"
 #define VIDEO_LENGTH3 6
 
 #define KMS_ELEMENT_PAD_TYPE_DATA 0

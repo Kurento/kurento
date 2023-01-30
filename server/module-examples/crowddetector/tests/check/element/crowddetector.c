@@ -26,7 +26,7 @@
 #include <kmstestutils.h>
 
 #define ROIS_PARAM "rois"
-#define VIDEO_PATH BINARY_LOCATION "/video/filter/crowd.mp4"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/filter/crowd.mp4"
 #define KMS_VIDEO_PREFIX "video_src_"
 #define KMS_AUDIO_PREFIX "audio_src_"
 #define KMS_ELEMENT_PAD_TYPE_AUDIO 1

@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "BaseTest.hpp"
 #include <boost/test/unit_test.hpp>
@@ -26,7 +29,7 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "test_server_duplicate_requests"
 
-#define VIDEO_URI "http://files.openvidu.io/video/format/sintel.webm"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/format/sintel.webm"
 #define RECORDER_URI_1 "file:///tmp/recorder1.webm"
 #define RECORDER_URI_2 "file:///tmp/recorder2.webm"
 
@@ -90,7 +93,7 @@ ClientHandler::check_create_duplicate_requests_call()
   request["id"] = getId();
   params["type"] = "PlayerEndpoint";
   constructorParams ["mediaPipeline"] = pipeId;
-  constructorParams ["uri"] = VIDEO_URI;
+  constructorParams ["uri"] = VIDEO_PATH;
   params["constructorParams"] = constructorParams;
 
   request["params"] = params;

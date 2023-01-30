@@ -25,8 +25,8 @@
 
 #include <kmstestutils.h>
 
-#define IMG_PATH BINARY_LOCATION "/img/mario-wings.png"
-#define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
+#define IMG_PATH TEST_FILES_LOCATION "/img/mario-wings.png"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/format/small.webm"
 
 #define IMAGES_TO_OVERLAY "images-to-overlay"
 

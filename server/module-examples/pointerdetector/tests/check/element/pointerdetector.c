@@ -25,8 +25,8 @@
 
 #include <commons/kmsuriendpointstate.h>
 
-#define IMG_PATH BINARY_LOCATION "/img/mario-wings.png"
-#define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
+#define IMG_PATH TEST_FILES_LOCATION "/img/mario-wings.png"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/format/small.webm"
 
 #define KMS_VIDEO_PREFIX "video_src_"
 #define KMS_AUDIO_PREFIX "audio_src_"

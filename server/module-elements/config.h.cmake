@@ -1,5 +1,5 @@
-#ifndef __KMS_ELEMENTS_CONFIG_H__
-#define __KMS_ELEMENTS_CONFIG_H__
+#ifndef __KURENTO_MODULE_ELEMENTS_CONFIG_H__
+#define __KURENTO_MODULE_ELEMENTS_CONFIG_H__
 
 /* Version */
 #cmakedefine VERSION "@VERSION@"
@@ -13,10 +13,10 @@
 /* Tests will generate files for manual check if this macro is defined */
 #cmakedefine MANUAL_CHECK
 
-/* Binary files directory */
-#cmakedefine BINARY_LOCATION "@BINARY_LOCATION@"
+/* Root URI with test files (e.g. http:// or file://) */
+#cmakedefine TEST_FILES_LOCATION "@TEST_FILES_LOCATION@"
 
 /* Library installation directory */
 #cmakedefine KURENTO_MODULES_SO_DIR "@KURENTO_MODULES_SO_DIR@"
 
-#endif /* __KMS_ELEMENTS_CONFIG_H__ */
+#endif /* __KURENTO_MODULE_ELEMENTS_CONFIG_H__ */

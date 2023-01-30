@@ -95,9 +95,10 @@ set_property(TARGET test_server_json_session
     INCLUDE_DIRECTORIES
       ${KMSCORE_INCLUDE_DIRS}
       ${CMAKE_CURRENT_SOURCE_DIR}/../server/transport/websocket
+      ${CMAKE_CURRENT_BINARY_DIR}/..
 )
 
-add_test_program(test_server_duplicate_requests server_duplicate_requests.cpp )
+add_test_program(test_server_duplicate_requests server_duplicate_requests.cpp)
 add_dependencies(test_server_duplicate_requests kurento-media-server)
 target_link_libraries(test_server_duplicate_requests
   ${KMSCORE_LIBRARIES}
@@ -110,6 +111,7 @@ set_property(TARGET test_server_duplicate_requests
   PROPERTY INCLUDE_DIRECTORIES
     ${KMSCORE_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/../server/transport/websocket
+    ${CMAKE_CURRENT_BINARY_DIR}/..
 )
 
 add_test_program(test_config_read

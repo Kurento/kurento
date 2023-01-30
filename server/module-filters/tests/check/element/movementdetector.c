@@ -25,7 +25,7 @@
 
 #include <kmstestutils.h>
 
-#define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
+#define VIDEO_PATH TEST_FILES_LOCATION "/video/format/small.webm"
 #define KMS_VIDEO_PREFIX "video_src_"
 #define KMS_AUDIO_PREFIX "audio_src_"
 #define KMS_ELEMENT_PAD_TYPE_AUDIO 1

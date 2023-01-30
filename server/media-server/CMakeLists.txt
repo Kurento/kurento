@@ -51,6 +51,7 @@ generic_find(LIBNAME KMSCORE VERSION ^7.0.0-dev REQUIRED)
 
 # Generate file "config.h"
 set(TEST_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+set(TEST_FILES_LOCATION "http://files.openvidu.io" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")

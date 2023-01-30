@@ -105,6 +105,7 @@ set_property(TARGET test_player
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/interface
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/../..
     ${KMSCORE_INCLUDE_DIRS}
     ${gstreamer-1.0_INCLUDE_DIRS}
 )
