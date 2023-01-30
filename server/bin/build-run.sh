@@ -260,14 +260,14 @@ log "CFG_UNDEFINED_SANITIZER=$CFG_UNDEFINED_SANITIZER"
 BUILD_VARS=()
 BUILD_TYPE="Debug"
 BUILD_DIR_SUFFIX=""
-CMAKE_ARGS=""
+CMAKE_ARGS=()
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
     BUILD_TYPE="RelWithDebInfo"
 fi
 
 if [[ "$CFG_VERBOSE" == "true" ]]; then
-    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_VERBOSE_MAKEFILE=ON"
+    CMAKE_ARGS+=("-DCMAKE_VERBOSE_MAKEFILE=TRUE")
 fi
 
 if [[ "$CFG_CLANG" == "true" ]]; then
@@ -281,7 +281,7 @@ fi
 
 if [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-asan"
-    CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_ADDRESS=ON"
+    CMAKE_ARGS+=("-DSANITIZE_ADDRESS=TRUE")
 
     if [[ "$CFG_CLANG" == "true" ]]; then
         # While GCC opts for shared sanitizer libs by default, Clang goes the
@@ -295,12 +295,12 @@ fi
 
 if [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-tsan"
-    CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_THREAD=ON"
+    CMAKE_ARGS+=("-DSANITIZE_THREAD=TRUE")
 fi
 
 if [[ "$CFG_UNDEFINED_SANITIZER" == "true" ]]; then
     BUILD_DIR_SUFFIX="${BUILD_DIR_SUFFIX}-ubsan"
-    CMAKE_ARGS="$CMAKE_ARGS -DSANITIZE_UNDEFINED=ON"
+    CMAKE_ARGS+=("-DSANITIZE_UNDEFINED=TRUE")
 fi
 
 if [[ -f /.dockerenv ]]; then
@@ -320,6 +320,13 @@ BUILD_VARS+=(
 
 BUILD_DIR="build-${BUILD_TYPE}${BUILD_DIR_SUFFIX}"
 
+# Extra CMake args that are always set.
+CMAKE_ARGS+=(
+    "-DCMAKE_BUILD_TYPE=$BUILD_TYPE"
+    "-DDISABLE_IPV6_TESTS=FALSE"
+    "-DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE"
+)
+
 if [[ ! -f "$BUILD_DIR/media-server/server/kurento-media-server" ]]; then
     # If only a partial build exists (or none at all), delete it.
     rm -rf "$BUILD_DIR"
@@ -333,7 +340,7 @@ if [[ ! -f "$BUILD_DIR/media-server/server/kurento-media-server" ]]; then
         [[ -n "$BUILD_VAR" ]] && COMMAND="$COMMAND $BUILD_VAR"
     done
 
-    COMMAND="$COMMAND cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON $CMAKE_ARGS .."
+    COMMAND="$COMMAND cmake ${CMAKE_ARGS[*]} .."
 
     log "Run command: $COMMAND"
     eval "$COMMAND"

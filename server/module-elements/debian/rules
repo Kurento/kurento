@@ -6,4 +6,4 @@
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DGENERATE_TESTS=TRUE
+	dh_auto_configure -- -DGENERATE_TESTS=TRUE -DDISABLE_IPV6_TESTS=FALSE

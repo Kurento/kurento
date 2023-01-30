@@ -15,6 +15,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define BOOST_TEST_STATIC_LINK
 #define BOOST_TEST_PROTECTED_VIRTUAL
 
@@ -170,12 +174,14 @@ media_state_changes ()
   media_state_changes_impl (false);
 }
 
+#ifndef DISABLE_IPV6_TESTS
 static void
 media_state_changes_ipv6 ()
 {
   BOOST_TEST_MESSAGE ("Start test: media_state_changes_ipv6");
   media_state_changes_impl (true);
 }
+#endif
 
 static void
 connection_state_changes_impl (bool useIpv6)
@@ -240,12 +246,14 @@ connection_state_changes ()
   connection_state_changes_impl (false);
 }
 
+#ifndef DISABLE_IPV6_TESTS
 static void
 connection_state_changes_ipv6 ()
 {
   BOOST_TEST_MESSAGE ("Start test: connection_state_changes_ipv6");
   connection_state_changes_impl (true);
 }
+#endif
 
 test_suite *
 init_unit_test_suite ( int , char *[] )
@@ -257,9 +265,12 @@ init_unit_test_suite ( int , char *[] )
 
   test->add (BOOST_TEST_CASE ( &media_state_changes ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &connection_state_changes ), 0, /* timeout */ 15);
+
+#ifndef DISABLE_IPV6_TESTS
   test->add (BOOST_TEST_CASE ( &media_state_changes_ipv6 ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &connection_state_changes_ipv6 ),
              0, /* timeout */ 15);
+#endif
 
   return test;
 }

@@ -61,6 +61,7 @@ target_link_libraries(test_rtpendpoint
 add_test_program(test_rtpendpoint_audio rtpendpoint_audio.c)
 add_dependencies(test_rtpendpoint_audio ${LIBRARY_NAME})
 target_include_directories(test_rtpendpoint_audio PRIVATE
+                           ${CMAKE_CURRENT_BINARY_DIR}/../../..
                            ${CMAKE_CURRENT_SOURCE_DIR}/..
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.0_INCLUDE_DIRS}

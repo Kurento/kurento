@@ -622,6 +622,8 @@ Debian tools will automatically run unit tests as part of the :ref:`package crea
 
 It is possible to skip building and running unit tests automatically, by editing the file ``debian/rules`` and changing the *auto_configure* rule from ``-DGENERATE_TESTS=TRUE`` to ``-DGENERATE_TESTS=FALSE -DDISABLE_TESTS=TRUE``.
 
+Some tests require an IPv6-enabled network. These can be disabled temporarily in order to run all remaining tests on a machine that only has an IPv4 interface. Just use ``-DDISABLE_IPV6_TESTS=TRUE`` in either your CMake call, or in the Debian files where this property is mentioned, if you want to create *.deb* packages (currently, only ``server/module-elements/debian/rules``).
+
 
 
 How-To

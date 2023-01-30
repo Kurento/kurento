@@ -15,6 +15,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gst/check/gstcheck.h>
 #include <gst/sdp/gstsdpmessage.h>
 
@@ -613,14 +617,16 @@ GST_START_TEST (test_opus_sendrecv)
 {
   do_opus_tests (FALSE);
 }
-
 GST_END_TEST;
+
+#ifndef DISABLE_IPV6_TESTS
 GST_START_TEST (test_opus_sendrecv_ipv6)
 {
   do_opus_tests (TRUE);
 }
-
 GST_END_TEST;
+#endif
+
 /*
  * End of test cases
  */
@@ -635,7 +641,10 @@ rtpendpoint_audio_test_suite (void)
   tcase_add_test (tc_chain, test_opus_sendonly_play_before_negotiation);
   tcase_add_test (tc_chain, test_opus_sendonly_play_after_negotiation);
   tcase_add_test (tc_chain, test_opus_sendrecv);
+
+#ifndef DISABLE_IPV6_TESTS
   tcase_add_test (tc_chain, test_opus_sendrecv_ipv6);
+#endif
 
   return s;
 }

@@ -16,6 +16,9 @@
 /* Root URI with test files (e.g. http:// or file://) */
 #cmakedefine TEST_FILES_LOCATION "@TEST_FILES_LOCATION@"
 
+/* Disable tests that require an IPv6 network */
+#cmakedefine DISABLE_IPV6_TESTS
+
 /* Library installation directory */
 #cmakedefine KURENTO_MODULES_SO_DIR "@KURENTO_MODULES_SO_DIR@"
 
