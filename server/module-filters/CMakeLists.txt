@@ -59,7 +59,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
-set(GETTEXT_PACKAGE "kurento-module-filters")
+set(GETTEXT_PACKAGE "${PROJECT_NAME}")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 set(KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)

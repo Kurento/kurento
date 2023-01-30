@@ -47,7 +47,7 @@ endif()
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
-set(GETTEXT_PACKAGE "kurento-module-pointerdetector")
+set(GETTEXT_PACKAGE "${PROJECT_NAME}")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 include(GNUInstallDirs)
 set(KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})

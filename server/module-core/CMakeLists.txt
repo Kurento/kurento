@@ -98,7 +98,7 @@ endif()
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
-set(GETTEXT_PACKAGE "kurento-module-core")
+set(GETTEXT_PACKAGE "${PROJECT_NAME}")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")

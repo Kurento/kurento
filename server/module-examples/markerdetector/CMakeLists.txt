@@ -53,7 +53,7 @@ endif()
 # Generate file "config.h"
 set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
-set(GETTEXT_PACKAGE "kurento-module-markerdetector")
+set(GETTEXT_PACKAGE "${PROJECT_NAME}")
 include(GNUInstallDirs)
 set(KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
