@@ -272,7 +272,7 @@ if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME kms6" \
         >/etc/apt/sources.list.d/kurento.list
 else
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME km6" \
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6" \
         >/etc/apt/sources.list.d/kurento.list
     echo "#deb [arch=amd64] http://ubuntu.openvidu.io/6.18.0 $DISTRIB_CODENAME kms6" \
         >>/etc/apt/sources.list.d/kurento.list
