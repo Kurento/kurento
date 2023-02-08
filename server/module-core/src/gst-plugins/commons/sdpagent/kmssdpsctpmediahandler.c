@@ -38,8 +38,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsSdpSctpMediaHandler, kms_sdp_sctp_media_handler,
 #define SDP_MEDIA_UDP_PROTO_INFO "UDP/"
 #define SDP_MEDIA_UDP_DTLS_SCTP_PROTO SDP_MEDIA_UDP_PROTO_INFO SDP_MEDIA_DTLS_SCTP_PROTO
 
-#define SDP_MEDIA_SCTP_PORT "5000"      // The default SCTP stream identifier
-
 // RFC 8841: SDP Offer/Answer for SCTP over DTLS.
 // https://www.rfc-editor.org/rfc/rfc8841
 //
@@ -357,18 +355,33 @@ static gboolean
 kms_sdp_sctp_media_handler_add_offer_attributes (KmsSdpMediaHandler * handler,
     GstSDPMedia * offer, const GstSDPMedia * prev_offer, GError ** error)
 {
+  gboolean ok = TRUE;
+
+  // Use a random port for SCTP-over-DTLS (as used in WebRTC).
+  // Before, the port 5000 was always used, but this causes a lot of
+  // `SCTP_CANT_STR_ASSOC` errors. With random ports, the error still happens
+  // but seems to be much less frequent.
+  // See bug report: https://github.com/sctplab/usrsctp/issues/314
+  //guint16 sctp_port = 5000;
+  guint16 sctp_port = (guint16)g_random_int_range (1024, G_MAXUINT16);
+
+  gchar *sctp_port_str = g_strdup_printf ("%u", sctp_port);
+
   if (gst_sdp_media_add_attribute (offer, SDP_MEDIA_SCTP_PORT_ATTR,
-          SDP_MEDIA_SCTP_PORT) != GST_SDP_OK) {
+          sctp_port_str)
+      != GST_SDP_OK) {
     g_set_error (error, KMS_SDP_AGENT_ERROR, SDP_AGENT_UNEXPECTED_ERROR,
         "Cannot set attribute 'a=%s:%s'", SDP_MEDIA_SCTP_PORT_ATTR,
-        SDP_MEDIA_SCTP_PORT);
-    return FALSE;
+        sctp_port_str);
+    ok = FALSE;
   }
 
+  g_free (sctp_port_str);
+
   /* Chain up */
-  return
-      KMS_SDP_MEDIA_HANDLER_CLASS (parent_class)->add_offer_attributes (handler,
-      offer, prev_offer, error);
+  return ok
+      && KMS_SDP_MEDIA_HANDLER_CLASS (parent_class)
+             ->add_offer_attributes (handler, offer, prev_offer, error);
 }
 
 static gboolean
