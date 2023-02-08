@@ -198,6 +198,7 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     less \
     mlocate \
     nano \
+    net-tools \
     procps \
     tree \
     wget
