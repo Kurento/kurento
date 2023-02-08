@@ -40,27 +40,24 @@ G_DEFINE_TYPE_WITH_CODE (KmsSdpSctpMediaHandler, kms_sdp_sctp_media_handler,
 
 #define SDP_MEDIA_SCTP_PORT "5000"      // The default SCTP stream identifier
 
-/* suggested value by draft-ietf-mmusic-sctp-sdp */
-//#define DEFAULT_STREAMS_N 16
-
-/* Old SCTP syntax (version 05 of the SCTP SDP draft, https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-05)
- * allows multiple formats, such as in:
- *
- *     m=application 54111 DTLS/SCTP 5000 5001 5002
- *     a=sctpmap:5000 webrtc-datachannel 16
- *     a=sctpmap:5001 bfcp 2
- *     a=sctpmap:5002 t38 1
- *
- * New SCTP syntax (version 21 of the SCTP SDP draft, https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26)
- * allows only a single format:
- *
- *     m=application 54111 UDP/DTLS/SCTP webrtc-datachannel
- *     a=sctp-port:5000
- *
- * When protocol is 'UDP/DTLS/SCTP' or 'TCP/DTLS/SCTP', the m- line port value
- * indicates the port of the underlying transport layer protocol (UDP or TCP),
- * and the mandatory 'sctp-port' value indicates the SCTP stream identifier.
- */
+// RFC 8841: SDP Offer/Answer for SCTP over DTLS.
+// https://www.rfc-editor.org/rfc/rfc8841
+//
+// SDP Media Description:
+//
+//     m=application 12345 UDP/DTLS/SCTP webrtc-datachannel
+//     a=sctp-port:5000
+//     a=max-message-size:100000
+//
+// * The "m=" line protocol can be "UDP/DTLS/SCTP" or "TCP/DTLS/SCTP". Its port
+//   value indicates the underlying UDP or TCP port.
+// * "a=sctp-port": Indicates the SCTP port.
+//   0 = Close or reject an SCTP association.
+//   Required.
+// * "a=max-message-size": Indicates the maximum SCTP user message
+//   size (in bytes) that the endpoint is willing to receive.
+//   0 = messages can be of any size.
+//   Optional. Default: 64K.
 
 static GObject *
 kms_sdp_sctp_media_handler_constructor (GType gtype, guint n_properties,
@@ -124,62 +121,40 @@ static gboolean
 format_supported (const GstSDPMedia * media, const gchar * fmt)
 {
   const gchar *val;
-  gchar **attrs;
-  gboolean ret;
 
-  if (g_strcmp0 (fmt, SDP_MEDIA_SCTP_FMT) == 0) {
-    // New syntax
-    return TRUE;
+  // "m=" line format must be as specified.
+  if (g_strcmp0 (fmt, SDP_MEDIA_SCTP_FMT) != 0) {
+    return FALSE;
   }
-  // Else, old syntax
-  val = sdp_utils_get_attr_map_value (media, SDP_MEDIA_SCTPMAP_ATTR, fmt);
+
+  // "a=sctp-port" is mandatory.
+  val = gst_sdp_media_get_attribute_val (media, SDP_MEDIA_SCTP_PORT_ATTR);
   if (val == NULL) {
     return FALSE;
   }
 
-  attrs = g_strsplit (val, " ", 0);
-  ret = (g_strcmp0 (attrs[1] /* subprotocol */ , SDP_MEDIA_SCTP_FMT) == 0);
-  g_strfreev (attrs);
-
-  return ret;
+  return TRUE;
 }
 
 static gboolean
 add_supported_sctp_attrs (const GstSDPMedia * offer, GstSDPMedia * answer,
     GError ** error)
 {
-  guint i, len;
+  const gchar *fmt = gst_sdp_media_get_format (answer, 0);
 
-  len = gst_sdp_media_formats_len (answer);
+  if (fmt == NULL || !format_supported (offer, fmt)) {
+    g_set_error (error, KMS_SDP_AGENT_ERROR, SDP_AGENT_UNEXPECTED_ERROR,
+        "Cannot process SCTP: Invalid media section in SDP offer");
+    return FALSE;
+  }
 
-  for (i = 0; i < len; i++) {
-    const gchar *fmt, *val, *attr;
+  const gchar *attr = SDP_MEDIA_SCTP_PORT_ATTR;
+  const gchar *val_str = gst_sdp_media_get_attribute_val (offer, attr);
 
-    fmt = gst_sdp_media_get_format (answer, i);
-
-    if (g_strcmp0 (fmt, SDP_MEDIA_SCTP_FMT) == 0) {
-      // New syntax
-      attr = SDP_MEDIA_SCTP_PORT_ATTR;
-      val = gst_sdp_media_get_attribute_val (offer, attr);
-      if (val == NULL) {
-        GST_WARNING ("No 'a=%s' attribute found in offer", attr);
-        continue;
-      }
-    } else {
-      // Old syntax
-      attr = SDP_MEDIA_SCTPMAP_ATTR;
-      val = sdp_utils_get_attr_map_value (offer, attr, fmt);
-      if (val == NULL) {
-        GST_WARNING ("No 'a=%s:%s' attribute found in offer", attr, fmt);
-        continue;
-      }
-    }
-
-    if (gst_sdp_media_add_attribute (answer, attr, val) != GST_SDP_OK) {
-      g_set_error (error, KMS_SDP_AGENT_ERROR, SDP_AGENT_UNEXPECTED_ERROR,
-          "Cannot add attribute 'a=%s:%s'", attr, val);
-      return FALSE;
-    }
+  if (gst_sdp_media_add_attribute (answer, attr, val_str) != GST_SDP_OK) {
+    g_set_error (error, KMS_SDP_AGENT_ERROR, SDP_AGENT_UNEXPECTED_ERROR,
+        "Cannot add attribute 'a=%s:%s' from SDP offer", attr, val_str);
+    return FALSE;
   }
 
   return TRUE;
@@ -442,31 +417,25 @@ static gboolean
 kms_sdp_sctp_media_handler_add_answer_attributes_impl (KmsSdpMediaHandler *
     handler, const GstSDPMedia * offer, GstSDPMedia * answer, GError ** error)
 {
-  guint i, len;
-
-  if (!KMS_SDP_MEDIA_HANDLER_CLASS (parent_class)->add_answer_attributes
-      (handler, offer, answer, error)) {
+  if (!KMS_SDP_MEDIA_HANDLER_CLASS (parent_class)
+           ->add_answer_attributes (handler, offer, answer, error)) {
     return FALSE;
   }
 
-  len = gst_sdp_media_formats_len (offer);
+  const gchar *fmt;
 
-  /* Set only supported media formats in answer. */
+  fmt = gst_sdp_media_get_format (offer, 0);
 
-  for (i = 0; i < len; i++) {
-    const gchar *fmt;
+  if (fmt == NULL || !format_supported (offer, fmt)) {
+    g_set_error (error, KMS_SDP_AGENT_ERROR, SDP_AGENT_UNEXPECTED_ERROR,
+        "Cannot process SCTP: Invalid SDP offer");
+    return FALSE;
+  }
 
-    fmt = gst_sdp_media_get_format (offer, i);
-
-    if (!format_supported (offer, fmt)) {
-      continue;
-    }
-
-    if (gst_sdp_media_add_format (answer, fmt) != GST_SDP_OK) {
-      g_set_error (error, KMS_SDP_AGENT_ERROR, SDP_AGENT_UNEXPECTED_ERROR,
-          "Cannot add format '%s'", fmt);
-      return FALSE;
-    }
+  if (gst_sdp_media_add_format (answer, fmt) != GST_SDP_OK) {
+    g_set_error (error, KMS_SDP_AGENT_ERROR, SDP_AGENT_UNEXPECTED_ERROR,
+        "Cannot add format '%s' from SDP offer", fmt);
+    return FALSE;
   }
 
   if (!add_supported_sctp_attrs (offer, answer, error)) {
