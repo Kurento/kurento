@@ -355,12 +355,18 @@ static const gchar *sdp_offer_sctp_str = "v=0\r\n"
     "s=TestSession\r\n"
     "c=IN IP4 0.0.0.0\r\n"
     "t=2873397496 2873404696\r\n"
-    "m=audio 9 RTP/AVP 0\r\n" "a=rtpmap:0 PCMU/8000\r\n" "a=sendonly\r\n"
-    "a=mid:audio0\r\n" "m=video 9 RTP/AVP 96\r\n" "a=rtpmap:96 VP8/90000\r\n"
-    "a=sendonly\r\n" "a=mid:video0\r\n"
-    "m=application 9 DTLS/SCTP 5000 5001 5002\r\n" "a=setup:actpass\r\n"
-    "a=sendonly\r\n" "a=sctpmap:5000 webrtc-datachannel 1024\r\n"
-    "a=sctpmap:5001 bfcp 2\r\n" "a=sctpmap:5002 t38 1\r\n"
+    "m=audio 9 RTP/AVP 0\r\n"
+    "a=rtpmap:0 PCMU/8000\r\n"
+    "a=sendonly\r\n"
+    "a=mid:audio0\r\n"
+    "m=video 9 RTP/AVP 96\r\n"
+    "a=rtpmap:96 VP8/90000\r\n"
+    "a=sendonly\r\n"
+    "a=mid:video0\r\n"
+    "m=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\n"
+    "a=sctp-port:1024\r\n"
+    "a=setup:actpass\r\n"
+    "a=sendonly\r\n"
     "a=webrtc-datachannel:5000 stream=1;label=\"channel 1\";subprotocol=\"chat\"\r\n"
     "a=webrtc-datachannel:5000 stream=2;label=\"channel 2\";subprotocol=\"file transfer\";max_retr=3\r\n"
     "a=bfcp:5000 stream=2;label=\"channel 2\";subprotocol=\"file transfer\";max_retr=3\r\n"
@@ -3375,8 +3381,8 @@ GST_START_TEST (sdp_agent_renegotiation_offer_remove_media)
   o = gst_sdp_message_get_origin (offer);
   v3 = g_ascii_strtoull (o->sess_version, NULL, 10);
 
-  /* sdp is the same so version should not have changed */
-  fail_unless (g_strcmp0 (session, o->sess_id) == 0 && v2 == v3);
+  /* The SCTP port always changes so should be a new version of this session */
+  fail_unless (g_strcmp0 (session, o->sess_id) == 0 && v2 + 1 == v3);
   fail_unless (gst_sdp_message_medias_len (offer) == 3);
 
   /* Check that medias are orderer and supported */
