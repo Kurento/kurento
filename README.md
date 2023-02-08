@@ -24,6 +24,8 @@ Kurento is an open source software project providing a platform suitable for cre
 
 All source code belonging to the Kurento project can be found in the [Kurento GitHub organization page](https://github.com/Kurento).
 
+[![Sourcegraph](https://img.shields.io/badge/Explore%20with%20Sourcegraph-Kurento-00CBEC?logo=sourcegraph)](https://sourcegraph.com/github.com/Kurento/kurento)
+
 
 
 ## FIWARE Platform
