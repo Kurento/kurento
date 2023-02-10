@@ -138,10 +138,6 @@ shopt -s inherit_errexit 2>/dev/null || true
 # Trace all commands (to stderr).
 set -o xtrace
 
-echo "SSH key:"
-ls -lAh /id_aptly
-cat /id_aptly
-
 # Exit trap, used to clean up.
 on_exit() {
     ssh -n -o StrictHostKeyChecking=no -i /id_aptly \
