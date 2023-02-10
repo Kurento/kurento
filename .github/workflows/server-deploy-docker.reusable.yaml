@@ -49,7 +49,7 @@ jobs:
         # Select only the *first* distro to use as base for Docker images.
         # The point of Docker is to abstract the base system, so there is no
         # need to publish Docker images with different versions of Ubuntu.
-        jobDistro: [${{ fromJson(inputs.jobDistros)[0] }}]
+        jobDistro: [ "${{ fromJson(inputs.jobDistros)[0] }}" ]
     timeout-minutes: 30
     steps:
       # Action: https://github.com/actions/checkout
