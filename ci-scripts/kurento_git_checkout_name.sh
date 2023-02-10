@@ -89,35 +89,47 @@ log "CFG_FALLBACK=$CFG_FALLBACK"
 # Check out the given branch or tag
 # ---------------------------------
 
-# Before checkout: Deinit submodules.
-# Needed because submodule state is not carried over when switching branches.
-git submodule deinit --all
+BRANCH_NAME="refs/remotes/$CFG_NAME"
+BRANCH_NAME_REMOTE="refs/remotes/origin/$CFG_NAME"
+TAG_NAME="refs/tags/$CFG_NAME"
 
-BRANCH_NAME="refs/remotes/origin/${CFG_NAME}"
-TAG_NAME="refs/tags/${CFG_NAME}"
+CHECKOUT_TARGET=""
 
-if git rev-parse --verify --quiet "$BRANCH_NAME"; then
-    git checkout --track "$BRANCH_NAME"
-elif git rev-parse --verify --quiet "$TAG_NAME"; then
-    git checkout "$TAG_NAME"
+if git rev-parse --quiet --verify --end-of-options "$BRANCH_NAME"; then
+    CHECKOUT_TARGET="$BRANCH_NAME"
+elif git rev-parse --quiet --verify --end-of-options "$BRANCH_NAME_REMOTE"; then
+    CHECKOUT_TARGET="$BRANCH_NAME_REMOTE"
+elif git rev-parse --quiet --verify --end-of-options "$TAG_NAME"; then
+    CHECKOUT_TARGET="$TAG_NAME"
 else
     # Use the fallback name
     case "$CFG_FALLBACK" in
         xenial|bionic|focal|jammy)
-            BRANCH_NAME="refs/remotes/origin/ubuntu/${CFG_FALLBACK}"
+            BRANCH_NAME="refs/remotes/origin/ubuntu/$CFG_FALLBACK"
             ;;
         *)
-            BRANCH_NAME="refs/remotes/origin/${CFG_FALLBACK}"
+            BRANCH_NAME="refs/remotes/origin/$CFG_FALLBACK"
             ;;
     esac
-    if git rev-parse --verify --quiet "$BRANCH_NAME"; then
-        git checkout --track "$BRANCH_NAME"
+    if git rev-parse --quiet --verify --end-of-options "$BRANCH_NAME"; then
+        CHECKOUT_TARGET="$BRANCH_NAME"
     else
-        # Default repo branch.
-        GIT_DEFAULT="$(kurento_git_default_branch.sh)"
-        git checkout "$GIT_DEFAULT"
+        # Default HEAD branch in the remote origin.
+        CHECKOUT_TARGET="$(kurento_git_default_branch.sh)"
     fi
 fi
+
+# Do nothing it the requested ref turns out to be the current one.
+if [[ "$CHECKOUT_TARGET" == "$(git rev-parse --verify HEAD)" ]]; then
+    log "Current commit is already '$CHECKOUT_TARGET'; nothing to do"
+    exit 0
+fi
+
+# Before checkout: Deinit submodules.
+# Needed because submodule state is not carried over when switching branches.
+git submodule deinit --all
+
+git checkout "$CHECKOUT_TARGET"
 
 # After checkout: Re-init submodules.
 git submodule update --init --recursive

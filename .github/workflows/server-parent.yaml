@@ -1,0 +1,179 @@
+name: "Kurento Media Server (Parent workflow)"
+
+on:
+  # Triggered manually.
+  workflow_dispatch:
+    inputs:
+      jobDistros:
+        description: "List of Ubuntu codenames to build for"
+        required: true
+        # There is no `list` type, so use a raw JSON array and `fromJson()`.
+        # Example: '["xenial", "bionic", "focal"]'
+        type: "string"
+        default: '["focal"]'
+      jobGitName:
+        description: "Non-default git branch or tag that should be checked out, if it exists"
+        required: false
+        type: "string"
+        default: ""
+      jobGitNameFallback:
+        description: "Non-default git branch or tag that should be checked out, if `jobGitName` does not exist"
+        required: false
+        type: "string"
+        default: ""
+      jobRelease:
+        description: "Enable to build release versions; disable for development builds"
+        required: false
+        type: "boolean"
+        default: false
+      jobOnlyKurento:
+        description: "Enable to only build Kurento; disable to also build forks"
+        required: false
+        type: "boolean"
+        default: true
+
+jobs:
+  libsrtp:
+    if: ${{ ! inputs.jobOnlyKurento }}
+    uses: "Kurento/libsrtp/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "7.0.0"
+      jobGitNameFallback: ""
+      jobRelease: ${{ inputs.jobRelease }}
+
+  openh264:
+    if: ${{ ! inputs.jobOnlyKurento }}
+    uses: "Kurento/openh264/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "7.0.0"
+      jobGitNameFallback: ""
+      jobRelease: ${{ inputs.jobRelease }}
+
+  openh264-gst-plugin:
+    if: ${{ ! inputs.jobOnlyKurento }}
+    needs: ["openh264"]
+    uses: "Kurento/openh264-gst-plugin/.github/workflows/kurento-buildpackage.reusable.yaml@master"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "master"
+      jobGitNameFallback: ""
+      jobRelease: ${{ inputs.jobRelease }}
+
+  gst-plugins-good:
+    if: ${{ ! inputs.jobOnlyKurento }}
+    uses: "Kurento/gst-plugins-good/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "7.0.0"
+      jobGitNameFallback: ""
+      jobRelease: ${{ inputs.jobRelease }}
+
+  libnice:
+    if: ${{ ! inputs.jobOnlyKurento }}
+    uses: "Kurento/libnice/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "7.0.0"
+      jobGitNameFallback: ""
+      jobRelease: ${{ inputs.jobRelease }}
+
+  module-creator:
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/module-creator/"
+      copyArtifacts: false
+
+  cmake-utils:
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/cmake-utils/"
+      copyArtifacts: false
+
+  jsonrpc:
+    needs: ["cmake-utils"]
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/jsonrpc/"
+
+  module-core:
+    needs: ["module-creator", "cmake-utils", "jsonrpc"]
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/module-core/"
+
+  module-elements:
+    needs: ["openh264-gst-plugin", "libnice", "module-core"]
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/module-elements/"
+
+  module-filters:
+    needs: ["module-elements"]
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/module-filters/"
+
+  media-server:
+    needs: ["libsrtp", "gst-plugins-good", "module-filters"]
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/media-server/"
+
+  deploy-deb:
+    needs: ["media-server"]
+    uses: "./.github/workflows/server-deploy-debian.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      jobDeployName: "${{ inputs.jobGitName }}"
+    secrets:
+      APTLY_SSH_PRIVATE_KEY: "${{ secrets.APTLY_SSH_PRIVATE_KEY }}"
+
+  deploy-docker:
+    needs: ["deploy-deb"]
+    uses: "./.github/workflows/server-deploy-docker.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      jobDeployName: "${{ inputs.jobGitName }}"
+      buildAsan: true
+    secrets:
+      KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
+      KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
+
+  # TODO: Move script to use Kurento ci-scripts/ and not openvidu ci-scripts/
+  # deploy-aws:
+  #   needs: ["media-server"]
+  #   uses: "./.github/workflows/server-deploy-aws.reusable.yaml"
+  #   with:
+  #     jobRelease: ${{ inputs.jobRelease }}

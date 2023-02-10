@@ -16,7 +16,7 @@ jobs:
 
     steps:
       # Close the issue if its body doesn't match a regular expression.
-      # Action: https://github.com/marketplace/actions/issue-auto-closer
+      # Action: https://github.com/roots/issue-closer-action
       - id: auto-closer
         name: Issue auto-closer
         uses: roots/issue-closer-action@v1.1
@@ -39,7 +39,7 @@ jobs:
             same issue to edit and provide all required information.
 
       # Get the current Issue data, to see if "auto-closer" closed it.
-      # Action: https://github.com/marketplace/actions/github-api-request
+      # Action: https://github.com/octokit/request-action
       # GitHub API: https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#get-an-issue
       - id: get-issue
         name: Get Issue Data
@@ -53,7 +53,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Cancel the whole workflow if "auto-closer" closed the issue.
-      # Action: https://github.com/marketplace/actions/cancel-this-build
+      # Action: https://github.com/andymckay/cancel-action
       - name: Cancel this build
         uses: andymckay/cancel-action@0.2
         if: ${{ fromJson(steps.get-issue.outputs.data).state != 'open' }}
@@ -68,7 +68,7 @@ jobs:
 
     steps:
       # Add a welcome message.
-      # Action: https://github.com/marketplace/actions/create-or-update-comment
+      # Action: https://github.com/peter-evans/create-or-update-comment
       - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v1.4.3
         with:
@@ -88,7 +88,7 @@ jobs:
             [Backlog](https://github.com/orgs/Kurento/projects/1#column-4140448).
 
       # Add new issues to the Triage project.
-      # Action: https://github.com/marketplace/actions/github-project-automation
+      # Action: https://github.com/alex-page/github-project-automation-plus
       - name: GitHub Project Automation+
         uses: alex-page/github-project-automation-plus@v0.3.0
         with:

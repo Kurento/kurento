@@ -515,7 +515,10 @@ log "Install build dependencies"
         #     ./debian/
 
         SNAPSHOT_TIME="$CFG_TIMESTAMP"
-        SNAPSHOT_HASH="$(git rev-parse --short HEAD 2>/dev/null)"
+
+        # If running within a Git repo, also append the commit hash.
+        # Otherwise, this info will just be omitted.
+        SNAPSHOT_HASH="$(git rev-parse --short HEAD 2>/dev/null || true)"
 
         dch \
             --newversion "$DCH_VERSION~$SNAPSHOT_TIME${SNAPSHOT_HASH:+".git$SNAPSHOT_HASH"}" \

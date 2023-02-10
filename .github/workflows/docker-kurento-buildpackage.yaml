@@ -23,7 +23,7 @@ jobs:
       - name: Set JOB_TIMESTAMP
         run: echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
-      # Action: https://github.com/marketplace/actions/checkout
+      # Action: https://github.com/actions/checkout
       - name: Checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 

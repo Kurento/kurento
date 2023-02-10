@@ -1,0 +1,77 @@
+name: "Deploy DEB packages to Kurento repository"
+
+on:
+  # Triggered from other workflows.
+  workflow_call:
+    inputs:
+      jobDistros:
+        description: "List of Ubuntu codenames to build for"
+        required: true
+        # There is no `list` type, so use a raw JSON array and `fromJson()`.
+        # Example: '["xenial", "bionic", "focal"]'
+        type: "string"
+        default: '["focal"]'
+      jobRelease:
+        description: "Enable to build release versions; disable for development builds"
+        required: false
+        type: "boolean"
+        default: false
+      jobDeployName:
+        description: "Custom name given to the deployment"
+        required: false
+        type: "string"
+        default: ""
+    secrets:
+      APTLY_SSH_PRIVATE_KEY:
+        description: "SSH private key for Aptly proxy server"
+        required: true
+
+defaults:
+  run:
+    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
+
+jobs:
+  build:
+    runs-on: ["self-hosted", "dev"]
+    strategy:
+      # Run each configuration sequentially.
+      # Aptly has a global lock and doesn't support concurrent operations from multiple jobs.
+      max-parallel: 1
+      matrix:
+        jobDistro: ${{ fromJson(inputs.jobDistros) }}
+    timeout-minutes: 30
+    steps:
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
+
+      - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
+        run: |
+          echo "$PWD" >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
+
+      # Action: https://github.com/actions/download-artifact
+      - name: "Copy artifacts from previous jobs"
+        id: "copy-artifacts"
+        uses: "actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a" # v3.0.2
+        with:
+          name: "artifacts"
+          path: "artifacts/"
+
+      - name: "Configure the environment for job script"
+        # Note: No need to clean. $RUNNER_TEMP path is emptied after each run.
+        run: |
+          APTLY_SSH_KEY_PATH="$RUNNER_TEMP/id_aptly"
+          echo "APTLY_SSH_KEY_PATH=$APTLY_SSH_KEY_PATH" >>$GITHUB_ENV
+          echo "${{ secrets.APTLY_SSH_PRIVATE_KEY }}" >"$APTLY_SSH_KEY_PATH"
+
+      - name: "Run job script"
+        env:
+          JOB_DISTRO: "${{ matrix.jobDistro }}"
+          JOB_RELEASE: "${{ inputs.jobRelease }}"
+          JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
+          APTLY_GPG_SUBKEY: "${{ vars.APTLY_GPG_SUBKEY }}"
+        working-directory: "artifacts/"
+        run: "kurento_ci_job_deploy_debian.sh"

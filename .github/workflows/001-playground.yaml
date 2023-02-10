@@ -1,0 +1,51 @@
+# Workflow used to play with Actions syntax.
+name: "GitHub Actions playground"
+
+on:
+  # Triggered manually.
+  workflow_dispatch:
+    inputs:
+      input1:
+        description: "String input"
+        required: true
+        type: "string"
+        default: "Value"
+      input2:
+        description: "Boolean input"
+        required: false
+        type: "boolean"
+        default: false
+
+defaults:
+  run:
+    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
+
+jobs:
+  playground:
+    runs-on: ["self-hosted", "dev"]
+    steps:
+      - name: "Configure the environment"
+        run: |
+          TEMP_PATH="$RUNNER_TEMP/temp_file"
+          echo "TEMP_PATH=$TEMP_PATH" >>$GITHUB_ENV
+          echo "${{ secrets.TEST_FILE }}" >test_file
+          echo "${{ vars.TEST_VARIABLE_FILE }}" >"$TEMP_PATH"
+      - name: "Some test commands"
+        env:
+          TEST_VAR_1: "Hello World"
+          TEST_VAR_2: "$RUNNER_TEMP"
+          TEST_VAR_3: "${{ env.RUNNER_TEMP }}"
+        run: |
+          echo "====="
+          echo "TEST_VAR_1: $TEST_VAR_1"
+          echo "TEST_VAR_2: $TEST_VAR_2"
+          echo "TEST_VAR_3: $TEST_VAR_3"
+          echo "TEMP_PATH: $TEMP_PATH"
+          echo "APTLY_GPG_SUBKEY: ${{ vars.APTLY_GPG_SUBKEY }}"
+          echo "====="
+          ls -lA test_file
+          cat test_file
+          echo "====="
+          ls -lA "$TEMP_PATH"
+          cat "$TEMP_PATH"
+          echo "====="

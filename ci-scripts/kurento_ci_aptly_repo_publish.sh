@@ -47,6 +47,51 @@
 #/   nightly snapshot versions of the packages.
 #/
 #/   Optional. Default: Disabled.
+#/
+#/
+#/
+#/ How to *drop* and remove repos
+#/ ==============================
+#/
+#/ This section should probably be made into a script itself, something like
+#/ kurento_ci_aptly_repo_drop.sh
+#/
+#/ There are 3 things to drop:
+#/
+#/ * Publications (`aptly publish drop`)
+#/ * Snapshots (`aptly snapshot drop`)
+#/ * Repositories (`aptly repo drop`)
+#/
+#/
+#/ Drop publication
+#/ ----------------
+#/
+#/ Doc: https://www.aptly.info/doc/aptly/publish/
+#/
+#/ aptly publish list -raw
+#/ aptly publish drop focal s3:ubuntu:bionic-gstreamer
+#/
+#/
+#/ Drop snapshot
+#/ -------------
+#/
+#/ WARNING: Normally you wouldn't need to drop any snapshot. Snapshots are only
+#/ created for official releases, and you should really not be looking to delete
+#/ any previous release.
+#/
+#/ Doc: https://www.aptly.info/doc/aptly/snapshot/
+#/
+#/ aptly snapshot list -raw
+#/ aptly snapshot drop snap-kurento-xenial-1.2.3
+#/
+#/
+#/ Drop repository
+#/ ---------------
+#/
+#/ Doc: https://www.aptly.info/doc/aptly/repo/
+#/
+#/ aptly repo list -raw
+#/ aptly repo drop kurento-focal-exp-bionic-gstreamer
 
 
 

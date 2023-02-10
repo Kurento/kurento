@@ -45,9 +45,9 @@
 #/
 #/ * Variable(s) from job files (with "Provide Configuration files"):
 #/
-#/ KEY_PUB
+#/ APTLY_SSH_KEY_PATH
 #/
-#/   Public SSH key file for user 'kurento' in Aptly proxy server.
+#/   Path to SSH private key file for user 'kurento' in Aptly proxy server.
 #/
 #/
 #/ * Variable(s) from job Custom Tools (with "Install custom tools"):
@@ -75,15 +75,8 @@ set -o xtrace
 # Job setup
 # ---------
 
-# Check optional parameters
-if [[ -z "${JOB_DEPLOY_NAME:-}" ]]; then
-    DEPLOY_SPECIAL="false"
-else
-    DEPLOY_SPECIAL="true"
-fi
-
 # Temp dir to store all packages in remote machine
-TEMP_DIR="aptly_${JOB_DISTRO}_${JOB_TIMESTAMP}"
+TEMP_DIR="aptly-$JOB_DISTRO-$JOB_TIMESTAMP"
 
 # Aptly runner script arguments
 PUBLISH_ARGS=""
@@ -109,10 +102,10 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
         log "ERROR: Cannot parse KMS Version field"
         exit 1
     fi
-elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
+elif [[ -n "${JOB_DEPLOY_NAME:-}" ]]; then
     log "Deploy a feature branch repo"
 
-    KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
+    KMS_VERSION="dev-$JOB_DEPLOY_NAME"
 else
     log "Deploy a development branch repo"
 
@@ -120,7 +113,7 @@ else
 fi
 
 PUBLISH_ARGS+=" --distro-name $JOB_DISTRO"
-PUBLISH_ARGS+=" --repo-name kurento-${JOB_DISTRO}-${KMS_VERSION}"
+PUBLISH_ARGS+=" --repo-name kurento-$JOB_DISTRO-$KMS_VERSION"
 PUBLISH_ARGS+=" --publish-name $KMS_VERSION"
 
 
@@ -129,12 +122,13 @@ PUBLISH_ARGS+=" --publish-name $KMS_VERSION"
 # ---------------------------------
 
 # Prepare SSH key to access Kurento Proxy machine
-cat "$KEY_PUB" >secret.pem
-chmod 0400 secret.pem
+chmod 0400 "$APTLY_SSH_KEY_PATH"
 
 docker run --pull always --rm -i \
-    --mount type=bind,src="$PWD",dst=/workdir -w /workdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
+    --mount type=bind,src="$APTLY_SSH_KEY_PATH",dst=/id_aptly \
+    --mount type=bind,src="$PWD",dst=/workdir \
+    --workdir /workdir \
     buildpack-deps:20.04-scm /bin/bash <<DOCKERCOMMANDS
 
 # Bash options for strict error checking.
@@ -144,27 +138,31 @@ shopt -s inherit_errexit 2>/dev/null || true
 # Trace all commands (to stderr).
 set -o xtrace
 
+echo "SSH key:"
+ls -lAh /id_aptly
+cat /id_aptly
+
 # Exit trap, used to clean up.
 on_exit() {
-    ssh -n -o StrictHostKeyChecking=no -i secret.pem \
+    ssh -n -o StrictHostKeyChecking=no -i /id_aptly \
         ubuntu@proxy.openvidu.io '\
             rm -rf "$TEMP_DIR"'
 }
 trap on_exit EXIT
 
-ssh -n -o StrictHostKeyChecking=no -i secret.pem \
+ssh -n -o StrictHostKeyChecking=no -i /id_aptly \
     ubuntu@proxy.openvidu.io '\
         mkdir -p "$TEMP_DIR"'
 
-scp -o StrictHostKeyChecking=no -i secret.pem \
+scp -o StrictHostKeyChecking=no -i /id_aptly \
     ./*.*deb \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
-scp -o StrictHostKeyChecking=no -i secret.pem \
+scp -o StrictHostKeyChecking=no -i /id_aptly \
     /ci-scripts/kurento_ci_aptly_repo_publish.sh \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
-ssh -n -o StrictHostKeyChecking=no -i secret.pem \
+ssh -n -o StrictHostKeyChecking=no -i /id_aptly \
     ubuntu@proxy.openvidu.io '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
@@ -175,7 +173,7 @@ DOCKERCOMMANDS
 
 
 # Delete SSH key
-rm secret.pem
+rm -f "$APTLY_SSH_KEY_PATH"
 
 
 

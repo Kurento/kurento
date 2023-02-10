@@ -23,12 +23,14 @@ set -o xtrace
 # Maybe in the future we might have something like experimental Maven or NPM
 # repositories, then we'd want to build experimental branches for them. But
 # for now, just skip and avoid polluting the default builds repositories.
-JOB_GIT_NAME="${JOB_GIT_NAME:-main}"
-GIT_DEFAULT="$(kurento_git_default_branch.sh)"
-if [[ "$JOB_GIT_NAME" != "$GIT_DEFAULT" ]]; then
-  log "Skip building from experimental branch '$JOB_GIT_NAME'"
-  exit 0
+if [[ -n "${JOB_GIT_NAME:-}" ]]; then
+    log "Skip building from experimental branch '$JOB_GIT_NAME'"
+    exit 0
 fi
+# Check out the requested branch
+# if [[ -n "${JOB_GIT_NAME:-}" ]]; then
+#     "${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" --name "$JOB_GIT_NAME"
+# fi
 
 rm -rf build
 mkdir build ; cd build/
@@ -55,8 +57,8 @@ done
 JS_PROJECT="$(cat js_project_name)-js"
 log "Generated sources: $JS_PROJECT"
 
-kurento_clone_repo.sh "$JS_PROJECT" "$JOB_GIT_NAME" || {
-  log "ERROR: Command failed: kurento_clone_repo $JS_PROJECT $JOB_GIT_NAME"
+kurento_clone_repo.sh "$JS_PROJECT" "${JOB_GIT_NAME:-}" || {
+  log "ERROR: Command failed: kurento_clone_repo $JS_PROJECT ${JOB_GIT_NAME:-}"
   exit 1
 }
 

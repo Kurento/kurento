@@ -1,0 +1,47 @@
+name: "Deploy CloudFormation templates for AWS"
+
+on:
+  # Triggered from other workflows.
+  workflow_call:
+    inputs:
+      jobRelease:
+        description: "Enable to build release versions; disable for development builds"
+        required: false
+        type: "boolean"
+        default: false
+
+defaults:
+  run:
+    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
+
+jobs:
+  build:
+    # AWS templates are not updated for development builds.
+    if: ${{ inputs.jobRelease }}
+    runs-on: ["self-hosted", "dev"]
+    timeout-minutes: 30
+    steps:
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
+
+      - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
+        run: |
+          echo "$PWD" >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
+
+      # Action: https://github.com/actions/download-artifact
+      - name: "Copy artifacts from previous jobs"
+        id: "copy-artifacts"
+        uses: "actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a" # v3.0.2
+        with:
+          name: "artifacts"
+          path: "artifacts/"
+
+      - name: "Run job script"
+        env:
+          JOB_RELEASE: "${{ inputs.jobRelease }}"
+        working-directory: "artifacts/"
+        run: "kurento_ci_job_deploy_aws_cf.sh"

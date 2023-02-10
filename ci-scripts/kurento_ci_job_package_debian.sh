@@ -11,6 +11,21 @@
 #/
 #/ This script expects some environment variables to be exported.
 #/
+#/ * Variable(s) from shell execution:
+#/
+#/ DISABLE_APT_PROXY
+#/
+#/   Set to "true" to skip using the Apt proxy URL.
+#/   Added for GitHub Actions: No proxy is needed.
+#/   Optional.
+#/
+#/ INSTALL_PATH
+#/
+#/   Path where to find the packages that should be installed.
+#/   Added for GitHub Actions: The path is not ".".
+#/   Optional.
+#/
+#/
 #/ * Variable(s) from job parameters (with "This project is parameterized"):
 #/
 #/ JOB_RELEASE
@@ -68,16 +83,21 @@ set -o xtrace
 # ---------
 
 # Check out the requested branch
+GIT_DEFAULT="$(kurento_git_default_branch.sh)"
 "${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
-    --name "$JOB_GIT_NAME" --fallback "${JOB_GIT_NAME_FALLBACK:-$JOB_DISTRO}"
+    --name "${JOB_GIT_NAME:-$GIT_DEFAULT}" \
+    --fallback "${JOB_GIT_NAME_FALLBACK:-$JOB_DISTRO}"
 
 # Arguments to kurento-buildpackage.
 KURENTO_BUILDPACKAGE_ARGS=()
 
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    KURENTO_BUILDPACKAGE_ARGS+=("--release")
+    KURENTO_BUILDPACKAGE_ARGS+=(--release)
 fi
 
+if [[ "${DISABLE_APT_PROXY:-}" != "true" ]]; then
+    KURENTO_BUILDPACKAGE_ARGS+=(--apt-proxy http://proxy.openvidu.io:3142)
+fi
 
 
 # Build
@@ -117,6 +137,7 @@ fi
 docker run --pull always --rm \
     --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
+    --mount type=bind,src="${INSTALL_PATH:-$PWD}",dst=/packages \
     --env ARGS \
     --env BOOST_TEST_LOG_LEVEL \
     --env BOOST_TEST_RUN_FILTERS \
@@ -127,8 +148,7 @@ docker run --pull always --rm \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \
     "kurento/kurento-buildpackage:${JOB_DISTRO}" \
-        --install-files . \
-        --apt-proxy 'http://proxy.openvidu.io:3142' \
+        --install-files /packages \
         --timestamp "$JOB_TIMESTAMP" \
         "${KURENTO_BUILDPACKAGE_ARGS[@]}"
 
