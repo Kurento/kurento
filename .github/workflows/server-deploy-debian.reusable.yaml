@@ -1,4 +1,4 @@
-name: "Desver: Deploy DEB"
+name: "Server: Deploy DEB"
 
 on:
   # Triggered from other workflows.
