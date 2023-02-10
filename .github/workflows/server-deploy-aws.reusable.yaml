@@ -1,4 +1,4 @@
-name: "Deploy CloudFormation templates for AWS"
+name: "Server: Deploy AWS CloudFormation"
 
 on:
   # Triggered from other workflows.

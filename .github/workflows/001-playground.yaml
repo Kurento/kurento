@@ -1,5 +1,5 @@
 # Workflow used to play with Actions syntax.
-name: "GitHub Actions playground"
+name: "GitHub: Workflow playground"
 
 on:
   # Triggered manually.

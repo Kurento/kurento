@@ -1,4 +1,4 @@
-name: "docker/kurento-ci-buildtools"
+name: "Docker: Build kurento-ci-buildtools"
 
 on:
   # Manual trigger.

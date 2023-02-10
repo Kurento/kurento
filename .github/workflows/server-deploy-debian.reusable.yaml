@@ -1,4 +1,4 @@
-name: "Deploy DEB packages to Kurento repository"
+name: "Desver: Deploy DEB"
 
 on:
   # Triggered from other workflows.

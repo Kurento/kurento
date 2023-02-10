@@ -1,4 +1,4 @@
-name: "Run kurento-buildpackage (Reusable workflow)"
+name: "Server: Build module (Reusable workflow)"
 
 on:
   # Triggered from other workflows.

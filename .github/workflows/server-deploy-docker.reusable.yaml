@@ -1,4 +1,4 @@
-name: "Deploy Docker images to Docker Hub"
+name: "Server: Deploy Docker"
 
 on:
   # Triggered from other workflows.

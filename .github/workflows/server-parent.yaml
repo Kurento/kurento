@@ -1,4 +1,4 @@
-name: "Kurento Media Server (Parent workflow)"
+name: "Server: Build All (Parent)"
 
 on:
   # Triggered manually.

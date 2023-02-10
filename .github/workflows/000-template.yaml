@@ -1,4 +1,4 @@
-name: "Workflow template"
+name: "GitHub: Workflow template"
 
 on:
   # Manual trigger.
