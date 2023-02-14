@@ -219,12 +219,12 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
     aptly publish snapshot -gpg-key="$GPGKEY" "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
-    if ! aptly publish list -raw | grep --quiet "^$PUBLISH_ENDPOINT $CFG_DISTRO_NAME$"; then
-        echo "Publish new development repo: $CFG_REPO_NAME"
-        aptly publish repo -gpg-key="$GPGKEY" -force-overwrite "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
-    else
+    if aptly publish list -raw | grep --quiet "^$PUBLISH_ENDPOINT $CFG_DISTRO_NAME$"; then
         echo "Update already published development repo: $CFG_REPO_NAME"
         aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
+    else
+        echo "Publish new development repo: $CFG_REPO_NAME"
+        aptly publish repo -gpg-key="$GPGKEY" -force-overwrite "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
     fi
 fi
 
