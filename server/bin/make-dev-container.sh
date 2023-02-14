@@ -266,12 +266,12 @@ apt-key adv \
 
 if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
     # Repo for Kurento 7 monorepo.
-    # echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME main" \
-    #     >/etc/apt/sources.list.d/kurento.list
+    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME main" \
+        >/etc/apt/sources.list.d/kurento.list
 
     # Repo for Kurento 7 multirepo.
-    echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME kms6" \
-        >/etc/apt/sources.list.d/kurento.list
+    #echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME kms6" \
+    #    >/etc/apt/sources.list.d/kurento.list
 else
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6" \
         >/etc/apt/sources.list.d/kurento.list
