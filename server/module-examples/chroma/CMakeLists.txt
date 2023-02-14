@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 project("kurento-module-chroma")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
+include(GNUInstallDirs) # CMAKE_INSTALL_*
+
 # Test configuration
 set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
@@ -31,7 +33,8 @@ common_buildflags_set()
 # Development: Add here exceptions to the "Warnings are Errors" rule.
 # Also, DOCUMENT WHY and always remove them as soon as the problem is fixed.
 # For example:
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-variable")
 
 # FIXME Disable error from deprecated "soup_session_sync_new" in libsoup
 # (Since Ubuntu 18.04)
@@ -49,15 +52,14 @@ set(VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
 set(GETTEXT_PACKAGE "${PROJECT_NAME}")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
-include(GNUInstallDirs)
 set(KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(GST_REQUIRED 1.0.0)
-set(SOUP_REQUIRED 2.40)
+set(GST_REQUIRED ^1.0.0)
+set(SOUP_REQUIRED ^2.40)
 set(OPENCV_REQUIRED <5.0.0)
 
 find_package(PkgConfig)

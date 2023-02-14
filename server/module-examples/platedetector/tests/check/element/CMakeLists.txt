@@ -14,5 +14,5 @@ target_include_directories(test_platedetector PRIVATE
 target_link_libraries(test_platedetector
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_CHECK_LIBRARIES}
-  kmstestutils
+  kmsplatetestutils
 )

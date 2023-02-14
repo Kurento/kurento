@@ -149,8 +149,18 @@ jobs:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/media-server/"
 
+  module-chroma:
+    needs: ["module-filters"]
+    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/module-examples/chroma/"
+
   deploy-deb:
-    needs: ["media-server"]
+    needs: ["media-server", "module-chroma"]
     uses: "./.github/workflows/server-deploy-debian.reusable.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"

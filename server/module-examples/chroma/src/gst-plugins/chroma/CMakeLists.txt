@@ -1,23 +1,29 @@
-include_directories(
-  ${GSTREAMER_INCLUDE_DIRS}
-  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${OpenCV_INCLUDE_DIRS}
-  ${SOUP_INCLUDE_DIRS}
-)
-
 set(CHROMA_SOURCES
-  chroma.c
-  kmschroma.c kmschroma.h
+  chroma.cpp
+  kmschroma.cpp
+  kmschroma.hpp
 )
 
 add_library(chroma MODULE ${CHROMA_SOURCES})
+if(SANITIZERS_ENABLED)
+  add_sanitizers(chroma)
+endif()
+
+target_include_directories(chroma SYSTEM
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GSTREAMER_INCLUDE_DIRS}
+    ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+    ${SOUP_INCLUDE_DIRS}
+)
 
 target_link_libraries(chroma
-  ${GSTREAMER_LIBRARIES}
-  ${GSTREAMER_VIDEO_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${SOUP_LIBRARIES}
+  PRIVATE
+    ${GSTREAMER_LIBRARIES}
+    ${GSTREAMER_VIDEO_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${SOUP_LIBRARIES}
 )
 
 install(

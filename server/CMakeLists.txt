@@ -198,3 +198,12 @@ set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/modu
 add_subdirectory(module-examples/opencv-example)
 
 set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/opencv-example/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
+
+
+
+# kurento-module-chroma
+# =====================
+
+add_subdirectory(module-examples/chroma)
+
+set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/chroma/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)

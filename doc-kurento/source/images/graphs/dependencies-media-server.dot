@@ -20,8 +20,9 @@ digraph dependencies_media_server {
   "kurento-media-server" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
 
   // Example plugins.
+  "kurento-module-chroma" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
+
   // Build disabled on Ubuntu >= 20.04 (due to breaking changes in OpenCV 4.0).
-  "kurento-module-chroma (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
   "kurento-module-crowddetector (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
   "kurento-module-datachannelexample (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
   "kurento-module-markerdetector (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};

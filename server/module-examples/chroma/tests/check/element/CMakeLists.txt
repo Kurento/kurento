@@ -11,5 +11,5 @@ target_include_directories(test_chroma PRIVATE
 target_link_libraries(test_chroma
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_CHECK_LIBRARIES}
-  kmstestutils
+  kmschromatestutils
 )

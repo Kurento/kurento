@@ -7,8 +7,8 @@ include_directories(
 set(KMS_TEST_UTILS_SOURCES
   kmstestutils.h kmstestutils.c
 )
-add_library(kmstestutils ${KMS_TEST_UTILS_SOURCES})
-target_link_libraries(kmstestutils
+add_library(kmspointertestutils ${KMS_TEST_UTILS_SOURCES})
+target_link_libraries(kmspointertestutils
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_BASE_LIBRARIES}
   ${GSTREAMER_SDP_LIBRARIES}

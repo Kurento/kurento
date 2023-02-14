@@ -145,9 +145,10 @@ The main :ref:`dev-release-media-server` modules should be built in this order:
 
 And the example Kurento modules, which depend on Kurento's *core*, *elements*, and *filters*, can be built now:
 
+* ``server/module-examples/chroma``
+
 (NOTE: Build disabled on Ubuntu >= 20.04 due to breaking changes in OpenCV 4.0)
 
-* ``server/module-examples/chroma``
 * ``server/module-examples/crowddetector``
 * ``server/module-examples/datachannelexample``
 * ``server/module-examples/markerdetector``

@@ -10,4 +10,4 @@ set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
  target_link_libraries(test_pointerdetector
                        ${GSTREAMER_LIBRARIES}
                        ${GSTREAMER_CHECK_LIBRARIES}
-                       kmstestutils)
+                       kmspointertestutils)

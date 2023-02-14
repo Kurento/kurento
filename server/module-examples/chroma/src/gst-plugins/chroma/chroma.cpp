@@ -17,7 +17,7 @@
 #include <config.h>
 #include <gst/gst.h>
 
-#include "kmschroma.h"
+#include "kmschroma.hpp"
 
 static gboolean
 init (GstPlugin * plugin)
