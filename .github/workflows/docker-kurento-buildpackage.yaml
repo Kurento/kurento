@@ -5,33 +5,40 @@ on:
   workflow_dispatch:
     inputs:
       jobDistros:
-        description: "List of Ubuntu codenames"
+        description: "List of Ubuntu codenames to build for"
         required: true
-        # There is no "list" type, so use a raw JSON array and `fromJson()`.
-        type: string
-        #default: '["xenial", "bionic", "focal"]'
+        # There is no `list` type, so use a raw JSON array and `fromJson()`.
+        # Example: '["xenial", "bionic", "focal"]'
+        type: "string"
         default: '["focal"]'
+
+defaults:
+  run:
+    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      # Run each configuration sequentially.
+      # Docker login & build fails if ran multiple times in parallel.
+      max-parallel: 1
       matrix:
-        jobDistro: ${{ fromJson(github.event.inputs.jobDistros) }}
+        jobDistro: ${{ fromJson(inputs.jobDistros) }}
     timeout-minutes: 30
     steps:
-      - name: Set JOB_TIMESTAMP
-        run: echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
-
       # Action: https://github.com/actions/checkout
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - name: "Checkout"
+        uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
 
-      - name: Add ci-scripts/ to PATH
-        working-directory: ci-scripts/
-        run: echo "$PWD" >>$GITHUB_PATH
+      - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
+        run: |
+          echo "$PWD" >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
-      - name: Run job script
+      - name: "Run job script"
         env:
           PUSH_IMAGES: "yes"
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
