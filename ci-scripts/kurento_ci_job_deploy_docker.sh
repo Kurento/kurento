@@ -11,6 +11,15 @@
 #/
 #/ This script expects some environment variables to be exported.
 #/
+#/ * Variable(s) from shell execution:
+#/
+#/ PACKAGES_PATH
+#/
+#/   Path where to find the packages that should be installed.
+#/   This is used to obtain the Kurento version from its package file.
+#/   Required.
+#/
+#/
 #/ * Variable(s) from job parameters (with "This project is parameterized"):
 #/
 #/ JOB_RELEASE
@@ -67,9 +76,9 @@ fi
 
 # Get version number from the package file itself
 # shellcheck disable=SC2012
-KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
+KMS_DEB_FILE="$(ls -v -1 "$PACKAGES_PATH"/kurento-media-server_*.deb | tail -n 1)"
 if [[ -z "$KMS_DEB_FILE" ]]; then
-    log "ERROR: Cannot find KMS package file: kurento-media-server_*.deb"
+    log "ERROR: Cannot find KMS package file: $PACKAGES_PATH/kurento-media-server_*.deb"
     exit 1
 fi
 KMS_VERSION="$(
@@ -90,20 +99,13 @@ KMS_VERSION_MAJ="$(echo "$KMS_VERSION" | cut -d. -f1)"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy a release image"
     DOCKER_KMS_VERSION="$KMS_VERSION"
-    DOCKER_NAME_SUFFIX=""
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy a feature branch image"
     DOCKER_KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
-    DOCKER_NAME_SUFFIX=""
 else
     log "Deploy a development branch image"
     DOCKER_KMS_VERSION="dev"
-    DOCKER_NAME_SUFFIX=""
 fi
-
-pushd ./kurento-media-server/
-
-# FIXME: Delete `DOCKER_NAME_SUFFIX` and Docker build argument `IMAGE_NAME_SUFFIX`.
 
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
@@ -113,7 +115,6 @@ BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
 BUILD_ARGS+=" APT_ARGS=-oAcquire::http::Proxy=http://proxy.openvidu.io:3142"
 export BUILD_ARGS
 export TAG_COMMIT="no"
-export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     # Main tag: "1.2.3"
     # Moving tag(s): "1.2", "1", "latest"
@@ -131,9 +132,7 @@ else
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
-log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}:${TAG}'"
-
-popd  # kurento-media-server/
+log "New Docker image built: 'kurento/kurento-media-server:${TAG}'"
 
 
 

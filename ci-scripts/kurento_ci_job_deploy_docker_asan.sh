@@ -11,6 +11,15 @@
 #/
 #/ This script expects some environment variables to be exported.
 #/
+#/ * Variable(s) from shell execution:
+#/
+#/ PACKAGES_PATH
+#/
+#/   Path where to find the packages that should be installed.
+#/   This is used to obtain the Kurento version from its package file.
+#/   Required.
+#/
+#/
 #/ * Variable(s) from job parameters (with "This project is parameterized"):
 #/
 #/ JOB_RELEASE
@@ -67,9 +76,9 @@ fi
 
 # Get version number from the package file itself
 # shellcheck disable=SC2012
-KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
+KMS_DEB_FILE="$(ls -v -1 "$PACKAGES_PATH"/kurento-media-server_*.deb | tail -n 1)"
 if [[ -z "$KMS_DEB_FILE" ]]; then
-    log "ERROR: Cannot find KMS package file: kurento-media-server_*.deb"
+    log "ERROR: Cannot find KMS package file: $PACKAGES_PATH/kurento-media-server_*.deb"
     exit 1
 fi
 KMS_VERSION="$(
@@ -87,27 +96,24 @@ fi
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy a release image"
     DOCKER_KMS_VERSION="$KMS_VERSION"
-    DOCKER_NAME_SUFFIX=""
     DOCKER_SOURCE_TAG="$KMS_VERSION"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy a feature branch image"
     DOCKER_KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
-    DOCKER_NAME_SUFFIX=""
     DOCKER_SOURCE_TAG="dev-${JOB_DEPLOY_NAME}"
 else
     log "Deploy a development branch image"
     DOCKER_KMS_VERSION="dev"
-    DOCKER_NAME_SUFFIX=""
     DOCKER_SOURCE_TAG="dev-${KMS_VERSION}"
 fi
 
 # Best effort to check if the given source tag does actually exist.
-DOCKER_KMS_IMAGE="kurento/kurento-media-server${DOCKER_NAME_SUFFIX}:${DOCKER_SOURCE_TAG}"
+DOCKER_KMS_IMAGE="kurento/kurento-media-server:${DOCKER_SOURCE_TAG}"
 if docker manifest >/dev/null 2>&1; then
     # The experimental command `docker manifest` is available.
     if ! docker manifest inspect "$DOCKER_KMS_IMAGE" >/dev/null 2>&1; then
         # The given image tag does not exist. Revert to the default tag.
-        DOCKER_KMS_IMAGE="kurento/kurento-media-server${DOCKER_NAME_SUFFIX}"
+        DOCKER_KMS_IMAGE="kurento/kurento-media-server"
     fi
 fi
 
@@ -124,8 +130,6 @@ else
     log "WARNING: Unknown system version --> Use GCC $DOCKER_GCC_VERSION"
 fi
 
-pushd ./kurento-media-server-asan/
-
 # Run the Docker image builder
 export PUSH_IMAGES="yes"
 BUILD_ARGS=""
@@ -136,7 +140,6 @@ BUILD_ARGS+=" GCC_VERSION=$DOCKER_GCC_VERSION"
 BUILD_ARGS+=" APT_ARGS=-oAcquire::http::Proxy=http://proxy.openvidu.io:3142"
 export BUILD_ARGS
 export TAG_COMMIT="no"
-export IMAGE_NAME_SUFFIX="$DOCKER_NAME_SUFFIX"
 if [[ "$JOB_RELEASE" == "true" ]]; then
     # Main tag: "1.2.3-asan"
     export TAG="${KMS_VERSION}-asan"
@@ -152,9 +155,7 @@ else
 fi
 "${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
 
-log "New Docker image built: 'kurento/kurento-media-server${IMAGE_NAME_SUFFIX}:${TAG}'"
-
-popd  # kurento-media-server-asan/
+log "New Docker image built: 'kurento/kurento-media-server:${TAG}'"
 
 
 
