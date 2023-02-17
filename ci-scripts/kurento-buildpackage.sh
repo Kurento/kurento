@@ -343,10 +343,11 @@ fi
 if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
 
     REPO="$CFG_INSTALL_KURENTO_VERSION"
+    LIST_LINE="deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main"
 
-    if KURENTO_LIST="$(grep --recursive --files-with-matches --include='*.list' "ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main" /etc/apt/)"; then
+    if LIST_FILE="$(grep --recursive --files-with-matches --include='*.list' "$LIST_LINE" /etc/apt/)"; then
         log "Found Kurento repository line for apt-get:"
-        log "$KURENTO_LIST"
+        log "$LIST_FILE"
     else
         # If requested, add the repository
         if [[ "$CFG_APT_ADD_REPO" == "true" ]]; then
@@ -354,8 +355,7 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
             apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
             log "Add Kurento repository line for apt-get"
-            echo "deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main" \
-                | tee -a /etc/apt/sources.list.d/kurento.list
+            echo "$LIST_LINE" | tee -a /etc/apt/sources.list.d/kurento.list
         else
             log "ERROR: Could not find Kurento repository line for apt-get"
             log ""
@@ -365,7 +365,7 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
             log "Suggested solution 2:"
             log "    Run commands:"
             log "    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83"
-            log "    $ echo 'deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main' | sudo tee -a /etc/apt/sources.list.d/kurento.list"
+            log "    $ echo '$LIST_LINE' | sudo tee -a /etc/apt/sources.list.d/kurento.list"
             log ""
             exit 1
         fi
