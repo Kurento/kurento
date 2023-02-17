@@ -36,9 +36,11 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends},
  gstreamer1.0-nice,
+ gstreamer1.0-plugins-good-kurento,
  kurento-module-core (>= 7.0.0),
  libgstreamer-plugins-bad1.0-0,
  libsoup2.4-1,
+ libsrtp-kurento,
  openh264-gst-plugin,
 Breaks:
  kms-elements-6.0,
