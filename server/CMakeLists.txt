@@ -184,7 +184,7 @@ add_custom_target(kurento-media-server-run
 
 
 # kurento-module-gstreamer-example
-# ===============================
+# ================================
 
 add_subdirectory(module-examples/gstreamer-example)
 
@@ -193,7 +193,7 @@ set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/modu
 
 
 # kurento-module-opencv-example
-# ============================
+# =============================
 
 add_subdirectory(module-examples/opencv-example)
 
@@ -207,3 +207,12 @@ set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/modu
 add_subdirectory(module-examples/chroma)
 
 set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/chroma/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
+
+
+
+# kurento-module-datachannelexample
+# =================================
+
+add_subdirectory(module-examples/datachannelexample)
+
+set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/datachannelexample/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)

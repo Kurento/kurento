@@ -17,9 +17,14 @@
 #ifndef __OPEN_CV_PROCESS_HPP__
 #define __OPEN_CV_PROCESS_HPP__
 
-#include <opencv2/opencv.hpp>
-#include <memory>
 #include <MediaObject.hpp>
+
+#include <memory>
+
+namespace cv
+{
+class Mat;
+}
 
 namespace kurento
 {

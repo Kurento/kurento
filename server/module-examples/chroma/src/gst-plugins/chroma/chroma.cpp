@@ -20,7 +20,7 @@
 #include "kmschroma.hpp"
 
 static gboolean
-init (GstPlugin * plugin)
+init (GstPlugin *plugin)
 {
   if (!kms_chroma_plugin_init (plugin))
     return FALSE;
@@ -32,4 +32,8 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     chroma,
     "Kurento chroma filter",
-    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "https://kurento.openvidu.io/")
+    init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
+    "Kurento",
+    "https://kurento.openvidu.io/")

@@ -37,7 +37,7 @@ Kurento is based on two concepts that act as building blocks for application dev
 
 The Kurento API is :wikipedia:`Object-Oriented <Object-oriented programming>`. This means that it is based on Classes that can be instantiated in the form of Objects; these Objects provide *properties* that are a representation of the internal state of the Kurento server, and *methods* that expose the operations that can be performed by the server.
 
-The following class diagram shows some of the relationships of the main classes in the Kurento API:
+The following class diagram shows part of the main classes in the Kurento API:
 
 .. graphviz:: /images/graphs/mediaobjects.dot
    :align: center
@@ -48,32 +48,32 @@ The following class diagram shows some of the relationships of the main classes 
 Endpoints
 =========
 
-A **WebRtcEndpoint** is an input/output endpoint that provides media streaming for Real Time Communications (RTC) through the web. It implements :term:`WebRTC` technology to communicate with browsers.
+**WebRtcEndpoint**: Input/output endpoint that provides media streaming for Real Time Communications (RTC) through the web. It implements :term:`WebRTC` technology to communicate with browsers.
 
 .. image:: /images/toolbox/WebRtcEndpoint.png
    :align:  center
 
-An **RtpEndpoint** is an input/output endpoint that provides bidirectional content delivery capabilities with remote networked peers, through the :term:`RTP` protocol. It uses :term:`SDP` for media negotiation.
+**RtpEndpoint**: Input/output endpoint that provides bidirectional content delivery capabilities with remote networked peers, through the :term:`RTP` protocol. It uses :term:`SDP` for media negotiation.
 
 .. image:: /images/toolbox/RtpEndpoint.png
    :align:  center
 
-An **HttpPostEndpoint** is an input endpoint that accepts media using HTTP POST requests like HTTP file upload function.
+**HttpPostEndpoint**: Input endpoint that accepts media using HTTP POST requests like HTTP file upload function.
 
 .. image:: /images/toolbox/HttpPostEndpoint.png
    :align:  center
 
-A **PlayerEndpoint** is an input endpoint that retrieves content from file system, HTTP URL or RTSP URL and injects it into the Media Pipeline.
+**PlayerEndpoint**: Input endpoint that retrieves content from file system, HTTP URL or RTSP URL and injects it into the Media Pipeline.
 
 .. image:: /images/toolbox/PlayerEndpoint.png
    :align:  center
 
-A **RecorderEndpoint** is an output endpoint that provides function to store contents in reliable mode (doesn't discard data). It contains *Media Sink* pads for audio and video.
+**RecorderEndpoint**: Output endpoint that provides function to store contents in reliable mode (doesn't discard data). It contains *Media Sink* pads for audio and video.
 
 .. image:: /images/toolbox/RecorderEndpoint.png
    :align:  center
 
-The following class diagram shows the relationships of the main endpoint classes:
+The following class diagram shows the main endpoint classes:
 
 .. graphviz:: /images/graphs/endpoints.dot
    :align: center
@@ -86,24 +86,24 @@ Filters
 
 Filters are MediaElements that perform media processing, Computer Vision, Augmented Reality, and so on.
 
-The **ZBarFilter** filter detects QR and bar codes in a video stream. When a code is found, the filter raises a *CodeFoundEvent*. Clients can add a listener to this event to execute some action.
+**ZBarFilter**: Detects QR and bar codes in a video stream. When a code is found, the filter raises a *CodeFoundEvent*. Clients can add a listener to this event to execute some action.
 
 .. image:: /images/toolbox/ZBarFilter.png
    :align:  center
 
-The **FaceOverlayFilter** filter detects faces in a video stream and overlaid it with a configurable image.
+**FaceOverlayFilter**: Detects faces in a video stream and overlays them with a configurable image.
 
 .. image:: /images/toolbox/FaceOverlayFilter.png
    :align:  center
 
-**GStreamerFilter** is a generic filter interface that allows injecting any GStreamer element into a Kurento Media Pipeline. Note however that the current implementation of GStreamerFilter only allows single elements to be injected; one cannot indicate more than one at the same time; use several GStreamerFilters if you need to inject more than one element at the same time.
+**GStreamerFilter**: Generic filter interface that allows injecting any GStreamer element into a Kurento Media Pipeline. Note however that the current implementation of GStreamerFilter only allows single elements to be injected; one cannot indicate more than one at the same time. Use several GStreamerFilters if you need to inject more than one element at the same time.
 
 .. image:: /images/toolbox/GStreamerFilter.png
    :align:  center
 
-Note that usage of some popular GStreamer elements requires installation of additional packages. For example, overlay elements such as *timeoverlay* or *textoverlay* require installation of the **gstreamer1.0-x** package, which will also install the *Pango* rendering library.
+Usage of some popular GStreamer elements requires installation of additional packages. For example, overlay elements such as *timeoverlay* or *textoverlay* require installation of the **gstreamer1.0-x** package, which will also install the *Pango* rendering library.
 
-The following class diagram shows the relationships of the main filter classes:
+The following class diagram shows the main filter classes:
 
 .. graphviz:: /images/graphs/filters.dot
    :align: center
@@ -116,22 +116,22 @@ Hubs
 
 Hubs are media objects in charge of managing multiple media flows in a pipeline. A Hub has several hub ports where other Media Elements are connected.
 
-**Composite** is a hub that mixes the audio stream of its connected inputs and constructs a grid with the video streams of them.
+**Composite**: Mixes the audio stream of its connected inputs and constructs a grid with the video streams of them.
 
 .. image:: /images/toolbox/Composite.png
    :align:  center
 
-**DispatcherOneToMany** is a Hub that sends a given input to all the connected output HubPorts.
+**DispatcherOneToMany**: Sends a given input to all the connected output HubPorts.
 
 .. image:: /images/toolbox/DispatcherOneToMany.png
    :align:  center
 
-**Dispatcher** is a hub that allows routing between arbitrary input-output HubPort pairs.
+**Dispatcher**: Routes between arbitrary input-output HubPort pairs.
 
 .. image:: /images/toolbox/Dispatcher.png
    :align:  center
 
-The following class diagram shows the relationships of the hubs:
+The following class diagram shows the Hub classes:
 
 .. graphviz:: /images/graphs/hubs.dot
    :align: center
@@ -139,34 +139,30 @@ The following class diagram shows the relationships of the hubs:
 
 
 
-Extra Modules
-=============
+Example Modules
+===============
 
-In addition to the base features, there are some additional built-in modules provided **for demonstration purposes**:
+In addition to the base features, there are some additional example modules provided **for demonstration purposes**:
 
 .. figure:: ../images/kurento-modules.png
    :align:  center
    :alt:    Kurento modules architecture
 
    **Kurento modules architecture**
-   *Kurento Media Server can be extended with built-in modules (crowddetector, pointerdetector, chroma, platedetector) and also with other custom modules.*
+   *Kurento Media Server can be extended with example modules (chroma, crowddetector, platedetector, pointerdetector) and also with other custom modules.*
 
-These extra modules are provided as examples of how to extend the base features of Kurento Media Server.:
+These example modules are provided to show how to extend the base features of Kurento Media Server:
 
-* **kurento-module-pointerdetector**: Filter that detects pointers in video streams, based on color tracking.
-* **kurento-module-chroma**: Filter that takes a color range in the top layer and makes it transparent, revealing another image behind.
-* **kurento-module-crowddetector**: Filter that detects people agglomeration in video streams.
-* **kurento-module-platedetector**: Filter that detects vehicle plates in video streams.
+* **Chroma**: Takes a color range from the top-left area of the video, and makes it transparent, revealing another background image.
+* **CrowdDetector**: Detects groups of people in video streams.
+* **PlateDetector**: Detects vehicle license plates in video streams.
+* **PointerDetector**: Detects pointers in video streams, based on color tracking.
 
 .. warning::
 
-   These modules **are just prototypes** and their results are not necessarily accurate or reliable. Consider this if you are planning to use them in a production environment.
+   These example modules **are just prototypes** and their results are not necessarily accurate or reliable. You can use them as programming guideline, but we strongly discourage anyone from using them in production environments.
 
-All modules come already preinstalled in the Kurento Docker images. For local installations, they can be installed separately:
-
-.. code-block:: shell
-
-   sudo apt-get install <ModuleName>
+All example modules come already preinstalled in the Kurento Docker images. For local installations, they can be installed separately with *apt-get*.
 
 Taking into account these extra modules, the complete Kurento toolbox is extended as follows:
 
@@ -175,6 +171,6 @@ Taking into account these extra modules, the complete Kurento toolbox is extende
    :alt: Extended Kurento Toolbox
 
    **Extended Kurento Toolbox**
-   *The basic Kurento toolbox (left side of the picture) is extended with more Computer Vision and Augmented Reality filters (right side of the picture) provided by the extra modules.*
+   *The basic Kurento toolbox (left side of the picture) is extended with more Computer Vision and Augmented Reality filters (right side of the picture) provided by the example modules.*
 
-If you are interested in writing your own modules, please read the section about :doc:`Writing Kurento Modules </user/writing_modules>`.
+If you want to write your own modules, please read the section about :doc:`Writing Kurento Modules </user/writing_modules>`.

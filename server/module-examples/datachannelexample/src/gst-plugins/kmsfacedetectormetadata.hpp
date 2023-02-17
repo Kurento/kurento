@@ -19,7 +19,6 @@
 #define _KMS_FACE_DETECTOR_METADATA_H_
 
 #include <gst/video/gstvideofilter.h>
-#include <opencv/cv.h>
 
 G_BEGIN_DECLS
 

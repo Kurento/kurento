@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2016 Kurento (http://kurento.org/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,21 @@
 #include <config.h>
 #include <gst/gst.h>
 
-#include "kmsmovementdetector.h"
+#include "kmsshowdata.h"
+#include "kmssenddata.h"
+#include "kmsimageoverlaymetadata.hpp"
+#include "kmsfacedetectormetadata.hpp"
 
 static gboolean
-init (GstPlugin * plugin)
+init (GstPlugin *plugin)
 {
-  if (!kms_movement_detector_plugin_init (plugin))
+  if (!kms_show_data_plugin_init (plugin))
+    return FALSE;
+  if (!kms_send_data_plugin_init (plugin))
+    return FALSE;
+  if (!kms_image_overlay_metadata_plugin_init (plugin))
+    return FALSE;
+  if (!kms_face_detector_metadata_plugin_init (plugin))
     return FALSE;
 
   return TRUE;
@@ -30,6 +39,10 @@ init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmsmovementdetector,
-    "Kurento movement filter",
-    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "https://kurento.openvidu.io/")
+    datachannelexample,
+    "Module used by some Kurento tutorials",
+    init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
+    "Kurento",
+    "https://kurento.openvidu.io/");

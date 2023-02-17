@@ -14,18 +14,15 @@
  * limitations under the License.
  *
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
+#include <config.h>
 #include <gst/gst.h>
 
-#include "kmsopencvfilter.h"
+#include "kmsfacedetector.hpp"
 
 static gboolean
-init (GstPlugin * plugin)
+init (GstPlugin *plugin)
 {
-  if (!kms_opencv_filter_plugin_init (plugin))
+  if (!kms_face_detector_plugin_init (plugin))
     return FALSE;
 
   return TRUE;
@@ -33,6 +30,10 @@ init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmsopencvfilter,
-    "Kurento generic opencv filter",
-    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "https://kurento.openvidu.io/")
+    facedetector,
+    "Kurento facedetector filter",
+    init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
+    "Kurento",
+    "https://kurento.openvidu.io/")

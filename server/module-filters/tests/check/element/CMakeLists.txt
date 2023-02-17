@@ -1,7 +1,7 @@
 set(SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
 
 add_test_program(test_faceoverlay faceoverlay.c)
-add_dependencies(test_faceoverlay kmsfaceoverlay)
+add_dependencies(test_faceoverlay faceoverlay)
 target_include_directories(test_faceoverlay PRIVATE
   ${KMSCORE_INCLUDE_DIRS}
   ${gstreamer-1.0_INCLUDE_DIRS}
@@ -17,7 +17,7 @@ target_link_libraries(test_faceoverlay
 )
 
 add_test_program(test_movementdetector movementdetector.c)
-add_dependencies(test_movementdetector kmsmovementdetector)
+add_dependencies(test_movementdetector movementdetector)
 target_include_directories(test_movementdetector PRIVATE
   ${KMSCORE_INCLUDE_DIRS}
   ${gstreamer-1.0_INCLUDE_DIRS}
@@ -33,7 +33,7 @@ target_link_libraries(test_movementdetector
 )
 
 add_test_program(test_logooverlay logooverlay.c)
-add_dependencies(test_logooverlay kmslogooverlay)
+add_dependencies(test_logooverlay logooverlay)
 target_include_directories(test_logooverlay PRIVATE
   ${KMSCORE_INCLUDE_DIRS}
   ${gstreamer-1.0_INCLUDE_DIRS}

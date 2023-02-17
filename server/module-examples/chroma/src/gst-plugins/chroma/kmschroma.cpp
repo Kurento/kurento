@@ -31,9 +31,9 @@
 #include <gst/video/gstvideofilter.h>
 #include <libsoup/soup.h>
 
-#include <opencv2/core.hpp>      // cv::Mat
-#include <opencv2/imgcodecs.hpp> // cv::imread
-#include <opencv2/imgproc.hpp>   // cv::resize
+#include <opencv2/core.hpp> // Mat
+#include <opencv2/imgcodecs.hpp> // imread
+#include <opencv2/imgproc.hpp> // cvtColor, rectangle, resize
 
 #include <cstdint>
 
@@ -60,7 +60,7 @@
 GST_DEBUG_CATEGORY_STATIC (kms_chroma_debug_category);
 #define GST_CAT_DEFAULT kms_chroma_debug_category
 
-#define KMS_CHROMA_GET_PRIVATE(obj)                                            \
+#define KMS_CHROMA_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_CHROMA, KmsChromaPrivate))
 
 // Types used to traverse images.
@@ -146,9 +146,7 @@ kms_chroma_load_image_to_overlay (KmsChroma *chroma)
 
     GST_OBJECT_LOCK (chroma);
 
-    if (!chroma->priv->background_image.empty ()) {
-      chroma->priv->background_image.release ();
-    }
+    chroma->priv->background_image.release ();
 
     GST_OBJECT_UNLOCK (chroma);
     return;
@@ -286,10 +284,11 @@ kms_chroma_initialize_images (KmsChroma *chroma, GstVideoFrame *frame)
 {
   const int width = GST_VIDEO_FRAME_WIDTH (frame);
   const int height = GST_VIDEO_FRAME_HEIGHT (frame);
+  const void *data = GST_VIDEO_FRAME_PLANE_DATA (frame, 0);
+  const size_t step = GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0);
 
   chroma->priv->cvImage =
-      cv::Mat (height, width, CV_8UC3, GST_VIDEO_FRAME_PLANE_DATA (frame, 0),
-          GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0));
+      cv::Mat (cv::Size (width, height), CV_8UC3, (void *)data, step);
 
   if (!chroma->priv->background_image.empty ()
       && chroma->priv->background_image.size () != cv::Size (width, height)) {
@@ -552,20 +551,20 @@ kms_chroma_finalize (GObject *object)
 {
   KmsChroma *chroma = KMS_CHROMA (object);
 
-  if (!chroma->priv->cvImage.empty ())
-    chroma->priv->cvImage.release ();
+  chroma->priv->cvImage.release ();
+  chroma->priv->background_image.release ();
 
-  if (!chroma->priv->background_image.empty ())
-    chroma->priv->background_image.release ();
-
-  if (chroma->priv->dir_created)
+  if (chroma->priv->dir_created) {
     remove_recursive (chroma->priv->dir);
+  }
 
-  if (chroma->priv->dir != NULL)
+  if (chroma->priv->dir != NULL) {
     g_free (chroma->priv->dir);
+  }
 
-  if (chroma->priv->background_uri != NULL)
+  if (chroma->priv->background_uri != NULL) {
     g_free (chroma->priv->background_uri);
+  }
 
   G_OBJECT_CLASS (kms_chroma_parent_class)->finalize (object);
 }

@@ -14,15 +14,18 @@
  * limitations under the License.
  *
  */
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gst/gst.h>
 
-#include "kmsfaceoverlay.h"
+#include "kmsopencvfilter.hpp"
 
 static gboolean
-init (GstPlugin * plugin)
+init (GstPlugin *plugin)
 {
-  if (!kms_face_overlay_plugin_init (plugin))
+  if (!kms_opencv_filter_plugin_init (plugin))
     return FALSE;
 
   return TRUE;
@@ -30,6 +33,10 @@ init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmsfaceoverlay,
-    "Kurento faceoverlay filter",
-    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "https://kurento.openvidu.io/")
+    opencvfilter,
+    "Kurento generic OpenCV filter",
+    init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
+    "Kurento",
+    "https://kurento.openvidu.io/")

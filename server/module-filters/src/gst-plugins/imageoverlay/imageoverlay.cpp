@@ -17,12 +17,12 @@
 #include <config.h>
 #include <gst/gst.h>
 
-#include "kmsfacedetector.h"
+#include "kmsimageoverlay.hpp"
 
 static gboolean
-init (GstPlugin * plugin)
+init (GstPlugin *plugin)
 {
-  if (!kms_face_detector_plugin_init (plugin))
+  if (!kms_image_overlay_plugin_init (plugin))
     return FALSE;
 
   return TRUE;
@@ -30,6 +30,10 @@ init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmsfacedetector,
-    "Kurento facedetector filter",
-    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "https://kurento.openvidu.io/")
+    imageoverlay,
+    "Kurento imageoverlay filter",
+    init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
+    "Kurento",
+    "https://kurento.openvidu.io/")

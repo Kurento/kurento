@@ -19,82 +19,77 @@
 #include "config.h"
 #endif
 
-#include "kmsopencvfilter.h"
+#include "kmsopencvfilter.hpp"
+#include "OpenCVProcess.hpp"
+
+#include <KurentoException.hpp>
 
 #include <gst/gst.h>
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
 #include <glib/gstdio.h>
-#include <opencv2/opencv.hpp>
+
+#include <opencv2/core.hpp> // Mat
+
 #include <memory>
-#include "OpenCVProcess.hpp"
-#include <KurentoException.hpp>
 
 #define PLUGIN_NAME "opencvfilter"
 
-using namespace cv;
+#define KMS_OPENCV_FILTER_LOCK(self) \
+  (g_rec_mutex_lock (&((KmsOpenCVFilter *)(self))->priv->mutex))
 
-#define KMS_OPENCV_FILTER_LOCK(opencv_filter) \
-  (g_rec_mutex_lock (&( (KmsOpenCVFilter *) (opencv_filter))->priv->mutex))
-
-#define KMS_OPENCV_FILTER_UNLOCK(opencv_filter) \
-  (g_rec_mutex_unlock (&( (KmsOpenCVFilter *) (opencv_filter))->priv->mutex))
+#define KMS_OPENCV_FILTER_UNLOCK(self) \
+  (g_rec_mutex_unlock (&((KmsOpenCVFilter *)(self))->priv->mutex))
 
 GST_DEBUG_CATEGORY_STATIC (kms_opencv_filter_debug_category);
 #define GST_CAT_DEFAULT kms_opencv_filter_debug_category
 
-#define KMS_OPENCV_FILTER_GET_PRIVATE(obj) (    \
-    G_TYPE_INSTANCE_GET_PRIVATE (               \
-        (obj),                                  \
-        KMS_TYPE_OPENCV_FILTER,                 \
-        KmsOpenCVFilterPrivate                  \
-                                )               \
-                                           )
+#define KMS_OPENCV_FILTER_GET_PRIVATE(obj) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_OPENCV_FILTER, \
+      KmsOpenCVFilterPrivate))
 
-enum {
-  PROP_0,
-  PROP_TARGET_OBJECT,
-  N_PROPERTIES
-};
+enum { PROP_0, PROP_TARGET_OBJECT, N_PROPERTIES };
 
 struct _KmsOpenCVFilterPrivate {
   GRecMutex mutex;
-  Mat *cv_image;
+  cv::Mat cv_image;
   kurento::OpenCVProcess *object;
 };
 
 /* pad templates */
 
-#define VIDEO_SRC_CAPS \
-  GST_VIDEO_CAPS_MAKE("{ BGRA }")
+#define VIDEO_SRC_CAPS GST_VIDEO_CAPS_MAKE ("{ BGRA }")
 
-#define VIDEO_SINK_CAPS \
-  GST_VIDEO_CAPS_MAKE("{ BGRA }")
+#define VIDEO_SINK_CAPS GST_VIDEO_CAPS_MAKE ("{ BGRA }")
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsOpenCVFilter, kms_opencv_filter,
-                         GST_TYPE_VIDEO_FILTER,
-                         GST_DEBUG_CATEGORY_INIT (kms_opencv_filter_debug_category,
-                             PLUGIN_NAME, 0,
-                             "debug category for opencv_filter element") );
+G_DEFINE_TYPE_WITH_CODE (KmsOpenCVFilter,
+    kms_opencv_filter,
+    GST_TYPE_VIDEO_FILTER,
+    GST_DEBUG_CATEGORY_INIT (kms_opencv_filter_debug_category,
+        PLUGIN_NAME,
+        0,
+        "debug category for opencv_filter element"));
 
 static void
-kms_opencv_filter_set_property (GObject *object, guint property_id,
-                                const GValue *value, GParamSpec *pspec)
+kms_opencv_filter_set_property (GObject *object,
+    guint property_id,
+    const GValue *value,
+    GParamSpec *pspec)
 {
-  KmsOpenCVFilter *opencv_filter = KMS_OPENCV_FILTER (object);
+  KmsOpenCVFilter *self = KMS_OPENCV_FILTER (object);
 
-  KMS_OPENCV_FILTER_LOCK (opencv_filter);
+  KMS_OPENCV_FILTER_LOCK (self);
 
   switch (property_id) {
   case PROP_TARGET_OBJECT:
     try {
-      opencv_filter->priv->object = dynamic_cast<kurento::OpenCVProcess *> ( (
-                                      kurento::OpenCVProcess *) g_value_get_pointer (value) );
+      self->priv->object = dynamic_cast<kurento::OpenCVProcess *> (
+          (kurento::OpenCVProcess *)g_value_get_pointer (value));
     } catch (std::bad_cast &e) {
-      opencv_filter->priv->object = nullptr;
-      GST_ERROR ( "Object type not valid");
+      self->priv->object = nullptr;
+      GST_ERROR ("Object type not valid");
     }
 
     break;
@@ -104,20 +99,22 @@ kms_opencv_filter_set_property (GObject *object, guint property_id,
     break;
   }
 
-  KMS_OPENCV_FILTER_UNLOCK (opencv_filter);
+  KMS_OPENCV_FILTER_UNLOCK (self);
 }
 
 static void
-kms_opencv_filter_get_property (GObject *object, guint property_id,
-                                GValue *value, GParamSpec *pspec)
+kms_opencv_filter_get_property (GObject *object,
+    guint property_id,
+    GValue *value,
+    GParamSpec *pspec)
 {
-  KmsOpenCVFilter *opencv_filter = KMS_OPENCV_FILTER (object);
+  KmsOpenCVFilter *self = KMS_OPENCV_FILTER (object);
 
-  KMS_OPENCV_FILTER_LOCK (opencv_filter);
+  KMS_OPENCV_FILTER_LOCK (self);
 
   switch (property_id) {
   case PROP_TARGET_OBJECT:
-    g_value_set_pointer (value, (gpointer) opencv_filter->priv->object);
+    g_value_set_pointer (value, (gpointer)self->priv->object);
     break;
 
   default:
@@ -125,75 +122,60 @@ kms_opencv_filter_get_property (GObject *object, guint property_id,
     break;
   }
 
-  KMS_OPENCV_FILTER_UNLOCK (opencv_filter);
+  KMS_OPENCV_FILTER_UNLOCK (self);
 }
 
 static void
-kms_opencv_filter_initialize_images (KmsOpenCVFilter *opencv_filter,
-                                     GstVideoFrame *frame, GstMapInfo &info)
+kms_opencv_filter_initialize_images (KmsOpenCVFilter *self,
+    GstVideoFrame *frame)
 {
-  if (opencv_filter->priv->cv_image == nullptr) {
+  const int width = GST_VIDEO_FRAME_WIDTH (frame);
+  const int height = GST_VIDEO_FRAME_HEIGHT (frame);
+  const void *data = GST_VIDEO_FRAME_PLANE_DATA (frame, 0);
+  const size_t step = GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0);
 
-    opencv_filter->priv->cv_image = new Mat (frame->info.height,
-        frame->info.width, CV_8UC4, info.data);
-
-  } else if ( (opencv_filter->priv->cv_image->cols != frame->info.width)
-              || (opencv_filter->priv->cv_image->rows != frame->info.height) ) {
-
-    delete opencv_filter->priv->cv_image;
-
-    opencv_filter->priv->cv_image = new Mat (frame->info.height,
-        frame->info.width, CV_8UC4, info.data);
-
-  } else {
-    opencv_filter->priv->cv_image->data = info.data;
-  }
+  self->priv->cv_image =
+      cv::Mat (cv::Size (width, height), CV_8UC4, (void *)data, step);
 }
 
 static GstFlowReturn
 kms_opencv_filter_transform_frame_ip (GstVideoFilter *filter,
-                                      GstVideoFrame *frame)
+    GstVideoFrame *frame)
 {
-  KmsOpenCVFilter *opencv_filter = KMS_OPENCV_FILTER (filter);
-  GstMapInfo info{};
+  KmsOpenCVFilter *self = KMS_OPENCV_FILTER (filter);
 
-  if (opencv_filter->priv->object == nullptr) {
+  if (self->priv->object == nullptr) {
     return GST_FLOW_OK;
   }
 
-  gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
-
-  kms_opencv_filter_initialize_images (opencv_filter, frame, info);
+  kms_opencv_filter_initialize_images (self, frame);
 
   try {
-    opencv_filter->priv->object->process (* (opencv_filter->priv->cv_image) );
+    self->priv->object->process (self->priv->cv_image);
   } catch (kurento::KurentoException &e) {
     GstMessage *message;
-    GError *err = g_error_new (g_quark_from_string (e.getType ().c_str () ),
-                               e.getCode (), "%s", GST_ELEMENT_NAME (opencv_filter) );
+    GError *err = g_error_new (g_quark_from_string (e.getType ().c_str ()),
+        e.getCode (), "%s", GST_ELEMENT_NAME (self));
 
-    message = gst_message_new_error (GST_OBJECT (opencv_filter),
-                                     err, e.getMessage ().c_str () );
+    message = gst_message_new_error (GST_OBJECT (self), err,
+        e.getMessage ().c_str ());
 
-    gst_element_post_message (GST_ELEMENT (opencv_filter),
-                              message);
+    gst_element_post_message (GST_ELEMENT (self), message);
 
     g_clear_error (&err);
   } catch (...) {
     GstMessage *message;
-    GError *err = g_error_new (g_quark_from_string ("UNDEFINED_EXCEPTION"),
-                               0, "%s", GST_ELEMENT_NAME (opencv_filter) );
+    GError *err = g_error_new (g_quark_from_string ("UNDEFINED_EXCEPTION"), 0,
+        "%s", GST_ELEMENT_NAME (self));
 
-    message = gst_message_new_error (GST_OBJECT (opencv_filter),
-                                     err, "Undefined filter error");
+    message = gst_message_new_error (GST_OBJECT (self), err,
+        "Undefined filter error");
 
-    gst_element_post_message (GST_ELEMENT (opencv_filter),
-                              message);
+    gst_element_post_message (GST_ELEMENT (self), message);
 
     g_clear_error (&err);
   }
 
-  gst_buffer_unmap (frame->buffer, &info);
   return GST_FLOW_OK;
 }
 
@@ -205,21 +187,20 @@ kms_opencv_filter_dispose (GObject *object)
 static void
 kms_opencv_filter_finalize (GObject *object)
 {
-  KmsOpenCVFilter *opencv_filter = KMS_OPENCV_FILTER (object);
+  KmsOpenCVFilter *self = KMS_OPENCV_FILTER (object);
 
-  if (opencv_filter->priv->cv_image != nullptr) {
-    delete opencv_filter->priv->cv_image;
+  if (!self->priv->cv_image.empty ()) {
+    self->priv->cv_image.release ();
   }
 
-  g_rec_mutex_clear (&opencv_filter->priv->mutex);
+  g_rec_mutex_clear (&self->priv->mutex);
 }
 
 static void
-kms_opencv_filter_init (KmsOpenCVFilter *
-                        opencv_filter)
+kms_opencv_filter_init (KmsOpenCVFilter *self)
 {
-  opencv_filter->priv = KMS_OPENCV_FILTER_GET_PRIVATE (opencv_filter);
-  g_rec_mutex_init (&opencv_filter->priv->mutex);
+  self->priv = KMS_OPENCV_FILTER_GET_PRIVATE (self);
+  g_rec_mutex_init (&self->priv->mutex);
 }
 
 static void
@@ -231,18 +212,16 @@ kms_opencv_filter_class_init (KmsOpenCVFilterClass *klass)
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
   gst_element_class_add_pad_template (GST_ELEMENT_CLASS (klass),
-                                      gst_pad_template_new ("src", GST_PAD_SRC,
-                                          GST_PAD_ALWAYS,
-                                          gst_caps_from_string (VIDEO_SRC_CAPS) ) );
+      gst_pad_template_new ("src", GST_PAD_SRC, GST_PAD_ALWAYS,
+          gst_caps_from_string (VIDEO_SRC_CAPS)));
   gst_element_class_add_pad_template (GST_ELEMENT_CLASS (klass),
-                                      gst_pad_template_new ("sink", GST_PAD_SINK,
-                                          GST_PAD_ALWAYS,
-                                          gst_caps_from_string (VIDEO_SINK_CAPS) ) );
+      gst_pad_template_new ("sink", GST_PAD_SINK, GST_PAD_ALWAYS,
+          gst_caps_from_string (VIDEO_SINK_CAPS)));
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-                                         "generic opencv element", "Video/Filter",
-                                         "Create a generic opencv filter to process images",
-                                         "David Fernandez <d.fernandezlop@gmail.com>");
+      "generic opencv element", "Video/Filter",
+      "Create a generic opencv filter to process images",
+      "David Fernandez <d.fernandezlop@gmail.com>");
 
   gobject_class->set_property = kms_opencv_filter_set_property;
   gobject_class->get_property = kms_opencv_filter_get_property;
@@ -250,20 +229,19 @@ kms_opencv_filter_class_init (KmsOpenCVFilterClass *klass)
   gobject_class->finalize = kms_opencv_filter_finalize;
 
   g_object_class_install_property (gobject_class, PROP_TARGET_OBJECT,
-                                   g_param_spec_pointer ("target-object", "target object",
-                                       "Reference to target object",
-                                       (GParamFlags) G_PARAM_READWRITE) );
+      g_param_spec_pointer ("target-object", "target object",
+          "Reference to target object", (GParamFlags)G_PARAM_READWRITE));
 
   video_filter_class->transform_frame_ip =
-    GST_DEBUG_FUNCPTR (kms_opencv_filter_transform_frame_ip);
+      GST_DEBUG_FUNCPTR (kms_opencv_filter_transform_frame_ip);
 
   /* Properties initialization */
-  g_type_class_add_private (klass, sizeof (KmsOpenCVFilterPrivate) );
+  g_type_class_add_private (klass, sizeof (KmsOpenCVFilterPrivate));
 }
 
 gboolean
 kms_opencv_filter_plugin_init (GstPlugin *plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-                               KMS_TYPE_OPENCV_FILTER);
+      KMS_TYPE_OPENCV_FILTER);
 }

@@ -18,11 +18,15 @@
 #include "config.h"
 #endif
 
+#include "kmsmovementdetector.hpp"
+
 #include <gst/gst.h>
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
-#include "kmsmovementdetector.h"
-#include <opencv/highgui.h>
+
+#include <opencv2/imgproc.hpp> // cvtColor
+
+#include <vector>
 
 #define PLUGIN_NAME "movementdetector"
 
@@ -31,21 +35,22 @@ GST_DEBUG_CATEGORY_STATIC (kms_movement_detector_debug_category);
 
 /* pad templates */
 
-#define VIDEO_SRC_CAPS \
-    GST_VIDEO_CAPS_MAKE("{ BGR }")
+#define VIDEO_SRC_CAPS GST_VIDEO_CAPS_MAKE ("{ BGR }")
 
-#define VIDEO_SINK_CAPS \
-    GST_VIDEO_CAPS_MAKE("{ BGR }")
+#define VIDEO_SINK_CAPS GST_VIDEO_CAPS_MAKE ("{ BGR }")
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsMovementDetector, kms_movement_detector,
+G_DEFINE_TYPE_WITH_CODE (KmsMovementDetector,
+    kms_movement_detector,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_movement_detector_debug_category, PLUGIN_NAME,
-        0, "debug category for movementdetector element"));
+    GST_DEBUG_CATEGORY_INIT (kms_movement_detector_debug_category,
+        PLUGIN_NAME,
+        0,
+        "debug category for movementdetector element"));
 
 void
-kms_movement_detector_dispose (GObject * object)
+kms_movement_detector_dispose (GObject *object)
 {
   KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (object);
 
@@ -57,27 +62,25 @@ kms_movement_detector_dispose (GObject * object)
 }
 
 void
-kms_movement_detector_finalize (GObject * object)
+kms_movement_detector_finalize (GObject *object)
 {
   KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (object);
 
   GST_DEBUG_OBJECT (movementdetector, "finalize");
 
   /* clean up object here */
-  if (movementdetector->img != NULL) {
-    cvReleaseImage (&movementdetector->img);
-    movementdetector->img = NULL;
+  if (!movementdetector->img.empty ()) {
+    movementdetector->img.release ();
   }
-  if (movementdetector->imgOldBW != NULL) {
-    cvReleaseImage (&movementdetector->imgOldBW);
-    movementdetector->imgOldBW = NULL;
+  if (!movementdetector->imgOldBW.empty ()) {
+    movementdetector->imgOldBW.release ();
   }
 
   G_OBJECT_CLASS (kms_movement_detector_parent_class)->finalize (object);
 }
 
 static gboolean
-kms_movement_detector_start (GstBaseTransform * trans)
+kms_movement_detector_start (GstBaseTransform *trans)
 {
   KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (trans);
 
@@ -87,7 +90,7 @@ kms_movement_detector_start (GstBaseTransform * trans)
 }
 
 static gboolean
-kms_movement_detector_stop (GstBaseTransform * trans)
+kms_movement_detector_stop (GstBaseTransform *trans)
 {
   KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (trans);
 
@@ -97,8 +100,11 @@ kms_movement_detector_stop (GstBaseTransform * trans)
 }
 
 static gboolean
-kms_movement_detector_set_info (GstVideoFilter * filter, GstCaps * incaps,
-    GstVideoInfo * in_info, GstCaps * outcaps, GstVideoInfo * out_info)
+kms_movement_detector_set_info (GstVideoFilter *filter,
+    GstCaps *incaps,
+    GstVideoInfo *in_info,
+    GstCaps *outcaps,
+    GstVideoInfo *out_info)
 {
   KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (filter);
 
@@ -108,20 +114,19 @@ kms_movement_detector_set_info (GstVideoFilter * filter, GstCaps * incaps,
 }
 
 static gboolean
-kms_movement_detector_initialize_images (KmsMovementDetector * movementdetector,
-    GstVideoFrame * frame)
+kms_movement_detector_initialize_images (KmsMovementDetector *movementdetector,
+    GstVideoFrame *frame)
 {
-  if (movementdetector->imgOldBW == NULL) {
-    movementdetector->img =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
-        IPL_DEPTH_8U, 3);
-    return TRUE;
-  } else if ((movementdetector->imgOldBW->width != frame->info.width)
-      || (movementdetector->imgOldBW->height != frame->info.height)) {
-    cvReleaseImage (&movementdetector->imgOldBW);
-    movementdetector->img =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
-        IPL_DEPTH_8U, 3);
+  const int width = GST_VIDEO_FRAME_WIDTH (frame);
+  const int height = GST_VIDEO_FRAME_HEIGHT (frame);
+  const void *data = GST_VIDEO_FRAME_PLANE_DATA (frame, 0);
+  const size_t step = GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0);
+
+  movementdetector->img =
+      cv::Mat (cv::Size (width, height), CV_8UC3, (void *)data, step);
+
+  if (movementdetector->imgOldBW.empty ()
+      || movementdetector->imgOldBW.size () != cv::Size (width, height)) {
     return TRUE;
   }
 
@@ -129,66 +134,55 @@ kms_movement_detector_initialize_images (KmsMovementDetector * movementdetector,
 }
 
 static GstFlowReturn
-kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
-    GstVideoFrame * frame)
+kms_movement_detector_transform_frame_ip (GstVideoFilter *filter,
+    GstVideoFrame *frame)
 {
   KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (filter);
-  GstMapInfo info;
-  IplImage *imgBW, *imgDiff;
-  CvMemStorage *mem;
-  CvSeq *contours = 0;
+  cv::Mat imgBW, imgDiff;
   gboolean imagesChanged;
+  std::vector<std::vector<cv::Point>> contours;
 
   //checking image sizes
   imagesChanged =
       kms_movement_detector_initialize_images (movementdetector, frame);
 
-  //get current frame
-  gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
-  movementdetector->img->imageData = (char *) info.data;
-  imgBW = cvCreateImage (cvGetSize (movementdetector->img),
-      movementdetector->img->depth, 1);
+  imgBW = cv::Mat (movementdetector->img.size (), CV_8UC1);
 
-  cvCvtColor (movementdetector->img, imgBW, CV_BGR2GRAY);
+  cv::cvtColor (movementdetector->img, imgBW, cv::COLOR_BGR2GRAY);
+
   if (imagesChanged) {
-    movementdetector->imgOldBW = imgBW;
+    imgBW.copyTo (movementdetector->imgOldBW);
     goto end;
   }
+
   //image difference
-  imgDiff = cvCreateImage (cvGetSize (movementdetector->img),
-      movementdetector->img->depth, 1);
+  imgDiff = cv::Mat (movementdetector->img.size (), CV_8UC1);
 
-  cvSub (movementdetector->imgOldBW, imgBW, imgDiff, NULL);
-  cvThreshold (imgDiff, imgDiff, 125, 255, CV_THRESH_OTSU);
-  cvErode (imgDiff, imgDiff, NULL, 1);
-  cvDilate (imgDiff, imgDiff, NULL, 1);
+  cv::subtract (movementdetector->imgOldBW, imgBW, imgDiff);
+  cv::threshold (imgDiff, imgDiff, 125, 255, cv::THRESH_OTSU);
+  cv::erode (imgDiff, imgDiff, cv::Mat ());
+  cv::dilate (imgDiff, imgDiff, cv::Mat ());
 
-  mem = cvCreateMemStorage (0);
-  cvFindContours (imgDiff, mem, &contours, sizeof (CvContour), CV_RETR_CCOMP,
-      CV_CHAIN_APPROX_NONE, cvPoint (0, 0));
+  cv::findContours (imgDiff, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_NONE);
 
-  for (; contours != 0; contours = contours->h_next) {
-    CvRect rect = cvBoundingRect (contours, 0);
-
-    cvRectangle (movementdetector->img, cvPoint (rect.x, rect.y),
-        cvPoint (rect.x + rect.width, rect.y + rect.width), cvScalar (255, 0, 0,
-            0), 2, 8, 0);
-
+  for (const auto &contour : contours) {
+    cv::Rect rect = cv::boundingRect (contour);
+    cv::rectangle (movementdetector->img, cv::Point (rect.x, rect.y),
+        cv::Point (rect.x + rect.width, rect.y + rect.width),
+        cv::Scalar (255, 0, 0, 0), 2);
   }
 
-  cvReleaseImage (&movementdetector->imgOldBW);
+  movementdetector->imgOldBW.release ();
   movementdetector->imgOldBW = imgBW;
 
-  cvReleaseImage (&imgDiff);
-  cvReleaseMemStorage (&mem);
+  imgDiff.release ();
 
 end:
-  gst_buffer_unmap (frame->buffer, &info);
   return GST_FLOW_OK;
 }
 
 static void
-kms_movement_detector_class_init (KmsMovementDetectorClass * klass)
+kms_movement_detector_class_init (KmsMovementDetectorClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstBaseTransformClass *base_transform_class =
@@ -220,14 +214,12 @@ kms_movement_detector_class_init (KmsMovementDetectorClass * klass)
 }
 
 static void
-kms_movement_detector_init (KmsMovementDetector * movementdetector)
+kms_movement_detector_init (KmsMovementDetector *movementdetector)
 {
-  movementdetector->imgOldBW = NULL;
-  movementdetector->img = NULL;
 }
 
 gboolean
-kms_movement_detector_plugin_init (GstPlugin * plugin)
+kms_movement_detector_plugin_init (GstPlugin *plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
       KMS_TYPE_MOVEMENT_DETECTOR);

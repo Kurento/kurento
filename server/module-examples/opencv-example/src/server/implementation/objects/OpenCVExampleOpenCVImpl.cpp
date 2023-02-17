@@ -16,8 +16,9 @@
 
 #include "OpenCVExampleOpenCVImpl.hpp"
 #include <KurentoException.hpp>
-#include <opencv2/core.hpp>    // cv::Mat
-#include <opencv2/imgproc.hpp> // cv::cvtColor
+
+#include <opencv2/core.hpp> // Mat
+#include <opencv2/imgproc.hpp> // cvtColor
 
 namespace kurento
 {

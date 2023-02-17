@@ -20,21 +20,22 @@
 #include "config.h"
 #endif
 
-#include "kmslogooverlay.h"
+#include "kmslogooverlay.hpp"
 
 #include <gst/gst.h>
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
 #include <glib/gstdio.h>
+
+#include <opencv2/core.hpp> // Mat
+#include <opencv2/imgcodecs.hpp> // imread
+#include <opencv2/imgproc.hpp> // resize
+
+#include <libsoup/soup.h>
+
 #include <ftw.h>
 #include <string.h>
 #include <errno.h>
-
-#include <opencv2/opencv_modules.hpp>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
-#include <libsoup/soup.h>
 
 #define TEMP_PATH "/tmp/XXXXXX"
 #define SRC_OVERLAY ((double)1)
@@ -44,23 +45,14 @@
 GST_DEBUG_CATEGORY_STATIC (kms_logo_overlay_debug_category);
 #define GST_CAT_DEFAULT kms_logo_overlay_debug_category
 
-#define KMS_LOGO_OVERLAY_GET_PRIVATE(obj) ( \
-  G_TYPE_INSTANCE_GET_PRIVATE (              \
-    (obj),                                   \
-    KMS_TYPE_LOGO_OVERLAY,                  \
-    KmsLogoOverlayPrivate                   \
-  )                                          \
-)
+#define KMS_LOGO_OVERLAY_GET_PRIVATE(obj) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_LOGO_OVERLAY, \
+      KmsLogoOverlayPrivate))
 
-enum
-{
-  PROP_0,
-  PROP_IMAGES_TO_OVERLAY
-};
+enum { PROP_0, PROP_IMAGES_TO_OVERLAY };
 
-struct _KmsLogoOverlayPrivate
-{
-  IplImage *cv_image;
+struct _KmsLogoOverlayPrivate {
+  cv::Mat cv_image;
 
   GstStructure *image_layout;
   GSList *image_layout_list;
@@ -69,48 +61,50 @@ struct _KmsLogoOverlayPrivate
   gboolean configured;
 };
 
-typedef struct _ImageStruct
-{
+typedef struct _ImageStruct {
   gfloat offsetXPercent, offsetYPercent, widthPercent, heightPercent;
   gchar *id;
-  IplImage *active_icon;
+  cv::Mat active_icon;
   gboolean keepAspectRatio, center;
 } ImageStruct;
 
 /* pad templates */
 
-#define VIDEO_SRC_CAPS \
-    GST_VIDEO_CAPS_MAKE("{ BGR }")
+#define VIDEO_SRC_CAPS GST_VIDEO_CAPS_MAKE ("{ BGR }")
 
-#define VIDEO_SINK_CAPS \
-    GST_VIDEO_CAPS_MAKE("{ BGR }")
+#define VIDEO_SINK_CAPS GST_VIDEO_CAPS_MAKE ("{ BGR }")
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsLogoOverlay, kms_logo_overlay,
+G_DEFINE_TYPE_WITH_CODE (KmsLogoOverlay,
+    kms_logo_overlay,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_logo_overlay_debug_category, PLUGIN_NAME,
-        0, "debug category for logooverlay element"));
+    GST_DEBUG_CATEGORY_INIT (kms_logo_overlay_debug_category,
+        PLUGIN_NAME,
+        0,
+        "debug category for logooverlay element"));
 
 static void
-dispose_image_struct (gpointer data)
+dispose_image_struct (ImageStruct *data)
 {
   ImageStruct *aux = data;
 
-  if (aux->id != NULL)
+  if (aux->id != NULL) {
     g_free (aux->id);
+  }
 
-  if (aux->active_icon != NULL)
-    cvReleaseImage (&aux->active_icon);
+  if (!aux->active_icon.empty ()) {
+    aux->active_icon.release ();
+  }
 
   g_free (aux);
 }
 
 static void
-kms_logo_overlay_dispose_image_layout_list (KmsLogoOverlay * logooverlay)
+kms_logo_overlay_dispose_image_layout_list (KmsLogoOverlay *logooverlay)
 {
   g_slist_free_full (logooverlay->priv->image_layout_list,
-      dispose_image_struct);
+      (GDestroyNotify)dispose_image_struct);
   logooverlay->priv->image_layout_list = NULL;
 }
 
@@ -125,7 +119,7 @@ tls_certificate_flags_to_reason (GTlsCertificateFlags flags)
     return "The certificate was not issued to this domain";
   } else if (flags & G_TLS_CERTIFICATE_NOT_ACTIVATED) {
     return "The certificate is not valid yet; check that your"
-        " computer's date and time are accurate";
+           " computer's date and time are accurate";
   } else if (flags & G_TLS_CERTIFICATE_EXPIRED) {
     return "The certificate has expired";
   } else if (flags & G_TLS_CERTIFICATE_REVOKED) {
@@ -139,17 +133,15 @@ tls_certificate_flags_to_reason (GTlsCertificateFlags flags)
 }
 
 static gboolean
-load_from_url (gchar * file_name, gchar * url)
+load_from_url (gchar *file_name, gchar *url)
 {
   SoupSession *session;
   SoupMessage *msg;
   FILE *dst;
   gboolean ok = FALSE;
 
-  session = soup_session_new_with_options (
-      SOUP_SESSION_SSL_USE_SYSTEM_CA_FILE, TRUE,
-      SOUP_SESSION_SSL_STRICT, FALSE,
-      NULL);
+  session = soup_session_new_with_options (SOUP_SESSION_SSL_USE_SYSTEM_CA_FILE,
+      TRUE, SOUP_SESSION_SSL_STRICT, FALSE, NULL);
 
   // Enable logging in 'libsoup' library
   if (g_strcmp0 (g_getenv ("SOUP_DEBUG"), "1") >= 0) {
@@ -205,8 +197,8 @@ load_from_url (gchar * file_name, gchar * url)
     goto end;
   }
 
-  GST_DEBUG ("Write %ld bytes to temp file: %s",
-      msg->response_body->length, file_name);
+  GST_DEBUG ("Write %ld bytes to temp file: %s", msg->response_body->length,
+      file_name);
   fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
 
   if (fclose (dst) != 0) {
@@ -222,14 +214,14 @@ end:
   return ok;
 }
 
-static IplImage *
-load_image (gchar * url, gchar * dir, gchar * image_name)
+static void
+load_image (cv::Mat &out, gchar *url, gchar *dir, gchar *image_name)
 {
-  IplImage *imageAux = NULL;
   gchar *file_name = NULL;
 
-  imageAux = cvLoadImage (url, CV_LOAD_IMAGE_UNCHANGED);
-  if (imageAux) {
+  out = cv::imread (url, cv::IMREAD_UNCHANGED);
+
+  if (!out.empty ()) {
     GST_INFO ("Loaded successfully from local file");
     goto end;
   } else {
@@ -243,8 +235,8 @@ load_image (gchar * url, gchar * dir, gchar * image_name)
     goto end;
   }
 
-  imageAux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
-  if (!imageAux) {
+  out = cv::imread (file_name, cv::IMREAD_UNCHANGED);
+  if (out.empty ()) {
     GST_ERROR ("Failed loading from URL");
     goto end;
   }
@@ -256,12 +248,10 @@ end:
     g_remove (file_name);
     g_free (file_name);
   }
-
-  return imageAux;
 }
 
 static void
-kms_logo_overlay_load_image_layout (KmsLogoOverlay * logooverlay)
+kms_logo_overlay_load_image_layout (KmsLogoOverlay *logooverlay)
 {
   int aux, len;
   gchar *uri;
@@ -274,17 +264,15 @@ kms_logo_overlay_load_image_layout (KmsLogoOverlay * logooverlay)
 
   for (aux = 0; aux < len; aux++) {
     const gchar *name =
-        gst_structure_nth_field_name (logooverlay->priv->image_layout,
-        aux);
+        gst_structure_nth_field_name (logooverlay->priv->image_layout, aux);
     GstStructure *image;
     gboolean ret;
 
-    ret =
-        gst_structure_get (logooverlay->priv->image_layout, name,
+    ret = gst_structure_get (logooverlay->priv->image_layout, name,
         GST_TYPE_STRUCTURE, &image, NULL);
     if (ret) {
-      ImageStruct *structAux = g_malloc0 (sizeof (ImageStruct));
-      IplImage *aux = NULL;
+      ImageStruct *structAux = (ImageStruct *)g_malloc0 (sizeof (ImageStruct));
+      cv::Mat aux;
       int new_width;
       int new_height;
 
@@ -307,41 +295,39 @@ kms_logo_overlay_load_image_layout (KmsLogoOverlay * logooverlay)
         continue;
       }
 
-      aux = load_image (uri, logooverlay->priv->dir, structAux->id);
+      load_image (aux, uri, logooverlay->priv->dir, structAux->id);
 
-      if (aux != NULL) {
-
-        new_width = logooverlay->priv->cv_image->width *
-            (structAux->widthPercent);
-        new_height = logooverlay->priv->cv_image->height *
-            (structAux->heightPercent);
+      if (!aux.empty ()) {
+        new_width =
+            logooverlay->priv->cv_image.cols * (structAux->widthPercent);
+        new_height =
+            logooverlay->priv->cv_image.rows * (structAux->heightPercent);
 
         if (structAux->keepAspectRatio) {
-          float old_ratio = (float) aux->height / (float) aux->width;
-          float new_ratio = (float) new_height / (float) new_width;
+          float old_ratio = (float)aux.rows / (float)aux.cols;
+          float new_ratio = (float)new_height / (float)new_width;
 
           if (old_ratio != new_ratio) {
-            float widthRatio = (float) new_width / (float) aux->width;
-            float heightRatio = (float) new_height / (float) aux->height;
+            float widthRatio = (float)new_width / (float)aux.cols;
+            float heightRatio = (float)new_height / (float)aux.rows;
 
             if (widthRatio < heightRatio) {
               //keep width and recalculate height
-              new_height = (float) new_width / old_ratio;
+              new_height = (float)new_width / old_ratio;
             } else {
               //keep height and recalculate width
-              new_width = old_ratio * (float) new_height;
+              new_width = old_ratio * (float)new_height;
             }
           }
         } else {
           structAux->center = FALSE;
         }
         structAux->active_icon =
-            cvCreateImage (cvSize (new_width, new_height), aux->depth,
-            aux->nChannels);
-        cvResize (aux, structAux->active_icon, CV_INTER_CUBIC);
-        cvReleaseImage (&aux);
+            cv::Mat (cv::Size (new_width, new_height), aux.type ());
+        cv::resize (aux, structAux->active_icon,
+            structAux->active_icon.size ());
+        aux.release ();
       } else {
-        structAux->active_icon = NULL;
         GST_WARNING ("Image %s not loaded", uri);
       }
 
@@ -355,138 +341,138 @@ kms_logo_overlay_load_image_layout (KmsLogoOverlay * logooverlay)
 }
 
 static void
-kms_logo_overlay_set_property (GObject * object, guint property_id,
-    const GValue * value, GParamSpec * pspec)
+kms_logo_overlay_set_property (GObject *object,
+    guint property_id,
+    const GValue *value,
+    GParamSpec *pspec)
 {
   KmsLogoOverlay *logooverlay = KMS_LOGO_OVERLAY (object);
 
   GST_OBJECT_LOCK (logooverlay);
 
   switch (property_id) {
-    case PROP_IMAGES_TO_OVERLAY:
-      if (logooverlay->priv->image_layout != NULL) {
-        gst_structure_free (logooverlay->priv->image_layout);
-      }
+  case PROP_IMAGES_TO_OVERLAY:
+    if (logooverlay->priv->image_layout != NULL) {
+      gst_structure_free (logooverlay->priv->image_layout);
+    }
 
-      logooverlay->priv->image_layout = g_value_dup_boxed (value);
-      if (logooverlay->priv->cv_image != NULL) {
-        kms_logo_overlay_load_image_layout (logooverlay);
-        logooverlay->priv->configured = TRUE;
-      }
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
+    logooverlay->priv->image_layout = (GstStructure *)g_value_dup_boxed (value);
+    if (!logooverlay->priv->cv_image.empty ()) {
+      kms_logo_overlay_load_image_layout (logooverlay);
+      logooverlay->priv->configured = TRUE;
+    }
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+    break;
   }
   GST_OBJECT_UNLOCK (logooverlay);
 }
 
 static void
-kms_logo_overlay_get_property (GObject * object, guint property_id,
-    GValue * value, GParamSpec * pspec)
+kms_logo_overlay_get_property (GObject *object,
+    guint property_id,
+    GValue *value,
+    GParamSpec *pspec)
 {
   KmsLogoOverlay *logooverlay = KMS_LOGO_OVERLAY (object);
 
   GST_OBJECT_LOCK (logooverlay);
 
   switch (property_id) {
-    case PROP_IMAGES_TO_OVERLAY:
-      if (logooverlay->priv->image_layout == NULL) {
-        logooverlay->priv->image_layout = gst_structure_new_empty ("images");
-      }
-      g_value_set_boxed (value, logooverlay->priv->image_layout);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
+  case PROP_IMAGES_TO_OVERLAY:
+    if (logooverlay->priv->image_layout == NULL) {
+      logooverlay->priv->image_layout = gst_structure_new_empty ("images");
+    }
+    g_value_set_boxed (value, logooverlay->priv->image_layout);
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+    break;
   }
   GST_OBJECT_UNLOCK (logooverlay);
 }
 
 static void
-kms_logo_overlay_display_overlay_img (KmsLogoOverlay * logooverlay,
-    int x_position, int y_position, IplImage * image)
+kms_logo_overlay_display_overlay_img (KmsLogoOverlay *logooverlay,
+    int x_position,
+    int y_position,
+    cv::Mat &image)
 {
   int w, h;
   uchar *row, *image_row;
 
-  row = (uchar *) image->imageData;
-  image_row = (uchar *) logooverlay->priv->cv_image->imageData +
-      (y_position * logooverlay->priv->cv_image->widthStep);
+  row = (uchar *)image.data;
+  image_row = (uchar *)logooverlay->priv->cv_image.data
+      + (y_position * logooverlay->priv->cv_image.step);
 
-  for (h = 0; h < image->height; h++) {
+  for (h = 0; h < image.rows; h++) {
 
     uchar *column = row;
     uchar *image_column = image_row + (x_position * 3);
 
-    for (w = 0; w < image->width; w++) {
+    for (w = 0; w < image.cols; w++) {
       /* Check if point is inside overlay boundaries */
-      if (((w + x_position) < logooverlay->priv->cv_image->width)
+      if (((w + x_position) < logooverlay->priv->cv_image.cols)
           && ((w + x_position) >= 0)) {
-        if (((h + y_position) < logooverlay->priv->cv_image->height)
+        if (((h + y_position) < logooverlay->priv->cv_image.rows)
             && ((h + y_position) >= 0)) {
 
-          if (image->nChannels == 1) {
-            *(image_column) = (uchar) (*(column));
-            *(image_column + 1) = (uchar) (*(column));
-            *(image_column + 2) = (uchar) (*(column));
-          } else if (image->nChannels == 3) {
-            *(image_column) = (uchar) (*(column));
-            *(image_column + 1) = (uchar) (*(column + 1));
-            *(image_column + 2) = (uchar) (*(column + 2));
-          } else if (image->nChannels == 4) {
-            double proportion =
-                ((double) *(uchar *) (column + 3)) / (double) 255;
+          if (image.channels () == 1) {
+            *(image_column) = (uchar)(*(column));
+            *(image_column + 1) = (uchar)(*(column));
+            *(image_column + 2) = (uchar)(*(column));
+          } else if (image.channels () == 3) {
+            *(image_column) = (uchar)(*(column));
+            *(image_column + 1) = (uchar)(*(column + 1));
+            *(image_column + 2) = (uchar)(*(column + 2));
+          } else if (image.channels () == 4) {
+            double proportion = ((double)*(uchar *)(column + 3)) / (double)255;
             double overlay = SRC_OVERLAY * proportion;
             double original = 1 - overlay;
 
             *image_column =
-                (uchar) ((*column * overlay) + (*image_column * original));
-            *(image_column + 1) =
-                (uchar) ((*(column + 1) * overlay) + (*(image_column +
-                        1) * original));
-            *(image_column + 2) =
-                (uchar) ((*(column + 2) * overlay) + (*(image_column +
-                        2) * original));
+                (uchar)((*column * overlay) + (*image_column * original));
+            *(image_column + 1) = (uchar)((*(column + 1) * overlay)
+                + (*(image_column + 1) * original));
+            *(image_column + 2) = (uchar)((*(column + 2) * overlay)
+                + (*(image_column + 2) * original));
           }
         }
       }
 
-      column += image->nChannels;
-      image_column += logooverlay->priv->cv_image->nChannels;
+      column += image.channels ();
+      image_column += logooverlay->priv->cv_image.channels ();
     }
 
-    row += image->widthStep;
-    image_row += logooverlay->priv->cv_image->widthStep;
+    row += image.step;
+    image_row += logooverlay->priv->cv_image.step;
   }
 }
 
 static void
-kms_logo_overlay_initialize_images (KmsLogoOverlay * logooverlay,
-    GstVideoFrame * frame)
+kms_logo_overlay_initialize_images (KmsLogoOverlay *logooverlay,
+    GstVideoFrame *frame)
 {
-  if (logooverlay->priv->cv_image == NULL) {
-    logooverlay->priv->cv_image =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
-        IPL_DEPTH_8U, 3);
-    if ((!logooverlay->priv->configured)
-        && (logooverlay->priv->image_layout != NULL)) {
-      kms_logo_overlay_load_image_layout (logooverlay);
-      logooverlay->priv->configured = TRUE;
-    }
+  const int width = GST_VIDEO_FRAME_WIDTH (frame);
+  const int height = GST_VIDEO_FRAME_HEIGHT (frame);
+  const void *data = GST_VIDEO_FRAME_PLANE_DATA (frame, 0);
+  const size_t step = GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0);
 
-  } else if ((logooverlay->priv->cv_image->width != frame->info.width)
-      || (logooverlay->priv->cv_image->height != frame->info.height)) {
+  logooverlay->priv->cv_image =
+      cv::Mat (cv::Size (width, height), CV_8UC3, (void *)data, step);
 
-    cvReleaseImage (&logooverlay->priv->cv_image);
-    logooverlay->priv->cv_image =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
-        IPL_DEPTH_8U, 3);
+  if (!logooverlay->priv->configured
+      && logooverlay->priv->image_layout != NULL) {
+    kms_logo_overlay_load_image_layout (logooverlay);
+    logooverlay->priv->configured = TRUE;
   }
 }
 
 static int
-delete_file (const char *fpath, const struct stat *sb, int typeflag,
+delete_file (const char *fpath,
+    const struct stat *sb,
+    int typeflag,
     struct FTW *ftwbuf)
 {
   int rv = g_remove (fpath);
@@ -499,70 +485,65 @@ delete_file (const char *fpath, const struct stat *sb, int typeflag,
 }
 
 static void
-remove_recursive (const gchar * path)
+remove_recursive (const gchar *path)
 {
   nftw (path, delete_file, 64, FTW_DEPTH | FTW_PHYS);
 }
 
 static GstFlowReturn
-kms_logo_overlay_transform_frame_ip (GstVideoFilter * filter,
-    GstVideoFrame * frame)
+kms_logo_overlay_transform_frame_ip (GstVideoFilter *filter,
+    GstVideoFrame *frame)
 {
   KmsLogoOverlay *logooverlay = KMS_LOGO_OVERLAY (filter);
-  GstMapInfo info;
   GSList *l;
   ImageStruct *structAux;
 
-  gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
-
   GST_OBJECT_LOCK (logooverlay);
+
   kms_logo_overlay_initialize_images (logooverlay, frame);
-  logooverlay->priv->cv_image->imageData = (char *) info.data;
 
   for (l = logooverlay->priv->image_layout_list; l != NULL; l = l->next) {
-    structAux = l->data;
+    structAux = (ImageStruct *)l->data;
 
     if ((structAux->widthPercent == 0) || (structAux->heightPercent == 0)) {
       continue;
     }
 
-    if (structAux->active_icon != NULL) {
-      int x_position = logooverlay->priv->cv_image->width *
-          (structAux->offsetXPercent);
-      int y_position = logooverlay->priv->cv_image->height *
-          (structAux->offsetYPercent);
+    if (!structAux->active_icon.empty ()) {
+      int x_position =
+          logooverlay->priv->cv_image.cols * (structAux->offsetXPercent);
+      int y_position =
+          logooverlay->priv->cv_image.rows * (structAux->offsetYPercent);
 
       if (structAux->center) {
-        int real_width = logooverlay->priv->cv_image->width *
-            (structAux->widthPercent);
-        int real_height = logooverlay->priv->cv_image->height *
-            (structAux->heightPercent);
+        int real_width =
+            logooverlay->priv->cv_image.cols * (structAux->widthPercent);
+        int real_height =
+            logooverlay->priv->cv_image.rows * (structAux->heightPercent);
 
-        if (real_width > structAux->active_icon->width) {
-          x_position = x_position +
-              ((real_width - structAux->active_icon->width) / 2);
+        if (real_width > structAux->active_icon.cols) {
+          x_position =
+              x_position + ((real_width - structAux->active_icon.cols) / 2);
         }
 
-        if (real_height > structAux->active_icon->height) {
-          y_position = y_position +
-              ((real_height - structAux->active_icon->height) / 2);
+        if (real_height > structAux->active_icon.rows) {
+          y_position =
+              y_position + ((real_height - structAux->active_icon.rows) / 2);
         }
       }
 
-      kms_logo_overlay_display_overlay_img (logooverlay,
-          x_position, y_position, structAux->active_icon);
+      kms_logo_overlay_display_overlay_img (logooverlay, x_position, y_position,
+          structAux->active_icon);
     }
   }
 
   GST_OBJECT_UNLOCK (logooverlay);
 
-  gst_buffer_unmap (frame->buffer, &info);
-
   return GST_FLOW_OK;
 }
 
 static void
-kms_logo_overlay_dispose (GObject * object)
+kms_logo_overlay_dispose (GObject *object)
 {
   /* clean up as possible.  may be called multiple times */
 
@@ -570,15 +551,15 @@ kms_logo_overlay_dispose (GObject * object)
 }
 
 static void
-kms_logo_overlay_finalize (GObject * object)
+kms_logo_overlay_finalize (GObject *object)
 {
   KmsLogoOverlay *logooverlay = KMS_LOGO_OVERLAY (object);
 
   remove_recursive (logooverlay->priv->dir);
   g_free (logooverlay->priv->dir);
 
-  if (logooverlay->priv->cv_image != NULL) {
-    cvReleaseImage (&logooverlay->priv->cv_image);
+  if (!logooverlay->priv->cv_image.empty ()) {
+    logooverlay->priv->cv_image.release ();
   }
 
   if (logooverlay->priv->image_layout_list != NULL) {
@@ -593,7 +574,7 @@ kms_logo_overlay_finalize (GObject * object)
 }
 
 static void
-kms_logo_overlay_init (KmsLogoOverlay * logooverlay)
+kms_logo_overlay_init (KmsLogoOverlay *logooverlay)
 {
   gchar d[] = TEMP_PATH;
   gchar *aux = g_mkdtemp (d);
@@ -602,14 +583,13 @@ kms_logo_overlay_init (KmsLogoOverlay * logooverlay)
 
   logooverlay->priv->dir = g_strdup (aux);
 
-  logooverlay->priv->cv_image = NULL;
   logooverlay->priv->image_layout = NULL;
   logooverlay->priv->image_layout_list = NULL;
   logooverlay->priv->configured = FALSE;
 }
 
 static void
-kms_logo_overlay_class_init (KmsLogoOverlayClass * klass)
+kms_logo_overlay_class_init (KmsLogoOverlayClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstVideoFilterClass *video_filter_class = GST_VIDEO_FILTER_CLASS (klass);
@@ -641,14 +621,14 @@ kms_logo_overlay_class_init (KmsLogoOverlayClass * klass)
   /* Properties initialization */
   g_object_class_install_property (gobject_class, PROP_IMAGES_TO_OVERLAY,
       g_param_spec_boxed ("images-to-overlay", "images to overlay",
-          "images to overlay in the video",
-          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          "images to overlay in the video", GST_TYPE_STRUCTURE,
+          (GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 
   g_type_class_add_private (klass, sizeof (KmsLogoOverlayPrivate));
 }
 
 gboolean
-kms_logo_overlay_plugin_init (GstPlugin * plugin)
+kms_logo_overlay_plugin_init (GstPlugin *plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
       KMS_TYPE_LOGO_OVERLAY);

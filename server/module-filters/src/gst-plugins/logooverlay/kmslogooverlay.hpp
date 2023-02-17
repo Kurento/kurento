@@ -18,39 +18,38 @@
 #ifndef _KMS_LOGO_OVERLAY_H_
 #define _KMS_LOGO_OVERLAY_H_
 
-#include "opencv2/core/version.hpp"
-#if CV_MAJOR_VERSION == 3
-#include <opencv2/core/fast_math.hpp>
-#endif
 #include <gst/video/gstvideofilter.h>
 
 G_BEGIN_DECLS
 
-#define KMS_TYPE_LOGO_OVERLAY   (kms_logo_overlay_get_type())
-#define KMS_LOGO_OVERLAY(obj)   (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_LOGO_OVERLAY,KmsLogoOverlay))
-#define KMS_LOGO_OVERLAY_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_LOGO_OVERLAY,KmsLogoOverlayClass))
-#define KMS_IS_LOGO_OVERLAY(obj)   (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_LOGO_OVERLAY))
-#define KMS_IS_LOGO_OVERLAY_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_LOGO_OVERLAY))
+#define KMS_TYPE_LOGO_OVERLAY (kms_logo_overlay_get_type ())
+#define KMS_LOGO_OVERLAY(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), KMS_TYPE_LOGO_OVERLAY, KmsLogoOverlay))
+#define KMS_LOGO_OVERLAY_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), KMS_TYPE_LOGO_OVERLAY, \
+      KmsLogoOverlayClass))
+#define KMS_IS_LOGO_OVERLAY(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), KMS_TYPE_LOGO_OVERLAY))
+#define KMS_IS_LOGO_OVERLAY_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), KMS_TYPE_LOGO_OVERLAY))
 
 typedef struct _KmsLogoOverlay KmsLogoOverlay;
 typedef struct _KmsLogoOverlayClass KmsLogoOverlayClass;
 typedef struct _KmsLogoOverlayPrivate KmsLogoOverlayPrivate;
 
-struct _KmsLogoOverlay
-{
+struct _KmsLogoOverlay {
   GstVideoFilter base;
   KmsLogoOverlayPrivate *priv;
 };
 
-struct _KmsLogoOverlayClass
-{
+struct _KmsLogoOverlayClass {
   GstVideoFilterClass base_facedetector_class;
 };
 
 GType kms_logo_overlay_get_type (void);
 
-gboolean kms_logo_overlay_plugin_init (GstPlugin * plugin);
+gboolean kms_logo_overlay_plugin_init (GstPlugin *plugin);
 
 G_END_DECLS
 
-#endif  /* _KMS_LOGO_OVERLAY_H_ */
+#endif /* _KMS_LOGO_OVERLAY_H_ */

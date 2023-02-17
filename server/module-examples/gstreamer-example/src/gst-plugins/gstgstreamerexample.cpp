@@ -38,15 +38,16 @@
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
 #include <glib/gstdio.h>
-#include <opencv2/core.hpp>    // cv::Mat
-#include <opencv2/imgproc.hpp> // cv::cvtColor
+
+#include <opencv2/core.hpp> // Mat
+#include <opencv2/imgproc.hpp> // cvtColor
 
 GST_DEBUG_CATEGORY_STATIC (gst_gstreamer_example_debug_category);
 #define GST_CAT_DEFAULT gst_gstreamer_example_debug_category
 #define PLUGIN_NAME "gstreamerexample"
 
-#define GST_GSTREAMER_EXAMPLE_GET_PRIVATE(obj)                                 \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GST_TYPE_GSTREAMER_EXAMPLE,             \
+#define GST_GSTREAMER_EXAMPLE_GET_PRIVATE(obj) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GST_TYPE_GSTREAMER_EXAMPLE, \
       GstGStreamerExamplePrivate))
 
 /* pad templates */
@@ -64,10 +65,10 @@ G_DEFINE_TYPE_WITH_CODE (GstGStreamerExample,
         0,
         "debug category for gstreamer_example element"));
 
-#define GSTREAMER_EXAMPLE_LOCK(self)                                           \
+#define GSTREAMER_EXAMPLE_LOCK(self) \
   (g_rec_mutex_lock (&((GstGStreamerExample *)self)->priv->mutex))
 
-#define GSTREAMER_EXAMPLE_UNLOCK(self)                                         \
+#define GSTREAMER_EXAMPLE_UNLOCK(self) \
   (g_rec_mutex_unlock (&((GstGStreamerExample *)self)->priv->mutex))
 
 #define DEFAULT_FILTER_TYPE GSTREAMER_EXAMPLE_TYPE_EDGES
@@ -76,7 +77,7 @@ G_DEFINE_TYPE_WITH_CODE (GstGStreamerExample,
 enum { PROP_0, PROP_FILTER_TYPE, PROP_EDGE_VALUE, N_PROPERTIES };
 
 struct _GstGStreamerExamplePrivate {
-  cv::Mat *cv_image;
+  cv::Mat cv_image;
   int edge_value;
   GStreamerExampleType filter_type;
   GRecMutex mutex;
@@ -121,7 +122,7 @@ gstreamer_example_get_property (GObject *object,
   GstGStreamerExample *self = GST_GSTREAMER_EXAMPLE (object);
 
   // Reading values of the properties is a critical region because read/write
-  // concurrently could produce race condition. For this reason, the following
+  // concurrently could produce a race condition. For this reason, the following
   // code is protected with a mutex.
   GSTREAMER_EXAMPLE_LOCK (self);
 
@@ -147,17 +148,17 @@ gstreamer_example_display_background (GstGStreamerExample *self, cv::Mat &mask)
 {
   int i, j;
   uchar *img_ptr, *mask_ptr;
-  int n_rows_img = self->priv->cv_image->rows;
-  int n_cols_img = self->priv->cv_image->cols;
+  int n_rows_img = self->priv->cv_image.rows;
+  int n_cols_img = self->priv->cv_image.cols;
 
   for (i = 0; i < n_rows_img; ++i) {
-    img_ptr = self->priv->cv_image->ptr<uchar> (i);
+    img_ptr = self->priv->cv_image.ptr<uchar> (i);
     mask_ptr = mask.ptr<uchar> (i);
 
     for (j = 0; j < n_cols_img; ++j) {
-      img_ptr[j * self->priv->cv_image->channels ()] = mask_ptr[j];
-      img_ptr[j * self->priv->cv_image->channels () + 1] = mask_ptr[j];
-      img_ptr[j * self->priv->cv_image->channels () + 2] = mask_ptr[j];
+      img_ptr[j * self->priv->cv_image.channels () + 0] = mask_ptr[j];
+      img_ptr[j * self->priv->cv_image.channels () + 1] = mask_ptr[j];
+      img_ptr[j * self->priv->cv_image.channels () + 2] = mask_ptr[j];
     }
   }
 
@@ -166,20 +167,15 @@ gstreamer_example_display_background (GstGStreamerExample *self, cv::Mat &mask)
 
 static void
 gstreamer_example_initialize_images (GstGStreamerExample *self,
-    GstVideoFrame *frame,
-    GstMapInfo &info)
+    GstVideoFrame *frame)
 {
-  if (self->priv->cv_image == NULL) {
-    self->priv->cv_image =
-        new cv::Mat (frame->info.height, frame->info.width, CV_8UC3, info.data);
-  } else if ((self->priv->cv_image->cols != frame->info.width)
-      || (self->priv->cv_image->rows != frame->info.height)) {
-    delete self->priv->cv_image;
-    self->priv->cv_image =
-        new cv::Mat (frame->info.height, frame->info.width, CV_8UC3, info.data);
-  } else {
-    self->priv->cv_image->data = info.data;
-  }
+  const int width = GST_VIDEO_FRAME_WIDTH (frame);
+  const int height = GST_VIDEO_FRAME_HEIGHT (frame);
+  const void *data = GST_VIDEO_FRAME_PLANE_DATA (frame, 0);
+  const size_t step = GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0);
+
+  self->priv->cv_image =
+      cv::Mat (cv::Size (width, height), CV_8UC3, (void *)data, step);
 }
 
 /**
@@ -190,16 +186,11 @@ gst_gstreamer_example_transform_frame_ip (GstVideoFilter *filter,
     GstVideoFrame *frame)
 {
   GstGStreamerExample *self = GST_GSTREAMER_EXAMPLE (filter);
-  GstMapInfo info;
   cv::Mat output_image;
   GStreamerExampleType filter_type;
   int edge_threshold;
 
-  gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
-
-  // The image size can change in runtime, for this reason it is neccessary
-  // to check if the dimensions have changed
-  gstreamer_example_initialize_images (self, frame, info);
+  gstreamer_example_initialize_images (self, frame);
 
   //Accessing property values has to be protected by a mutex
   GSTREAMER_EXAMPLE_LOCK (self);
@@ -210,11 +201,11 @@ gst_gstreamer_example_transform_frame_ip (GstVideoFilter *filter,
   if (filter_type == GSTREAMER_EXAMPLE_TYPE_EDGES) {
     GST_DEBUG ("Calculating edges");
     cv::Mat gray_image;
-    cvtColor ((*self->priv->cv_image), gray_image, cv::COLOR_BGR2GRAY);
+    cv::cvtColor (self->priv->cv_image, gray_image, cv::COLOR_BGR2GRAY);
     cv::Canny (gray_image, output_image, edge_threshold, 255);
   } else if (filter_type == GSTREAMER_EXAMPLE_TYPE_GREY) {
     GST_DEBUG ("Calculating black&white image");
-    cv::cvtColor ((*self->priv->cv_image), output_image, cv::COLOR_BGR2GRAY);
+    cv::cvtColor (self->priv->cv_image, output_image, cv::COLOR_BGR2GRAY);
   }
 
   if (output_image.data != NULL) {
@@ -223,7 +214,6 @@ gst_gstreamer_example_transform_frame_ip (GstVideoFilter *filter,
     gstreamer_example_display_background (self, output_image);
   }
 
-  gst_buffer_unmap (frame->buffer, &info);
   return GST_FLOW_OK;
 }
 
@@ -249,8 +239,8 @@ gst_gstreamer_example_finalize (GObject *object)
 {
   GstGStreamerExample *self = GST_GSTREAMER_EXAMPLE (object);
 
-  if (self->priv->cv_image != NULL) {
-    delete self->priv->cv_image;
+  if (!self->priv->cv_image.empty ()) {
+    self->priv->cv_image.release ();
   }
 
   g_rec_mutex_clear (&self->priv->mutex);

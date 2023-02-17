@@ -264,6 +264,7 @@ faceoverlay_suite (void)
   // we need to extend the timeout
   tcase_set_timeout (tc_chain, 10.0);
   suite_add_tcase (s, tc_chain);
+
   tcase_add_test (tc_chain, set_properties);
   tcase_add_test (tc_chain, player_with_filter);
 

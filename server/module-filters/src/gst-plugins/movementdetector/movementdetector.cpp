@@ -14,30 +14,26 @@
  * limitations under the License.
  *
  */
+#include <config.h>
+#include <gst/gst.h>
 
-#ifndef __CLASSIFIER_H__
-#define __CLASSIFIER_H__
+#include "kmsmovementdetector.hpp"
 
-#include <glib.h>
+static gboolean
+init (GstPlugin *plugin)
+{
+  if (!kms_movement_detector_plugin_init (plugin))
+    return FALSE;
 
-#include <opencv/cv.h>
+  return TRUE;
+}
 
-G_BEGIN_DECLS
-
-typedef struct _Classifier Classifier;
-
-
-// Changed classify_image and added some lifecycle managing objects
-// to be able to handle Haar Classifier in non "C" API, as it is outdated
-
-void classify_image (Classifier* classifier, IplImage* img, CvSeq* facesList);
-
-Classifier* init_classifier (char* classifier_file);
-
-bool is_inited (Classifier* classifier);
-
-void delete_classifier (Classifier* clasifier);
-
-G_END_DECLS
-
-#endif /* __CLASSIFIER_H__ */
+GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
+    GST_VERSION_MINOR,
+    movementdetector,
+    "Kurento movement filter",
+    init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
+    "Kurento",
+    "https://kurento.openvidu.io/")

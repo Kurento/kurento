@@ -21,26 +21,30 @@
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
 
-#include "opencv2/core/version.hpp"
-#if CV_MAJOR_VERSION == 3
-#include <opencv2/core/fast_math.hpp>
-#endif
-#include <opencv/cv.h>
+#include <opencv2/core.hpp> // Mat
+
 #include <stdio.h>
 
 G_BEGIN_DECLS
-#define KMS_TYPE_MOVEMENT_DETECTOR   (kms_movement_detector_get_type())
-#define KMS_MOVEMENT_DETECTOR(obj)   (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_MOVEMENT_DETECTOR,KmsMovementDetector))
-#define KMS_MOVEMENT_DETECTOR_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_MOVEMENT_DETECTOR,KmsMovementDetectorClass))
-#define KMS_IS_MOVEMENT_DETECTOR(obj)   (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_MOVEMENT_DETECTOR))
-#define KMS_IS_MOVEMENT_DETECTOR_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_MOVEMENT_DETECTOR))
+
+#define KMS_TYPE_MOVEMENT_DETECTOR (kms_movement_detector_get_type ())
+#define KMS_MOVEMENT_DETECTOR(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), KMS_TYPE_MOVEMENT_DETECTOR, \
+      KmsMovementDetector))
+#define KMS_MOVEMENT_DETECTOR_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), KMS_TYPE_MOVEMENT_DETECTOR, \
+      KmsMovementDetectorClass))
+#define KMS_IS_MOVEMENT_DETECTOR(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), KMS_TYPE_MOVEMENT_DETECTOR))
+#define KMS_IS_MOVEMENT_DETECTOR_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), KMS_TYPE_MOVEMENT_DETECTOR))
 typedef struct _KmsMovementDetector KmsMovementDetector;
 typedef struct _KmsMovementDetectorClass KmsMovementDetectorClass;
 
 struct _KmsMovementDetector {
   GstVideoFilter parent;
-  IplImage* img;
-  IplImage* imgOldBW;
+  cv::Mat img;
+  cv::Mat imgOldBW;
 };
 
 struct _KmsMovementDetectorClass {
@@ -49,7 +53,7 @@ struct _KmsMovementDetectorClass {
 
 GType kms_movement_detector_get_type (void);
 
-gboolean kms_movement_detector_plugin_init (GstPlugin * plugin);
+gboolean kms_movement_detector_plugin_init (GstPlugin *plugin);
 
 G_END_DECLS
 #endif

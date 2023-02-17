@@ -14,22 +14,33 @@
  * limitations under the License.
  *
  */
-#include <config.h>
-#include <gst/gst.h>
 
-#include "kmsimageoverlay.h"
+#ifndef __CLASSIFIER_H__
+#define __CLASSIFIER_H__
 
-static gboolean
-init (GstPlugin * plugin)
+#include <glib.h>
+#include <opencv2/core/types.hpp>
+#include <vector>
+
+namespace cv
 {
-  if (!kms_image_overlay_plugin_init (plugin))
-    return FALSE;
-
-  return TRUE;
+class Mat;
 }
 
-GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
-    GST_VERSION_MINOR,
-    kmsimageoverlay,
-    "Kurento imageoverlay filter",
-    init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "https://kurento.openvidu.io/")
+G_BEGIN_DECLS
+
+typedef struct _Classifier Classifier;
+
+void classify_image (Classifier *self,
+    const cv::Mat &img,
+    std::vector<cv::Rect> &faces);
+
+Classifier *init_classifier (const gchar *file);
+
+bool is_init (Classifier *self);
+
+void delete_classifier (Classifier *self);
+
+G_END_DECLS
+
+#endif /* __CLASSIFIER_H__ */

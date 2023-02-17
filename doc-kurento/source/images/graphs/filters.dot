@@ -7,8 +7,6 @@ digraph filters {
   edge [
     arrowtail = "empty";
     dir = "back";
-    fontname = "Bitstream Vera Sans";
-    fontsize = 8;
   ]
 
   node [
@@ -19,15 +17,18 @@ digraph filters {
     style = "dashed";
   ]
 
-  "MediaObject" -> "MediaElement";
-
-  "MediaElement" -> "Filter";
+  "MediaObject" -> "MediaElement" -> "Filter";
+  "GstZBar"
 
   node [ style = "filled" ]
 
-  "Filter" -> "FaceOverlayFilter";
+  "Filter" -> "FaceDetector" -> "FaceOverlay";
+  "Filter" -> "ImageOverlay" -> "FaceOverlay";
+  "Filter" -> "LogoOverlay";
+  "Filter" -> "MovementDetector";
   "Filter" -> "GStreamerFilter";
-  "Filter" -> "ImageOverlayFilter";
   "Filter" -> "OpenCVFilter";
+
   "Filter" -> "ZBarFilter";
+  "GstZBar" -> "ZBarFilter";
 }

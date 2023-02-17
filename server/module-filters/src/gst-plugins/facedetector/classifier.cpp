@@ -17,84 +17,76 @@
 
 #include <string>
 
-#include "classifier.h"
+#include "classifier.hpp"
 
-#include <opencv2/objdetect/objdetect.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core.hpp> // Mat
+#include <opencv2/imgproc.hpp> // cvtColor
+#include <opencv2/objdetect.hpp> // CascadeClassifier
 
-using namespace cv;
 class _Classifier
 {
 public:
   _Classifier (const std::string &filename);
-  ~_Classifier() = default;
+  ~_Classifier () = default;
 
   bool is_loaded ();
 
-  CascadeClassifier face_cascade;
+  cv::CascadeClassifier face_cascade;
   std::string filename;
 };
 
-
-_Classifier::_Classifier(const std::string &filename)
+_Classifier::_Classifier (const std::string &filename)
 {
-  if (face_cascade.load ( filename )) {
-	  this->filename = filename;
+  if (face_cascade.load (filename)) {
+    this->filename = filename;
   }
 }
 
-bool _Classifier::is_loaded ()
+bool
+_Classifier::is_loaded ()
 {
-	return !face_cascade.empty();
+  return !face_cascade.empty ();
 }
 
-void classify_image (Classifier* classifier, IplImage *img, CvSeq *facesList)
+void
+classify_image (Classifier *self,
+    const cv::Mat &img,
+    std::vector<cv::Rect> &faces)
 {
-  std::vector<Rect> faces;
-  Mat frame (cv::cvarrToMat(img));
-  Mat frame_gray;
+  cv::Mat img_gray;
 
-  cvtColor ( frame, frame_gray, COLOR_BGR2GRAY );
-  equalizeHist ( frame_gray, frame_gray );
+  cv::cvtColor (img, img_gray, cv::COLOR_BGR2GRAY);
 
-  classifier->face_cascade.detectMultiScale ( frame_gray, faces, 1.2, 3, 0,
-      Size (frame.cols / 20, frame.rows / 20),
-      Size (frame.cols / 2, frame.rows / 2) );
+  cv::equalizeHist (img_gray, img_gray);
 
-  for (auto &face : faces) {
-    CvRect aux = cvRect(face.x, face.y, face.width, face.height);
-    cvSeqPush (facesList, &aux);
+  self->face_cascade.detectMultiScale (img_gray, faces, 1.2, 3, 0,
+      cv::Size (img.cols / 20, img.rows / 20),
+      cv::Size (img.cols / 2, img.rows / 2));
+}
+
+Classifier *
+init_classifier (const gchar *file)
+{
+  Classifier *self = new Classifier (file);
+
+  if (self != NULL) {
+    if (self->is_loaded ())
+      return self;
+    else
+      delete self;
   }
 
-  faces.clear();
+  return NULL;
 }
 
-
-Classifier* init_classifier (char* classifier_file)
+bool
+is_init (Classifier *self)
 {
-	Classifier *pClassifier = new Classifier (classifier_file);
-
-	if (pClassifier != NULL) {
-		if (pClassifier->is_loaded())
-			return pClassifier;
-		else
-			delete pClassifier;
-
-	}
-
-	return NULL;
+  return self->is_loaded ();
 }
 
-bool is_inited (Classifier* classifier)
+void
+delete_classifier (Classifier *self)
 {
-	if (classifier->is_loaded())
-		return true;
-	return false;
+  delete self;
 }
-
-
-void delete_classifier (Classifier* classifier)
-{
-	delete classifier;
-}
-

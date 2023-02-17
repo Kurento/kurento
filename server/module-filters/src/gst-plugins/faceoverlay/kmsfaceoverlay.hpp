@@ -22,35 +22,38 @@
 
 G_BEGIN_DECLS
 
-#define KMS_TYPE_FACE_OVERLAY   (kms_face_overlay_get_type())
-#define KMS_FACE_OVERLAY(obj)   (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_FACE_OVERLAY,KmsFaceOverlay))
-#define KMS_FACE_OVERLAY_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_FACE_OVERLAY,KmsFaceOverlayClass))
-#define KMS_IS_FACE_OVERLAY(obj)   (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_FACE_OVERLAY))
-#define KMS_IS_FACE_OVERLAY_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_FACE_OVERLAY))
+#define KMS_TYPE_FACE_OVERLAY (kms_face_overlay_get_type ())
+#define KMS_FACE_OVERLAY(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), KMS_TYPE_FACE_OVERLAY, KmsFaceOverlay))
+#define KMS_FACE_OVERLAY_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), KMS_TYPE_FACE_OVERLAY, \
+      KmsFaceOverlayClass))
+#define KMS_IS_FACE_OVERLAY(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), KMS_TYPE_FACE_OVERLAY))
+#define KMS_IS_FACE_OVERLAY_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), KMS_TYPE_FACE_OVERLAY))
 
 typedef struct _KmsFaceOverlay KmsFaceOverlay;
 typedef struct _KmsFaceOverlayClass KmsFaceOverlayClass;
 typedef struct _KmsFaceOverlayPrivate KmsFaceOverlayPrivate;
 
-struct _KmsFaceOverlay
-{
+struct _KmsFaceOverlay {
   GstBin parent;
 
-   /*< private > */
+  /*< private > */
   KmsFaceOverlayPrivate *priv;
 
   gboolean show_debug_info;
 };
 
-struct _KmsFaceOverlayClass
-{
+struct _KmsFaceOverlayClass {
   GstBinClass base_faceoverlay_class;
 };
 
 GType kms_face_overlay_get_type (void);
 
-gboolean kms_face_overlay_plugin_init (GstPlugin * plugin);
+gboolean kms_face_overlay_plugin_init (GstPlugin *plugin);
 
 G_END_DECLS
 
-#endif  /* _KMS_FACE_OVERLAY_H_ */
+#endif /* _KMS_FACE_OVERLAY_H_ */
