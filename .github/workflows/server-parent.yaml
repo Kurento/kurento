@@ -170,7 +170,7 @@ jobs:
       directory: "server/module-examples/datachannelexample/"
 
   deploy-deb:
-    needs: ["media-server", "module-chroma"]
+    needs: ["media-server", "module-chroma", "module-datachannelexample"]
     uses: "./.github/workflows/server-deploy-debian.reusable.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
