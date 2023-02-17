@@ -138,7 +138,7 @@ This tutorial detects and draws faces present in the webcam video. It connects f
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-metadata>
+   Java </tutorials/java/tutorial-facedetector>
 
 
 

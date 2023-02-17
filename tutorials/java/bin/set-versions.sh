@@ -161,7 +161,7 @@ CHILDREN=(
     hello-world
     hello-world-recording
     magic-mirror
-    metadata-example
+    facedetector
     one2many-call
     one2one-call
     one2one-call-advanced

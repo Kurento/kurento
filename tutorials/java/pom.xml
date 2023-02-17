@@ -32,7 +32,7 @@
 		<module>hello-world</module>
 		<module>hello-world-recording</module>
 		<module>magic-mirror</module>
-		<module>metadata-example</module>
+		<module>facedetector</module>
 		<module>one2many-call</module>
 		<module>one2one-call</module>
 		<module>one2one-call-advanced</module>
