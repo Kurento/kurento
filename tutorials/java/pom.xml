@@ -41,7 +41,7 @@
 		<module>player</module>
 		<module>pointerdetector</module>
 		<module>rtp-receiver</module>
-		<module>send-data-channel</module>
+		<module>datachannel-send-qr</module>
 		<module>show-data-channel</module>
 	</modules>
 

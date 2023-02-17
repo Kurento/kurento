@@ -1,5 +1,5 @@
-kurento-send-data-channel
-=========================
+kurento-datachannel-send-qr
+===========================
 
 Kurento Java Tutorial: Player connected to a filter and a WebRTC to send data
 about QR codes through data channel.
@@ -15,5 +15,4 @@ install this module with command `sudo apt-get install kurento-module-datachanne
 Running this tutorial
 ---------------------
 
-In order to run this tutorial, please read the following [instructions](https://kurento.openvidu.io/docs/current/tutorials/java/tutorial-send-datachannel.html)
-
+In order to run this tutorial, please read the following [instructions](https://kurento.openvidu.io/docs/current/tutorials/java/tutorial-datachannel-send-qr.html)

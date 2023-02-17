@@ -170,7 +170,7 @@ CHILDREN=(
     player
     pointerdetector
     rtp-receiver
-    send-data-channel
+    datachannel-send-qr
     show-data-channel
 )
 for CHILD in "${CHILDREN[@]}"; do

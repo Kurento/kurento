@@ -162,7 +162,7 @@ This tutorial injects video into a QR filter and then sends the stream to WebRTC
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-send-datachannel>
+   Java </tutorials/java/tutorial-datachannel-send-qr>
 
 
 
