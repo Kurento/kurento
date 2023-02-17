@@ -171,7 +171,7 @@ CHILDREN=(
     pointerdetector
     rtp-receiver
     datachannel-send-qr
-    show-data-channel
+    datachannel-show-text
 )
 for CHILD in "${CHILDREN[@]}"; do
     find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \

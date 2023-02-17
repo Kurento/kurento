@@ -1,5 +1,5 @@
-kurento-show-data-channel
-=========================
+kurento-datachannel-show-text
+=============================
 
 Kurento Java Tutorial: WebRTC in loopback with filter to show data received
 through data channel.
@@ -14,5 +14,4 @@ install this module with command `sudo apt-get install kurento-module-datachanne
 Running this tutorial
 ---------------------
 
-In order to run this tutorial, please read the following [instructions](https://kurento.openvidu.io/docs/current/tutorials/java/tutorial-show-datachannel.html)
-
+In order to run this tutorial, please read the following [instructions](https://kurento.openvidu.io/docs/current/tutorials/java/tutorial-datachannel-show-text.html)

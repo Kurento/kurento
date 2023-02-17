@@ -174,7 +174,7 @@ This tutorial shows how text messages sent from browser can be delivered by Data
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-show-datachannel>
+   Java </tutorials/java/tutorial-datachannel-show-text>
    Browser JavaScript </tutorials/js/tutorial-helloworld-datachannels>
 
 

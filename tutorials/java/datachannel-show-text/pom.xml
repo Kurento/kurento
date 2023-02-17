@@ -8,7 +8,7 @@
 		<artifactId>kurento-tutorial</artifactId>
 		<version>7.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>kurento-show-data-channel</artifactId>
+	<artifactId>kurento-datachannel-show-text</artifactId>
 	<packaging>jar</packaging>
 
 	<!-- Project-level information -->

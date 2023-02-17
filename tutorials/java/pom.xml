@@ -42,7 +42,7 @@
 		<module>pointerdetector</module>
 		<module>rtp-receiver</module>
 		<module>datachannel-send-qr</module>
-		<module>show-data-channel</module>
+		<module>datachannel-show-text</module>
 	</modules>
 
 	<build>
