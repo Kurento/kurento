@@ -12,10 +12,12 @@ plugin_init (GstPlugin *plugin)
   return gst_{{nameSnakeCase}}_plugin_init (plugin);
 }
 
-GST_PLUGIN_DEFINE (GST_VERSION_MAJOR, GST_VERSION_MINOR,
+GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
+    GST_VERSION_MINOR,
     {{nameLowercase}},
     "Filter documentation",
-    plugin_init, VERSION, GST_LICENSE_UNKNOWN,
+    plugin_init,
+    VERSION,
+    GST_LICENSE_UNKNOWN,
     PACKAGE,
-    "https://www.example.com/"
-)
+    "https://www.example.com/")
