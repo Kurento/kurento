@@ -189,7 +189,7 @@ echo "CFG_RELEASE=$CFG_RELEASE"
 # Step 1: Create repo
 # ===================
 
-if ! aptly repo list -raw | grep --quiet "^${CFG_REPO_NAME}$"; then
+if ! aptly repo list -raw | grep --quiet --line-regexp "${CFG_REPO_NAME}"; then
     echo "Create new repo: $CFG_REPO_NAME"
     aptly repo create -distribution="$CFG_DISTRO_NAME" -component=main "$CFG_REPO_NAME"
 fi
@@ -219,7 +219,7 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
     aptly publish snapshot -gpg-key="$GPGKEY" "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
-    if aptly publish list -raw | grep --quiet "^$PUBLISH_ENDPOINT $CFG_DISTRO_NAME$"; then
+    if aptly publish list -raw | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
         echo "Update already published development repo: $CFG_REPO_NAME"
         aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
     else
