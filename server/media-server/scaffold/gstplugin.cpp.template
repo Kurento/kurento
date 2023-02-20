@@ -1,16 +1,17 @@
-#include "gst{{nameLowercase}}.h"
+#include "{{prefixLowerCase}}{{nameLowercase}}.h"
 
 #include <gst/gst.h>
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
 
-#define PLUGIN_NAME "{{nameLowercase}}"
-#define GST_CAT_DEFAULT gst_{{nameSnakeCase}}_debug
+#define PLUGIN_NAME "{{prefixLowerCase}}{{nameLowercase}}"
+#define GST_CAT_DEFAULT {{prefixLowerCase}}_{{nameSnakeCase}}_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
-#define GST_{{nameSnakeUpperCase}}_GET_PRIVATE(obj) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GST_TYPE_{{nameSnakeUpperCase}}, \
-      Gst{{nameCamelCase}}Private))
+#define {{prefixUpperCase}}_{{nameSnakeUpperCase}}_GET_PRIVATE(obj) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
+      {{prefixUpperCase}}_TYPE_{{nameSnakeUpperCase}}, \
+      {{prefixCamelCase}}{{nameCamelCase}}Private))
 
 /* pad templates */
 
@@ -19,19 +20,20 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (Gst{{nameCamelCase}},
-    gst_{{nameSnakeCase}},
+G_DEFINE_TYPE_WITH_CODE ({{prefixCamelCase}}{{nameCamelCase}},
+    {{prefixLowerCase}}_{{nameSnakeCase}},
     GST_TYPE_VIDEO_FILTER,
     GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT,
         PLUGIN_NAME,
         0,
-        "GStreamer debug category for the '" PLUGIN_NAME "' element"));
+        PLUGIN_NAME " debug category"));
 
 static GstFlowReturn
-gst_{{nameSnakeCase}}_transform_frame_ip (GstVideoFilter *filter,
+{{prefixLowerCase}}_{{nameSnakeCase}}_transform_frame_ip (
+    GstVideoFilter *filter,
     GstVideoFrame *frame)
 {
-  Gst{{nameCamelCase}} *self = GST_{{nameSnakeUpperCase}} (filter);
+  {{prefixCamelCase}}{{nameCamelCase}} *self = {{prefixUpperCase}}_{{nameSnakeUpperCase}} (filter);
   (void)self; // TO-DO: Do something with it...
   return GST_FLOW_OK;
 }
@@ -46,9 +48,9 @@ gst_{{nameSnakeCase}}_transform_frame_ip (GstVideoFilter *filter,
  * NULL; g_clear_object() can be used to do this atomically.
  */
 static void
-gst_{{nameSnakeCase}}_dispose (GObject *object)
+{{prefixLowerCase}}_{{nameSnakeCase}}_dispose (GObject *object)
 {
-  Gst{{nameCamelCase}} *self = GST_{{nameSnakeUpperCase}} (object);
+  {{prefixCamelCase}}{{nameCamelCase}} *self = {{prefixUpperCase}}_{{nameSnakeUpperCase}} (object);
   (void)self; // TO-DO: Do something with it...
 }
 
@@ -56,9 +58,9 @@ gst_{{nameSnakeCase}}_dispose (GObject *object)
  * finalize() is called when the object is destroyed.
  */
 static void
-gst_{{nameSnakeCase}}_finalize (GObject *object)
+{{prefixLowerCase}}_{{nameSnakeCase}}_finalize (GObject *object)
 {
-  Gst{{nameCamelCase}} *self = GST_{{nameSnakeUpperCase}} (object);
+  {{prefixCamelCase}}{{nameCamelCase}} *self = {{prefixUpperCase}}_{{nameSnakeUpperCase}} (object);
   (void)self; // TO-DO: Do something with it...
 }
 
@@ -66,13 +68,13 @@ gst_{{nameSnakeCase}}_finalize (GObject *object)
  * init() should be used to initialize all variables to their default values.
  */
 static void
-gst_{{nameSnakeCase}}_init (Gst{{nameCamelCase}} *self)
+{{prefixLowerCase}}_{{nameSnakeCase}}_init ({{prefixCamelCase}}{{nameCamelCase}} *self)
 {
   (void)self; // TO-DO: Do something with it...
 }
 
 static void
-gst_{{nameSnakeCase}}_class_init (Gst{{nameCamelCase}}Class *klass)
+{{prefixLowerCase}}_{{nameSnakeCase}}_class_init ({{prefixCamelCase}}{{nameCamelCase}}Class *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstVideoFilterClass *video_filter_class = GST_VIDEO_FILTER_CLASS (klass);
@@ -85,18 +87,21 @@ gst_{{nameSnakeCase}}_class_init (Gst{{nameCamelCase}}Class *klass)
           gst_caps_from_string (VIDEO_SINK_CAPS)));
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-      "element definition", "Video/Filter", "Filter doc", "Developer");
+      PLUGIN_NAME " element definition",
+      "Video/Filter",
+      "Element description",
+      "{{gstreamerAuthor}}");
 
-  gobject_class->dispose = gst_{{nameSnakeCase}}_dispose;
-  gobject_class->finalize = gst_{{nameSnakeCase}}_finalize;
+  gobject_class->dispose = {{prefixLowerCase}}_{{nameSnakeCase}}_dispose;
+  gobject_class->finalize = {{prefixLowerCase}}_{{nameSnakeCase}}_finalize;
 
-  video_filter_class->transform_frame_ip =
-      GST_DEBUG_FUNCPTR (gst_{{nameSnakeCase}}_transform_frame_ip);
+  video_filter_class->transform_frame_ip = GST_DEBUG_FUNCPTR (
+      {{prefixLowerCase}}_{{nameSnakeCase}}_transform_frame_ip);
 }
 
 gboolean
-gst_{{nameSnakeCase}}_plugin_init (GstPlugin *plugin)
+{{prefixLowerCase}}_{{nameSnakeCase}}_plugin_init (GstPlugin *plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      GST_TYPE_{{nameSnakeUpperCase}});
+      {{prefixUpperCase}}_TYPE_{{nameSnakeUpperCase}});
 }

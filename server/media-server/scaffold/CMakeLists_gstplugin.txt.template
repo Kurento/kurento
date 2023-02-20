@@ -1,28 +1,28 @@
 set({{nameSnakeUpperCase}}_SOURCES
   {{nameLowercase}}.c
-  gst{{nameLowercase}}.h
-  gst{{nameLowercase}}.cpp
+  {{prefixLowerCase}}{{nameLowercase}}.h
+  {{prefixLowerCase}}{{nameLowercase}}.cpp
 )
 
-add_library(gst{{nameLowercase}} MODULE ${{{nameSnakeUpperCase}}_SOURCES})
+add_library({{prefixLowerCase}}{{nameLowercase}} MODULE ${{{nameSnakeUpperCase}}_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(gst{{nameLowercase}})
+  add_sanitizers({{prefixLowerCase}}{{nameLowercase}})
 endif()
 
-target_include_directories(gst{{nameLowercase}} SYSTEM
+target_include_directories({{prefixLowerCase}}{{nameLowercase}} SYSTEM
   PRIVATE
     ${GSTREAMER_INCLUDE_DIRS}
     ${GSTREAMER_VIDEO_INCLUDE_DIRS}
 )
 
-target_link_libraries(gst{{nameLowercase}}
+target_link_libraries({{prefixLowerCase}}{{nameLowercase}}
   PRIVATE
     ${GSTREAMER_LIBRARIES}
     ${GSTREAMER_VIDEO_LIBRARIES}
 )
 
 install(
-  TARGETS gst{{nameLowercase}}
+  TARGETS {{prefixLowerCase}}{{nameLowercase}}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

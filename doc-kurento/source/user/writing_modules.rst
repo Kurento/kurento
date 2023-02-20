@@ -26,7 +26,11 @@ Now use the scaffold tool to generate code for your new module:
 
 .. code-block:: shell
 
-   kurento-module-scaffold <CamelCaseName> <snake_case_name> [IsOpenCV? true|false]
+   kurento-module-scaffold <Prefix> <CamelCaseName> <snake_case_name> [IsOpenCV? true|false]
+
+``<Prefix>`` should be an *UpperCamelCase* word that serves as an application- or library-specific namespace prefix in order to avoid name conflicts in case a similar plugin with the same name ever gets added to GStreamer. If an empty string ("") is given, then ``Gst`` will be used by default.
+
+``<CamelCaseName>`` and ``<snake_case_name>`` are the name of the new module, in *UpperCamelCase* (also known as *PascalCase*) and *snake_case*, respectively.
 
 For example:
 
@@ -34,13 +38,13 @@ For example:
 
   .. code-block:: shell
 
-     kurento-module-scaffold MyOpenCVModule my-opencv-module true
+     kurento-module-scaffold App OpenCVModule opencv-module true
 
 * For a GStreamer module:
 
   .. code-block:: shell
 
-     kurento-module-scaffold MyGstModule my-gst-module false
+     kurento-module-scaffold App VideoModule video-module false
 
 The scaffolding tool generates a complete folder tree, with all the needed *CMakeLists.txt* files to build with CMake. You'll also find empty Kurento Module Descriptor files (``*.kmd.json``), which must contain a complete description of the module: constructor, methods, properties, events, and the complex types defined by the developer.
 
@@ -57,19 +61,19 @@ If working with a GStreamer module, now you can verify that the new module can b
 .. code-block:: shell
 
    # To check if the plugin is found and loaded:
-   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" | grep -i {modulename}
+   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" | grep -i appvideomodule
 
    # To inspect all metadata exported by the plugin:
-   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" {modulename}
+   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" appvideomodule
 
    # To test the plugin directly with some video input
    # (this is just a sample for raw video; adapt as necessary!)
    gst-launch-1.0 --gst-plugin-path="$PWD/src/gst-plugins" \
        uridecodebin uri='file:///path/to/video.mp4' ! videoconvert \
-       ! {modulename} \
+       ! appvideomodule \
        ! videoconvert ! autovideosink
 
-Note that ``{modulename}`` is the name of your module in all lowercase.
+Note that in this example ``appvideomodule`` is the GStreamer name of your module.
 
 The following sections detail how to create your module, depending on the filter type you chose (OpenCV or GStreamer).
 
@@ -82,14 +86,14 @@ There are several files in ``src/server/implementation/objects/``:
 
 .. code-block:: text
 
-   {ModuleName}Impl.cpp
-   {ModuleName}Impl.hpp
-   {ModuleName}OpenCVImpl.cpp
-   {ModuleName}OpenCVImpl.hpp
+   {Name}Impl.cpp
+   {Name}Impl.hpp
+   {Name}OpenCVImpl.cpp
+   {Name}OpenCVImpl.hpp
 
 The first two files contain the server-side implementation of the JSON-RPC API, and normally you won't need to modify them. The last two files will contain the logic of your module.
 
-The file ``{ModuleName}OpenCVImpl.cpp`` contains functions to deal with the methods and the parameters (you must implement the logic). Also, this file contains a class method called **process**. This function will be called with each new frame, so you must implement the logic of your filter in there.
+The file ``{Name}OpenCVImpl.cpp`` contains functions to deal with the methods and the parameters (you must implement the logic). Also, this file contains a class method called **process**. This function will be called with each new frame, so you must implement the logic of your filter in there.
 
 
 
@@ -102,18 +106,18 @@ In this case, these are the files that you'll find under ``src/``:
 
   .. code-block:: text
 
-     gst{modulename}.cpp
-     gst{modulename}.h
-     {modulename}.c
+     {prefix}{name}.cpp
+     {prefix}{name}.h
+     {name}.c
 
 * ``src/server/implementation/objects/`` contains the server-side implementation of the JSON-RPC API:
 
   .. code-block:: text
 
-     {ModuleName}Impl.cpp
-     {ModuleName}Impl.hpp
+     {Name}Impl.cpp
+     {Name}Impl.hpp
 
-In the file ``{ModuleName}Impl.cpp`` you have to invoke the methods of your GStreamer element. The actual module logic should be implemented in the GStreamer Element.
+In the file ``{Name}Impl.cpp`` you have to invoke the methods of your GStreamer element. The actual module logic should be implemented in the GStreamer Element.
 
 
 
@@ -202,8 +206,8 @@ The Debian builder tool ends up generating one or more *.deb* package files **in
 .. code-block:: shell-session
 
    $ ls -1 ../*.*deb
-   ../my-gst-module-dev_0.0.1~rc1_amd64.deb
-   ../my-gst-module_0.0.1~rc1_amd64.deb
+   ../videomodule-dev_0.0.1~rc1_amd64.deb
+   ../videomodule_0.0.1~rc1_amd64.deb
 
 Depending on the contents of the module project, the Debian package builder can generate multiple *.deb* files:
 
@@ -216,7 +220,7 @@ Now copy and install the package(s) into any Debian or Ubuntu based system where
 
 .. code-block:: shell
 
-   sudo dpkg -i my-gst-module_0.0.1~rc1_amd64.deb
+   sudo dpkg -i videomodule_0.0.1~rc1_amd64.deb
 
 For more information about the process of creating Debian packages, check these resources:
 
@@ -243,13 +247,13 @@ When ready, you should **verify the module installation**. Run Kurento twice, wi
        'core' version 7.0.0
        'elements' version 7.0.0
        'filters' version 7.0.0
-       'mygstmodule' version 0.0.1~0.gd61e201
+       'appvideomodule' version 0.0.1~0.gd61e201
 
    $ /usr/bin/kurento-media-server --list
    Available factories:
        [...]
-       MyGstModule
-       mygstmodule.MyGstModule
+       AppVideoModule
+       appvideomodule.AppVideoModule
 
 
 
@@ -265,38 +269,38 @@ A ``Dockerfile`` such as this one would be a good enough starting point:
 .. code-block:: docker
 
    FROM kurento/kurento-media-server:|VERSION_KMS|
-   COPY my-gst-module_0.0.1~rc1_amd64.deb /
-   RUN dpkg -i /my-gst-module_0.0.1~rc1_amd64.deb
+   COPY video-module_0.0.1~rc1_amd64.deb /
+   RUN dpkg -i /video-module_0.0.1~rc1_amd64.deb
 
 Now build the new image:
 
 .. code-block:: shell-session
 
-   $ docker build --tag kurento-with-my-gst-module:|VERSION_KMS| .
+   $ docker build --tag kurento-with-video-module:|VERSION_KMS| .
    Step 1/3 : FROM kurento/kurento-media-server:|VERSION_KMS|
-   Step 2/3 : COPY my-gst-module_0.0.1~rc1_amd64.deb /
-   Step 3/3 : RUN dpkg -i /my-gst-module_0.0.1~rc1_amd64.deb
+   Step 2/3 : COPY video-module_0.0.1~rc1_amd64.deb /
+   Step 3/3 : RUN dpkg -i /video-module_0.0.1~rc1_amd64.deb
    Successfully built d10d3b4a8202
-   Successfully tagged kurento-with-my-gst-module:|VERSION_KMS|
+   Successfully tagged kurento-with-video-module:|VERSION_KMS|
 
 And verify your module is correctly loaded by Kurento:
 
 .. code-block:: shell-session
    :emphasize-lines: 7,12,13
 
-   $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --version
+   $ docker run --rm kurento-with-video-module:|VERSION_KMS| --version
    Kurento Media Server version: 7.0.0
    Found modules:
        'core' version 7.0.0
        'elements' version 7.0.0
        'filters' version 7.0.0
-       'mygstmodule' version 0.0.1~0.gd61e201
+       'appvideomodule' version 0.0.1~0.gd61e201
 
-   $ docker run --rm kurento-with-my-gst-module:|VERSION_KMS| --list
+   $ docker run --rm kurento-with-video-module:|VERSION_KMS| --list
    Available factories:
        [...]
-       MyGstModule
-       mygstmodule.MyGstModule
+       AppVideoModule
+       appvideomodule.AppVideoModule
 
 
 
@@ -324,14 +328,12 @@ Finally, to actually use the module in your Maven project, you have to add the d
        <dependencies>
            <dependency>
                <groupId>org.kurento.module</groupId>
-               <artifactId>{modulename}</artifactId>
+               <artifactId>{name}</artifactId>
                <version>0.0.1-SNAPSHOT</version>
            </dependency>
        </dependencies>
        ...
    </project>
-
-Note that ``{modulename}`` is the name of your module in all lowercase.
 
 Then you will be able to instantiate and use the new module in your Java code. For example, Kurento's `OpenCV plugin sample <https://github.com/Kurento/kurento/server/module-examples/opencv-example/>`__ is used like this:
 
@@ -371,10 +373,8 @@ This generates a ``build/js/`` directory, containing all the client code. You ca
 .. code-block:: json
 
    "dependencies": {
-     "{modulename}": "0.0.1"
+     "{name}": "0.0.1"
    }
-
-Note that ``{modulename}`` is the name of your module in all lowercase.
 
 
 

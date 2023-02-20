@@ -19,9 +19,9 @@ ${remoteClass.name}Impl.cpp
 #include "MediaPipelineImpl.hpp"
 </#if>
 
-#define GST_CAT_DEFAULT kurento_${camelToUnderscore(remoteClass.name)?lower_case}_impl
+#define PLUGIN_NAME "Kurento${remoteClass.name}Impl"
+#define GST_CAT_DEFAULT kurento_${camelToUnderscore(remoteClass.name)?lower_case}_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
-#define GST_DEFAULT_NAME "Kurento${remoteClass.name}Impl"
 
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
@@ -110,8 +110,10 @@ ${remoteClass.name}Impl::StaticConstructor ${remoteClass.name}Impl::staticConstr
 
 ${remoteClass.name}Impl::StaticConstructor::StaticConstructor()
 {
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
-                           GST_DEFAULT_NAME);
+  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT,
+      PLUGIN_NAME,
+      0,
+      PLUGIN_NAME " debug category");
 }
 
 <#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>

@@ -1,5 +1,5 @@
-#ifndef __{{nameSnakeUpperCase}}_CONFIG_H__
-#define __{{nameSnakeUpperCase}}_CONFIG_H__
+#ifndef _{{prefixUpperCase}}_{{nameSnakeUpperCase}}_CONFIG_H_
+#define _{{prefixUpperCase}}_{{nameSnakeUpperCase}}_CONFIG_H_
 
 /* Version */
 #cmakedefine VERSION "@VERSION@"
@@ -13,4 +13,4 @@
 /* Library installation directory */
 #cmakedefine KURENTO_MODULES_SO_DIR "@KURENTO_MODULES_SO_DIR@"
 
-#endif /* __{{nameSnakeUpperCase}}_CONFIG_H__ */
+#endif // _{{prefixUpperCase}}_{{nameSnakeUpperCase}}_CONFIG_H_

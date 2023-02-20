@@ -1,5 +1,5 @@
 Source: {{nameKebabCase}}
-Maintainer: {{debianOwner}}
+Maintainer: {{debianMaintainer}}
 Priority: optional
 Build-Depends:
  cmake,
@@ -15,6 +15,7 @@ Standards-Version: 4.5.1
 Homepage: https://www.example.com/
 #Vcs-Browser: https://git.example.com/{{nameKebabCase}}
 #Vcs-Git: https://git.example.com/{{nameKebabCase}}.git
+Rules-Requires-Root: no
 
 Package: {{nameKebabCase}}
 Architecture: any

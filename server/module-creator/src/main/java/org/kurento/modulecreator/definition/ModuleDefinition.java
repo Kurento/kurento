@@ -380,7 +380,7 @@ public class ModuleDefinition {
           if (VersionManager.devCompatibleVersion(importEntry.getVersion(),
               dependencyModule.getVersion())) {
 
-            log.info("[WARNING] Dependency on module '" + importEntry.getName() + "' version '"
+            log.debug("Dependency on module '" + importEntry.getName() + "' version '"
                 + importEntry.getVersion() + "' is satisfied with _development_ version '"
                 + dependencyModule.getVersion() + "'");
           } else {

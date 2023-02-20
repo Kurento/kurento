@@ -1,6 +1,6 @@
 #include <gst/gst.h>
 
-#include "gst{{nameLowercase}}.h"
+#include "{{prefixLowerCase}}{{nameLowercase}}.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -9,13 +9,13 @@
 static gboolean
 plugin_init (GstPlugin *plugin)
 {
-  return gst_{{nameSnakeCase}}_plugin_init (plugin);
+  return {{prefixLowerCase}}_{{nameSnakeCase}}_plugin_init (plugin);
 }
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    {{nameLowercase}},
-    "Filter documentation",
+    {{prefixLowerCase}}{{nameLowercase}},
+    "Plugin description",
     plugin_init,
     VERSION,
     GST_LICENSE_UNKNOWN,

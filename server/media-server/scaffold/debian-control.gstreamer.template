@@ -1,5 +1,5 @@
 Source: {{nameKebabCase}}
-Maintainer: {{debianOwner}}
+Maintainer: {{debianMaintainer}}
 Priority: optional
 Build-Depends:
  cmake,
