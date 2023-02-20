@@ -100,6 +100,20 @@ apt-get update && apt-get install --no-install-recommends --yes \
     coreutils \
 && rm -rf /var/lib/apt/lists/*
 
+# Add Ubuntu debug repository key for apt-get.
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    ubuntu-dbgsym-keyring \
+|| apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
+&& rm -rf /var/lib/apt/lists/*
+
+# Add Ubuntu debug repository line for apt-get.
+RUN \
+echo "deb http://ddebs.ubuntu.com $UBUNTU_CODENAME main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
+&& echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
+
 # Configure Git user, which will appear in the Debian Changelog files
 # (this is required by Git-BuildPackage)
 RUN \
