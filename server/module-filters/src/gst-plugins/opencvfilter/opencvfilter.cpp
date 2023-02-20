@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -33,7 +34,7 @@ init (GstPlugin *plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    opencvfilter,
+    kmsopencvfilter,
     "Kurento generic OpenCV filter",
     init,
     VERSION,

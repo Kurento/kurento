@@ -137,7 +137,7 @@ GST_START_TEST (player_with_filter)
   pipeline = gst_pipeline_new ("pipeline_live_stream");
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   player = gst_element_factory_make ("playerendpoint", NULL);
-  filter = gst_element_factory_make ("movementdetector", NULL);
+  filter = gst_element_factory_make ("kmsmovementdetector", NULL);
   fakesink_audio = gst_element_factory_make ("fakesink", NULL);
   fakesink_video = gst_element_factory_make ("fakesink", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -192,7 +192,7 @@ GST_START_TEST (player_with_filter)
 GST_END_TEST static Suite *
 movementdetector_suite (void)
 {
-  Suite *s = suite_create ("movementdetector");
+  Suite *s = suite_create ("kmsmovementdetector");
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);

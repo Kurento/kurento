@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -22,9 +23,9 @@
 
 #include <gst/gst.h>
 
-GST_DEBUG_CATEGORY_STATIC (kms_face_overlay_debug_category);
-#define GST_CAT_DEFAULT kms_face_overlay_debug_category
-#define PLUGIN_NAME "faceoverlay"
+#define PLUGIN_NAME "kmsfaceoverlay"
+#define GST_CAT_DEFAULT kms_face_overlay_debug
+GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 #define KMS_FACE_OVERLAY_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_FACE_OVERLAY, \
@@ -60,10 +61,10 @@ struct _KmsFaceOverlayPrivate {
 G_DEFINE_TYPE_WITH_CODE (KmsFaceOverlay,
     kms_face_overlay,
     GST_TYPE_BIN,
-    GST_DEBUG_CATEGORY_INIT (kms_face_overlay_debug_category,
+    GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT,
         PLUGIN_NAME,
         0,
-        "debug category for faceoverlay element"));
+        "GStreamer debug category for the '" PLUGIN_NAME "' element"));
 
 static void
 kms_face_overlay_set_property (GObject *object,
@@ -71,16 +72,16 @@ kms_face_overlay_set_property (GObject *object,
     const GValue *value,
     GParamSpec *pspec)
 {
-  KmsFaceOverlay *faceoverlay = KMS_FACE_OVERLAY (object);
+  KmsFaceOverlay *self = KMS_FACE_OVERLAY (object);
 
-  faceoverlay->priv = KMS_FACE_OVERLAY_GET_PRIVATE (faceoverlay);
+  self->priv = KMS_FACE_OVERLAY_GET_PRIVATE (self);
 
   switch (property_id) {
   case PROP_SHOW_DEBUG_INFO:
-    faceoverlay->show_debug_info = g_value_get_boolean (value);
+    self->show_debug_info = g_value_get_boolean (value);
     break;
   case PROP_IMAGE_TO_OVERLAY:
-    g_object_set (faceoverlay->priv->image_overlay, "image-to-overlay",
+    g_object_set (self->priv->image_overlay, "image-to-overlay",
         g_value_get_boxed (value), NULL);
     break;
   default:
@@ -95,19 +96,19 @@ kms_face_overlay_get_property (GObject *object,
     GValue *value,
     GParamSpec *pspec)
 {
-  KmsFaceOverlay *faceoverlay = KMS_FACE_OVERLAY (object);
+  KmsFaceOverlay *self = KMS_FACE_OVERLAY (object);
 
-  faceoverlay->priv = KMS_FACE_OVERLAY_GET_PRIVATE (faceoverlay);
+  self->priv = KMS_FACE_OVERLAY_GET_PRIVATE (self);
 
   switch (property_id) {
   case PROP_SHOW_DEBUG_INFO:
-    g_value_set_boolean (value, faceoverlay->show_debug_info);
+    g_value_set_boolean (value, self->show_debug_info);
     break;
   case PROP_IMAGE_TO_OVERLAY: {
     GstStructure *aux;
 
-    g_object_get (G_OBJECT (faceoverlay->priv->image_overlay),
-        "image-to-overlay", &aux, NULL);
+    g_object_get (G_OBJECT (self->priv->image_overlay), "image-to-overlay",
+        &aux, NULL);
     g_value_set_boxed (value, aux);
     gst_structure_free (aux);
     break;
@@ -119,48 +120,40 @@ kms_face_overlay_get_property (GObject *object,
 }
 
 static void
-kms_face_overlay_init (KmsFaceOverlay *faceoverlay)
+kms_face_overlay_init (KmsFaceOverlay *self)
 {
   GstPadTemplate *templ;
   GstPad *target;
 
-  faceoverlay->priv = KMS_FACE_OVERLAY_GET_PRIVATE (faceoverlay);
+  self->priv = KMS_FACE_OVERLAY_GET_PRIVATE (self);
 
-  faceoverlay->priv->face_detector =
-      gst_element_factory_make ("facedetector", NULL);
-  gst_bin_add (GST_BIN (faceoverlay), faceoverlay->priv->face_detector);
+  self->priv->face_detector = gst_element_factory_make ("kmsfacedetector", NULL);
+  gst_bin_add (GST_BIN (self), self->priv->face_detector);
 
-  faceoverlay->priv->image_overlay =
-      gst_element_factory_make ("imageoverlay", NULL);
-  gst_bin_add (GST_BIN (faceoverlay), faceoverlay->priv->image_overlay);
+  self->priv->image_overlay = gst_element_factory_make ("kmsimageoverlay", NULL);
+  gst_bin_add (GST_BIN (self), self->priv->image_overlay);
 
-  target =
-      gst_element_get_static_pad (faceoverlay->priv->face_detector, "sink");
+  target = gst_element_get_static_pad (self->priv->face_detector, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
-  faceoverlay->priv->sink =
-      gst_ghost_pad_new_from_template ("sink", target, templ);
+  self->priv->sink = gst_ghost_pad_new_from_template ("sink", target, templ);
   g_object_unref (templ);
   g_object_unref (target);
-  gst_element_add_pad (GST_ELEMENT (faceoverlay), faceoverlay->priv->sink);
+  gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
-  target = gst_element_get_static_pad (faceoverlay->priv->image_overlay, "src");
+  target = gst_element_get_static_pad (self->priv->image_overlay, "src");
   templ = gst_static_pad_template_get (&src_factory);
-  faceoverlay->priv->src =
-      gst_ghost_pad_new_from_template ("src", target, templ);
+  self->priv->src = gst_ghost_pad_new_from_template ("src", target, templ);
   g_object_unref (templ);
   g_object_unref (target);
-  gst_element_add_pad (GST_ELEMENT (faceoverlay), faceoverlay->priv->src);
+  gst_element_add_pad (GST_ELEMENT (self), self->priv->src);
 
-  gst_element_link (faceoverlay->priv->face_detector,
-      faceoverlay->priv->image_overlay);
+  gst_element_link (self->priv->face_detector, self->priv->image_overlay);
 }
 
 static void
 kms_face_overlay_class_init (KmsFaceOverlayClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
   /* Setting up pads and setting metadata should be moved to
      base_class_init if you intend to subclass this class. */

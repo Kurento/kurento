@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -28,9 +29,9 @@
 
 #include <vector>
 
-GST_DEBUG_CATEGORY_STATIC (kms_movement_detector_debug_category);
-#define GST_CAT_DEFAULT kms_movement_detector_debug_category
-#define PLUGIN_NAME "movementdetector"
+#define PLUGIN_NAME "kmsmovementdetector"
+#define GST_CAT_DEFAULT kms_movement_detector_debug
+GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 /* pad templates */
 
@@ -43,17 +44,17 @@ GST_DEBUG_CATEGORY_STATIC (kms_movement_detector_debug_category);
 G_DEFINE_TYPE_WITH_CODE (KmsMovementDetector,
     kms_movement_detector,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_movement_detector_debug_category,
+    GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT,
         PLUGIN_NAME,
         0,
-        "debug category for movementdetector element"));
+        "GStreamer debug category for the '" PLUGIN_NAME "' element"));
 
 void
 kms_movement_detector_dispose (GObject *object)
 {
-  KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (object);
+  KmsMovementDetector *self = KMS_MOVEMENT_DETECTOR (object);
 
-  GST_DEBUG_OBJECT (movementdetector, "dispose");
+  GST_DEBUG_OBJECT (self, "dispose");
 
   /* clean up as possible.  may be called multiple times */
 
@@ -63,16 +64,16 @@ kms_movement_detector_dispose (GObject *object)
 void
 kms_movement_detector_finalize (GObject *object)
 {
-  KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (object);
+  KmsMovementDetector *self = KMS_MOVEMENT_DETECTOR (object);
 
-  GST_DEBUG_OBJECT (movementdetector, "finalize");
+  GST_DEBUG_OBJECT (self, "finalize");
 
   /* clean up object here */
-  if (!movementdetector->img.empty ()) {
-    movementdetector->img.release ();
+  if (!self->img.empty ()) {
+    self->img.release ();
   }
-  if (!movementdetector->imgOldBW.empty ()) {
-    movementdetector->imgOldBW.release ();
+  if (!self->imgOldBW.empty ()) {
+    self->imgOldBW.release ();
   }
 
   G_OBJECT_CLASS (kms_movement_detector_parent_class)->finalize (object);
@@ -81,9 +82,9 @@ kms_movement_detector_finalize (GObject *object)
 static gboolean
 kms_movement_detector_start (GstBaseTransform *trans)
 {
-  KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (trans);
+  KmsMovementDetector *self = KMS_MOVEMENT_DETECTOR (trans);
 
-  GST_DEBUG_OBJECT (movementdetector, "start");
+  GST_DEBUG_OBJECT (self, "start");
 
   return TRUE;
 }
@@ -91,9 +92,9 @@ kms_movement_detector_start (GstBaseTransform *trans)
 static gboolean
 kms_movement_detector_stop (GstBaseTransform *trans)
 {
-  KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (trans);
+  KmsMovementDetector *self = KMS_MOVEMENT_DETECTOR (trans);
 
-  GST_DEBUG_OBJECT (movementdetector, "stop");
+  GST_DEBUG_OBJECT (self, "stop");
 
   return TRUE;
 }
@@ -105,15 +106,15 @@ kms_movement_detector_set_info (GstVideoFilter *filter,
     GstCaps *outcaps,
     GstVideoInfo *out_info)
 {
-  KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (filter);
+  KmsMovementDetector *self = KMS_MOVEMENT_DETECTOR (filter);
 
-  GST_DEBUG_OBJECT (movementdetector, "set_info");
+  GST_DEBUG_OBJECT (self, "set_info");
 
   return TRUE;
 }
 
 static gboolean
-kms_movement_detector_initialize_images (KmsMovementDetector *movementdetector,
+kms_movement_detector_initialize_images (KmsMovementDetector *self,
     GstVideoFrame *frame)
 {
   const int width = GST_VIDEO_FRAME_WIDTH (frame);
@@ -121,11 +122,10 @@ kms_movement_detector_initialize_images (KmsMovementDetector *movementdetector,
   const void *data = GST_VIDEO_FRAME_PLANE_DATA (frame, 0);
   const size_t step = GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0);
 
-  movementdetector->img =
-      cv::Mat (cv::Size (width, height), CV_8UC3, (void *)data, step);
+  self->img = cv::Mat (cv::Size (width, height), CV_8UC3, (void *)data, step);
 
-  if (movementdetector->imgOldBW.empty ()
-      || movementdetector->imgOldBW.size () != cv::Size (width, height)) {
+  if (self->imgOldBW.empty ()
+      || self->imgOldBW.size () != cv::Size (width, height)) {
     return TRUE;
   }
 
@@ -136,28 +136,27 @@ static GstFlowReturn
 kms_movement_detector_transform_frame_ip (GstVideoFilter *filter,
     GstVideoFrame *frame)
 {
-  KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (filter);
+  KmsMovementDetector *self = KMS_MOVEMENT_DETECTOR (filter);
   cv::Mat imgBW, imgDiff;
   gboolean imagesChanged;
   std::vector<std::vector<cv::Point>> contours;
 
   //checking image sizes
-  imagesChanged =
-      kms_movement_detector_initialize_images (movementdetector, frame);
+  imagesChanged = kms_movement_detector_initialize_images (self, frame);
 
-  imgBW = cv::Mat (movementdetector->img.size (), CV_8UC1);
+  imgBW = cv::Mat (self->img.size (), CV_8UC1);
 
-  cv::cvtColor (movementdetector->img, imgBW, cv::COLOR_BGR2GRAY);
+  cv::cvtColor (self->img, imgBW, cv::COLOR_BGR2GRAY);
 
   if (imagesChanged) {
-    imgBW.copyTo (movementdetector->imgOldBW);
+    imgBW.copyTo (self->imgOldBW);
     goto end;
   }
 
   //image difference
-  imgDiff = cv::Mat (movementdetector->img.size (), CV_8UC1);
+  imgDiff = cv::Mat (self->img.size (), CV_8UC1);
 
-  cv::subtract (movementdetector->imgOldBW, imgBW, imgDiff);
+  cv::subtract (self->imgOldBW, imgBW, imgDiff);
   cv::threshold (imgDiff, imgDiff, 125, 255, cv::THRESH_OTSU);
   cv::erode (imgDiff, imgDiff, cv::Mat ());
   cv::dilate (imgDiff, imgDiff, cv::Mat ());
@@ -166,13 +165,13 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter *filter,
 
   for (const auto &contour : contours) {
     cv::Rect rect = cv::boundingRect (contour);
-    cv::rectangle (movementdetector->img, cv::Point (rect.x, rect.y),
+    cv::rectangle (self->img, cv::Point (rect.x, rect.y),
         cv::Point (rect.x + rect.width, rect.y + rect.width),
         cv::Scalar (255, 0, 0, 0), 2);
   }
 
-  movementdetector->imgOldBW.release ();
-  movementdetector->imgOldBW = imgBW;
+  self->imgOldBW.release ();
+  self->imgOldBW = imgBW;
 
   imgDiff.release ();
 
@@ -213,7 +212,7 @@ kms_movement_detector_class_init (KmsMovementDetectorClass *klass)
 }
 
 static void
-kms_movement_detector_init (KmsMovementDetector *movementdetector)
+kms_movement_detector_init (KmsMovementDetector *self)
 {
 }
 

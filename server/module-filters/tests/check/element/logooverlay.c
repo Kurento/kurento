@@ -62,7 +62,7 @@ GST_START_TEST (set_properties)
   GstElement *logooverlay;
   GstStructure *imageSt;
 
-  logooverlay = gst_element_factory_make ("logooverlay", NULL);
+  logooverlay = gst_element_factory_make ("kmslogooverlay", NULL);
 
   imageSt = generate_logo_structure ();
 
@@ -185,7 +185,7 @@ GST_START_TEST (player_with_filter)
   pipeline = gst_pipeline_new ("pipeline_live_stream");
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   player = gst_element_factory_make ("playerendpoint", NULL);
-  filter = gst_element_factory_make ("logooverlay", NULL);
+  filter = gst_element_factory_make ("kmslogooverlay", NULL);
   fakesink_audio = gst_element_factory_make ("fakesink", NULL);
   fakesink_video = gst_element_factory_make ("fakesink", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -285,7 +285,7 @@ GST_START_TEST (player_with_filter_many_changes)
   pipeline = gst_pipeline_new ("pipeline_live_stream");
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   player = gst_element_factory_make ("playerendpoint", NULL);
-  filter = gst_element_factory_make ("logooverlay", NULL);
+  filter = gst_element_factory_make ("kmslogooverlay", NULL);
   fakesink_audio = gst_element_factory_make ("fakesink", NULL);
   fakesink_video = gst_element_factory_make ("fakesink", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -348,7 +348,7 @@ GST_START_TEST (player_with_filter_many_changes)
 GST_END_TEST static Suite *
 logooverlay_suite (void)
 {
-  Suite *s = suite_create ("logooverlay");
+  Suite *s = suite_create ("kmslogooverlay");
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);

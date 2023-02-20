@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -39,9 +39,9 @@
 #define KMS_OPENCV_FILTER_UNLOCK(self) \
   (g_rec_mutex_unlock (&((KmsOpenCVFilter *)(self))->priv->mutex))
 
-GST_DEBUG_CATEGORY_STATIC (kms_opencv_filter_debug_category);
-#define GST_CAT_DEFAULT kms_opencv_filter_debug_category
-#define PLUGIN_NAME "opencvfilter"
+#define PLUGIN_NAME "kmsopencvfilter"
+#define GST_CAT_DEFAULT kms_opencv_filter_debug
+GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 #define KMS_OPENCV_FILTER_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_OPENCV_FILTER, \
@@ -66,10 +66,10 @@ struct _KmsOpenCVFilterPrivate {
 G_DEFINE_TYPE_WITH_CODE (KmsOpenCVFilter,
     kms_opencv_filter,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_opencv_filter_debug_category,
+    GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT,
         PLUGIN_NAME,
         0,
-        "debug category for opencv_filter element"));
+        "GStreamer debug category for the '" PLUGIN_NAME "' element"));
 
 static void
 kms_opencv_filter_set_property (GObject *object,
@@ -208,8 +208,8 @@ kms_opencv_filter_class_init (KmsOpenCVFilterClass *klass)
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstVideoFilterClass *video_filter_class = GST_VIDEO_FILTER_CLASS (klass);
 
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
-
+  /* Setting up pads and setting metadata should be moved to
+     base_class_init if you intend to subclass this class. */
   gst_element_class_add_pad_template (GST_ELEMENT_CLASS (klass),
       gst_pad_template_new ("src", GST_PAD_SRC, GST_PAD_ALWAYS,
           gst_caps_from_string (VIDEO_SRC_CAPS)));

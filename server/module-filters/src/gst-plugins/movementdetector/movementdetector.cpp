@@ -14,7 +14,11 @@
  * limitations under the License.
  *
  */
-#include <config.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gst/gst.h>
 
 #include "kmsmovementdetector.hpp"
@@ -30,8 +34,8 @@ init (GstPlugin *plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    movementdetector,
-    "Kurento movement filter",
+    kmsmovementdetector,
+    "Kurento movementdetector filter",
     init,
     VERSION,
     GST_LICENSE_UNKNOWN,

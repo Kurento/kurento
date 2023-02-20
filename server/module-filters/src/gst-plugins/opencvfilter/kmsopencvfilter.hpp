@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #ifndef _KMS_OPENCV_FILTER_H_
 #define _KMS_OPENCV_FILTER_H_
@@ -32,6 +32,7 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), KMS_TYPE_OPENCV_FILTER))
 #define KMS_IS_OPENCV_FILTER_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), KMS_TYPE_OPENCV_FILTER))
+
 typedef struct _KmsOpenCVFilter KmsOpenCVFilter;
 typedef struct _KmsOpenCVFilterClass KmsOpenCVFilterClass;
 typedef struct _KmsOpenCVFilterPrivate KmsOpenCVFilterPrivate;

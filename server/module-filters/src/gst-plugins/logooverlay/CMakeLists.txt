@@ -4,24 +4,24 @@ set(LOGOOVERLAY_SOURCES
   kmslogooverlay.hpp
 )
 
-add_library(logooverlay MODULE ${LOGOOVERLAY_SOURCES})
+add_library(kmslogooverlay MODULE ${LOGOOVERLAY_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(logooverlay)
+  add_sanitizers(kmslogooverlay)
 endif()
 
-target_include_directories(logooverlay SYSTEM
+target_include_directories(kmslogooverlay SYSTEM
   PRIVATE
   ${gstreamer-1.0_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${libsoup-2.4_INCLUDE_DIRS}
 )
 
-target_include_directories(logooverlay
+target_include_directories(kmslogooverlay
   PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../../..
 )
 
-target_link_libraries(logooverlay
+target_link_libraries(kmslogooverlay
   PRIVATE
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-video-1.0_LIBRARIES}
@@ -30,7 +30,7 @@ target_link_libraries(logooverlay
 )
 
 install(
-  TARGETS logooverlay
+  TARGETS kmslogooverlay
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

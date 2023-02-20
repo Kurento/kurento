@@ -14,7 +14,11 @@
  * limitations under the License.
  *
  */
-#include <config.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gst/gst.h>
 
 #include "kmsfacedetector.hpp"
@@ -30,7 +34,7 @@ init (GstPlugin *plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    facedetector,
+    kmsfacedetector,
     "Kurento facedetector filter",
     init,
     VERSION,

@@ -35,7 +35,7 @@ FaceOverlayFilterImpl::FaceOverlayFilterImpl (const boost::property_tree::ptree
     mediaPipeline) : FilterImpl ( conf,
                                     std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
 {
-  g_object_set (element, "filter-factory", "faceoverlay", NULL);
+  g_object_set (element, "filter-factory", "kmsfaceoverlay", NULL);
 
   g_object_get (G_OBJECT (element), "filter", &faceOverlay, NULL);
 

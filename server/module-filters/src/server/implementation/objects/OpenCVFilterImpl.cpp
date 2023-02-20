@@ -36,7 +36,7 @@ OpenCVFilterImpl::OpenCVFilterImpl (const boost::property_tree::ptree &conf,
                                     mediaPipeline) : FilterImpl (conf, std::dynamic_pointer_cast<MediaPipelineImpl>
                                           (mediaPipeline) )
 {
-  g_object_set (element, "filter-factory", "opencvfilter", NULL);
+  g_object_set (element, "filter-factory", "kmsopencvfilter", NULL);
 
   g_object_get (G_OBJECT (element), "filter", &opencvfilter, NULL);
 

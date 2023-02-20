@@ -14,7 +14,11 @@
  * limitations under the License.
  *
  */
-#include <config.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gst/gst.h>
 
 #include "kmsimageoverlay.hpp"
@@ -30,7 +34,7 @@ init (GstPlugin *plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    imageoverlay,
+    kmsimageoverlay,
     "Kurento imageoverlay filter",
     init,
     VERSION,

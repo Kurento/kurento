@@ -23,8 +23,6 @@
 
 #include <opencv2/core.hpp> // Mat
 
-#include <stdio.h>
-
 G_BEGIN_DECLS
 
 #define KMS_TYPE_MOVEMENT_DETECTOR (kms_movement_detector_get_type ())
@@ -38,6 +36,7 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), KMS_TYPE_MOVEMENT_DETECTOR))
 #define KMS_IS_MOVEMENT_DETECTOR_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), KMS_TYPE_MOVEMENT_DETECTOR))
+
 typedef struct _KmsMovementDetector KmsMovementDetector;
 typedef struct _KmsMovementDetectorClass KmsMovementDetectorClass;
 

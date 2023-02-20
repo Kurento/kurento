@@ -1,28 +1,26 @@
 set(FACEDETECTOR_SOURCES
-  classifier.cpp
-  classifier.hpp
   facedetector.cpp
   kmsfacedetector.cpp
   kmsfacedetector.hpp
 )
 
-add_library(facedetector MODULE ${FACEDETECTOR_SOURCES})
+add_library(kmsfacedetector MODULE ${FACEDETECTOR_SOURCES})
 if(SANITIZERS_ENABLED)
-  add_sanitizers(facedetector)
+  add_sanitizers(kmsfacedetector)
 endif()
 
-target_include_directories(facedetector SYSTEM
+target_include_directories(kmsfacedetector SYSTEM
   PRIVATE
   ${gstreamer-1.0_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
 
-target_include_directories(facedetector
+target_include_directories(kmsfacedetector
   PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../../..
 )
 
-target_link_libraries(facedetector
+target_link_libraries(kmsfacedetector
   PRIVATE
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-video-1.0_LIBRARIES}
@@ -31,7 +29,7 @@ target_link_libraries(facedetector
 )
 
 install(
-  TARGETS facedetector
+  TARGETS kmsfacedetector
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

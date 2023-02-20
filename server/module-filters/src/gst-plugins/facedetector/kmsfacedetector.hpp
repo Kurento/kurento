@@ -39,7 +39,6 @@ typedef struct _KmsFaceDetectorPrivate KmsFaceDetectorPrivate;
 
 struct _KmsFaceDetector {
   GstVideoFilter base;
-
   KmsFaceDetectorPrivate *priv;
 };
 

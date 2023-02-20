@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+
 #define _XOPEN_SOURCE 500
 
 #ifdef HAVE_CONFIG_H
@@ -40,9 +41,9 @@
 #define TEMP_PATH "/tmp/XXXXXX"
 #define SRC_OVERLAY ((double)1)
 
-GST_DEBUG_CATEGORY_STATIC (kms_image_overlay_debug_category);
-#define GST_CAT_DEFAULT kms_image_overlay_debug_category
-#define PLUGIN_NAME "imageoverlay"
+#define PLUGIN_NAME "kmsimageoverlay"
+#define GST_CAT_DEFAULT kms_image_overlay_debug
+GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 #define KMS_IMAGE_OVERLAY_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_IMAGE_OVERLAY, \
@@ -76,10 +77,10 @@ struct _KmsImageOverlayPrivate {
 G_DEFINE_TYPE_WITH_CODE (KmsImageOverlay,
     kms_image_overlay,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_image_overlay_debug_category,
+    GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT,
         PLUGIN_NAME,
         0,
-        "debug category for imageoverlay element"));
+        "GStreamer debug category for the '" PLUGIN_NAME "' element"));
 
 /* Converts GTlsCertificateFlags to a translated string representation
  * of the first set error flag. */
@@ -188,7 +189,7 @@ end:
 }
 
 static void
-kms_image_overlay_load_image_to_overlay (KmsImageOverlay *imageoverlay)
+kms_image_overlay_load_image_to_overlay (KmsImageOverlay *self)
 {
   gchar *url = NULL;
   gboolean fields_ok = TRUE;
@@ -197,27 +198,23 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay *imageoverlay)
   gchar *file_name = NULL;
 
   fields_ok = fields_ok
-      && gst_structure_get (imageoverlay->priv->image_to_overlay,
-          "offsetXPercent", G_TYPE_DOUBLE, &imageoverlay->priv->offsetXPercent,
-          NULL);
+      && gst_structure_get (self->priv->image_to_overlay, "offsetXPercent",
+          G_TYPE_DOUBLE, &self->priv->offsetXPercent, NULL);
   fields_ok = fields_ok
-      && gst_structure_get (imageoverlay->priv->image_to_overlay,
-          "offsetYPercent", G_TYPE_DOUBLE, &imageoverlay->priv->offsetYPercent,
-          NULL);
+      && gst_structure_get (self->priv->image_to_overlay, "offsetYPercent",
+          G_TYPE_DOUBLE, &self->priv->offsetYPercent, NULL);
   fields_ok = fields_ok
-      && gst_structure_get (imageoverlay->priv->image_to_overlay,
-          "widthPercent", G_TYPE_DOUBLE, &imageoverlay->priv->widthPercent,
-          NULL);
+      && gst_structure_get (self->priv->image_to_overlay, "widthPercent",
+          G_TYPE_DOUBLE, &self->priv->widthPercent, NULL);
   fields_ok = fields_ok
-      && gst_structure_get (imageoverlay->priv->image_to_overlay,
-          "heightPercent", G_TYPE_DOUBLE, &imageoverlay->priv->heightPercent,
-          NULL);
+      && gst_structure_get (self->priv->image_to_overlay, "heightPercent",
+          G_TYPE_DOUBLE, &self->priv->heightPercent, NULL);
   fields_ok = fields_ok
-      && gst_structure_get (imageoverlay->priv->image_to_overlay, "url",
-          G_TYPE_STRING, &url, NULL);
+      && gst_structure_get (self->priv->image_to_overlay, "url", G_TYPE_STRING,
+          &url, NULL);
 
   if (!fields_ok) {
-    GST_ERROR_OBJECT (imageoverlay, "Invalid image structure received");
+    GST_ERROR_OBJECT (self, "Invalid image structure received");
     goto end;
   }
 
@@ -236,21 +233,21 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay *imageoverlay)
     GST_INFO ("Not a local file, try to download first");
   }
 
-  if (!imageoverlay->priv->dir_created) {
+  if (!self->priv->dir_created) {
     gchar *d = g_strdup (TEMP_PATH);
 
-    imageoverlay->priv->dir = g_mkdtemp (d);
-    if (!imageoverlay->priv->dir) {
+    self->priv->dir = g_mkdtemp (d);
+    if (!self->priv->dir) {
       GST_ERROR ("Cannot create temp dir: %s", TEMP_PATH);
       goto end;
     }
 
-    imageoverlay->priv->dir_created = TRUE;
+    self->priv->dir_created = TRUE;
 
-    GST_DEBUG ("Created temp dir: %s", imageoverlay->priv->dir);
+    GST_DEBUG ("Created temp dir: %s", self->priv->dir);
   }
 
-  file_name = g_strconcat (imageoverlay->priv->dir, "/image.png", NULL);
+  file_name = g_strconcat (self->priv->dir, "/image.png", NULL);
 
   if (!load_from_url (file_name, url)) {
     GST_ERROR ("Failed downloading from URL");
@@ -271,12 +268,12 @@ end:
     g_free (file_name);
   }
 
-  if (!imageoverlay->priv->costume.empty ()) {
-    imageoverlay->priv->costume.release ();
+  if (!self->priv->costume.empty ()) {
+    self->priv->costume.release ();
   }
 
   if (!imageAux.empty ()) {
-    imageAux.copyTo (imageoverlay->priv->costume);
+    imageAux.copyTo (self->priv->costume);
   }
 
   g_free (url);
@@ -288,27 +285,26 @@ kms_image_overlay_set_property (GObject *object,
     const GValue *value,
     GParamSpec *pspec)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
+  KmsImageOverlay *self = KMS_IMAGE_OVERLAY (object);
 
-  GST_OBJECT_LOCK (imageoverlay);
+  GST_OBJECT_LOCK (self);
 
   switch (property_id) {
   case PROP_SHOW_DEBUG_INFO:
-    imageoverlay->priv->show_debug_info = g_value_get_boolean (value);
+    self->priv->show_debug_info = g_value_get_boolean (value);
     break;
   case PROP_IMAGE_TO_OVERLAY:
-    if (imageoverlay->priv->image_to_overlay != NULL)
-      gst_structure_free (imageoverlay->priv->image_to_overlay);
+    if (self->priv->image_to_overlay != NULL)
+      gst_structure_free (self->priv->image_to_overlay);
 
-    imageoverlay->priv->image_to_overlay =
-        (GstStructure *)g_value_dup_boxed (value);
-    kms_image_overlay_load_image_to_overlay (imageoverlay);
+    self->priv->image_to_overlay = (GstStructure *)g_value_dup_boxed (value);
+    kms_image_overlay_load_image_to_overlay (self);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     break;
   }
-  GST_OBJECT_UNLOCK (imageoverlay);
+  GST_OBJECT_UNLOCK (self);
 }
 
 static void
@@ -317,32 +313,32 @@ kms_image_overlay_get_property (GObject *object,
     GValue *value,
     GParamSpec *pspec)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
+  KmsImageOverlay *self = KMS_IMAGE_OVERLAY (object);
 
-  GST_DEBUG_OBJECT (imageoverlay, "get_property");
+  GST_DEBUG_OBJECT (self, "get_property");
 
-  GST_OBJECT_LOCK (imageoverlay);
+  GST_OBJECT_LOCK (self);
 
   switch (property_id) {
   case PROP_SHOW_DEBUG_INFO:
-    g_value_set_boolean (value, imageoverlay->priv->show_debug_info);
+    g_value_set_boolean (value, self->priv->show_debug_info);
     break;
   case PROP_IMAGE_TO_OVERLAY:
-    if (imageoverlay->priv->image_to_overlay == NULL) {
-      imageoverlay->priv->image_to_overlay =
+    if (self->priv->image_to_overlay == NULL) {
+      self->priv->image_to_overlay =
           gst_structure_new_empty ("image_to_overlay");
     }
-    g_value_set_boxed (value, imageoverlay->priv->image_to_overlay);
+    g_value_set_boxed (value, self->priv->image_to_overlay);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     break;
   }
-  GST_OBJECT_UNLOCK (imageoverlay);
+  GST_OBJECT_UNLOCK (self);
 }
 
 static void
-kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *imageoverlay,
+kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *self,
     const GSList *faces_list)
 {
   const GSList *iterator = NULL;
@@ -353,24 +349,23 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *imageoverlay,
     int w, h;
     uchar *row, *image_row;
 
-    if ((imageoverlay->priv->heightPercent == 0)
-        || (imageoverlay->priv->widthPercent == 0)) {
+    if ((self->priv->heightPercent == 0) || (self->priv->widthPercent == 0)) {
       continue;
     }
 
-    r->x = r->x + (r->width * (imageoverlay->priv->offsetXPercent));
-    r->y = r->y + (r->height * (imageoverlay->priv->offsetYPercent));
-    r->height = r->height * (imageoverlay->priv->heightPercent);
-    r->width = r->width * (imageoverlay->priv->widthPercent);
+    r->x = r->x + (r->width * (self->priv->offsetXPercent));
+    r->y = r->y + (r->height * (self->priv->offsetYPercent));
+    r->height = r->height * (self->priv->heightPercent);
+    r->width = r->width * (self->priv->widthPercent);
 
-    costumeAux = cv::Mat (cv::Size (r->width, r->height),
-        imageoverlay->priv->costume.type ());
+    costumeAux =
+        cv::Mat (cv::Size (r->width, r->height), self->priv->costume.type ());
 
-    cv::resize (imageoverlay->priv->costume, costumeAux, costumeAux.size ());
+    cv::resize (self->priv->costume, costumeAux, costumeAux.size ());
 
     row = (uchar *)costumeAux.data;
-    image_row = (uchar *)imageoverlay->priv->cvImage.data
-        + (r->y * imageoverlay->priv->cvImage.step);
+    image_row =
+        (uchar *)self->priv->cvImage.data + (r->y * self->priv->cvImage.step);
 
     for (h = 0; h < costumeAux.rows; h++) {
 
@@ -379,20 +374,18 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *imageoverlay,
 
       for (w = 0; w < costumeAux.cols; w++) {
         /* Check if point is inside overlay boundaries */
-        if (((w + r->x) < imageoverlay->priv->cvImage.cols)
-            && ((w + r->x) >= 0)) {
-          if (((h + r->y) < imageoverlay->priv->cvImage.rows)
-              && ((h + r->y) >= 0)) {
+        if (((w + r->x) < self->priv->cvImage.cols) && ((w + r->x) >= 0)) {
+          if (((h + r->y) < self->priv->cvImage.rows) && ((h + r->y) >= 0)) {
 
-            if (imageoverlay->priv->costume.channels () == 1) {
+            if (self->priv->costume.channels () == 1) {
               *(image_column) = (uchar)(*(column));
               *(image_column + 1) = (uchar)(*(column));
               *(image_column + 2) = (uchar)(*(column));
-            } else if (imageoverlay->priv->costume.channels () == 3) {
+            } else if (self->priv->costume.channels () == 3) {
               *(image_column) = (uchar)(*(column));
               *(image_column + 1) = (uchar)(*(column + 1));
               *(image_column + 2) = (uchar)(*(column + 2));
-            } else if (imageoverlay->priv->costume.channels () == 4) {
+            } else if (self->priv->costume.channels () == 4) {
               double proportion =
                   ((double)*(uchar *)(column + 3)) / (double)255;
               double overlay = SRC_OVERLAY * proportion;
@@ -408,12 +401,12 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *imageoverlay,
           }
         }
 
-        column += imageoverlay->priv->costume.channels ();
-        image_column += imageoverlay->priv->cvImage.channels ();
+        column += self->priv->costume.channels ();
+        image_column += self->priv->cvImage.channels ();
       }
 
       row += costumeAux.step;
-      image_row += imageoverlay->priv->cvImage.step;
+      image_row += self->priv->cvImage.step;
     }
 
     costumeAux.release ();
@@ -421,7 +414,7 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *imageoverlay,
 }
 
 static void
-kms_image_overlay_initialize_images (KmsImageOverlay *imageoverlay,
+kms_image_overlay_initialize_images (KmsImageOverlay *self,
     GstVideoFrame *frame)
 {
   const int width = GST_VIDEO_FRAME_WIDTH (frame);
@@ -429,7 +422,7 @@ kms_image_overlay_initialize_images (KmsImageOverlay *imageoverlay,
   const void *data = GST_VIDEO_FRAME_PLANE_DATA (frame, 0);
   const size_t step = GST_VIDEO_FRAME_PLANE_STRIDE (frame, 0);
 
-  imageoverlay->priv->cvImage =
+  self->priv->cvImage =
       cv::Mat (cv::Size (width, height), CV_8UC3, (void *)data, step);
 }
 
@@ -490,8 +483,7 @@ get_faces (GstStructure *faces)
 }
 
 static void
-kms_image_overlay_get_timestamp (KmsImageOverlay *imageoverlay,
-    GstStructure *faces)
+kms_image_overlay_get_timestamp (KmsImageOverlay *self, GstStructure *faces)
 {
   GstStructure *timestamp;
   gboolean ret;
@@ -499,10 +491,8 @@ kms_image_overlay_get_timestamp (KmsImageOverlay *imageoverlay,
   ret = gst_structure_get (faces, "timestamp", GST_TYPE_STRUCTURE, &timestamp,
       NULL);
   if (ret) {
-    gst_structure_get (timestamp, "dts", G_TYPE_UINT64,
-        &imageoverlay->priv->dts, NULL);
-    gst_structure_get (timestamp, "pts", G_TYPE_UINT64,
-        &imageoverlay->priv->pts, NULL);
+    gst_structure_get (timestamp, "dts", G_TYPE_UINT64, &self->priv->dts, NULL);
+    gst_structure_get (timestamp, "pts", G_TYPE_UINT64, &self->priv->pts, NULL);
     gst_structure_free (timestamp);
   }
 }
@@ -517,45 +507,44 @@ static GstFlowReturn
 kms_image_overlay_transform_frame_ip (GstVideoFilter *filter,
     GstVideoFrame *frame)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (filter);
+  KmsImageOverlay *self = KMS_IMAGE_OVERLAY (filter);
   GstStructure *faces;
   GSList *faces_list;
 
-  kms_image_overlay_initialize_images (imageoverlay, frame);
+  kms_image_overlay_initialize_images (self, frame);
 
-  GST_OBJECT_LOCK (imageoverlay);
-  faces = (GstStructure *)g_queue_pop_head (imageoverlay->priv->events_queue);
+  GST_OBJECT_LOCK (self);
+  faces = (GstStructure *)g_queue_pop_head (self->priv->events_queue);
 
   while (faces != NULL) {
 
-    kms_image_overlay_get_timestamp (imageoverlay, faces);
+    kms_image_overlay_get_timestamp (self, faces);
     GST_DEBUG ("buffer pts %" G_GUINT64_FORMAT, frame->buffer->pts);
-    GST_DEBUG ("event pts %" G_GUINT64_FORMAT, imageoverlay->priv->pts);
+    GST_DEBUG ("event pts %" G_GUINT64_FORMAT, self->priv->pts);
     GST_DEBUG ("queue length %d",
-        g_queue_get_length (imageoverlay->priv->events_queue));
+        g_queue_get_length (self->priv->events_queue));
 
-    if (imageoverlay->priv->pts == frame->buffer->pts) {
+    if (self->priv->pts == frame->buffer->pts) {
       faces_list = get_faces (faces);
 
       if (faces_list != NULL) {
-        if (!imageoverlay->priv->costume.empty ()) {
-          kms_image_overlay_display_detections_overlay_img (imageoverlay,
-              faces_list);
+        if (!self->priv->costume.empty ()) {
+          kms_image_overlay_display_detections_overlay_img (self, faces_list);
         }
         g_slist_free_full (faces_list, (GDestroyNotify)cvrect_free);
       }
       gst_structure_free (faces);
       break;
-    } else if (imageoverlay->priv->pts < frame->buffer->pts) {
+    } else if (self->priv->pts < frame->buffer->pts) {
       gst_structure_free (faces);
     } else {
-      g_queue_push_head (imageoverlay->priv->events_queue, faces);
+      g_queue_push_head (self->priv->events_queue, faces);
       break;
     }
-    faces = (GstStructure *)g_queue_pop_head (imageoverlay->priv->events_queue);
+    faces = (GstStructure *)g_queue_pop_head (self->priv->events_queue);
   }
 
-  GST_OBJECT_UNLOCK (imageoverlay);
+  GST_OBJECT_UNLOCK (self);
 
   return GST_FLOW_OK;
 }
@@ -577,53 +566,53 @@ kms_image_overlay_dispose (GObject *object)
 static void
 kms_image_overlay_finalize (GObject *object)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
+  KmsImageOverlay *self = KMS_IMAGE_OVERLAY (object);
 
-  imageoverlay->priv->cvImage.release ();
-  imageoverlay->priv->costume.release ();
+  self->priv->cvImage.release ();
+  self->priv->costume.release ();
 
-  if (imageoverlay->priv->image_to_overlay != NULL) {
-    gst_structure_free (imageoverlay->priv->image_to_overlay);
+  if (self->priv->image_to_overlay != NULL) {
+    gst_structure_free (self->priv->image_to_overlay);
   }
 
-  if (imageoverlay->priv->dir_created) {
-    remove_recursive (imageoverlay->priv->dir);
-    g_free (imageoverlay->priv->dir);
+  if (self->priv->dir_created) {
+    remove_recursive (self->priv->dir);
+    g_free (self->priv->dir);
   }
 
-  g_queue_free_full (imageoverlay->priv->events_queue,
+  g_queue_free_full (self->priv->events_queue,
       (GDestroyNotify)dispose_queue_element);
-  imageoverlay->priv->events_queue = NULL;
+  self->priv->events_queue = NULL;
 
   G_OBJECT_CLASS (kms_image_overlay_parent_class)->finalize (object);
 }
 
 static void
-kms_image_overlay_init (KmsImageOverlay *imageoverlay)
+kms_image_overlay_init (KmsImageOverlay *self)
 {
-  imageoverlay->priv = KMS_IMAGE_OVERLAY_GET_PRIVATE (imageoverlay);
+  self->priv = KMS_IMAGE_OVERLAY_GET_PRIVATE (self);
 
-  imageoverlay->priv->show_debug_info = FALSE;
-  imageoverlay->priv->dir_created = FALSE;
+  self->priv->show_debug_info = FALSE;
+  self->priv->dir_created = FALSE;
 
-  imageoverlay->priv->events_queue = g_queue_new ();
+  self->priv->events_queue = g_queue_new ();
 }
 
 static gboolean
 kms_image_overlay_sink_events (GstBaseTransform *trans, GstEvent *event)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (trans);
+  KmsImageOverlay *self = KMS_IMAGE_OVERLAY (trans);
 
   switch (GST_EVENT_TYPE (event)) {
   case GST_EVENT_CUSTOM_DOWNSTREAM: {
     GstStructure *faces;
 
-    GST_OBJECT_LOCK (imageoverlay);
+    GST_OBJECT_LOCK (self);
 
     faces = gst_structure_copy (gst_event_get_structure (event));
-    g_queue_push_tail (imageoverlay->priv->events_queue, faces);
+    g_queue_push_tail (self->priv->events_queue, faces);
 
-    GST_OBJECT_UNLOCK (imageoverlay);
+    GST_OBJECT_UNLOCK (self);
     break;
   }
   default:
@@ -638,10 +627,6 @@ kms_image_overlay_class_init (KmsImageOverlayClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstVideoFilterClass *video_filter_class = GST_VIDEO_FILTER_CLASS (klass);
-
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
-
-  GST_DEBUG ("class init");
 
   /* Setting up pads and setting metadata should be moved to
      base_class_init if you intend to subclass this class. */

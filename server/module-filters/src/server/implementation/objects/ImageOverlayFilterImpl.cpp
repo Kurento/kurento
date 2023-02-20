@@ -38,7 +38,7 @@ ImageOverlayFilterImpl::ImageOverlayFilterImpl (const
   FilterImpl (config, std::dynamic_pointer_cast<MediaObjectImpl>
               ( mediaPipeline) )
 {
-  g_object_set (element, "filter-factory", "logooverlay", NULL);
+  g_object_set (element, "filter-factory", "kmslogooverlay", NULL);
 
   g_object_get (G_OBJECT (element), "filter", &imageOverlay, NULL);
 

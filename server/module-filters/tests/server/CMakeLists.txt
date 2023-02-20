@@ -8,11 +8,11 @@ if(TARGET ${LIBRARY_NAME}module)
 endif()
 
 add_dependencies(test_filters_constructors
-  facedetector
-  faceoverlay
-  imageoverlay
-  movementdetector
-  opencvfilter
+  kmsfacedetector
+  kmsfaceoverlay
+  kmsimageoverlay
+  kmsmovementdetector
+  kmsopencvfilter
 )
 set_property(TARGET test_filters_constructors
   PROPERTY INCLUDE_DIRECTORIES

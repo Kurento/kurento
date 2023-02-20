@@ -45,7 +45,7 @@ GST_START_TEST (set_properties)
   GstElement *faceoverlay;
   GstStructure *imageSt;
 
-  faceoverlay = gst_element_factory_make ("faceoverlay", NULL);
+  faceoverlay = gst_element_factory_make ("kmsfaceoverlay", NULL);
 
   //set face
   imageSt = gst_structure_new ("image",
@@ -193,7 +193,7 @@ GST_START_TEST (player_with_filter)
   pipeline = gst_pipeline_new ("pipeline_live_stream");
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   player = gst_element_factory_make ("playerendpoint", NULL);
-  filter = gst_element_factory_make ("faceoverlay", NULL);
+  filter = gst_element_factory_make ("kmsfaceoverlay", NULL);
   fakesink_audio = gst_element_factory_make ("fakesink", NULL);
   fakesink_video = gst_element_factory_make ("fakesink", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -257,7 +257,7 @@ GST_START_TEST (player_with_filter)
 GST_END_TEST static Suite *
 faceoverlay_suite (void)
 {
-  Suite *s = suite_create ("faceoverlay");
+  Suite *s = suite_create ("kmsfaceoverlay");
   TCase *tc_chain = tcase_create ("element");
 
   tcase_set_timeout (tc_chain, 30.0);
