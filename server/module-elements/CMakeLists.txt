@@ -17,7 +17,7 @@ set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of ent
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/src/server")
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}") # find_package() search path for `FindKmsRtpEndpointLib.cmake`, `FindKmsWebRtcEndpointLib.cmake`.
 
-# Export search paths if this is not the top-level project.
+# Export CMake search paths if this is not the top-level project.
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
   set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
@@ -68,11 +68,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=incompatible-pointer-types")
 
 # Generate file "config.h"
-set(VERSION ${PROJECT_VERSION})
-set(PACKAGE ${PROJECT_NAME})
+set(VERSION "${PROJECT_VERSION}")
+set(PACKAGE "${PROJECT_NAME}")
 set(GETTEXT_PACKAGE "${PROJECT_NAME}")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
-set(KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
+set(KURENTO_MODULES_SO_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX}")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")

@@ -16,11 +16,20 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Kurento")
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/src/server")
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}") # find_package() search path for `FindKmsGstCommons.cmake`.
 
-# Export search paths if this is not the top-level project.
+# Export CMake search paths if this is not the top-level project.
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
   set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
 endif()
+
+# Declare installation of CMake modules provided by this project.
+install(
+  FILES
+    cmake/Kurento/CodeGenerator.cmake
+    cmake/Kurento/FindMaven.cmake
+    cmake/Kurento/FindNpm.cmake
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
+)
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
@@ -96,8 +105,8 @@ if(${HAVE_PTHREAD_SETNAME_NP_WITH_TID})
 endif()
 
 # Generate file "config.h"
-set(VERSION ${PROJECT_VERSION})
-set(PACKAGE ${PROJECT_NAME})
+set(VERSION "${PROJECT_VERSION}")
+set(PACKAGE "${PROJECT_NAME}")
 set(GETTEXT_PACKAGE "${PROJECT_NAME}")
 set(MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -140,12 +149,3 @@ enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)
-
-# Kurento CMake modules.
-install(
-  FILES
-    cmake/Kurento/CodeGenerator.cmake
-    cmake/Kurento/FindMaven.cmake
-    cmake/Kurento/FindNpm.cmake
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/Kurento
-)
