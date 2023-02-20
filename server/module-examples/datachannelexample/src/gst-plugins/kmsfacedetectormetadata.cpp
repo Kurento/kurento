@@ -144,9 +144,9 @@ kms_face_detector_metadata_initialize_images (
 
   if (facedetector->priv->cvImage.empty ()
       || facedetector->priv->cvImage.size () != cv::Size (width, height)) {
-    int target_width = width <= MAX_WIDTH ? width : MAX_WIDTH;
+    const int target_width = width <= MAX_WIDTH ? width : MAX_WIDTH;
 
-    facedetector->priv->resize_factor = width / target_width;
+    facedetector->priv->resize_factor = (gdouble)width / target_width;
 
     facedetector->priv->cvResizedImage = cv::Mat (
         cv::Size (target_width, height / facedetector->priv->resize_factor),
@@ -205,8 +205,8 @@ kms_face_detector_metadata_transform_frame_ip (GstVideoFilter *filter,
 {
   KmsFaceDetectorMetadata *facedetector = KMS_FACE_DETECTOR_METADATA (filter);
 
-  if ((facedetector->priv->haar_detector)
-      && (facedetector->priv->face_cascade.empty ())) {
+  if (facedetector->priv->haar_detector
+      && facedetector->priv->face_cascade.empty ()) {
     return GST_FLOW_OK;
   }
 
