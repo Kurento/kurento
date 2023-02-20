@@ -31,8 +31,6 @@
 
 #include <glib/gprintf.h>
 
-#define PLUGIN_NAME "facedetector"
-
 #define FACE_HAAR_FILE \
   "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
 #define FACE_CASCADE "/usr/share/opencv4/lbpcascades/lbpcascade_frontalface.xml"
@@ -46,6 +44,7 @@
 
 GST_DEBUG_CATEGORY_STATIC (kms_face_detector_debug_category);
 #define GST_CAT_DEFAULT kms_face_detector_debug_category
+#define PLUGIN_NAME "facedetector"
 
 #define KMS_FACE_DETECTOR_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_FACE_DETECTOR, \

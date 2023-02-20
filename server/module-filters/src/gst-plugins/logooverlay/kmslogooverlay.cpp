@@ -40,10 +40,9 @@
 #define TEMP_PATH "/tmp/XXXXXX"
 #define SRC_OVERLAY ((double)1)
 
-#define PLUGIN_NAME "logooverlay"
-
 GST_DEBUG_CATEGORY_STATIC (kms_logo_overlay_debug_category);
 #define GST_CAT_DEFAULT kms_logo_overlay_debug_category
+#define PLUGIN_NAME "logooverlay"
 
 #define KMS_LOGO_OVERLAY_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_LOGO_OVERLAY, \

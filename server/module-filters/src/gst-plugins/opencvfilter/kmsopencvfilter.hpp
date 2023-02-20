@@ -21,6 +21,7 @@
 #include <gst/video/gstvideofilter.h>
 
 G_BEGIN_DECLS
+
 #define KMS_TYPE_OPENCV_FILTER (kms_opencv_filter_get_type ())
 #define KMS_OPENCV_FILTER(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), KMS_TYPE_OPENCV_FILTER, KmsOpenCVFilter))
@@ -49,4 +50,5 @@ GType kms_opencv_filter_get_type (void);
 gboolean kms_opencv_filter_plugin_init (GstPlugin *plugin);
 
 G_END_DECLS
+
 #endif /* _KMS_OPENCV_FILTER_H_ */

@@ -33,8 +33,6 @@
 
 #include <memory>
 
-#define PLUGIN_NAME "opencvfilter"
-
 #define KMS_OPENCV_FILTER_LOCK(self) \
   (g_rec_mutex_lock (&((KmsOpenCVFilter *)(self))->priv->mutex))
 
@@ -43,6 +41,7 @@
 
 GST_DEBUG_CATEGORY_STATIC (kms_opencv_filter_debug_category);
 #define GST_CAT_DEFAULT kms_opencv_filter_debug_category
+#define PLUGIN_NAME "opencvfilter"
 
 #define KMS_OPENCV_FILTER_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_OPENCV_FILTER, \

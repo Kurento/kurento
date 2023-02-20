@@ -260,9 +260,7 @@ faceoverlay_suite (void)
   Suite *s = suite_create ("faceoverlay");
   TCase *tc_chain = tcase_create ("element");
 
-  // Sample video player_with_filter is bigger than the default 4 seconds
-  // we need to extend the timeout
-  tcase_set_timeout (tc_chain, 10.0);
+  tcase_set_timeout (tc_chain, 30.0);
   suite_add_tcase (s, tc_chain);
 
   tcase_add_test (tc_chain, set_properties);

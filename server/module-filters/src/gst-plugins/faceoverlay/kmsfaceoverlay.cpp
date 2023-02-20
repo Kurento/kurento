@@ -22,10 +22,9 @@
 
 #include <gst/gst.h>
 
-#define PLUGIN_NAME "faceoverlay"
-
 GST_DEBUG_CATEGORY_STATIC (kms_face_overlay_debug_category);
 #define GST_CAT_DEFAULT kms_face_overlay_debug_category
+#define PLUGIN_NAME "faceoverlay"
 
 #define KMS_FACE_OVERLAY_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_FACE_OVERLAY, \

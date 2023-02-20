@@ -28,10 +28,9 @@
 
 #include <vector>
 
-#define PLUGIN_NAME "movementdetector"
-
 GST_DEBUG_CATEGORY_STATIC (kms_movement_detector_debug_category);
 #define GST_CAT_DEFAULT kms_movement_detector_debug_category
+#define PLUGIN_NAME "movementdetector"
 
 /* pad templates */
 
