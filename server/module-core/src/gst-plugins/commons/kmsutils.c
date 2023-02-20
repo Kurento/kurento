@@ -1246,15 +1246,17 @@ kms_event_data_destroy (gpointer user_data)
 {
   KmsEventData *data = user_data;
 
-  if (data->next != NULL) {
-    kms_event_data_destroy (data->next);
+  if (data != NULL) {
+      if (data->next != NULL) {
+          kms_event_data_destroy (data->next);
+      }
+      
+      if (data->user_notify != NULL) {
+          data->user_notify (data->user_data);
+      }
+      
+      g_slice_free (KmsEventData, data);
   }
-
-  if (data->user_notify != NULL) {
-    data->user_notify (data->user_data);
-  }
-
-  g_slice_free (KmsEventData, data);
 }
 
 static gboolean
