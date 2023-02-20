@@ -52,15 +52,15 @@ Open a terminal and run these commands:
 
    .. code-block:: shell
 
-      # Import the Kurento repository signing key
+      # Get DISTRIB_* env vars.
+      source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+
+      # Add Kurento repository key for apt-get.
       sudo apt-key adv \
           --keyserver keyserver.ubuntu.com \
           --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
-      # Get Ubuntu version definitions
-      source /etc/lsb-release
-
-      # Add the repository to Apt
+      # Add Kurento repository line for apt-get.
       sudo tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
       # Kurento Media Server - Nightly packages
       deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME main

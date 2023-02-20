@@ -64,43 +64,48 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Configure Apt:
 # * Disable installation of recommended and suggested packages
-RUN echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
- && echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends
+RUN \
+echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
+&& echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends
 
 # Install a basic set of packages
 # * gnupg, iproute2, zip: Tools used by various CI scripts.
-RUN apt-get update && apt-get install --no-install-recommends --yes \
-        gnupg \
-        iproute2 \
-        zip unzip \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get update && apt-get install --no-install-recommends --yes \
+    gnupg \
+    iproute2 \
+    zip unzip \
+&& rm -rf /var/lib/apt/lists/*
 
 # Install an extra set of packages.
 # These are basic build dependencies that end up beind required by most jobs.
-RUN apt-get update && apt-get install --no-install-recommends --yes \
-        build-essential \
-        libglib2.0-dev \
-        wget \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get update && apt-get install --no-install-recommends --yes \
+    build-essential \
+    libglib2.0-dev \
+    wget \
+&& rm -rf /var/lib/apt/lists/*
 
 # Install dependencies of the `kurento-buildpackage` build script
 # (listed in the script header).
-RUN apt-get update && apt-get install --no-install-recommends --yes \
-        python3 python3-pip python3-setuptools python3-wheel \
-        devscripts \
-        dpkg-dev \
-        lintian \
-        git \
-        openssh-client \
-        equivs \
-        coreutils \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get update && apt-get install --no-install-recommends --yes \
+    python3 python3-pip python3-setuptools python3-wheel \
+    devscripts \
+    dpkg-dev \
+    lintian \
+    git \
+    openssh-client \
+    equivs \
+    coreutils \
+&& rm -rf /var/lib/apt/lists/*
 
 # Configure Git user, which will appear in the Debian Changelog files
 # (this is required by Git-BuildPackage)
-RUN git config --system user.name "Kurento" \
- && git config --system user.email "kurento@openvidu.io" \
- && git config --global --add safe.directory '*'
+RUN \
+git config --system user.name "Kurento" \
+&& git config --system user.email "kurento@openvidu.io" \
+&& git config --global --add safe.directory '*'
 
 # Install the Git-BuildPackage tool for creation of .deb files.
 RUN python3 -m pip install --upgrade gbp

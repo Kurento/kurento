@@ -254,8 +254,8 @@ fi
 
 
 
-echo "# (Optional) Add Kurento repo"
-# ==================================
+echo "# (Optional) Install Kurento Media Server"
+# ==============================================
 
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
@@ -304,21 +304,23 @@ echo "# (Optional) Install debug symbols"
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
 
+# Add Ubuntu debug repository key for apt-get.
 apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
 || apt-key adv \
     --keyserver keyserver.ubuntu.com \
     --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
+# Add Ubuntu debug repository line for apt-get.
 tee /etc/apt/sources.list.d/ddebs.list >/dev/null <<EOF
 deb http://ddebs.ubuntu.com $DISTRIB_CODENAME main restricted universe multiverse
-deb http://ddebs.ubuntu.com $DISTRIB_CODENAME-updates main restricted universe multiverse
+deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
 EOF
 
+# Install debug packages.
 # The debug packages repository fails very often due to bad server state.
 # Try to update, and only if it works install debug symbols.
-if apt-get update; then
-    apt-get install --no-install-recommends --yes kurento-dbg
-fi
+apt-get update && apt-get install --no-install-recommends --yes \
+    kurento-dbg
 
 
 

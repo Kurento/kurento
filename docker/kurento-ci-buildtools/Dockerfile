@@ -35,16 +35,17 @@ ENV APT_KEEP_CACHE="false"
 # Install Node, NPM, and Bower (fox JavaScript-based projects)
 # - Tested Node version: 18.
 # - Tested NPM version: 8.
-RUN apt-get update && apt-get install --no-install-recommends --yes \
-        wget \
- && wget --no-verbose -O - https://deb.nodesource.com/setup_18.x | bash - \
- && apt-get update && apt-get install --no-install-recommends --yes \
-        nodejs \
- && rm -rf /var/lib/apt/lists/* \
- && npm config set color false \
- && npm install -g 'npm@^8' \
- && npm install -g bower \
- && npm cache clean --force
+RUN \
+apt-get update && apt-get install --no-install-recommends --yes \
+    wget \
+&& wget --no-verbose -O - https://deb.nodesource.com/setup_18.x | bash - \
+&& apt-get update && apt-get install --no-install-recommends --yes \
+    nodejs \
+&& rm -rf /var/lib/apt/lists/* \
+&& npm config set color false \
+&& npm install -g 'npm@^8' \
+&& npm install -g bower \
+&& npm cache clean --force
 
 # Install packages
 # * build-essential: For C/C++ Kurento modules that generate client SDK files
@@ -58,17 +59,18 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 # * ffmpeg: For different integration testst that generate an RTP stream
 # * libmediainfo-dev: MediaInfoLibrary class
 # * netcat: KmsService class, to check if KMS port is already in use
-RUN apt-get update && apt-get install --no-install-recommends --yes \
-        build-essential \
-        curl \
-        default-jdk \
-        maven \
-        jq jshon \
-        rsync \
-        ffmpeg \
-        libmediainfo-dev \
-        netcat-openbsd \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get update && apt-get install --no-install-recommends --yes \
+    build-essential \
+    curl \
+    default-jdk \
+    maven \
+    jq jshon \
+    rsync \
+    ffmpeg \
+    libmediainfo-dev \
+    netcat-openbsd \
+&& rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/bin/bash"]
 CMD []

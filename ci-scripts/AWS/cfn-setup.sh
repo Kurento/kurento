@@ -17,28 +17,32 @@ shopt -s inherit_errexit 2>/dev/null || true
 # Trace all commands (to stderr).
 set -o xtrace
 
+# Get DISTRIB_* env vars.
+source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+
 
 
 # Kurento Media Server
 # ====================
 
 # Make sure that GnuPG is installed (needed for `apt-key adv`).
-apt-get update ; apt-get install --yes gnupg
+apt-get update ; apt-get install --no-install-recommends --yes \
+    gnupg
 
-# Import the Kurento repository signing key.
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+# Add Kurento repository key for apt-get.
+apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
-# Get Ubuntu version definitions.
-source /etc/lsb-release
-
-# Add the repository to Apt.
+# Add Kurento repository line for apt-get.
 tee /etc/apt/sources.list.d/kurento.list >/dev/null <<EOF
 # Kurento Media Server - Release packages
-deb [arch=amd64] http://ubuntu.openvidu.io/{{KmsVersion}} ${DISTRIB_CODENAME} main
+deb [arch=amd64] http://ubuntu.openvidu.io/{{KmsVersion}} $DISTRIB_CODENAME main
 EOF
 
 # Install.
-apt-get update ; apt-get install --yes kurento-media-server
+apt-get update ; apt-get install --yes \
+    kurento-media-server
 
 # Enable system service.
 systemctl enable kurento-media-server
@@ -49,7 +53,7 @@ systemctl enable kurento-media-server
 # ======
 
 # Install.
-apt-get update ; apt-get install --yes coturn kurento-media-server
+apt-get update ; apt-get install --yes coturn
 
 # Enable system service.
 tee /etc/default/coturn >/dev/null <<'EOF'

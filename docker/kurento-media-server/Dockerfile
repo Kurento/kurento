@@ -93,63 +93,80 @@ ENV LANG="C.UTF-8"
 # * dnsutils: For `dig` in `getmyip.sh`.
 # * gnupg: For `apt-key adv` (Since Ubuntu 18.04).
 # * nano: Not required but useful for edits while troubleshooting.
-RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        ca-certificates \
-        curl \
-        dnsutils \
-        gnupg \
-        nano \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    ca-certificates \
+    curl \
+    dnsutils \
+    gnupg \
+    nano \
+&& rm -rf /var/lib/apt/lists/*
 
-# Add Kurento Apt package repository.
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
- && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
+# Add Kurento repository key for apt-get.
+RUN \
+apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
+
+# Add Kurento repository line for apt-get.
+RUN \
+echo "deb [arch=amd64] http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME main" \
+    >/etc/apt/sources.list.d/kurento.list
 
 # Install Kurento Media Server.
-RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        kurento-media-server \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    kurento-media-server \
+&& rm -rf /var/lib/apt/lists/*
 
 # Install additional modules.
 # These might not be all available, so install separately and allow errors.
-RUN apt-get $APT_ARGS update && \
-    for PACKAGE in \
-        kurento-module-chroma \
-        kurento-module-crowddetector \
-        kurento-module-datachannelexample \
-        kurento-module-markerdetector \
-        kurento-module-platedetector \
-        kurento-module-pointerdetector ; \
-    do \
-        apt-get $APT_ARGS install --no-install-recommends --yes "$PACKAGE" || true ; \
-    done \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get $APT_ARGS update \
+&& for PACKAGE in \
+    kurento-module-chroma \
+    kurento-module-crowddetector \
+    kurento-module-datachannelexample \
+    kurento-module-markerdetector \
+    kurento-module-platedetector \
+    kurento-module-pointerdetector ; \
+do \
+    apt-get $APT_ARGS install --no-install-recommends --yes "$PACKAGE" || true ; \
+done \
+&& rm -rf /var/lib/apt/lists/*
 
 # Install additional tools that are indirectly used by some GStreamer plugins:
 # * gstreamer-tools: Allows running the command `gst-inspect`.
 #   Useful for troubleshooting and debugging installed GStreamer plugins.
 # * gstreamer-x: Video rendering plugins for X11 and Pango.
 #   Needed by some overlay elements like "textoverlay".
-RUN apt-get $APT_ARGS update \
- && apt-get $APT_ARGS install --no-install-recommends --yes \
-        gstreamer1.5-tools \
-        gstreamer1.5-x \
- || apt-get $APT_ARGS install --no-install-recommends --yes \
-        gstreamer1.0-tools \
-        gstreamer1.0-x \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    gstreamer1.0-tools \
+    gstreamer1.0-x \
+&& rm -rf /var/lib/apt/lists/*
 
-# Install debug symbols.
-RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        ubuntu-dbgsym-keyring \
- || { \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
-    && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME} main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
-    && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list \
-    && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        kurento-dbg ; \
- } \
- && rm -rf /var/lib/apt/lists/*
+# Add Ubuntu debug repository key for apt-get.
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    ubuntu-dbgsym-keyring \
+|| apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
+&& rm -rf /var/lib/apt/lists/*
+
+# Add Ubuntu debug repository line for apt-get.
+RUN \
+echo "deb http://ddebs.ubuntu.com $UBUNTU_CODENAME main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
+&& echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
+
+# Install debug packages.
+# The debug packages repository fails very often due to bad server state.
+# Try to update, and only if it works install debug symbols.
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    kurento-dbg \
+&& rm -rf /var/lib/apt/lists/*
 
 # Expose default Kurento RPC control port.
 EXPOSE 8888

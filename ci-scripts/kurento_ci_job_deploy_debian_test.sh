@@ -107,80 +107,104 @@ set -o xtrace
 # Disable Apt interactive mode
 export DEBIAN_FRONTEND=noninteractive
 
-# Install required tools
+# Get DISTRIB_* env vars.
+source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+
+
+
+echo "# Install required tools"
+# =============================
+
 apt-get update ; apt-get install --no-install-recommends --yes \
     build-essential \
     ca-certificates \
     cmake \
     git \
-    gnupg \
     pkg-config
 
-# Add Kurento repository
-{
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
 
-    source /etc/lsb-release
 
-    tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
+echo "# Install Kurento Media Server"
+# ===================================
+
+apt-get update ; apt-get install --no-install-recommends --yes \
+    gnupg
+
+# Add Kurento repository key for apt-get.
+apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
+
+# Add Kurento repository line for apt-get.
+tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
 deb [arch=amd64] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME main
 EOF
-}
 
-# Install KMS
+# Install Kurento Media Server.
 apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server
 
-# Install debug symbols
-{
-    apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
-    || apt-key adv \
-            --keyserver keyserver.ubuntu.com \
-            --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
-
-    source /etc/lsb-release
-
-    tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
-deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
-deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
-EOF
-
-    apt-get update ; apt-get install --no-install-recommends --yes \
-        kurento-dbg
-}
-
-# Install build dependencies
+# Install Kurento Media Server development packages.
 apt-get update ; apt-get install --no-install-recommends --yes \
     kurento-media-server-dev
 
-# Download KMS source code
-{
-    git clone https://github.com/Kurento/kurento.git
 
-    cd kurento/server/
 
-    if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
-        echo "Switch to development branch"
-        REF="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD)"
-    elif [[ "$DOCKER_KMS_VERSION" == "dev-"* ]]; then
-        echo "Switch to feature branch"
-        REF="${DOCKER_KMS_VERSION#dev-}"
-    else
-        echo "Switch to release tag"
-        REF="$DOCKER_KMS_VERSION"
-    fi
+echo "# Install debug symbols"
+# ============================
 
-    # Before checkout: Deinit submodules.
-    # Needed because submodule state is not carried over when switching branches.
-    git submodule deinit --all
+# Add Ubuntu debug repository key for apt-get.
+apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
+|| apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
-    git checkout "$REF" || true
+# Add Ubuntu debug repository line for apt-get.
+tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
+deb http://ddebs.ubuntu.com $DISTRIB_CODENAME main restricted universe multiverse
+deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
+EOF
 
-    # After checkout: Re-init submodules.
-    git submodule update --init --recursive
-}
+# Install debug packages.
+# The debug packages repository fails very often due to bad server state.
+# Try to update, and only if it works install debug symbols.
+apt-get update && apt-get install --no-install-recommends --yes \
+    kurento-dbg
 
-# Build and run KMS
+
+
+echo "# Download Kurento source code"
+# ===================================
+
+git clone https://github.com/Kurento/kurento.git
+
+cd kurento/server/
+
+if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
+    echo "Switch to development branch"
+    REF="$(grep -Po 'refs/remotes/origin/\K(.*)' .git/refs/remotes/origin/HEAD)"
+elif [[ "$DOCKER_KMS_VERSION" == "dev-"* ]]; then
+    echo "Switch to feature branch"
+    REF="${DOCKER_KMS_VERSION#dev-}"
+else
+    echo "Switch to release tag"
+    REF="$DOCKER_KMS_VERSION"
+fi
+
+# Before checkout: Deinit submodules.
+# Needed because submodule state is not carried over when switching branches.
+git submodule deinit --all
+
+git checkout "$REF" || true
+
+# After checkout: Re-init submodules.
+git submodule update --init --recursive
+
+
+
+echo "# Build and run Kurento"
+# ============================
+
 export MAKEFLAGS="-j$(nproc)"
 bin/build-run.sh --build-only
 

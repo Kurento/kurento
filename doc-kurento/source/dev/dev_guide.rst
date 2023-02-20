@@ -110,7 +110,7 @@ A developer intending to work on Kurento itself must know how to work with the f
 Development 101
 ===============
 
-KMS is a C/C++ project developed with an Ubuntu system as main target, which means that its dependency management and distribution is based on the Debian package system.
+Kurento is a C/C++ project developed with an Ubuntu system as main target, which means that its dependency management and distribution is based on the Debian package system.
 
 
 
@@ -144,7 +144,7 @@ When a library is packaged, the result usually consists of several packages. The
 Build tools
 -----------
 
-There are several tools for building C/C++ projects: Autotools, Make, CMake, Gradle, etc. The most prominent tool for building projects is the Makefile, and all the other tools tend to be simply wrappers around this one. KMS uses CMake, which generates native Makefiles to build and package the project. There are some IDEs that recognize CMake projects directly, such as `JetBrains CLion <https://www.jetbrains.com/clion/>`__ or `Qt Creator <https://www.qt.io/ide/>`__.
+There are several tools for building C/C++ projects: Autotools, Make, CMake, Gradle, etc. The most prominent tool for building projects is the Makefile, and all the other tools tend to be simply wrappers around this one. Kurento uses CMake, which generates native Makefiles to build and package the project. There are some IDEs that recognize CMake projects directly, such as `JetBrains CLion <https://www.jetbrains.com/clion/>`__ or `Qt Creator <https://www.qt.io/ide/>`__.
 
 A CMake projects consists of several *CMakeLists.txt* files, which define how to compile and package native code into binaries and shared libraries. These files also contain a list of the libraries (dependencies) needed to build the code.
 
@@ -305,26 +305,29 @@ After having :doc:`installed Kurento </user/installation>`, first thing to do is
 
 .. code-block:: shell
 
-   # Import the Ubuntu debug repository signing key
-   sudo apt-key adv \
-       --keyserver keyserver.ubuntu.com \
-       --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
+   # Get DISTRIB_* env vars.
+   source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
-   # Get Ubuntu version definitions
-   source /etc/lsb-release
+   # Add Ubuntu debug repository key for apt-get.
+   apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
+   || apt-key adv \
+      --keyserver keyserver.ubuntu.com \
+      --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
-   # Add the repository to Apt
+   # Add Ubuntu debug repository line for apt-get.
    sudo tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
-   # Official Ubuntu repos with debug packages
-   deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME} main restricted universe multiverse
+   deb http://ddebs.ubuntu.com $DISTRIB_CODENAME main restricted universe multiverse
    deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
    EOF
 
-Now, install all debug symbols that are relevant to KMS:
+Now, install all debug packages that are relevant to Kurento:
 
 .. code-block:: shell
 
-   sudo apt-get update ; sudo apt-get install --no-install-recommends \
+   # Install debug packages.
+   # The debug packages repository fails very often due to bad server state.
+   # Try to update, and only if it works install debug symbols.
+   sudo apt-get update && sudo apt-get install --no-install-recommends --yes \
        kurento-dbg
 
 
@@ -503,7 +506,7 @@ These are the two typical workflows used to work with fork libraries:
 Full cycle
 ----------
 
-This workflow has the easiest and fastest setup, however it also is the slowest one. To make a change, you would edit the code in the library, then build it, generate Debian packages, and lastly install those packages over the ones already installed in your system. It would then be possible to run KMS and see the effect of the changes in the library.
+This workflow has the easiest and fastest setup, however it also is the slowest one. To make a change, you would edit the code in the library, then build it, generate Debian packages, and lastly install those packages over the ones already installed in your system. It would then be possible to run Kurento and see the effect of the changes in the library.
 
 This is of course an extremely cumbersome process to follow during anything more complex than a couple of edits in the library code.
 
@@ -525,7 +528,7 @@ This allows for the fastest development cycle, however the specific instructions
 Create Deb packages
 ===================
 
-You can easily create Debian packages (*.deb* files) for KMS itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
+You can easily create Debian packages (*.deb* files) for Kurento itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
 
 
 

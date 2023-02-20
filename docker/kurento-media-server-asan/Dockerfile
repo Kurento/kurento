@@ -100,42 +100,47 @@ ENV LANG="C.UTF-8"
 # Install tools:
 # * git: For `git clone` in `build.sh`.
 # * gnupg: For `apt-key adv` (Since Ubuntu 18.04).
-RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        git \
-        gnupg \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    git \
+    gnupg \
+&& rm -rf /var/lib/apt/lists/*
 
 # Add Kurento Apt package repository.
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
- && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
+RUN \
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
+&& echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
 
 # Install development tools.
-RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        build-essential \
-        kurento-media-server-dev \
-        maven-debian-helper \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    build-essential \
+    kurento-media-server-dev \
+    maven-debian-helper \
+&& rm -rf /var/lib/apt/lists/*
 
 # Install latest GCC.
 # This is done to use the latest AddressSanitizer, which is always a good idea
 # because it will have better detection capabilities and bugs resolved.
-RUN echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
-        >/etc/apt/sources.list.d/ubuntu-toolchain.list \
- && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
- && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        "gcc-${GCC_VERSION}" \
-        "g++-${GCC_VERSION}" \
-        "cpp-${GCC_VERSION}" \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
+    >/etc/apt/sources.list.d/ubuntu-toolchain.list \
+&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
+&& apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    "gcc-${GCC_VERSION}" \
+    "g++-${GCC_VERSION}" \
+    "cpp-${GCC_VERSION}" \
+&& rm -rf /var/lib/apt/lists/*
 
 # Configure GCC version.
-RUN update-alternatives --remove-all gcc || true \
- && update-alternatives --remove-all g++ || true \
- && update-alternatives --remove-all cpp || true \
- && update-alternatives --install /usr/bin/gcc gcc "/usr/bin/gcc-${GCC_VERSION}" 60 \
-        --slave /usr/bin/g++ g++ "/usr/bin/g++-${GCC_VERSION}" \
-        --slave /usr/bin/cpp cpp "/usr/bin/cpp-${GCC_VERSION}" \
- && update-alternatives --set gcc "/usr/bin/gcc-${GCC_VERSION}"
+RUN \
+update-alternatives --remove-all gcc || true \
+&& update-alternatives --remove-all g++ || true \
+&& update-alternatives --remove-all cpp || true \
+&& update-alternatives --install /usr/bin/gcc gcc "/usr/bin/gcc-${GCC_VERSION}" 60 \
+    --slave /usr/bin/g++ g++ "/usr/bin/g++-${GCC_VERSION}" \
+    --slave /usr/bin/cpp cpp "/usr/bin/cpp-${GCC_VERSION}" \
+&& update-alternatives --set gcc "/usr/bin/gcc-${GCC_VERSION}"
 
 # Download, build, and dist Kurento.
 COPY build.sh /
@@ -151,15 +156,16 @@ FROM ${KMS_IMAGE}
 ARG UBUNTU_CODENAME
 
 # Install latest GCC runtime.
-RUN apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        gnupg \
- && echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
-        >/etc/apt/sources.list.d/ubuntu-toolchain.list \
- && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
- && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-        libgcc1 \
-        libstdc++6 \
- && rm -rf /var/lib/apt/lists/*
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    gnupg \
+&& echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
+    >/etc/apt/sources.list.d/ubuntu-toolchain.list \
+&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
+&& apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    libgcc1 \
+    libstdc++6 \
+&& rm -rf /var/lib/apt/lists/*
 
 # Get the Kurento binaries built in previous stage.
 COPY --from=builder /kurento-asan /kurento-asan

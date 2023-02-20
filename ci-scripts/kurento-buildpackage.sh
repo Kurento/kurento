@@ -352,7 +352,9 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
         # If requested, add the repository
         if [[ "$CFG_APT_ADD_REPO" == "true" ]]; then
             log "Add Kurento repository key for apt-get"
-            apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83
+            apt-key adv \
+                --keyserver keyserver.ubuntu.com \
+                --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
             log "Add Kurento repository line for apt-get"
             echo "$LIST_LINE" | tee -a /etc/apt/sources.list.d/kurento.list
@@ -364,7 +366,9 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
             log ""
             log "Suggested solution 2:"
             log "    Run commands:"
-            log "    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AFA7A83"
+            log "    $ apt-key adv \\"
+            log "        --keyserver keyserver.ubuntu.com \\"
+            log "        --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83"
             log "    $ echo '$LIST_LINE' | sudo tee -a /etc/apt/sources.list.d/kurento.list"
             log ""
             exit 1
