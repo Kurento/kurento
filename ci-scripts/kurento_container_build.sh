@@ -117,9 +117,6 @@ done
 log "### DOCKER IMAGES"
 docker images | grep "$IMAGE_NAME"
 
-log "#### SPACE AVAILABLE"
-df -h
-
 # Push
 if [[ "$PUSH_IMAGES" == "yes" ]]; then
     docker login -u "$KURENTO_DOCKERHUB_USERNAME" -p "$KURENTO_DOCKERHUB_TOKEN"
