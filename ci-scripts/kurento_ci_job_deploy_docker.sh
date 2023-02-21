@@ -112,7 +112,6 @@ export PUSH_IMAGES="yes"
 BUILD_ARGS=""
 BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
-BUILD_ARGS+=" APT_ARGS=-oAcquire::http::Proxy=http://proxy.openvidu.io:3142"
 export BUILD_ARGS
 export TAG_COMMIT="no"
 if [[ "$JOB_RELEASE" == "true" ]]; then
