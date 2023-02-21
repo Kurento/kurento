@@ -412,7 +412,7 @@ log "Install build dependencies"
 
 # Notes:
 # * DEBIAN_FRONTEND: In clean Ubuntu systems 'tzdata' might not be installed
-#   yet, but it may be now, so make sure interactive prompts are disabled.
+#   yet, but it may be now, so make sure interactive dialogues are disabled.
 # * Debug::pkgProblemResolver=yes: Show details about the dependency resolution.
 #   Doc: http://manpages.ubuntu.com/manpages/man5/apt.conf.5.html
 # * --target-release '*-backports': Prefer installing newer versions of packages

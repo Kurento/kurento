@@ -84,7 +84,9 @@ ARG UBUNTU_CODENAME
 ARG KMS_VERSION="dev"
 
 # Configure environment:
-# * LANG: Set the default locale for all commands.
+# Run apt-get/dpkg without interactive dialogue.
+ARG DEBIAN_FRONTEND=noninteractive
+# Set the default locale for all commands.
 ENV LANG="C.UTF-8"
 
 # Install tools:

@@ -104,7 +104,7 @@ set -o errexit -o errtrace -o pipefail -o nounset
 # Trace all commands
 set -o xtrace
 
-# Disable Apt interactive mode
+# Run apt-get/dpkg without interactive dialogue.
 export DEBIAN_FRONTEND=noninteractive
 
 # Get DISTRIB_* env vars.

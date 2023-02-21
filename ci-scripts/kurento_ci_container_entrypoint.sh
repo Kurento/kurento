@@ -24,6 +24,7 @@ echo "[kurento_ci_container_entrypoint] Preparing environment..."
 BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
 export PATH="$BASEPATH:$PATH"
 
+# Run apt-get/dpkg without interactive dialogue.
 export DEBIAN_FRONTEND=noninteractive
 
 echo "[kurento_ci_container_entrypoint] Show environment..."
