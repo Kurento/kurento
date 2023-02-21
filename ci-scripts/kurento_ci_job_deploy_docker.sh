@@ -101,7 +101,7 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     DOCKER_KMS_VERSION="$KMS_VERSION"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy a feature branch image"
-    DOCKER_KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
+    DOCKER_KMS_VERSION="dev-$JOB_DEPLOY_NAME"
 else
     log "Deploy a development branch image"
     DOCKER_KMS_VERSION="dev"
@@ -122,17 +122,17 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     export EXTRA_TAGS="$KMS_VERSION_MAJ_MIN $KMS_VERSION_MAJ latest"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     # Main tag: "dev-deploy-name"
-    export TAG="dev-${JOB_DEPLOY_NAME}"
+    export TAG="dev-$JOB_DEPLOY_NAME"
     export EXTRA_TAGS=""
 else
     # Main tag: "dev-1.2.3"
     # Moving tag(s): "dev-1.2", "dev"
-    export TAG="dev-${KMS_VERSION}"
-    export EXTRA_TAGS="dev-${KMS_VERSION_MAJ_MIN} dev"
+    export TAG="dev-$KMS_VERSION"
+    export EXTRA_TAGS="dev-$KMS_VERSION_MAJ_MIN dev"
 fi
-"${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
+"$KURENTO_SCRIPTS_HOME/kurento_container_build.sh"
 
-log "New Docker image built: 'kurento/kurento-media-server:${TAG}'"
+log "New Docker image built: 'kurento/kurento-media-server:$TAG'"
 
 
 

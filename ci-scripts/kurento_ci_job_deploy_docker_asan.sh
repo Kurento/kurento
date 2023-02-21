@@ -99,16 +99,16 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
     DOCKER_SOURCE_TAG="$KMS_VERSION"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy a feature branch image"
-    DOCKER_KMS_VERSION="dev-${JOB_DEPLOY_NAME}"
-    DOCKER_SOURCE_TAG="dev-${JOB_DEPLOY_NAME}"
+    DOCKER_KMS_VERSION="dev-$JOB_DEPLOY_NAME"
+    DOCKER_SOURCE_TAG="dev-$JOB_DEPLOY_NAME"
 else
     log "Deploy a development branch image"
     DOCKER_KMS_VERSION="dev"
-    DOCKER_SOURCE_TAG="dev-${KMS_VERSION}"
+    DOCKER_SOURCE_TAG="dev-$KMS_VERSION"
 fi
 
 # Best effort to check if the given source tag does actually exist.
-DOCKER_KMS_IMAGE="kurento/kurento-media-server:${DOCKER_SOURCE_TAG}"
+DOCKER_KMS_IMAGE="kurento/kurento-media-server:$DOCKER_SOURCE_TAG"
 if docker manifest >/dev/null 2>&1; then
     # The experimental command `docker manifest` is available.
     if ! docker manifest inspect "$DOCKER_KMS_IMAGE" >/dev/null 2>&1; then
@@ -153,9 +153,9 @@ else
     export TAG="dev-${KMS_VERSION}-asan"
     export EXTRA_TAGS=""
 fi
-"${KURENTO_SCRIPTS_HOME}/kurento_container_build.sh"
+"$KURENTO_SCRIPTS_HOME/kurento_container_build.sh"
 
-log "New Docker image built: 'kurento/kurento-media-server:${TAG}'"
+log "New Docker image built: 'kurento/kurento-media-server:$TAG'"
 
 
 
