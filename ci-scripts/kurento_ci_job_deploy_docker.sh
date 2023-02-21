@@ -127,7 +127,7 @@ else
     # Main tag: "dev-1.2.3"
     # Moving tag(s): "dev-1.2", "dev"
     export TAG="dev-$KMS_VERSION"
-    export EXTRA_TAGS="dev-$KMS_VERSION_MAJ_MIN dev"
+    export EXTRA_TAGS="dev-$KMS_VERSION_MAJ_MIN dev-$KMS_VERSION_MAJ dev"
 fi
 "$KURENTO_SCRIPTS_HOME/kurento_container_build.sh"
 
