@@ -189,7 +189,8 @@ echo "CFG_RELEASE=$CFG_RELEASE"
 # Step 1: Create repo
 # ===================
 
-if ! aptly repo list -raw | grep --quiet --line-regexp "${CFG_REPO_NAME}"; then
+APTLY_OUTPUT="$(aptly repo list -raw)"
+if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp "$CFG_REPO_NAME"; then
     echo "Create new repo: $CFG_REPO_NAME"
     aptly repo create -distribution="$CFG_DISTRO_NAME" -component=main "$CFG_REPO_NAME"
 fi
@@ -206,25 +207,26 @@ aptly repo add -force-replace -remove-files "$CFG_REPO_NAME" ./*.*deb
 # Step 3: Publish repo
 # ====================
 
-PUBLISH_ENDPOINT="s3:ubuntu:${CFG_PUBLISH_NAME}"
+PUBLISH_ENDPOINT="s3:ubuntu:$CFG_PUBLISH_NAME"
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
     # Aptly docs:
     # > It is not recommended to publish local repositories directly unless the
     # > repository is for testing purposes and changes happen frequently. For
     # > production usage please take snapshot of repository and publish it.
-    SNAP_NAME="snap-${CFG_REPO_NAME}"
+    SNAP_NAME="snap-$CFG_REPO_NAME"
 
     echo "Create and publish new release snapshot: $SNAP_NAME"
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
     aptly publish snapshot -gpg-key="$GPGKEY" "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
-    if aptly publish list -raw | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
-        echo "Update already published development repo: $CFG_REPO_NAME"
-        aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
-    else
+    APTLY_OUTPUT="$(aptly publish list -raw)"
+    if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
         echo "Publish new development repo: $CFG_REPO_NAME"
         aptly publish repo -gpg-key="$GPGKEY" -force-overwrite "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
+    else
+        echo "Update already published development repo: $CFG_REPO_NAME"
+        aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
     fi
 fi
 
