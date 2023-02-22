@@ -64,7 +64,7 @@ MVN_ARGS=()
 log "Validate parameters"
 if [[ -n "$MAVEN_SETTINGS" ]]; then
     [[ -f "$MAVEN_SETTINGS" ]] || {
-        log "ERROR: Cannot read file: $MAVEN_SETTINGS"
+        log "ERROR: Cannot read MAVEN_SETTINGS file: $MAVEN_SETTINGS"
         exit 1
     }
     MVN_ARGS+=(--settings "$MAVEN_SETTINGS")

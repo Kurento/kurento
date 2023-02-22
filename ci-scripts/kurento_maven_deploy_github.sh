@@ -38,6 +38,12 @@ function delete_github_version {
         -H "X-GitHub-Api-Version: 2022-11-28" \
         "https://api.github.com/orgs/Kurento/packages/maven/$PROJECT_NAME/versions/$API_VERSION_ID"
 
+    # If there was only a single instance of the given version, GitHub rejects
+    # the deletion with an error message:
+    # "You cannot delete the last version of a package. You must delete the package instead."
+    # But the operation is still successful for our intents. We don't want to be
+    # deleting and recreating the package, only its excess versions.
+
     log "INFO: Successfully deleted version '${PROJECT_NAME}:${PROJECT_VERSION}' from GitHub."
 }
 

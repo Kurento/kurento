@@ -22,29 +22,33 @@ jobs:
 
       - name: "Configure the environment for job script"
         run: |
-          # APTLY_SSH_KEY_PATH="$RUNNER_TEMP/id_aptly"
-          # echo "APTLY_SSH_KEY_PATH=$APTLY_SSH_KEY_PATH" >>$GITHUB_ENV
-          # echo "${{ secrets.APTLY_SSH_PRIVATE_KEY }}" >"$APTLY_SSH_KEY_PATH"
+          # Path to the Maven settings.xml file.
+          MAVEN_SETTINGS_PATH="$GITHUB_WORKSPACE/clients/java/maven-settings/settings.xml"
+          echo "MAVEN_SETTINGS=$MAVEN_SETTINGS_PATH" >>$GITHUB_ENV
+
+          # Env vars used by the Maven settings.xml file.
+          echo "WORKSPACE_PATH=$GITHUB_WORKSPACE" >>$GITHUB_ENV
 
       - name: "Run job script"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+          # Env vars used by the Maven settings.xml file.
           KURENTO_MAVEN_SONATYPE_USERNAME: "${{ secrets.KURENTO_MAVEN_SONATYPE_USERNAME }}"
           KURENTO_MAVEN_SONATYPE_PASSWORD: "${{ secrets.KURENTO_MAVEN_SONATYPE_PASSWORD }}"
           KURENTO_MAVEN_DOWNLOAD_USERNAME: "${{ secrets.KURENTO_MAVEN_DOWNLOAD_USERNAME }}"
           KURENTO_MAVEN_DOWNLOAD_PASSWORD: "${{ secrets.KURENTO_MAVEN_DOWNLOAD_PASSWORD }}"
           KURENTO_MAVEN_UPLOAD_USERNAME: "${{ secrets.KURENTO_MAVEN_UPLOAD_USERNAME }}"
           KURENTO_MAVEN_UPLOAD_PASSWORD: "${{ secrets.KURENTO_MAVEN_UPLOAD_PASSWORD }}"
-          WORKSPACE_PATH: "${{ env.GITHUB_WORKSPACE }}"
-        # working-directory: "${{ inputs.directory }}"
+        working-directory: "clients/java/qa-pom/"
         run: |
           # Compile, package, and deploy the current project.
-          "kurento_maven_deploy.sh"
+          kurento_maven_deploy.sh
 
           # Only create a tag if the deployment process was successful.
           # Allow errors because the tag might already exist (like if the release
           # is being done again after solving some deployment issue).
-          "kurento_check_version.sh true || { echo 'WARNING: Command failed: kurento_check_version (tagging enabled)'; }"
+          kurento_check_version.sh true || { echo 'WARNING: Command failed: kurento_check_version (tagging enabled)'; }
 
       # Action: https://github.com/actions/upload-artifact
       - name: "Archive the artifacts"
