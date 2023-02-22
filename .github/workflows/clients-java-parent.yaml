@@ -1,0 +1,16 @@
+name: "Clients: Build All Java (Parent)"
+
+on:
+  # Manual trigger.
+  workflow_dispatch:
+
+  # Trigger from other job.
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Say Hello"
+        run: |
+          echo "Hello World!"
