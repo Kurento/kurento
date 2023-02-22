@@ -157,13 +157,9 @@ And the example Kurento modules, which depend on Kurento's *core*, *elements*, a
 
 With this, the Media Server part of Kurento is built and ready for use. This includes an JSON-RPC server that listens for connections and speaks the :doc:`/features/kurento_protocol`.
 
-To make life easier for application developers, there is a Java and a JavaScript client SDK that implements the RPC protocol. These are libraries that get auto-generated from each of the Kurento modules.
+To make life easier for application developers, there is a Java and a JavaScript client SDK that implements the RPC protocol. These are libraries that get auto-generated from each of the Kurento modules. See :ref:`dev-release-java` and :ref:`dev-release-javascript`.
 
-The *kurento-utils-js* library must be built before Java modules, because it is a dependency of both *kurento-java* and *kurento-tutorial-java*:
-
-* ``browser/kurento-utils-js`` (`kurento-utils <https://www.npmjs.com/package/kurento-utils>`__)
-
-Now, the main Java Kurento modules and :ref:`dev-release-java`:
+Java release order:
 
 * ``server/module-creator`` (`org.kurento:kurento-module-creator <https://search.maven.org/artifact/org.kurento/kurento-module-creator>`__)
 * ``clients/java/maven-plugin`` (`org.kurento:kurento-maven-plugin <https://search.maven.org/artifact/org.kurento/kurento-maven-plugin>`__)
@@ -175,9 +171,7 @@ Now, the main Java Kurento modules and :ref:`dev-release-java`:
 
 * ``clients/java`` (`org.kurento:kurento-java <https://search.maven.org/artifact/org.kurento/kurento-java>`__, including `org.kurento:kurento-client <https://search.maven.org/artifact/org.kurento/kurento-client>`__)
 
-* ``test/integration`` (`org.kurento:kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento:kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
-
-After *kurento-java* is done, the client code for example Kurento modules (which depend on *kurento-client*) can be built:
+After *kurento-client* is done, the client code for example Kurento modules can be built:
 
 * ``server/module-examples/chroma`` (`org.kurento.module:chroma <https://search.maven.org/artifact/org.kurento.module/chroma>`__)
 * ``server/module-examples/crowddetector`` (`org.kurento.module:crowddetector <https://search.maven.org/artifact/org.kurento.module/crowddetector>`__)
@@ -185,6 +179,11 @@ After *kurento-java* is done, the client code for example Kurento modules (which
 * ``server/module-examples/markerdetector`` (`org.kurento.module:markerdetector <https://search.maven.org/artifact/org.kurento.module/markerdetector>`__)
 * ``server/module-examples/platedetector`` (`org.kurento.module:platedetector <https://search.maven.org/artifact/org.kurento.module/platedetector>`__)
 * ``server/module-examples/pointerdetector`` (`org.kurento.module:pointerdetector <https://search.maven.org/artifact/org.kurento.module/pointerdetector>`__)
+
+Now, the Kurento testing packages (which depend on some of the example modules). *kurento-utils-js* library must also be built at this stage, because it is a dependency of *kurento-test*:
+
+* ``browser/kurento-utils-js`` (`kurento-utils <https://www.npmjs.com/package/kurento-utils>`__)
+* ``test/integration`` (`org.kurento:kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento:kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
 
 And lastly, the tutorials (which depend on the example modules):
 
@@ -842,9 +841,7 @@ Release order:
 
 * ``clients/java`` (`org.kurento:kurento-java <https://search.maven.org/artifact/org.kurento/kurento-java>`__, including `org.kurento:kurento-client <https://search.maven.org/artifact/org.kurento/kurento-client>`__)
 
-* ``test/integration`` (`org.kurento:kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento:kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
-
-After *kurento-java* is done, the client code for example Kurento modules (which depend on *kurento-client*) can be built:
+After *kurento-client* is done, the client code for example Kurento modules can be built:
 
 * ``server/module-examples/chroma`` (`org.kurento.module:chroma <https://search.maven.org/artifact/org.kurento.module/chroma>`__)
 * ``server/module-examples/crowddetector`` (`org.kurento.module:crowddetector <https://search.maven.org/artifact/org.kurento.module/crowddetector>`__)
@@ -852,6 +849,11 @@ After *kurento-java* is done, the client code for example Kurento modules (which
 * ``server/module-examples/markerdetector`` (`org.kurento.module:markerdetector <https://search.maven.org/artifact/org.kurento.module/markerdetector>`__)
 * ``server/module-examples/platedetector`` (`org.kurento.module:platedetector <https://search.maven.org/artifact/org.kurento.module/platedetector>`__)
 * ``server/module-examples/pointerdetector`` (`org.kurento.module:pointerdetector <https://search.maven.org/artifact/org.kurento.module/pointerdetector>`__)
+
+Now, the Kurento testing packages (which depend on some of the example modules). *kurento-utils-js* library must also be built at this stage, because it is a dependency of *kurento-test*:
+
+* ``browser/kurento-utils-js`` (`kurento-utils <https://www.npmjs.com/package/kurento-utils>`__)
+* ``test/integration`` (`org.kurento:kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento:kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
 
 And lastly, the tutorials (which depend on the example modules):
 

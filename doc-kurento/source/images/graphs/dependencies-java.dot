@@ -6,28 +6,27 @@ digraph dependencies_all {
 
   rankdir = "RL";
 
-  "kurento-module-creator";
-  "kurento-maven-plugin" -> "kurento-module-creator";
+  "module-creator";
+  "maven-plugin" -> "module-creator";
+  "kms-api-core" -> {"maven-plugin"};
+  "kms-api-elements" -> {"kms-api-core"};
+  "kms-api-filters" -> {"kms-api-elements"};
 
-  "kms-api-core" -> {"kurento-maven-plugin"};
-  "kms-api-elements" -> {"kurento-maven-plugin"};
-  "kms-api-filters" -> {"kurento-maven-plugin"};
+  "qa-pom";
 
-  "kurento-qa-pom";
-  "kurento-utils-js";
-
-  "kurento-client" -> {"kurento-qa-pom" "kurento-utils-js" "kms-api-core" "kms-api-elements" "kms-api-filters"};
+  "kurento-client" -> {"qa-pom" "kms-api-filters"};
 
   // Example plugins.
-  "kurento-module-chroma" -> {"kurento-maven-plugin" "kurento-client"};
-  "kurento-module-crowddetector" -> {"kurento-maven-plugin" "kurento-client"};
-  "kurento-module-datachannelexample" -> {"kurento-maven-plugin" "kurento-client"};
-  "kurento-module-markerdetector" -> {"kurento-maven-plugin" "kurento-client"};
-  "kurento-module-platedetector" -> {"kurento-maven-plugin" "kurento-client"};
-  "kurento-module-pointerdetector" -> {"kurento-maven-plugin" "kurento-client"};
+  "module-chroma" -> {"kurento-client"};
+  "module-crowddetector" -> {"kurento-client"};
+  "module-datachannelexample" -> {"kurento-client"};
+  "module-markerdetector" -> {"kurento-client"};
+  "module-platedetector" -> {"kurento-client"};
+  "module-pointerdetector" -> {"kurento-client"};
 
-  "kurento-tutorial-java" -> {"kurento-client" "kurento-module-chroma" "kurento-module-crowddetector" "kurento-module-datachannelexample" "kurento-module-platedetector" "kurento-module-pointerdetector"};
-  "kurento-tutorial-test" -> "kurento-tutorial-java";
+  "utils-js";
+  "kurento-test" -> {"utils-js" "kurento-client" "module-chroma" "module-crowddetector" "module-platedetector"};
 
-  "kurento-test" -> {"kurento-client" "kurento-client" "kurento-utils-js" "kurento-module-chroma" "kurento-module-crowddetector" "kurento-module-platedetector"};
+  "tutorial-java" -> {"kurento-client" "module-chroma" "module-crowddetector" "module-datachannelexample" "module-platedetector" "module-pointerdetector"};
+  "tutorial-test" -> "tutorial-java";
 }

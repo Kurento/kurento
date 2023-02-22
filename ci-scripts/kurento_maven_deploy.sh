@@ -74,7 +74,7 @@ fi
 # Maven arguments that are common to all commands.
 MVN_ARGS+=(
     --batch-mode
-    #--no-transfer-progress # TODO: Uncomment this line when the image kurento/kurento-ci-buildtools is updated to use Maven >= 3.6.1 (Ubuntu >= 20.04)
+    --no-transfer-progress
     -Dmaven.test.skip=true
 )
 

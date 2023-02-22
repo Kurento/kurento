@@ -1,16 +1,66 @@
 name: "Clients: Build Java module (Reusable workflow)"
 
 on:
-  # Manual trigger.
-  workflow_dispatch:
-
-  # Trigger from other job.
+  # Triggered from other workflows.
   workflow_call:
+
+defaults:
+  run:
+    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    runs-on: ["self-hosted", "dev"]
+    strategy:
+      matrix:
+        jobDistro: ${{ fromJson(inputs.jobDistros) }}
+    timeout-minutes: 30
     steps:
-      - name: "Say Hello"
+      - name: "Check for non-default git ref"
+        id: "git-ref"
         run: |
-          echo "Hello World!"
+          if [[ -n "${{ inputs.jobGitName }}" ]]; then
+            echo "value=${{ inputs.jobGitName }}" >>$GITHUB_OUTPUT
+          else
+            echo "value=main" >>$GITHUB_OUTPUT
+          fi
+
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
+        with:
+          ref: "${{ steps.git-ref.outputs.value }}"
+
+      - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
+        run: |
+          echo "$PWD" >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
+
+      # Action: https://github.com/actions/download-artifact
+      - name: "Copy artifacts from previous jobs"
+        id: "copy-artifacts"
+        if: ${{ inputs.copyArtifacts }}
+        uses: "actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a" # v3.0.2
+        with:
+          name: "artifacts"
+          path: "artifacts/"
+
+      - name: "Run job script"
+        env:
+          JOB_DISTRO: "${{ matrix.jobDistro }}"
+          JOB_GIT_NAME: "${{ inputs.jobGitName }}"
+          JOB_GIT_NAME_FALLBACK: "${{ inputs.jobGitNameFallback }}"
+          JOB_RELEASE: "${{ inputs.jobRelease }}"
+          DISABLE_APT_PROXY: "true"
+          INSTALL_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
+        working-directory: "${{ inputs.directory }}"
+        run: "kurento_ci_job_package_debian.sh"
+
+      # Action: https://github.com/actions/upload-artifact
+      - name: "Archive the artifacts"
+        uses: "actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce" # v3.1.2
+        with:
+          name: "artifacts"
+          path: "${{ inputs.directory }}/*.*deb"

@@ -108,7 +108,7 @@ Edit the settings file to include this:
                <id>snapshot</id>
                <repositories>
                    <repository>
-                       <id>kurento-github-public</id>
+                       <id>kurento-github-download</id>
                        <name>Kurento GitHub Maven packages (public access)</name>
                        <url>https://public:&#103;hp_fW4yqnUBB4LZvk8DE6VEbsu6XdnSBZ466WEJ@maven.pkg.github.com/kurento/*</url>
                        <releases>
@@ -121,7 +121,7 @@ Edit the settings file to include this:
                </repositories>
                <pluginRepositories>
                    <pluginRepository>
-                       <id>kurento-github-public</id>
+                       <id>kurento-github-download</id>
                        <name>Kurento GitHub Maven packages (public access)</name>
                        <url>https://public:&#103;hp_fW4yqnUBB4LZvk8DE6VEbsu6XdnSBZ466WEJ@maven.pkg.github.com/kurento/*</url>
                        <releases>
@@ -186,7 +186,7 @@ This method consists on explicitly adding access to the snapshots repository, fo
        ...
        <repositories>
            <repository>
-               <id>kurento-github-public</id>
+               <id>kurento-github-download</id>
                <name>Kurento GitHub Maven packages (public access)</name>
                <url>https://public:&#103;hp_fW4yqnUBB4LZvk8DE6VEbsu6XdnSBZ466WEJ@maven.pkg.github.com/kurento/*</url>
                <releases>
@@ -199,7 +199,7 @@ This method consists on explicitly adding access to the snapshots repository, fo
        </repositories>
        <pluginRepositories>
            <pluginRepository>
-               <id>kurento-github-public</id>
+               <id>kurento-github-download</id>
                <name>Kurento GitHub Maven packages (public access)</name>
                <url>https://public:&#103;hp_fW4yqnUBB4LZvk8DE6VEbsu6XdnSBZ466WEJ@maven.pkg.github.com/kurento/*</url>
                <releases>
