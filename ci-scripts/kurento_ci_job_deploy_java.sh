@@ -26,7 +26,10 @@ set -o xtrace
 # ================
 
 docker run -i --rm --pull always \
+    --user="$(id -u)":"$(id -g)" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
+    --mount type=bind,src="$MAVEN_LOCAL_REPOSITORY_PATH",dst=/maven-repository \
+    --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \
     --workdir /workdir \
     --env-file "$ENV_PATH" \
@@ -39,17 +42,11 @@ shopt -s inherit_errexit 2>/dev/null || true
 # Trace all commands (to stderr).
 set -o xtrace
 
-# Add ci-scripts to PATH.
+# Configure the environment.
 export PATH="/ci-scripts:\$PATH"
+export MAVEN_LOCAL_REPOSITORY_PATH="/maven-repository"
 
 # Compile, package, and deploy the current project.
-kurento_maven_deploy.sh
-
-# Only create a tag if the deployment process was successful.
-# Allow errors because the tag might already exist (like if the release
-# is being done again after solving some deployment issue).
-kurento_check_version.sh true || {
-    echo "WARNING: Command failed: kurento_check_version (tagging enabled)"
-}
+kurento_maven_deploy.sh --maven-settings-path /maven-settings.xml
 
 DOCKERCOMMANDS

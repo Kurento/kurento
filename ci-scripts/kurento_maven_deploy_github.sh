@@ -42,7 +42,7 @@ function delete_github_version {
     # the deletion with an error message:
     # "You cannot delete the last version of a package. You must delete the package instead."
     # But the operation is still successful for our intents. We don't want to be
-    # deleting and recreating the package, only its excess versions.
+    # deleting and recreating the whole package, only its excess versions.
 
     log "INFO: Successfully deleted version '${PROJECT_NAME}:${PROJECT_VERSION}' from GitHub."
 }

@@ -37,12 +37,43 @@ MAVEN_DEPLOY_PLUGIN="org.apache.maven.plugins:maven-deploy-plugin:3.1.0"
 MAVEN_JAVADOC_PLUGIN="org.apache.maven.plugins:maven-javadoc-plugin:3.5.0"
 MAVEN_SOURCE_PLUGIN="org.apache.maven.plugins:maven-source-plugin:3.2.1"
 
-# Maven arguments that are common to all commands.
-MVN_ARGS=(
-    --batch-mode
-    --no-transfer-progress
-    -Dmaven.test.skip=true
-)
+
+
+# Parse call arguments
+# ====================
+
+CFG_MAVEN_SETTINGS_PATH=""
+CFG_MAVEN_SIGN_ARTIFACTS="true"
+
+while [[ $# -gt 0 ]]; do
+    case "${1-}" in
+        --maven-settings-path)
+            if [[ -n "${2-}" ]]; then
+                CFG_MAVEN_SETTINGS_PATH="$(realpath "$2")"
+                shift
+            else
+                log "ERROR: --maven-settings-path expects <Path>"
+                exit 1
+            fi
+            ;;
+        --no-sign-artifacts)
+            CFG_MAVEN_SIGN_ARTIFACTS="false"
+            ;;
+        *)
+            log "ERROR: Unknown argument '${1-}'"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+
+
+# Validate config
+# ===============
+
+log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
+log "CFG_MAVEN_SIGN_ARTIFACTS=$CFG_MAVEN_SIGN_ARTIFACTS"
 
 
 
@@ -54,22 +85,33 @@ MVN_ARGS=(
     exit 1
 }
 
-kurento_check_version.sh false || {
+CHECK_VERSION_ARGS=()
+if [[ -n "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
+    CHECK_VERSION_ARGS+=(--maven-settings-path "$CFG_MAVEN_SETTINGS_PATH")
+fi
+
+kurento_check_version.sh "${CHECK_VERSION_ARGS[@]}" || {
     log "ERROR: Command failed: kurento_check_version (tagging disabled)"
     exit 1
 }
 
 
 
-# Validate config
-# ===============
+# Maven call arguments
+# ====================
 
-if [[ -n "${MAVEN_SETTINGS_PATH:-}" ]]; then
-    MVN_ARGS+=(--settings "$MAVEN_SETTINGS_PATH")
-fi
+MVN_ARGS=()
 
-if [[ -z "${MAVEN_SIGN_ARTIFACTS:-}" ]]; then
-    MAVEN_SIGN_ARTIFACTS="true"
+# Arguments that are common to all commands.
+MVN_ARGS+=(
+    --batch-mode
+    --no-transfer-progress
+    -Dmaven.test.skip=true
+)
+
+# Path to the Maven settings.xml file.
+if [[ -n "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
+    MVN_ARGS+=(--settings "$CFG_MAVEN_SETTINGS_PATH")
 fi
 
 
@@ -95,9 +137,11 @@ MVN_ARGS+=(
     -Pdeploy
 )
 
-PROJECT_VERSION="$(kurento_get_version.sh)" || {
-  log "ERROR: Command failed: kurento_get_version"
-  exit 1
+GET_VERSION_ARGS=("${CHECK_VERSION_ARGS[@]}")
+
+PROJECT_VERSION="$(kurento_get_version.sh "${GET_VERSION_ARGS[@]}")" || {
+    log "ERROR: Command failed: kurento_get_version"
+    exit 1
 }
 
 log "Build and deploy version: $PROJECT_VERSION"
@@ -131,7 +175,7 @@ log "Version to deploy is RELEASE"
 
 MVN_ARGS+=(-Pkurento-release)
 
-if [[ $MAVEN_SIGN_ARTIFACTS == "true" ]]; then
+if [[ $CFG_MAVEN_SIGN_ARTIFACTS == "true" ]]; then
     log "Artifact signing on deploy is ENABLED"
 
     MVN_ARGS+=(-Pgpg-sign)
@@ -182,3 +226,18 @@ else
         exit 1
     }
 fi
+
+
+
+# Create git tag
+# ==============
+
+# Only create a tag if the deployment process was successful.
+# Allow errors because the tag might already exist (like if the release
+# is being done again after solving some deployment issue).
+
+CHECK_VERSION_ARGS+=(--create-git-tag)
+
+kurento_check_version.sh "${CHECK_VERSION_ARGS[@]}" || {
+    log "WARNING: Command failed: kurento_check_version (tagging enabled)"
+}

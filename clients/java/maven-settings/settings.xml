@@ -41,11 +41,11 @@
 			<id>ci-build</id>
 			<activation>
 				<!--
-				Activate when the environment variable `WORKSPACE_PATH` is defined:
+				Activate when the environment variable `MAVEN_LOCAL_REPOSITORY_PATH` is defined:
 				The absolute path of the directory assigned to the build as a workspace.
 				-->
 				<property>
-					<name>env.WORKSPACE_PATH</name>
+					<name>env.MAVEN_LOCAL_REPOSITORY_PATH</name>
 				</property>
 			</activation>
 			<properties>
@@ -55,18 +55,18 @@
 				are not set for release or snapshot versions, respectively.
 				So using the `deploy` profile would override this.
 				-->
-				<altDeploymentRepository>ci::file://${env.WORKSPACE_PATH}/target-m2</altDeploymentRepository>
+				<altDeploymentRepository>ci::file://${env.MAVEN_LOCAL_REPOSITORY_PATH}</altDeploymentRepository>
 			</properties>
 			<repositories>
 				<repository>
 					<id>ci-build</id>
-					<url>file://${env.WORKSPACE_PATH}/target-m2</url>
+					<url>file://${env.MAVEN_LOCAL_REPOSITORY_PATH}</url>
 				</repository>
 			</repositories>
 			<pluginRepositories>
 				<pluginRepository>
 					<id>ci-build</id>
-					<url>file://${env.WORKSPACE_PATH}/target-m2</url>
+					<url>file://${env.MAVEN_LOCAL_REPOSITORY_PATH}</url>
 				</pluginRepository>
 			</pluginRepositories>
 		</profile>
