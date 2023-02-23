@@ -22,40 +22,35 @@ jobs:
 
       - name: "Configure the environment for job script"
         run: |
+          # Path to the env file generated in this step.
+          echo "ENV_PATH=$GITHUB_ENV" >>$GITHUB_ENV
+
           # Path to the Maven settings.xml file.
           MAVEN_SETTINGS_PATH="$GITHUB_WORKSPACE/clients/java/maven-settings/settings.xml"
           echo "MAVEN_SETTINGS_PATH=$MAVEN_SETTINGS_PATH" >>$GITHUB_ENV
 
           # Env vars used by the Maven settings.xml file.
           echo "WORKSPACE_PATH=$GITHUB_WORKSPACE" >>$GITHUB_ENV
+          echo "KURENTO_MAVEN_SONATYPE_USERNAME=${{ secrets.KURENTO_MAVEN_SONATYPE_USERNAME }}" >>$GITHUB_ENV
+          echo "KURENTO_MAVEN_SONATYPE_PASSWORD=${{ secrets.KURENTO_MAVEN_SONATYPE_PASSWORD }}" >>$GITHUB_ENV
+          echo "KURENTO_MAVEN_DOWNLOAD_USERNAME=${{ secrets.KURENTO_MAVEN_DOWNLOAD_USERNAME }}" >>$GITHUB_ENV
+          echo "KURENTO_MAVEN_DOWNLOAD_PASSWORD=${{ secrets.KURENTO_MAVEN_DOWNLOAD_PASSWORD }}" >>$GITHUB_ENV
+          echo "KURENTO_MAVEN_UPLOAD_USERNAME=${{ secrets.KURENTO_MAVEN_UPLOAD_USERNAME }}" >>$GITHUB_ENV
+          echo "KURENTO_MAVEN_UPLOAD_PASSWORD=${{ secrets.KURENTO_MAVEN_UPLOAD_PASSWORD }}" >>$GITHUB_ENV
+
+          # Env vars used by kurento_maven_deploy_github.sh
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >>$GITHUB_ENV
 
       - name: "Run job script"
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-          # Env vars used by the Maven settings.xml file.
-          KURENTO_MAVEN_SONATYPE_USERNAME: "${{ secrets.KURENTO_MAVEN_SONATYPE_USERNAME }}"
-          KURENTO_MAVEN_SONATYPE_PASSWORD: "${{ secrets.KURENTO_MAVEN_SONATYPE_PASSWORD }}"
-          KURENTO_MAVEN_DOWNLOAD_USERNAME: "${{ secrets.KURENTO_MAVEN_DOWNLOAD_USERNAME }}"
-          KURENTO_MAVEN_DOWNLOAD_PASSWORD: "${{ secrets.KURENTO_MAVEN_DOWNLOAD_PASSWORD }}"
-          KURENTO_MAVEN_UPLOAD_USERNAME: "${{ secrets.KURENTO_MAVEN_UPLOAD_USERNAME }}"
-          KURENTO_MAVEN_UPLOAD_PASSWORD: "${{ secrets.KURENTO_MAVEN_UPLOAD_PASSWORD }}"
         working-directory: "clients/java/qa-pom/"
-        run: |
-          # Compile, package, and deploy the current project.
-          kurento_maven_deploy.sh
-
-          # Only create a tag if the deployment process was successful.
-          # Allow errors because the tag might already exist (like if the release
-          # is being done again after solving some deployment issue).
-          kurento_check_version.sh true || { echo 'WARNING: Command failed: kurento_check_version (tagging enabled)'; }
+        run: "kurento_ci_job_deploy_java.sh"
 
       # Action: https://github.com/actions/upload-artifact
       - name: "Archive the artifacts"
         uses: "actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce" # v3.1.2
         with:
           name: "artifacts"
-          path: "${{ inputs.directory }}/*.*deb"
+          path: "target-m2/"
 
   # module-creator:
   #   uses: "./.github/workflows/clients-java-build.reusable.yaml"

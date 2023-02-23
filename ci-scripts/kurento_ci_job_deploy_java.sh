@@ -29,7 +29,8 @@ docker run -i --rm --pull always \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$PWD",dst=/workdir \
     --workdir /workdir \
-    kurento/kurento-ci-buildtools:focal /bin/bash <<DOCKERCOMMANDS
+    --env-file "$ENV_PATH" \
+    kurento/kurento-ci-buildtools:focal <<DOCKERCOMMANDS
 
 # Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
