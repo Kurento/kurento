@@ -17,14 +17,14 @@ jobs:
         working-directory: "ci-scripts/"
         run: |
           echo "$PWD" >>$GITHUB_PATH
-          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "CI_SCRIPTS_PATH=$PWD" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
       - name: "Configure the environment for job script"
         run: |
           # Path to the Maven settings.xml file.
           MAVEN_SETTINGS_PATH="$GITHUB_WORKSPACE/clients/java/maven-settings/settings.xml"
-          echo "MAVEN_SETTINGS=$MAVEN_SETTINGS_PATH" >>$GITHUB_ENV
+          echo "MAVEN_SETTINGS_PATH=$MAVEN_SETTINGS_PATH" >>$GITHUB_ENV
 
           # Env vars used by the Maven settings.xml file.
           echo "WORKSPACE_PATH=$GITHUB_WORKSPACE" >>$GITHUB_ENV

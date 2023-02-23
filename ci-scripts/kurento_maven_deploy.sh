@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
+# Checked with ShellCheck (https://www.shellcheck.net/)
+
+#/ Deploy Java artifacts with Maven.
 
 
 
-# Shell setup
-# ===========
+# Configure shell
+# ===============
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+source "$SELF_DIR/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
 trap_add 'log "==================== END ===================="' EXIT
 
-# Trace all commands.
+# Trace all commands (to stderr).
 set -o xtrace
 
 
@@ -24,6 +26,23 @@ command -v jq >/dev/null || {
     log "ERROR: 'jq' is not installed; please install it"
     exit 1
 }
+
+
+
+# Settings
+# ========
+
+# Fully-qualified plugin names, to use newer versions than the Maven defaults.
+MAVEN_DEPLOY_PLUGIN="org.apache.maven.plugins:maven-deploy-plugin:3.1.0"
+MAVEN_JAVADOC_PLUGIN="org.apache.maven.plugins:maven-javadoc-plugin:3.5.0"
+MAVEN_SOURCE_PLUGIN="org.apache.maven.plugins:maven-source-plugin:3.2.1"
+
+# Maven arguments that are common to all commands.
+MVN_ARGS=(
+    --batch-mode
+    --no-transfer-progress
+    -Dmaven.test.skip=true
+)
 
 
 
@@ -42,51 +61,35 @@ kurento_check_version.sh false || {
 
 
 
-# MAVEN_SETTINGS path
-#   Path to settings.xml file used by maven
-#
-# SIGN_ARTIFACTS true | false
-#   Whether to sign artifacts before deployment. Default value is true
-#
+# Validate config
+# ===============
 
-# Path information
-# BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# PATH="${BASEPATH}:${PATH}"
-
-# Fully-qualified plugin names, to use newer versions than the Maven defaults.
-MAVEN_DEPLOY_PLUGIN="org.apache.maven.plugins:maven-deploy-plugin:3.0.0"
-MAVEN_JAVADOC_PLUGIN="org.apache.maven.plugins:maven-javadoc-plugin:3.4.1"
-MAVEN_SOURCE_PLUGIN="org.apache.maven.plugins:maven-source-plugin:3.2.1"
-
-MVN_ARGS=()
-
-# Validate parameters
-log "Validate parameters"
-if [[ -n "$MAVEN_SETTINGS" ]]; then
-    [[ -f "$MAVEN_SETTINGS" ]] || {
-        log "ERROR: Cannot read MAVEN_SETTINGS file: $MAVEN_SETTINGS"
-        exit 1
-    }
-    MVN_ARGS+=(--settings "$MAVEN_SETTINGS")
+if [[ -n "${MAVEN_SETTINGS_PATH:-}" ]]; then
+    MVN_ARGS+=(--settings "$MAVEN_SETTINGS_PATH")
 fi
-[[ -z "${SIGN_ARTIFACTS:-}" ]] && SIGN_ARTIFACTS="true"
 
-# Maven arguments that are common to all commands.
-MVN_ARGS+=(
-    --batch-mode
-    --no-transfer-progress
-    -Dmaven.test.skip=true
-)
+if [[ -z "${MAVEN_SIGN_ARTIFACTS:-}" ]]; then
+    MAVEN_SIGN_ARTIFACTS="true"
+fi
 
-# First, make an initial build that gets deployed to a local repository. This is
-# archived by Jenkins, and passed along to dependent jobs.
+
+
+# Deploy to local repo
+# ====================
+
+# First, make an initial build that gets deployed to a local repository.
+# This is what gets archived by CI, and passed along to dependent jobs.
 # The repo is set by the `ci-build` profile from Maven's `settings.xml`.
-mvn "${MVN_ARGS[@]}" -Pci-build clean package "${MAVEN_DEPLOY_PLUGIN}:deploy" || {
+
+mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MAVEN_DEPLOY_PLUGIN:deploy" || {
     log "ERROR: Command failed: mvn deploy (Jenkins repo)"
     exit 1
 }
 
-# Now make the actual deployment.
+
+
+# Deploy to remote repo
+# =====================
 
 MVN_ARGS+=(
     -Pdeploy
@@ -96,6 +99,7 @@ PROJECT_VERSION="$(kurento_get_version.sh)" || {
   log "ERROR: Command failed: kurento_get_version"
   exit 1
 }
+
 log "Build and deploy version: $PROJECT_VERSION"
 
 # If SNAPSHOT, deploy to snapshots repository and exit.
@@ -127,17 +131,17 @@ log "Version to deploy is RELEASE"
 
 MVN_ARGS+=(-Pkurento-release)
 
-if [[ $SIGN_ARTIFACTS == "true" ]]; then
+if [[ $MAVEN_SIGN_ARTIFACTS == "true" ]]; then
     log "Artifact signing on deploy is ENABLED"
 
     MVN_ARGS+=(-Pgpg-sign)
 
     MVN_GOALS=(
         package
-        "${MAVEN_SOURCE_PLUGIN}:jar"
-        "${MAVEN_JAVADOC_PLUGIN}:jar"
+        "$MAVEN_SOURCE_PLUGIN:jar"
+        "$MAVEN_JAVADOC_PLUGIN:jar"
         gpg:sign
-        "${MAVEN_DEPLOY_PLUGIN}:deploy"
+        "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
 
     mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
@@ -168,9 +172,9 @@ else
 
     MVN_GOALS=(
         package
-        "${MAVEN_SOURCE_PLUGIN}:jar"
-        "${MAVEN_JAVADOC_PLUGIN}:jar"
-        "${MAVEN_DEPLOY_PLUGIN}:deploy"
+        "$MAVEN_SOURCE_PLUGIN:jar"
+        "$MAVEN_JAVADOC_PLUGIN:jar"
+        "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
 
     mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
