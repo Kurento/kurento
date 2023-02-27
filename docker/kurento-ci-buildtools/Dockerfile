@@ -48,20 +48,20 @@ apt-get update && apt-get install --no-install-recommends --yes \
 && npm cache clean --force
 
 # Install packages
-# * build-essential: For C/C++ Kurento modules that generate client SDK files
-# * curl: For CI script kurento_http_publish.sh
-# * default-jdk (Java JDK): For Java projects
-# * maven: For Java projects
-# * jq, jshon: For some JavaScript tools and jobs
-# * rsync: For remote copies
+# * build-essential, cmake: For C/C++ server modules that generate client SDK files.
+# * curl: For CI script `kurento_http_publish.sh`.
+# * default-jdk (Java JDK): For Java projects.
+# * maven: For Java projects.
+# * jq, jshon: For some JavaScript tools and jobs.
+# * rsync: For remote copies.
 #
 # Tools used by test/integration/kurento-test:
-# * ffmpeg: For different integration testst that generate an RTP stream
-# * libmediainfo-dev: MediaInfoLibrary class
-# * netcat: KmsService class, to check if KMS port is already in use
+# * ffmpeg: For different integration testst that generate an RTP stream.
+# * libmediainfo-dev: MediaInfoLibrary class.
+# * netcat: KmsService class, to check if a port is already in use.
 RUN \
 apt-get update && apt-get install --no-install-recommends --yes \
-    build-essential \
+    build-essential cmake \
     curl \
     default-jdk \
     maven \

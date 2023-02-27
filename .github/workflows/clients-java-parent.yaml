@@ -3,6 +3,12 @@ name: "Clients: Build All Java (Parent)"
 on:
   # Triggered manually.
   workflow_dispatch:
+    inputs:
+      jobServerVersion:
+        description: "Server version from which to generate client code"
+        required: false
+        type: "string"
+        default: "dev"
 
 jobs:
   qa-pom:
@@ -26,8 +32,14 @@ jobs:
       directory: "clients/java/maven-plugin/"
     secrets: inherit
 
-  # module-core:
-  #   needs: ["maven-plugin"]
+  module-core:
+    needs: ["maven-plugin"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-core/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
   # module-elements:
   #   needs: ["module-core"]

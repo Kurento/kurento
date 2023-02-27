@@ -14,6 +14,16 @@ on:
         required: false
         type: "boolean"
         default: true
+      genModuleEnable:
+        description: "Enable generation of client code from server modules that contain API definition files (.kmd)"
+        required: false
+        type: "boolean"
+        default: false
+      genModuleServerVersion:
+        description: "Server version from which to generate client code"
+        required: false
+        type: "string"
+        default: "dev"
 
 defaults:
   run:
@@ -70,7 +80,17 @@ jobs:
           # Env vars used by `kurento_maven_deploy_github.sh`.
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >>$GITHUB_ENV
 
-      - name: "Run job script"
+      - name: "Run job script (generate)"
+        if: ${{ inputs.genModuleEnable }}
+        working-directory: "${{ inputs.directory }}"
+        run: |
+          kurento_ci_job_generate_module.sh --java --server-version "${{ inputs.genModuleServerVersion }}"
+          #echo "build-path=build/java/" >>$GITHUB_OUTPUT
+
+          # Change the `directory` input so it points to the newly generated dir.
+          echo "INPUT_DIRECTORY=$PWD/build/java/" >>$GITHUB_ENV
+
+      - name: "Run job script (deploy)"
         working-directory: "${{ inputs.directory }}"
         run: "kurento_ci_job_deploy_java.sh"
 

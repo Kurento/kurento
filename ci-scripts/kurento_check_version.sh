@@ -49,7 +49,7 @@ log "CFG_GET_VERSION_ARGS=${CFG_GET_VERSION_ARGS[*]}"
 # Verify version
 # ==============
 
-PROJECT_VERSION="$(kurento_get_version.sh "${GET_VERSION_ARGS[@]}")" || {
+PROJECT_VERSION="$(kurento_get_version.sh "${CFG_GET_VERSION_ARGS[@]}")" || {
     log "ERROR: Command failed: kurento_get_version"
     exit 1
 }

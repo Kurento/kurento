@@ -78,7 +78,7 @@ if [[ -f CMakeLists.txt ]]; then
     cd "$TEMPDIR" || exit 1
     echo "@PROJECT_VERSION@" >version.txt.in
     echo "configure_file(\${CMAKE_BINARY_DIR}/version.txt.in version.txt)" >>../CMakeLists.txt
-    cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE >/dev/null || {
+    cmake -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE .. >/dev/null || {
         log "ERROR: Command failed: cmake" >&2
         exit 1
     }

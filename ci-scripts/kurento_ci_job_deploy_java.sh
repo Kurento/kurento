@@ -25,6 +25,9 @@ set -o xtrace
 # Run in container
 # ================
 
+# `--user` is needed to avoid creating files as root, which would make next
+# jobs fail because the runner cannot clean up the workspace files.
+
 docker run -i --rm --pull always \
     --user="$(id -u)":"$(id -g)" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
