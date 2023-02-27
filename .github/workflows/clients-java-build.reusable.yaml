@@ -80,18 +80,20 @@ jobs:
           # Env vars used by `kurento_maven_deploy_github.sh`.
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >>$GITHUB_ENV
 
+          # Env vars used by `run` steps.
+          echo "WORKING_DIRECTORY=${{ inputs.directory }}" >>$GITHUB_ENV
+
       - name: "Run job script (generate)"
         if: ${{ inputs.genModuleEnable }}
-        working-directory: "${{ inputs.directory }}"
+        working-directory: "${{ env.WORKING_DIRECTORY }}"
         run: |
           kurento_ci_job_generate_module.sh --java --server-version "${{ inputs.genModuleServerVersion }}"
-          #echo "build-path=build/java/" >>$GITHUB_OUTPUT
 
-          # Change the `directory` input so it points to the newly generated dir.
-          echo "INPUT_DIRECTORY=$PWD/build/java/" >>$GITHUB_ENV
+          # Change WORKING_DIRECTORY so it points to the newly generated dir.
+          echo "WORKING_DIRECTORY=$WORKING_DIRECTORY/build/java" >>$GITHUB_ENV
 
       - name: "Run job script (deploy)"
-        working-directory: "${{ inputs.directory }}"
+        working-directory: "${{ env.WORKING_DIRECTORY }}"
         run: "kurento_ci_job_deploy_java.sh"
 
       # Action: https://github.com/actions/upload-artifact
