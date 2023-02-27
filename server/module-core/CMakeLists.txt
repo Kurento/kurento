@@ -10,6 +10,7 @@ set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` 
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
 set(ENABLE_EXPERIMENTAL_TESTS OFF CACHE BOOL "Enable tests that are not yet stable")
+enable_testing()
 
 # Add CMake modules provided by this project.
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Kurento")
@@ -144,8 +145,6 @@ generic_find(LIBNAME uuid REQUIRED)
 find_package(LibVpx REQUIRED)
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
-
-enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)

@@ -12,6 +12,7 @@ set(DISABLE_IPV6_TESTS FALSE CACHE BOOL "Disable tests that require an IPv6 netw
 set(ENABLE_EXPERIMENTAL_TESTS OFF CACHE BOOL "Enable tests that are not yet stable")
 set(TEST_FILES_LOCATION "https://raw.githubusercontent.com/Kurento/test-files/main" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
+enable_testing()
 
 # Add CMake modules provided by this project.
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/src/server")
@@ -104,8 +105,6 @@ generic_find(LIBNAME uuid REQUIRED)
 generic_find(LIBNAME openssl REQUIRED)
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
-
-enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)

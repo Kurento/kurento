@@ -10,6 +10,7 @@ set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` 
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(TEST_FILES_LOCATION "https://raw.githubusercontent.com/Kurento/test-files/main" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
+enable_testing()
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
@@ -74,8 +75,6 @@ generic_find(LIBNAME KMSCORE VERSION ^7.0.0-dev REQUIRED)
 generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
-
-enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)

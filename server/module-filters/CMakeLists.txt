@@ -10,6 +10,7 @@ set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` 
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(TEST_FILES_LOCATION "https://raw.githubusercontent.com/Kurento/test-files/main" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
+enable_testing()
 
 # Add CMake modules provided by this project.
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_BINARY_DIR}/src/server")
@@ -81,8 +82,6 @@ generic_find(LIBNAME libsoup-2.4 VERSION ${SOUP_REQUIRED} REQUIRED)
 generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
-
-enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)
