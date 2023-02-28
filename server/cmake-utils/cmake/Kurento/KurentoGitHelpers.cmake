@@ -17,16 +17,13 @@ find_package(Git)
 
 function(get_git_dir git_dir_output_variable)
   if(EXISTS ${GIT_EXECUTABLE})
-    execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --git-dir
+    execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --absolute-git-dir
         OUTPUT_VARIABLE git_dir
         ERROR_VARIABLE ignored
         OUTPUT_STRIP_TRAILING_WHITESPACE
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     if(DEFINED git_dir AND NOT ${git_dir} EQUAL "")
-      if(NOT IS_ABSOLUTE ${git_dir})
-        set(git_dir ${CMAKE_CURRENT_SOURCE_DIR}/${git_dir})
-      endif()
       if(EXISTS ${git_dir})
         set(${git_dir_output_variable} ${git_dir} PARENT_SCOPE)
       endif()
