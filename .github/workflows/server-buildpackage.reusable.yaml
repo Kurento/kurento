@@ -7,7 +7,7 @@ on:
       jobDistros:
         description: "List of Ubuntu codenames to build for"
         required: true
-        # There is no `list` type, so use a raw JSON array and `fromJson()`.
+        # There is no `list` type, so use a raw JSON array and `fromJSON()`.
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["focal"]'
@@ -46,7 +46,7 @@ jobs:
     runs-on: ["self-hosted", "dev"]
     strategy:
       matrix:
-        jobDistro: ${{ fromJson(inputs.jobDistros) }}
+        jobDistro: ${{ fromJSON(inputs.jobDistros) }}
     timeout-minutes: 30
     steps:
       - name: "Check for non-default git ref"

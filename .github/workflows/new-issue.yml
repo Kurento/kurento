@@ -56,7 +56,7 @@ jobs:
       # Action: https://github.com/andymckay/cancel-action
       - name: Cancel this build
         uses: andymckay/cancel-action@0.2
-        if: ${{ fromJson(steps.get-issue.outputs.data).state != 'open' }}
+        if: ${{ fromJSON(steps.get-issue.outputs.data).state != 'open' }}
 
   # Accept the issue by sending a thank you message and sorting it.
   accept-issue:
