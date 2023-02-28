@@ -26,7 +26,7 @@ set -o xtrace
 # ================
 
 # `--user` is needed to avoid creating files as root, which would make next
-# jobs fail because the runner cannot clean up the workspace files.
+# jobs fail because the runner cannot do workspace cleanup.
 
 docker run -i --rm --pull always \
     --user="$(id -u)":"$(id -g)" \
