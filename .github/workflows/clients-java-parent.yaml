@@ -98,8 +98,8 @@ jobs:
 
   # kurento-utils-js:
 
-  # We'll stop publishing test packages for Kurento 7. The Kurento Test Framework
-  # is currently not supported and unmaintained.
+  # Not published for Kurento 7.
+  # The Kurento Test Framework is unsupported and unmaintained.
   #test-integration:
   #  needs:
   #    [
@@ -110,9 +110,9 @@ jobs:
   #      "module-platedetector",
   #    ]
 
-  # We'll stop publishing tutorials for Kurento 7. Doesn't make much sense
-  # having them as standalone installable from Maven, they are supposed to be
-  # a learning resource, not a ready-to-use application.
+  # Not published for Kurento 7.
+  # Doesn't make much sense having them as standalone installable from Maven,
+  # they are supposed to be a learning resource, not a ready-to-use application.
   #tutorials-java:
   #  needs:
   #    [
