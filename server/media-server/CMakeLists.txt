@@ -10,6 +10,7 @@ set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` 
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(TEST_FILES_LOCATION "https://raw.githubusercontent.com/Kurento/test-files/main" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
+enable_testing()
 
 find_package(KurentoUtils)
 if(NOT KurentoUtils_FOUND)
@@ -75,8 +76,6 @@ pkg_check_modules(EVENT REQUIRED libevent>=2.0.16)
 
 add_subdirectory(server)
 
-enable_testing()
-
 add_subdirectory(test)
 
 install(FILES kurento.conf.json sdp_pattern.txt DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${CUSTOM_PREFIX})
@@ -84,6 +83,5 @@ install(FILES kurento.conf.json sdp_pattern.txt DESTINATION ${CMAKE_INSTALL_SYSC
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config)
 get_filename_component(CONFIG_FILE kurento.conf.json ABSOLUTE)
 execute_process(COMMAND ln -fs ${CONFIG_FILE} ${CMAKE_BINARY_DIR}/config/)
-
 
 add_subdirectory(scaffold)

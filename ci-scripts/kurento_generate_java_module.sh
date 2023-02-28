@@ -1,64 +1,36 @@
 #!/usr/bin/env bash
+# Checked with ShellCheck (https://www.shellcheck.net/)
+
+#/ Generate API client module for the current project.
+#/
+#/ Generates client code from Kurento API definition files (.kmd).
 
 
 
-# Shell setup
-# -----------
+# Configure shell
+# ===============
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+source "$SELF_DIR/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
+trap_add 'log "==================== END ===================="' EXIT
 
-# Trace all commands
+# Trace all commands (to stderr).
 set -o xtrace
 
 
 
-kurento_check_version.sh false || {
-  log "ERROR: Command failed: kurento_check_version (tagging disabled)"
-  exit 1
-}
+# Generate client code
+# ====================
 
-# Don't build from experimental branches. Otherwise we'd need to have some
-# mechanism to publish experimental module builds, which we don't have for
-# Java and JavaScript modules.
-#
-# Maybe in the future we might have something like experimental Maven or NPM
-# repositories, then we'd want to build experimental branches for them. But
-# for now, just skip and avoid polluting the default builds repositories.
-if [[ -n "${JOB_GIT_NAME:-}" ]]; then
-    log "Skip building from experimental branch '$JOB_GIT_NAME'"
-    exit 0
-fi
-# Check out the requested branch
-# if [[ -n "${JOB_GIT_NAME:-}" ]]; then
-#     "${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" --name "$JOB_GIT_NAME"
-# fi
+rm -rf build/
+mkdir build/
+cd build/
 
-rm -rf build
-mkdir build ; cd build/
-cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || {
-  log "ERROR: Command failed: cmake"
-  exit 1
-}
+cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE ..
 
 cd java || {
   log "ERROR: Expected directory doesn't exist: $PWD/java"
   exit 1
 }
-
-
-
-# Deploy project
-# --------------
-
-kurento_maven_deploy.sh || {
-  log "ERROR: Command failed: kurento_maven_deploy"
-  exit 1
-}
-
-
-
-log "==================== END ===================="

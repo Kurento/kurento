@@ -3,17 +3,12 @@ cmake_minimum_required(VERSION 3.0)
 project("kurento")
 message(STATUS "CMake project: ${PROJECT_NAME}")
 
-# Disable Policy CMP0058, which takes care of Ninja complaining in QtCreator
-# (generate_kurento_libraries() creates files that aren't part of any target)
-#cmake_policy(SET CMP0058 OLD)
-
 # Test configuration
 set(GENERATE_TESTS FALSE CACHE BOOL "Always build tests: add `make check_build` to normal `make` calls")
 set(DISABLE_TESTS FALSE CACHE BOOL "Enable running `make check` during the building process")
 set(DISABLE_IPV6_TESTS FALSE CACHE BOOL "Disable tests that require an IPv6 network")
 set(TEST_FILES_LOCATION "https://raw.githubusercontent.com/Kurento/test-files/main" CACHE STRING "Root URI with test files (e.g. http:// or file://)")
 set(VALGRIND_NUM_CALLERS 20 CACHE STRING "Valgrind option: maximum number of entries shown in stack traces")
-
 enable_testing()
 
 # Create the SUPPRESSIONS list with all found files

@@ -10,8 +10,8 @@ set(KmsRtpEndpointLib_VERSION ${PACKAGE_VERSION})
 
 
 
-# Set include directories
-# =======================
+# Include directories
+# ===================
 
 find_path(KmsRtpEndpointLib_INCLUDE_DIR
   NAMES
@@ -21,10 +21,15 @@ find_path(KmsRtpEndpointLib_INCLUDE_DIR
     @CUSTOM_PREFIX@
 )
 
-set(KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
+set(KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX
+  "build"
+  CACHE PATH "Path prefix used to look for binary files"
+)
 
 if(TARGET kmsrtpendpointlib)
-  set(KmsRtpEndpointLib_GENERATED_INCLUDE_DIR "${KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins")
+  set(KmsRtpEndpointLib_GENERATED_INCLUDE_DIR
+    "${KMS_RTP_ENDPOINT_BINARY_DIR_PREFIX}/src/gst-plugins"
+  )
 else()
   find_path(KmsRtpEndpointLib_GENERATED_INCLUDE_DIR
     NAMES
@@ -35,14 +40,16 @@ else()
   )
 endif()
 
-set(KmsRtpEndpointLib_INCLUDE_DIRS ${KmsRtpEndpointLib_INCLUDE_DIR} ${KmsRtpEndpointLib_GENERATED_INCLUDE_DIR}
+set(KmsRtpEndpointLib_INCLUDE_DIRS
+  ${KmsRtpEndpointLib_INCLUDE_DIR}
+  ${KmsRtpEndpointLib_GENERATED_INCLUDE_DIR}
   CACHE INTERNAL "Include directories for KmsRtpEndpointLib library"
 )
 
 
 
-# Set path to library
-# ===================
+# Path to library
+# ===============
 
 if(TARGET kmsrtpendpointlib)
   #Just get the target for the library
@@ -56,14 +63,15 @@ else()
   )
 endif()
 
-set(KmsRtpEndpointLib_LIBRARIES ${KmsRtpEndpointLib_LIBRARY}
+set(KmsRtpEndpointLib_LIBRARIES
+  ${KmsRtpEndpointLib_LIBRARY}
   CACHE INTERNAL "Libraries for KmsRtpEndpointLib"
 )
 
 
 
-# Set output variables
-# ====================
+# Output variables
+# ================
 
 include(GenericFind)
 
@@ -80,12 +88,12 @@ foreach(LIB ${REQUIRED_LIBS})
   else()
     generic_find(LIBNAME ${LIB_NAME} REQUIRED)
   endif()
+
   list(APPEND REQUIRED_LIBRARIES ${${LIB_NAME}_LIBRARIES})
   list(APPEND REQUIRED_INCLUDE_DIRS ${${LIB_NAME}_INCLUDE_DIRS})
 endforeach()
 
 include(FindPackageHandleStandardArgs)
-
 find_package_handle_standard_args(KmsRtpEndpointLib
   FOUND_VAR
     KmsRtpEndpointLib_FOUND
@@ -109,3 +117,16 @@ mark_as_advanced(
   KmsRtpEndpointLib_LIBRARY
   KmsRtpEndpointLib_LIBRARIES
 )
+
+
+
+# Log lookup result
+# =================
+
+get_filename_component(CURRENT_FILE ${CMAKE_CURRENT_LIST_FILE} NAME)
+
+if(KmsRtpEndpointLib_FOUND)
+  message(STATUS "[${CURRENT_FILE}] Found: ${KmsRtpEndpointLib_LIBRARY}")
+else()
+  message(STATUS "[${CURRENT_FILE}] Not found")
+endif()

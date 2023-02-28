@@ -1,16 +1,128 @@
 name: "Clients: Build All Java (Parent)"
 
 on:
-  # Manual trigger.
+  # Triggered manually.
   workflow_dispatch:
-
-  # Trigger from other job.
-  workflow_call:
+    inputs:
+      jobServerVersion:
+        description: "Server version from which to generate client code"
+        required: false
+        type: "string"
+        default: "dev"
 
 jobs:
-  build:
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Say Hello"
-        run: |
-          echo "Hello World!"
+  qa-pom:
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "clients/java/qa-pom/"
+      copyArtifacts: false
+    secrets: inherit
+
+  module-creator:
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-creator/"
+      copyArtifacts: false
+    secrets: inherit
+
+  maven-plugin:
+    needs: ["module-creator"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "clients/java/maven-plugin/"
+    secrets: inherit
+
+  module-core:
+    needs: ["maven-plugin"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-core/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  module-elements:
+    needs: ["module-core"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-elements/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  module-filters:
+    needs: ["module-elements"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-filters/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  client:
+    needs: ["qa-pom", "module-filters"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "clients/java/"
+    secrets: inherit
+
+  module-chroma:
+    needs: ["client"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/chroma/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  #module-crowddetector:
+  #  needs: ["client"]
+
+  module-datachannelexample:
+    needs: ["client"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/datachannelexample/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  #module-markerdetector:
+  #  needs: ["client"]
+
+  #module-platedetector:
+  #  needs: ["client"]
+
+  #module-pointerdetector:
+  #  needs: ["client"]
+
+  # kurento-utils-js:
+
+  # Not published for Kurento 7.
+  # The Kurento Test Framework is unsupported and unmaintained.
+  #test-integration:
+  #  needs:
+  #    [
+  #      "kurento-utils-js",
+  #      "client",
+  #      "module-chroma",
+  #      "module-crowddetector",
+  #      "module-platedetector",
+  #    ]
+
+  # Not published for Kurento 7.
+  # Doesn't make much sense having them as standalone installable from Maven,
+  # they are supposed to be a learning resource, not a ready-to-use application.
+  #tutorials-java:
+  #  needs:
+  #    [
+  #      "client",
+  #      "module-chroma",
+  #      "module-crowddetector",
+  #      "module-datachannelexample",
+  #      "module-platedetector",
+  #      "module-pointerdetector",
+  #    ]
+
+  #tutorials-test:
+  #  needs: ["tutorials-java"]

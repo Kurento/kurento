@@ -9,7 +9,6 @@
 # ================
 
 # Requires $GITHUB_TOKEN with `read:packages` and `delete:packages` scopes.
-
 function delete_github_version {
     local GROUPID; GROUPID="$(mvn --batch-mode --quiet help:evaluate -Dexpression=project.groupId -DforceStdout)"
     local ARTIFACTID; ARTIFACTID="$(mvn --batch-mode --quiet help:evaluate -Dexpression=project.artifactId -DforceStdout)"
@@ -17,12 +16,13 @@ function delete_github_version {
 
     local PROJECT_VERSION; PROJECT_VERSION="$(mvn --batch-mode --quiet help:evaluate -Dexpression=project.version -DforceStdout)"
 
-    log "INFO: Reading all versions of '${PROJECT_NAME}' from GitHub."
+    log "INFO: Reading all versions of '$PROJECT_NAME' from GitHub."
     local API_VERSIONS_JSON; API_VERSIONS_JSON="$(
         curl -sS \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/orgs/kurento/packages/maven/$PROJECT_NAME/versions"
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/orgs/Kurento/packages/maven/$PROJECT_NAME/versions"
     )"
 
     local API_VERSION_ID; API_VERSION_ID="$(echo "$API_VERSIONS_JSON" | jq ".[] | select(.name==\"$PROJECT_VERSION\")? | .id")"
@@ -33,9 +33,16 @@ function delete_github_version {
 
     curl -sS \
         -X DELETE \
-        -H "Accept: application/vnd.github.v3+json" \
-        -H "Authorization: token $GITHUB_TOKEN" \
-        "https://api.github.com/orgs/kurento/packages/maven/$PROJECT_NAME/versions/$API_VERSION_ID"
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "https://api.github.com/orgs/Kurento/packages/maven/$PROJECT_NAME/versions/$API_VERSION_ID"
+
+    # If there was only a single instance of the given version, GitHub rejects
+    # the deletion with an error message:
+    # "You cannot delete the last version of a package. You must delete the package instead."
+    # But the operation is still successful for our intents. We don't want to be
+    # deleting and recreating the whole package, only its excess versions.
 
     log "INFO: Successfully deleted version '${PROJECT_NAME}:${PROJECT_VERSION}' from GitHub."
 }

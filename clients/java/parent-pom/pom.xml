@@ -9,9 +9,7 @@
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
 		<version>7.0.0-SNAPSHOT</version>
-
-		<!-- Disable local search for parent pom; force repository lookup. -->
-		<relativePath/>
+		<relativePath>../qa-pom</relativePath>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
 	<version>7.0.0-SNAPSHOT</version>

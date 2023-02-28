@@ -10,8 +10,8 @@ set(KmsJsonRpc_VERSION ${PACKAGE_VERSION})
 
 
 
-# Set include directories
-# =======================
+# Include directories
+# ===================
 
 find_package(PkgConfig)
 pkg_check_modules(_JSONCPP REQUIRED jsoncpp>=1.7.2)
@@ -28,14 +28,16 @@ find_path(KmsJsonRpc_INCLUDE_DIR
     kurento
 )
 
-set(KmsJsonRpc_INCLUDE_DIRS ${KmsJsonRpc_INCLUDE_DIR} ${_JSONCPP_INCLUDE_DIRS}
+set(KmsJsonRpc_INCLUDE_DIRS
+  ${KmsJsonRpc_INCLUDE_DIR}
+  ${_JSONCPP_INCLUDE_DIRS}
   CACHE INTERNAL "Include directories for KmsJsonRpc library"
 )
 
 
 
-# Set path to library
-# ===================
+# Path to library
+# ===============
 
 set(JSON_CPP_BINARY_DIR_PREFIX "build" CACHE PATH "Path prefix used to look for binary files")
 
@@ -51,17 +53,18 @@ else()
   )
 endif()
 
-set(KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
+set(KmsJsonRpc_LIBRARIES
+  ${KmsJsonRpc_LIBRARY}
+  ${_JSONCPP_LIBRARIES}
   CACHE INTERNAL "Libraries for KmsJsonRpc"
 )
 
 
 
-# Set output variables
-# ====================
+# Output variables
+# ================
 
 include(FindPackageHandleStandardArgs)
-
 find_package_handle_standard_args(KmsJsonRpc
   FOUND_VAR
     KmsJsonRpc_FOUND
@@ -83,3 +86,16 @@ mark_as_advanced(
   KmsJsonRpc_LIBRARY
   KmsJsonRpc_LIBRARIES
 )
+
+
+
+# Log lookup result
+# =================
+
+get_filename_component(CURRENT_FILE ${CMAKE_CURRENT_LIST_FILE} NAME)
+
+if(KmsJsonRpc_FOUND)
+  message(STATUS "[${CURRENT_FILE}] Found: ${KmsJsonRpc_LIBRARY}")
+else()
+  message(STATUS "[${CURRENT_FILE}] Not found")
+endif()
