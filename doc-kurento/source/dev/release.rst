@@ -423,7 +423,7 @@ This is the command to generate and build a Java module:
 .. code-block:: shell
 
    mkdir build/ && cd build/ \
-      && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE \
+      && cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
       && cd java/ \
       && mvn -DskipTests=true clean install
 
@@ -432,7 +432,7 @@ For JavaScript modules, the command is very similar:
 .. code-block:: shell
 
    mkdir build/ && cd build/ \
-      && cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE \
+      && cmake -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
       && cd js/ \
       && npm install
 
@@ -461,7 +461,7 @@ Complete code for Java modules:
            pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
 
            mkdir build && cd build \
-           && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE \
+           && cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
            && cd java \
            && mvn -DskipTests=false clean install \
            || { echo "ERROR: Command failed"; return 1; }

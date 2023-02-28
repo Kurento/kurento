@@ -665,7 +665,7 @@ What to do when you are developing a new feature that spans across the media ser
 
       cd server/<module>/  # E.g. server/module-filters/
       mkdir build ; cd build/
-      cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
+      cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE ..
       cd java/
       mvn -DskipTests=true clean install
 

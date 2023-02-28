@@ -312,7 +312,7 @@ Run this from the root directory of your module:
 .. code-block:: shell
 
    mkdir build/ ; cd build/
-   cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
+   cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE ..
 
 This generates a ``build/java/`` directory, containing all the client code. You can now run either of these commands:
 
@@ -366,7 +366,7 @@ Run this from the root directory of your module:
 .. code-block:: shell
 
    mkdir build/ ; cd build/
-   cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE
+   cmake -DGENERATE_JS_CLIENT_PROJECT=TRUE ..
 
 This generates a ``build/js/`` directory, containing all the client code. You can now manually copy this code to your application. Alternatively, you can use :term:`Bower` (for *Browser JavaScript*) or :term:`NPM` (for *Node.js*). To do that, you should add your JavaScript module as a dependency in your *bower.json* or *package.json* file, respectively:
 
