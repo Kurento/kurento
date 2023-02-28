@@ -41,55 +41,88 @@ jobs:
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
     secrets: inherit
 
-  # module-elements:
-  #   needs: ["module-core"]
+  module-elements:
+    needs: ["module-core"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-elements/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
-  # module-filters:
-  #   needs: ["module-elements"]
+  module-filters:
+    needs: ["module-elements"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-filters/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
-  # client:
-  #   needs: ["qa-pom", "module-filters"]
+  client:
+    needs: ["qa-pom", "module-filters"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "clients/java/"
+    secrets: inherit
 
-  # module-chroma:
-  #   needs: ["client"]
+  module-chroma:
+    needs: ["client"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/chroma/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
-  # module-crowddetector:
-  #   needs: ["client"]
+  #module-crowddetector:
+  #  needs: ["client"]
 
-  # module-datachannelexample:
-  #   needs: ["client"]
+  module-datachannelexample:
+    needs: ["client"]
+    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/datachannelexample/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
-  # module-markerdetector:
-  #   needs: ["client"]
+  #module-markerdetector:
+  #  needs: ["client"]
 
-  # module-platedetector:
-  #   needs: ["client"]
+  #module-platedetector:
+  #  needs: ["client"]
 
-  # module-pointerdetector:
-  #   needs: ["client"]
+  #module-pointerdetector:
+  #  needs: ["client"]
 
   # kurento-utils-js:
 
-  # test-integration:
-  #   needs:
-  #     [
-  #       "kurento-utils-js",
-  #       "client",
-  #       "module-chroma",
-  #       "module-crowddetector",
-  #       "module-platedetector",
-  #     ]
+  # We'll stop publishing test packages for Kurento 7. The Kurento Test Framework
+  # is currently not supported and unmaintained.
+  #test-integration:
+  #  needs:
+  #    [
+  #      "kurento-utils-js",
+  #      "client",
+  #      "module-chroma",
+  #      "module-crowddetector",
+  #      "module-platedetector",
+  #    ]
 
-  # tutorials-java:
-  #   needs:
-  #     [
-  #       "client",
-  #       "module-chroma",
-  #       "module-crowddetector",
-  #       "module-datachannelexample",
-  #       "module-platedetector",
-  #       "module-pointerdetector",
-  #     ]
+  # We'll stop publishing tutorials for Kurento 7. Doesn't make much sense
+  # having them as standalone installable from Maven, they are supposed to be
+  # a learning resource, not a ready-to-use application.
+  #tutorials-java:
+  #  needs:
+  #    [
+  #      "client",
+  #      "module-chroma",
+  #      "module-crowddetector",
+  #      "module-datachannelexample",
+  #      "module-platedetector",
+  #      "module-pointerdetector",
+  #    ]
 
-  # tutorials-test:
-  #   needs: ["tutorials-java"]
+  #tutorials-test:
+  #  needs: ["tutorials-java"]
