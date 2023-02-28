@@ -195,7 +195,9 @@ Install build dependencies
 
 **Option 1: Quick setup**
 
-If you install the ``kurento-media-server-dev`` package, all build dependencies will get installed too. This is a quick and easy way to get all the dependencies, if you don't care about building them from scratch:
+If you install the ``kurento-media-server-dev`` package, all build dependencies will get installed too. This is a quick and easy way to get all the dependencies, if you don't care about building them from scratch.
+
+First add the Kurento repos to your system, by following either of :ref:`release install <installation-local>` or :ref:`development install <installation-dev-local>`. Then, run this command:
 
 .. code-block:: shell
 
@@ -206,18 +208,23 @@ If you *do care* about building everything from scratch, keep reading.
 
 **Option 2: Build everything**
 
-All repositories that form the Kurento Media Server codebase are prepared to be packaged with Debian packaging tools. As such, their build dependencies are written in the ``Build-Depends`` list of the ``debian/control`` file.
+All repositories that form the Kurento Media Server codebase are prepared to be packaged with Debian packaging tools. For every one of the fork libraries and modules of Kurento, you should have a look at its ``debian/control`` file, and make sure the dependencies listed in ``Build-Depends`` are installed in your system. This can be automated with ``mk-build-deps`` (which is part of the ``devscripts`` package).
 
-For each of the projects, you should read that file, and make sure the listed dependencies are installed in your system. This can be automated with ``mk-build-deps`` (which is part of the ``devscripts`` package):
+For example, to build the Kurento *core* module:
 
 .. code-block:: shell
 
    sudo apt-get update ; sudo apt-get install --no-install-recommends \
-       devscripts
+       devscripts equivs
+
+   cd server/module-core/
+
+   # Get DISTRIB_* env vars.
+   source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
    sudo apt-get update ; sudo mk-build-deps --install --remove \
-       --tool="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --no-remove" \
-       debian/control
+       --tool="apt-get -o Debug::pkgProblemResolver=yes --target-release 'a=${DISTRIB_CODENAME}-backports' --no-install-recommends --no-remove" \
+       ./debian/control
 
 
 
