@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Kurento packaging script for Debian/Ubuntu.
 #/
@@ -6,7 +7,8 @@
 #/ Debian/Ubuntu package files (.deb) from them. It will automatically install
 #/ all required dependencies with `apt-get`, then build the project.
 #/
-#/ This script must be called from within a Git repository.
+#/ If running on a Git repository, information about the current commit will be
+#/ added to the resulting version number (for development builds).
 #/
 #/
 #/
@@ -21,9 +23,9 @@
 #/   without also having to build all of its dependencies.
 #/
 #/   <KurentoVersion> indicates which Kurento repo should be used to download
-#/   packages from. E.g.: "7.0.0", or "dev" for nightly builds. Typically, you
-#/   will provide an actual version number when also using '--release', and just
-#/   use "dev" otherwise.
+#/   packages from. E.g.: "7.0.0", or "dev" for development builds. Typically,
+#/   you will provide an actual version number when also using '--release', and
+#/   just use "dev" otherwise.
 #/
 #/   The appropriate Kurento repository line for apt-get must be already present
 #/   in some ".list" file under /etc/apt/. To have this script adding the
@@ -53,22 +55,6 @@
 #/   See also:
 #/     --install-kurento
 #/
-#/ --srcdir <SrcDir>
-#/
-#/   Specifies in which sub-directory the script should work. If not specified,
-#/   all operations will be done in the current directory where the script has
-#/   been called.
-#/
-#/   The <SrcDir> MUST contain a 'debian/' directory with all Debian files,
-#/   which are used to define how to build the project and generate packages.
-#/
-#/   This argument is useful for Git projects that contain submodules. Running
-#/   directly from a submodule directory might cause some problems if the
-#/   command git-buildpackage is not able to identify the submodule as a proper
-#/   Git repository.
-#/
-#/   Optional. Default: Current working directory.
-#/
 #/ --dstdir <DstDir>
 #/
 #/   Specifies where the resulting Debian package files ('*.deb') should be
@@ -93,7 +79,7 @@
 #/ --release
 #/
 #/   Build packages intended for Release. If this option is not given, packages
-#/   are built as nightly snapshots.
+#/   are built as development snapshots.
 #/
 #/   Optional. Default: Disabled.
 #/
@@ -134,7 +120,6 @@
 #/ ---------------
 #/
 #/ * git-buildpackage
-#/   - Python 3 (pip, setuptools, wheel)
 #/   - debuild (package 'devscripts')
 #/     - dpkg-buildpackage (package 'dpkg-dev')
 #/     - lintian
@@ -144,40 +129,25 @@
 #/   - equivs
 #/ * nproc (package 'coreutils')
 #/ * realpath (package 'coreutils')
-#/
-#/
-#/ Dependency install
-#/ ------------------
-#/
-#/ sudo apt-get update ; sudo apt-get install --no-install-recommends \
-#/     python3 python3-pip python3-setuptools python3-wheel \
-#/     devscripts \
-#/     dpkg-dev \
-#/     lintian \
-#/     git \
-#/     openssh-client \
-#/     equivs \
-#/     coreutils
-#/ sudo python3 -m pip install --upgrade gbp
 
 
 
-# Shell setup
-# -----------
+# Configure shell
+# ===============
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+source "$SELF_DIR/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
+trap_add 'log "==================== END ===================="' EXIT
 
-# Trace all commands
+# Trace all commands (to stderr).
 set -o xtrace
 
 
 
 # Check permissions
-# -----------------
+# =================
 
 [[ "$(id -u)" -eq 0 ]] || {
     log "ERROR: Please run as root user (or with 'sudo')"
@@ -187,13 +157,12 @@ set -o xtrace
 
 
 # Parse call arguments
-# --------------------
+# ====================
 
 CFG_INSTALL_KURENTO="false"
 CFG_INSTALL_KURENTO_VERSION=""
 CFG_INSTALL_FILES="false"
 CFG_INSTALL_FILES_DIR="$PWD"
-CFG_SRCDIR="$PWD"
 CFG_DSTDIR="$PWD"
 CFG_ALLOW_DIRTY="false"
 CFG_RELEASE="false"
@@ -219,16 +188,6 @@ while [[ $# -gt 0 ]]; do
             if [[ -n "${2-}" ]]; then
                 CFG_INSTALL_FILES_DIR="$(realpath "$2")"
                 shift
-            fi
-            ;;
-        --srcdir)
-            if [[ -n "${2-}" ]]; then
-                CFG_SRCDIR="$(realpath "$2")"
-                shift
-            else
-                log "ERROR: --srcdir expects <SrcDir>"
-                log "Run with '--help' to read usage details"
-                exit 1
             fi
             ;;
         --dstdir)
@@ -281,16 +240,11 @@ done
 
 
 
-# Review config settings
-# ----------------------
+# Validate config
+# ===============
 
 [[ -d "$CFG_INSTALL_FILES_DIR" ]] || {
     log "ERROR: --install-files given a nonexistent path: '$CFG_INSTALL_FILES_DIR'"
-    exit 1
-}
-
-[[ -d "$CFG_SRCDIR" ]] || {
-    log "ERROR: --srcdir given a nonexistent path: '$CFG_SRCDIR'"
     exit 1
 }
 
@@ -307,7 +261,6 @@ log "CFG_INSTALL_KURENTO=$CFG_INSTALL_KURENTO"
 log "CFG_INSTALL_KURENTO_VERSION=$CFG_INSTALL_KURENTO_VERSION"
 log "CFG_INSTALL_FILES=$CFG_INSTALL_FILES"
 log "CFG_INSTALL_FILES_DIR=$CFG_INSTALL_FILES_DIR"
-log "CFG_SRCDIR=$CFG_SRCDIR"
 log "CFG_DSTDIR=$CFG_DSTDIR"
 log "CFG_ALLOW_DIRTY=$CFG_ALLOW_DIRTY"
 log "CFG_RELEASE=$CFG_RELEASE"
@@ -317,8 +270,8 @@ log "CFG_APT_PROXY_URL=$CFG_APT_PROXY_URL"
 
 
 
-# Internal control variables
-# --------------------------
+# Configure apt-get
+# =================
 
 # Get Ubuntu version definitions. This brings variables such as:
 #     DISTRIB_CODENAME="focal"
@@ -327,11 +280,6 @@ source /etc/lsb-release
 
 # Extra options for all apt-get invocations
 APT_ARGS=()
-
-
-
-# Initial apt-get setup
-# ---------------------
 
 # If requested, use an Apt proxy
 if [[ -n "$CFG_APT_PROXY_URL" ]]; then
@@ -392,21 +340,8 @@ fi
 
 
 
-# Enter Work Directory
-# --------------------
-
-# All next commands expect to be run from the path that contains
-# the actual project and its 'debian/' directory
-
-pushd "$CFG_SRCDIR" || {
-    log "ERROR: Cannot change to source dir: '$CFG_SRCDIR'"
-    exit 1
-}
-
-
-
 # Install dependencies
-# --------------------
+# ====================
 
 log "Install build dependencies"
 
@@ -427,8 +362,8 @@ log "Install build dependencies"
 
 
 
-# Run git-buildpackage
-# --------------------
+# Update changelog
+# ================
 
 # To build Release packages, the 'debian/changelog' file must be updated and
 # committed by a developer, as part of the release process. Then the build
@@ -438,31 +373,8 @@ log "Install build dependencies"
 #     git add debian/changelog
 #     git commit -m "Update debian/changelog with new release version"
 #
-# For nightly (in development) builds, the 'debian/changelog' file is
-# auto-generated by the build script with a snapshot version number. This
-# snapshot information is never committed.
-#
-# git-buildpackage arguments:
-#
-# --git-ignore-new ignores the uncommitted 'debian/changelog'.
-#
-# --ignore-branch allows building from a tag or a commit.
-#   If not set, GBP would enforce that the current branch is the
-#   "debian-branch" specified in 'gbp.conf' (or 'main', by default).
-#
-# --git-upstream-tree=SLOPPY generates the source tarball from the current
-#   state of the working directory.
-#   If not set, GBP would search for upstream source files in
-#   the "upstream-branch" specified in 'gbp.conf' (or 'upstream' by default).
-#
-# --git-author uses the Git user details for the entry in 'debian/changelog'.
-#
-# Other arguments are passed to `debuild` and `dpkg-buildpackage`.
-
-
-
-# Update debian/changelog
-# -----------------------
+# For development builds, the 'debian/changelog' file is auto-generated by the
+# build script with a snapshot version number. This information isn't committed.
 
 (
     # A Debian/Ubuntu package repository stores all packages for all components
@@ -491,14 +403,6 @@ log "Install build dependencies"
     if [[ "$CFG_RELEASE" == "true" ]]; then
         log "Update debian/changelog for a RELEASE version build"
 
-        # gbp dch \
-        #     --ignore-branch \
-        #     --git-author \
-        #     --spawn-editor=never \
-        #     --new-version="$DCH_VERSION" \
-        #     --release \
-        #     ./debian/
-
         # Add the release message to the currently opened changelog entry.
         dch "Prepare release $PACKAGE_VERSION"
 
@@ -508,15 +412,7 @@ log "Install build dependencies"
             --distribution "testing" --force-distribution \
             ""
     else
-        log "Update debian/changelog for a NIGHTLY snapshot build"
-
-        # gbp dch \
-        #     --ignore-branch \
-        #     --git-author \
-        #     --spawn-editor=never \
-        #     --new-version="$DCH_VERSION" \
-        #     --snapshot --snapshot-number="$CFG_TIMESTAMP" \
-        #     ./debian/
+        log "Update debian/changelog for a DEVELOPMENT snapshot build"
 
         SNAPSHOT_TIME="$CFG_TIMESTAMP"
 
@@ -532,12 +428,12 @@ log "Install build dependencies"
 
 
 
-# Build Debian packages
-# ---------------------
+# Build packages
+# ==============
 
-GBP_ARGS=()
+BUILD_CMD_ARGS=()
 
-GBP_ARGS+=(
+BUILD_CMD_ARGS+=(
     # (-b) Build a binary-only package, skipping `dpkg-source`.
     "--build=binary"
 
@@ -552,17 +448,17 @@ GBP_ARGS+=(
 # This can be overriden with DEB_BUILD_OPTIONS. For example:
 #     $ DEB_BUILD_OPTIONS="parallel=2" ./kurento-buildpackage.sh
 if [[ ! "${DEB_BUILD_OPTIONS:-}" =~ "parallel" ]]; then
-    GBP_ARGS+=("-j$(nproc)")
+    BUILD_CMD_ARGS+=("-j$(nproc)")
 fi
 
 if [[ "$CFG_ALLOW_DIRTY" == "true" ]]; then
-    GBP_ARGS+=(
+    BUILD_CMD_ARGS+=(
         # Generate the source tarball by ignoring ALL changed files
         # in the working directory.
         "--source-option=--extend-diff-ignore=.*"
     )
 elif [[ "$CFG_INSTALL_FILES" == "true" ]]; then
-    GBP_ARGS+=(
+    BUILD_CMD_ARGS+=(
         # Generate the source tarball by ignoring '*.deb' and '*.ddeb' files
         # inside $CFG_INSTALL_FILES_DIR.
         "--source-option=--extend-diff-ignore=.*\.d?deb$"
@@ -570,19 +466,10 @@ elif [[ "$CFG_INSTALL_FILES" == "true" ]]; then
 fi
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
-    log "Run git-buildpackage to generate a RELEASE version build"
+    log "Running package builder for a RELEASE version"
 else
-    log "Run git-buildpackage to generate a NIGHTLY snapshot build"
+    log "Running package builder for a DEVELOPMENT snapshot"
 fi
-
-# `debuild`: don't check that the source tarball (".orig.tar.gz") exists;
-# this check isn't needed because `git-buildpackage` is just going to create
-# the source tarball when it doesn't find it in the working directory.
-#
-# Also, use `--preserve-env` to pass all of our CTEST_* or GST_* environment
-# variables (for Check and GStreamer, respectively) to debian/rules, and
-# ultimately to the corresponding tools when they run.
-# GBP_BUILDER="debuild --preserve-env --no-tgz-check -i -I"
 
 # Print logs from tests
 export BOOST_TEST_LOG_LEVEL=test_suite
@@ -591,19 +478,12 @@ export CTEST_OUTPUT_ON_FAILURE=1
 # GStreamer: Don't log with colors (avoid ANSI escape codes in test output)
 export GST_DEBUG_NO_COLOR=1
 
-# gbp buildpackage \
-#     --git-ignore-new \
-#     --git-ignore-branch \
-#     --git-upstream-tree=SLOPPY \
-#     --git-builder="$GBP_BUILDER" \
-#     "${GBP_ARGS[@]}"
-
-dpkg-buildpackage "${GBP_ARGS[@]}"
+dpkg-buildpackage "${BUILD_CMD_ARGS[@]}"
 
 
 
 # Move packages
-# -------------
+# =============
 
 # `dh_builddeb` puts by default the generated '.deb' files in '../'
 # so move them to the target destination directory.
@@ -613,14 +493,3 @@ log "Move resulting packages to destination dir: '$CFG_DSTDIR'"
 find "$(realpath ..)" -maxdepth 1 -type f -name '*.*deb' \
     -not -path "$CFG_DSTDIR/*" -print0 \
 | xargs -0 --no-run-if-empty mv --target-directory="$CFG_DSTDIR"
-
-
-
-# Exit Work Directory
-# -------------------
-
-popd || true  # "$CFG_SRCDIR"
-
-
-
-log "==================== END ===================="
