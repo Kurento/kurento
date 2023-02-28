@@ -50,8 +50,8 @@ public class RomClientObjectManager implements RomEventHandler, ObjectRefsManage
     if (object == null) {
       log.error(
           "Trying to propagate a event with type={} and data={} to object {}, "
-              + "but that doesn't exist in the client. Objects are={}",
-          type, data, objectRef, objects);
+              + "but that doesn't exist in the client.",
+          type, data, objectRef);
       return;
     }
 
