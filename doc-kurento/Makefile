@@ -16,12 +16,14 @@ endif
 
 # You can set these variables from the command line.
 # Adding more '-v' increases the log verbosity level.
-SPHINXOPTS  := -v
+BUILDDIR := build
+MAVEN := mvn
+MAVEN_ARGS := --batch-mode --quiet
+SOURCEDIR := source
 SPHINXBUILD := sphinx-build
-SPHINXPROJ  := Kurento
-SOURCEDIR   := source
-BUILDDIR    := build
-WORKDIR     := $(CURDIR)/$(BUILDDIR)/$(SOURCEDIR)
+SPHINXOPTS := -v
+SPHINXPROJ := Kurento
+WORKDIR := $(CURDIR)/$(BUILDDIR)/$(SOURCEDIR)
 
 # Put this target first so that "make" without argument is like "make help"
 help:
@@ -61,15 +63,15 @@ langdoc-client-java: langdoc-init
 	cd kurento/clients/java/
 	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JAVA|"
 	cd kurento-client || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
-	mvn --batch-mode --quiet -Psnapshot -DskipTests=true clean package \
-		|| { echo "ERROR: 'mvn clean package' failed"; exit 1; }
-	mvn --batch-mode --quiet javadoc:javadoc \
+	$(MAVEN) $(MAVEN_ARGS) -Psnapshot -DskipTests=true clean package \
+		|| { echo "ERROR: '$(MAVEN) clean package' failed"; exit 1; }
+	$(MAVEN) $(MAVEN_ARGS) javadoc:javadoc \
 		-DreportOutputDirectory="$(DESTPATH)" \
 		-DdestDir="client-javadoc" \
 		-Dsourcepath="src/main/java;target/generated-sources/kmd" \
 		-Dsubpackages="org.kurento.client" \
 		-DexcludePackageNames="*.internal" \
-		|| { echo "ERROR: 'mvn javadoc' failed"; exit 1; }
+		|| { echo "ERROR: '$(MAVEN) javadoc' failed"; exit 1; }
 
 langdoc-client-js: langdoc-init
 	cd $(WORKPATH)

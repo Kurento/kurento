@@ -3,6 +3,12 @@ name: "Documentation build"
 on:
   # Manual trigger.
   workflow_dispatch:
+    inputs:
+      jobRelease:
+        description: "Enable to build release versions; disable for development builds"
+        required: false
+        type: "boolean"
+        default: false
 
 defaults:
   run:
@@ -10,9 +16,34 @@ defaults:
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    runs-on: ["self-hosted", "dev"]
     timeout-minutes: 30
     steps:
-      - name: "Say Hello"
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
+
+      - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
         run: |
-          echo "Hello World!"
+          echo "$PWD" >>$GITHUB_PATH
+          echo "CI_SCRIPTS_PATH=$PWD" >>$GITHUB_ENV
+          echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
+
+      - name: "Configure the environment for job script"
+        run: |
+          # Env vars used by `kurento_ci_job_deploy_doc.sh`.
+          echo "ENV_PATH=$GITHUB_ENV" >>$GITHUB_ENV
+
+          # Path to the Maven settings.xml file.
+          echo "MAVEN_SETTINGS_PATH=$GITHUB_WORKSPACE/clients/java/maven-settings/settings.xml" >>$GITHUB_ENV
+
+          # Env vars used by the Maven settings.xml file.
+          echo "KURENTO_MAVEN_DOWNLOAD_USERNAME=${{ secrets.KURENTO_MAVEN_DOWNLOAD_USERNAME }}" >>$GITHUB_ENV
+          echo "KURENTO_MAVEN_DOWNLOAD_PASSWORD=${{ secrets.KURENTO_MAVEN_DOWNLOAD_PASSWORD }}" >>$GITHUB_ENV
+
+      - name: "Run job script"
+        working-directory: "doc-kurento/"
+        env:
+          JOB_RELEASE: "${{ inputs.jobRelease }}"
+        run: "kurento_ci_job_deploy_doc.sh"
