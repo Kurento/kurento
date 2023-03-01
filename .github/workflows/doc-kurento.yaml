@@ -1,0 +1,18 @@
+name: "Documentation build"
+
+on:
+  # Manual trigger.
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 30
+    steps:
+      - name: "Say Hello"
+        run: |
+          echo "Hello World!"
