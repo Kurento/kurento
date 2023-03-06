@@ -53,21 +53,13 @@ init-workdir:
 	rsync -a $(SOURCE_DIR)/ $(SPHINX_WORKDIR)
 
 langdoc-init:
-	# Care must be taken because the Current Directory changes in this target,
-	# so it's better to use absolute paths for destination dirs.
 	# DESTPATH must be added to the setting 'html_static_path' in 'conf.py',
 	# and its contents must match the URLs used in the documentation files.
-	$(eval WORKPATH := $(CURDIR)/$(BUILD_DIR)/client-src)
 	$(eval DESTPATH := $(CURDIR)/$(BUILD_DIR)/langdoc)
-	mkdir -p $(WORKPATH)
 	mkdir -p $(DESTPATH)
 
 langdoc-client-java: langdoc-init
-	cd $(WORKPATH)
-	[ -d kurento ] || git clone --depth 1 https://github.com/Kurento/kurento.git
-	cd kurento/
-	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JAVA|"
-	cd clients/java/client/ || { echo "ERROR: 'cd' failed, ls:"; ls -lA; exit 1; }
+	pushd ../clients/java/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) -Psnapshot -DskipTests=true clean package \
 		|| { echo "ERROR: '$(MAVEN) clean package' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) $(MAVEN_JAVADOC_PLUGIN):javadoc \
@@ -77,28 +69,23 @@ langdoc-client-java: langdoc-init
 		-Dsubpackages="org.kurento.client" \
 		-DexcludePackageNames="*.internal" \
 		|| { echo "ERROR: '$(MAVEN) javadoc' failed"; exit 1; }
+	popd
 
 langdoc-client-js: langdoc-init
-	cd $(WORKPATH)
-	[ -d kurento ] || git clone --depth 1 https://github.com/Kurento/kurento.git
-	cd kurento/
-	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_CLIENT_JS|"
-	cd clients/javascript/client/
+	pushd ../clients/javascript/client/
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
 	rsync -a doc/jsdoc/ $(DESTPATH)/client-jsdoc
+	popd
 
 langdoc-utils-js: langdoc-init
-	cd $(WORKPATH)
-	[ -d kurento ] || git clone --depth 1 https://github.com/Kurento/kurento.git
-	cd kurento/
-	[ "|VERSION_RELEASE|" = "true" ] && git checkout "|VERSION_UTILS_JS|"
-	cd browser/kurento-utils-js/
+	pushd ../browser/kurento-utils-js/
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
 	rsync -a doc/jsdoc/kurento-utils/*/ $(DESTPATH)/utils-jsdoc
+	popd
 
 langdoc: langdoc-client-java langdoc-client-js langdoc-utils-js
 
