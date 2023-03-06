@@ -32,8 +32,13 @@ fi
 
 # `--user` is needed to avoid creating files as root, which would make next
 # jobs fail because the runner cannot do workspace cleanup.
+#
+# `--sysctl net.ipv6.conf.all.disable_ipv6=1` is used to disable IPv6, because
+# NPM will fail installing packages if the IPv6 interface is not properly routed
+# on the host system.
 docker run -i --rm --pull always \
     --user "$(id -u)":"$(id -g)" \
+    --sysctl net.ipv6.conf.all.disable_ipv6=1 \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \

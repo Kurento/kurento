@@ -8,10 +8,10 @@
 # See: https://www.gnu.org/software/make/manual/html_node/One-Shell.html
 .ONESHELL:
 
+.PHONY: help init langdoc Makefile*
+
 # Use Bash shell for commands.
 SHELL := /bin/bash
-
-.PHONY: help init-workdir langdoc Makefile*
 
 # Check required features
 ifeq ($(filter oneshell,$(.FEATURES)),)
@@ -25,21 +25,27 @@ SPHINXOPTS := -v
 SPHINXPROJ := Kurento
 
 MAVEN := mvn
-MAVEN_ARGS := --batch-mode --quiet
+MAVEN_ARGS := --batch-mode --settings /maven-settings.xml
 
-BUILD_DIR := build
-SOURCE_DIR := source
-SPHINX_WORKDIR := $(CURDIR)/$(BUILD_DIR)/$(SOURCE_DIR)
+BUILD := build
+DIST := dist
+DIST_NAME := kurento-doc
+LANGDOC := langdoc
+SOURCE := source
+
+DIST_PATH := $(CURDIR)/$(DIST)/$(DIST_NAME)
+LANGDOC_PATH := $(CURDIR)/$(BUILD)/$(LANGDOC)
+SPHINX_SRC_PATH := $(CURDIR)/$(BUILD)/$(SOURCE)
 
 # Fully-qualified plugin names, to use newer versions than the Maven defaults.
 MAVEN_JAVADOC_PLUGIN := org.apache.maven.plugins:maven-javadoc-plugin:3.5.0
 
 # Put this target first so that "make" without argument is like "make help"
 help:
-	@$(SPHINXBUILD) -M $@ "$(SOURCE_DIR)" "$(BUILD_DIR)" $(SPHINXOPTS) $(O)
-	@echo "  langdoc     to make JavaDocs and JsDocs of the Kurento Clients"
+	@$(SPHINXBUILD) -M $@ "$(SOURCE)" "$(BUILD)" $(SPHINXOPTS) $(O)
+	@echo "  langdoc     to make JavaDoc and JsDoc of the Kurento Clients"
 	@echo "  dist        to make <langdoc html epub latexpdf> and then pack"
-	@echo "              all resulting files as kurento-doc-|VERSION_DOC|.tgz"
+	@echo "              all resulting files as $(DIST_NAME).tgz"
 	@echo "  readthedocs to make <langdoc> and then copy the results to the"
 	@echo "              Sphinx theme's static folder"
 	@echo ""
@@ -52,22 +58,20 @@ help:
 	@echo "- texlive-latex-recommended"
 	@echo "- texlive-latex-extra"
 
-init-workdir:
-	mkdir -p $(SPHINX_WORKDIR)
-	rsync -a $(SOURCE_DIR)/ $(SPHINX_WORKDIR)
+init:
+	mkdir -p \
+		$(DIST_PATH) \
+		$(LANGDOC_PATH) \
+		$(SPHINX_SRC_PATH)
+	rsync -a $(SOURCE)/ $(SPHINX_SRC_PATH)/
+	./configure.sh --source $(SPHINX_SRC_PATH)
 
-langdoc-init:
-	# DESTPATH must be added to the setting 'html_static_path' in 'conf.py',
-	# and its contents must match the URLs used in the documentation files.
-	$(eval DESTPATH := $(CURDIR)/$(BUILD_DIR)/langdoc)
-	mkdir -p $(DESTPATH)
-
-langdoc-client-java: langdoc-init
+langdoc-client-java:
 	pushd ../clients/java/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) -Psnapshot -DskipTests=true clean package \
 		|| { echo "ERROR: '$(MAVEN) clean package' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) $(MAVEN_JAVADOC_PLUGIN):javadoc \
-		-DreportOutputDirectory="$(DESTPATH)" \
+		-DreportOutputDirectory="$(LANGDOC_PATH)" \
 		-DdestDir="client-javadoc" \
 		-Dsourcepath="src/main/java;target/generated-sources/kmd" \
 		-Dsubpackages="org.kurento.client" \
@@ -75,42 +79,43 @@ langdoc-client-java: langdoc-init
 		|| { echo "ERROR: '$(MAVEN) javadoc' failed"; exit 1; }
 	popd
 
-langdoc-client-js: langdoc-init
+langdoc-client-js:
 	pushd ../clients/javascript/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
-	npm install --no-color
+	npm install
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
-	rsync -a doc/jsdoc/ $(DESTPATH)/client-jsdoc
+	rsync -a doc/jsdoc/ $(LANGDOC_PATH)/client-jsdoc/
 	popd
 
-langdoc-utils-js: langdoc-init
+langdoc-utils-js:
 	pushd ../browser/kurento-utils-js/ || { echo "ERROR: 'cd' failed"; exit 1; }
-	npm install --no-color
+	npm install
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
-	rsync -a doc/jsdoc/kurento-utils/*/ $(DESTPATH)/utils-jsdoc
+	rsync -a doc/jsdoc/kurento-utils/*/ $(LANGDOC_PATH)/utils-jsdoc/
 	popd
 
-langdoc: langdoc-client-java langdoc-client-js langdoc-utils-js
+langdoc: init langdoc-client-java langdoc-client-js langdoc-utils-js
 
 dist: langdoc html epub latexpdf
-	$(eval DISTDIR := $(BUILD_DIR)/dist/kurento-doc-|VERSION_DOC|)
-	mkdir -p $(DISTDIR)
-	rsync -a $(BUILD_DIR)/html $(BUILD_DIR)/epub/Kurento.epub \
-		$(BUILD_DIR)/latex/Kurento.pdf $(DISTDIR)
-	tar zcf $(DISTDIR).tgz -C $(DISTDIR) .
+	rsync -a \
+		$(BUILD)/html \
+		$(BUILD)/epub/Kurento.epub \
+		$(BUILD)/latex/Kurento.pdf \
+		$(DIST_PATH)/
+	tar zcf $(DIST_PATH).tgz -C $(DIST_PATH) .
 
 # Target to be run by CI.
 # It modifies the source directory, adding the langdoc results, so the worspace
 # should get cleaned up or deleted afterwards by the CI job.
-ci-readthedocs: init-workdir langdoc
-	rsync -a $(SPHINX_WORKDIR)/ $(SOURCE_DIR)
-	rsync -a $(BUILD_DIR)/langdoc $(SOURCE_DIR)
+ci-readthedocs: langdoc
+	rsync -a $(SPHINX_SRC_PATH)/ $(SOURCE)/
+	rsync -a $(BUILD)/langdoc $(SOURCE)/
 
 # Comment this target to disable unconditional generation of JavaDoc & JsDoc
 #html: langdoc
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option. $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: init-workdir Makefile*
-	$(SPHINXBUILD) -M $@ "$(SPHINX_WORKDIR)" "$(BUILD_DIR)" $(SPHINXOPTS) $(O)
+%: init Makefile*
+	$(SPHINXBUILD) -M $@ "$(SPHINX_SRC_PATH)" "$(BUILD)" $(SPHINXOPTS) $(O)

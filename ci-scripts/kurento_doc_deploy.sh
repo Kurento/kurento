@@ -70,8 +70,6 @@ log "CFG_RELEASE=$CFG_RELEASE"
 # Generate doc
 # ============
 
-./configure.sh
-
 if [[ -z "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
     cp Makefile Makefile.ci
 else
@@ -98,7 +96,7 @@ fi
 
 RTD_DIR="$(mktemp --directory)"
 
-git clone "git@github.com:Kurento/doc-kurento-readthedocs.git" "$RTD_DIR"
+git clone --depth 1 "git@github.com:Kurento/doc-kurento-readthedocs.git" "$RTD_DIR"
 
 rsync -av --delete \
     --exclude-from=.gitignore \

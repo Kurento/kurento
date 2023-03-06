@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#Checked with ShellCheck (https://www.shellcheck.net/)
+# Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Initialization script for Kurento documentation.
 #/
@@ -11,8 +11,8 @@
 
 
 
-# Shell setup
-# ===========
+# Configure shell
+# ===============
 
 # Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
@@ -46,6 +46,32 @@ source "$CONF_FILE"
 
 
 
+# Parse call arguments
+# ====================
+
+CFG_SOURCE_PATH="$SELF_DIR"
+
+while [[ $# -gt 0 ]]; do
+    case "${1-}" in
+        --source)
+            if [[ -n "${2-}" ]]; then
+                CFG_SOURCE_PATH="$(realpath "$2")"
+                shift
+            else
+                log "ERROR: --source expects <Path>"
+                exit 1
+            fi
+            ;;
+        *)
+            log "ERROR: Unknown argument '${1-}'"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+
+
 # Replace placeholders
 # ====================
 
@@ -61,14 +87,13 @@ for NAME in "${!PROJECT_VERSIONS[@]}"; do
     # grep's exit code 1 means no lines selected, and >1 means an error.
     # Thus, exit code 1 must be handled to prevent `-o pipefail` from failing.
 
-
     {
         grep \
             --files-with-matches \
             --binary-files=without-match \
             --recursive \
             --null \
-            "|$NAME|" "$SELF_DIR" \
+            "|$NAME|" "$CFG_SOURCE_PATH" \
         || [[ $? == 1 ]]
     } | xargs \
         --null \
