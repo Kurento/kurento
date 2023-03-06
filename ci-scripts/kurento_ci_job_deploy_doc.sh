@@ -52,6 +52,6 @@ set -o xtrace
 export PATH="/ci-scripts:\$PATH"
 
 # Build and deploy the documentation.
-kurento_doc_deploy.sh ${DOC_DEPLOY_ARGS[@]}
+kurento_doc_deploy.sh --maven-settings /maven-settings.xml ${DOC_DEPLOY_ARGS[@]}
 
 DOCKERCOMMANDS

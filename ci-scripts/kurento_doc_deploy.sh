@@ -32,14 +32,11 @@ set -o xtrace
 # Parse call arguments
 # ====================
 
-CFG_RELEASE="false"
 CFG_MAVEN_SETTINGS_PATH=""
+CFG_RELEASE="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --release)
-            CFG_RELEASE="true"
-            ;;
         --maven-settings)
             if [[ -n "${2-}" ]]; then
                 CFG_MAVEN_SETTINGS_PATH="$(realpath "$2")"
@@ -48,6 +45,9 @@ while [[ $# -gt 0 ]]; do
                 log "ERROR: --maven-settings expects <Path>"
                 exit 1
             fi
+            ;;
+        --release)
+            CFG_RELEASE="true"
             ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
@@ -62,8 +62,8 @@ done
 # Validate config
 # ===============
 
-log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
+log "CFG_RELEASE=$CFG_RELEASE"
 
 
 
