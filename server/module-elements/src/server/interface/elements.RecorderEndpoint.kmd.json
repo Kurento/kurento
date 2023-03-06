@@ -31,10 +31,10 @@
         must support using the <i>chunked</i> encoding mode (HTTP header
         <code>Transfer-Encoding: chunked</code>). Examples:
         <ul>
-          <li><code>http(s)://{host}/path/to/file</code></li>
+          <li><code>http(s)://host/path/to/file</code></li>
           <li>
             <code>
-              http(s)://{username}:{password}@{host}:{port}/path/to/file
+              http(s)://username:password@host:port/path/to/file
             </code>
           </li>
         </ul>
@@ -52,7 +52,7 @@
           <a href='https://en.wikipedia.org/wiki/Query_string#URL_encoding'>
             URL-encoded
           </a>
-          in <code>{username}</code> and <code>{password}</code> fields.
+          in <code>username</code> and <code>password</code> fields.
         </strong>
       </li>
     </ul>

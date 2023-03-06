@@ -77,7 +77,7 @@ public class CustomMavenPomTest {
     assertTagValue(doc, "/project/properties/project.build.sourceEncoding", "UTF-8");
 
     // Replace properties
-    assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
+    assertTagValue(doc, "/project/properties/maven.compiler.release", "11");
 
     // Add dependencies
     assertTagValue(doc, "/project/dependencies/dependency/groupId", "fake_dependency");
@@ -142,7 +142,7 @@ public class CustomMavenPomTest {
     assertTagValue(doc, "/project/properties/project.build.sourceEncoding", "UTF-8");
 
     // Replace properties
-    assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
+    assertTagValue(doc, "/project/properties/maven.compiler.release", "11");
 
     // Add dependencies
     assertTagValue(doc, "/project/dependencies/dependency/groupId", "fake_dependency");

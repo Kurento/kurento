@@ -64,18 +64,12 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- maven-compiler-plugin -->
-		<!-- REVIEW: Starting from Java-9, change to use the new <release> parameter. -->
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.release>11</maven.compiler.release>
 
 		<!-- maven-eclipse-plugin -->
 		<downloadSources>true</downloadSources>
 		<downloadJavadocs>true</downloadJavadocs>
 
-		<!-- maven-pmd-plugin -->
-		<targetJdk>${maven.compiler.target}</targetJdk>
-
-		<version.pmd.plugin>3.6</version.pmd.plugin>
 		<version.checkstyle.plugin>2.17</version.checkstyle.plugin>
 		<version.findbugs.plugin>3.0.4</version.findbugs.plugin>
 		<version.puppycrawl.checkstyle>8.29</version.puppycrawl.checkstyle>
@@ -112,11 +106,6 @@
 			<id>qa</id>
 			<build>
 				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-pmd-plugin</artifactId>
-						<version>${version.pmd.plugin}</version>
-					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-checkstyle-plugin</artifactId>
