@@ -37,7 +37,7 @@ docker run -i --rm --pull always \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \
-    --workdir /workdir \
+    --workdir /workdir/doc-kurento/ \
     --env-file "$ENV_PATH" \
     kurento/kurento-ci-buildtools:focal <<DOCKERCOMMANDS
 

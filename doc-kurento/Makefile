@@ -63,7 +63,7 @@ langdoc-init:
 	mkdir -p $(DESTPATH)
 
 langdoc-client-java: langdoc-init
-	pushd $(CURDIR)/../clients/java/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
+	pushd ../clients/java/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) -Psnapshot -DskipTests=true clean package \
 		|| { echo "ERROR: '$(MAVEN) clean package' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) $(MAVEN_JAVADOC_PLUGIN):javadoc \
@@ -76,7 +76,7 @@ langdoc-client-java: langdoc-init
 	popd
 
 langdoc-client-js: langdoc-init
-	pushd $(CURDIR)/../clients/javascript/client/
+	pushd ../clients/javascript/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
@@ -84,7 +84,7 @@ langdoc-client-js: langdoc-init
 	popd
 
 langdoc-utils-js: langdoc-init
-	pushd $(CURDIR)/../browser/kurento-utils-js/
+	pushd ../browser/kurento-utils-js/ || { echo "ERROR: 'cd' failed"; exit 1; }
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }

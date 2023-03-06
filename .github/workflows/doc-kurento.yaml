@@ -43,7 +43,6 @@ jobs:
           echo "KURENTO_MAVEN_DOWNLOAD_PASSWORD=${{ secrets.KURENTO_MAVEN_DOWNLOAD_PASSWORD }}" >>$GITHUB_ENV
 
       - name: "Run job script"
-        working-directory: "doc-kurento/"
         env:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
         run: "kurento_ci_job_deploy_doc.sh"
