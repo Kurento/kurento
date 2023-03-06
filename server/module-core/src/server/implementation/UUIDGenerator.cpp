@@ -22,12 +22,14 @@
 #include <sstream>
 #include <sys/types.h>
 #include <unistd.h>
+#include <mutex>
 
 namespace kurento
 {
 
 class RandomGenerator
 {
+  std::recursive_mutex uuid_mutex;
   boost::uuids::basic_random_generator<boost::mt19937> gen;
   boost::mt19937 ran;
   pid_t pid{};
@@ -64,7 +66,13 @@ public:
     reinit();
 
     std::stringstream ss;
-    boost::uuids::uuid uuid = gen ();
+    boost::uuids::uuid uuid;
+    
+    {
+      std::lock_guard<std::recursive_mutex> guard(uuid_mutex);
+      
+      uuid = gen ();
+    }
 
     ss << uuid;
     return ss.str();
