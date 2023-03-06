@@ -1,12 +1,16 @@
 # Makefile for Sphinx documentation
 
-# Special Make configuration:
-# * Run all targets sequentially (disable parallel jobs)
-#   See: https://www.gnu.org/software/make/manual/html_node/Parallel.html
-# * Run all commands in the same shell (disable one shell per command)
-#   See: https://www.gnu.org/software/make/manual/html_node/One-Shell.html
+# Run all targets sequentially (disable parallel jobs)
+# See: https://www.gnu.org/software/make/manual/html_node/Parallel.html
 .NOTPARALLEL:
+
+# Run all commands in the same shell (disable one shell per command)
+# See: https://www.gnu.org/software/make/manual/html_node/One-Shell.html
 .ONESHELL:
+
+# Use Bash shell for commands.
+SHELL := /bin/bash
+
 .PHONY: help init-workdir langdoc Makefile*
 
 # Check required features
@@ -59,7 +63,7 @@ langdoc-init:
 	mkdir -p $(DESTPATH)
 
 langdoc-client-java: langdoc-init
-	pushd ../clients/java/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
+	pushd $(CURDIR)/../clients/java/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) -Psnapshot -DskipTests=true clean package \
 		|| { echo "ERROR: '$(MAVEN) clean package' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) $(MAVEN_JAVADOC_PLUGIN):javadoc \
@@ -72,7 +76,7 @@ langdoc-client-java: langdoc-init
 	popd
 
 langdoc-client-js: langdoc-init
-	pushd ../clients/javascript/client/
+	pushd $(CURDIR)/../clients/javascript/client/
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
@@ -80,7 +84,7 @@ langdoc-client-js: langdoc-init
 	popd
 
 langdoc-utils-js: langdoc-init
-	pushd ../browser/kurento-utils-js/
+	pushd $(CURDIR)/../browser/kurento-utils-js/
 	npm install --no-color
 	node_modules/.bin/grunt --no-color --force jsdoc \
 		|| { echo "ERROR: 'grunt jsdoc' failed"; exit 1; }
