@@ -129,8 +129,10 @@ elif [[ "$CFG_JS" == "true" ]]; then
     GENERATE_CMD="kurento_generate_js_module.sh"
 fi
 
+# `--user` is needed to avoid creating files as root, which would make next
+# jobs fail because the runner cannot do workspace cleanup.
 docker exec -i \
-    --user="$(id -u)":"$(id -g)" \
+    --user "$(id -u)":"$(id -g)" \
     --workdir /workdir \
     --env-file "$ENV_PATH" \
     kurento_ci_job_generate_module bash <<DOCKERCOMMANDS
