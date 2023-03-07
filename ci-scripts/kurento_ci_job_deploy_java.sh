@@ -27,9 +27,8 @@ set -o xtrace
 
 # `--user` is needed to avoid creating files as root, which would make next
 # jobs fail because the runner cannot do workspace cleanup.
-
 docker run -i --rm --pull always \
-    --user="$(id -u)":"$(id -g)" \
+    --user "$(id -u)":"$(id -g)" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$MAVEN_LOCAL_REPOSITORY_PATH",dst=/maven-repository \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
@@ -50,6 +49,6 @@ export PATH="/ci-scripts:\$PATH"
 export MAVEN_LOCAL_REPOSITORY_PATH="/maven-repository"
 
 # Compile, package, and deploy the current project.
-kurento_maven_deploy.sh --maven-settings-path /maven-settings.xml
+kurento_maven_deploy.sh --maven-settings /maven-settings.xml
 
 DOCKERCOMMANDS

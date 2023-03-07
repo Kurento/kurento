@@ -47,12 +47,12 @@ CFG_MAVEN_SIGN_ARTIFACTS="true"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --maven-settings-path)
+        --maven-settings)
             if [[ -n "${2-}" ]]; then
                 CFG_MAVEN_SETTINGS_PATH="$(realpath "$2")"
                 shift
             else
-                log "ERROR: --maven-settings-path expects <Path>"
+                log "ERROR: --maven-settings expects <Path>"
                 exit 1
             fi
             ;;
@@ -87,7 +87,7 @@ log "CFG_MAVEN_SIGN_ARTIFACTS=$CFG_MAVEN_SIGN_ARTIFACTS"
 
 CHECK_VERSION_ARGS=()
 if [[ -n "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
-    CHECK_VERSION_ARGS+=(--maven-settings-path "$CFG_MAVEN_SETTINGS_PATH")
+    CHECK_VERSION_ARGS+=(--maven-settings "$CFG_MAVEN_SETTINGS_PATH")
 fi
 
 kurento_check_version.sh "${CHECK_VERSION_ARGS[@]}" || {

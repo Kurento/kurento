@@ -39,12 +39,12 @@ CFG_MAVEN_SETTINGS_PATH=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --maven-settings-path)
+        --maven-settings)
             if [[ -n "${2-}" ]]; then
                 CFG_MAVEN_SETTINGS_PATH="$(realpath "$2")"
                 shift
             else
-                log "ERROR: --maven-settings-path expects <Path>" >&2
+                log "ERROR: --maven-settings expects <Path>" >&2
                 exit 1
             fi
             ;;
