@@ -28,9 +28,7 @@ pom.xml
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- maven-compiler-plugin -->
-		<!-- FIXME: Starting from Java-9, change to use the new <release> parameter. -->
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.release>11</maven.compiler.release>
 	</properties>
 
 <#if module.imports[0]??>

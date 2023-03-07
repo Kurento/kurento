@@ -61,6 +61,9 @@
 		<!-- maven-resources-plugin -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+		<!-- maven-compiler-plugin -->
+		<maven.compiler.release>11</maven.compiler.release>
+
 		<buildDirectory>${project.basedir}/target</buildDirectory>
 	</properties>
 
@@ -119,11 +122,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.2</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
+				<version>3.11.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

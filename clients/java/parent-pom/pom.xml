@@ -171,7 +171,7 @@
 		<version.clean.plugin>3.2.0</version.clean.plugin>
 		<version.clover2.plugin>4.0.6</version.clover2.plugin>
 		<version.cobertura.plugin>2.7</version.cobertura.plugin>
-		<version.compiler.plugin>3.10.1</version.compiler.plugin>
+		<version.compiler.plugin>3.11.0</version.compiler.plugin>
 		<version.dependency.plugin>3.3.0</version.dependency.plugin>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
@@ -204,20 +204,10 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- maven-compiler-plugin -->
-		<!-- REVIEW: Starting from Java-9, change to use the new <release> parameter. -->
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
-
-		<!-- Options to override the compiler arguments directly on the compiler
-		argument line, to separate between what the IDE understands as the source level
-		and what the Maven compiler actually uses. -->
-		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
-		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
+		<maven.compiler.release>11</maven.compiler.release>
 
 		<!-- maven-enforcer-plugin -->
 		<maven.min.version>3.0.3</maven.min.version>
-		<jdk.min.version>${maven.compiler.source}</jdk.min.version>
-		<jdk.max.version>${maven.compiler.source}</jdk.max.version>
 
 		<!-- maven-eclipse-plugin -->
 		<downloadSources>true</downloadSources>
@@ -838,8 +828,6 @@
 					<configuration>
 						<showDeprecation>true</showDeprecation>
 						<showWarnings>true</showWarnings>
-						<source>${maven.compiler.argument.source}</source>
-						<target>${maven.compiler.argument.target}</target>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -1072,20 +1060,6 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>enforce-java-version</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireJavaVersion>
-									<message>To build this project, JDK ${jdk.min.version} (or greater) is required. Please install it.</message>
-									<version>${jdk.min.version}</version>
-								</requireJavaVersion>
-							</rules>
-						</configuration>
-					</execution>
-					<execution>
 						<id>enforce-maven-version</id>
 						<goals>
 							<goal>enforce</goal>
@@ -1097,20 +1071,6 @@
 									<version>${maven.min.version}</version>
 								</requireMavenVersion>
 							</rules>
-						</configuration>
-					</execution>
-					<execution>
-						<id>enforce-bytecode-version</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<enforceBytecodeVersion>
-									<maxJdkVersion>${jdk.max.version}</maxJdkVersion>
-								</enforceBytecodeVersion>
-							</rules>
-							<fail>true</fail>
 						</configuration>
 					</execution>
 					<execution>
@@ -1265,17 +1225,6 @@
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
-
-		<!-- Profile to allow generating javadoc in both Java 7 & 8 environments -->
-		<profile>
-			<id>doclint-java8-disable</id>
-			<activation>
-				<jdk>[1.8,)</jdk>
-			</activation>
-			<properties>
-				<javadoc.opts>-Xdoclint:none</javadoc.opts>
-			</properties>
 		</profile>
 
 		<!-- Profile to aid upgrading Spring Boot to newer versions. -->

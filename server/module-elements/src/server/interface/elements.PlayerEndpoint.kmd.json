@@ -26,10 +26,10 @@
   <li>
     HTTP: Any file available in an HTTP server. Examples:
     <ul>
-      <li><code>http(s)://{host}/path/to/file</code></li>
+      <li><code>http(s)://host/path/to/file</code></li>
       <li>
         <code>
-          http(s)://{username}:{password}@{host}:{port}/path/to/file
+          http(s)://username:password@host:port/path/to/file
         </code>
       </li>
     </ul>
@@ -37,10 +37,10 @@
   <li>
     RTSP: Typically used to capture a feed from an IP Camera. Examples:
     <ul>
-      <li><code>rtsp://{host}</code></li>
+      <li><code>rtsp://host</code></li>
       <li>
         <code>
-          rtsp://{username}:{password}@{host}:{port}/path/to/file?{key=value}&{key=value}
+          rtsp://username:password@host:port/path/to/file?key=value&key=value
         </code>
       </li>
     </ul>
@@ -51,7 +51,7 @@
       <a href='https://en.wikipedia.org/wiki/Query_string#URL_encoding'>
         URL-encoded
       </a>
-      in <code>{username}</code> and <code>{password}</code> fields.
+      in <code>username</code> and <code>password</code> fields.
     </strong>
   </li>
 </ul>
