@@ -40,6 +40,7 @@ docker run -i --rm --pull always \
     --user "$(id -u)":"$(id -g)" \
     --sysctl net.ipv6.conf.all.disable_ipv6=1 \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
+    --mount type=bind,src="$KURENTOCI_SSH_KEY_PATH",dst=/id_ssh \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \
     --workdir /workdir/doc-kurento/ \
@@ -57,6 +58,6 @@ set -o xtrace
 export PATH="/ci-scripts:\$PATH"
 
 # Build and deploy the documentation.
-kurento_doc_deploy.sh --maven-settings /maven-settings.xml ${DOC_DEPLOY_ARGS[@]}
+kurento_doc_deploy.sh --ssh-key /id_ssh --maven-settings /maven-settings.xml ${DOC_DEPLOY_ARGS[@]}
 
 DOCKERCOMMANDS
