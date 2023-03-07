@@ -42,8 +42,12 @@ apt-get update && apt-get install --no-install-recommends --yes \
 && apt-get update && apt-get install --no-install-recommends --yes \
     nodejs \
 && rm -rf /var/lib/apt/lists/* \
-&& npm config set color false \
-&& npm install -g 'npm@^8' \
+&& mkdir -p /.npm \
+&& chmod 0777 /.npm \
+&& npm config set cache=/.npm \
+&& npm config set color=false \
+&& npm config set progress=false \
+&& npm install -g npm \
 && npm install -g bower \
 && npm cache clean --force
 
