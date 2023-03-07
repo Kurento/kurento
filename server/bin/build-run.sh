@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Build and run Kurento Media Server.
 #/
