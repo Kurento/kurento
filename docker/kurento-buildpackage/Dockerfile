@@ -98,6 +98,7 @@ apt-get update && apt-get install --no-install-recommends --yes \
     openssh-client \
     equivs \
     coreutils \
+&& rm -f /var/lib/man-db/auto-update \
 && rm -rf /var/lib/apt/lists/*
 
 # Add Ubuntu debug repository key for apt-get.
