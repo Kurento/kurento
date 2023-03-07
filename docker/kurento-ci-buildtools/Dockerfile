@@ -32,9 +32,7 @@ FROM kurento/kurento-buildpackage:${UBUNTU_CODENAME}
 # (in case you end up using the parent's entrypoint.sh)
 ENV APT_KEEP_CACHE="false"
 
-# Install Node, NPM, and Bower (fox JavaScript-based projects)
-# - Tested Node version: 18.
-# - Tested NPM version: 8.
+# Install Node, NPM, and Bower (fox JavaScript-based projects).
 RUN \
 apt-get update && apt-get install --no-install-recommends --yes \
     wget \
@@ -42,14 +40,13 @@ apt-get update && apt-get install --no-install-recommends --yes \
 && apt-get update && apt-get install --no-install-recommends --yes \
     nodejs \
 && rm -rf /var/lib/apt/lists/* \
-&& mkdir -p /.npm \
-&& chmod 0777 /.npm \
 && npm config set cache=/.npm \
 && npm config set color=false \
 && npm config set progress=false \
 && npm install -g npm \
 && npm install -g bower \
-&& npm cache clean --force
+&& npm cache clean --force \
+&& chmod --recursive 0777 /.npm
 
 # Install packages
 # * build-essential, cmake: For C/C++ server modules that generate client SDK files.
