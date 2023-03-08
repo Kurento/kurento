@@ -3,12 +3,6 @@ name: "Documentation build"
 on:
   # Manual trigger.
   workflow_dispatch:
-    inputs:
-      jobRelease:
-        description: "Enable to build release versions; disable for development builds"
-        required: false
-        type: "boolean"
-        default: false
 
 defaults:
   run:
@@ -53,6 +47,4 @@ jobs:
           echo "KURENTO_MAVEN_DOWNLOAD_PASSWORD=${{ secrets.KURENTO_MAVEN_DOWNLOAD_PASSWORD }}" >>$GITHUB_ENV
 
       - name: "Run job script"
-        env:
-          JOB_RELEASE: "${{ inputs.jobRelease }}"
         run: "kurento_ci_job_deploy_doc.sh"

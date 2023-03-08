@@ -264,38 +264,13 @@ After the build has been completed, you can change into the build directory and 
 Clean up your system
 --------------------
 
-To leave the system in a clean state, remove all Kurento packages and related development libraries.
-
-This command should be fairly safe to use; it works perfectly fine for us on a daily basis (we even use it with the option ``--yes``, which makes the process automatic and unattended). Still, please carefully review the list of packages marked for uninstalling.
-
-Run:
+To leave the system in a clean state, remove all Kurento packages and related development libraries. All Kurento packages contain the word "*kurento*" in the version number, so Aptitude makes it very easy to uninstall them all:
 
 .. code-block:: shell
 
-    PACKAGES=(
-        # Main modules.
-        '^(kms|kurento).*'
+   sudo aptitude remove ~Vkurento
 
-        # External libraries.
-        ffmpeg
-        '^gir1.2-gst.*1.5'
-        gir1.2-nice-0.1
-        '^(lib)?gstreamer.*1.5.*'
-        '^lib(nice|s3-2|srtp|usrsctp).*'
-        '^srtp-.*'
-        '^openh264(-gst-plugins-bad-1.5)?'
-        '^openwebrtc-gst-plugins.*'
-
-        # System development libraries.
-        '^libboost-?(filesystem|log|program-options|regex|system|test|thread)?-dev'
-        '^lib(glib2.0|glibmm-2.4|opencv|sigc++-2.0|soup2.4|ssl|tesseract|vpx)-dev'
-        uuid-dev
-    )
-
-    # Run a loop over all package names and uninstall them.
-    for PACKAGE in "${PACKAGES[@]}"; do
-        sudo apt-get purge --auto-remove "$PACKAGE" || { echo "Skip unknown package"; }
-    done
+Use *purge* instead of *remove* to also delete any leftover configuration files in ``/etc/``.
 
 
 
@@ -535,7 +510,7 @@ This allows for the fastest development cycle, however the specific instructions
 Create Deb packages
 ===================
 
-You can easily create Debian packages (*.deb* files) for Kurento itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/man1/debuild.1.html>`__, but in order to integrate the build process with Git, we based our tooling on `gbp <https://manpages.ubuntu.com/manpages/man1/gbp.1.html>`__ (`git-buildpackage <https://honk.sigxcpu.org/piki/projects/git-buildpackage/>`__).
+You can easily create Debian packages (*.deb* files) for Kurento itself and for any of the forked libraries. Typically, Deb packages can be created directly by using standard system tools such as `dpkg-buildpackage <https://manpages.ubuntu.com/manpages/man1/dpkg-buildpackage.1.html>`__ or `debuild <https://manpages.ubuntu.com/manpages/man1/debuild.1.html>`__.
 
 
 

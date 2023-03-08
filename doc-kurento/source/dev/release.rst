@@ -9,7 +9,7 @@ Release Procedures
 Introduction
 ============
 
-This document aims to summarize all release procedures that apply to each one of the modules that are part of the Kurento project. The main form of categorization is by technology type: C/C++ based modules, Java modules, JavaScript modules, and others.
+This document describes all release procedures that apply to each one of the modules that are part of the Kurento project. The main form of categorization is by technology type: C/C++ based modules, Java modules, JavaScript modules, and others.
 
 
 .. _dev-release-general:
@@ -21,19 +21,19 @@ General considerations
 
 * During development, Kurento projects will have the future version number, followed by a development suffix:
 
-  - In Java (Maven) projects, development versions are indicated by the suffix ``-SNAPSHOT`` after the version number. Example: ``1.0.0-SNAPSHOT``.
-  - In C/C++ (CMake) projects, development versions are indicated by the suffix ``-dev`` after the version number. Example: ``1.0.0-dev``.
+  - ``-SNAPSHOT`` in Java (Maven) projects. Example: ``1.0.0-SNAPSHOT``.
+  - ``-dev`` in C/C++ (CMake) and JavaScript projects. Example: ``1.0.0-dev``.
 
-  These suffixes must be removed for release, and then recovered again to resume development.
+  These suffixes must be removed for release, and then added again to start a new development cycle.
 
 * The release version number doesn't need to match the one that had been in use during development. For example, after ``1.0.1-dev``, maybe enough features had been added that it gets released as ``1.1.0`` instead of ``1.0.1``. This is something that will be decided at the time of each release.
 
-* Tags are named with the version number of the release. Example: ``1.0.0``.
+* Git tags are created and named with the version number of each release. Example: ``1.0.0``. No superfluous prefix is used, such as ``v``.
 
-* If per-release patch branches are needed, they will use ``x`` as placeholder for the unspecified number. For example:
+* If hotfix branches are needed, they will use ``x`` as placeholder for the unspecified number. For example:
 
   - A support branch for the ``1.1`` minor release would be called ``1.1.x``.
-  - A support branch for the whole ``1`` major release would be called ``1.1.x``.
+  - A support branch for the whole ``1`` major release would be called ``1.x``.
 
 * Contrary to the project version, Debian package versions don't contain development suffixes, and should always be of the form ``1.0.0-1kurento1``:
 
@@ -41,15 +41,15 @@ General considerations
 
   - The second part (*1kurento1*) is the **Debian package revision**:
 
-    - The number prefix (in this example: *0*) indicates the version relative to other same-name packages provided by the base system. When this number is *0*, it means that the package is original and only exists in Kurento, not in Debian or Ubuntu itself. This is typically the case for the projects owned or forked for the Kurento project.
+    - The number prefix indicates the version relative to other same-name packages provided by the base system.
 
-    - The number suffix (in this example: *1*) means the number of times the same package has been re-packaged and re-published. *1* means that this is the *first* time a given project version was packaged.
+    - The number suffix means the amount of times that the package itself has been repackaged and republished. *1* means that this is the *first* time a given project version was packaged. If it was *1kurento3*, it would mean that's the third time the same version has been repackaged.
 
     **Example**:
 
-    Imagine that version *1.0.0* of your code is released for the first time. The full Debian package version will be: *1.0.0-1kurento1*. Later, you realize the package doesn't install correctly in some machines, because of a bug in the package's post-install script. You fix it, and now it's time to re-publish! But the project's source code itself has not changed at all, only the packaging files (in ``/debian/`` dir); thus, the *base version* will remain *1.0.0*, and only the *Debian revision* needs to change. The new package's full version will be *1.0.0-1kurento2*.
+    A new version *1.0.0* is released for the first time. The full Debian package version will be: *1.0.0-1kurento1*. Later, you realize the package doesn't install correctly in some machines, because of a bug in the package's post-install script. It's time to fix the mistake and republish! The software's source code itself has not changed at all, only the packaging files (in ``/debian/`` dir); thus, the *base version* will remain *1.0.0*, and only the *Debian revision* needs to change. The new package's full version will be *1.0.0-1kurento2*.
 
-  Please check the `Debian Policy Manual`_ and `this Ask Ubuntu answer`_ for more information about the package versions.
+  Please check the `Debian Policy Manual`_ and `this Ask Ubuntu answer`_ for more information about package versions.
 
 * Kurento uses `Semantic Versioning`_. Whenever you need to decide what is going to be the *final release version* for a new release, try to follow the SemVer guidelines:
 
@@ -57,19 +57,17 @@ General considerations
 
      Given a version number MAJOR.MINOR.PATCH, increment the:
 
-     1. MAJOR version when you make incompatible API changes,
-     2. MINOR version when you add functionality in a backwards-compatible manner, and
-     3. PATCH version when you make backwards-compatible bug fixes.
+     1. MAJOR version when making backwards-incompatible or breaking API changes.
+     2. MINOR version when adding new functionality in a backwards-compatible manner.
+     3. PATCH version when making backwards-compatible bug fixes.
 
   Please refer to https://semver.org/ for more information.
 
   **Example**:
 
-  If the last Kurento release was **1.0.0**, then the next development version would be **1.0.1-dev** (or *1.0.1-SNAPSHOT* for Java components).
+  If the last release was **1.0.0**, then the next development version would be **1.0.1-dev** (or *1.0.1-SNAPSHOT* for Java components).
 
-  Later, the time comes to release this new development. If the new code only includes bug fixes and patches, then the version number *1.0.1* is already good. However, maybe this new release ended up including new functionality, which according to Semantic Versioning should be accompanied with a bump in the *.MINOR* version number, so the next release version number should be *1.1.0*. The Debian package version is reset accordingly, so the full Debian version is **1.1.0-1kurento1**.
-
-  If you are re-packaging an already published version, without changes in the project's code itself, then just increment the Debian package revision: *1kurento1* becomes *1kurento2*, and so on.
+  Some weeks later, the time comes to release this new development. If the new code only includes bug fixes and patches, then the version number *1.0.1* is already good. However, if some new features had been added, this new code should be released with version number *1.1.0*. The Debian package version is reset accordingly, so the full version is **1.1.0-1kurento1**.
 
 
 
@@ -109,6 +107,8 @@ General considerations
         # <Amend>
         # <Create Tag>
         git push --force origin <TagName>
+
+     Note that the **main** branch in GitHub is a protected branch. This means force-pushing is disallowed, to avoid breaking the git trees of anyone who has this repository cloned.
 
 
 
@@ -161,33 +161,33 @@ To make life easier for application developers, there is a Java and a JavaScript
 
 Java release order:
 
-* ``server/module-creator`` (`org.kurento:kurento-module-creator <https://search.maven.org/artifact/org.kurento/kurento-module-creator>`__)
-* ``clients/java/maven-plugin`` (`org.kurento:kurento-maven-plugin <https://search.maven.org/artifact/org.kurento/kurento-maven-plugin>`__)
-* ``clients/java/qa-pom`` (`org.kurento:kurento-qa-pom <https://search.maven.org/artifact/org.kurento/kurento-qa-pom>`__)
+* ``server/module-creator`` (`org.kurento.kurento-module-creator <https://search.maven.org/artifact/org.kurento/kurento-module-creator>`__)
+* ``clients/java/maven-plugin`` (`org.kurento.kurento-maven-plugin <https://search.maven.org/artifact/org.kurento/kurento-maven-plugin>`__)
+* ``clients/java/qa-pom`` (`org.kurento.kurento-qa-pom <https://search.maven.org/artifact/org.kurento/kurento-qa-pom>`__)
 
-* ``server/module-core`` (`org.kurento:kms-api-core <https://search.maven.org/artifact/org.kurento/kms-api-core>`__)
-* ``server/module-elements`` (`org.kurento:kms-api-elements <https://search.maven.org/artifact/org.kurento/kms-api-elements>`__)
-* ``server/module-filters`` (`org.kurento:kms-api-filters <https://search.maven.org/artifact/org.kurento/kms-api-filters>`__)
+* ``server/module-core`` (`org.kurento.kms-api-core <https://search.maven.org/artifact/org.kurento/kms-api-core>`__)
+* ``server/module-elements`` (`org.kurento.kms-api-elements <https://search.maven.org/artifact/org.kurento/kms-api-elements>`__)
+* ``server/module-filters`` (`org.kurento.kms-api-filters <https://search.maven.org/artifact/org.kurento/kms-api-filters>`__)
 
-* ``clients/java`` (`org.kurento:kurento-java <https://search.maven.org/artifact/org.kurento/kurento-java>`__, including `org.kurento:kurento-client <https://search.maven.org/artifact/org.kurento/kurento-client>`__)
+* ``clients/java`` (`org.kurento.kurento-java <https://search.maven.org/artifact/org.kurento/kurento-java>`__, including `org.kurento.kurento-client <https://search.maven.org/artifact/org.kurento/kurento-client>`__)
 
 After *kurento-client* is done, the client code for example Kurento modules can be built:
 
-* ``server/module-examples/chroma`` (`org.kurento.module:chroma <https://search.maven.org/artifact/org.kurento.module/chroma>`__)
-* ``server/module-examples/crowddetector`` (`org.kurento.module:crowddetector <https://search.maven.org/artifact/org.kurento.module/crowddetector>`__)
-* ``server/module-examples/datachannelexample`` (`org.kurento.module:datachannelexample <https://search.maven.org/artifact/org.kurento.module/datachannelexample>`__)
-* ``server/module-examples/markerdetector`` (`org.kurento.module:markerdetector <https://search.maven.org/artifact/org.kurento.module/markerdetector>`__)
-* ``server/module-examples/platedetector`` (`org.kurento.module:platedetector <https://search.maven.org/artifact/org.kurento.module/platedetector>`__)
-* ``server/module-examples/pointerdetector`` (`org.kurento.module:pointerdetector <https://search.maven.org/artifact/org.kurento.module/pointerdetector>`__)
+* ``server/module-examples/chroma`` (`org.kurento.module.chroma <https://search.maven.org/artifact/org.kurento.module/chroma>`__)
+* ``server/module-examples/crowddetector`` (`org.kurento.module.crowddetector <https://search.maven.org/artifact/org.kurento.module/crowddetector>`__)
+* ``server/module-examples/datachannelexample`` (`org.kurento.module.datachannelexample <https://search.maven.org/artifact/org.kurento.module/datachannelexample>`__)
+* ``server/module-examples/markerdetector`` (`org.kurento.module.markerdetector <https://search.maven.org/artifact/org.kurento.module/markerdetector>`__)
+* ``server/module-examples/platedetector`` (`org.kurento.module.platedetector <https://search.maven.org/artifact/org.kurento.module/platedetector>`__)
+* ``server/module-examples/pointerdetector`` (`org.kurento.module.pointerdetector <https://search.maven.org/artifact/org.kurento.module/pointerdetector>`__)
 
 Now, the Kurento testing packages (which depend on some of the example modules). *kurento-utils-js* library must also be built at this stage, because it is a dependency of *kurento-test*:
 
 * ``browser/kurento-utils-js`` (`kurento-utils <https://www.npmjs.com/package/kurento-utils>`__)
-* ``test/integration`` (`org.kurento:kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento:kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
+* ``test/integration`` (`org.kurento.kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento.kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
 
 And lastly, the tutorials (which depend on the example modules):
 
-* ``tutorials/java`` (`org.kurento.tutorial:kurento-tutorial <https://search.maven.org/artifact/org.kurento.tutorial/kurento-tutorial>`__, including `org.kurento.tutorial:* <https://search.maven.org/search?q=g:org.kurento.tutorial>`__)
+* ``tutorials/java`` (`org.kurento.tutorial.kurento-tutorial <https://search.maven.org/artifact/org.kurento.tutorial/kurento-tutorial>`__, including `org.kurento.tutorial.* <https://search.maven.org/search?q=g:org.kurento.tutorial>`__)
 * ``test/tutorial``
 
 JavaScript follows a similar ordering. Starting from :ref:`dev-release-javascript` for the main Kurento modules:
@@ -246,7 +246,7 @@ Release steps
 
 #. Choose the *final release version*, following the SemVer guidelines as explained in :ref:`dev-release-general`.
 
-#. Set the new version. This operation might vary between projects.
+#. Set the new version. Most modules have a ``bin/set-version.sh`` script to make it easier with per-project specific commands.
 
    .. code-block:: shell
 
@@ -440,7 +440,7 @@ Complete code for Java modules:
 
 .. code-block:: shell
 
-   apt-get update ; apt-get install --no-install-recommends \
+   sudo apt-get update ; sudo apt-get install --no-install-recommends \
        kurento-module-creator \
        kurento-cmake-utils \
        kurento-jsonrpc-dev \
@@ -455,16 +455,22 @@ Complete code for Java modules:
            module-core
            module-elements
            module-filters
+           module-examples/chroma
+           module-examples/crowddetector
+           module-examples/datachannelexample
+           module-examples/markerdetector
+           module-examples/platedetector
+           module-examples/pointerdetector
        )
 
        for PROJECT in "${PROJECTS[@]}"; do
            pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
 
-           mkdir build && cd build \
-           && cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
-           && cd java \
-           && mvn -DskipTests=false clean install \
-           || { echo "ERROR: Command failed"; return 1; }
+           mkdir build/ && cd build/ \
+               && cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
+               && cd java/ \
+               && mvn -DskipTests=true clean install \
+               || { echo "ERROR: Command failed"; return 1; }
 
            popd
        done
@@ -482,17 +488,19 @@ Release steps
 
 #. Choose the *final release version*, following the SemVer guidelines as explained in :ref:`dev-release-general`.
 
-#. Set the new version. This operation might vary between projects.
+#. Set the new version. Most modules have a ``bin/set-version.sh`` script to make it easier with per-project specific commands.
 
-#. Commit and tag as needed.
+#. Check there are no dangling development versions in any of the dependencies.
 
-#. Start the `Kurento BUILD_ALL job`_ with the parameters *JOB_RELEASE* **ENABLED** and *JOB_ONLY_KMS* **DISABLED**.
+   Search for the ``-dev`` suffix.
 
-   The *Kurento BUILD_ALL job* is a *Jenkins MultiJob Project*. If it fails at any stage, after fixing the cause of the error there is no need to start the job again from the beginning. Instead, you can resume the build from the point it was before the failure.
+#. Commit changes, rebase, and squash as needed.
 
-   For this, just open the latest build number that failed (with a red marker in the *Build History* panel at the left of the job page); in the description of the build, the action *Resume build* is available on the left side.
+#. Run the `Server Build All`_ job with parameters:
 
-#. Wait until all packages get created and published correctly. Fix any issues that might appear.
+   - *jobGitName*: Release branch name (e.g. *release-1.0.0*).
+   - *jobRelease*: **ENABLED**.
+   - *jobOnlyKurento*: **DISABLED**.
 
 **All-In-One script**:
 
@@ -502,14 +510,36 @@ Release steps
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
    NEW_DEBIAN="<DebianRevision>"  # Eg.: 1kurento1
 
-   cd server/
+   function do_release {
+       pushd server/ \
+       || { echo "ERROR: Command failed: pushd"; return 1; }
 
-   # Set the new version.
-   bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
-       --release --commit --tag
+       # Set the new version.
+       bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" --release --commit \
+       || { echo "ERROR: Command failed: set-versions"; return 1; }
+
+       # Check for development versions.
+       grep -Pr \
+           --include CMakeLists.txt \
+           --include '*.cmake' \
+           --include '*.kmd.json' \
+           --exclude-dir 'test*/' \
+           -- '\d+\.\d+\.\d+-dev' \
+       && { echo "ERROR: Development versions not allowed!"; return 1; }
+
+       popd
+
+       echo "Done!"
+   }
+
+   # Run in a subshell where all commands are traced.
+   ( set -o xtrace; do_release; )
+
+   # Review committed changes. Amend as needed.
+   git log --max-count 1 --patch
 
    # Push committed changes.
-   git push --follow-tags
+   git push
 
 
 
@@ -535,7 +565,11 @@ New Development
    # Push committed changes.
    git push
 
-Then start the `Kurento BUILD_ALL job`_ with the parameters *JOB_RELEASE* **DISABLED** and *JOB_ONLY_KMS* **DISABLED**.
+Then start the `Server Build All`_ job with parameters:
+
+   - *jobGitName*: Empty (default value).
+   - *jobRelease*: **DISABLED**.
+   - *jobOnlyKurento*: **DISABLED**.
 
 
 
@@ -617,9 +651,9 @@ Release steps
 
 #. Check latest changes from the main branch.
 
-#. Set the new version. This operation might vary between projects.
+#. Set the new version. Most modules have a ``bin/set-version.sh`` script to make it easier with per-project specific commands.
 
-#. Check there are no development versions in any of the dependencies.
+#. Check there are no dangling development versions in any of the dependencies.
 
 #. Test the build. Make sure the code is in a working state.
 
@@ -635,7 +669,7 @@ Release steps
       # To run beautifier over a specific file:
       node_modules/.bin/grunt jsbeautifier::file:<FilePath>.js
 
-#. Commit and tag as needed.
+#. Commit changes, rebase, and squash as needed.
 
 **All-In-One script**:
 
@@ -677,7 +711,7 @@ Release steps
            bin/set-versions.sh "$NEW_VERSION" --release --git-add \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
-           # Check there are no development versions in any of the dependencies.
+           # Check for development versions.
            grep -Fr --exclude-dir='*node_modules' --include='*.json' -e '-dev"' -e '"git+' \
            && { echo "ERROR: Development versions not allowed!"; return 1; }
 
@@ -831,33 +865,33 @@ Kurento Java client
 
 Release order:
 
-* ``server/module-creator`` (`org.kurento:kurento-module-creator <https://search.maven.org/artifact/org.kurento/kurento-module-creator>`__)
-* ``clients/java/maven-plugin`` (`org.kurento:kurento-maven-plugin <https://search.maven.org/artifact/org.kurento/kurento-maven-plugin>`__)
-* ``clients/java/qa-pom`` (`org.kurento:kurento-qa-pom <https://search.maven.org/artifact/org.kurento/kurento-qa-pom>`__)
+* ``server/module-creator`` (`org.kurento.kurento-module-creator <https://search.maven.org/artifact/org.kurento/kurento-module-creator>`__)
+* ``clients/java/maven-plugin`` (`org.kurento.kurento-maven-plugin <https://search.maven.org/artifact/org.kurento/kurento-maven-plugin>`__)
+* ``clients/java/qa-pom`` (`org.kurento.kurento-qa-pom <https://search.maven.org/artifact/org.kurento/kurento-qa-pom>`__)
 
-* ``server/module-core`` (`org.kurento:kms-api-core <https://search.maven.org/artifact/org.kurento/kms-api-core>`__)
-* ``server/module-elements`` (`org.kurento:kms-api-elements <https://search.maven.org/artifact/org.kurento/kms-api-elements>`__)
-* ``server/module-filters`` (`org.kurento:kms-api-filters <https://search.maven.org/artifact/org.kurento/kms-api-filters>`__)
+* ``server/module-core`` (`org.kurento.kms-api-core <https://search.maven.org/artifact/org.kurento/kms-api-core>`__)
+* ``server/module-elements`` (`org.kurento.kms-api-elements <https://search.maven.org/artifact/org.kurento/kms-api-elements>`__)
+* ``server/module-filters`` (`org.kurento.kms-api-filters <https://search.maven.org/artifact/org.kurento/kms-api-filters>`__)
 
-* ``clients/java`` (`org.kurento:kurento-java <https://search.maven.org/artifact/org.kurento/kurento-java>`__, including `org.kurento:kurento-client <https://search.maven.org/artifact/org.kurento/kurento-client>`__)
+* ``clients/java`` (`org.kurento.kurento-java <https://search.maven.org/artifact/org.kurento/kurento-java>`__, including `org.kurento.kurento-client <https://search.maven.org/artifact/org.kurento/kurento-client>`__)
 
 After *kurento-client* is done, the client code for example Kurento modules can be built:
 
-* ``server/module-examples/chroma`` (`org.kurento.module:chroma <https://search.maven.org/artifact/org.kurento.module/chroma>`__)
-* ``server/module-examples/crowddetector`` (`org.kurento.module:crowddetector <https://search.maven.org/artifact/org.kurento.module/crowddetector>`__)
-* ``server/module-examples/datachannelexample`` (`org.kurento.module:datachannelexample <https://search.maven.org/artifact/org.kurento.module/datachannelexample>`__)
-* ``server/module-examples/markerdetector`` (`org.kurento.module:markerdetector <https://search.maven.org/artifact/org.kurento.module/markerdetector>`__)
-* ``server/module-examples/platedetector`` (`org.kurento.module:platedetector <https://search.maven.org/artifact/org.kurento.module/platedetector>`__)
-* ``server/module-examples/pointerdetector`` (`org.kurento.module:pointerdetector <https://search.maven.org/artifact/org.kurento.module/pointerdetector>`__)
+* ``server/module-examples/chroma`` (`org.kurento.module.chroma <https://search.maven.org/artifact/org.kurento.module/chroma>`__)
+* ``server/module-examples/crowddetector`` (`org.kurento.module.crowddetector <https://search.maven.org/artifact/org.kurento.module/crowddetector>`__)
+* ``server/module-examples/datachannelexample`` (`org.kurento.module.datachannelexample <https://search.maven.org/artifact/org.kurento.module/datachannelexample>`__)
+* ``server/module-examples/markerdetector`` (`org.kurento.module.markerdetector <https://search.maven.org/artifact/org.kurento.module/markerdetector>`__)
+* ``server/module-examples/platedetector`` (`org.kurento.module.platedetector <https://search.maven.org/artifact/org.kurento.module/platedetector>`__)
+* ``server/module-examples/pointerdetector`` (`org.kurento.module.pointerdetector <https://search.maven.org/artifact/org.kurento.module/pointerdetector>`__)
 
 Now, the Kurento testing packages (which depend on some of the example modules). *kurento-utils-js* library must also be built at this stage, because it is a dependency of *kurento-test*:
 
 * ``browser/kurento-utils-js`` (`kurento-utils <https://www.npmjs.com/package/kurento-utils>`__)
-* ``test/integration`` (`org.kurento:kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento:kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
+* ``test/integration`` (`org.kurento.kurento-integration-tests <https://search.maven.org/artifact/org.kurento/kurento-integration-tests>`__, including `org.kurento.kurento-test <https://search.maven.org/artifact/org.kurento/kurento-test>`__)
 
 And lastly, the tutorials (which depend on the example modules):
 
-* ``tutorials/java`` (`org.kurento.tutorial:kurento-tutorial <https://search.maven.org/artifact/org.kurento.tutorial/kurento-tutorial>`__, including `org.kurento.tutorial:* <https://search.maven.org/search?q=g:org.kurento.tutorial>`__)
+* ``tutorials/java`` (`org.kurento.tutorial.kurento-tutorial <https://search.maven.org/artifact/org.kurento.tutorial/kurento-tutorial>`__, including `org.kurento.tutorial.* <https://search.maven.org/search?q=g:org.kurento.tutorial>`__)
 * ``test/tutorial``
 
 Dependency graph:
@@ -871,18 +905,7 @@ Dependency graph:
 Preparation: kurento-java
 -------------------------
 
-* If *kurento-qa-pom* is getting a new version, edit the file ``kurento-parent-pom/pom.xml`` to update it:
-
-  .. code-block:: diff
-
-        <parent>
-            <groupId>org.kurento</groupId>
-            <artifactId>kurento-qa-pom</artifactId>
-     -      <version>1.0.0</version>
-     +      <version>1.1.0</version>
-        </parent>
-
-* If *kurento-maven-plugin* is getting a new version, edit the file ``kurento-parent-pom/pom.xml`` to update it:
+* If *kurento-maven-plugin* is getting a new version, edit the file ``clients/java/parent-pom/pom.xml`` to update it:
 
   .. code-block:: diff
 
@@ -890,7 +913,7 @@ Preparation: kurento-java
      +  <version.kurento-maven-plugin>1.1.0</version.kurento-maven-plugin>
 
 
-* If *kurento-utils-js* is getting a new version, edit the file ``kurento-parent-pom/pom.xml`` to update it:
+* If *kurento-utils-js* is getting a new version, edit the file ``clients/java/parent-pom/pom.xml`` to update it:
 
   .. code-block:: diff
 
@@ -904,25 +927,17 @@ Release steps
 
 #. Choose the *final release version*, following the SemVer guidelines as explained in :ref:`dev-release-general`.
 
-#. Check there are no uncommitted files.
+#. Set the new version. Most modules have a ``bin/set-version.sh`` script to make it easier with per-project specific commands.
 
-#. Check latest changes from the main branch.
+#. Check there are no dangling development versions in any of the dependencies.
 
-#. Set the new version. This operation might vary between projects.
+   Search for the ``-SNAPSHOT`` suffix. Note that most versions are defined as properties in ``clients/java/parent-pom/pom.xml``.
 
-#. Check there are no development versions in any of the dependencies.
+#. Commit changes, rebase, and squash as needed.
 
-   In *kurento-java*, all dependencies are defined as properties in the file ``kurento-parent-pom/pom.xml``.
+#. Run the `Clients Build All Java`_ job with parameters:
 
-#. Test the build. Make sure the code is in a working state.
-
-   The profile '*kurento-release*' is used to enforce no development versions are present.
-
-#. Commit and tag as needed.
-
-#. Start the `Kurento Java job`_ and wait for it to finish.
-
-   The *Kurento Java job* is a *Jenkins MultiJob Project*. For each Java project, it will use Maven to compile, package, generate JARs with sources and JavaDoc, and finally deploy them to Sonatype Nexus, which is the gateway for publication to Maven Central.
+   - *jobServerVersion*: Repository name of the release branch name (e.g. *dev-release-1.0.0*).
 
 **All-In-One script**:
 
@@ -935,30 +950,23 @@ Release steps
        local COMMIT_MSG="Prepare release $NEW_VERSION"
 
        local PROJECTS=(
-           clients-java
            clients/java/qa-pom
+           clients/java
            tutorials/java
-           test/tutorial # FIXME tests fail because Kurento Test Framework needs improvements
+           test/integration
+           test/tutorial
        )
 
        for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Check there are no uncommitted files.
-           # Exclude XML files, to allow re-running this function.
-           git diff-index --quiet HEAD -- '!*.xml' \
-           || { echo "ERROR: Uncommitted files not allowed!"; return 1; }
-
-           # Check latest changes from the main branch.
-           git pull --rebase --autostash \
-           || { echo "ERROR: Command failed: git pull"; return 1; }
+           pushd "$PROJECT" \
+           || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION" --release --git-add \
+           bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION" --release --commit \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
-           # Check there are no development versions in any of the dependencies.
-           grep -Fr --include='pom.xml' -e '-SNAPSHOT' \
+           # Check for development versions.
+           grep -Fr --include pom.xml -- '-SNAPSHOT' \
            && { echo "ERROR: Development versions not allowed!"; return 1; }
 
            # Test the build.
@@ -966,30 +974,9 @@ Release steps
            # projects to update their parent version.
            # * Build and run tests.
            # * Do not use `-U` because for each project we want Maven to find
-           #   the locally installed artifacts from previous $PROJECT.
+           #   the locally cached artifacts from previous project.
            mvn -Pkurento-release -DskipTests=false clean install \
-           || { echo "ERROR: Command failed: mvn clean install"; return 1; }
-
-           popd
-       done
-
-       echo "Everything seems OK; proceed to commit and push"
-
-       for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Commit all modified files.
-           git commit -m "$COMMIT_MSG" \
-           || { echo "ERROR: Command failed: git commit"; return 1; }
-
-           # Push new commit(s).
-           git push \
-           || { echo "ERROR: Command failed: git push"; return 1; }
-
-           #git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-           #&& git push origin "$NEW_VERSION" \
-           #|| { echo "ERROR: Command failed: git tag"; return 1; }
-           # NOTE: the CI jobs automatically tag the repos upon releases
+           || { echo "ERROR: Command failed: mvn"; return 1; }
 
            popd
        done
@@ -1009,26 +996,29 @@ When all repos have been released, and all CI jobs have finished successfully:
 
 * Open the `Nexus Sonatype Staging Repositories`_ section.
 * Select **kurento** repository.
-* Inspect **Content** to ensure they are as expected:
+* Inspect **Content** to ensure it is as expected:
 
-  - org.kurento:kurento-module-creator
-  - org.kurento:kurento-maven-plugin
-  - org.kurento:kurento-qa-pom
-  - org.kurento:kms-api-core
-  - org.kurento:kms-api-elements
-  - org.kurento:kms-api-filters
-  - org.kurento:kurento-java
-  - org.kurento:kurento-client
-  - org.kurento:kurento-integration-tests
-  - org.kurento:kurento-test
-  - org.kurento.module:chroma
-  - org.kurento.module:crowddetector
-  - org.kurento.module:datachannelexample
-  - org.kurento.module:markerdetector
-  - org.kurento.module:platedetector
-  - org.kurento.module:pointerdetector
-  - org.kurento.tutorial:kurento-tutorial
-  - org.kurento.tutorial:\*
+  - org.kurento.kms-api-core
+  - org.kurento.kms-api-elements
+  - org.kurento.kms-api-filters
+  - org.kurento.kurento-client
+  - org.kurento.kurento-commons
+  - org.kurento.kurento-java
+  - org.kurento.kurento-jsonrpc
+  - org.kurento.kurento-jsonrpc-client
+  - org.kurento.kurento-jsonrpc-client-jetty
+  - org.kurento.kurento-jsonrpc-server
+  - org.kurento.kurento-maven-plugin
+  - org.kurento.kurento-module-creator
+  - org.kurento.kurento-parent-pom
+  - org.kurento.kurento-qa-config
+  - org.kurento.kurento-qa-pom
+  - org.kurento.module.chroma
+  - org.kurento.module.crowddetector (Unavailable since Kurento 7.0.0)
+  - org.kurento.module.datachannelexample
+  - org.kurento.module.markerdetector (Unavailable since Kurento 7.0.0)
+  - org.kurento.module.platedetector (Unavailable since Kurento 7.0.0)
+  - org.kurento.module.pointerdetector (Unavailable since Kurento 7.0.0)
 
   All of them must appear in the correct version, ``$NEW_VERSION``.
 
@@ -1114,7 +1104,7 @@ New Development
 Docker images
 =============
 
-A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `Kurento BUILD_ALL job`_ is triggered.
+A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `Server Build All`_ job is triggered.
 
 The ``docker/`` directory contains *Dockerfiles* for all the `Kurento Docker images`_, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (because *which one of the sub-dirs would the tag apply to?*).
 
@@ -1178,7 +1168,9 @@ For this reason, the documentation must be built only after all the other module
       && git push \
       || echo "ERROR: Command failed: git"
 
-#. Run the `doc-kurento CI job`_ with the parameter *JOB_RELEASE* **ENABLED**.
+#. Run the `doc-kurento CI job`_ with parameters:
+
+   - *jobRelease*: **ENABLED**.
 
 #. CI automatically tags Release versions in Read the Docs generated repo `doc-kurento-readthedocs`_, so the release will show up in the Read the Docs dashboard.
 
@@ -1237,7 +1229,8 @@ For this reason, the documentation must be built only after all the other module
 .. Kurento links
 .. _Kurento Docker Hub: https://hub.docker.com/u/kurento
 .. _Kurento Docker images: https://hub.docker.com/r/kurento/kurento-media-server
-.. _Kurento BUILD_ALL job: https://ci.openvidu.io/jenkins/job/Development/job/00_KMS_BUILD_ALL/
+.. _Server Build All: https://github.com/Kurento/kurento/actions/workflows/server-parent.yaml
+.. _Clients Build All Java: https://github.com/Kurento/kurento/actions/workflows/clients-java-parent.yaml
 .. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
 .. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs
 

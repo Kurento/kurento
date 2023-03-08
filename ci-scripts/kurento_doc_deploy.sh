@@ -2,16 +2,6 @@
 # Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Generate and commit source files for Read The Docs.
-#/
-#/
-#/ Arguments
-#/ =========
-#/
-#/ --release
-#/
-#/   Build documentation sources intended for a Release build.
-#/   If this option is not given, sources are built as development snapshots.
-#/   Optional. Default: Disabled.
 
 
 
@@ -34,7 +24,6 @@ set -o xtrace
 
 CFG_SSH_KEY_PATH=""
 CFG_MAVEN_SETTINGS_PATH=""
-CFG_RELEASE="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -56,9 +45,6 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
-        --release)
-            CFG_RELEASE="true"
-            ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
             exit 1
@@ -74,7 +60,6 @@ done
 
 log "CFG_SSH_KEY_PATH=$CFG_SSH_KEY_PATH"
 log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
-log "CFG_RELEASE=$CFG_RELEASE"
 
 
 
@@ -89,14 +74,6 @@ fi
 
 make --file=Makefile.ci ci-readthedocs
 rm Makefile.ci
-
-if [[ "$CFG_RELEASE" == "true" ]]; then
-    log "Command: kurento_check_version (tagging enabled)"
-    kurento_check_version.sh --create-git-tag
-else
-    log "Command: kurento_check_version (tagging disabled)"
-    kurento_check_version.sh
-fi
 
 
 
@@ -139,13 +116,5 @@ log "Commit and push changes to Kurento/$REPO_NAME"
         git push
     fi
 
-    if [[ "$CFG_RELEASE" == "true" ]]; then
-        log "Command: kurento_check_version (tagging enabled)"
-        kurento_check_version.sh --create-git-tag
-    else
-        log "Command: kurento_check_version (tagging disabled)"
-        kurento_check_version.sh
-    fi
-
-    popd  # $REPO_DIR
+    popd  # $RTD_DIR
 }

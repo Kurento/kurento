@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       input1:
-        description: "String input"
+        description: "input1: String input"
         required: true
         type: "string"
         default: "Value"
       input2:
-        description: "Boolean input"
+        description: "input2: Boolean input"
         required: false
         type: "boolean"
         default: false

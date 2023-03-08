@@ -5,24 +5,24 @@ on:
   workflow_call:
     inputs:
       jobDistros:
-        description: "List of Ubuntu codenames to build for"
+        description: "jobDistros: List of Ubuntu codenames to build for"
         required: true
         # There is no `list` type, so use a raw JSON array and `fromJSON()`.
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["focal"]'
       jobRelease:
-        description: "Enable to build release versions Disable for development builds"
+        description: "jobRelease: Enable to build release versions Disable for development builds"
         required: false
         type: "boolean"
         default: false
       jobDeployName:
-        description: "Custom name given to the deployment"
+        description: "jobDeployName: Custom name given to the deployment"
         required: false
         type: "string"
         default: ""
       buildAsan:
-        description: "Whether to also build an image with AddressSanitizer"
+        description: "buildAsan: Whether to also build an image with AddressSanitizer"
         required: false
         type: "boolean"
         default: false

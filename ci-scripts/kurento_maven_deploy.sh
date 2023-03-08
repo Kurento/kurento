@@ -43,6 +43,7 @@ MAVEN_SOURCE_PLUGIN="org.apache.maven.plugins:maven-source-plugin:3.2.1"
 # ====================
 
 CFG_MAVEN_SETTINGS_PATH=""
+CFG_MAVEN_SIGN_KEY_PATH=""
 CFG_MAVEN_SIGN_ARTIFACTS="true"
 
 while [[ $# -gt 0 ]]; do
@@ -50,6 +51,15 @@ while [[ $# -gt 0 ]]; do
         --maven-settings)
             if [[ -n "${2-}" ]]; then
                 CFG_MAVEN_SETTINGS_PATH="$(realpath "$2")"
+                shift
+            else
+                log "ERROR: --maven-settings expects <Path>"
+                exit 1
+            fi
+            ;;
+        --sign-key)
+            if [[ -n "${2-}" ]]; then
+                CFG_MAVEN_SIGN_KEY_PATH="$(realpath "$2")"
                 shift
             else
                 log "ERROR: --maven-settings expects <Path>"
@@ -72,7 +82,13 @@ done
 # Validate config
 # ===============
 
+if [[ "$CFG_MAVEN_SIGN_ARTIFACTS" == "true" ]] && [[ -z "$CFG_MAVEN_SIGN_KEY_PATH" ]]; then
+    log "ERROR: Either of '--sign-key' or '--no-sign-artifacts' must be used"
+    exit 1
+fi
+
 log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
+log "CFG_MAVEN_SIGN_KEY_PATH=$CFG_MAVEN_SIGN_KEY_PATH"
 log "CFG_MAVEN_SIGN_ARTIFACTS=$CFG_MAVEN_SIGN_ARTIFACTS"
 
 
@@ -91,7 +107,7 @@ if [[ -n "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
 fi
 
 kurento_check_version.sh "${CHECK_VERSION_ARGS[@]}" || {
-    log "ERROR: Command failed: kurento_check_version (tagging disabled)"
+    log "ERROR: Command failed: kurento_check_version"
     exit 1
 }
 
@@ -124,7 +140,7 @@ fi
 # The repo is set by the `ci-build` profile from Maven's `settings.xml`.
 
 mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MAVEN_DEPLOY_PLUGIN:deploy" || {
-    log "ERROR: Command failed: mvn deploy (Jenkins repo)"
+    log "ERROR: Command failed: mvn deploy (local repo)"
     exit 1
 }
 
@@ -178,6 +194,12 @@ MVN_ARGS+=(-Pkurento-release)
 if [[ $CFG_MAVEN_SIGN_ARTIFACTS == "true" ]]; then
     log "Artifact signing on deploy is ENABLED"
 
+    {
+        # Load the private key into the GPG keyring.
+        export GNUPGHOME="/tmp/.gnupg"
+        gpg --import "$CFG_MAVEN_SIGN_KEY_PATH"
+    }
+
     MVN_ARGS+=(-Pgpg-sign)
 
     MVN_GOALS=(
@@ -226,18 +248,3 @@ else
         exit 1
     }
 fi
-
-
-
-# Create git tag
-# ==============
-
-# Only create a tag if the deployment process was successful.
-# Allow errors because the tag might already exist (like if the release
-# is being done again after solving some deployment issue).
-
-CHECK_VERSION_ARGS+=(--create-git-tag)
-
-kurento_check_version.sh "${CHECK_VERSION_ARGS[@]}" || {
-    log "WARNING: Command failed: kurento_check_version (tagging enabled)"
-}

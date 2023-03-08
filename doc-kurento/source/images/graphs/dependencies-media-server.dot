@@ -7,25 +7,27 @@ digraph dependencies_media_server {
   rankdir = "RL";
 
   // Main components.
-  {
-    rank = "same";
-    "kurento-module-creator";
-    "kurento-cmake-utils";
-    "kurento-jsonrpc";
-  }
-  "kurento-jsonrpc" -> "kurento-cmake-utils";
-  "kurento-module-core" -> {"kurento-module-creator" "kurento-cmake-utils" "kurento-jsonrpc"};
-  "kurento-module-elements" -> "kurento-module-core";
-  "kurento-module-filters" -> "kurento-module-elements";
-  "kurento-media-server" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
+  "module-creator";
+  "cmake-utils";
+  "jsonrpc" -> "cmake-utils";
+
+  "module-core" [group = "1"];
+  "module-elements" [group = "1"];
+  "module-filters" [group = "1"];
+  "media-server" [group = "1"];
+
+  "module-core" -> {"module-creator" "cmake-utils" "jsonrpc"};
+  "module-elements" -> {"module-core"};
+  "module-filters" -> "module-elements";
+  "media-server" -> {"module-core" "module-elements" "module-filters"};
 
   // Example plugins.
-  "kurento-module-chroma" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
+  "module-chroma" -> "media-server";
+  "module-datachannelexample" -> "media-server";
 
   // Build disabled on Ubuntu >= 20.04 (due to breaking changes in OpenCV 4.0).
-  "kurento-module-crowddetector (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
-  "kurento-module-datachannelexample (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
-  "kurento-module-markerdetector (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
-  "kurento-module-platedetector (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
-  "kurento-module-pointerdetector (unavailable)" -> {"kurento-module-core" "kurento-module-elements" "kurento-module-filters"};
+  "module-crowddetector (unavailable)" -> "media-server";
+  "module-markerdetector (unavailable)" -> "media-server";
+  "module-platedetector (unavailable)" -> "media-server";
+  "module-pointerdetector (unavailable)" -> "media-server";
 }

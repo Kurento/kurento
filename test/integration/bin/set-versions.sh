@@ -165,14 +165,14 @@ log "CFG_COMMIT=$CFG_COMMIT"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     VERSION_JAVA="$CFG_VERSION"
 
-    COMMIT_MSG="Prepare tutorial tests release $VERSION_JAVA"
+    COMMIT_MSG="Prepare integration tests release $VERSION_JAVA"
 else
     VERSION_JAVA="${CFG_VERSION}-SNAPSHOT"
 
     if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
     else
-        COMMIT_MSG="Update tutorial tests version to $VERSION_JAVA"
+        COMMIT_MSG="Update integration tests version to $VERSION_JAVA"
     fi
 fi
 
@@ -227,15 +227,11 @@ function git_commit {
 {
     # Children: Inherit from the new version.
     CHILDREN=(
-        chroma-test
-        crowddetector-test
-        hello-world-test
-        magic-mirror-test
-        one2many-call-test
-        one2one-call-advanced-test
-        one2one-call-test
-        platedetector-test
-        pointerdetector-test
+        benchmark
+        client-test
+        jsonrpc-test
+        kurento-test
+        sanity-test
     )
     for CHILD in "${CHILDREN[@]}"; do
         mapfile -t FILES < <(find "$CHILD" -name pom.xml)
@@ -248,6 +244,32 @@ function git_commit {
             git_commit "$FILE"
         done
     done
+}
+
+{
+    pushd kurento-test/
+
+    # Dependency on kurento-module-chroma.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='chroma']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    # Dependency on kurento-module-crowddetector.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='crowddetector']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    # Dependency on kurento-module-platedetector.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='platedetector']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
 }
 
 log "Done!"

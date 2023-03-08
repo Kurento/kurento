@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Version change helper.
 #/
@@ -25,44 +26,65 @@
 #/ Arguments
 #/ =========
 #/
-#/ <BaseVersion>
+#/ <Version>
 #/
-#/   Base version number to use. When '--release' is used, this string will
-#/   be set as-is; otherwise, a nightly/snapshot suffix is added.
+#/   Base version number to set. When '--release' is used, this version will
+#/   be used as-is; otherwise, a development/snapshot suffix is added.
 #/
-#/   <BaseVersion> must be in the Semantic Versioning format, such as "1.2.3"
+#/   <Version> should be in Semantic Versioning format, such as "1.0.0"
 #/   ("<Major>.<Minor>.<Patch>").
 #/
 #/ --release
 #/
-#/   Do not add nightly/snapshot suffix to the base version number.
-#/   The resulting value will be valid for a Release build.
+#/   Use version numbers intended for Release builds, such as "1.0.0". If this
+#/   option is not given, a development/snapshot suffix is added.
+#/
+#/   If '--commit' is also enabled, this option uses the commit message
+#/   "Prepare release <Version>". The convention is to use this message to
+#/   make a new release.
 #/
 #/   Optional. Default: Disabled.
 #/
-#/ --git-add
+#/ --new-development
 #/
-#/   Add changes to the Git stage area. Useful to leave everything ready for a
-#/   commit.
+#/   Mark the start of a new development iteration.
+#/
+#/   If '--commit' is also enabled, this option uses the commit message
+#/   "Prepare for next development iteration". The convention is to use this
+#/   message to start development on a new project version after a release.
+#/
+#/   If neither '--release' nor '--new-development' are given, the commit
+#/   message will simply be "Update version to <Version>".
+#/
+#/   Optional. Default: Disabled.
+#/
+#/ --commit
+#/
+#/   Commit changes to Git. This will commit only the changed files.
 #/
 #/   Optional. Default: Disabled.
 
 
 
-# Shell setup
-# ===========
+# Configure shell
+# ===============
 
-# Bash options for strict error checking.
-set -o errexit -o errtrace -o pipefail -o nounset
+# Absolute Canonical Path to the directory that contains this script.
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+source "$SELF_DIR/../../../ci-scripts/bash.conf.sh" || exit 1
 
-# Check dependencies.
+# Trace all commands (to stderr).
+set -o xtrace
+
+
+
+# Check dependencies
+# ==================
+
 command -v xmlstarlet >/dev/null || {
-    echo "ERROR: 'xmlstarlet' is not installed; please install it"
+    log "ERROR: 'xmlstarlet' is not installed; please install it"
     exit 1
 }
-
-# Trace all commands.
-set -o xtrace
 
 
 
@@ -71,21 +93,25 @@ set -o xtrace
 
 CFG_VERSION=""
 CFG_RELEASE="false"
-CFG_GIT_ADD="false"
+CFG_NEWDEVELOPMENT="false"
+CFG_COMMIT="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --release)
-            CFG_RELEASE="true"
-            ;;
         --kms-api)
             # Ignore argument.
             if [[ -n "${2-}" ]]; then
                 shift
             fi
             ;;
-        --git-add)
-            CFG_GIT_ADD="true"
+        --release)
+            CFG_RELEASE="true"
+            ;;
+        --new-development)
+            CFG_NEWDEVELOPMENT="true"
+            ;;
+        --commit)
+            CFG_COMMIT="true"
             ;;
         *)
             CFG_VERSION="$1"
@@ -96,33 +122,46 @@ done
 
 
 
-# Config restrictions
-# ===================
+# Validate config
+# ===============
 
 if [[ -z "$CFG_VERSION" ]]; then
-    echo "ERROR: Missing <Version>"
+    log "ERROR: Missing <Version>"
     exit 1
 fi
 
 REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
 [[ "$CFG_VERSION" =~ $REGEX ]] || {
-    echo "ERROR: '$CFG_VERSION' is not SemVer (<Major>.<Minor>.<Patch>)"
+    log "ERROR: '$CFG_VERSION' is not SemVer (<Major>.<Minor>.<Patch>)"
     exit 1
 }
 
-echo "CFG_VERSION=$CFG_VERSION"
-echo "CFG_RELEASE=$CFG_RELEASE"
-echo "CFG_GIT_ADD=$CFG_GIT_ADD"
+if [[ "$CFG_RELEASE" == "true" ]]; then
+    CFG_NEWDEVELOPMENT="false"
+fi
+
+log "CFG_VERSION=$CFG_VERSION"
+log "CFG_RELEASE=$CFG_RELEASE"
+log "CFG_NEWDEVELOPMENT=$CFG_NEWDEVELOPMENT"
+log "CFG_COMMIT=$CFG_COMMIT"
 
 
 
-# Internal variables
-# ==================
+# Control variables
+# =================
 
 if [[ "$CFG_RELEASE" == "true" ]]; then
     VERSION_JAVA="$CFG_VERSION"
+
+    COMMIT_MSG="Prepare Java tutorials release $VERSION_JAVA"
 else
     VERSION_JAVA="${CFG_VERSION}-SNAPSHOT"
+
+    if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
+        COMMIT_MSG="Prepare for next development iteration"
+    else
+        COMMIT_MSG="Update Java tutorials version to $VERSION_JAVA"
+    fi
 fi
 
 
@@ -130,57 +169,179 @@ fi
 # Helper functions
 # ================
 
-# Add the given file(s) to the Git stage area.
-function git_add() {
+# Create a commit with the already staged files + any extra provided ones.
+# This function can be called multiple times over the same tree.
+function git_commit {
     [[ $# -ge 1 ]] || {
-        echo "ERROR [git_add]: Missing argument(s): <file1> [<file2> ...]"
+        log "ERROR [git_commit]: Missing argument(s): <file1> [<file2> ...]"
         return 1
     }
 
-    if [[ "$CFG_GIT_ADD" == "true" ]]; then
-        git add -- "$@"
+    if [[ "$CFG_COMMIT" != "true" ]]; then
+        return 0
     fi
+
+    git add -- "$@"
+
+    # Check if there are new staged changes ready to be committed.
+    if git diff --staged --quiet --exit-code; then
+        return 0
+    fi
+
+    # Amend the last commit if one already exists with same message.
+    local GIT_COMMIT_ARGS=(--message "$COMMIT_MSG")
+    if ! git log --max-count 1 --grep "^${COMMIT_MSG}$" --format="" --exit-code; then
+        GIT_COMMIT_ARGS+=(--amend)
+    fi
+
+    git commit "${GIT_COMMIT_ARGS[@]}"
 }
 
 
 
-# Apply version
-# =============
+# Set version
+# ===========
 
-# Parent: Update to the new version of kurento-java.
-xmlstarlet edit -S --inplace \
+{
+    # Parent: Inherit from the new version of kurento-qa-pom.
+    xmlstarlet edit -S --inplace \
         --update "/_:project/_:parent/_:version" \
         --value "$VERSION_JAVA" \
         pom.xml
 
-# Children: Make them inherit from the new parent.
-CHILDREN=(
-    chroma
-    crowddetector
-    group-call
-    hello-world
-    hello-world-recording
-    magic-mirror
-    facedetector
-    one2many-call
-    one2one-call
-    one2one-call-advanced
-    one2one-call-recording
-    platedetector
-    player
-    pointerdetector
-    rtp-receiver
-    datachannel-send-qr
-    datachannel-show-text
-)
-for CHILD in "${CHILDREN[@]}"; do
-    find "$CHILD" -name pom.xml -print0 | xargs -0 -n1 \
-        xmlstarlet edit -S --inplace \
-            --update "/_:project/_:parent/_:version" \
-            --value "$VERSION_JAVA"
-done
+    git_commit pom.xml
+}
 
-git_add \
-    '*pom.xml'
+{
+    # Children: Inherit from the new version.
+    CHILDREN=(
+        chroma
+        crowddetector
+        datachannel-send-qr
+        datachannel-show-text
+        facedetector
+        group-call
+        hello-world
+        hello-world-recording
+        magic-mirror
+        one2many-call
+        one2one-call
+        one2one-call-advanced
+        one2one-call-recording
+        platedetector
+        player
+        pointerdetector
+        rtp-receiver
+    )
+    for CHILD in "${CHILDREN[@]}"; do
+        mapfile -t FILES < <(find "$CHILD" -name pom.xml)
+        for FILE in "${FILES[@]}"; do
+            xmlstarlet edit -S --inplace \
+                --update "/_:project/_:parent/_:version" \
+                --value "$VERSION_JAVA" \
+                "$FILE"
 
-echo "Done!"
+            git_commit "$FILE"
+        done
+    done
+}
+
+{
+    pushd chroma/
+
+    # Dependency on kurento-module-chroma.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='chroma']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
+}
+
+{
+    pushd crowddetector/
+
+    # Dependency on kurento-module-crowddetector.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='crowddetector']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
+}
+
+{
+    pushd datachannel-send-qr/
+
+    # Dependency on kurento-module-datachannelexample.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='datachannelexample']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
+}
+
+{
+    pushd datachannel-show-text/
+
+    # Dependency on kurento-module-datachannelexample.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='datachannelexample']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
+}
+
+{
+    pushd facedetector/
+
+    # Dependency on kurento-module-datachannelexample.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='datachannelexample']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
+}
+
+{
+    pushd platedetector/
+
+    # Dependency on kurento-module-platedetector.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='platedetector']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
+}
+
+{
+    pushd pointerdetector/
+
+    # Dependency on kurento-module-pointerdetector.
+    xmlstarlet edit -S --inplace \
+        --update "/_:project/_:dependencies/_:dependency[_:artifactId='pointerdetector']/_:version" \
+        --value "$VERSION_JAVA" \
+        pom.xml
+
+    git_commit pom.xml
+
+    popd
+}
+
+log "Done!"

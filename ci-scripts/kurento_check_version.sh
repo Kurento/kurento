@@ -21,14 +21,10 @@ set -o xtrace
 # Parse call arguments
 # ====================
 
-CFG_CREATE_GIT_TAG="false"
 CFG_GET_VERSION_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --create-git-tag)
-            CFG_CREATE_GIT_TAG="true"
-            ;;
         *)
             CFG_GET_VERSION_ARGS+=("$1")
             ;;
@@ -41,7 +37,6 @@ done
 # Validate config
 # ===============
 
-log "CFG_CREATE_GIT_TAG=$CFG_CREATE_GIT_TAG"
 log "CFG_GET_VERSION_ARGS=${CFG_GET_VERSION_ARGS[*]}"
 
 
@@ -93,23 +88,23 @@ kurento_check_semver.sh "$PROJECT_VERSION" || {
 
 
 
-# Create git tag
-# ==============
+# # Create git tag
+# # ==============
 
-# Create a Git tag when a Release version is detected.
-# This is default 'false' because sometimes we need to do several actual
-# changes before being able to mark a commit as an official Release.
-if [[ "$CFG_CREATE_GIT_TAG" == "true" ]]; then
-    TAG_MSG="Tag version $PROJECT_VERSION"
-    TAG_NAME="$PROJECT_VERSION"
+# # Create a Git tag when a Release version is detected.
+# # This is default 'false' because sometimes we need to do several actual
+# # changes before being able to mark a commit as an official Release.
+# if [[ "$CFG_CREATE_GIT_TAG" == "true" ]]; then
+#     TAG_MSG="Tag version $PROJECT_VERSION"
+#     TAG_NAME="$PROJECT_VERSION"
 
-    log "Create git tag: '$TAG_NAME'"
+#     log "Create git tag: '$TAG_NAME'"
 
-    if git tag -a -m "$TAG_MSG" "$TAG_NAME"; then
-        log "Tag created, push to remote"
-        git push origin "$TAG_NAME"
-    else
-        log "ERROR: Command failed: git tag $TAG_NAME"
-        exit 1
-    fi
-fi
+#     if git tag -a -m "$TAG_MSG" "$TAG_NAME"; then
+#         log "Tag created, push to remote"
+#         git push origin "$TAG_NAME"
+#     else
+#         log "ERROR: Command failed: git tag $TAG_NAME"
+#         exit 1
+#     fi
+# fi
