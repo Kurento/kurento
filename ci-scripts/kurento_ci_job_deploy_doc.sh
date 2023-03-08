@@ -25,11 +25,6 @@ set -o xtrace
 # Run in container
 # ================
 
-DOC_DEPLOY_ARGS=()
-if [[ "$JOB_RELEASE" == "true" ]]; then
-    DOC_DEPLOY_ARGS+=("--release")
-fi
-
 # `--user` is needed to avoid creating files as root, which would make next
 # jobs fail because the runner cannot do workspace cleanup.
 #
@@ -58,6 +53,6 @@ set -o xtrace
 export PATH="/ci-scripts:\$PATH"
 
 # Build and deploy the documentation.
-kurento_doc_deploy.sh --ssh-key /id_ssh --maven-settings /maven-settings.xml ${DOC_DEPLOY_ARGS[@]}
+kurento_doc_deploy.sh --ssh-key /id_ssh --maven-settings /maven-settings.xml
 
 DOCKERCOMMANDS

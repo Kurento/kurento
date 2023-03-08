@@ -32,12 +32,12 @@ digraph dependencies_all {
   "media-server" -> {"module-core" "module-elements" "module-filters"};
 
   // Example plugins.
-  "module-chroma" -> "module-filters";
+  "module-chroma" -> "media-server";
+  "module-datachannelexample" -> "media-server";
 
   // Build disabled on Ubuntu >= 20.04 (due to breaking changes in OpenCV 4.0).
-  "module-crowddetector (unavailable)" -> "module-filters";
-  "module-datachannelexample (unavailable)" -> "module-filters";
-  "module-markerdetector (unavailable)" -> "module-filters";
-  "module-platedetector (unavailable)" -> "module-filters";
-  "module-pointerdetector (unavailable)" -> "module-filters";
+  "module-crowddetector (unavailable)" -> "media-server";
+  "module-markerdetector (unavailable)" -> "media-server";
+  "module-platedetector (unavailable)" -> "media-server";
+  "module-pointerdetector (unavailable)" -> "media-server";
 }

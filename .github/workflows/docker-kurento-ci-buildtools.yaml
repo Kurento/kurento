@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       jobDistros:
-        description: "List of Ubuntu codenames to build for"
+        description: "jobDistros: List of Ubuntu codenames to build for"
         required: true
         # There is no `list` type, so use a raw JSON array and `fromJSON()`.
         # Example: '["xenial", "bionic", "focal"]'

@@ -5,29 +5,29 @@ on:
   workflow_dispatch:
     inputs:
       jobDistros:
-        description: "List of Ubuntu codenames to build for"
+        description: "jobDistros: List of Ubuntu codenames to build for"
         required: true
         # There is no `list` type, so use a raw JSON array and `fromJSON()`.
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["focal"]'
       jobGitName:
-        description: "Non-default git branch or tag that should be checked out, if it exists"
+        description: "jobGitName: Non-default git branch or tag that should be checked out, if it exists"
         required: false
         type: "string"
         default: ""
       jobGitNameFallback:
-        description: "Non-default git branch or tag that should be checked out, if `jobGitName` does not exist"
+        description: "jobGitNameFallback: Non-default git branch or tag that should be checked out, if `jobGitName` does not exist"
         required: false
         type: "string"
         default: ""
       jobRelease:
-        description: "Enable to build release versions; disable for development builds"
+        description: "jobRelease: Enable to build release versions; disable for development builds"
         required: false
         type: "boolean"
         default: false
       jobOnlyKurento:
-        description: "Enable to only build Kurento; disable to also build forks"
+        description: "jobOnlyKurento: Enable to only build Kurento; disable to also build forks"
         required: false
         type: "boolean"
         default: true

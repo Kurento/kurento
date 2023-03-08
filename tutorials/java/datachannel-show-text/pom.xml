@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento.tutorial</groupId>
 		<artifactId>kurento-tutorial</artifactId>
-		<version>7.0.0-SNAPSHOT</version>
+		<version>7.0.0</version>
 	</parent>
 	<artifactId>kurento-datachannel-show-text</artifactId>
 	<packaging>jar</packaging>
@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>datachannelexample</artifactId>
-			<version>7.0.0-SNAPSHOT</version>
+			<version>7.0.0</version>
 		</dependency>
 	</dependencies>
 

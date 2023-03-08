@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       jobRelease:
-        description: "Enable to build release versions; disable for development builds"
+        description: "jobRelease: Enable to build release versions; disable for development builds"
         required: false
         type: "boolean"
         default: false

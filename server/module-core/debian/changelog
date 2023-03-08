@@ -3,7 +3,7 @@ kurento-module-core (7.0.0-1kurento1) UNRELEASED; urgency=medium
   [ Kurento ]
   * UNRELEASED
 
- -- Kurento <kurento@openvidu.io>  Wed, 18 Jan 2023 22:20:08 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 08 Mar 2023 16:44:01 +0100
 
 kms-core (6.18.0-0kurento1) testing; urgency=medium
 
