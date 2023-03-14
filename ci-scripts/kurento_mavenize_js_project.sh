@@ -1,104 +1,90 @@
 #!/usr/bin/env bash
+# Checked with ShellCheck (https://www.shellcheck.net/)
 
-# Shell setup
-# -----------
+#/ Convert a JavaScript package into a Java deployable artifact.
 
-BASEPATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"  # Absolute canonical path
-# shellcheck source=bash.conf.sh
-source "$BASEPATH/bash.conf.sh" || exit 1
+
+
+# Configure shell
+# ===============
+
+SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
+source "$SELF_DIR/bash.conf.sh" || exit 1
 
 log "==================== BEGIN ===================="
+trap_add 'log "==================== END ===================="' EXIT
 
-# Trace all commands
+# Trace all commands (to stderr).
 set -o xtrace
 
 
 
-# PROJECT_NAME string
-#   Project name used in pom.xml
-#
-# MAVEN_SHELL_SCRIPT string
-#   Script to be included in maven shell plugin
-#
-# ASSEMBLY_FILE path
-#   Location of the assembly file to be used by maven. If not present a new
-#   one will be created
+# Verify project
+# ==============
 
-# Get input parameters for backward compatibility
-[[ -n "${1:-}" ]] && PROJECT_NAME="$1"
-[[ -n "${2:-}" ]] && MAVEN_SHELL_SCRIPT="$2"
-[[ -n "${3:-}" ]] && ASSEMBLY_FILE="$3"
-
-# Validate parameters
-[[ -z "${PROJECT_NAME:-}" ]] && {
-  log "ERROR: Undefined variable: PROJECT_NAME"
-  exit 1
+[[ -f package.json ]] || {
+    log "ERROR: File not found: package.json"
+    exit 1
 }
 
-if [[ -n "${MAVEN_SHELL_SCRIPT:-}" ]]; then
-cat >maven_script.sh <<EOF
+
+
+# Prepare script called from pom.xml
+tee maven_script.sh >/dev/null <<EOF
 #!/usr/bin/env bash
 # Shell options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
 # Trace all commands
 set -o xtrace
-$MAVEN_SHELL_SCRIPT
-EOF
-else
-cat >maven_script.sh <<EOF
-#!/usr/bin/env bash
-# Shell options for strict error checking
-set -o errexit -o errtrace -o pipefail -o nounset
-# Trace all commands
-set -o xtrace
-echo "#### Run maven_script.sh ####"
+echo "==== Run maven_script.sh ===="
 npm install --no-color --loglevel=info --audit=false --fund=false || { echo ERR1; exit 1; }
 node_modules/.bin/grunt --no-color || { echo ERR2; exit 2; }
 node_modules/.bin/grunt --no-color sync:bower || { echo ERR3; exit 3; }
 mkdir -p src/main/resources/META-INF/resources/js/ || { echo ERR4; exit 4; }
 cp dist/* src/main/resources/META-INF/resources/js/
 EOF
-fi
-
 chmod +x maven_script.sh
 
-[[ -z "${ASSEMBLY_FILE:-}" ]] && ASSEMBLY_FILE="assembly.xml"
 
-# Validate project structure
-[[ -f package.json ]] || {
-  log "ERROR: Cannot read file: package.json"
-  exit 1
-}
 
-# Build maven version from package.json
-VERSION="$(jshon -e version -u < package.json)" || {
-  log "ERROR: Command failed: jshon -e version"
-  exit 1
-}
+# Build Maven version string
+# ==========================
 
-# Version must be semver compliant
-echo "$VERSION" | grep -q -P "^\d+\.\d+\.\d+" || {
-  log "ERROR: VERSION doesn't seem to follow semver"
-  exit 1
-}
+PROJECT_VERSION="$(jq --raw-output '.version' package.json)"
+PROJECT_RELEASE="$(echo "$PROJECT_VERSION" | awk -F '-' '{print $1}')"
+MAVEN_VERSION="$PROJECT_RELEASE"
 
-RELEASE="$(echo "$VERSION" | awk -F"-" '{print $1}')"
-[[ -n "$(echo "$VERSION" | awk -F"-" '{print $2}')" ]] && VERSION="${RELEASE}-SNAPSHOT"
-
-# Exit if pom already present with correct version
-if [[ -f pom.xml ]]; then
-  POM_VERSION="$(kurento_get_version.sh)" || {
-    log "ERROR: Command failed: kurento_get_version"
-    exit 1
-  }
-  [[ "$VERSION" == "$POM_VERSION" ]] && {
-    log "Exit: Valid pom.xml already exists"
-    exit 0
-  }
+if [[ "$PROJECT_VERSION" != "$PROJECT_RELEASE" ]]; then
+    MAVEN_VERSION+="-SNAPSHOT"
 fi
 
-# Add pom file
-cat >pom.xml <<EOF
+
+
+# Verify versions
+# ===============
+
+# Exit if pom already present with correct version.
+if [[ -f pom.xml ]]; then
+    POM_VERSION="$(kurento_get_version.sh)"
+    if [[ "$POM_VERSION" == "$MAVEN_VERSION" ]]; then
+        log "Exit: Valid pom.xml already exists"
+        exit 0
+    fi
+fi
+
+
+
+# Mavenize
+# ========
+
+PROJECT_NAME="$(kurento_get_name.sh)" || {
+    echo "ERROR: Command failed: kurento_get_name"
+    exit 1
+}
+
+ASSEMBLY_FILE="assembly.xml"
+
+tee pom.xml >/dev/null <<EOF
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -107,13 +93,13 @@ cat >pom.xml <<EOF
   <!-- Maven coordinates -->
   <groupId>org.kurento</groupId>
   <artifactId>${PROJECT_NAME}</artifactId>
-  <version>${VERSION}</version>
+  <version>${MAVEN_VERSION}</version>
   <packaging>jar</packaging>
 
   <!-- Project-level information -->
   <name>${PROJECT_NAME}</name>
   <description>
-    Kurento Media Server, JavaScript client code for module ${PROJECT_NAME}.
+    Kurento Media Server JavaScript client code for ${PROJECT_NAME}.
   </description>
   <url>https://kurento.openvidu.io/docs/\${project.version}</url>
   <scm>
@@ -225,14 +211,14 @@ cat >pom.xml <<EOF
 </project>
 EOF
 
-# If there's an assembly file elsewhere, stop and use the file specified. It should be placed on the root of the workspace
-[[ -f "$ASSEMBLY_FILE" ]] && {
-  log "Exit: Assembly file already exists: $ASSEMBLY_FILE"
-  exit 0
-}
+# If there's an assembly file, stop and use the file specified.
+if [[ -f "$ASSEMBLY_FILE" ]]; then
+    log "Exit: Assembly file already exists: $ASSEMBLY_FILE"
+    exit 0
+fi
 
-# Add assembly file
-cat >"$ASSEMBLY_FILE" <<EOF
+# Add assembly file.
+tee "$ASSEMBLY_FILE" >/dev/null <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -263,7 +249,3 @@ cat >"$ASSEMBLY_FILE" <<EOF
   </fileSets>
 </assembly>
 EOF
-
-
-
-log "==================== END ===================="

@@ -63,7 +63,7 @@ apt-get update && apt-get install --no-install-recommends --yes \
 # * build-essential, cmake: For C/C++ server modules that generate client SDK files.
 # * curl: For CI script `kurento_http_publish.sh`.
 # * default-jdk (Java JDK): For Java projects.
-# * jq, jshon: For some JavaScript tools and jobs.
+# * jq: For some JavaScript tools and jobs.
 # * libnss-wrapper: Used by jobs that perform Git push/pull operations.
 # * maven: For Java projects.
 # * rsync: For remote copies.
@@ -78,7 +78,7 @@ apt-get update && apt-get install --no-install-recommends --yes \
     curl \
     default-jdk \
     ffmpeg \
-    jq jshon \
+    jq \
     libmediainfo-dev \
     libnss-wrapper \
     maven \
