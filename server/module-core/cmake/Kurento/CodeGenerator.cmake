@@ -999,12 +999,12 @@ function (generate_kurento_libraries)
     )
 
     # Templates for JavaScript were imported from kurento-client-js, and are
-    # stored in `src/main/templates/client-js/`. This allows to build the
-    # Kurento modules (kurento-client-{core,elements,filters}) before the JS
-    # client itself (as required by the dependency tree).
+    # stored in `server/module-creator/src/main/templates/client-js`.
+    # This allows to build the modules kurento-client-(core|elements|filters)
+    # before the JavaScript client itself (as required by its dependency tree).
     execute_code_generator (
       EXEC_PARAMS
-        -r ${PARAM_MODELS} ${KURENTO_MODULES_DIR_LINE} -c ${CMAKE_BINARY_DIR}/js/lib -it client-js
+        -r ${PARAM_MODELS} ${KURENTO_MODULES_DIR_LINE} -c ${CMAKE_BINARY_DIR}/js/lib -it client-js/templates
     )
 
     execute_code_generator (

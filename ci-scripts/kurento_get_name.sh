@@ -32,6 +32,21 @@ set -o xtrace
 
 
 
+# Check dependencies
+# ==================
+
+command -v cmake >/dev/null || {
+    log "ERROR: 'cmake' is not installed; please install it"
+    exit 1
+}
+
+command -v jq >/dev/null || {
+    log "ERROR: 'jq' is not installed; please install it"
+    exit 1
+}
+
+
+
 # Get project name
 # ================
 
@@ -56,6 +71,8 @@ if [[ -f CMakeLists.txt ]]; then
     PROJECT_NAME="$(cat output.txt)"
     cd ..
     rm -rf "$TEMPDIR"
+elif [[ -f package.json ]]; then
+    PROJECT_NAME="$(jq --raw-output '.name' package.json)"
 fi
 
 if [ -z "${PROJECT_NAME:-}" ]; then
