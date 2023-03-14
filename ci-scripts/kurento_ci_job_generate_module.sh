@@ -78,11 +78,13 @@ log "CFG_SERVER_VERSION=$CFG_SERVER_VERSION"
 # Create container
 # ================
 
+CONTAINER_NAME="kurento_ci_job_generate_module_${JOB_TIMESTAMP}_$(mktemp --dry-run XXXXXX)"
+
 # Create a new container that runs Bash indefinitely.
 # To keep Bash alive, a terminal is attached to the container (`-t`).
 docker run -t --detach \
     --pull always \
-    --rm --name kurento_ci_job_generate_module \
+    --rm --name "$CONTAINER_NAME" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$KURENTOCI_SSH_KEY_PATH",dst=/id_ssh \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
@@ -90,7 +92,7 @@ docker run -t --detach \
     kurento/kurento-ci-buildtools:focal
 
 # Stop (which also removes, due to `--rm`) the container upon script exit.
-trap_add 'docker stop --time 3 kurento_ci_job_generate_module' EXIT
+trap_add "docker stop --time 3 $CONTAINER_NAME" EXIT
 
 
 
@@ -100,7 +102,7 @@ trap_add 'docker stop --time 3 kurento_ci_job_generate_module' EXIT
 # Install the required version of Kurento into a container.
 docker exec -i \
     --workdir /workdir \
-    kurento_ci_job_generate_module bash <<DOCKERCOMMANDS
+    "$CONTAINER_NAME" bash <<DOCKERCOMMANDS
 
 # Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
@@ -144,7 +146,7 @@ docker exec -i \
     --user "$(id -u)":"$(id -g)" \
     --workdir /workdir \
     --env-file "$ENV_PATH" \
-    kurento_ci_job_generate_module bash <<DOCKERCOMMANDS
+    "$CONTAINER_NAME" bash <<DOCKERCOMMANDS
 
 # Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
