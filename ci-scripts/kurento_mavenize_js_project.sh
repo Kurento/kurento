@@ -142,6 +142,10 @@ tee pom.xml >/dev/null <<EOF
   </organization>
 
   <!-- Project configuration -->
+  <properties>
+    <!-- maven-resources-plugin -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <build>
     <plugins>
       <plugin>
