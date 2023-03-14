@@ -65,7 +65,7 @@ jobs:
   #module-crowddetector:
 
   module-datachannelexample:
-    uses: "./.github/workflows/clients-java-build.reusable.yaml"
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
       directory: "server/module-examples/datachannelexample/"
       genModuleEnable: true
