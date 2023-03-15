@@ -61,7 +61,7 @@ apt-get update && apt-get install --no-install-recommends --yes \
 
 # Install packages
 # * build-essential, cmake: For C/C++ server modules that generate client SDK files.
-# * curl: For CI script `kurento_http_publish.sh`.
+# * curl: For CI script `kurento_deploy_js_http.sh`.
 # * default-jdk (Java JDK): For Java projects.
 # * jq: For some JavaScript tools and jobs.
 # * libnss-wrapper: Used by jobs that perform Git push/pull operations.

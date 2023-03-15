@@ -123,7 +123,7 @@ FILES="$FILES dist/$BASE_NAME.map:js/$BASE_NAME.map"
 [ -f LICENSE ] && FILES="$FILES LICENSE:LICENSE"
 
 export FILES
-CREATE_TAG="true" kurento_bower_publish.sh
+CREATE_TAG="true" kurento_deploy_js_bower.sh
 
 
 
@@ -159,7 +159,7 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
   FILES="$FILES $KURENTO_PROJECT.version:upload/$S_DIR/$KURENTO_PROJECT.version"
 
   export FILES
-  kurento_http_publish.sh
+  kurento_deploy_js_http.sh
 else
   log "Skip HTTP publish: Version is SNAPSHOT"
 fi
