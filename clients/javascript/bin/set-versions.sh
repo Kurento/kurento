@@ -131,14 +131,14 @@ log "CFG_COMMIT=$CFG_COMMIT"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     VERSION_JS="$CFG_VERSION"
 
-    COMMIT_MSG="Prepare JavaScript Node.js tutorial release $VERSION_JS"
+    COMMIT_MSG="Prepare JavaScript client release $VERSION_JS"
 else
     VERSION_JS="${CFG_VERSION}-dev"
 
     if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
     else
-        COMMIT_MSG="Update JavaScript Node.js tutorial version to $VERSION_JS"
+        COMMIT_MSG="Update JavaScript client version to $VERSION_JS"
     fi
 fi
 
@@ -193,92 +193,36 @@ function run_jq() {
 # Set version
 # ===========
 
-# Dirs that contain common dependencies (kurento-client and kurento-utils).
-DIRS_COMMON=(
-    chroma
-    crowddetector
-    hello-world
-    magic-mirror
-    one2many-call
-    one2one-call
-    platedetector
-    pointerdetector
-)
-
-# Dirs that contain module dependencies.
-MODULES=(
-    chroma
-    crowddetector
-    platedetector
-    pointerdetector
-)
-
-for DIR in "${DIRS_COMMON[@]}"; do
-    pushd "$DIR"
+{
+    pushd client/
 
     run_jq ".version = \"$VERSION_JS\"" package.json
 
     if [[ "$CFG_RELEASE" == "true" ]]; then
         run_jq "
-            .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-        " package.json
-        run_jq "
-            .dependencies.\"kurento-utils\" = \"$VERSION_JS\"
-        " static/bower.json
-    else
-        run_jq "
-            .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
-        " package.json
-        run_jq "
-            .dependencies.\"kurento-utils\" = \"git+https://github.com/Kurento/kurento-utils-bower.git\"
-        " static/bower.json
-    fi
-
-    git_commit package.json static/bower.json
-
-    popd
-done
-
-for MODULE in "${MODULES[@]}"; do
-    pushd "$MODULE"
-
-    if [[ "$CFG_RELEASE" == "true" ]]; then
-        run_jq "
-            .dependencies.\"kurento-module-${MODULE}\" = \"$VERSION_JS\"
+            .dependencies.\"kurento-client-core\" = \"$VERSION_JS\"
+            | .dependencies.\"kurento-client-elements\" = \"$VERSION_JS\"
+            | .dependencies.\"kurento-client-filters\" = \"$VERSION_JS\"
+            | .dependencies.\"kurento-jsonrpc\" = \"$VERSION_JS\"
         " package.json
     else
         run_jq "
-            .dependencies.\"kurento-module-${MODULE}\" = \"git+https://github.com/Kurento/kurento-module-${MODULE}-js.git\"
+            .dependencies.\"kurento-client-core\" = \"git+https://github.com/Kurento/kurento-client-core-js.git\"
+            | .dependencies.\"kurento-client-elements\" = \"git+https://github.com/Kurento/kurento-client-elements-js.git\"
+            | .dependencies.\"kurento-client-filters\" = \"git+https://github.com/Kurento/kurento-client-filters-js.git\"
+            | .dependencies.\"kurento-jsonrpc\" = \"https://gitpkg.now.sh/Kurento/kurento/clients/javascript/jsonrpc?main\"
         " package.json
     fi
 
     git_commit package.json
 
     popd
-done
+}
 
 {
-    pushd module-tests-api/
+    pushd jsonrpc/
 
     run_jq ".version = \"$VERSION_JS\"" package.json
-
-    if [[ "$CFG_RELEASE" == "true" ]]; then
-        run_jq "
-            .dependencies.\"kurento-client\" = \"$VERSION_JS\"
-            | .dependencies.\"kurento-module-chroma\" = \"$VERSION_JS\"
-            | .dependencies.\"kurento-module-crowddetector\" = \"$VERSION_JS\"
-            | .dependencies.\"kurento-module-platedetector\" = \"$VERSION_JS\"
-            | .dependencies.\"kurento-module-pointerdetector\" = \"$VERSION_JS\"
-        " package.json
-    else
-        run_jq "
-            .dependencies.\"kurento-client\" = \"git+https://github.com/Kurento/kurento-client-js.git\"
-            | .dependencies.\"kurento-module-chroma\" = \"git+https://github.com/Kurento/kurento-module-chroma-js.git\"
-            | .dependencies.\"kurento-module-crowddetector\" = \"git+https://github.com/Kurento/kurento-module-crowddetector-js.git\"
-            | .dependencies.\"kurento-module-platedetector\" = \"git+https://github.com/Kurento/kurento-module-platedetector-js.git\"
-            | .dependencies.\"kurento-module-pointerdetector\" = \"git+https://github.com/Kurento/kurento-module-pointerdetector-js.git\"
-        " package.json
-    fi
 
     git_commit package.json
 
