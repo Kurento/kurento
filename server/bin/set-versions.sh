@@ -361,9 +361,16 @@ pushd module-core/
 perl -i -pe \
     "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
     src/server/interface/core.kmd.json
-perl -i -pe \
-    "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-    cmake/Kurento/CodeGenerator.cmake
+
+# Don't be too happy to update the version requirement of Kurento Module Creator.
+# Older versions should be able to generate code for new ones.
+# This line is commented out for reference, but should be run manually only
+# on those cases where a breaking change has been introduced in the module creator
+# and the upgraded requirement is actually a necessity.
+#perl -i -pe \
+#    "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
+#    cmake/Kurento/CodeGenerator.cmake
+
 update_debian_changelog
 update_debian_control
 popd
