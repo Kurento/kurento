@@ -1,21 +1,88 @@
-name: "Workflow template"
+name: "Clients: Build All JavaScript (Parent)"
 
 on:
-  # Manual trigger.
+  # Triggered manually.
   workflow_dispatch:
-
-  # Trigger from other job.
-  workflow_call:
-
-defaults:
-  run:
-    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
+    inputs:
+      jobServerVersion:
+        description: "Server version from which to generate client code"
+        required: false
+        type: "string"
+        default: "dev"
 
 jobs:
-  build:
-    runs-on: "ubuntu-latest"
-    timeout-minutes: 30
-    steps:
-      - name: "Say Hello"
-        run: |
-          echo "Hello World!"
+  kurento-utils-js:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "browser/kurento-utils-js/"
+    secrets: inherit
+
+  module-core:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-core/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  module-elements:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-elements/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  module-filters:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-filters/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  jsonrpc:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "clients/javascript/jsonrpc/"
+    secrets: inherit
+
+  client:
+    needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "clients/javascript/client/"
+    secrets: inherit
+
+  module-chroma:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/chroma/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  #module-crowddetector:
+
+  module-datachannelexample:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/datachannelexample/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
+
+  #module-markerdetector:
+  #  needs: ["client"]
+
+  #module-platedetector:
+  #  needs: ["client"]
+
+  #module-pointerdetector:
+  #  needs: ["client"]
+
+  # Not published for Kurento 7.
+  # Doesn't make much sense having them as standalone installable from Maven,
+  # they are supposed to be a learning resource, not a ready-to-use application.
+  #tutorials-js:
+  #tutorials-node:

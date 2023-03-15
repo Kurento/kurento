@@ -19,7 +19,8 @@ var Docker = require('dockerode');
 var minimist = require('minimist');
 var spawn = require('child_process').spawn;
 
-URL_VIDEO_FILES = "https://raw.githubusercontent.com/Kurento/test-files/main/video/";
+URL_VIDEO_FILES =
+  "https://raw.githubusercontent.com/Kurento/test-files/main/video/";
 URL_BARCODES = URL_VIDEO_FILES + "filter/barcodes.webm";
 URL_FIWARECUT = URL_VIDEO_FILES + "filter/fiwarecut.webm";
 URL_PLATES = URL_VIDEO_FILES + "filter/plates.webm";

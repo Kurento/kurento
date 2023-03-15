@@ -21,6 +21,16 @@ set -o xtrace
 
 
 
+# Check dependencies
+# ==================
+
+command -v cmake >/dev/null || {
+    log "ERROR: 'cmake' is not installed; please install it"
+    exit 1
+}
+
+
+
 # Generate client code
 # ====================
 
