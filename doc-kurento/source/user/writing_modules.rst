@@ -227,7 +227,7 @@ For more information about the process of creating Debian packages, check these 
 * `Debian Building Tutorial <https://wiki.debian.org/BuildingTutorial>`__
 * `Debian Policy Manual <https://www.debian.org/doc/debian-policy/index.html>`__
 
-**Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento``, to instruct Kurento about where the plugin files have been copied:
+**Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento-media-server``, to instruct Kurento about where the plugin files have been copied:
 
 .. code-block:: shell
 

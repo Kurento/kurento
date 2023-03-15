@@ -25,7 +25,7 @@ SPHINXOPTS := -v
 SPHINXPROJ := Kurento
 
 MAVEN := mvn
-MAVEN_ARGS := --batch-mode --settings /maven-settings.xml
+MAVEN_ARGS := --batch-mode
 
 BUILD := build
 DIST := dist
@@ -73,9 +73,9 @@ langdoc-client-java:
 	$(MAVEN) $(MAVEN_ARGS) $(MAVEN_JAVADOC_PLUGIN):javadoc \
 		-DreportOutputDirectory="$(LANGDOC_PATH)" \
 		-DdestDir="client-javadoc" \
-		-Dsourcepath="src/main/java;target/generated-sources/kmd" \
+		-Dsourcepath="src/main/java:target/generated-sources/kmd" \
 		-Dsubpackages="org.kurento.client" \
-		-DexcludePackageNames="*.internal" \
+		-DexcludePackageNames="*.internal:*.internal.*:*.internal.*.*" \
 		|| { echo "ERROR: '$(MAVEN) javadoc' failed"; exit 1; }
 	popd
 

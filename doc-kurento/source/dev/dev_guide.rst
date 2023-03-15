@@ -268,7 +268,7 @@ To leave the system in a clean state, remove all Kurento packages and related de
 
 .. code-block:: shell
 
-   sudo aptitude remove ~Vkurento
+   sudo aptitude remove '?installed?version(kurento)'
 
 Use *purge* instead of *remove* to also delete any leftover configuration files in ``/etc/``.
 

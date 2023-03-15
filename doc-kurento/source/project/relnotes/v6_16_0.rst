@@ -32,7 +32,7 @@ Thanks to `@prlanzarin <https://github.com/prlanzarin>`__ (Paulo Lanzarin) for `
 
 **Client API**
 
-* Java: `setIceTcp <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setIceTcp-boolean->`__.
+* Java: `setIceTcp <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setIceTcp(boolean)>`__.
 * JavaScript: `setIceTcp <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setIceTcp>`__.
 
 

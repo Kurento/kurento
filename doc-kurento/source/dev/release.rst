@@ -112,26 +112,18 @@ General considerations
 
 
 
-.. warning::
-
-   As of this writing, there is a mix of methods in the CI scripts (``ci-scripts/``) when it comes to handle the release versions. The instructions in this document favor creating and pushing git tags manually in the developer's computer, however some projects also make use of the script *kurento_check_version.sh*, which tries to detect when a project's version is *not* a development snapshot, then creates and pushes a git tag automatically. However if the tag already exists (created manually by the developer), then the ``git tag`` command fails, and this script prints a warning message before continuing with its work.
-
-   We've been considering different methodologies between handling the tags automatically in CI or handling them manually by the developer before releasing new versions; both of these methods have pros and cons. For example, if tags are handled manually by the developer, solving mistakes in the release process becomes simpler because there are no surprises from CI creating tags inadvertently; on the other hand, leaving them to be created by CI seems to simplify a bit the release process, but not really by a big margin.
-
-
-
 Release order
 =============
 
 First, the C/C++ parts of the code are built, Debian packages are created, and everything is left ready for deployment in an Apt repository (for *apt-get*) managed by `Aptly`_.
 
-Before Kurento Media Server itself, all required forks and libraries must be built and installed: :ref:`dev-release-forks`. These are:
+Before Kurento Media Server itself, all required forks and libraries must be built and installed:
 
-* `libsrtp`_
-* `openh264`_
-* `openh264-gst-plugin`_
-* `gst-plugins-good`_
-* `libnice`_
+* `libsrtp <https://github.com/Kurento/libsrtp>`__
+* `openh264 <https://github.com/Kurento/openh264>`__
+* `openh264-gst-plugin <https://github.com/Kurento/openh264-gst-plugin>`__
+* `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
+* `libnice <https://github.com/Kurento/libnice>`__
 
 The main :ref:`dev-release-media-server` modules should be built in this order:
 
@@ -217,133 +209,6 @@ Last, but not least, the project maintains a set of Docker images and documentat
 
 * :ref:`dev-release-docker`
 * :ref:`dev-release-doc`
-
-
-
-.. _dev-release-forks:
-
-Fork Repositories
-=================
-
-This graph shows the dependencies between forked projects used by Kurento:
-
-.. graphviz:: /images/graphs/dependencies-forks.dot
-   :align: center
-   :caption: Projects forked by Kurento
-
-Release order:
-
-* `libsrtp`_
-* `openh264`_
-* `openh264-gst-plugin`_
-* `gst-plugins-good`_
-* `libnice`_
-
-
-
-Release steps
--------------
-
-#. Choose the *final release version*, following the SemVer guidelines as explained in :ref:`dev-release-general`.
-
-#. Set the new version. Most modules have a ``bin/set-version.sh`` script to make it easier with per-project specific commands.
-
-   .. code-block:: shell
-
-      # Change here.
-      NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
-      NEW_DEBIAN="<DebianRevision>"  # Eg.: 1kurento1
-
-      function do_release {
-          local PACKAGE_VERSION="$NEW_VERSION-$NEW_DEBIAN"
-          local COMMIT_MSG="Prepare release $PACKAGE_VERSION"
-
-          local SNAPSHOT_ENTRY="* UNRELEASED"
-          local RELEASE_ENTRY="* $COMMIT_MSG"
-
-          DEBFULLNAME="Kurento" \
-          DEBEMAIL="kurento@openvidu.io" \
-          gbp dch \
-              --ignore-branch \
-              --git-author \
-              --spawn-editor never \
-              --new-version "$PACKAGE_VERSION" \
-              \
-              --release \
-              --distribution "testing" \
-              --force-distribution \
-              \
-              debian/ \
-          || { echo "ERROR: Command failed: gbp dch"; return 1; }
-
-          # First appearance of "UNRELEASED": Put our commit message
-          sed -i "0,/$SNAPSHOT_ENTRY/{s/$SNAPSHOT_ENTRY/$RELEASE_ENTRY/}" \
-              debian/changelog \
-          || { echo "ERROR: Command failed: sed"; return 2; }
-
-          # Remaining appearances of "UNRELEASED" (if any): Delete line
-          sed -i "/$SNAPSHOT_ENTRY/d" \
-              debian/changelog \
-          || { echo "ERROR: Command failed: sed"; return 3; }
-
-          git add debian/changelog \
-          && git commit -m "$COMMIT_MSG" \
-          || { echo "ERROR: Command failed: git"; return 4; }
-
-          gbp tag \
-          && gbp push \
-          || { echo "ERROR: Command failed: gbp"; return 5; }
-
-          echo "Done!"
-      }
-
-      # Run in a subshell where all commands are traced.
-      ( set -o xtrace; do_release; )
-
-#. Follow on with releasing Kurento Media Server.
-
-
-
-New Development
----------------
-
-**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *Debian revision* number.
-
-The version number (as opposed to the Debian revision) is only changed when the fork gets updated from upstream sources. Meanwhile, we only update the Debian revision.
-
-.. code-block:: shell
-
-   # Change here.
-   NEW_VERSION="<NextVersion>"   # Eg.: 1.0.1
-   NEW_DEBIAN="<DebianRevision>" # Eg.: 1kurento1
-
-   function do_release {
-       local PACKAGE_VERSION="$NEW_VERSION-$NEW_DEBIAN"
-       local COMMIT_MSG="Bump development version to $PACKAGE_VERSION"
-
-       DEBFULLNAME="Kurento" \
-       DEBEMAIL="kurento@openvidu.io" \
-       gbp dch \
-             --ignore-branch \
-             --git-author \
-             --spawn-editor never \
-             --new-version "$PACKAGE_VERSION" \
-             debian/ \
-       || { echo "ERROR: Command failed: gbp dch"; return 1; }
-
-       git add debian/changelog \
-       && git commit -m "$COMMIT_MSG" \
-       || { echo "ERROR: Command failed: git"; return 2; }
-
-       gbp tag \
-       && gbp push \
-       || { echo "ERROR: Command failed: gbp"; return 3; }
-
-       echo "Done!"
-   }
-
-   # Run in a subshell where all commands are traced.
-   ( set -o xtrace; do_release; )
 
 
 
@@ -436,7 +301,7 @@ For JavaScript modules, the command is very similar:
       && cd js/ \
       && npm install
 
-Complete code for Java modules:
+Complete code for Java and JavaScript modules:
 
 .. code-block:: shell
 
@@ -456,21 +321,29 @@ Complete code for Java modules:
            module-elements
            module-filters
            module-examples/chroma
-           module-examples/crowddetector
+           #module-examples/crowddetector
            module-examples/datachannelexample
-           module-examples/markerdetector
-           module-examples/platedetector
-           module-examples/pointerdetector
+           #module-examples/markerdetector
+           #module-examples/platedetector
+           #module-examples/pointerdetector
        )
 
        for PROJECT in "${PROJECTS[@]}"; do
            pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
 
-           mkdir build/ && cd build/ \
-               && cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
-               && cd java/ \
+           mkdir -p build/ && cd build/
+
+           cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
+               && pushd java/ \
                && mvn -DskipTests=true clean install \
-               || { echo "ERROR: Command failed"; return 1; }
+               && popd \
+               || { echo "ERROR: Java code generation failed"; return 1; }
+
+           cmake -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE .. \
+               && pushd js/ \
+               && npm install \
+               && popd \
+               || { echo "ERROR: JavaScript code generation failed"; return 1; }
 
            popd
        done
@@ -494,7 +367,7 @@ Release steps
 
    Search for the ``-dev`` suffix.
 
-#. Commit changes, rebase, and squash as needed.
+#. Commit changes (rebase and squash as needed).
 
 #. Run the `Server Build All`_ job with parameters:
 
@@ -543,36 +416,6 @@ Release steps
 
 
 
-New Development
----------------
-
-**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *.PATCH* number and resetting the **Debian revision** to 1.
-
-**All-In-One script**:
-
-.. code-block:: shell
-
-   # Change here.
-   NEW_VERSION="<NextVersion>"   # Eg.: 1.0.1
-   NEW_DEBIAN="<DebianRevision>" # Eg.: 1kurento1
-
-   cd server/
-
-   # Set the new version.
-   bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
-       --new-development --commit
-
-   # Push committed changes.
-   git push
-
-Then start the `Server Build All`_ job with parameters:
-
-   - *jobGitName*: Empty (default value).
-   - *jobRelease*: **DISABLED**.
-   - *jobOnlyKurento*: **DISABLED**.
-
-
-
 .. _dev-release-javascript:
 
 Kurento JavaScript client
@@ -608,74 +451,22 @@ And tutorials:
 Release steps
 -------------
 
-#. Start the `Kurento JavaScript job`_ and wait for it to finish.
-
-   The *Kurento JavaScript job* is a *Jenkins MultiJob Project*. It will auto-generate the JavaScript Client libraries (from each of the Kurento Media Server modules that contain KMD API Definition files, ``*.kmd.json``), and will commit them to their corresponding repos (see below).
-
-   At this point, all other JavaScript repos which are not auto-generated modules, will get a development build, which is good to verify that their jobs work fine, before the actual release build.
-
-#. Check that the auto-generated API Client JavaScript repos have been updated and tagged with the new version:
-
-   .. warning::
-
-      During release 6.18.0, some of the jobs didn't publish a new version to NPM because the scripts detected a development number; the jobs had to be started manually a second time to make it detect a release number. Watch out because it's possible that there is a bug somewhere in the process.
-
-   - kurento-module-core-javascript -> `kurento-client-core-js <https://github.com/Kurento/kurento-client-core-js>`__
-   - kurento-module-elements-javascript -> `kurento-client-elements-js <https://github.com/Kurento/kurento-client-elements-js>`__
-   - kurento-module-filters-javascript -> `kurento-client-filters-js <https://github.com/Kurento/kurento-client-filters-js>`__
-
-   - kurento-module-chroma-javascript -> `kurento-module-chroma-js <https://github.com/Kurento/kurento-module-chroma-js>`__
-   - kurento-module-crowddetector-javascript -> `kurento-module-crowddetector-js <https://github.com/Kurento/kurento-module-crowddetector-js>`__
-   - kurento-module-datachannelexample-javascript -> `kurento-module-datachannelexample-js <https://github.com/Kurento/kurento-module-datachannelexample-js>`__
-   - kurento-module-markerdetector-javascript -> `kurento-module-markerdetector-js <https://github.com/Kurento/kurento-module-markerdetector-js>`__
-   - kurento-module-platedetector-javascript -> `kurento-module-platedetector-js <https://github.com/Kurento/kurento-module-platedetector-js>`__
-   - kurento-module-pointerdetector-javascript -> `kurento-module-pointerdetector-js <https://github.com/Kurento/kurento-module-pointerdetector-js>`__
-
-#. Also check that the JavaScript modules have been published by CI:
-
-  - Open each module's page in NPM, and check that the latest version corresponds to the current release:
-
-    - NPM: `kurento-client-core <https://www.npmjs.com/package/kurento-client-core>`__
-    - NPM: `kurento-client-elements <https://www.npmjs.com/package/kurento-client-elements>`__
-    - NPM: `kurento-client-filters <https://www.npmjs.com/package/kurento-client-filters>`__
-
-  - If any of these are missing, it's probably due to the CI job not running (because the project didn't really contain any code difference from the previous version... happens sometimes when not all repos have changed since the last release). Open CI and run the jobs manually:
-
-    - CI: `kurento_client_core_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_core_js_merged/>`__
-    - CI: `kurento_client_elements_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_elements_js_merged/>`__
-    - CI: `kurento_client_filters_js_merged <https://ci.openvidu.io/jenkins/job/Development/job/kurento_client_filters_js_merged/>`__
-
 #. Choose the *final release version*, following the SemVer guidelines as explained in :ref:`dev-release-general`.
-
-#. Check there are no uncommitted files.
-
-#. Check latest changes from the main branch.
 
 #. Set the new version. Most modules have a ``bin/set-version.sh`` script to make it easier with per-project specific commands.
 
 #. Check there are no dangling development versions in any of the dependencies.
 
-#. Test the build. Make sure the code is in a working state.
+   Search for the ``-dev`` suffix.
 
-   The most common issue is that the code is not properly formatted. To manually run the beautifier, do this:
+#. Commit changes (rebase and squash as needed).
 
-   .. code-block:: shell
+#. Run the `Clients Build All JavaScript`_ job with parameters:
 
-      npm install
-
-      # To run beautifier over all files, modifying in-place:
-      node_modules/.bin/grunt jsbeautifier::default
-
-      # To run beautifier over a specific file:
-      node_modules/.bin/grunt jsbeautifier::file:<FilePath>.js
-
-#. Commit changes, rebase, and squash as needed.
+   - *jobRelease*: **ENABLED**.
+   - *jobServerVersion*: Repository name of the release branch name (e.g. *dev-release-1.0.0*).
 
 **All-In-One script**:
-
-.. note::
-
-   The *jq* command-line JSON processor must be installed.
 
 .. code-block:: shell
 
@@ -683,45 +474,39 @@ Release steps
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
 
    function do_release {
-       local COMMIT_MSG="Prepare release $NEW_VERSION"
-
-       cd server/
-
        local PROJECTS=(
            browser/kurento-utils-js
-           clients/javascript/jsonrpc
-           clients/javascript/client
+           clients/javascript
            tutorials/javascript-node
            tutorials/javascript-browser
        )
 
        for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Check there are no uncommitted files.
-           # Exclude JSON files, to allow re-running this function.
-           git diff-index --quiet HEAD -- '!*.json' \
-           || { echo "ERROR: Uncommitted files not allowed!"; return 1; }
-
-           # Check latest changes from the main branch.
-           git pull --rebase --autostash \
-           || { echo "ERROR: Command failed: git pull"; return 1; }
+           pushd "$PROJECT" \
+           || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           bin/set-versions.sh "$NEW_VERSION" --release --git-add \
+           bin/set-versions.sh "$NEW_VERSION" --release --commit \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
            # Check for development versions.
-           grep -Fr --exclude-dir='*node_modules' --include='*.json' -e '-dev"' -e '"git+' \
+           grep -Pr --exclude-dir node_modules --include package.json -- '-dev|git\+http' \
            && { echo "ERROR: Development versions not allowed!"; return 1; }
 
            # Test the build.
-           if [[ "$PROJECT" == "clients/javascript/client" ]]; then
-               # kurento-client-js depends on kurento-jsonrpc-js, so we'll use
-               # `npm link` here to solve the dependency.
-               # Use a custom Node prefix so `npm link` doesn't require root permissions.
-               mkdir -p /tmp/.npm/lib/
-               NPM_CONFIG_PREFIX=/tmp/.npm npm link ../kurento-jsonrpc-js
+           if [[ "$PROJECT" == "clients/javascript" ]]; then
+               # kurento-client depends on kurento-jsonrpc, so install it
+               # directly here to resolve the dependency.
+               # Do not use `npm link`, because it is broken [1] and the link
+               # will be lost with the `npm install` that comes afterwards.
+               # [1]: https://github.com/npm/cli/issues/2372
+               pushd jsonrpc/ && npm install && popd
+               cd client/
+               npm install \
+                   ../jsonrpc/ \
+                   ../../../server/module-core/build/js/ \
+                   ../../../server/module-elements/build/js/ \
+                   ../../../server/module-filters/build/js/
            fi
            if [[ -f package.json ]]; then
                npm install || { echo "ERROR: Command failed: npm install"; return 1; }
@@ -732,27 +517,6 @@ Release steps
                && node_modules/.bin/grunt sync:bower \
                || { echo "ERROR: Command failed: grunt"; return 1; }
            fi
-
-           popd
-       done
-
-       echo "Everything seems OK; proceed to commit and push"
-
-       for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Commit all modified files.
-           git commit -m "$COMMIT_MSG" \
-           || { echo "ERROR: Command failed: git commit"; return 1; }
-
-           # Push new commit(s).
-           git push \
-           || { echo "ERROR: Command failed: git push"; return 1; }
-
-           #git tag -a -m "$COMMIT_MSG" "$NEW_VERSION" \
-           #&& git push origin "$NEW_VERSION" \
-           #|| { echo "ERROR: Command failed: git tag"; return 1; }
-           # NOTE: the CI jobs automatically tag the repos upon releases
 
            popd
        done
@@ -768,7 +532,38 @@ Release steps
 Post-Release
 ------------
 
+If CI jobs fail, the most common issue is that the code is not properly formatted. To manually run the beautifier, do this:
+
+.. code-block:: shell
+
+   npm install
+
+   # To run beautifier over all files, modifying in-place:
+   node_modules/.bin/grunt jsbeautifier::default
+
+   # To run beautifier over a specific file:
+   node_modules/.bin/grunt jsbeautifier::file:<FilePath>.js
+
 When all CI jobs have finished successfully:
+
+* Check that the auto-generated JavaScript client repos have been updated with the new version:
+
+  - `kurento-client-core-js <https://github.com/Kurento/kurento-client-core-js>`__
+  - `kurento-client-elements-js <https://github.com/Kurento/kurento-client-elements-js>`__
+  - `kurento-client-filters-js <https://github.com/Kurento/kurento-client-filters-js>`__
+
+  - `kurento-module-chroma-js <https://github.com/Kurento/kurento-module-chroma-js>`__
+  - `kurento-module-crowddetector-js <https://github.com/Kurento/kurento-module-crowddetector-js>`__
+  - `kurento-module-datachannelexample-js <https://github.com/Kurento/kurento-module-datachannelexample-js>`__
+  - `kurento-module-markerdetector-js <https://github.com/Kurento/kurento-module-markerdetector-js>`__
+  - `kurento-module-platedetector-js <https://github.com/Kurento/kurento-module-platedetector-js>`__
+  - `kurento-module-pointerdetector-js <https://github.com/Kurento/kurento-module-pointerdetector-js>`__
+
+* Check that the JavaScript packages have been published to NPM:
+
+  - NPM: `kurento-client-core <https://www.npmjs.com/package/kurento-client-core>`__
+  - NPM: `kurento-client-elements <https://www.npmjs.com/package/kurento-client-elements>`__
+  - NPM: `kurento-client-filters <https://www.npmjs.com/package/kurento-client-filters>`__
 
 * Open the `Nexus Sonatype Staging Repositories`_ section.
 * Select **kurento** repository.
@@ -792,69 +587,6 @@ When all CI jobs have finished successfully:
 * **Refresh**.
 * **Release** repository.
 * Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
-
-
-
-New Development
----------------
-
-**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *.PATCH* number.
-
-**All-In-One script**:
-
-.. note::
-
-   The *jq* command-line JSON processor must be installed.
-
-.. code-block:: shell
-
-   # Change here.
-   NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
-
-   function do_release {
-       local COMMIT_MSG="Prepare for next development iteration"
-
-       cd server/
-
-       local PROJECTS=(
-           browser/kurento-utils-js
-           clients/javascript/jsonrpc
-           clients/javascript/client
-           tutorials/javascript-node
-           tutorials/javascript-browser
-       )
-
-       for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Set the new version.
-           bin/set-versions.sh "$NEW_VERSION" --git-add \
-           || { echo "ERROR: Command failed: set-versions"; return 1; }
-
-           popd
-       done
-
-       echo "Everything seems OK; proceed to commit and push"
-
-       for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Commit all modified files.
-           git commit -m "$COMMIT_MSG" \
-           || { echo "ERROR: Command failed: git commit"; return 1; }
-
-           # Push new commit(s).
-           git push \
-           || { echo "ERROR: Command failed: git push"; return 1; }
-
-           popd
-       done
-
-       echo "Done!"
-   }
-
-   # Run in a subshell where all commands are traced.
-   ( set -o xtrace; do_release; )
 
 
 
@@ -933,7 +665,7 @@ Release steps
 
    Search for the ``-SNAPSHOT`` suffix. Note that most versions are defined as properties in ``clients/java/parent-pom/pom.xml``.
 
-#. Commit changes, rebase, and squash as needed.
+#. Commit changes (rebase and squash as needed).
 
 #. Run the `Clients Build All Java`_ job with parameters:
 
@@ -947,8 +679,6 @@ Release steps
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
 
    function do_release {
-       local COMMIT_MSG="Prepare release $NEW_VERSION"
-
        local PROJECTS=(
            clients/java/qa-pom
            clients/java
@@ -992,7 +722,7 @@ Release steps
 Post-Release
 ------------
 
-When all repos have been released, and all CI jobs have finished successfully:
+When all CI jobs have finished successfully:
 
 * Open the `Nexus Sonatype Staging Repositories`_ section.
 * Select **kurento** repository.
@@ -1030,8 +760,198 @@ When all repos have been released, and all CI jobs have finished successfully:
 
 
 
-New Development
----------------
+.. _dev-release-docker:
+
+Docker images
+=============
+
+A new set of development images is deployed to `Kurento Docker Hub`_ on each build. Besides, a release version will be published as part of the CI jobs chain when the `Server Build All`_ job is triggered.
+
+
+
+.. _dev-release-doc:
+
+Kurento documentation
+=====================
+
+The documentation scripts will download both Java and JavaScript clients, generate HTML Javadoc / Jsdoc pages from them, and embed everything into a `static section <https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html#reference-documentation>`__.
+
+For this reason, the documentation must be built only after all the other modules have been released.
+
+#. Write the Release Notes in ``doc-kurento/source/project/relnotes/``.
+
+#. Edit ``doc-kurento/VERSIONS.env`` to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries.
+
+   These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency. Check each one of the Kurento modules to verify what is the latest version of each one, and put it in the corresponding variable:
+
+   - ``[VERSION_DOC]``: The docs version shown to readers. Normally same as ``[VERSION_KMS]``.
+   - ``[VERSION_KMS]``: Version of the Kurento Media Server
+   - ``[VERSION_CLIENT_JAVA]``: Version of the Java client SDK
+   - ``[VERSION_CLIENT_JS]``: Version of the JavaScript client SDK
+   - ``[VERSION_UTILS_JS]``: Version of *kurento-utils-js*
+   - ``[VERSION_TUTORIAL_JAVA]``: Version of the Java tutorials package.
+   - ``[VERSION_TUTORIAL_NODE]``: Version of the Node.js tutorials package.
+   - ``[VERSION_TUTORIAL_JS]``: Version of the Browser JavaScript tutorials package.
+
+#. In ``doc-kurento/VERSIONS.env``, set *VERSION_RELEASE* to **true**. Remember to set it again to *false* after the release, when starting a new development iteration.
+
+#. Test the build locally, check everything works.
+
+   .. code-block:: shell
+
+      python3 -m venv python_modules
+      source python_modules/bin/activate
+      python3 -m pip install --upgrade -r requirements.txt
+      make html
+
+   JavaDoc and JsDoc pages can be generated separately with ``make langdoc``.
+
+#. Commit changes (rebase and squash as needed).
+
+#. Run the `Documentation build`_ job with parameters:
+
+   - *jobRelease*: **ENABLED**.
+
+#. CI automatically tags Release versions in ReadTheDocs generated repo `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
+
+   .. note::
+
+      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in the *doc-kurento-readthedocs* repo. ReadTheDocs reads it to determine the documentation sources and release tags.
+
+#. Check for errors in `ReadTheDocs Builds`_. If the new version hasn't been detected and built, do it manually: use the *Build Version* button to force a build of the *latest* version. Doing this, ReadTheDocs will detect that there is a new tag in the *doc-kurento-readthedocs* repo.
+
+**All-In-One script**:
+
+.. code-block:: shell
+
+   # Change here.
+   NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
+
+   function do_release {
+       local COMMIT_MSG="Prepare documentation release $NEW_VERSION"
+
+       # Set [VERSION_RELEASE]="true".
+       sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="true"/' VERSIONS.env \
+       || { echo "ERROR: Command failed: sed"; return 1; }
+
+       # Set [VERSION_DOC].
+       local VERSION_DOC="$NEW_VERSION"
+       sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
+       || { echo "ERROR: Command failed: sed"; return 2; }
+
+       # `--all` to include possibly deleted files.
+       git add --all \
+           VERSIONS.env \
+           source/project/relnotes/ \
+       && git commit -m "$COMMIT_MSG" \
+       || { echo "ERROR: Command failed: git"; return 4; }
+
+       echo "Done!"
+   }
+
+   # Run in a subshell where all commands are traced
+   ( set -o xtrace; do_release; )
+
+
+
+New Development Iteration
+=========================
+
+Kurento Media Server
+--------------------
+
+**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *.PATCH* number and resetting the **Debian revision** to 1.
+
+**All-In-One script**:
+
+.. code-block:: shell
+
+   # Change here.
+   NEW_VERSION="<NextVersion>"   # Eg.: 1.0.1
+   NEW_DEBIAN="<DebianRevision>" # Eg.: 1kurento1
+
+   cd server/
+
+   # Set the new version.
+   bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
+       --new-development --commit
+
+   # Push committed changes.
+   git push
+
+Then start the `Server Build All`_ job with parameters:
+
+   - *jobGitName*: Empty (default value).
+   - *jobRelease*: **DISABLED**.
+   - *jobOnlyKurento*: **DISABLED**.
+
+
+
+Kurento JavaScript client
+-------------------------
+
+**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *.PATCH* number.
+
+**All-In-One script**:
+
+.. note::
+
+   The *jq* command-line JSON processor must be installed.
+
+.. code-block:: shell
+
+   # Change here.
+   NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
+
+   function do_release {
+       local COMMIT_MSG="Prepare for next development iteration"
+
+       cd server/
+
+       local PROJECTS=(
+           browser/kurento-utils-js
+           clients/javascript/jsonrpc
+           clients/javascript/client
+           tutorials/javascript-node
+           tutorials/javascript-browser
+       )
+
+       for PROJECT in "${PROJECTS[@]}"; do
+           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
+
+           # Set the new version.
+           bin/set-versions.sh "$NEW_VERSION" --git-add \
+           || { echo "ERROR: Command failed: set-versions"; return 1; }
+
+           popd
+       done
+
+       echo "Everything seems OK; proceed to commit and push"
+
+       for PROJECT in "${PROJECTS[@]}"; do
+           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
+
+           # Commit all modified files.
+           git commit -m "$COMMIT_MSG" \
+           || { echo "ERROR: Command failed: git commit"; return 1; }
+
+           # Push new commit(s).
+           git push \
+           || { echo "ERROR: Command failed: git push"; return 1; }
+
+           popd
+       done
+
+       echo "Done!"
+   }
+
+   # Run in a subshell where all commands are traced.
+   ( set -o xtrace; do_release; )
+
+
+
+Kurento Java client
+-------------------
 
 .. warning::
 
@@ -1099,130 +1019,52 @@ New Development
 
 
 
-.. _dev-release-docker:
-
-Docker images
-=============
-
-A new set of development images is deployed to `Kurento Docker Hub`_ on each nightly build. Besides, a release version will be published as part of the CI jobs chain when the `Server Build All`_ job is triggered.
-
-The ``docker/`` directory contains *Dockerfiles* for all the `Kurento Docker images`_, however this repo shouldn't be tagged, because it is essentially a "multi-repo" and the tags would be meaningless (because *which one of the sub-dirs would the tag apply to?*).
-
-
-
-.. _dev-release-doc:
-
 Kurento documentation
-=====================
+---------------------
 
-The documentation scripts will download both Java and JavaScript clients, generate HTML Javadoc / Jsdoc pages from them, and embed everything into a `static section <https://doc-kurento.readthedocs.io/en/latest/features/kurento_client.html#reference-documentation>`__.
+**AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set *VERSION_RELEASE* to **false**. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
 
-For this reason, the documentation must be built only after all the other modules have been released.
+**All-In-One script**:
 
-#. Write the Release Notes in ``doc-kurento/source/project/relnotes/``.
+.. code-block:: shell
 
-#. Ensure that the whole nightly CI chain works:
+   # Change here.
+   NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
 
-   Job *doc-kurento* -> job *doc-kurento-readthedocs* -> `New build at Read the Docs`_.
+   function do_release {
+       local COMMIT_MSG="Prepare for next development iteration"
 
-#. Edit ``doc-kurento/VERSIONS.env`` to set all relevant version numbers: version of the documentation itself, and all referred modules and client libraries.
+       # Set [VERSION_RELEASE]="false"
+       sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="false"/' VERSIONS.env \
+       || { echo "ERROR: Command failed: sed"; return 1; }
 
-   These numbers can be different because not all of the Kurento projects are necessarily released with the same frequency. Check each one of the Kurento repositories to verify what is the latest version of each one, and put it in the corresponding variable:
+       # Set [VERSION_DOC]
+       local VERSION_DOC="$NEW_VERSION-dev"
+       sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
+       || { echo "ERROR: Command failed: sed"; return 2; }
 
-   - ``[VERSION_DOC]``: The docs version shown to readers. Normally same as ``[VERSION_KMS]``.
-   - ``[VERSION_KMS]``: Version of the Kurento Media Server
-   - ``[VERSION_CLIENT_JAVA]``: Version of the Java client SDK
-   - ``[VERSION_CLIENT_JS]``: Version of the JavaScript client SDK
-   - ``[VERSION_UTILS_JS]``: Version of *kurento-utils-js*
-   - ``[VERSION_TUTORIAL_JAVA]``: Version of the Java tutorials package.
-   - ``[VERSION_TUTORIAL_NODE]``: Version of the Node.js tutorials package.
-   - ``[VERSION_TUTORIAL_JS]``: Version of the Browser JavaScript tutorials package.
+       # Add a new Release Notes document
+       local RELNOTES_NAME="v${NEW_VERSION//./_}"
+       cp source/project/relnotes/v0_TEMPLATE.rst \
+           "source/project/relnotes/$RELNOTES_NAME.rst" \
+       && sed -i "s/1.2.3/$NEW_VERSION/" \
+           "source/project/relnotes/$RELNOTES_NAME.rst" \
+       && sed -i "8i\   $RELNOTES_NAME" \
+           source/project/relnotes/index.rst \
+       || { echo "ERROR: Command failed: sed"; return 3; }
 
-#. In *VERSIONS.env*, set *VERSION_RELEASE* to **true**. Remember to set it again to *false* after the release, when starting a new development iteration.
+       git add \
+           VERSIONS.env \
+           source/project/relnotes/ \
+       && git commit -m "$COMMIT_MSG" \
+       && git push \
+       || { echo "ERROR: Command failed: git"; return 4; }
 
-#. Test the build locally, check everything works.
+       echo "Done!"
+   }
 
-   .. code-block:: shell
-
-      python3 -m venv python_modules
-      source python_modules/bin/activate
-      python3 -m pip install --upgrade -r requirements.txt
-      make html
-
-   Note that the JavaDoc and JsDoc pages won't be generated locally if you don't have your system prepared to do so; also there are some Sphinx constructs or plugins that might fail if you don't have them ready to use, but the Read the Docs servers have them so they should end up working fine.
-
-#. Git add, commit, and push. Trigger a nightly build, where you can **check the result** of the documentation builds to have an idea of how the final release build will end up looking like, at https://doc-kurento.readthedocs.io/en/latest/.
-
-   .. code-block:: shell
-
-      # Change here.
-      NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
-
-      COMMIT_MSG="Prepare release $NEW_VERSION"
-
-      # `--all` to include possibly deleted files.
-      git add --all \
-          VERSIONS.env \
-          source/project/relnotes/ \
-      && git commit -m "$COMMIT_MSG" \
-      && git push \
-      || echo "ERROR: Command failed: git"
-
-#. Run the `doc-kurento CI job`_ with parameters:
-
-   - *jobRelease*: **ENABLED**.
-
-#. CI automatically tags Release versions in Read the Docs generated repo `doc-kurento-readthedocs`_, so the release will show up in the Read the Docs dashboard.
-
-   .. note::
-
-      If you made a mistake and want to re-create the git tag with a different commit, remember that the re-tagging must be done manually in both *doc-kurento* and *doc-kurento-readthedocs* repos. Read the Docs CI servers will read the latter one to obtain the documentation sources and release tags.
-
-#. Open `Read the Docs Builds`_. If the new version hasn't been detected and built, do it manually: use the *Build Version* button to force a build of the *latest* version. Doing this, Read the Docs will "realize" that there is a new tagged release version of the documentation in the *doc-kurento-readthedocs* repo.
-
-#. **AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set *VERSION_RELEASE* to **false**. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
-
-   **All-In-One** script:
-
-   .. code-block:: shell
-
-      # Change here.
-      NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
-
-      function do_release {
-          local COMMIT_MSG="Prepare for next development iteration"
-
-          # Set [VERSION_RELEASE]="false"
-          sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="false"/' VERSIONS.env \
-          || { echo "ERROR: Command failed: sed"; return 1; }
-
-          # Set [VERSION_DOC]
-          local VERSION_DOC="$NEW_VERSION-dev"
-          sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
-          || { echo "ERROR: Command failed: sed"; return 2; }
-
-          # Add a new Release Notes document
-          local RELNOTES_NAME="v${NEW_VERSION//./_}"
-          cp source/project/relnotes/v0_TEMPLATE.rst \
-              "source/project/relnotes/$RELNOTES_NAME.rst" \
-          && sed -i "s/1.2.3/$NEW_VERSION/" \
-              "source/project/relnotes/$RELNOTES_NAME.rst" \
-          && sed -i "8i\   $RELNOTES_NAME" \
-              source/project/relnotes/index.rst \
-          || { echo "ERROR: Command failed: sed"; return 3; }
-
-          git add \
-              VERSIONS.env \
-              source/project/relnotes/ \
-          && git commit -m "$COMMIT_MSG" \
-          && git push \
-          || { echo "ERROR: Command failed: git"; return 4; }
-
-          echo "Done!"
-      }
-
-      # Run in a subshell where all commands are traced
-      ( set -o xtrace; do_release; )
+   # Run in a subshell where all commands are traced
+   ( set -o xtrace; do_release; )
 
 
 
@@ -1231,17 +1073,9 @@ For this reason, the documentation must be built only after all the other module
 .. _Kurento Docker images: https://hub.docker.com/r/kurento/kurento-media-server
 .. _Server Build All: https://github.com/Kurento/kurento/actions/workflows/server-parent.yaml
 .. _Clients Build All Java: https://github.com/Kurento/kurento/actions/workflows/clients-java-parent.yaml
-.. _doc-kurento CI job: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
+.. _Clients Build All JavaScript: https://github.com/Kurento/kurento/actions/workflows/clients-javascript-parent.yaml
+.. _Documentation build: https://ci.openvidu.io/jenkins/job/Development/job/kurento_doc_merged/
 .. _doc-kurento-readthedocs: https://github.com/Kurento/doc-kurento-readthedocs
-
-
-
-.. GitHub links
-.. _libsrtp: https://github.com/Kurento/libsrtp
-.. _openh264: https://github.com/Kurento/openh264
-.. _openh264-gst-plugin: https://github.com/Kurento/openh264-gst-plugin
-.. _gst-plugins-good: https://github.com/Kurento/gst-plugins-good
-.. _libnice: https://github.com/Kurento/libnice
 
 
 
@@ -1251,6 +1085,6 @@ For this reason, the documentation must be built only after all the other module
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html#summary
 .. _Aptly: https://www.aptly.info/
 .. _Nexus Sonatype Staging Repositories: https://oss.sonatype.org/#stagingRepositories
-.. _Read the Docs Builds: https://readthedocs.org/projects/doc-kurento/builds/
-.. _New build at Read the Docs: https://readthedocs.org/projects/doc-kurento/builds/
-.. _Read the Docs Advanced Settings: https://readthedocs.org/dashboard/doc-kurento/advanced/
+.. _ReadTheDocs Builds: https://readthedocs.org/projects/doc-kurento/builds/
+.. _New build at ReadTheDocs: https://readthedocs.org/projects/doc-kurento/builds/
+.. _ReadTheDocs Advanced Settings: https://readthedocs.org/dashboard/doc-kurento/advanced/

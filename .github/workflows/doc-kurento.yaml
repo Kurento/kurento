@@ -29,10 +29,10 @@ jobs:
           # Env vars used by `kurento_ci_job_deploy_doc.sh`.
           echo "ENV_PATH=$GITHUB_ENV" >>$GITHUB_ENV
 
-          # Commit that triggered this build.
+          # Commit that triggered this build. Used by `kurento_doc_deploy.sh`.
           echo "GIT_HASH_SHORT=${GITHUB_SHA:0:7}" >>$GITHUB_ENV
 
-          # Path to the SSH key used by `kurento_doc_deploy.sh`.
+          # Path to the SSH key. Used by `kurento_doc_deploy.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
           KURENTOCI_SSH_KEY_PATH="$RUNNER_TEMP/id_ssh"
           echo "KURENTOCI_SSH_KEY_PATH=$KURENTOCI_SSH_KEY_PATH" >>$GITHUB_ENV

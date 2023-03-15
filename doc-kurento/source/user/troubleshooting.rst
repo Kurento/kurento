@@ -388,9 +388,9 @@ Missing audio or video streams
 
 If the Kurento Tutorials are showing an spinner, or your application is missing media streams, that's a strong indication that the network topology requires using either a :term:`STUN` server or a :term:`TURN` relay, to traverse through the :term:`NAT` of intermediate routers. Check the section about :ref:`installing a STUN/TURN server <faq-coturn-install>`.
 
-If your application is expected to work with **audio-only** or **video-only** streams, make sure that Kurento Pipeline elements are not connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__):
+If your application is expected to work with **audio-only** or **video-only** streams, make sure that Kurento Pipeline elements are not connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect(org.kurento.client.MediaElement)>`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__):
 
-  - Use the ``connect(MediaElement, MediaType)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement-org.kurento.client.MediaType->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__).
+  - Use the ``connect(MediaElement, MediaType)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect(org.kurento.client.MediaElement,org.kurento.client.MediaType)>`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__).
   - Monitor the :ref:`MediaFlowInStateChanged <events-mediaflowin>` and :ref:`MediaFlowOutStateChanged <events-mediaflowout>` events from all MediaElements.
   - Make sure that the element providing media (the *source*) is firing a *MediaFlowOut* event, and that the receiver (the *sink*) is firing a corresponding *MediaFlowIn* event.
 
@@ -854,11 +854,11 @@ Follow this checklist to make sure none of these are the cause of your issue:
 
 * The RecorderEndpoint was created with a ``mediaProfile`` type that assumes *both* audio and video. If you intend to record audio-only or video-only media, select the appropriate ``_AUDIO_ONLY`` or ``_VIDEO_ONLY`` profile when creating the recorder instance. For example, to record a WebRTC screen capture (as obtained from a web browser's call to ``MediaDevices.getDisplayMedia()``), choose ``WEBM_VIDEO_ONLY`` instead of just ``WEBM``.
 
-* The RecorderEndpoint was connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__) (which assumes both audio and video), but the stream is audio-only or video-only.
+* The RecorderEndpoint was connected with the default ``connect(MediaElement)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect(org.kurento.client.MediaElement)>`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__) (which assumes both audio and video), but the stream is audio-only or video-only.
 
   - Monitor the :ref:`MediaFlowInStateChanged <events-mediaflowin>` and :ref:`MediaFlowOutStateChanged <events-mediaflowout>` events from all MediaElements.
   - Make sure that the element providing media (the *source*) is firing a *MediaFlowOut* event, and that the RecorderEndpoint is firing a corresponding *MediaFlowIn* event.
-  - If your recording should be only-audio or only-video, use the ``connect(MediaElement, MediaType)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect-org.kurento.client.MediaElement-org.kurento.client.MediaType->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__).
+  - If your recording should be only-audio or only-video, use the ``connect(MediaElement, MediaType)`` method (`Java <../_static/client-javadoc/org/kurento/client/MediaElement.html#connect(org.kurento.client.MediaElement,org.kurento.client.MediaType)>`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.MediaElement.html#.connect>`__).
 
 * Check the availability of audio/video devices at recorder client initialization, and just before starting the recording.
 * User is disconnecting existing hardware, or maybe connecting new hardware (usb webcams, mic, etc).
