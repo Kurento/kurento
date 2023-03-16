@@ -17,60 +17,60 @@ jobs:
       directory: "browser/kurento-utils-js/"
     secrets: inherit
 
-  # module-core:
-  #   uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
-  #   with:
-  #     directory: "server/module-core/"
-  #     genModuleEnable: true
-  #     genModuleServerVersion: "${{ inputs.jobServerVersion }}"
-  #   secrets: inherit
+  module-core:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-core/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
-  # module-elements:
-  #   uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
-  #   with:
-  #     directory: "server/module-elements/"
-  #     genModuleEnable: true
-  #     genModuleServerVersion: "${{ inputs.jobServerVersion }}"
-  #   secrets: inherit
+  module-elements:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-elements/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
-  # module-filters:
-  #   uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
-  #   with:
-  #     directory: "server/module-filters/"
-  #     genModuleEnable: true
-  #     genModuleServerVersion: "${{ inputs.jobServerVersion }}"
-  #   secrets: inherit
+  module-filters:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-filters/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
-  # jsonrpc:
-  #   uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
-  #   with:
-  #     directory: "clients/javascript/jsonrpc/"
-  #   secrets: inherit
+  jsonrpc:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "clients/javascript/jsonrpc/"
+    secrets: inherit
 
-  # client:
-  #   needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
-  #   uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
-  #   with:
-  #     directory: "clients/javascript/client/"
-  #   secrets: inherit
+  client:
+    needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "clients/javascript/client/"
+    secrets: inherit
 
-  # module-chroma:
-  #   uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
-  #   with:
-  #     directory: "server/module-examples/chroma/"
-  #     genModuleEnable: true
-  #     genModuleServerVersion: "${{ inputs.jobServerVersion }}"
-  #   secrets: inherit
+  module-chroma:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/chroma/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
   #module-crowddetector:
 
-  # module-datachannelexample:
-  #   uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
-  #   with:
-  #     directory: "server/module-examples/datachannelexample/"
-  #     genModuleEnable: true
-  #     genModuleServerVersion: "${{ inputs.jobServerVersion }}"
-  #   secrets: inherit
+  module-datachannelexample:
+    uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
+    with:
+      directory: "server/module-examples/datachannelexample/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+    secrets: inherit
 
   #module-markerdetector:
   #  needs: ["client"]
