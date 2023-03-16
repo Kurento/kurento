@@ -5,17 +5,17 @@ on:
   workflow_call:
     inputs:
       directory:
-        description: "Working directory for the job execution"
+        description: "directory: Working directory for the job execution"
         required: true
         type: "string"
         default: "./"
       genModuleEnable:
-        description: "Enable generation of client code from server modules that contain API definition files (.kmd)"
+        description: "genModuleEnable: Enable generation of client code from server modules that contain API definition files (.kmd)"
         required: false
         type: "boolean"
         default: false
       genModuleServerVersion:
-        description: "Server version from which to generate client code"
+        description: "genModuleServerVersion: Server version from which to generate client code"
         required: false
         type: "string"
         default: "dev"
@@ -57,6 +57,9 @@ jobs:
           echo "KURENTOCI_SSH_KEY_PATH=$KURENTOCI_SSH_KEY_PATH" >>$GITHUB_ENV
           echo "${{ secrets.KURENTOCI_PRIVATE_SSH_KEY }}" >"$KURENTOCI_SSH_KEY_PATH"
           chmod 0400 "$KURENTOCI_SSH_KEY_PATH"
+
+          # Env vars used by `kurento_deploy_js_npm.sh`.
+          echo "KURENTO_NPM_TOKEN=${{ secrets.KURENTO_NPM_TOKEN }}" >>$GITHUB_ENV
 
           # Env vars used by the Maven settings.xml file.
           echo "KURENTO_MAVEN_SONATYPE_USERNAME=${{ secrets.KURENTO_MAVEN_SONATYPE_USERNAME }}" >>$GITHUB_ENV

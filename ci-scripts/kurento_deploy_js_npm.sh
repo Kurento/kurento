@@ -64,4 +64,9 @@ fi
 # ======
 
 log "Deploying to NPM: ${projectName}@${localVersion}"
+
+# The NPM access token should be available in an environment variable
+# named as given here. Note this is a static string: no var expansion done.
+# shellcheck disable=SC2016
+NPM_CONFIG_USERCONFIG=<(echo '//registry.npmjs.org/:_authToken=${KURENTO_NPM_TOKEN}') \
 npm publish
