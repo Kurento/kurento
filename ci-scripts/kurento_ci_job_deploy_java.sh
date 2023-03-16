@@ -52,6 +52,6 @@ export MAVEN_LOCAL_REPOSITORY_PATH="/maven-repository"
 # Compile, package, and deploy the current project.
 kurento_maven_deploy.sh \
     --maven-settings /maven-settings.xml \
-    --sign-key /maven.gpg
+    --maven-sign-key /maven.gpg
 
 DOCKERCOMMANDS

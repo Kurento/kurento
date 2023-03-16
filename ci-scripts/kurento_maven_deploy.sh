@@ -57,12 +57,12 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
-        --sign-key)
+        --maven-sign-key)
             if [[ -n "${2-}" ]]; then
                 CFG_MAVEN_SIGN_KEY_PATH="$(realpath "$2")"
                 shift
             else
-                log "ERROR: --maven-settings expects <Path>"
+                log "ERROR: --maven-sign-key expects <Path>"
                 exit 1
             fi
             ;;
@@ -83,7 +83,7 @@ done
 # ===============
 
 if [[ "$CFG_MAVEN_SIGN_ARTIFACTS" == "true" ]] && [[ -z "$CFG_MAVEN_SIGN_KEY_PATH" ]]; then
-    log "ERROR: Either of '--sign-key' or '--no-sign-artifacts' must be used"
+    log "ERROR: Either of '--maven-sign-key' or '--no-sign-artifacts' must be used"
     exit 1
 fi
 

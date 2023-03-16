@@ -31,6 +31,7 @@ docker run -i --rm --pull always \
     --user "$(id -u)":"$(id -g)" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
+    --mount type=bind,src="$MAVEN_GPG_KEY_PATH",dst=/maven.gpg \
     --mount type=bind,src="$PWD",dst=/workdir \
     --workdir /workdir \
     --env-file "$ENV_PATH" \
@@ -47,6 +48,8 @@ set -o xtrace
 export PATH="/ci-scripts:\$PATH"
 
 # Compile, package, and deploy the current project.
-kurento_deploy_js.sh --maven-settings /maven-settings.xml
+kurento_deploy_js.sh \
+    --maven-settings /maven-settings.xml \
+    --maven-sign-key /maven.gpg
 
 DOCKERCOMMANDS

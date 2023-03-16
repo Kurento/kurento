@@ -84,6 +84,14 @@ jobs:
           # Change WORKING_DIRECTORY so it points to the newly generated dir.
           echo "WORKING_DIRECTORY=$WORKING_DIRECTORY/build/js" >>$GITHUB_ENV
 
+      - name: "Configure the environment for job script (deploy)"
+        run: |
+          # Path to the GPG key used by `kurento_maven_deploy.sh`.
+          # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
+          MAVEN_GPG_KEY_PATH="$RUNNER_TEMP/maven.gpg"
+          echo "MAVEN_GPG_KEY_PATH=$MAVEN_GPG_KEY_PATH" >>$GITHUB_ENV
+          echo "${{ secrets.MAVEN_PRIVATE_GPG_KEY }}" >"$MAVEN_GPG_KEY_PATH"
+
       - name: "Run job script (deploy)"
         working-directory: "${{ env.WORKING_DIRECTORY }}"
         run: "kurento_ci_job_deploy_js.sh"
