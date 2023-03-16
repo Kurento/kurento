@@ -56,7 +56,7 @@ Once your *.kmd* files have been filled with a complete description of the modul
    cmake ..
    make
 
-If working with a GStreamer module, now you can verify that the new module can be successfully loaded by GStreamer, with these commands:
+If working with a GStreamer module, now you can verify that the new module is successfully loaded by GStreamer, with these commands:
 
 .. code-block:: shell
 
@@ -196,7 +196,7 @@ To build a Debian package file, you can either use the **kurento-buildpackage** 
        dpkg-dev
 
    # Run dpkg-buildpackage to build Debian packages
-   dpkg-buildpackage -us -uc
+   dpkg-buildpackage -b -us -uc
 
    # Copy the generated packages to their final destination
    cp ../*.*deb /path/to/destination/
