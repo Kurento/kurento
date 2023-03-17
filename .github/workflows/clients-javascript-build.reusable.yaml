@@ -4,6 +4,11 @@ on:
   # Triggered from other workflows.
   workflow_call:
     inputs:
+      jobRelease:
+        description: "jobRelease: Enable to build release versions; disable for development builds"
+        required: false
+        type: "boolean"
+        default: false
       directory:
         description: "directory: Working directory for the job execution"
         required: true
@@ -53,10 +58,10 @@ jobs:
 
           # Path to the SSH key used by `kurento_generate_js_module.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
-          KURENTOCI_SSH_KEY_PATH="$RUNNER_TEMP/id_ssh"
-          echo "KURENTOCI_SSH_KEY_PATH=$KURENTOCI_SSH_KEY_PATH" >>$GITHUB_ENV
-          echo "${{ secrets.KURENTOCI_PRIVATE_SSH_KEY }}" >"$KURENTOCI_SSH_KEY_PATH"
-          chmod 0400 "$KURENTOCI_SSH_KEY_PATH"
+          GIT_SSH_KEY_PATH="$RUNNER_TEMP/id_git_ssh"
+          echo "GIT_SSH_KEY_PATH=$GIT_SSH_KEY_PATH" >>$GITHUB_ENV
+          echo "${{ secrets.KURENTOCI_PRIVATE_SSH_KEY }}" >"$GIT_SSH_KEY_PATH"
+          chmod 0400 "$GIT_SSH_KEY_PATH"
 
           # Env vars used by `kurento_deploy_js_npm.sh`.
           echo "KURENTO_NPM_TOKEN=${{ secrets.KURENTO_NPM_TOKEN }}" >>$GITHUB_ENV
@@ -78,6 +83,8 @@ jobs:
       - name: "Run job script (generate)"
         if: ${{ inputs.genModuleEnable }}
         working-directory: "${{ env.WORKING_DIRECTORY }}"
+        env:
+          JOB_RELEASE: "${{ inputs.jobRelease }}"
         run: |
           kurento_ci_job_generate_module.sh --js --server-version "${{ inputs.genModuleServerVersion }}"
 

@@ -86,7 +86,7 @@ docker run -t --detach \
     --pull always \
     --rm --name "$CONTAINER_NAME" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
-    --mount type=bind,src="$KURENTOCI_SSH_KEY_PATH",dst=/id_ssh \
+    --mount type=bind,src="$GIT_SSH_KEY_PATH",dst=/id_git_ssh \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \
     kurento/kurento-ci-buildtools:focal
@@ -121,7 +121,9 @@ PROJECT_NAME="\$(kurento_get_name.sh)" || {
 }
 
 # Install the appropriate dev package.
-kurento_install_server.sh --server-package "\${PROJECT_NAME}-dev" --server-version "$CFG_SERVER_VERSION"
+kurento_install_server.sh \
+    --server-package "\${PROJECT_NAME}-dev" \
+    --server-version "$CFG_SERVER_VERSION"
 
 DOCKERCOMMANDS
 
@@ -136,8 +138,11 @@ if [[ "$CFG_JAVA" == "true" ]]; then
     GENERATE_CMD="kurento_generate_java_module.sh"
 elif [[ "$CFG_JS" == "true" ]]; then
     GENERATE_CMD="kurento_generate_js_module.sh"
+    GENERATE_ARGS+=("--git-ssh-key /id_git_ssh")
 
-    GENERATE_ARGS+=("--ssh-key /id_ssh")
+    if [[ "$JOB_RELEASE" == "true" ]]; then
+        GENERATE_ARGS+=(--release)
+    fi
 fi
 
 # `--user` is needed to avoid creating files as root, which would make next

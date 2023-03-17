@@ -3,6 +3,12 @@ name: "Documentation build"
 on:
   # Manual trigger.
   workflow_dispatch:
+    inputs:
+      jobRelease:
+        description: "jobRelease: Enable to build release versions; disable for development builds"
+        required: false
+        type: "boolean"
+        default: false
 
 defaults:
   run:
@@ -34,10 +40,10 @@ jobs:
 
           # Path to the SSH key. Used by `kurento_doc_deploy.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
-          KURENTOCI_SSH_KEY_PATH="$RUNNER_TEMP/id_ssh"
-          echo "KURENTOCI_SSH_KEY_PATH=$KURENTOCI_SSH_KEY_PATH" >>$GITHUB_ENV
-          echo "${{ secrets.KURENTOCI_PRIVATE_SSH_KEY }}" >"$KURENTOCI_SSH_KEY_PATH"
-          chmod 0400 "$KURENTOCI_SSH_KEY_PATH"
+          GIT_SSH_KEY_PATH="$RUNNER_TEMP/id_git_ssh"
+          echo "GIT_SSH_KEY_PATH=$GIT_SSH_KEY_PATH" >>$GITHUB_ENV
+          echo "${{ secrets.KURENTOCI_PRIVATE_SSH_KEY }}" >"$GIT_SSH_KEY_PATH"
+          chmod 0400 "$GIT_SSH_KEY_PATH"
 
           # Path to the Maven settings.xml file.
           echo "MAVEN_SETTINGS_PATH=$GITHUB_WORKSPACE/clients/java/maven-settings/settings.xml" >>$GITHUB_ENV
@@ -47,4 +53,6 @@ jobs:
           echo "KURENTO_MAVEN_DOWNLOAD_PASSWORD=${{ secrets.KURENTO_MAVEN_DOWNLOAD_PASSWORD }}" >>$GITHUB_ENV
 
       - name: "Run job script"
+        env:
+          JOB_RELEASE: "${{ inputs.jobRelease }}"
         run: "kurento_ci_job_deploy_doc.sh"

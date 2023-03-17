@@ -25,12 +25,18 @@ set -o xtrace
 # Run in container
 # ================
 
+DOC_DEPLOY_ARGS=()
+
+if [[ "$JOB_RELEASE" == "true" ]]; then
+    DOC_DEPLOY_ARGS+=(--release)
+fi
+
 # `--user` is needed to avoid creating files as root, which would make next
 # jobs fail because the runner cannot do workspace cleanup.
 docker run -i --rm --pull always \
     --user "$(id -u)":"$(id -g)" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
-    --mount type=bind,src="$KURENTOCI_SSH_KEY_PATH",dst=/id_ssh \
+    --mount type=bind,src="$GIT_SSH_KEY_PATH",dst=/id_git_ssh \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \
     --workdir /workdir/doc-kurento/ \
@@ -48,6 +54,9 @@ set -o xtrace
 export PATH="/ci-scripts:\$PATH"
 
 # Build and deploy the documentation.
-kurento_doc_deploy.sh --ssh-key /id_ssh --maven-settings /maven-settings.xml
+kurento_doc_deploy.sh \
+    --git-ssh-key /id_git_ssh \
+    --maven-settings /maven-settings.xml \
+    ${DOC_DEPLOY_ARGS[@]}
 
 DOCKERCOMMANDS

@@ -126,7 +126,7 @@ chmod 0400 "$APTLY_SSH_KEY_PATH"
 
 docker run --pull always --rm -i \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
-    --mount type=bind,src="$APTLY_SSH_KEY_PATH",dst=/id_aptly \
+    --mount type=bind,src="$APTLY_SSH_KEY_PATH",dst=/id_aptly_ssh \
     --mount type=bind,src="$PWD",dst=/workdir \
     --workdir /workdir \
     buildpack-deps:20.04-scm /bin/bash <<DOCKERCOMMANDS
@@ -140,25 +140,25 @@ set -o xtrace
 
 # Exit trap, used to clean up.
 on_exit() {
-    ssh -n -o StrictHostKeyChecking=no -i /id_aptly \
+    ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
         ubuntu@proxy.openvidu.io '\
             rm -rf "$TEMP_DIR"'
 }
 trap on_exit EXIT
 
-ssh -n -o StrictHostKeyChecking=no -i /id_aptly \
+ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     ubuntu@proxy.openvidu.io '\
         mkdir -p "$TEMP_DIR"'
 
-scp -o StrictHostKeyChecking=no -i /id_aptly \
+scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     ./*.*deb \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
-scp -o StrictHostKeyChecking=no -i /id_aptly \
+scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     /ci-scripts/kurento_ci_aptly_repo_publish.sh \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
-ssh -n -o StrictHostKeyChecking=no -i /id_aptly \
+ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     ubuntu@proxy.openvidu.io '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \

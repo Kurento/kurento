@@ -64,7 +64,7 @@ jobs:
         run: |
           # Path to the SSH key used by `kurento_ci_job_deploy_debian.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
-          APTLY_SSH_KEY_PATH="$RUNNER_TEMP/id_aptly"
+          APTLY_SSH_KEY_PATH="$RUNNER_TEMP/id_aptly_ssh"
           echo "APTLY_SSH_KEY_PATH=$APTLY_SSH_KEY_PATH" >>$GITHUB_ENV
           echo "${{ secrets.APTLY_SSH_PRIVATE_KEY }}" >"$APTLY_SSH_KEY_PATH"
           chmod 0400 "$APTLY_SSH_KEY_PATH"
