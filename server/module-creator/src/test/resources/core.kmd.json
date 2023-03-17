@@ -1446,11 +1446,8 @@ Pipeline, towards the associated producer. Only valid for video consumers.
       "events": [
         "ElementConnected",
         "ElementDisconnected",
-        "MediaFlowOutStateChange",
         "MediaFlowOutStateChanged",
-        "MediaFlowInStateChange",
         "MediaFlowInStateChanged",
-        "MediaTranscodingStateChange",
         "MediaTranscodingStateChanged"
       ]
     }
@@ -2660,28 +2657,6 @@ and is ready for establishing a connection.
       ]
     },
     {
-      "name": "MediaFlowOutStateChange",
-      "extends": "Media",
-      "doc": "@deprecated Use <code>MediaFlowOutStateChanged</code> instead.",
-      "properties": [
-        {
-          "name": "state",
-          "doc": "Current media state",
-          "type": "MediaFlowState"
-        },
-        {
-          "name": "padName",
-          "doc": "Name of the pad which has media",
-          "type": "String"
-        },
-        {
-          "name": "mediaType",
-          "doc": "Type of media that is flowing",
-          "type": "MediaType"
-        }
-      ]
-    },
-    {
       "name": "MediaFlowOutStateChanged",
       "extends": "Media",
       "doc": "Fired when the outgoing media flow begins or ends. The event contains:
@@ -2690,28 +2665,6 @@ and is ready for establishing a connection.
         <li>padName. The name of the pad that changed state.</li>
         <li>MediaType: The type of media flowing.</li>
       </ul>",
-      "properties": [
-        {
-          "name": "state",
-          "doc": "Current media state",
-          "type": "MediaFlowState"
-        },
-        {
-          "name": "padName",
-          "doc": "Name of the pad which has media",
-          "type": "String"
-        },
-        {
-          "name": "mediaType",
-          "doc": "Type of media that is flowing",
-          "type": "MediaType"
-        }
-      ]
-    },
-    {
-      "name": "MediaFlowInStateChange",
-      "extends": "Media",
-      "doc": "@deprecated Use <code>MediaFlowInStateChanged</code> instead.",
       "properties": [
         {
           "name": "state",
@@ -2753,28 +2706,6 @@ and is ready for establishing a connection.
         {
           "name": "mediaType",
           "doc": "Type of media that is flowing",
-          "type": "MediaType"
-        }
-      ]
-    },
-    {
-      "name": "MediaTranscodingStateChange",
-      "extends": "Media",
-      "doc": "@deprecated Use <code>MediaTranscodingStateChanged</code> instead.",
-      "properties": [
-        {
-          "name": "state",
-          "doc": "Current transcoding state; either enabled or disabled.",
-          "type": "MediaTranscodingState"
-        },
-        {
-          "name": "binName",
-          "doc": "Name of the GStreamer bin which is processing the media.",
-          "type": "String"
-        },
-        {
-          "name": "mediaType",
-          "doc": "Type of media that is being processed; either audio or video.",
           "type": "MediaType"
         }
       ]

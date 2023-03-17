@@ -541,17 +541,6 @@ MediaElementImpl::mediaFlowOutStateChanged (gboolean isFlowing, gchar *padName,
   mediaFlowOutStates[key] = state;
 
   try {
-    MediaFlowOutStateChange event (shared_from_this (),
-        MediaFlowOutStateChange::getName (), state, padName,
-        padTypeToMediaType (type));
-    sigcSignalEmit(signalMediaFlowOutStateChange, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s",
-        MediaFlowOutStateChange::getName ().c_str (), e.what ());
-  }
-
-  try {
     MediaFlowOutStateChanged event (shared_from_this (),
         MediaFlowOutStateChanged::getName (), state, padName,
         padTypeToMediaType (type));
@@ -585,17 +574,6 @@ MediaElementImpl::mediaFlowInStateChanged (gboolean isFlowing, gchar *padName,
     key = std::string (TYPE_AUDIO) + std::string (padName);
   }
   mediaFlowInStates[key] = state;
-
-  try {
-    MediaFlowInStateChange event (shared_from_this (),
-        MediaFlowInStateChange::getName (), state, padName,
-        padTypeToMediaType (type));
-    sigcSignalEmit(signalMediaFlowInStateChange, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s",
-        MediaFlowInStateChange::getName ().c_str (), e.what ());
-  }
 
   try {
     MediaFlowInStateChanged event (shared_from_this (),
@@ -633,17 +611,6 @@ MediaElementImpl::onMediaTranscodingStateChanged (gboolean isTranscoding,
     key = std::string (TYPE_AUDIO) + std::string (binName);
   }
   mediaTranscodingStates[key] = state;
-
-  try {
-    MediaTranscodingStateChange event (shared_from_this (),
-        MediaTranscodingStateChange::getName (), state, binName,
-        padTypeToMediaType (type));
-    sigcSignalEmit(signalMediaTranscodingStateChange, event);
-  } catch (const std::bad_weak_ptr &e) {
-    // shared_from_this()
-    GST_ERROR ("BUG creating %s: %s",
-        MediaTranscodingStateChange::getName ().c_str (), e.what ());
-  }
 
   try {
     MediaTranscodingStateChanged event (shared_from_this (),
