@@ -152,12 +152,15 @@
 
 
 
-# Shell setup
-# ===========
+# Configure shell
+# ===============
 
+# Absolute Canonical Path to the directory that contains this script.
 SELF_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)"
-# shellcheck source=bash.conf.sh
-source "$SELF_DIR/bash.conf.sh" || exit 1
+source "$SELF_DIR/../../ci-scripts/bash.conf.sh" || exit 1
+
+# Trace all commands (to stderr).
+#set -o xtrace
 
 
 
