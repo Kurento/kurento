@@ -127,7 +127,8 @@ log "Commit and push changes to Kurento/$REPO_NAME"
     pushd "$REPO_DIR"
 
     # Check if there are any changes; if so, commit them.
-    if ! git diff-index --quiet HEAD; then
+    git update-index --refresh
+    if ! git diff-index --quiet --exit-code HEAD; then
         # `--all` to include possibly deleted files.
         git add --all .
 
