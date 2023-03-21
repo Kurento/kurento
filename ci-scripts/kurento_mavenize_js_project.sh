@@ -77,7 +77,7 @@ fi
 # Mavenize
 # ========
 
-PROJECT_NAME="$(kurento_get_name.sh)" || {
+PROJECT_NAME="$(kurento_get_name.sh)-js" || {
     echo "ERROR: Command failed: kurento_get_name"
     exit 1
 }
