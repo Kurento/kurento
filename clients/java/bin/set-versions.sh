@@ -203,7 +203,7 @@ function git_commit {
     git add -- "$@"
 
     # Check if there are new staged changes ready to be committed.
-    if git diff --staged --quiet --exit-code; then
+    if git diff --cached --quiet --exit-code; then
         return 0
     fi
 
