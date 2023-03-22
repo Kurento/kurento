@@ -24,7 +24,7 @@ if(HAS_PARENT)
 endif()
 
 include(KurentoGitHelpers)
-get_git_version(PROJECT_VERSION 7.0.0)
+get_git_version(PROJECT_VERSION 7.0.1-dev)
 message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 
 # CMake Config Mode search file. Adds the main Kurento dir to CMAKE_MODULE_PATH.

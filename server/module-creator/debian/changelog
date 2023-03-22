@@ -1,9 +1,9 @@
-kurento-module-creator (7.0.0-1kurento1) UNRELEASED; urgency=medium
+kurento-module-creator (7.0.1-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 08 Mar 2023 16:44:00 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 22 Mar 2023 18:10:23 +0100
 
 kurento-module-creator (6.18.0-0kurento1) testing; urgency=medium
 

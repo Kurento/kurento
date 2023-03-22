@@ -1,6 +1,6 @@
-kurento-module-opencv-example (7.0.0-1kurento1) UNRELEASED; urgency=medium
+kurento-module-opencv-example (7.0.1-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * Initial release.
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 08 Mar 2023 16:44:02 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 22 Mar 2023 18:10:25 +0100

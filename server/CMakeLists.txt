@@ -38,7 +38,7 @@ include(GenericFind)
 # DEVELOPER NOTE:
 # To use a Kurento Module Creator that you have already installed in the system,
 # uncomment this line:
-#generic_find(LIBNAME KurentoModuleCreator VERSION ^7.0.0)
+#generic_find(LIBNAME KurentoModuleCreator VERSION ^7.0.1-dev)
 
 if(NOT KurentoModuleCreator_FOUND)
   message(STATUS "Building kurento-module-creator")
