@@ -79,7 +79,7 @@ Read :ref:`faq-stun-needed` to learn about when you might need to use these, and
 
 **Client API**
 
-* Java: `setStunServerAddress <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress-java.lang.String->`__ and `setStunServerPort <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort-int->`__ for STUN, or `setTurnUrl <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl-java.lang.String->`__ for TURN.
+* Java: `setStunServerAddress <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerAddress(java.lang.String)>`__ and `setStunServerPort <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setStunServerPort(int)>`__ for STUN, or `setTurnUrl <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setTurnUrl(java.lang.String)>`__ for TURN.
 * JavaScript: `setStunServerAddress <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerAddress>`__ and `setStunServerPort <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setStunServerPort>`__ for STUN, or `setTurnUrl <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setTurnUrl>`__ for TURN.
 
 
@@ -99,7 +99,7 @@ To specify the network interface name(s) that KMS should use to communicate from
 
 **Client API**
 
-* Java: `setNetworkInterfaces <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces-java.lang.String->`__.
+* Java: `setNetworkInterfaces <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setNetworkInterfaces(java.lang.String)>`__.
 * JavaScript: `setNetworkInterfaces <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setNetworkInterfaces>`__.
 
 
@@ -109,15 +109,15 @@ To specify the network interface name(s) that KMS should use to communicate from
 WebRTC Bitrate
 ==============
 
-The default **MaxVideoSendBandwidth** range of the WebRtcEndpoint is a VERY conservative one, and leads to a low maximum video quality. Most applications will probably want to increase this to higher values such as 2000 kbps (2 mbps): `Java <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMaxVideoSendBandwidth-int->`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMaxVideoSendBandwidth>`__.
+The default **MaxVideoSendBandwidth** range of the WebRtcEndpoint is a VERY conservative one, and leads to a low maximum video quality. Most applications will probably want to increase this to higher values such as 2000 kbps (2 mbps): `Java <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMaxVideoSendBandwidth(int)>`__, `JavaScript <../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMaxVideoSendBandwidth>`__.
 
 There are several ways to override the default settings for variable bitrate and network bandwidth estimation:
 
-* `setMinVideoRecvBandwidth <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMinVideoRecvBandwidth-int->`__ / `setMaxVideoRecvBandwidth <../_static/client-javadoc/org/kurento/client/SdpEndpoint.html#setMaxVideoRecvBandwidth-int->`__
+* `setMinVideoRecvBandwidth <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMinVideoRecvBandwidth(int)>`__ / `setMaxVideoRecvBandwidth <../_static/client-javadoc/org/kurento/client/SdpEndpoint.html#setMaxVideoRecvBandwidth(int)>`__
 
-* `setMinVideoSendBandwidth <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMinVideoSendBandwidth-int->`__ / `setMaxVideoSendBandwidth <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMaxVideoSendBandwidth-int->`__
+* `setMinVideoSendBandwidth <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMinVideoSendBandwidth(int)>`__ / `setMaxVideoSendBandwidth <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMaxVideoSendBandwidth(int)>`__
 
-* `setMinOutputBitrate <../_static/client-javadoc/org/kurento/client/MediaElement.html#setMinOutputBitrate-int->`__ / `setMaxOutputBitrate <../_static/client-javadoc/org/kurento/client/MediaElement.html#setMaxOutputBitrate-int->`__
+* `setEncoderBitrate <../_static/client-javadoc/org/kurento/client/MediaElement.html#setEncoderBitrate(int)>`__ / `setMinEncoderBitrate <../_static/client-javadoc/org/kurento/client/MediaElement.html#setMinEncoderBitrate(int)>`__ / `setMaxEncoderBitrate <../_static/client-javadoc/org/kurento/client/MediaElement.html#setMaxEncoderBitrate(int)>`__
 
   - This setting is also configurable in ``/etc/kurento/modules/kurento/MediaElement.conf.ini``.
 
@@ -166,7 +166,7 @@ Of course, if you cannot guarantee that UDP will work in your network, then **yo
 
 **Client API**
 
-* Java: `setIceTcp <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setIceTcp-boolean->`__.
+* Java: `setIceTcp <../../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setIceTcp(boolean)>`__.
 * JavaScript: `setIceTcp <../../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setIceTcp>`__.
 
 
@@ -187,7 +187,7 @@ When this feature is used, all of the Kurento IPv4 and/or IPv6 ICE candidates ar
 
 **Client API**
 
-* Java: `setExternalIPv4 <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalIPv4-java.lang.String->`__.
+* Java: `setExternalIPv4 <../_static/client-javadoc/org/kurento/client/WebRtcEndpoint.html#setExternalIPv4(java.lang.String)>`__.
 * JavaScript: `setExternalIPv4 <../_static/client-jsdoc/module-elements.WebRtcEndpoint.html#setExternalIPv4>`__.
 
 
@@ -209,7 +209,7 @@ For the vast majority of use cases it is better to use the default MTU value of 
 
 **Client API**
 
-* Java: `setMtu <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu-int->`__.
+* Java: `setMtu <../_static/client-javadoc/org/kurento/client/BaseRtpEndpoint.html#setMtu(int)>`__.
 * JavaScript: `setMtu <../_static/client-jsdoc/module-core_abstracts.BaseRtpEndpoint.html#setMtu>`__.
 
 

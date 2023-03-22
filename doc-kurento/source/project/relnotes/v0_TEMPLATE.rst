@@ -40,8 +40,8 @@ Full description, with images, code samples, external links, etc. Some useful sy
 
      Something to keep in mind.
 
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `#IssueNum <https://github.com/Kurento/kurento/issues/IssueNum>`__ (*Issue title*).
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `#PrNum <https://github.com/Kurento/kurento/pull/PrNum>`__ (*Pull Request title*).
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{issue_id} <https://github.com/Kurento/kurento/issues/{issue_id}>`__ (*Issue title*).
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{pr_id} <https://github.com/Kurento/kurento/pull/{pr_id}>`__ (*Pull Request title*).
 
 
 

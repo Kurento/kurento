@@ -23,6 +23,7 @@ set -o xtrace
 # ====================
 
 CFG_MAVEN_SETTINGS_PATH=""
+CFG_MAVEN_SIGN_KEY_PATH=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -32,6 +33,15 @@ while [[ $# -gt 0 ]]; do
                 shift
             else
                 log "ERROR: --maven-settings expects <Path>"
+                exit 1
+            fi
+            ;;
+        --maven-sign-key)
+            if [[ -n "${2-}" ]]; then
+                CFG_MAVEN_SIGN_KEY_PATH="$(realpath "$2")"
+                shift
+            else
+                log "ERROR: --maven-sign-key expects <Path>"
                 exit 1
             fi
             ;;
@@ -49,6 +59,7 @@ done
 # ===============
 
 log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
+log "CFG_MAVEN_SIGN_KEY_PATH=$CFG_MAVEN_SIGN_KEY_PATH"
 
 
 
@@ -96,7 +107,9 @@ kurento_deploy_js_npm.sh
 # ================
 
 kurento_mavenize_js_project.sh
-kurento_maven_deploy.sh --maven-settings "$CFG_MAVEN_SETTINGS_PATH"
+kurento_maven_deploy.sh \
+    --maven-settings "$CFG_MAVEN_SETTINGS_PATH" \
+    --maven-sign-key "$CFG_MAVEN_SIGN_KEY_PATH"
 
 
 

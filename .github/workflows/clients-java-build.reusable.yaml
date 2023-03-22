@@ -5,22 +5,22 @@ on:
   workflow_call:
     inputs:
       directory:
-        description: "Working directory for the job execution"
+        description: "directory: Working directory for the job execution"
         required: true
         type: "string"
         default: "./"
       copyArtifacts:
-        description: "Whether artifacts from previous jobs should be copied or not"
+        description: "copyArtifacts: Whether artifacts from previous jobs should be copied or not"
         required: false
         type: "boolean"
         default: true
       genModuleEnable:
-        description: "Enable generation of client code from server modules that contain API definition files (.kmd)"
+        description: "genModuleEnable: Enable generation of client code from server modules that contain API definition files (.kmd)"
         required: false
         type: "boolean"
         default: false
       genModuleServerVersion:
-        description: "Server version from which to generate client code"
+        description: "genModuleServerVersion: Server version from which to generate client code"
         required: false
         type: "string"
         default: "dev"
@@ -91,6 +91,14 @@ jobs:
 
           # Change WORKING_DIRECTORY so it points to the newly generated dir.
           echo "WORKING_DIRECTORY=$WORKING_DIRECTORY/build/java" >>$GITHUB_ENV
+
+      - name: "Configure the environment for job script (deploy)"
+        run: |
+          # Path to the GPG key used by `kurento_maven_deploy.sh`.
+          # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
+          MAVEN_GPG_KEY_PATH="$RUNNER_TEMP/maven.gpg"
+          echo "MAVEN_GPG_KEY_PATH=$MAVEN_GPG_KEY_PATH" >>$GITHUB_ENV
+          echo "${{ secrets.MAVEN_PRIVATE_GPG_KEY }}" >"$MAVEN_GPG_KEY_PATH"
 
       - name: "Run job script (deploy)"
         working-directory: "${{ env.WORKING_DIRECTORY }}"

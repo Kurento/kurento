@@ -4,8 +4,13 @@ on:
   # Triggered manually.
   workflow_dispatch:
     inputs:
+      jobRelease:
+        description: "jobRelease: Enable to build release versions; disable for development builds"
+        required: false
+        type: "boolean"
+        default: false
       jobServerVersion:
-        description: "Server version from which to generate client code"
+        description: "jobServerVersion: Server version from which to generate client code"
         required: false
         type: "string"
         default: "dev"
@@ -14,12 +19,14 @@ jobs:
   kurento-utils-js:
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "browser/kurento-utils-js/"
     secrets: inherit
 
   module-core:
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-core/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
@@ -28,6 +35,7 @@ jobs:
   module-elements:
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-elements/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
@@ -36,6 +44,7 @@ jobs:
   module-filters:
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-filters/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
@@ -44,6 +53,7 @@ jobs:
   jsonrpc:
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "clients/javascript/jsonrpc/"
     secrets: inherit
 
@@ -51,12 +61,14 @@ jobs:
     needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "clients/javascript/client/"
     secrets: inherit
 
   module-chroma:
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-examples/chroma/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
@@ -67,6 +79,7 @@ jobs:
   module-datachannelexample:
     uses: "./.github/workflows/clients-javascript-build.reusable.yaml"
     with:
+      jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-examples/datachannelexample/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"

@@ -178,7 +178,7 @@ echo "# Download Kurento source code"
 
 git clone https://github.com/Kurento/kurento.git
 
-cd kurento/server/
+cd kurento/
 
 if [[ "$DOCKER_KMS_VERSION" == "dev" ]]; then
     echo "Switch to development branch"
@@ -204,6 +204,8 @@ git submodule update --init --recursive
 
 echo "# Build and run Kurento"
 # ============================
+
+cd server/
 
 export MAKEFLAGS="-j$(nproc)"
 bin/build-run.sh --build-only

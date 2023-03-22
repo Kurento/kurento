@@ -32,6 +32,7 @@ docker run -i --rm --pull always \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$MAVEN_LOCAL_REPOSITORY_PATH",dst=/maven-repository \
     --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
+    --mount type=bind,src="$MAVEN_GPG_KEY_PATH",dst=/maven.gpg \
     --mount type=bind,src="$PWD",dst=/workdir \
     --workdir /workdir \
     --env-file "$ENV_PATH" \
@@ -49,6 +50,8 @@ export PATH="/ci-scripts:\$PATH"
 export MAVEN_LOCAL_REPOSITORY_PATH="/maven-repository"
 
 # Compile, package, and deploy the current project.
-kurento_maven_deploy.sh --maven-settings /maven-settings.xml
+kurento_maven_deploy.sh \
+    --maven-settings /maven-settings.xml \
+    --maven-sign-key /maven.gpg
 
 DOCKERCOMMANDS

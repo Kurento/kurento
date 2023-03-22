@@ -54,9 +54,14 @@ pom.xml
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+			</plugin>
+			<plugin>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>
-				<version>7.0.0-SNAPSHOT</version>
+				<version>7.0.0</version>
 				<executions>
 					<execution>
 						<goals>

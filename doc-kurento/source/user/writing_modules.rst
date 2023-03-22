@@ -56,7 +56,7 @@ Once your *.kmd* files have been filled with a complete description of the modul
    cmake ..
    make
 
-If working with a GStreamer module, now you can verify that the new module can be successfully loaded by GStreamer, with these commands:
+If working with a GStreamer module, now you can verify that the new module is successfully loaded by GStreamer, with these commands:
 
 .. code-block:: shell
 
@@ -196,7 +196,7 @@ To build a Debian package file, you can either use the **kurento-buildpackage** 
        dpkg-dev
 
    # Run dpkg-buildpackage to build Debian packages
-   dpkg-buildpackage -us -uc
+   dpkg-buildpackage -b -us -uc
 
    # Copy the generated packages to their final destination
    cp ../*.*deb /path/to/destination/
@@ -227,7 +227,7 @@ For more information about the process of creating Debian packages, check these 
 * `Debian Building Tutorial <https://wiki.debian.org/BuildingTutorial>`__
 * `Debian Policy Manual <https://www.debian.org/doc/debian-policy/index.html>`__
 
-**Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento``, to instruct Kurento about where the plugin files have been copied:
+**Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento-media-server``, to instruct Kurento about where the plugin files have been copied:
 
 .. code-block:: shell
 

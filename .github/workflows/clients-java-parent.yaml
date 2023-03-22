@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       jobServerVersion:
-        description: "Server version from which to generate client code"
+        description: "jobServerVersion: Server version from which to generate client code"
         required: false
         type: "string"
         default: "dev"
@@ -75,8 +75,15 @@ jobs:
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
     secrets: inherit
 
+  # Unavailable since Kurento 7.0.0
   #module-crowddetector:
   #  needs: ["client"]
+  #  uses: "./.github/workflows/clients-java-build.reusable.yaml"
+  #  with:
+  #    directory: "server/module-examples/crowddetector/"
+  #    genModuleEnable: true
+  #    genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+  #  secrets: inherit
 
   module-datachannelexample:
     needs: ["client"]
@@ -87,16 +94,37 @@ jobs:
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
     secrets: inherit
 
+  # Unavailable since Kurento 7.0.0
   #module-markerdetector:
   #  needs: ["client"]
+  #  uses: "./.github/workflows/clients-java-build.reusable.yaml"
+  #  with:
+  #    directory: "server/module-examples/markerdetector/"
+  #    genModuleEnable: true
+  #    genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+  #  secrets: inherit
 
+  # Unavailable since Kurento 7.0.0
   #module-platedetector:
   #  needs: ["client"]
+  #  uses: "./.github/workflows/clients-java-build.reusable.yaml"
+  #  with:
+  #    directory: "server/module-examples/platedetector/"
+  #    genModuleEnable: true
+  #    genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+  #  secrets: inherit
 
+  # Unavailable since Kurento 7.0.0
   #module-pointerdetector:
   #  needs: ["client"]
+  #  uses: "./.github/workflows/clients-java-build.reusable.yaml"
+  #  with:
+  #    directory: "server/module-examples/pointerdetector/"
+  #    genModuleEnable: true
+  #    genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+  #  secrets: inherit
 
-  # kurento-utils-js:
+  #kurento-utils-js:
 
   # Not published for Kurento 7.
   # The Kurento Test Framework is unsupported and unmaintained.

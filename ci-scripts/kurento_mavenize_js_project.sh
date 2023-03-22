@@ -77,7 +77,7 @@ fi
 # Mavenize
 # ========
 
-PROJECT_NAME="$(kurento_get_name.sh)" || {
+PROJECT_NAME="$(kurento_get_name.sh)-js" || {
     echo "ERROR: Command failed: kurento_get_name"
     exit 1
 }
@@ -145,9 +145,17 @@ tee pom.xml >/dev/null <<EOF
   <properties>
     <!-- maven-resources-plugin -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- maven-compiler-plugin -->
+    <maven.compiler.release>11</maven.compiler.release>
   </properties>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>

@@ -2,6 +2,18 @@
 # Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Verify that the project's version is valid.
+#/
+#/
+#/ Arguments
+#/ =========
+#/
+#/ --release
+#/
+#/   Enforce release version numbers. The script will exit with an error if
+#/   the current project's version is not appropriate for a release.
+#/
+#/   Optional. Default: Disabled.
+
 
 
 # Configure shell
@@ -21,13 +33,13 @@ set -o xtrace
 # Parse call arguments
 # ====================
 
-CFG_CREATE_GIT_TAG="false"
+CFG_RELEASE="false"
 CFG_GET_VERSION_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --create-git-tag)
-            CFG_CREATE_GIT_TAG="true"
+        --release)
+            CFG_RELEASE="true"
             ;;
         *)
             CFG_GET_VERSION_ARGS+=("$1")
@@ -41,7 +53,7 @@ done
 # Validate config
 # ===============
 
-log "CFG_CREATE_GIT_TAG=$CFG_CREATE_GIT_TAG"
+log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GET_VERSION_ARGS=${CFG_GET_VERSION_ARGS[*]}"
 
 
@@ -55,27 +67,30 @@ PROJECT_VERSION="$(kurento_get_version.sh "${CFG_GET_VERSION_ARGS[@]}")" || {
 }
 log "PROJECT_VERSION: $PROJECT_VERSION"
 
-if [ "${PROJECT_VERSION}x" = "x" ]; then
+if [[ -z "$PROJECT_VERSION" ]]; then
     log "ERROR: Could not find project version"
     exit 1
 fi
 
-if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]]; then
-    log "Exit: Version is SNAPSHOT: ${PROJECT_VERSION}"
-    exit 0
+if [[ "$PROJECT_VERSION" == *-SNAPSHOT ]] || [[ "$PROJECT_VERSION" == *-dev ]]; then
+    MESSAGE="Version is NOT release (contains development suffix)"
+    if [[ "$CFG_RELEASE" == "true" ]]; then
+        log "ERROR: $MESSAGE"
+        exit 1
+    else
+        log "Exit: $MESSAGE"
+        exit 0
+    fi
 fi
 
-if [[ ${PROJECT_VERSION} == *-dev ]]; then
-    log "Exit: Version is DEV"
-    exit 0
-fi
+# From here, we are dealing with a release version number.
 
 if [[ $(echo "$PROJECT_VERSION" | grep -o '\.' | wc -l) -gt 2 ]]; then
     log "Exit: Found more than two dots, should be a configure.ac dev version"
     exit 0
 fi
 
-if [ -f debian/changelog ]; then
+if [[ -f debian/changelog ]]; then
     # check changelog version
     #ver=$(head -1 debian/changelog | sed -e "s@.* (\(.*\)) .*@\1@")
     CHG_VER="$(dpkg-parsechangelog --show-field Version)"
@@ -85,31 +100,9 @@ if [ -f debian/changelog ]; then
     fi
 fi
 
-# Check that release version conforms to Semantic Versioning.
-kurento_check_semver.sh "$PROJECT_VERSION" || {
-    log "ERROR: Command failed: kurento_check_semver"
+# Check conformity to Semantic Versioning style.
+REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
+[[ "$PROJECT_VERSION" =~ $REGEX ]] || {
+    log "ERROR: '$PROJECT_VERSION' is not SemVer (<Major>.<Minor>.<Patch>)"
     exit 1
 }
-
-
-
-# Create git tag
-# ==============
-
-# Create a Git tag when a Release version is detected.
-# This is default 'false' because sometimes we need to do several actual
-# changes before being able to mark a commit as an official Release.
-if [[ "$CFG_CREATE_GIT_TAG" == "true" ]]; then
-    TAG_MSG="Tag version $PROJECT_VERSION"
-    TAG_NAME="$PROJECT_VERSION"
-
-    log "Create git tag: '$TAG_NAME'"
-
-    if git tag -a -m "$TAG_MSG" "$TAG_NAME"; then
-        log "Tag created, push to remote"
-        git push origin "$TAG_NAME"
-    else
-        log "ERROR: Command failed: git tag $TAG_NAME"
-        exit 1
-    fi
-fi

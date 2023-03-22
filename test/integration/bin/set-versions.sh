@@ -34,6 +34,18 @@
 #/   <Version> should be in Semantic Versioning format, such as "1.0.0"
 #/   ("<Major>.<Minor>.<Patch>").
 #/
+#/ --kms-api <KmsVersion>
+#/
+#/   Also change version of the Kurento Media Server Java API packages.
+#/
+#/   This argument is used when a new version of the Media Server has been
+#/   released, and the Java packages should be made to depend on the new API
+#/   definition ones (which get published as part of the Media Server release).
+#/
+#/   <KmsVersion> is a full Maven version, such as "1.0.0-SNAPSHOT" or "1.0.0".
+#/
+#/   Optional. Default: None.
+#/
 #/ --release
 #/
 #/   Use version numbers intended for Release builds, such as "1.0.0". If this
@@ -153,14 +165,14 @@ log "CFG_COMMIT=$CFG_COMMIT"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     VERSION_JAVA="$CFG_VERSION"
 
-    COMMIT_MSG="Prepare Java tutorials release $VERSION_JAVA"
+    COMMIT_MSG="Prepare integration tests release $VERSION_JAVA"
 else
     VERSION_JAVA="${CFG_VERSION}-SNAPSHOT"
 
     if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
     else
-        COMMIT_MSG="Update Java tutorials version to $VERSION_JAVA"
+        COMMIT_MSG="Update integration tests version to $VERSION_JAVA"
     fi
 fi
 
@@ -203,7 +215,7 @@ function git_commit {
 # ===========
 
 {
-    # Parent: Inherit from the new version of kurento-qa-pom.
+    # Parent: Inherit from the new version of kurento-parent-pom.
     xmlstarlet edit -S --inplace \
         --update "/_:project/_:parent/_:version" \
         --value "$VERSION_JAVA" \
@@ -215,23 +227,11 @@ function git_commit {
 {
     # Children: Inherit from the new version.
     CHILDREN=(
-        chroma
-        crowddetector
-        datachannel-send-qr
-        datachannel-show-text
-        facedetector
-        group-call
-        hello-world
-        hello-world-recording
-        magic-mirror
-        one2many-call
-        one2one-call
-        one2one-call-advanced
-        one2one-call-recording
-        platedetector
-        player
-        pointerdetector
-        rtp-receiver
+        benchmark
+        client-test
+        jsonrpc-test
+        kurento-test
+        sanity-test
     )
     for CHILD in "${CHILDREN[@]}"; do
         mapfile -t FILES < <(find "$CHILD" -name pom.xml)
@@ -247,7 +247,7 @@ function git_commit {
 }
 
 {
-    pushd chroma/
+    pushd kurento-test/
 
     # Dependency on kurento-module-chroma.
     xmlstarlet edit -S --inplace \
@@ -255,87 +255,15 @@ function git_commit {
         --value "$VERSION_JAVA" \
         pom.xml
 
-    git_commit pom.xml
-
-    popd
-}
-
-{
-    pushd crowddetector/
-
     # Dependency on kurento-module-crowddetector.
     xmlstarlet edit -S --inplace \
         --update "/_:project/_:dependencies/_:dependency[_:artifactId='crowddetector']/_:version" \
         --value "$VERSION_JAVA" \
         pom.xml
 
-    git_commit pom.xml
-
-    popd
-}
-
-{
-    pushd datachannel-send-qr/
-
-    # Dependency on kurento-module-datachannelexample.
-    xmlstarlet edit -S --inplace \
-        --update "/_:project/_:dependencies/_:dependency[_:artifactId='datachannelexample']/_:version" \
-        --value "$VERSION_JAVA" \
-        pom.xml
-
-    git_commit pom.xml
-
-    popd
-}
-
-{
-    pushd datachannel-show-text/
-
-    # Dependency on kurento-module-datachannelexample.
-    xmlstarlet edit -S --inplace \
-        --update "/_:project/_:dependencies/_:dependency[_:artifactId='datachannelexample']/_:version" \
-        --value "$VERSION_JAVA" \
-        pom.xml
-
-    git_commit pom.xml
-
-    popd
-}
-
-{
-    pushd facedetector/
-
-    # Dependency on kurento-module-datachannelexample.
-    xmlstarlet edit -S --inplace \
-        --update "/_:project/_:dependencies/_:dependency[_:artifactId='datachannelexample']/_:version" \
-        --value "$VERSION_JAVA" \
-        pom.xml
-
-    git_commit pom.xml
-
-    popd
-}
-
-{
-    pushd platedetector/
-
     # Dependency on kurento-module-platedetector.
     xmlstarlet edit -S --inplace \
         --update "/_:project/_:dependencies/_:dependency[_:artifactId='platedetector']/_:version" \
-        --value "$VERSION_JAVA" \
-        pom.xml
-
-    git_commit pom.xml
-
-    popd
-}
-
-{
-    pushd pointerdetector/
-
-    # Dependency on kurento-module-pointerdetector.
-    xmlstarlet edit -S --inplace \
-        --update "/_:project/_:dependencies/_:dependency[_:artifactId='pointerdetector']/_:version" \
         --value "$VERSION_JAVA" \
         pom.xml
 

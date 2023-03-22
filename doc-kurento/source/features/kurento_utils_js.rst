@@ -23,8 +23,7 @@ Kurento Utils is a wrapper object of an
 `RTCPeerConnection <https://w3c.github.io/webrtc-pc/>`__. This object is aimed
 to simplify the development of WebRTC-based applications.
 
-The source code of this project can be cloned from the
-`GitHub repository <https://github.com/Kurento/kurento
+The source code of this project can be cloned from the `GitHub repository <https://github.com/Kurento/kurento>`__.
 
 
 How to use it

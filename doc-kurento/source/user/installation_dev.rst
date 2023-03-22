@@ -228,34 +228,10 @@ Afterwards, in the same ``pom.xml``, look for the desired dependency and change 
 Kurento JavaScript Client
 =========================
 
-Node.js
--------
-
-If you are using the Kurento JavaScript Client from a Node.js application and want to use the latest development version of this library, you have to change the *dependencies* section in the application's *package.json*. This way, NPM will point directly to the development repository:
+Change the *dependencies* section in the application's *package.json*, to point directly to the development repository:
 
 .. code-block:: js
 
    "dependencies": {
      "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git#master"
    }
-
-
-Browser JavaScript
-------------------
-
-If you are using the Kurento JavaScript Client from a browser application, with Bower to handle JS dependencies, and want to use the latest development version of this library, you have to change the *dependencies* section in the application's *bower.json*. This way, Bower will point directly to the development repository:
-
-.. code-block:: js
-
-   "dependencies": {
-     "kurento-client": "git+https://github.com/Kurento/kurento-client-bower.git#master",
-     "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git#master"
-   }
-
-Alternatively, if your browser application is pointing directly to JavaScript libraries from HTML resources, then you have to change to development URLs:
-
-.. code-block:: html
-
-   <script type="text/javascript"
-       src="http://builds.openvidu.io/dev/master/latest/js/kurento-client.min.js">
-   </script>

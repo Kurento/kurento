@@ -131,14 +131,14 @@ log "CFG_COMMIT=$CFG_COMMIT"
 if [[ "$CFG_RELEASE" == "true" ]]; then
     VERSION_JS="$CFG_VERSION"
 
-    COMMIT_MSG="Prepare kurento-utils-js release $VERSION_JS"
+    COMMIT_MSG="Prepare JavaScript client release $VERSION_JS"
 else
     VERSION_JS="${CFG_VERSION}-dev"
 
     if [[ "$CFG_NEWDEVELOPMENT" == "true" ]]; then
         COMMIT_MSG="Prepare for next development iteration"
     else
-        COMMIT_MSG="Update kurento-utils-js version to $VERSION_JS"
+        COMMIT_MSG="Update JavaScript client version to $VERSION_JS"
     fi
 fi
 
@@ -194,9 +194,39 @@ function run_jq() {
 # ===========
 
 {
+    pushd client/
+
+    run_jq ".version = \"$VERSION_JS\"" package.json
+
+    if [[ "$CFG_RELEASE" == "true" ]]; then
+        run_jq "
+            .dependencies.\"kurento-client-core\" = \"$VERSION_JS\"
+            | .dependencies.\"kurento-client-elements\" = \"$VERSION_JS\"
+            | .dependencies.\"kurento-client-filters\" = \"$VERSION_JS\"
+            | .dependencies.\"kurento-jsonrpc\" = \"$VERSION_JS\"
+        " package.json
+    else
+        run_jq "
+            .dependencies.\"kurento-client-core\" = \"git+https://github.com/Kurento/kurento-client-core-js.git\"
+            | .dependencies.\"kurento-client-elements\" = \"git+https://github.com/Kurento/kurento-client-elements-js.git\"
+            | .dependencies.\"kurento-client-filters\" = \"git+https://github.com/Kurento/kurento-client-filters-js.git\"
+            | .dependencies.\"kurento-jsonrpc\" = \"https://gitpkg.now.sh/Kurento/kurento/clients/javascript/jsonrpc?main\"
+        " package.json
+    fi
+
+    git_commit package.json
+
+    popd
+}
+
+{
+    pushd jsonrpc/
+
     run_jq ".version = \"$VERSION_JS\"" package.json
 
     git_commit package.json
+
+    popd
 }
 
 log "Done!"
