@@ -870,13 +870,25 @@ LAST: Close the Release Process
 
 To finish the release, go to GitHub and create a new Pull Request from the release branch. Review all the changes, and accept the PR with a **merge commit**. Do not use the other options (squash or rebase), because we want all changes to get separately recorded with author and date information.
 
-After merging the PR, you can do some cleanup in your local clone:
+After merging the PR, fetch the new commit:
 
 .. code-block:: shell
 
    git switch main
    git fetch --all --tags --prune --prune-tags
-   git pull --rebase --autostash
+   git pull --autostash
+
+Tag the commit with the new version number (change ``1.0.0`` to the correct one):
+
+.. code-block:: shell
+
+   git tag --force --annotate -m "1.0.0" "1.0.0"
+   git push --force origin "1.0.0"
+
+And now you can optionally do some cleanup in your local clone:
+
+.. code-block:: shell
+
    git branch --force --delete release-1.0.0
 
 Then, proceed to start a new development iteration for all of the Kurento components.
