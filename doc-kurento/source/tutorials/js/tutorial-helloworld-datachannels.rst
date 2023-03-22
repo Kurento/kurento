@@ -2,6 +2,12 @@
 JavaScript - Hello World with Data Channels
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+.. warning::
+
+   Bower dependencies are not yet upgraded for Kurento 7.0.0.
+
+   Kurento tutorials that use pure browser JavaScript need to be rewritten to drop the deprecated Bower service and instead use a web resource packer. This has not been done, so these tutorials won't be able to download the dependencies they need to work. PRs would be appreciated!
+
 This web application extends the :doc:`Hello World Tutorial<./tutorial-helloworld>`, adding
 media processing to the basic `WebRTC`:term: loopback and allowing send text from browser
 to the media server through data channels.
