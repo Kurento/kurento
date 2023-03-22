@@ -162,17 +162,22 @@ PROJECT_VERSION="$(kurento_get_version.sh "${GET_VERSION_ARGS[@]}")" || {
 
 log "Build and deploy version: $PROJECT_VERSION"
 
-# If SNAPSHOT, deploy to snapshots repository and exit.
-if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
-    log "Version to deploy is SNAPSHOT"
-
+# Always deploy to snapshots repository.
+# Having all versions (snapshot or not) in the snapshots repository can be handy
+# for development when trying to test a release version but not wanting to wait
+# until Maven Central makes the published packages available (which can take
+# 30 or more minutes).
+{
     MVN_ARGS+=(-Psnapshot)
 
     source kurento_maven_deploy_github.sh || {
         log "ERROR: Command failed: kurento_maven_deploy_github"
         exit 1
     }
+}
 
+if [[ $PROJECT_VERSION == *-SNAPSHOT ]]; then
+    log "Version to deploy is SNAPSHOT"
     exit 0
 fi
 

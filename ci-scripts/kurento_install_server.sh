@@ -76,7 +76,7 @@ source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
 apt-key adv \
-    --keyserver keyserver.ubuntu.com \
+    --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 # Add Kurento repository line for apt-get.

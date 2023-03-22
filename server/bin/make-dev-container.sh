@@ -261,7 +261,7 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
 
 apt-key adv \
-    --keyserver keyserver.ubuntu.com \
+    --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
@@ -307,7 +307,7 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 # Add Ubuntu debug repository key for apt-get.
 apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
 || apt-key adv \
-    --keyserver keyserver.ubuntu.com \
+    --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
 # Add Ubuntu debug repository line for apt-get.
