@@ -1,27 +1,25 @@
 # New Issue workflow.
 # Verifies each newly opened issue, and either files or closes it.
-name: New-Issue
+name: "New Issue"
 
 # Run only when a new issue is opened.
 # (roots/issue-closer action doesn't support other event types)
 on:
   issues:
-    types: [opened]
+    types: ["opened"]
 
 jobs:
   # Verify that the issue is valid in form.
   validate-issue:
-    name: Validate issue
-    runs-on: ubuntu-latest
-
+    runs-on: "ubuntu-latest"
     steps:
       # Close the issue if its body doesn't match a regular expression.
       # Action: https://github.com/roots/issue-closer-action
-      - id: auto-closer
-        name: Issue auto-closer
-        uses: roots/issue-closer-action@v1.1
+      - name: "Issue auto-closer"
+        id: "auto-closer"
+        uses: "roots/issue-closer-action@fec85f2a845cd6cf33eda6e6a4c93026e71f86d1" # v1.2
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
           issue-pattern: "I agree to fill this issue template"
           issue-close-message: >
             Hello @${{ github.event.issue.user.login }}! :wave: we're sorry you
@@ -40,39 +38,39 @@ jobs:
 
       # Get the current Issue data, to see if "auto-closer" closed it.
       # Action: https://github.com/octokit/request-action
-      # GitHub API: https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#get-an-issue
-      - id: get-issue
-        name: Get Issue Data
-        uses: octokit/request-action@v2.x
+      # GitHub API: https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#get-an-issue
+      - name: "Get Issue Data"
+        id: "get-issue"
+        uses: "octokit/request-action@89a1754fe82ca777b044ca8e79e9881a42f15a93" # v2.1.7
         with:
-          route: GET /repos/:owner/:repo/issues/:issue_number
-          owner: ${{ github.event.repository.owner.login }}
-          repo: ${{ github.event.repository.name }}
-          issue_number: ${{ github.event.issue.number }}
+          route: "GET /repos/:owner/:repo/issues/:issue_number"
+          owner: "${{ github.event.repository.owner.login }}"
+          repo: "${{ github.event.repository.name }}"
+          issue_number: "${{ github.event.issue.number }}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
       # Cancel the whole workflow if "auto-closer" closed the issue.
       # Action: https://github.com/andymckay/cancel-action
-      - name: Cancel this build
-        uses: andymckay/cancel-action@0.2
+      - name: "Cancel this build"
+        uses: "andymckay/cancel-action@b9280e3f8986d7a8e91c7462efc0fa318010c8b1" # v0.3
         if: ${{ fromJSON(steps.get-issue.outputs.data).state != 'open' }}
 
   # Accept the issue by sending a thank you message and sorting it.
   accept-issue:
-    name: Accept issue
-    runs-on: ubuntu-latest
+    name: "Accept issue"
+    runs-on: "ubuntu-latest"
 
     # Wait for previous job to finish (disable parallel run).
-    needs: validate-issue
+    needs: ["validate-issue"]
 
     steps:
       # Add a welcome message.
       # Action: https://github.com/peter-evans/create-or-update-comment
-      - name: Create or Update Comment
-        uses: peter-evans/create-or-update-comment@v1.4.3
+      - name: "Create or Update Comment"
+        uses: "peter-evans/create-or-update-comment@v1.4.3"
         with:
-          issue-number: ${{ github.event.issue.number }}
+          issue-number: "${{ github.event.issue.number }}"
           body: >
             Hello @${{ github.event.issue.user.login }}! :wave: we're sorry you
             found a bug... so first of all, thank you very much for reporting
@@ -89,9 +87,9 @@ jobs:
 
       # Add new issues to the Triage project.
       # Action: https://github.com/alex-page/github-project-automation-plus
-      - name: GitHub Project Automation+
-        uses: alex-page/github-project-automation-plus@v0.3.0
+      - name: "GitHub Project Automation+"
+        uses: "alex-page/github-project-automation-plus@v0.3.0"
         with:
-          repo-token: ${{ secrets.NEW_ISSUE_TOKEN }}
-          project: Triage
-          column: Backlog Candidates
+          repo-token: "${{ secrets.NEW_ISSUE_TOKEN }}"
+          project: "Triage"
+          column: "Backlog Candidates"
