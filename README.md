@@ -2,18 +2,9 @@
 
 
 
-<!---
-TODO: Replace
-doc-kurento/source/(.*)\.rst
-with
-https://doc-kurento.readthedocs.io/en/latest/$1.html
--->
-
-
-
 # Kurento Media Server
 
-| :house:[Homepage](https://kurento.openvidu.io/) | :books:[Documentation (under construction)](doc-kurento/source/index.rst) | [![Docker Pulls](https://img.shields.io/docker/pulls/kurento/kurento-media-server?color=blue&label=Docker&logo=docker&logoColor=blue)](https://hub.docker.com/r/kurento/kurento-media-server) |
+| :house:[Homepage](https://kurento.openvidu.io/) | :books:[Documentation](https://doc-kurento.readthedocs.io/) | [![Docker Pulls](https://img.shields.io/docker/pulls/kurento/kurento-media-server?color=blue&label=Docker&logo=docker&logoColor=blue)](https://hub.docker.com/r/kurento/kurento-media-server) |
 | --- | --- | --- |
 | [![GitHub commits](https://img.shields.io/github/commits-difference/Kurento/kurento?base=eabf6de352fb927df91baa2ec26794dac8c64d78&head=HEAD&label=Commits&logo=github)](https://github.com/Kurento/kurento/graphs/commit-activity) | [![GitHub contributors](https://img.shields.io/github/contributors/Kurento/kurento?label=Contributors&logo=github)](https://github.com/Kurento/kurento/graphs/contributors) | [![Stack Exchange questions](https://img.shields.io/stackexchange/stackoverflow/t/kurento?color=orange&label=Stack%20Overflow&logo=stackoverflow&logoColor=orange)](https://stackoverflow.com/questions/tagged/kurento) |
 
@@ -70,7 +61,7 @@ The Open API specification, also known as [Kurento Protocol](https://doc-kurento
 
 ## Documentation
 
-Kurento provides detailed [Documentation (under construction)](doc-kurento/source/index.rst) including tutorials, installation and development guides.
+Kurento provides detailed [Documentation](https://doc-kurento.readthedocs.io/) including tutorials, installation and development guides.
 
 
 
@@ -78,10 +69,10 @@ Kurento provides detailed [Documentation (under construction)](doc-kurento/sourc
 
 Usage:
 
-* [Installation Guide](doc-kurento/source/user/installation.rst)
+* [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html)
 * [Docker Image](https://hub.docker.com/r/kurento/kurento-media-server)
 * [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contributing.html)
-* [Developer Guide](doc-kurento/source/dev/dev_guide.rst)
+* [Developer Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html)
 
 Issues:
 
