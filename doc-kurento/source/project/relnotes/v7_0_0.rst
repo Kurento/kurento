@@ -1,5 +1,5 @@
 ==================
-7.0.0 (UNRELEASED)
+7.0.0 (March 2023)
 ==================
 
 A new Major version release of Kurento. This brings the opportunity to make breaking changes, which is used to clean the API a bit and fix some long standing issues with small details of the media server, such as the encoding format of audio recordings.
