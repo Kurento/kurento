@@ -485,7 +485,7 @@ check_bin (KmsTreeBin * tree_bin, const GstCaps * caps)
   GstCaps *current_caps = kms_tree_bin_get_input_caps (tree_bin);
 
   GST_LOG_OBJECT (tree_bin,
-      "Check compatibility for bin: %" GST_PTR_FORMAT " ...", tree_bin);
+      "Checking compatibility for bin '%" GST_PTR_FORMAT "'...", tree_bin);
 
   if (current_caps == NULL) {
     current_caps = gst_pad_get_allowed_caps (tee_sink);
@@ -721,29 +721,27 @@ kms_agnostic_bin2_find_or_create_bin_for_caps (KmsAgnosticBin2 * self,
         media_type);
 
     bin = kms_agnostic_bin2_create_bin_for_caps (self, caps);
-    GST_TRACE_OBJECT (self, "Created TreeBin: %" GST_PTR_FORMAT, bin);
+    GST_LOG_OBJECT (self, "Created TreeBin: %" GST_PTR_FORMAT, bin);
 
     if (!self->priv->transcoding_emitted) {
       self->priv->transcoding_emitted = TRUE;
       g_signal_emit (GST_BIN (self),
           kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, TRUE, type);
       GST_INFO_OBJECT (self, "TRANSCODING ACTIVE for %s", media_type);
-    }
-    else {
+    } else {
       GST_LOG_OBJECT (self, "Suppressed - TRANSCODING ACTIVE for %s",
           media_type);
     }
-  }
-  else {
-    GST_LOG_OBJECT (self, "TreeBin found! Use it for %s", media_type);
+  } else {
+    GST_LOG_OBJECT (self, "TreeBin found! Using '%" GST_PTR_FORMAT "' for %s",
+        bin, media_type);
 
     if (!self->priv->transcoding_emitted) {
       self->priv->transcoding_emitted = TRUE;
       g_signal_emit (GST_BIN (self),
           kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, FALSE, type);
       GST_DEBUG_OBJECT (self, "TRANSCODING INACTIVE for %s", media_type);
-    }
-    else {
+    } else {
       GST_LOG_OBJECT (self, "Suppressed - TRANSCODING INACTIVE for %s",
           media_type);
     }
@@ -802,7 +800,7 @@ end:
 
 /**
  * Process a pad for connecting or disconnecting, it should be always called
- * whint the agnostic lock hold.
+ * with the agnostic lock hold.
  *
  * @self: The #KmsAgnosticBin2 owner of the pad
  * @pad: The pad to be processed
@@ -971,15 +969,14 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
 
   self = KMS_AGNOSTIC_BIN2 (user_data);
 
-  GST_TRACE_OBJECT (pad, "Self: %s, event: %" GST_PTR_FORMAT,
-      GST_ELEMENT_NAME (self), event);
-
   gst_event_parse_caps (event, &new_caps);
 
-  if (new_caps == NULL) {
-    GST_ERROR_OBJECT (self, "Unexpected NULL input caps");
+  if (!new_caps || gst_caps_get_size (new_caps) == 0) {
+    GST_ERROR_OBJECT (self, "Invalid CAPS event: %" GST_PTR_FORMAT, event);
     return GST_PAD_PROBE_OK;
   }
+
+  GST_LOG_OBJECT (self, "Processing CAPS event");
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
   current_caps = self->priv->input_caps;
@@ -987,15 +984,12 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   if (current_caps != NULL) {
-    GstStructure *st;
+    GST_LOG_OBJECT (self, "Current input caps: %" GST_PTR_FORMAT, current_caps);
 
-    GST_LOG_OBJECT (self, "Current input caps: %" GST_PTR_FORMAT,
-        current_caps);
+    GstStructure *st = gst_caps_get_structure (current_caps, 0);
 
-    st = gst_caps_get_structure (current_caps, 0);
-    // Remove famerate, width, height, streamheader that make unecessary
-    // agnostic reconstruction happen
-
+    // Remove fields that can change dynamically without needing
+    // an agnostic bin reconstruction.
     gst_structure_remove_fields (st, "width", "height", "framerate",
         "streamheader", "codec_data", NULL);
 
@@ -1004,8 +998,7 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
         && !kms_utils_caps_is_raw (new_caps)) {
       GST_LOG_OBJECT (self, "Set new input caps: %" GST_PTR_FORMAT, new_caps);
       kms_agnostic_bin2_configure_input (self, new_caps);
-    }
-    else {
+    } else {
       // REVIEW: Why no need when old or new caps are RAW?
       GST_LOG_OBJECT (self, "No need to set new input caps");
     }

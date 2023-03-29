@@ -182,7 +182,8 @@ kms_base_media_muxer_get_sink (KmsBaseMediaMuxer * self, const gchar * uri)
     g_clear_error (&err);
   }
 
-  GST_DEBUG_OBJECT (sink, "Muxer sink created for URI '%s'", uri);
+  GST_DEBUG_OBJECT (sink, "Muxer sink '%s' created for URI '%s'",
+      GST_OBJECT_NAME (gst_element_get_factory (sink)), uri);
 
   /* Try to configure the sink element */
   sink_class = G_OBJECT_GET_CLASS (sink);

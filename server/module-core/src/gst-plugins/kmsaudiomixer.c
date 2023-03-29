@@ -19,12 +19,14 @@
 #include "config.h"
 #endif
 
-#include <gst/gst.h>
-
+#include "kmsagnosticbin.h"
 #include "kmsaudiomixer.h"
 #include "kmsloop.h"
 #include "kmsrefstruct.h"
-#include "kmsagnosticbin.h"
+#include "kmsutils.h"
+
+#include <gst/gst.h>
+#include <gst/base/gstaggregator.h> // GstAggregatorStartTimeSelection
 
 #define PLUGIN_NAME "kmsaudiomixer"
 
@@ -123,10 +125,19 @@ kms_audio_selector_create_capsfilter (KmsAudioMixer * self)
   GstElement *capsfilter = kms_utils_element_factory_make ("capsfilter", PLUGIN_NAME);
 
   if (!self->priv->filtercaps) {
+    const guint64 channel_mask = 0x03;
     self->priv->filtercaps =
-        gst_caps_new_simple ("audio/x-raw", "format", G_TYPE_STRING, "S16LE",
-        "rate", G_TYPE_INT, 48000, "channels", G_TYPE_INT, 2, NULL);
+        // clang-format off
+        gst_caps_new_simple ("audio/x-raw",
+            "format", G_TYPE_STRING, "S16LE",
+            "layout", G_TYPE_STRING, "interleaved",
+            "rate", G_TYPE_INT, 48000,
+            "channels", G_TYPE_INT, 2,
+            "channel-mask", GST_TYPE_BITMASK, channel_mask,
+            NULL);
+        // clang-format on
   }
+
   g_object_set (G_OBJECT (capsfilter), "caps", self->priv->filtercaps, NULL);
 
   return capsfilter;
@@ -831,10 +842,14 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
   tee = kms_utils_element_factory_make ("tee", PLUGIN_NAME);
   fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
 
+  // clang-format off
+  g_object_set (adder,
+      "latency", LATENCY * GST_MSECOND,
+      "start-time-selection", "first",
+      NULL);
+  // clang-format on
   g_object_set (tee, "allow-not-linked", TRUE, NULL);
   g_object_set (fakesink, "sync", FALSE, "async", FALSE, NULL);
-  g_object_set (adder, "latency", LATENCY * GST_MSECOND, "start-time-selection",
-    1, NULL);
 
   g_object_set_qdata_full (G_OBJECT (adder), key_sink_pad_name_quark (),
       g_strdup (padname), g_free);
@@ -894,11 +909,11 @@ no_audiotestsrc:
   g_hash_table_insert (self->priv->adders, g_strdup (padname), adder);
 
   srcname = g_strdup_printf ("src_%u", id);
-
   pad = gst_ghost_pad_new_no_target (srcname, GST_PAD_SRC);
-  g_signal_connect_object (pad, "linked", G_CALLBACK (set_target_cb), tee, 0);
+  g_signal_connect_object (pad, "linked", G_CALLBACK (set_target_cb), tee,
+      (GConnectFlags)0);
   g_signal_connect_object (pad, "unlinked", G_CALLBACK (remove_target_cb), tee,
-      0);
+      (GConnectFlags)0);
   g_free (srcname);
 
   g_object_set_qdata (G_OBJECT (adder), key_tee_quark (), tee);

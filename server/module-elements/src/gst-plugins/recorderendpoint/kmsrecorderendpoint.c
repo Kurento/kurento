@@ -967,7 +967,7 @@ set_appsrc_caps (GstElement * appsrc, const GstCaps * caps)
 
   if (str == NULL) {
     GST_ERROR_OBJECT (appsrc,
-        "Can not get caps at index 0 from %" GST_PTR_FORMAT, srccaps);
+        "Cannot get index 0 from caps: %" GST_PTR_FORMAT, srccaps);
     goto end;
   }
 
@@ -978,7 +978,7 @@ set_appsrc_caps (GstElement * appsrc, const GstCaps * caps)
   gst_structure_set_value (str, "framerate", &framerate);
   g_value_reset (&framerate);
 
-  GST_DEBUG_OBJECT (appsrc, "Setting source caps %" GST_PTR_FORMAT, srccaps);
+  GST_DEBUG_OBJECT (appsrc, "Setting source caps: %" GST_PTR_FORMAT, srccaps);
   g_object_set (appsrc, "caps", srccaps, NULL);
 
 end:
@@ -999,7 +999,7 @@ set_appsink_caps (GstElement * appsink, const GstCaps * caps,
 
   if (str == NULL) {
     GST_ERROR_OBJECT (appsink,
-        "Can not get caps at index 0 from %" GST_PTR_FORMAT, sinkcaps);
+        "Cannot get index 0 from caps: %" GST_PTR_FORMAT, sinkcaps);
     goto end;
   }
 
@@ -1019,7 +1019,7 @@ set_appsink_caps (GstElement * appsink, const GstCaps * caps,
       break;
   }
 
-  GST_DEBUG_OBJECT (appsink, "Setting sink caps %" GST_PTR_FORMAT, sinkcaps);
+  GST_DEBUG_OBJECT (appsink, "Setting sink caps: %" GST_PTR_FORMAT, sinkcaps);
   g_object_set (appsink, "caps", sinkcaps, NULL);
 
 end:
@@ -1040,19 +1040,18 @@ appsink_event_probe (GstPad * pad, GstPadProbeInfo * info,
     gst_event_parse_caps (event, &caps);
 
     if (gst_caps_get_size (caps) == 0) {
-      GST_ERROR_OBJECT (pad, "Invalid CAPS event %" GST_PTR_FORMAT, event);
+      GST_ERROR_OBJECT (pad, "Invalid CAPS event: %" GST_PTR_FORMAT, event);
       return GST_PAD_PROBE_OK;
     }
 
-    GST_DEBUG_OBJECT (pad, "Processing CAPS event %" GST_PTR_FORMAT, caps);
+    GST_DEBUG_OBJECT (pad, "Processing CAPS event");
 
     if (!gst_caps_is_fixed (caps)) {
       GST_WARNING_OBJECT (
-          pad, "Not fixed caps in CAPS event %" GST_PTR_FORMAT, event);
+          pad, "Not fixed caps in CAPS event: %" GST_PTR_FORMAT, event);
     }
 
     GstElement *appsink = gst_pad_get_parent_element (pad);
-    GST_DEBUG_OBJECT (appsink, "Setting caps: %" GST_PTR_FORMAT, caps);
     set_appsink_caps (appsink, caps, self->priv->profile);
 
     GstElement *appsrc =

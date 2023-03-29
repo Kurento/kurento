@@ -706,8 +706,6 @@ MediaElementImpl::MediaElementImpl (const boost::property_tree::ptree &config,
 
 MediaElementImpl::~MediaElementImpl ()
 {
-  std::shared_ptr<MediaPipelineImpl> pipe;
-
   GST_LOG ("Deleting media element %s", getName().c_str () );
 
   if (padAddedHandlerId) {

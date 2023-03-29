@@ -214,8 +214,8 @@ kms_av_muxer_get_sink_pad_name (KmsRecordingProfile profile,
 static void
 kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
 {
-  self->priv->videosrc = gst_element_factory_make ("appsrc", "videoSrc");
-  self->priv->audiosrc = gst_element_factory_make ("appsrc", "audioSrc");
+  self->priv->videosrc = gst_element_factory_make ("appsrc", "avMuxerVideoSrc");
+  self->priv->audiosrc = gst_element_factory_make ("appsrc", "avMuxerAudioSrc");
 
   self->priv->sink =
       KMS_BASE_MEDIA_MUXER_GET_CLASS (self)->create_sink (KMS_BASE_MEDIA_MUXER
