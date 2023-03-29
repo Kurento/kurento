@@ -1002,7 +1002,7 @@ Kurento Java client
            || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           bin/set-versions.sh "$NEW_VERSION" --kms-api "${NEW_VERSION}-SNAPSHOT" \
+           bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION-SNAPSHOT" \
                --new-development --commit \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
