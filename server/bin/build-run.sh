@@ -489,22 +489,17 @@ elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     )
 fi
 
-# Set default debug log settings, if none given
+# Pass debug log settings, or defaults if none are set.
 if [[ -n "${GST_DEBUG:-}" ]]; then
-    RUN_VARS+=(
-        "GST_DEBUG='$GST_DEBUG'"
-    )
+    RUN_VARS+=("GST_DEBUG='$GST_DEBUG'")
 else
-    RUN_VARS+=(
-        "GST_DEBUG='2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
-    )
+    RUN_VARS+=("GST_DEBUG='2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'")
 fi
 
-# (Optional) Extra GST_DEBUG categories
-# export GST_DEBUG="${GST_DEBUG:-2},aggregator:5,compositor:5,compositemixer:5"
-# export GST_DEBUG="${GST_DEBUG:-2},baseparse:6,h264parse:6"
-# export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,agnosticbin*:5"
-# export GST_DEBUG="${GST_DEBUG:-2},kmswebrtcsession:6"
+# Pass other relevant environment variables, if set.
+if [[ -n "${GST_DEBUG_DUMP_DOT_DIR:-}" ]]; then
+    RUN_VARS+=("GST_DEBUG_DUMP_DOT_DIR='$GST_DEBUG_DUMP_DOT_DIR'")
+fi
 
 
 
@@ -561,7 +556,7 @@ RUN_VARS+=(
 
 # Use `env` to set the environment variables just for our target program,
 # without affecting the wrapper.
-COMMAND="$RUN_WRAPPER env -i"
+COMMAND="$RUN_WRAPPER env --ignore-environment"
 for RUN_VAR in "${RUN_VARS[@]}"; do
     [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
 done
