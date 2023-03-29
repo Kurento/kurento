@@ -19,7 +19,7 @@
 
 	<properties>
 		<demo.port>8443</demo.port>
-		<start-class>org.kurento.tutorial.helloworld.Application</start-class>
+		<start-class>org.kurento.tutorial.helloworld.HelloWorldApp</start-class>
 	</properties>
 
 	<dependencies>
