@@ -710,6 +710,12 @@ Release steps
            grep -Fr --include pom.xml -- '-SNAPSHOT' \
            && { echo "ERROR: Development versions not allowed!"; return 1; }
 
+           # Skip "test/tutorial" because the testing framework has rotted
+           # and isn't able to spawn new browser windows for the tests.
+           if [[ "$PROJECT" == "test/tutorial" ]]; then
+               continue
+           fi
+
            # Install the project.
            # * Build and run tests.
            # * Do not use `-U` because for each project we want Maven to find
