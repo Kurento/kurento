@@ -420,7 +420,7 @@ static void
 kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
     GstElement * tee, GstCaps * caps)
 {
-  GstElement *queue = kms_utils_element_factory_make ("queue", "agnosticbin");
+  GstElement *queue = kms_utils_element_factory_make ("queue", PLUGIN_NAME);
   GstPad *target;
   GstProxyPad *proxy;
 
@@ -429,9 +429,9 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
 
   if (!(gst_caps_is_any (caps) || gst_caps_is_empty (caps))
       && kms_utils_caps_is_raw (caps)) {
-    GstElement *convert = kms_utils_create_convert_for_caps (caps);
-    GstElement *rate = kms_utils_create_rate_for_caps (caps);
-    GstElement *mediator = kms_utils_create_mediator_element (caps);
+    GstElement *convert = kms_utils_create_convert_for_caps (caps, PLUGIN_NAME);
+    GstElement *rate = kms_utils_create_rate_for_caps (caps, PLUGIN_NAME);
+    GstElement *mediator = kms_utils_create_mediator_element (caps, PLUGIN_NAME);
 
     g_object_set (queue, "leaky", 2, "max-size-time", LEAKY_TIME, NULL);
 
@@ -1392,7 +1392,7 @@ check_ret_error (GstPad * pad, GstFlowReturn ret)
       GST_FIXME_OBJECT (pad, "REPLACE FAKESINK");
       GstElement *fakesink = self->priv->input_fakesink;
       kms_utils_bin_remove (GST_BIN (self), fakesink);
-      fakesink = kms_utils_element_factory_make ("fakesink", "agnosticbin");
+      fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
       self->priv->input_fakesink = fakesink;
       g_object_set (fakesink, "async", FALSE, "sync", FALSE,
           "silent", FALSE,
@@ -1462,10 +1462,10 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 
   self->priv = KMS_AGNOSTIC_BIN2_GET_PRIVATE (self);
 
-  tee = kms_utils_element_factory_make ("tee", "agnosticbin");
+  tee = kms_utils_element_factory_make ("tee", PLUGIN_NAME);
   self->priv->input_tee = tee;
 
-  fakesink = kms_utils_element_factory_make ("fakesink", "agnosticbin");
+  fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
   self->priv->input_fakesink = fakesink;
   g_object_set (fakesink, "async", FALSE, "sync", FALSE,
       "silent", FALSE, // FIXME used to print log in check_ret_error()

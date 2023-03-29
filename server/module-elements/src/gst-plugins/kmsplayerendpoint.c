@@ -855,7 +855,7 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
   } else {
     GST_WARNING_OBJECT (self, "No supported pad: %" GST_PTR_FORMAT
         ". Connecting it to a fakesink", pad);
-    appsink = gst_element_factory_make ("fakesink", NULL);
+    appsink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
   }
 
   g_object_set (appsink, "sync", TRUE, "async", TRUE, NULL);

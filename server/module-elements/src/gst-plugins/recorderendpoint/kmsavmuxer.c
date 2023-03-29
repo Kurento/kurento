@@ -19,13 +19,13 @@
 #include "config.h"
 #endif
 
-#include <gst/gst.h>
+#include "kmsavmuxer.h"
+
 #include <commons/kms-core-enumtypes.h>
+#include <commons/kmsagnosticcaps.h>
 #include <commons/kmsrecordingprofile.h>
 #include <commons/kmsutils.h>
-#include <commons/kmsagnosticcaps.h>
-
-#include "kmsavmuxer.h"
+#include <gst/gst.h>
 
 #define OBJECT_NAME "avmuxer"
 #define KMS_AV_MUXER_NAME OBJECT_NAME
@@ -152,16 +152,16 @@ kms_av_muxer_create_muxer (KmsAVMuxer * self)
     case KMS_RECORDING_PROFILE_WEBM:
     case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
-      return gst_element_factory_make ("webmmux", NULL);
+      return kms_utils_element_factory_make ("webmmux", OBJECT_NAME);
     case KMS_RECORDING_PROFILE_MKV:
     case KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY:{
-      return gst_element_factory_make ("matroskamux", NULL);
+      return kms_utils_element_factory_make ("matroskamux", OBJECT_NAME);
     }
     case KMS_RECORDING_PROFILE_MP4:
     case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY:{
-      GstElement *mux = gst_element_factory_make ("mp4mux", NULL);
+      GstElement *mux = kms_utils_element_factory_make ("mp4mux", OBJECT_NAME);
       GstElementFactory *file_sink_factory =
           gst_element_factory_find ("filesink");
       GstElementFactory *sink_factory =
@@ -176,12 +176,12 @@ kms_av_muxer_create_muxer (KmsAVMuxer * self)
       return mux;
     }
     case KMS_RECORDING_PROFILE_FLV: {
-        GstElement *mux = gst_element_factory_make ("flvmux", NULL);
+        GstElement *mux = kms_utils_element_factory_make ("flvmux", OBJECT_NAME);
         g_object_set(mux, "streamable", TRUE, NULL);
         return mux;
     }
     case KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY:
-      return gst_element_factory_make ("jifmux", NULL);
+      return kms_utils_element_factory_make ("jifmux", OBJECT_NAME);
     default:
       GST_ERROR_OBJECT (self, "No valid recording profile set");
       return NULL;

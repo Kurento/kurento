@@ -920,7 +920,7 @@ kms_base_rtp_endpoint_request_rtp_sink (KmsIRtpSessionManager * manager,
         GST_STR_NULL (media_str));
 
     GstElement *fakesink =
-        kms_utils_element_factory_make ("fakesink", "basertpendpoint");
+        kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
     g_object_set (fakesink, "async", FALSE, "sync", FALSE, NULL);
     gst_bin_add (GST_BIN (self), fakesink);
     gst_element_sync_state_with_parent (fakesink);
@@ -990,7 +990,7 @@ kms_base_rtp_endpoint_request_rtcp_sink (KmsIRtpSessionManager *manager,
         GST_STR_NULL (media_str));
 
     GstElement *fakesink =
-        kms_utils_element_factory_make ("fakesink", "basertpendpoint");
+        kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
     g_object_set (fakesink, "async", FALSE, "sync", FALSE, NULL);
     gst_bin_add (GST_BIN (self), fakesink);
     gst_element_sync_state_with_parent (fakesink);
@@ -1911,7 +1911,7 @@ kms_base_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     gst_element_link_pads (rtpbin, GST_OBJECT_NAME (pad), depayloader, "sink");
     gst_element_sync_state_with_parent (depayloader);
   } else {
-    GstElement *fake = gst_element_factory_make ("fakesink", NULL);
+    GstElement *fake = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
 
     g_object_set (fake, "async", FALSE, "sync", FALSE, NULL);
 

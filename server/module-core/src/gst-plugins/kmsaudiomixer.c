@@ -120,7 +120,7 @@ cb_latency (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 static GstElement *
 kms_audio_selector_create_capsfilter (KmsAudioMixer * self)
 {
-  GstElement *capsfilter = gst_element_factory_make ("capsfilter", NULL);
+  GstElement *capsfilter = kms_utils_element_factory_make ("capsfilter", PLUGIN_NAME);
 
   if (!self->priv->filtercaps) {
     self->priv->filtercaps =
@@ -532,10 +532,10 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
     return;
   }
 
-  audiorate = gst_element_factory_make ("audiorate", NULL);
+  audiorate = kms_utils_element_factory_make ("audiorate", PLUGIN_NAME);
   g_object_set (audiorate, "skip-to-first", TRUE, NULL);
 
-  agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+  agnosticbin = kms_utils_element_factory_make ("agnosticbin", PLUGIN_NAME);
   g_object_set_qdata_full (G_OBJECT (agnosticbin), key_sink_pad_name_quark (),
       g_strdup (padname), g_free);
 
@@ -827,9 +827,9 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
     return FALSE;
   }
 
-  adder = gst_element_factory_make ("audiomixer", NULL);
-  tee = gst_element_factory_make ("tee", NULL);
-  fakesink = gst_element_factory_make ("fakesink", NULL);
+  adder = kms_utils_element_factory_make ("audiomixer", PLUGIN_NAME);
+  tee = kms_utils_element_factory_make ("tee", PLUGIN_NAME);
+  fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
 
   g_object_set (tee, "allow-not-linked", TRUE, NULL);
   g_object_set (fakesink, "sync", FALSE, "async", FALSE, NULL);
@@ -949,7 +949,7 @@ kms_audio_mixer_request_new_pad (GstElement * element,
               (element)), AUDIO_SINK_PAD))
     return NULL;
 
-  typefind = gst_element_factory_make ("typefind", NULL);
+  typefind = kms_utils_element_factory_make ("typefind", PLUGIN_NAME);
   sinkpad = gst_element_get_static_pad (typefind, "sink");
   if (sinkpad == NULL) {
     gst_object_unref (typefind);

@@ -50,7 +50,7 @@ void kms_utils_bin_remove (GstBin * bin, GstElement * element);
  * gst_element_factory_make(), but with the given prefix.
  */
 GstElement *kms_utils_element_factory_make (const gchar *factoryname,
-    const gchar *prefix);
+    const gchar *name_prefix);
 
 /* Caps */
 gboolean kms_utils_caps_is_audio (const GstCaps * caps);
@@ -59,9 +59,12 @@ gboolean kms_utils_caps_is_data (const GstCaps * caps);
 gboolean kms_utils_caps_is_rtp (const GstCaps * caps);
 gboolean kms_utils_caps_is_raw (const GstCaps * caps);
 
-GstElement * kms_utils_create_convert_for_caps (const GstCaps * caps);
-GstElement * kms_utils_create_mediator_element (const GstCaps * caps);
-GstElement * kms_utils_create_rate_for_caps (const GstCaps * caps);
+GstElement *kms_utils_create_convert_for_caps (const GstCaps *caps,
+    const gchar *name_prefix);
+GstElement *kms_utils_create_mediator_element (const GstCaps *caps,
+    const gchar *name_prefix);
+GstElement *kms_utils_create_rate_for_caps (const GstCaps *caps,
+    const gchar *name_prefix);
 
 const gchar * kms_utils_get_caps_codec_name_from_sdp (const gchar * codec_name);
 

@@ -754,9 +754,11 @@ kms_element_get_output_element (KmsElement * self, KmsElementPadType pad_type,
   if (pad_type == KMS_ELEMENT_PAD_TYPE_DATA) {
     GstElement *tee, *sink;
 
-    tee = gst_element_factory_make ("tee", NULL);
+    gchar *name = gst_element_get_name (GST_ELEMENT (self));
+    tee = kms_utils_element_factory_make ("tee", name);
+    sink = kms_utils_element_factory_make ("fakesink", name);
+    g_free (name);
 
-    sink = gst_element_factory_make ("fakesink", NULL);
     g_object_set (sink, "sync", FALSE, "async", FALSE, NULL);
 
     gst_bin_add_many (GST_BIN (self), tee, sink, NULL);
@@ -1815,8 +1817,8 @@ kms_element_create_output_element_default (KmsElement *self)
 {
   gchar *name = gst_element_get_name (GST_ELEMENT (self));
   GstElement *element = kms_utils_element_factory_make ("agnosticbin", name);
-
   g_free (name);
+
   return element;
 }
 

@@ -335,7 +335,8 @@ on_rtcpdemux_new_ssrc_pad (GstElement *rtcpdemux,
 
     // Cannot identify which local media corresponds to the SSRC.
     // The pad cannot be left without linking, so discard into a fakesink.
-    GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+    GstElement *fakesink =
+        kms_utils_element_factory_make ("fakesink", GST_DEFAULT_NAME);
     gst_bin_add (GST_BIN (self), fakesink);
     gst_element_sync_state_with_parent_target_state (fakesink);
     GstPad *sink = gst_element_get_static_pad (fakesink, "sink");
@@ -419,12 +420,12 @@ kms_base_rtp_session_add_gst_bundle_elements (KmsBaseRtpSession * self,
     kms_i_rtp_connection_add (conn, GST_BIN (self), active);
   }
 
-  rtcpdemux = gst_element_factory_make ("rtcpdemux", NULL);
+  rtcpdemux = kms_utils_element_factory_make ("rtcpdemux", GST_DEFAULT_NAME);
 
   g_signal_connect (rtcpdemux, "new-ssrc-pad",
       G_CALLBACK (on_rtcpdemux_new_ssrc_pad), self);
 
-  ssrcdemux = gst_element_factory_make ("rtpssrcdemux", NULL);
+  ssrcdemux = kms_utils_element_factory_make ("rtpssrcdemux", GST_DEFAULT_NAME);
 
   g_object_set_qdata_full (G_OBJECT (ssrcdemux), rtcp_demux_peer_quark (),
       g_object_ref (rtcpdemux), g_object_unref);
