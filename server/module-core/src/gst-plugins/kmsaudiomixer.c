@@ -855,7 +855,8 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
       g_strdup (padname), g_free);
 
   audiotestsrc = kms_utils_element_factory_make ("audiotestsrc", PLUGIN_NAME);
-  g_object_set (audiotestsrc, "is-live", TRUE, "wave", "silence", NULL);
+  g_object_set (audiotestsrc, "is-live", TRUE, NULL);
+  gst_util_set_object_arg (G_OBJECT (audiotestsrc), "wave", "silence");
 
   GstElement* capsfilter_src = kms_audio_selector_create_capsfilter (self);
   GstElement* capsfilter_sink = kms_audio_selector_create_capsfilter (self);
