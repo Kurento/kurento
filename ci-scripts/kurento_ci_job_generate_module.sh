@@ -91,7 +91,6 @@ docker run -t --detach \
     --pull always \
     --rm --name "$CONTAINER_NAME" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
-    --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \
     kurento/kurento-ci-buildtools:focal
 
