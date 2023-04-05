@@ -540,18 +540,19 @@ ulimit -c unlimited
 #log "Set kernel core dump path: $KERNEL_CORE_PATH"
 #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
 
+# Set main config file path.
+RUN_VARS+=(
+    "KURENTO_CONF_FILE='${KURENTO_CONF_FILE:-$PWD/config/kurento.conf.json}'"
+)
+
 # Set modules path.
 # Equivalent to `--modules-path`, `--modules-config-path`, `--gst-plugin-path`.
 RUN_VARS+=(
-    # Use the former to include modules already installed in the system.
-    #"KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules'"
-    "KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD'"
+    "KURENTO_MODULES_PATH='$PWD${KURENTO_MODULES_PATH:+:$KURENTO_MODULES_PATH}:/usr/lib/x86_64-linux-gnu/kurento'"
 
-    "KURENTO_MODULES_CONFIG_PATH='${KURENTO_MODULES_CONFIG_PATH:+$KURENTO_MODULES_CONFIG_PATH:}$PWD/config'"
+    "KURENTO_MODULES_CONFIG_PATH='$PWD/config${KURENTO_MODULES_CONFIG_PATH:+:$KURENTO_MODULES_CONFIG_PATH}:/etc/kurento/modules'"
 
-    # Use the former to include plugins already installed in the system.
-    #"GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
-    "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD'"
+    "GST_PLUGIN_PATH='$PWD${GST_PLUGIN_PATH:+:$GST_PLUGIN_PATH}:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
 )
 
 # Use `env` to set the environment variables just for our target program,
@@ -561,9 +562,7 @@ for RUN_VAR in "${RUN_VARS[@]}"; do
     [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
 done
 
-COMMAND+=" media-server/server/kurento-media-server \
-    --conf-file='$PWD/config/kurento.conf.json' \
-"
+COMMAND+=" media-server/server/kurento-media-server"
 
 log "Run command: $COMMAND"
 eval "$COMMAND" "$CFG_KMS_ARGS"

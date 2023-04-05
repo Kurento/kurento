@@ -48,9 +48,11 @@ For example:
 
 The scaffolding tool generates a complete folder tree, with all the needed *CMakeLists.txt* files to build with CMake. You'll also find empty Kurento Module Descriptor files (``*.kmd.json``), which must contain a complete description of the module: constructor, methods, properties, events, and the complex types defined by the developer.
 
-Once your *.kmd* files have been filled with a complete description of the module, it is time to generate the corresponding server stub code with *kurento-module-creator*. Run this from the root directory of your module:
+Once your *.kmd* files have been filled with a complete description of the module, it is time to generate the corresponding server stub code with *kurento-module-creator*. Change to the root directory of your module and run CMake:
 
 .. code-block:: shell
+
+   cd video-module/
 
    mkdir build/ ; cd build/
    cmake ..
@@ -61,14 +63,14 @@ If working with a GStreamer module, now you can verify that the new module is su
 .. code-block:: shell
 
    # To check if the plugin is found and loaded:
-   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" | grep -i appvideomodule
+   GST_PLUGIN_PATH="$PWD" gst-inspect-1.0 | grep -i appvideomodule
 
    # To inspect all metadata exported by the plugin:
-   gst-inspect-1.0 --gst-plugin-path="$PWD/src/gst-plugins" appvideomodule
+   GST_PLUGIN_PATH="$PWD" gst-inspect-1.0 appvideomodule
 
    # To test the plugin directly with some video input
    # (this is just a sample for raw video; adapt as necessary!)
-   gst-launch-1.0 --gst-plugin-path="$PWD/src/gst-plugins" \
+   GST_PLUGIN_PATH="$PWD" gst-launch-1.0 \
        uridecodebin uri='file:///path/to/video.mp4' ! videoconvert \
        ! appvideomodule \
        ! videoconvert ! autovideosink
@@ -182,8 +184,46 @@ Before being able to use your new module, its binary files must be installed to 
 
 
 
-Installing locally
-------------------
+Install by copying files
+------------------------
+
+You can just manually copy your plugin binary files to the destination machine. Then, the following environment variables must be set to instruct Kurento about where the plugin files have been copied:
+
+.. code-block:: shell
+
+   export KURENTO_MODULES_PATH="/path/to/module:$KURENTO_MODULES_PATH"
+   export GST_PLUGIN_PATH="/path/to/module:$GST_PLUGIN_PATH"
+
+Remember that if you're starting Kurento with the system service files, these env vars should be set in ``/etc/default/kurento-media-server``.
+
+When ready, you should **verify the module installation**. Run Kurento twice, with the ``--version`` and ``--list`` arguments. The former shows a list of all installed modules and their versions, while the latter prints a list of all the actual *MediaObject* Factories that clients can invoke with the JSON-RPC API. Your own module should show up in both lists.
+
+Following with the example from the previous section:
+
+.. code-block:: shell-session
+   :emphasize-lines: 10,15,16
+
+   $ export KURENTO_MODULES_PATH="$HOME/video-module/build"
+   $ export GST_PLUGIN_PATH="$HOME/video-module/build"
+
+   $ /usr/bin/kurento-media-server --version
+   Kurento Media Server version: 7.0.0
+   Found modules:
+       'core' version 7.0.0
+       'elements' version 7.0.0
+       'filters' version 7.0.0
+       'appvideomodule' version 0.0.1~0.gd61e201
+
+   $ /usr/bin/kurento-media-server --list
+   Available factories:
+       [...]
+       AppVideoModule
+       appvideomodule.AppVideoModule
+
+
+
+Install with apt-get
+--------------------
 
 The recommended way to distribute a module is to build it into a Debian package file (``*.deb``). This is the easiest and most convenient method for end users of the module, as they will just have to perform a simple package installation on any system where Kurento is already running. Besides, this doesn't require the user to know anything about plugin paths or how the module files must be laid out on disk.
 
@@ -196,7 +236,7 @@ To build a Debian package file, you can either use the **kurento-buildpackage** 
        dpkg-dev
 
    # Run dpkg-buildpackage to build Debian packages
-   dpkg-buildpackage -b -us -uc
+   dpkg-buildpackage -b -uc -us
 
    # Copy the generated packages to their final destination
    cp ../*.*deb /path/to/destination/
@@ -227,38 +267,10 @@ For more information about the process of creating Debian packages, check these 
 * `Debian Building Tutorial <https://wiki.debian.org/BuildingTutorial>`__
 * `Debian Policy Manual <https://www.debian.org/doc/debian-policy/index.html>`__
 
-**Alternatively**, it is also possible to just build the module and manually copy its binary files to the destination system. You can then define the following environment variables in the file ``/etc/default/kurento-media-server``, to instruct Kurento about where the plugin files have been copied:
-
-.. code-block:: shell
-
-   KURENTO_MODULES_PATH="$KURENTO_MODULES_PATH:/path/to/module"
-   GST_PLUGIN_PATH="$GST_PLUGIN_PATH:/path/to/module"
-
-Kurento will then add these paths to the path lookup it performs at startup, when looking for all available plugins.
-
-When ready, you should **verify the module installation**. Run Kurento twice, with the ``--version`` and ``--list`` arguments. The former shows a list of all installed modules and their versions, while the latter prints a list of all the actual *MediaObject* Factories that clients can invoke with the JSON-RPC API. Your own module should show up in both lists:
-
-.. code-block:: shell-session
-   :emphasize-lines: 7,12,13
-
-   $ /usr/bin/kurento-media-server --version
-   Kurento Media Server version: 7.0.0
-   Found modules:
-       'core' version 7.0.0
-       'elements' version 7.0.0
-       'filters' version 7.0.0
-       'appvideomodule' version 0.0.1~0.gd61e201
-
-   $ /usr/bin/kurento-media-server --list
-   Available factories:
-       [...]
-       AppVideoModule
-       appvideomodule.AppVideoModule
 
 
-
-Installing in Docker
---------------------
+Install in Docker
+-----------------
 
 It is perfectly possible to install and use additional Kurento modules with Docker-based deployments of Kurento Media Server. To do so, first follow any of the installation methods described above, but then instead of copying files to a host server you would add them into a Docker image or container.
 
@@ -307,9 +319,11 @@ And verify your module is correctly loaded by Kurento:
 Java client code
 ----------------
 
-Run this from the root directory of your module:
+Change to the root directory of your module and run CMake:
 
 .. code-block:: shell
+
+   cd video-module/
 
    mkdir build/ ; cd build/
    cmake -DGENERATE_JAVA_CLIENT_PROJECT=TRUE ..
@@ -361,9 +375,11 @@ The result is, as expected, that the OpenCV plugin sample applies a :wikipedia:`
 JavaScript client code
 ----------------------
 
-Run this from the root directory of your module:
+Change to the root directory of your module and run CMake:
 
 .. code-block:: shell
+
+   cd video-module/
 
    mkdir build/ ; cd build/
    cmake -DGENERATE_JS_CLIENT_PROJECT=TRUE ..

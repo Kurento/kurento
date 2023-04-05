@@ -94,13 +94,14 @@ export KURENTO_LOGS_PATH="/var/log/kurento-media-server"
 # Advanced server settings
 # ========================
 
-unset GST_PLUGIN_PATH
+## Path where user-installed GStreamer plugins can be found.
+#export GST_PLUGIN_PATH="/usr/lib/x86_64-linux-gnu/gstreamer-1.0"
 
-## Path to the main configuration file for Kurento Media Server
+## Path to the main configuration file for Kurento Media Server.
 #export KURENTO_CONF_FILE="/etc/kurento/kurento.conf.json"
 
-## Path to the directory where Kurento modules can be found
-#export KURENTO_MODULES_PATH="/usr/lib"
+## Path where Kurento modules can be found.
+#export KURENTO_MODULES_PATH="/usr/lib/x86_64-linux-gnu/kurento"
 
 ## Path to the directory where config files can be found for Kurento modules
 #export KURENTO_MODULES_CONFIG_PATH="/etc/kurento/modules"

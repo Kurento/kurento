@@ -111,6 +111,6 @@ fi
 LD_PRELOAD="$PWD/libasan.so" \
 ASAN_OPTIONS='detect_odr_violation=0 detect_leaks=1 detect_invalid_pointer_pairs=2 strict_string_checks=1 detect_stack_use_after_return=0 check_initialization_order=1 strict_init_order=1' \
 LD_LIBRARY_PATH="$PWD" \
-./kurento-media-server \
-    --modules-path="$PWD" \
-    --gst-plugin-path="$PWD"
+KURENTO_MODULES_PATH="$PWD" \
+GST_PLUGIN_PATH="$PWD" \
+./kurento-media-server
