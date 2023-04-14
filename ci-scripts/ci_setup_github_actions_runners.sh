@@ -69,7 +69,7 @@ mkdir --parents "$RUNNER_HOME/default/"
 # Configure runners
 # =================
 
-for RUNNER_NAME in $(printf "$RUNNER_LABEL%d " $(seq 1 $RUNNER_COUNT)); do
+for RUNNER_NAME in $(printf "$RUNNER_LABEL-%02d " $(seq 1 $RUNNER_COUNT)); do
     cp -a "$RUNNER_HOME/default/" "$RUNNER_HOME/$RUNNER_NAME/"
 
     pushd "$RUNNER_HOME/$RUNNER_NAME/"
