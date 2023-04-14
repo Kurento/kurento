@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ["self-hosted"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.

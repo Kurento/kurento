@@ -32,7 +32,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "dev"]
+    runs-on: ["self-hosted"]
     strategy:
       # Run each configuration sequentially.
       # Aptly has a global lock and doesn't support concurrent operations from multiple jobs.

@@ -40,7 +40,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "dev"]
+    runs-on: ["self-hosted"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.
