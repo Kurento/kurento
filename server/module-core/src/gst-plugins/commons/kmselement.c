@@ -1275,16 +1275,23 @@ kms_element_set_property (GObject * object, guint property_id,
     case PROP_TARGET_ENCODER_BITRATE: {
       gint v = g_value_get_int (value);
       KMS_ELEMENT_LOCK (self);
-      if (v < self->priv->min_encoder_bitrate
-          || v > self->priv->max_encoder_bitrate) {
-        v = DEFAULT_TARGET_ENCODER_BITRATE;
+      if (v < self->priv->min_encoder_bitrate) {
         GST_WARNING_OBJECT (self,
-            "Ignoring out of bounds requested target bitrate; setting default: %d",
-            v);
+            "Requested \"%s\" (%d) < min (%d); using min instead",
+            TARGET_ENCODER_BITRATE, v, self->priv->min_encoder_bitrate);
+        v = self->priv->min_encoder_bitrate;
+      }
+      else if (v > self->priv->max_encoder_bitrate) {
+        GST_WARNING_OBJECT (self,
+            "Requested \"%s\" (%d) > max (%d); using max instead",
+            TARGET_ENCODER_BITRATE, v, self->priv->max_encoder_bitrate);
+        v = self->priv->max_encoder_bitrate;
       }
       self->priv->target_encoder_bitrate = v;
       g_hash_table_foreach (self->priv->output_elements,
           (GHFunc)set_target_encoder_bitrate, self);
+      GST_DEBUG_OBJECT (self, "\"%s\" set: %d", TARGET_ENCODER_BITRATE,
+          self->priv->target_encoder_bitrate);
       KMS_ELEMENT_UNLOCK (self);
       break;
     }
@@ -1292,13 +1299,26 @@ kms_element_set_property (GObject * object, guint property_id,
       gint v = g_value_get_int (value);
       KMS_ELEMENT_LOCK (self);
       if (v > self->priv->max_encoder_bitrate) {
-        v = self->priv->max_encoder_bitrate;
         GST_WARNING_OBJECT (self,
-            "Ignoring requested bitrate min > max; setting max: %d", v);
+            "Requested \"%s\" (%d) > max (%d); using max instead",
+            MIN_ENCODER_BITRATE, v, self->priv->max_encoder_bitrate);
+        v = self->priv->max_encoder_bitrate;
       }
       self->priv->min_encoder_bitrate = v;
       g_hash_table_foreach (self->priv->output_elements,
           (GHFunc)set_min_encoder_bitrate, self);
+      if (self->priv->target_encoder_bitrate
+          < self->priv->min_encoder_bitrate) {
+        GST_WARNING_OBJECT (self,
+            "\"%s\" (%d) < new min (%d); increasing it to new min",
+            TARGET_ENCODER_BITRATE, self->priv->target_encoder_bitrate,
+            self->priv->min_encoder_bitrate);
+        self->priv->target_encoder_bitrate = self->priv->min_encoder_bitrate;
+        g_hash_table_foreach (self->priv->output_elements,
+            (GHFunc)set_target_encoder_bitrate, self);
+      }
+      GST_DEBUG_OBJECT (self, "\"%s\" set: %d", MIN_ENCODER_BITRATE,
+          self->priv->min_encoder_bitrate);
       KMS_ELEMENT_UNLOCK (self);
       break;
     }
@@ -1306,13 +1326,26 @@ kms_element_set_property (GObject * object, guint property_id,
       gint v = g_value_get_int (value);
       KMS_ELEMENT_LOCK (self);
       if (v < self->priv->min_encoder_bitrate) {
-        v = self->priv->min_encoder_bitrate;
         GST_WARNING_OBJECT (self,
-            "Ignoring requested bitrate max < min; setting min: %d", v);
+            "Requested \"%s\" (%d) < min (%d); using min instead",
+            MAX_ENCODER_BITRATE, v, self->priv->min_encoder_bitrate);
+        v = self->priv->min_encoder_bitrate;
       }
       self->priv->max_encoder_bitrate = v;
       g_hash_table_foreach (self->priv->output_elements,
           (GHFunc)set_max_encoder_bitrate, self);
+      if (self->priv->target_encoder_bitrate
+          > self->priv->max_encoder_bitrate) {
+        GST_WARNING_OBJECT (self,
+            "\"%s\" (%d) > new max (%d); decreasing it to new max",
+            TARGET_ENCODER_BITRATE, self->priv->target_encoder_bitrate,
+            self->priv->max_encoder_bitrate);
+        self->priv->target_encoder_bitrate = self->priv->max_encoder_bitrate;
+        g_hash_table_foreach (self->priv->output_elements,
+            (GHFunc)set_target_encoder_bitrate, self);
+      }
+      GST_DEBUG_OBJECT (self, "\"%s\" set: %d", MAX_ENCODER_BITRATE,
+          self->priv->max_encoder_bitrate);
       KMS_ELEMENT_UNLOCK (self);
       break;
     }
@@ -1866,17 +1899,17 @@ kms_element_class_init (KmsElementClass * klass)
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_TARGET_ENCODER_BITRATE,
-      g_param_spec_int ("target-encoder-bitrate", "target encoder bitrate",
+      g_param_spec_int (TARGET_ENCODER_BITRATE, "target encoder bitrate",
           "Target video bitrate for media transcoding (in bps)",
           0, G_MAXINT, DEFAULT_TARGET_ENCODER_BITRATE, G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, PROP_MIN_ENCODER_BITRATE,
-      g_param_spec_int ("min-encoder-bitrate", "min encoder bitrate",
+      g_param_spec_int (MIN_ENCODER_BITRATE, "min encoder bitrate",
           "Minimum video bitrate for media transcoding (in bps)",
           0, G_MAXINT, DEFAULT_MIN_ENCODER_BITRATE, G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, PROP_MAX_ENCODER_BITRATE,
-      g_param_spec_int ("max-encoder-bitrate", "max encoder bitrate",
+      g_param_spec_int (MAX_ENCODER_BITRATE, "max encoder bitrate",
           "Maximum video bitrate for media transcoding (in bps)",
           0, G_MAXINT, DEFAULT_MAX_ENCODER_BITRATE, G_PARAM_READWRITE));
 
