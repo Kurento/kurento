@@ -44,10 +44,10 @@
 	</licenses>
 	<mailingLists>
 		<mailingList>
-			<name>Kurento List</name>
-			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
-			<post>http://groups.google.com/group/kurento/post</post>
-			<archive>http://groups.google.com/group/kurento/about</archive>
+			<name>Kurento Discussions</name>
+			<archive>https://github.com/orgs/Kurento/discussions</archive>
+			<post>https://github.com/orgs/Kurento/discussions/new</post>
+			<subscribe>https://github.com/orgs/Kurento/discussions</subscribe>
 		</mailingList>
 	</mailingLists>
 	<organization>

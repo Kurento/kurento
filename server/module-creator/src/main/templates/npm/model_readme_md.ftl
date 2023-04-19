@@ -72,7 +72,7 @@ Contribution policy
 
 You can contribute to the Kurento community through bug-reports, bug-fixes, new
 code or new documentation. For contributing to the Kurento community, drop a
-post to the [Kurento Public Mailing List] providing full information about your
+post to the [Kurento discussion forum] providing full information about your
 contribution and its value. In your contributions, you must comply with the
 following guidelines
 
@@ -107,7 +107,7 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [Kurento Blog]: https://kurento.openvidu.io/blog
 [Kurento FIWARE Catalog Entry]: http://catalogue.fiware.org/enablers/stream-oriented-kurento
 [Kurento Netiquette Guidelines]: https://kurento.openvidu.io/blog/kurento-netiquette-guidelines
-[Kurento Public Mailing list]: https://groups.google.com/forum/#!forum/kurento
+[Kurento discussion forum]: https://github.com/orgs/Kurento/discussions
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [Apache 2.0 License]: http://www.apache.org/licenses/LICENSE-2.0
 [NUBOMEDIA]: http://www.nubomedia.eu
