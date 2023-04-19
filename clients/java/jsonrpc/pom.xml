@@ -29,6 +29,13 @@
 			<modules>
 				<module>jsonrpc-client</module>
 				<module>jsonrpc-server</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>demo</id>
+			<modules>
+				<module>jsonrpc-client</module>
+				<module>jsonrpc-server</module>
 				<module>jsonrpc-demo-server</module>
 			</modules>
 		</profile>
