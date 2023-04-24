@@ -35,6 +35,23 @@ enum
   PROP_STREAM_ID
 };
 
+enum
+{
+  SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED,
+  LAST_SIGNAL
+};
+
+static guint kms_webrtc_base_connection_signals[LAST_SIGNAL] = { 0 };
+
+
+typedef struct _DtlsConnectionSourceData
+{
+  KmsRefStruct ref;
+  KmsWebRtcBaseConnection *self;
+  gchar *dtls_component;
+} DtlsConnectionSourceData;
+
+
 gboolean
 kms_webrtc_base_connection_configure (KmsWebRtcBaseConnection * self,
     KmsIceBaseAgent * agent, const gchar * name)
@@ -162,6 +179,23 @@ kms_webrtc_base_connection_class_init (KmsWebRtcBaseConnectionClass * klass)
       g_param_spec_string ("stream-id", "Stream identifier",
           "The stream identifier.", NULL,
           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+   /**
+   * KmsWebrtcBaseConnection::on-dtls-connection-state-changed
+   * @self: the object which received the signal
+   * @stream_id: The ID of the stream
+   * @dtls_object: The dtls component raising the signal
+   * @connection_id: GStreamer connection Id
+   * @state: The #DtlsConnectionState of the component
+   *
+   * This signal is fired whenever a component's DTLS connection state changes
+   */
+  kms_webrtc_base_connection_signals[SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED] =
+      g_signal_new ("on-dtls-connection-state-changed",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+      G_TYPE_INVALID);
+
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
@@ -313,4 +347,69 @@ kms_webrtc_base_connection_collect_latency_stats (KmsIRtpConnection * self,
       KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
 
   klass->collect_latency_stats (self, enable);
+}
+
+
+static void
+dtls_component_connection_state_cb (GObject * object, GParamSpec * pspec,
+    DtlsConnectionSourceData *data)
+{
+  KmsWebRtcBaseConnection *conn = data->self;
+  GValue state_value = { 0 };
+  GValue connection_id_value = { 0 };
+  GType connection_state_type = g_type_from_name ("GstDtlsConnectionState");
+  guint state;
+  const gchar *conn_id;
+
+	g_value_init (&state_value, connection_state_type);
+	g_value_init (&connection_id_value, G_TYPE_STRING);
+
+  g_object_get_property(object, "connection-state", &state_value);
+  g_object_get_property(object, "connection-id", &connection_id_value);
+  state = g_value_get_enum (&state_value);
+  conn_id = g_value_get_string(&connection_id_value);
+  g_signal_emit (G_OBJECT (conn),
+        kms_webrtc_base_connection_signals[SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED], 0,
+        conn->stream_id, data->dtls_component, conn_id, state);
+
+  g_value_unset(&state_value);
+  g_value_unset(&connection_id_value);
+}
+
+static void
+dtls_connection_source_data_destroy (DtlsConnectionSourceData * data, GClosure * closure)
+{
+  g_free(data->dtls_component);
+
+  g_slice_free (DtlsConnectionSourceData, data);
+}
+
+
+static DtlsConnectionSourceData *
+dtls_connection_source_data_new (KmsWebRtcBaseConnection * self, const gchar *component, const gchar *direction)
+{
+  DtlsConnectionSourceData *data;
+
+  data = g_slice_new0 (DtlsConnectionSourceData);
+
+
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (data),
+      (GDestroyNotify) dtls_connection_source_data_destroy);
+
+  data->self = self;
+  data->dtls_component = g_strconcat("[", component, "/", direction, "]", NULL);
+
+  return data;
+}
+
+
+void kms_webrtc_base_connection_add_dtls_component (KmsWebRtcBaseConnection * self,
+    GstElement *dtls_component, const gchar *component, const gchar *direction)
+{
+  DtlsConnectionSourceData* data = dtls_connection_source_data_new(self, component, direction);
+
+  g_signal_connect_data (dtls_component, "notify::connection-state",
+      G_CALLBACK (dtls_component_connection_state_cb),
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (data)),
+      (GClosureNotify) kms_ref_struct_unref, 0);      
 }

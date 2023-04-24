@@ -72,6 +72,8 @@ public:
 
   std::vector<std::shared_ptr<IceConnection>> getIceConnectionState () override;
 
+  std::vector<std::shared_ptr<DtlsConnection>> getDtlsConnectionState () override;
+
   void gatherCandidates () override;
   void addIceCandidate (std::shared_ptr<IceCandidate> candidate) override;
 
@@ -94,6 +96,7 @@ public:
 
   sigc::signal<void, IceCandidateFound> signalIceCandidateFound;
   sigc::signal<void, IceGatheringDone> signalIceGatheringDone;
+  sigc::signal<void, DtlsConnectionStateChange> signalDtlsConnectionStateChange;
   sigc::signal<void, IceComponentStateChanged> signalIceComponentStateChanged;
   sigc::signal<void, NewCandidatePairSelected> signalNewCandidatePairSelected;
   sigc::signal<void, DataChannelOpened> signalDataChannelOpened;
@@ -115,6 +118,7 @@ private:
 
   gulong handlerOnIceCandidate = 0;
   gulong handlerOnIceGatheringDone = 0;
+  gulong handlerOnDtlsConnectionStateChanged = 0;
   gulong handlerOnIceComponentStateChanged = 0;
   gulong handlerOnDataChannelOpened = 0;
   gulong handlerOnDataChannelClosed = 0;
@@ -124,6 +128,8 @@ private:
   void onIceGatheringDone (gchar *sessId);
   void onIceComponentStateChanged (gchar *sessId, const gchar *streamId,
                                    guint componentId, guint state);
+  void onDtlsConnectionStateChanged (gchar *sessId, const gchar *streamId,
+                                   gchar *componentId, gchar *connectionId, guint state);
   void newSelectedPairFull (gchar *sessId, const gchar *streamId,
                             guint componentId, KmsIceCandidate *localCandidate,
                             KmsIceCandidate *remoteCandidate);
@@ -135,7 +141,8 @@ private:
 
   std::map < std::string, std::shared_ptr<IceCandidatePair >> candidatePairs;
   std::map < std::string, std::shared_ptr<IceConnection>> iceConnectionState;
-
+  std::map < std::string, std::shared_ptr<DtlsConnection>> dtlsConnectionState;
+  
   std::shared_ptr<DSCPValue> qosDscp;
   
   std::mutex mut;

@@ -307,6 +307,11 @@ kms_webrtc_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
   g_signal_connect (priv->rtcp_tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (rtcp_connected_cb), conn);
 
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->rtp_tr->sink->dtlssrtpenc, "rtp", "dtlssrtpenc");
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->rtp_tr->src->dtlssrtpdec, "rtp", "dtlssrtpdec");
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->rtcp_tr->sink->dtlssrtpenc, "rtcp", "dtlssrtpenc");
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->rtcp_tr->src->dtlssrtpdec, "rtcp", "dtlssrtpdec");
+  
   return conn;
 }
 

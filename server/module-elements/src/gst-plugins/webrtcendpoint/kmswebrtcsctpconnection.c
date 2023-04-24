@@ -255,6 +255,9 @@ kms_webrtc_sctp_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
   g_signal_connect (priv->tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (dtls_connected_cb), conn);
 
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->sink->dtlssrtpenc, "sctp", "dtlssrtpenc");
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->src->dtlssrtpdec, "sctp", "dtlssrtpdec");
+  
   return conn;
 }
 
