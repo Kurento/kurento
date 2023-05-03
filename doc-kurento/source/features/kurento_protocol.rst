@@ -6,7 +6,9 @@ Kurento Protocol
 
 .. contents:: Table of Contents
 
-Kurento Media Server is controlled by means of an JSON-RPC API, implemented in terms of the **Kurento Protocol** specification as described in this document, based on :term:`WebSocket` and :term:`JSON-RPC`.
+Kurento Media Server exposes a full fledged API to let applications process media in several ways. To allow this rich API, Kurento requires full-duplex communications between the controlling Application Server and the media server itself. For this reason, the **Kurento Protocol** is implemented on top of :term:`JSON-RPC` and uses the :term:`WebSocket` transport.
+
+Thorough this document, the word "**client**" is used to refer to the :doc:`Application Server </user/writing_applications>`, which acts as brain and controller of Kurento.
 
 
 
@@ -23,7 +25,7 @@ Request
 An *RPC call* is represented by sending a *request* message to a server. The *request* message has the following members:
 
 - ``jsonrpc``: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
-- ``id``: A unique identifier established by the client that contains a string or number. The server must reply with the same value in the *response* message. This member is used to correlate the context between both messages.
+- ``id``: A unique identifier established by the client, that contains a string or number. The server must reply with the same value in the *response* message. This member is used to correlate the context between both messages.
 - ``method``: A string containing the name of the method to be invoked.
 - ``params``: A structured value that holds the parameter values to be used during the invocation of the method.
 
@@ -104,7 +106,7 @@ The following example shows a typical error response:
 Kurento API over JSON-RPC
 =========================
 
-Kurento Media Server exposes a full fledged API to let applications process media in several ways. To allow this rich API, Kurento Clients require full-duplex communications between client and server. For this reason, the Kurento Protocol is based on the :term:`WebSocket` transport.
+
 
 Before issuing commands, the Kurento Client requires establishing a WebSocket connection with Kurento Media Server to this URL: ``ws://hostname:port/kurento``.
 
@@ -117,8 +119,9 @@ Once the WebSocket has been established, the Kurento Protocol offers different t
 - ``subscribe``: Subscribes to some specific event, to receive notifications when it gets emitted by a media object.
 - ``unsubscribe``: Removes an existing subscription to an event.
 - ``release``: Marks a media object for garbage collection and release of the resources used by it.
+- ``connect``: Restore a previous connection with a media server, to recover from unexpected disconnections.
 
-The Kurento Protocol allows that Kurento Media Server sends requests to clients:
+The Kurento Protocol also allows Kurento Media Server to proactively send messages to clients, i.e. sending of events:
 
 - ``onEvent``: This request is sent from Kurento Media server to subscribed clients when an event occurs.
 
@@ -190,7 +193,7 @@ The response to this request message is as follows. Notice that the parameter *v
      "jsonrpc": "2.0",
      "id": 2,
      "result": {
-       "value": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline",
+       "value": "ID_kurento.MediaPipeline",
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
    }
@@ -208,7 +211,7 @@ The following example shows a request message for the creation of an object of t
      "params": {
        "type": "WebRtcEndpoint",
        "constructorParams": {
-         "mediaPipeline": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline"
+         "mediaPipeline": "ID_kurento.MediaPipeline"
        },
        "properties": {},
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
@@ -223,7 +226,7 @@ The response to this request message is as follows:
      "jsonrpc": "2.0",
      "id": 3,
      "result": {
-       "value": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/087b7777-aab5-4787-816f-f0de19e5b1d9_kurento.WebRtcEndpoint",
+       "value": "ID_kurento.MediaPipeline/ID_kurento.WebRtcEndpoint",
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
    }
@@ -233,7 +236,7 @@ The response to this request message is as follows:
 describe
 --------
 
-This message retrieves the information of an already existing object in the Media Server. This can be useful for cases there a newly started Application Server does already know the IDs of all objects it wants to manage, so it just needs to get a reference to them from the Media Server, instead of creating new ones. The *object* parameter contains the ID of the desired object that should be retrieved.
+This message retrieves the information of an already existing object in the Media Server. This can be useful for cases there a newly started client does already know the IDs of all objects it wants to manage, so it just needs to get a reference to them from the Media Server, instead of creating new ones. The *object* parameter contains the ID of the desired object that should be retrieved.
 
 This example shows how to get a reference to a Media Pipeline that had been created earlier:
 
@@ -244,7 +247,7 @@ This example shows how to get a reference to a Media Pipeline that had been crea
      "id": 4,
      "method": "describe",
      "params": {
-       "object": "55c16267-2395-40af-af50-8555adc78f9c_kurento.MediaPipeline",
+       "object": "ID_kurento.MediaPipeline",
        "sessionId": "0cd20d0e-451f-4fd9-b3d4-dff33f90d328"
      }
    }
@@ -275,7 +278,7 @@ The following example shows the retrieval of an already existing *PlayerEndpoint
      "id": 5,
      "method": "describe",
      "params": {
-       "object": "e9cbc8c2-d283-4e62-bb13-d34546d5cdf8_kurento.MediaPipeline/3a2abe27-6f9e-4e08-9ac6-3a456b7979e7_kurento.PlayerEndpoint",
+       "object": "ID_kurento.MediaPipeline/ID_kurento.PlayerEndpoint",
        "sessionId": "4b3c8344-5b47-4f40-bc2d-a2a0f82723d0"
      }
    }
@@ -333,9 +336,9 @@ An error response will be returned:
 invoke
 ------
 
-This message requests the invocation of an operation in the specified object. The parameter *object* indicates the *id* of the object in which the operation will be invoked. The parameter *operation* carries the name of the operation to be executed. Finally, the parameter *operationParams* has the parameters needed to execute the operation.
+This message requests running a given operation on the specified object. The parameter *object* indicates the *id* of the object in which the operation will run. The parameter *operation* carries the name of the operation that should run. Finally, the parameter *operationParams* has the parameters passed to the operation.
 
-The following example shows a request message for the invocation of the operation *connect* on a *PlayerEndpoint* connected to a *WebRtcEndpoint*:
+The following example shows an invocation request for the *connect* operation, to connect a *PlayerEndpoint* with a *WebRtcEndpoint*:
 
 .. code-block:: json
 
@@ -344,55 +347,24 @@ The following example shows a request message for the invocation of the operatio
      "id": 6,
      "method": "invoke",
      "params": {
-       "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/76dcb8d7-5655-445b-8cb7-cf5dc91643bc_kurento.PlayerEndpoint",
+       "object": "ID_kurento.MediaPipeline/ID_kurento.PlayerEndpoint",
        "operation": "connect",
        "operationParams": {
-         "sink": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/087b7777-aab5-4787-816f-f0de19e5b1d9_kurento.WebRtcEndpoint"
+         "sink": "ID_kurento.MediaPipeline/ID_kurento.WebRtcEndpoint"
        },
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
    }
 
-The response message contains the value returned while executing the operation invoked in the object, or nothing if the operation doesn't return any value.
+The response message contains the value returned while executing the operation invoked on the object, or nothing if the operation doesn't return any value.
 
-This is the typical response while invoking the operation *connect* (that doesn't return anything):
+This is the typical response while invoking the *connect* operation (which doesn't return anything):
 
 .. code-block:: json
 
    {
      "jsonrpc": "2.0",
      "id": 6,
-     "result": {
-       "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
-     }
-   }
-
-
-
-release
--------
-
-This message requests releasing the resources of the specified object. The parameter *object* indicates the *id* of the object to be released:
-
-.. code-block:: json
-
-   {
-     "jsonrpc": "2.0",
-     "id": 7,
-     "method": "release",
-     "params": {
-       "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline",
-       "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
-     }
-   }
-
-The response message only contains the *sessionId*:
-
-.. code-block:: json
-
-   {
-     "jsonrpc": "2.0",
-     "id": 7,
      "result": {
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
@@ -415,14 +387,14 @@ The following example shows a request message requesting the subscription of the
      "method": "subscribe",
      "params": {
        "type": "EndOfStream",
-       "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/76dcb8d7-5655-445b-8cb7-cf5dc91643bc_kurento.PlayerEndpoint",
+       "object": "ID_kurento.MediaPipeline/ID_kurento.PlayerEndpoint",
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
    }
 
 The response message contains the subscription identifier. This value can be used later to remove this subscription.
 
-This is  the response of the subscription request. The  *value* attribute contains the subscription id:
+This is the response of the subscription request. The *value* attribute contains the subscription id:
 
 .. code-block:: json
 
@@ -452,7 +424,7 @@ The following example shows a request message requesting the cancellation of the
      "method": "unsubscribe",
      "params": {
        "subscription": "052061c1-0d87-4fbd-9cc9-66b57c3e1280",
-       "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/76dcb8d7-5655-445b-8cb7-cf5dc91643bc_kurento.PlayerEndpoint",
+       "object": "ID_kurento.MediaPipeline/ID_kurento.PlayerEndpoint",
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
    }
@@ -467,6 +439,99 @@ The response message only contains the *sessionId*:
      "result": {
        "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
      }
+   }
+
+
+
+release
+-------
+
+This message requests releasing the resources of the specified object. The parameter *object* indicates the *id* of the object to be released:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 7,
+     "method": "release",
+     "params": {
+       "object": "ID_kurento.MediaPipeline",
+       "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+     }
+   }
+
+The response message only contains the *sessionId*:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 7,
+     "result": {
+       "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+     }
+   }
+
+
+
+connect
+-------
+
+Objects handled by Kurento can consume a lot of resources. It would be wasteful if the media server keeps unneeded objects in memory due to an unexpected disconnection of the client, so Kurento includes a Garbage Collector that will release unused resources.
+
+A Media Element is garbage collected when the client which owned the object gets disconnected for longer than 4 minutes. After that time, these media elements are disposed automatically. Therefore, the WebSocket connection between client and Kurento should be active at all times. In case of reconnecting after a temporary network disconnection, Kurento provides the *connect* method that allows the client to reconnect.
+
+This message allows a client to reconnect to the same Kurento instance to which it was previously connected:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 10,
+     "method": "connect",
+     "params": {
+       "sessionId": "4f5255d5-5695-4e1c-aa2b-722e82db5260"
+     }
+   }
+
+If Kurento replies as follows:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 10,
+     "result": {
+       "sessionId": "4f5255d5-5695-4e1c-aa2b-722e82db5260"
+     }
+   }
+
+this means that the reconnection to the given session was successful, and the session's resources won't be garbage collected after 4 minutes.
+
+However, if the *connect* method was attempted against a different Kurento instance, the response would look like this:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 10,
+     "error": {
+       "code": 40007,
+       "message": "Invalid session",
+       "data": {
+         "type": "INVALID_SESSION"
+       }
+     }
+   }
+
+In this case, the client is supposed to invoke the *connect* method without parameters, in order to get a new *sessionId*:
+
+.. code-block:: json
+
+   {
+     "jsonrpc": "2.0",
+     "id": 10,
+     "method": "connect"
    }
 
 
@@ -495,12 +560,12 @@ The following example shows a notification sent from server to client, notifying
      "params": {
        "value": {
          "data": {
-           "source": "681f1bc8-2d13-4189-a82a-2e2b92248a21_kurento.MediaPipeline/e983997e-ac19-4f4b-9575-3709af8c01be_kurento.PlayerEndpoint",
+           "source": "ID_kurento.MediaPipeline/ID_kurento.PlayerEndpoint",
            "tags": [],
            "timestampMillis": "1441277150433",
            "type": "EndOfStream"
          },
-         "object": "681f1bc8-2d13-4189-a82a-2e2b92248a21_kurento.MediaPipeline/e983997e-ac19-4f4b-9575-3709af8c01be_kurento.PlayerEndpoint",
+         "object": "ID_kurento.MediaPipeline/ID_kurento.PlayerEndpoint",
          "type": "EndOfStream"
        }
      }
@@ -518,12 +583,12 @@ Here, an example Error event is sent to notify about permission errors while try
          "data": {
            "description": "Error code 6: Could not open file \"/tmp/invalid/path/test.webm\" for writing., [...] system error: Permission denied",
            "errorCode": 6,
-           "source": "bdd15b54-9cfa-4036-8a1a-a17db06b78bc_kurento.MediaPipeline/5dd21f63-643f-4562-a5d5-0ea0b6fd4a48_kurento.RecorderEndpoint",
+           "source": "ID_kurento.MediaPipeline/ID_kurento.RecorderEndpoint",
            "tags": [],
            "timestampMillis": "1646657831138",
            "type": "RESOURCE_ERROR_OPEN"
          },
-         "object": "bdd15b54-9cfa-4036-8a1a-a17db06b78bc_kurento.MediaPipeline/5dd21f63-643f-4562-a5d5-0ea0b6fd4a48_kurento.RecorderEndpoint",
+         "object": "ID_kurento.MediaPipeline/ID_kurento.RecorderEndpoint",
          "type": "Error"
        }
      }
@@ -537,66 +602,6 @@ closeSession
 ------------
 
 If you inspect the JSON traffic between any of the Kurento clients and Kurento Media Server itself, you might notice that clients send a ``closeSession`` request. This is an undocumented command that was added for development purposes in the past, and was kept in the implementation. However, it does nothing in practice. You can safely ignore this method if you are implementing the Kurento Protocol on your own SDK.
-
-
-
-Network issues
-==============
-
-Resources handled by KMS are high-consuming. For this reason, KMS implements a garbage collector.
-
-A Media Element is collected when the client is disconnected longer than 4 minutes. After that time, these media elements are disposed automatically. Therefore, the WebSocket connection between client and KMS should be active at all times. In case of a temporary network disconnection, KMS implements a mechanism that allows the client to reconnect.
-
-For this, there is a special kind of message with the format shown below. This message allows a client to reconnect to the same KMS instance to which it was previously connected:
-
-.. code-block:: json
-
-   {
-     "jsonrpc": "2.0",
-     "id": 10,
-     "method": "connect",
-     "params": {
-       "sessionId": "4f5255d5-5695-4e1c-aa2b-722e82db5260"
-     }
-   }
-
-If KMS replies as follows ...
-
-.. code-block:: json
-
-   {
-     "jsonrpc": "2.0",
-     "id": 10,
-     "result": {
-       "sessionId": "4f5255d5-5695-4e1c-aa2b-722e82db5260"
-     }
-   }
-
-... this means that the client was able to reconnect to the same KMS instance. In case of reconnection to a different KMS instance, the message is the following:
-
-.. code-block:: json
-
-   {
-     "jsonrpc": "2.0",
-     "id": 10,
-     "error": {
-       "code": 40007,
-       "message": "Invalid session",
-       "data": {
-         "type": "INVALID_SESSION"
-       }
-     }
-   }
-
-In this case, the client is supposed to invoke the *connect* primitive once again in order to get a new *sessionId*:
-
-.. code-block:: json
-
-   {
-     "jsonrpc": "2.0",
-     "id": 10,
-     "method": "connect"
-   }
 
 
 
@@ -620,7 +625,7 @@ This section describes an example of the messages exchanged between a Kurento Cl
      }
    }
 
-2. KMS sends a response message with the identifier for the Media Pipeline and the Media Session:
+2. Kurento sends a response message with the identifier for the Media Pipeline and the Media Session:
 
 .. code-block:: json
 
@@ -651,7 +656,7 @@ This section describes an example of the messages exchanged between a Kurento Cl
      }
    }
 
-4. KMS creates the *WebRtcEndpoint* and sends back to the client the Media Element identifier:
+4. Kurento creates the *WebRtcEndpoint* and sends back to the client the Media Element identifier:
 
 .. code-block:: json
 
@@ -664,7 +669,7 @@ This section describes an example of the messages exchanged between a Kurento Cl
      }
    }
 
-5. Client invokes the *connect* primitive in the *WebRtcEndpoint* in order to create a loopback:
+5. Client invokes the *connect* operation on the *WebRtcEndpoint*, in order to create a loopback:
 
 .. code-block:: json
 
@@ -682,7 +687,7 @@ This section describes an example of the messages exchanged between a Kurento Cl
      }
    }
 
-6. KMS carries out the connection and acknowledges the operation:
+6. Kurento carries out the connection and acknowledges the operation:
 
 .. code-block:: json
 
@@ -694,7 +699,7 @@ This section describes an example of the messages exchanged between a Kurento Cl
      }
    }
 
-7. Client invokes the *processOffer* primitive in the *WebRtcEndpoint* in order to start the :term:`SDP Offer/Answer` negotiation for WebRTC:
+7. Client invokes the *processOffer* method of the *WebRtcEndpoint*, in order to start the :term:`SDP Offer/Answer` negotiation for WebRTC:
 
 .. code-block:: json
 
@@ -712,7 +717,7 @@ This section describes an example of the messages exchanged between a Kurento Cl
      }
    }
 
-8. KMS carries out the SDP negotiation and returns the SDP Answer:
+8. Kurento carries out the SDP negotiation and returns the SDP Answer:
 
 .. code-block:: json
 
@@ -733,11 +738,11 @@ In order to implement a Kurento Client you need to follow the reference document
 
 We have defined a custom IDL format based on JSON. From it, we automatically generate the client code for the Kurento Client libraries:
 
-- `KMS core <https://github.com/Kurento/kurento/blob/main/server/module-core/src/server/interface/core.kmd.json>`__
+- `core <https://github.com/Kurento/kurento/blob/main/server/module-core/src/server/interface/core.kmd.json>`__
 
-- `KMS elements <https://github.com/Kurento/kurento/blob/main/server/module-elements/src/server/interface>`__
+- `elements <https://github.com/Kurento/kurento/blob/main/server/module-elements/src/server/interface>`__
 
-- `KMS filters <https://github.com/Kurento/kurento/blob/main/server/module-filters/src/server/interface>`__
+- `filters <https://github.com/Kurento/kurento/blob/main/server/module-filters/src/server/interface>`__
 
 
 
