@@ -379,7 +379,7 @@ Release steps
 
    Search for the ``-dev`` suffix.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Server Build All`_ job with parameters:
 
@@ -469,7 +469,7 @@ Release steps
 
    Search for the ``-dev`` suffix.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Clients Build All JavaScript`_ job with parameters:
 
@@ -675,7 +675,7 @@ Release steps
 
    Search for the ``-SNAPSHOT`` suffix. Note that most versions are defined as properties in ``clients/java/parent-pom/pom.xml``.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Clients Build All Java`_ job with parameters:
 
@@ -823,13 +823,14 @@ For this reason, the documentation must be built only after all the other module
 
    JavaDoc and JsDoc pages can be generated separately with ``make langdoc``.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Documentation build`_ job with parameters:
 
+   - Workflow branch: Release branch name (e.g. *release-1.0.0*).
    - *jobRelease*: **ENABLED**.
 
-#. CI automatically tags Release versions in ReadTheDocs generated repo `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
+#. CI automatically tags Release versions in the ReadTheDocs-generated repo `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
 
    .. note::
 
