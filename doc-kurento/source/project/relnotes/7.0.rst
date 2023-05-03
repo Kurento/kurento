@@ -219,3 +219,24 @@ Fixed
 * Couldn't use special charachters (``/ ? @``) in *PlayerEndpoint* and *RecorderEndpoint* URIs. This mainly affected users wanting to play RTSP sources, and it was caused by limitations in both sides of Kurento and the underlying GStreamer library. It should now be possible to use special characters in either of the username or password, which must be URL-encoded fields.
 
   Kurento Client API docs: `Java <../../_static/client-javadoc/org/kurento/client/PlayerEndpoint.html>`__, `JavaScript <../../_static/client-jsdoc/module-elements.PlayerEndpoint.html>`__.
+
+
+
+Bug-fix releases
+================
+
+7.0.1
+-----
+
+* Fix incorrect out caps from **audiomixer** element.
+
+  The audiomixer was *sometimes* outputting mono audio, after the downstream WEBM muxer (in RecorderEndpoint) had been configured for 2 channels. This caused an error in the webmmuxer, because changing caps is not
+supported.
+
+* Rework **EncoderBitrate**. Improve **Transcoding** event (`#24 <https://github.com/Kurento/kurento/pull/24>`__).
+
+  Debug messages explaining what is going on with the different values were very confusing, so now they were rewritten to make them clearer.
+
+  The *Transcoding* event was not correctly emitted under some conditions like first connecting a compatible sink, then adding an incompatible one which needed transcoding; the latter would not cause a "transcoding active" event.
+
+  Handling of target/min/max bitrate for the encoder was very confusing, because it only took place at the beginning when loading those values from the Kurento .conf files. From that point, client calls to set new values would only have an effect *if the agnosticbin / enctreebin was already active*.
