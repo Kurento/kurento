@@ -74,6 +74,10 @@ log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
 {
     CHECK_VERSION_ARGS=()
 
+    # Doc versions are only composed of Major.Minor, while .Patch or bug-fix
+    # versions are all summarized under the same Minor release.
+    CHECK_VERSION_ARGS+=(--minor)
+
     if [[ "$CFG_RELEASE" == "true" ]]; then
         CHECK_VERSION_ARGS+=(--release)
     fi
