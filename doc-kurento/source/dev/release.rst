@@ -1040,6 +1040,7 @@ Kurento documentation
 
    # Change here.
    NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
+   IS_MAJOR="<IsMajor?>" # "true" for 1.1.0, "false" for 1.0.1
 
    cd doc-kurento/
 
@@ -1054,14 +1055,17 @@ Kurento documentation
        || { echo "ERROR: Command failed: sed"; return 2; }
 
        # Add a new Release Notes document
-       local RELNOTES_NAME="v${NEW_VERSION//./_}"
-       cp source/project/relnotes/v0_TEMPLATE.rst \
-           "source/project/relnotes/$RELNOTES_NAME.rst" \
-       && sed -i "s/1.2.3/$NEW_VERSION/" \
-           "source/project/relnotes/$RELNOTES_NAME.rst" \
-       && sed -i "8i\   $RELNOTES_NAME" \
-           source/project/relnotes/index.rst \
-       || { echo "ERROR: Command failed: sed"; return 3; }
+       if [[ "$IS_MAJOR" == "true" ]]; then
+           local MAJOR_MINOR="${NEW_VERSION%.*}"
+           local RELNOTES_NAME="$MAJOR_MINOR"
+           cp source/project/relnotes/0.0_TEMPLATE.rst \
+               "source/project/relnotes/$RELNOTES_NAME.rst" \
+           && sed -i "s/00.00/$RELNOTES_NAME/" \
+               "source/project/relnotes/$RELNOTES_NAME.rst" \
+           && sed -i "8i\   $RELNOTES_NAME" \
+               source/project/relnotes/index.rst \
+           || { echo "ERROR: Command failed: sed"; return 3; }
+       fi
 
        # Amend last commit with these changes.
        # This assumes that previous modules have been committed already,

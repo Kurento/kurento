@@ -70,7 +70,7 @@ Information about *development of Kurento itself* is also available:
    /project/relnotes/index
 
 ..
-   This sections are commented out, for now:
+   Commented out for now:
    /project/sponsors
    /project/opensource
    /project/story
@@ -91,7 +91,7 @@ Information about *development of Kurento itself* is also available:
    /dev/testing
 
 ..
-   This sections are commented out, for now:
+   Commented out for now:
    /dev/changelog
    /dev/architecture
 

@@ -1,10 +1,18 @@
-==================
-1.2.3 (UNRELEASED)
-==================
+======================================
+Kurento 7.1 Release Notes (UNRELEASED)
+======================================
 
 This is a template for changes that are being added to the next release.
 
+Kurento 7.1.0 was released on 31 March 1999.
+
+.. The latest bug-fix release in the stable 7.1 series is `7.1.1 <#7.1.1>`__ and was released on 31 March 1999.
+
+See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.1.html for the latest version of this document.
+
 To install Kurento Media Server: :doc:`/user/installation`.
+
+.. contents:: Table of Contents
 
 
 
