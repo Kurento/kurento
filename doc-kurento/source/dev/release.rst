@@ -874,7 +874,13 @@ For this reason, the documentation must be built only after all the other module
 LAST: Close the Release Process
 ===============================
 
-To finish the release, go to GitHub and create a new Pull Request from the release branch. Review all the changes, and accept the PR with a **merge commit**. Do not use the other options (squash or rebase), because we want all changes to get separately recorded with author and date information.
+To finish the release, go to GitHub and create a new Pull Request from the release branch:
+
+.. code-block:: text
+
+   https://github.com/Kurento/kurento/pull/new/release-1.0.0
+
+Review all the changes, and accept the PR with a **merge commit**. Do not use the other options (squash or rebase), because we want all changes to get separately recorded with author and date information.
 
 After merging the PR, fetch the new commit:
 
