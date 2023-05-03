@@ -4,9 +4,9 @@ Kurento 7.0 Release Notes
 
 A new Major version release of Kurento. This brings the opportunity to make breaking changes, which is used to clean the API a bit and fix some long standing issues with small details of the media server, such as the encoding format of audio recordings.
 
-Kurento 7.0.0 was released on 22 March 2023.
+Kurento 7.0.0 was originally released on 22 March 2023.
 
-The latest bug-fix release in the stable 7.0 series is `7.0.1 <#7.0.1>`__ and was released on 27 April 2023.
+The latest `bug-fix release <#bug-fix-releases>`__ in the stable 7.0 series is **7.0.1**.
 
 See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.0.html for the latest version of this document.
 
@@ -228,10 +228,11 @@ Bug-fix releases
 7.0.1
 -----
 
+Released on 27 April 2023.
+
 * Fix incorrect out caps from **audiomixer** element.
 
-  The audiomixer was *sometimes* outputting mono audio, after the downstream WEBM muxer (in RecorderEndpoint) had been configured for 2 channels. This caused an error in the webmmuxer, because changing caps is not
-supported.
+  The audiomixer was *sometimes* outputting mono audio, after the downstream WEBM muxer (in RecorderEndpoint) had been configured for 2 channels. This caused an error in the webmmuxer, because changing caps is not supported.
 
 * Rework **EncoderBitrate**. Improve **Transcoding** event (`#24 <https://github.com/Kurento/kurento/pull/24>`__).
 

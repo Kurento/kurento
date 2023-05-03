@@ -4,9 +4,9 @@ Kurento 7.1 Release Notes (UNRELEASED)
 
 This is a template for changes that are being added to the next release.
 
-Kurento 7.1.0 was released on 31 March 1999.
+Kurento 7.1.0 was originally released on 31 March 1999.
 
-.. The latest bug-fix release in the stable 7.1 series is `7.1.1 <#7.1.1>`__ and was released on 31 March 1999.
+.. The latest `bug-fix release <#bug-fix-releases>`__ in the stable 7.1 series is **7.1.1**.
 
 See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.1.html for the latest version of this document.
 
@@ -86,3 +86,20 @@ This list includes other changes and fixes contributed by users and/or fellow de
 **RepoName 2**
 
 * "Username for PR" ...
+
+
+
+..
+   Bug-fix releases
+   ================
+
+   7.1.1
+   -----
+
+   * Fix 1.
+
+     Description.
+
+   * Fix 2.
+
+     Description.
