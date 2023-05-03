@@ -819,6 +819,8 @@ For this reason, the documentation must be built only after all the other module
       python3 -m pip install --upgrade -r requirements.txt
       make html
 
+   Repeat the *pip install* command if it fails. Python package management is so abysmally bad that this usually solves the issue.
+
    JavaDoc and JsDoc pages can be generated separately with ``make langdoc``.
 
 #. Commit changes (rebase and squash as needed).
