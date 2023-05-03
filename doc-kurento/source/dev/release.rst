@@ -846,13 +846,14 @@ For this reason, the documentation must be built only after all the other module
 
    function do_release {
        local COMMIT_MSG="Prepare documentation release $NEW_VERSION"
+       local SHORT_VERSION="${NEW_VERSION%.*}" # Major.Minor (no .Patch)
 
        # Set [VERSION_RELEASE]="true".
        sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="true"/' VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 1; }
 
        # Set [VERSION_DOC].
-       local VERSION_DOC="$NEW_VERSION"
+       local VERSION_DOC="$SHORT_VERSION"
        sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 2; }
 
@@ -1045,19 +1046,20 @@ Kurento documentation
    cd doc-kurento/
 
    function do_release {
+       local SHORT_VERSION="${NEW_VERSION%.*}" # Major.Minor (no .Patch)
+
        # Set [VERSION_RELEASE]="false"
        sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="false"/' VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 1; }
 
        # Set [VERSION_DOC]
-       local VERSION_DOC="$NEW_VERSION-dev"
+       local VERSION_DOC="$SHORT_VERSION-dev"
        sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 2; }
 
        # Add a new Release Notes document
        if [[ "$IS_MAJOR" == "true" ]]; then
-           local MAJOR_MINOR="${NEW_VERSION%.*}"
-           local RELNOTES_NAME="$MAJOR_MINOR"
+           local RELNOTES_NAME="$SHORT_VERSION"
            cp source/project/relnotes/0.0_TEMPLATE.rst \
                "source/project/relnotes/$RELNOTES_NAME.rst" \
            && sed -i "s/00.00/$RELNOTES_NAME/" \
