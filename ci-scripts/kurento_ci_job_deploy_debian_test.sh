@@ -167,9 +167,13 @@ EOF
 
 # Install debug packages.
 # The debug packages repository fails very often due to bad server state.
-# Try to update, and only if it works install debug symbols.
-apt-get update && apt-get install --no-install-recommends --yes \
-    kurento-dbg
+# Try to update, and only if it works, install debug symbols. Otherwise, disable
+# the debug repository.
+apt-get update && apt-get install --no-install-recommends --yes kurento-dbg \
+|| {
+    echo "WARNING: Ubuntu debug repository is down! Leaving it disabled"
+    sed -i 's/^[^#]/#&/' /etc/apt/sources.list.d/ddebs.list
+}
 
 
 
