@@ -25,7 +25,7 @@ Request
 An *RPC call* is represented by sending a *request* message to a server. The *request* message has the following members:
 
 - ``jsonrpc``: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
-- ``id``: A unique identifier established by the client, that contains a string or number. The server must reply with the same value in the *response* message. This member is used to correlate the context between both messages.
+- ``id``: A unique identifier established by the client, that contains a number. The server must reply with the same value in the *response* message. This member is used to correlate the context between both messages.
 - ``method``: A string containing the name of the method to be invoked.
 - ``params``: A structured value that holds the parameter values to be used during the invocation of the method.
 
@@ -52,12 +52,11 @@ The following JSON shows a sample request for the creation of a `PlayerEndpoint`
 Successful Response
 -------------------
 
-When an *RPC call* is made, the server replies with a *response* message. In case of a successful response, the *response* message will contain the following members:
+When an RPC call is made, the server replies with a **response** message. A successful response will contain the following members:
 
 - ``jsonrpc``: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
 - ``id``: Must match the value of the *id* member in the *request* message.
 - ``result``: Its value is determined by the method invoked on the server.
-- In case the connection is rejected, the response includes a message with a *rejected* attribute containing a message with a *code* and *message* attributes with the reason why the session was not accepted, and no *sessionId* is defined.
 
 The following example shows a typical successful response:
 
@@ -72,32 +71,34 @@ The following example shows a typical successful response:
      }
    }
 
+In case the connection is rejected, the response includes a message with a *rejected* attribute, containing a *code* and a *message* with the reason why the session was not accepted, and no *sessionId* is defined.
+
 
 
 Error Response
 --------------
 
-When an *RPC call* is made, the server replies with a *response* message. In case of an error response, the *response* message will contain the following
-members:
+When an RPC call is made, the server replies with a **response** message. An error response will contain the following members:
 
 - ``jsonrpc``: A string specifying the version of the JSON-RPC protocol. It must be ``2.0``.
-- ``id``: Must match the value of the *id* member in the *request* message. If there was an error in detecting the *id* in the *request* message (e.g. *Parse Error/Invalid Request*), *id* is *null*.
-- ``error``: A message describing the error through the following members:
+- ``id``: Must match the value of the *id* member in the *request* message. If the error happened even before being able to read the *id* in the *request* message (e.g. a JSON *Parse Error* / *Invalid Request*), *id* is *null*.
+- ``error``: An object describing the error, with the following members:
 
-  - ``code``: An integer number that indicates the error type that occurred.
-  - ``message``: A string providing a short description of the error.
-  - ``data``: A primitive or structured value that contains additional information about the error. It may be omitted. The value of this member is defined by the server.
+  - ``code``: A number indicating the type of error that occurred. Destined for machine code.
+  - ``data``: An optional value that is particular to each error, and contains additional information about the error itself. It usually is an object that at least contains a ``type`` string with the internal name of the error.
+  - ``message``: A string providing a short description of the error. Destined for human reading; it's not a good idea to parse it with machine code, because the wording of messages could change over time. Prefer using the ``code`` field to differentiate between types of errors.
 
-The following example shows a typical error response:
+The following example shows an example error response:
 
 .. code-block:: json
 
    {
      "jsonrpc": "2.0",
-     "id": 1,
+     "id": 5,
      "error": {
-       "code": 33,
-       "message": "Invalid parameter format"
+       "code": 40101,
+       "data": { "type": "MEDIA_OBJECT_NOT_FOUND" },
+       "message": "Object '1234567890' not found"
      }
    }
 
@@ -106,11 +107,9 @@ The following example shows a typical error response:
 Kurento API over JSON-RPC
 =========================
 
-
-
 Before issuing commands, the Kurento Client requires establishing a WebSocket connection with Kurento Media Server to this URL: ``ws://hostname:port/kurento``.
 
-Once the WebSocket has been established, the Kurento Protocol offers different types of request/response messages:
+Once the WebSocket has been established, the Kurento Protocol offers several callable methods:
 
 - ``ping``: Keep-alive method between client and Kurento Media Server.
 - ``create``: Creates a new media object, i.e. a Media Pipeline, an Endpoint, or any other Media Element.
@@ -185,7 +184,7 @@ The following example shows a request message for the creation of an object of t
      }
    }
 
-The response to this request message is as follows. Notice that the parameter *value* identifies the created Media Pipelines, and *sessionId* is the identifier of the current session:
+The response to this request message is as follows. Notice that the parameter *value* identifies the created Media Pipeline, and *sessionId* is the identifier of the current session:
 
 .. code-block:: json
 
@@ -198,9 +197,9 @@ The response to this request message is as follows. Notice that the parameter *v
      }
    }
 
-The response message contains the identifier of the new object in the field *value*. As usual, the field *id* must match the value of the *id* member in the *request* message. The *sessionId* is also returned in each response.
+The response message contains the identifier of the new object in the field *value*. As usual, the field *id* will match the value of the *id* member in the *request* message. The *sessionId* is also returned in each response.
 
-The following example shows a request message for the creation of an object of the type *WebRtcEndpoint* within an existing Media Pipeline (identified by the parameter *mediaPipeline*). Notice that in this request, the *sessionId* is already present, while in the previous example it was not (since at that point it was unknown for the client):
+The following example shows a request message for the creation of an object of the type *WebRtcEndpoint* within an existing Media Pipeline (identified by the parameter *constructorParams.mediaPipeline*). Notice that in this request, the *sessionId* is already present, while in the previous example it was not (since at that point it was unknown for the client):
 
 .. code-block:: json
 
@@ -236,7 +235,7 @@ The response to this request message is as follows:
 describe
 --------
 
-This message retrieves the information of an already existing object in the Media Server. This can be useful for cases there a newly started client does already know the IDs of all objects it wants to manage, so it just needs to get a reference to them from the Media Server, instead of creating new ones. The *object* parameter contains the ID of the desired object that should be retrieved.
+This message retrieves the information of an already existing object in the Media Server. This can be useful for cases there a newly started client does already know the IDs of all objects it wants to manage, so it just needs to get a reference to them from the Media Server, instead of creating new ones. The *object* parameter contains the id of the desired object that should be retrieved.
 
 This example shows how to get a reference to a Media Pipeline that had been created earlier:
 
@@ -262,8 +261,8 @@ The response to this request message is as follows:
      "result": {
        "hierarchy": ["kurento.MediaObject"],
        "qualifiedType": "kurento.MediaPipeline",
-       "sessionId": "0cd20d0e-451f-4fd9-b3d4-dff33f90d328",
-       "type": "MediaPipeline"
+       "type": "MediaPipeline",
+       "sessionId": "0cd20d0e-451f-4fd9-b3d4-dff33f90d328"
      }
    }
 
@@ -298,8 +297,8 @@ The response to this request message is as follows:
          "kurento.MediaObject"
       ],
       "qualifiedType": "kurento.PlayerEndpoint",
-      "sessionId": "4b3c8344-5b47-4f40-bc2d-a2a0f82723d0",
-      "type": "PlayerEndpoint"
+      "type": "PlayerEndpoint",
+      "sessionId": "4b3c8344-5b47-4f40-bc2d-a2a0f82723d0"
      }
    }
 
@@ -446,7 +445,7 @@ The response message only contains the *sessionId*:
 release
 -------
 
-This message requests releasing the resources of the specified object. The parameter *object* indicates the *id* of the object to be released:
+This message requests releasing the resources of the specified object. The parameter *object* indicates the *objectId* of the object to be released:
 
 .. code-block:: json
 
@@ -494,7 +493,7 @@ This message allows a client to reconnect to the same Kurento instance to which 
      }
    }
 
-If Kurento replies as follows:
+If the reconnection to the given session was successful, the session's resources won't be garbage collected after 4 minutes, and Kurento replies as follows:
 
 .. code-block:: json
 
@@ -502,11 +501,10 @@ If Kurento replies as follows:
      "jsonrpc": "2.0",
      "id": 10,
      "result": {
+       "serverId": "<serverId>",
        "sessionId": "4f5255d5-5695-4e1c-aa2b-722e82db5260"
      }
    }
-
-this means that the reconnection to the given session was successful, and the session's resources won't be garbage collected after 4 minutes.
 
 However, if the *connect* method was attempted against a different Kurento instance, the response would look like this:
 
@@ -517,10 +515,8 @@ However, if the *connect* method was attempted against a different Kurento insta
      "id": 10,
      "error": {
        "code": 40007,
-       "message": "Invalid session",
-       "data": {
-         "type": "INVALID_SESSION"
-       }
+       "data": { "type": "INVALID_SESSION" },
+       "message": "Invalid session"
      }
    }
 
