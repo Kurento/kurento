@@ -77,7 +77,7 @@ generic_find(LIBNAME gstreamer-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-base-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-video-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-check-1.0 VERSION ${GST_REQUIRED})
-generic_find(LIBNAME KmsJsonRpc VERSION ^7.0.1 REQUIRED)
+generic_find(LIBNAME KmsJsonRpc VERSION ^7.0.2-dev REQUIRED)
 generic_find(LIBNAME libsoup-2.4 VERSION ${SOUP_REQUIRED} REQUIRED)
 generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 

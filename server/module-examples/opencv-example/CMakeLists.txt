@@ -56,7 +56,7 @@ find_package(PkgConfig)
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
 
 include(GenericFind)
-generic_find(LIBNAME KMSCORE VERSION ^7.0.1 REQUIRED)
+generic_find(LIBNAME KMSCORE VERSION ^7.0.2-dev REQUIRED)
 generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 # Generate file "config.h"
