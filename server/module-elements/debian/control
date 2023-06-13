@@ -42,6 +42,8 @@ Depends:
  libsoup2.4-1,
  libsrtp-kurento,
  openh264-gst-plugin,
+Recommends:
+ gstreamer1.0-x,
 Breaks:
  kms-elements-6.0,
  kms-elements,
