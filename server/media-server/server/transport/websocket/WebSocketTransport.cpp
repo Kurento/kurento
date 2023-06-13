@@ -580,8 +580,7 @@ void WebSocketTransport::openHandler (ServerType *s,
 
   if (resource != path) {
     try {
-      GST_ERROR ("Invalid path \"%s\", closing connection",
-                 connection->get_resource().c_str() );
+      GST_ERROR ("Invalid path \"%s\", closing connection", resource.c_str ());
       s->close (hdl, websocketpp::close::status::protocol_error, "Invalid path");
     } catch (websocketpp::exception &e) {
       GST_ERROR ("Error: %s", e.code().message().c_str() );

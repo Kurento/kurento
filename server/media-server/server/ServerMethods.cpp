@@ -655,11 +655,7 @@ ServerMethods::create (const Json::Value &params,
 
   JsonRpc::getValue (params, TYPE, type);
 
-  try {
-    JsonRpc::getValue (params, SESSION_ID, sessionId);
-  } catch (JsonRpc::CallException e) {
-    sessionId = generateUUID ();
-  }
+  getOrCreateSessionId (sessionId, params);
 
   try {
     factory = moduleManager.getFactory (type);
