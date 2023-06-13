@@ -1,7 +1,7 @@
 {
   "name": "markerdetector",
-  "version": "7.0.1-dev",
-  "kurentoVersion": "^7.0.1-dev",
+  "version": "7.0.1",
+  "kurentoVersion": "^7.0.1",
   "code": {
     "api": {
       "js": {

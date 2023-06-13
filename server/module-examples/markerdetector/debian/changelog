@@ -2,7 +2,7 @@ kurento-module-markerdetector (7.0.1-1kurento1) UNRELEASED; urgency=medium
 
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 22 Mar 2023 18:10:25 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Wed, 19 Apr 2023 14:47:58 +0200
 
 kms-markerdetector (6.18.0-0kurento1) testing; urgency=medium
 
