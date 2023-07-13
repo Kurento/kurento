@@ -142,7 +142,7 @@ static gboolean kms_agnostic_bin2_process_pad (KmsAgnosticBin2 * self,
     GstPad * pad);
 
 static GstBin *kms_agnostic_bin2_find_or_create_bin_for_caps (KmsAgnosticBin2 *
-    self, GstCaps * caps);
+    self, GstCaps ** caps);
 
 static void
 kms_agnostic_bin2_insert_bin (KmsAgnosticBin2 * self, GstBin * bin)
@@ -487,7 +487,7 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
 }
 
 static gboolean
-check_bin (KmsTreeBin * tree_bin, const GstCaps * caps)
+check_bin (KmsTreeBin * tree_bin, GstCaps ** caps)
 {
   gboolean ret = FALSE;
   GstElement *output_tee = kms_tree_bin_get_output_tee (tree_bin);
@@ -501,17 +501,17 @@ check_bin (KmsTreeBin * tree_bin, const GstCaps * caps)
   GST_DEBUG_OBJECT (tree_bin, "TreeBin %" GST_PTR_FORMAT " caps: %"
       GST_PTR_FORMAT, tree_bin, current_caps);
 
-  if (current_caps != NULL && gst_caps_get_size (current_caps) > 0) {
-    //TODO: Remove this when problem in negotiation with features will be
-    //resolved
-    GstCaps *caps_without_features = gst_caps_make_writable (current_caps);
 
-    gst_caps_set_features (caps_without_features, 0,
-        gst_caps_features_new_empty ());
-    if (gst_caps_can_intersect (caps, caps_without_features)) {
+  if (current_caps != NULL && gst_caps_get_size (current_caps) > 0) {
+    if (gst_caps_can_intersect (*caps, current_caps)) {
+      // If caps negotiation is ok, then resulting caps needs to be updated just in case original one contained more than one structure
+      GstCaps *resulting_caps = gst_caps_intersect (*caps, current_caps);
+
+      gst_caps_unref (*caps);
+      *caps = resulting_caps;
+
       ret = TRUE;
     }
-    gst_caps_unref (caps_without_features);
   }
 
   g_object_unref (tee_sink);
@@ -520,12 +520,12 @@ check_bin (KmsTreeBin * tree_bin, const GstCaps * caps)
 }
 
 static GstBin *
-kms_agnostic_bin2_find_bin_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
+kms_agnostic_bin2_find_bin_for_caps (KmsAgnosticBin2 * self, GstCaps ** caps)
 {
   GList *bins, *l;
   GstBin *bin = NULL;
 
-  if (gst_caps_is_any (caps) || gst_caps_is_empty (caps)) {
+  if (gst_caps_is_any (*caps) || gst_caps_is_empty (*caps)) {
     return self->priv->input_bin;
   }
 
@@ -609,7 +609,7 @@ kms_agnostic_bin2_get_or_create_dec_bin (KmsAgnosticBin2 * self, GstCaps * caps)
     GstBin *dec_bin;
 
     GST_LOG ("Raw caps: %" GST_PTR_FORMAT, raw_caps);
-    dec_bin = kms_agnostic_bin2_find_bin_for_caps (self, raw_caps);
+    dec_bin = kms_agnostic_bin2_find_bin_for_caps (self, &raw_caps);
 
     if (dec_bin == NULL) {
       dec_bin = kms_agnostic_bin2_create_dec_bin (self, raw_caps);
@@ -652,7 +652,7 @@ kms_agnostic_bin2_create_rtp_pay_bin (KmsAgnosticBin2 * self, GstCaps * caps)
   input_caps = gst_pad_query_caps (sink, NULL);
   g_object_unref (sink);
 
-  enc_bin = kms_agnostic_bin2_find_or_create_bin_for_caps (self, input_caps);
+  enc_bin = kms_agnostic_bin2_find_or_create_bin_for_caps (self, &input_caps);
   kms_agnostic_bin2_insert_bin (self, GST_BIN (bin));
   gst_caps_unref (input_caps);
 
@@ -704,13 +704,20 @@ kms_agnostic_bin2_create_bin_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
 
 static GstBin *
 kms_agnostic_bin2_find_or_create_bin_for_caps (KmsAgnosticBin2 * self,
-    GstCaps * caps)
+    GstCaps ** caps)
 {
   GstBin *bin;
   KmsMediaType type;
   gchar* media_type = NULL;
 
-  if (kms_utils_caps_is_audio (caps)) {
+  GST_DEBUG_OBJECT (self, "Find TreeBin with wanted caps: %" GST_PTR_FORMAT, *caps);
+
+  bin = kms_agnostic_bin2_find_bin_for_caps (self, caps);
+
+  // We need to setup the media type after getting a bin, because it is possible that caps contains several
+  // structures corresponding to several media types. So until we get the bin we won't have that narrowed 
+  // to a single media type.
+  if (kms_utils_caps_is_audio (*caps)) {
     type = KMS_MEDIA_TYPE_AUDIO;
     media_type = g_strdup ("audio");
   }
@@ -719,9 +726,6 @@ kms_agnostic_bin2_find_or_create_bin_for_caps (KmsAgnosticBin2 * self,
     media_type = g_strdup ("video");
   }
 
-  GST_DEBUG_OBJECT (self, "Find TreeBin with wanted caps: %" GST_PTR_FORMAT, caps);
-
-  bin = kms_agnostic_bin2_find_bin_for_caps (self, caps);
 
   // TODO: This code only runs during connection of new elements that might need
   // transcoding. But there is no handling of disconnection of elements that
@@ -742,7 +746,7 @@ kms_agnostic_bin2_find_or_create_bin_for_caps (KmsAgnosticBin2 * self,
     GST_DEBUG_OBJECT (self, "TreeBin not found! Transcoding required for %s",
         media_type);
 
-    bin = kms_agnostic_bin2_create_bin_for_caps (self, caps);
+    bin = kms_agnostic_bin2_create_bin_for_caps (self, *caps);
     GST_DEBUG_OBJECT (self, "Created TreeBin: %" GST_PTR_FORMAT, bin);
 
     // Emit this event in all cases. I.e. regardless of whether this is the
@@ -803,7 +807,7 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
 
   GST_DEBUG_OBJECT (self, "Downstream wanted caps: %" GST_PTR_FORMAT, peer_caps);
 
-  bin = kms_agnostic_bin2_find_or_create_bin_for_caps (self, peer_caps);
+  bin = kms_agnostic_bin2_find_or_create_bin_for_caps (self, &peer_caps);
 
   if (bin != NULL) {
     GstElement *tee = kms_tree_bin_get_output_tee (KMS_TREE_BIN (bin));
