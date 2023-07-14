@@ -444,6 +444,31 @@ kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
   return gst_element_set_state (self->priv->pipeline, state);
 }
 
+static gboolean
+process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
+{
+  GstPad *src;
+  GstPad *sink;
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (GST_ELEMENT_PARENT (appsrc));
+
+  if (event == NULL) {
+    GST_ERROR_OBJECT (appsink, "Cannot get event");
+    return TRUE;
+  }
+
+  GST_DEBUG_OBJECT (self, "Pushing event %" GST_PTR_FORMAT, event);
+  src = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
+  sink = gst_pad_get_peer (src);
+  g_object_unref (src);
+
+  if (sink != NULL) {
+    gst_pad_send_event (sink, event);
+    g_object_unref (sink);
+  }
+
+  return TRUE;
+}
+
 static GstFlowReturn
 process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     gboolean is_preroll)
@@ -627,6 +652,20 @@ appsink_new_sample_cb (GstAppSink * appsink, gpointer user_data)
   sample = gst_app_sink_pull_sample (appsink);
 
   return process_sample (appsink, GST_APP_SRC (user_data), sample, !IS_PREROLL);
+}
+
+static gboolean
+appsink_new_event_cb (GstAppSink *appsink, gpointer user_data)
+{
+  GstEvent *event;
+  GstMiniObject *obj;
+
+  obj = gst_app_sink_pull_object (appsink);
+  if (GST_IS_EVENT (obj)) {
+    event = GST_EVENT (obj);
+    return process_event (appsink, GST_APP_SRC(user_data), event);
+  }
+  return FALSE;
 }
 
 static void
@@ -844,6 +883,7 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
     callbacks.eos = appsink_eos_cb;
     callbacks.new_preroll = appsink_new_preroll_cb;
     callbacks.new_sample = appsink_new_sample_cb;
+    callbacks.new_event = appsink_new_event_cb;
     gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc,
         NULL);
 
