@@ -219,7 +219,7 @@ connect_pads_and_remove_on_unlinked (GstElement * agnosticbin,
 {
   GstPad *src;
 
-  src = gst_element_get_request_pad (agnosticbin, "src_%u");
+  src = gst_element_request_pad_simple (agnosticbin, "src_%u");
   g_assert (src != NULL);
   g_signal_connect (src, "unlinked", G_CALLBACK (remove_on_unlinked), NULL);
   gst_element_link_pads (agnosticbin, GST_OBJECT_NAME (src), elem, sink_name);
