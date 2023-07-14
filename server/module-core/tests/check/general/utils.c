@@ -403,7 +403,6 @@ utils_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
-  if (FALSE) {
   tcase_add_test (tc_chain, check_urls);
 
   tcase_add_test (tc_chain, check_sdp_utils_media_get_fid_ssrc);
@@ -412,7 +411,6 @@ utils_suite (void)
   tcase_add_test (tc_chain, check_kms_utils_set_pad_query_function_full);
   
   tcase_add_test (tc_chain, check_kms_utils_drop_until_keyframe_buffer);
-  }
   tcase_add_test (tc_chain, check_kms_utils_drop_until_keyframe_bufferlist);
 
   return s;
