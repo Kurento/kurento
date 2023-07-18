@@ -1115,6 +1115,12 @@ kms_webrtc_session_data_session_established_cb (KmsWebRtcDataSessionBin *
       connected);
 }
 
+static gboolean
+new_event_callback (GstAppSink * appsink, DataChannel * channel) 
+{
+  return FALSE;
+}
+
 static GstFlowReturn
 new_sample_callback (GstAppSink * appsink, DataChannel * channel)
 {
@@ -1192,6 +1198,9 @@ kms_webrtc_session_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
   callbacks.new_preroll = NULL;
   callbacks.new_sample =
       (GstFlowReturn (*)(GstAppSink *, gpointer)) new_sample_callback;
+  callbacks.new_event =
+      (gboolean (*)(GstAppSink *, gpointer)) new_event_callback;
+  
 
   gst_app_sink_set_callbacks (GST_APP_SINK (channel->appsink), &callbacks,
       kms_ref_struct_ref (KMS_REF_STRUCT_CAST (channel)),
