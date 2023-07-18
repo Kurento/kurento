@@ -98,6 +98,10 @@ command -v astyle >/dev/null || {
     log "ERROR: 'astyle' is not installed; please install it"
     exit 1
 }
+command -v dch >/dev/null || {
+    log "ERROR: 'devscripts' is not installed; please install it"
+    exit 1
+}
 
 
 

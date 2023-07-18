@@ -43,7 +43,7 @@ RUNNER_TOKEN="${RUNNER_TOKEN:-RunnerToken}"
 # Download runner package
 # =======================
 
-sudo apt-get update && sudo apt-get install --yes wget jq
+sudo apt-get update ; sudo apt-get install --yes wget jq
 
 mkdir --parents "$RUNNER_HOME/default/"
 

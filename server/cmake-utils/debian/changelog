@@ -1,9 +1,9 @@
-kurento-cmake-utils (7.0.1-1kurento1) UNRELEASED; urgency=medium
+kurento-cmake-utils (7.0.2-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 22 Mar 2023 18:10:23 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jun 2023 18:02:35 +0200
 
 kms-cmake-utils (6.18.0-0kurento1) testing; urgency=medium
 

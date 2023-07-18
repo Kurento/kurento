@@ -1,6 +1,6 @@
-kurento-module-gstreamer-example (7.0.1-1kurento1) UNRELEASED; urgency=medium
+kurento-module-gstreamer-example (7.0.2-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * Initial release.
 
- -- Juan Navarro <juan.navarro@gmx.es>  Wed, 22 Mar 2023 18:10:25 +0100
+ -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jun 2023 18:02:38 +0200

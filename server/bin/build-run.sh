@@ -362,11 +362,15 @@ fi
 RUN_VARS=()
 RUN_WRAPPER=""
 
+# Special variables support.
+G_DEBUG_VALUES=()
+G_SLICE_VALUES=()
+
 if [[ "$CFG_JEMALLOC" == "true" ]]; then
     # Find the full path to the Jemalloc library file.
     JEMALLOC_PATH="$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[0-9]+' | sort --version-sort --reverse | head --lines 1)" || {
         log "ERROR: Jemalloc not found, please install it:"
-        log "sudo apt-get update && sudo apt-get install '^libjemalloc[0-9]+$'"
+        log "sudo apt-get update ; sudo apt-get install '^libjemalloc[0-9]+$'"
         exit 1
     }
 
@@ -376,23 +380,29 @@ if [[ "$CFG_JEMALLOC" == "true" ]]; then
     RUN_VARS+=(
         "LD_PRELOAD='$JEMALLOC_PATH'"
         "MALLOC_CONF='$JEMALLOC_CONF'"
+    )
 
+    G_DEBUG_VALUES+=(
         # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
+        "gc-friendly"
+    )
 
+    G_SLICE_VALUES+=(
         # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        "G_SLICE='always-malloc'"
+        "always-malloc"
     )
 fi
 
 if [[ "$CFG_GDB" == "true" ]]; then
     RUN_WRAPPER="gdb --args"
     RUN_VARS+=(
-        # fatal-warnings: Abort on calls to `g_warning()`` or `g_critical()`.
-        "G_DEBUG='fatal-warnings'"
-
         # Prevent GStreamer from forking at startup.
         "GST_REGISTRY_FORK='no'"
+    )
+
+    G_DEBUG_VALUES+=(
+        # fatal-warnings: Abort on calls to `g_warning()` or `g_critical()`.
+        "fatal-warnings"
     )
 fi
 
@@ -401,15 +411,21 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
-        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
-
-        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        # debug-blocks: Enable sanity checks on released memory slices.
-        "G_SLICE='always-malloc,debug-blocks'"
-
         # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
+    )
+
+    G_DEBUG_VALUES+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "gc-friendly"
+    )
+
+    G_SLICE_VALUES+=(
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "always-malloc"
+
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "debug-blocks"
     )
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
@@ -451,15 +467,21 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
         "LD_PRELOAD='$LIBSAN'"
         "ASAN_OPTIONS='$ASAN_OPTIONS'"
 
-        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
-
-        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        # debug-blocks: Enable sanity checks on released memory slices.
-        "G_SLICE='always-malloc,debug-blocks'"
-
         # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
+    )
+
+    G_DEBUG_VALUES+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "gc-friendly"
+    )
+
+    G_SLICE_VALUES+=(
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "always-malloc"
+
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "debug-blocks"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
@@ -477,15 +499,21 @@ elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     RUN_VARS+=(
         "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
 
-        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
-
-        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        # debug-blocks: Enable sanity checks on released memory slices.
-        "G_SLICE='always-malloc,debug-blocks'"
-
         # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
+    )
+
+    G_DEBUG_VALUES+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "gc-friendly"
+    )
+
+    G_SLICE_VALUES+=(
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "always-malloc"
+
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "debug-blocks"
     )
 fi
 
@@ -497,8 +525,35 @@ else
 fi
 
 # Pass other relevant environment variables, if set.
+
+# GST_DEBUG_DUMP_DOT_DIR
+# https://gstreamer.freedesktop.org/documentation/tutorials/basic/debugging-tools.html#getting-pipeline-graphs
 if [[ -n "${GST_DEBUG_DUMP_DOT_DIR:-}" ]]; then
     RUN_VARS+=("GST_DEBUG_DUMP_DOT_DIR='$GST_DEBUG_DUMP_DOT_DIR'")
+fi
+
+# G_DEBUG
+# https://docs.gtk.org/glib/running.html#environment-variables
+for G_DEBUG_VALUE in "${G_DEBUG_VALUES[@]}"; do
+    G_DEBUG+="${G_DEBUG:+,}$G_DEBUG_VALUE"
+done
+if [[ -n "${G_DEBUG:-}" ]]; then
+    RUN_VARS+=("G_DEBUG='$G_DEBUG'")
+fi
+
+# G_SLICE
+# https://docs.gtk.org/glib/running.html#environment-variables
+for G_SLICE_VALUE in "${G_SLICE_VALUES[@]}"; do
+    G_SLICE+="${G_SLICE:+,}$G_SLICE_VALUE"
+done
+if [[ -n "${G_SLICE:-}" ]]; then
+    RUN_VARS+=("G_SLICE='$G_SLICE'")
+fi
+
+# G_MESSAGES_DEBUG
+# https://docs.gtk.org/glib/logging.html#debug-message-output
+if [[ -n "${G_MESSAGES_DEBUG:-}" ]]; then
+    RUN_VARS+=("G_MESSAGES_DEBUG='$G_MESSAGES_DEBUG'")
 fi
 
 

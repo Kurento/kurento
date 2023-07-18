@@ -1044,7 +1044,7 @@ Kurento documentation
 
    # Change here.
    NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
-   IS_MAJOR="<IsMajor?>" # "true" for 1.1.0, "false" for 1.0.1
+   IS_MINOR="<IsMinor?>" # "true" for 1.1.0, "false" for 1.0.1
 
    cd doc-kurento/
 
@@ -1061,7 +1061,7 @@ Kurento documentation
        || { echo "ERROR: Command failed: sed"; return 2; }
 
        # Add a new Release Notes document
-       if [[ "$IS_MAJOR" == "true" ]]; then
+       if [[ "$IS_MINOR" == "true" ]]; then
            local RELNOTES_NAME="$SHORT_VERSION"
            cp source/project/relnotes/0.0_TEMPLATE.rst \
                "source/project/relnotes/$RELNOTES_NAME.rst" \
