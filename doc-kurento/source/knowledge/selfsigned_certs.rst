@@ -54,7 +54,7 @@ This command already includes some useful things:
 
 .. note::
 
-   * It is not possible to create certificates for IP addresses, that's why domain names must be used instead.
+   * It is not possible to create certificates for a range of IP addresses (e.g. "192.168.1.\*"). You could add to the command the IP address of your server, however that solution lacks flexibility and the cert won't work if (when) the server's IP is different. That's why private domain names end up being a better solution for LAN testing.
 
    * ``.home.arpa`` is the IETF recommended subdomain for use in private networks. You can check more info in `What domain name to use for your home network <https://www.ctrl.blog/entry/homenet-domain-name.html>`__ and :rfc:`8375`.
 
@@ -68,7 +68,7 @@ Using a local domain
 With the Hosts file
 -------------------
 
-You can take advantage of a subdomain like ``.home.arpa`` by adding a new entry to the *Hosts file* in client machines that will connect to your test server.
+You can take advantage of a subdomain like ``.home.arpa`` by adding a new entry to the *Hosts file* in client devices that will connect to your test server.
 
 This is an easy thing to do, but has the drawback of having to change each client separately. Also, doing this is easy on desktop computers, but not so easy (or outright impossible) on mobile devices.
 
@@ -76,9 +76,9 @@ For Linux and macOS you just need to add a line like this to your ``/etc/hosts``
 
 .. code-block:: text
 
-   192.168.1.50  dev.home.arpa
+   192.168.1.50  server.home.arpa
 
-Now, opening ``dev.home.arpa`` on a client's web browser will access your test server at 192.168.1.50.
+Now, opening ``server.home.arpa`` on that client will access your test server located at 192.168.1.50.
 
 On Windows you can do the same; the Hosts file is located at ``%SystemRoot%\System32\drivers\etc\hosts``.
 
@@ -89,7 +89,7 @@ Different systems have this file in different locations, so check here for a mor
 With Zeroconf (mDNS)
 --------------------
 
-You can publish your server IP address as a **discoverable Zeroconf name** in your LAN. This is a more flexible solution than editing Hosts files in every client machine, as it only needs to be done once, in the server itself.
+You can publish your server IP address as a **discoverable Zeroconf name** in your LAN. This is a more flexible solution than editing Hosts files in every client device, as it only needs to be done once, in the server itself.
 
 An even more general solution than this would be to use a full-fledged DNS server, but using Zeroconf is a simpler solution that can be set up quickly by any developer.
 
@@ -107,14 +107,14 @@ And run this:
    IP_ADDRESS="$(ip -4 -oneline route get 1.0.0.0 | grep -Po 'src \K([\d.]+)')"
 
    # Publish the IP address as a Zeroconf name.
-   avahi-publish --address --no-reverse "dev.home.local" "$IP_ADDRESS"
+   avahi-publish --address --no-reverse "server.home.local" "$IP_ADDRESS"
 
 This technique is very handy, because all popular modern platforms include mDNS clients to discover Zeroconf addresses:
 
 * Windows, since Windows 10: `mDNS and DNS-SD slowly making their way into Windows 10 <https://www.ctrl.blog/entry/windows-mdns-dnssd.html>`__.
 * Mac and iOS include mDNS natively.
 * Linux systems support mDNS if the appropriate `Avahi <https://www.avahi.org/>`__ packages are installed.
-* Android supports mDNS resolution since API Level 32 aka. Android 12.1: `mDNS .local resolution <https://source.android.com/docs/core/ota/modular-system/dns-resolver#mdns-local-resolution>`__. Android 12.0 might also have the feature backported on some devices, according to some user comments in the `feature issue <https://issuetracker.google.com/issues/140786115>`__.
+* Android supports mDNS resolution since API Level 32 aka. Android 12.1: `mDNS .local resolution <https://source.android.com/docs/core/ota/modular-system/dns-resolver#mdns-local-resolution>`__. Android 12.0 might also have the feature backported on some devices, according to user comments in the `feature issue <https://issuetracker.google.com/issues/140786115>`__.
 
 
 
