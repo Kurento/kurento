@@ -36,10 +36,11 @@ Then run it:
 
    # Generate new untrusted self-signed certificate files.
    CAROOT="$PWD" mkcert -cert-file cert.pem -key-file key.pem \
-       "127.0.0.1" \
-       "::1"       \
-       "localhost" \
-       "*.home.arpa"
+       "127.0.0.1"   \
+       "::1"         \
+       "localhost"   \
+       "*.home.arpa" \
+       "*.home.local"
 
    # Set correct permissions.
    chmod 440 *.pem
@@ -49,11 +50,15 @@ This command already includes some useful things:
 * It will create a new Root CA if none existed already.
 * It will use the Root CA to spawn a new server certificate from it.
 * The new certificate allows accessing the server from localhost in its IPv4, IPv6, and hostname forms.
-* The cert also allows accessing the server at the ``*.home.arpa`` *domain wildcard*, regardless of the IP address in your network, so other machines in your internal LAN can be used for testing. Check the section below for examples of how to easily assign a domain name to your server.
+* The cert also allows accessing the server if it gets assigned a name in the ``.home.arpa`` and ``.home.local`` subdomains, so other devices in your internal LAN can be used as test clients. Check the section below for examples of how to easily assign a domain name to your server.
 
 .. note::
 
-   ``*.home.arpa`` is the IETF recommended domain name for use in private networks. You can check more info in `What domain name to use for your home network <https://www.ctrl.blog/entry/homenet-domain-name.html>`__ and :rfc:`8375`.
+   * It is not possible to create certificates for a range of IP addresses (e.g. "192.168.1.\*"). You could add to the command the IP address of your server, however that solution lacks flexibility and the cert won't work if (when) the server's IP is different. That's why private domain names end up being a better solution for LAN testing.
+
+   * ``.home.arpa`` is the IETF recommended subdomain for use in private networks. You can check more info in `What domain name to use for your home network <https://www.ctrl.blog/entry/homenet-domain-name.html>`__ and :rfc:`8375`.
+
+   * ``.local`` is the Zeroconf subdomain for mDNS protocol. It will be useful if using Zeroconf to assign a domain name to the server, as explained below. Many clients (i.e. web browsers) don't support second-level wildcards like "\*.local", so that's why we propose "\*.home.local" here.
 
 
 
@@ -63,48 +68,53 @@ Using a local domain
 With the Hosts file
 -------------------
 
-You can take advantage of a domain wildcard such as ``*.home.arpa``, by adding a new entry to the *Hosts file* in client machines that will connect to your test server.
+You can take advantage of a subdomain like ``.home.arpa`` by adding a new entry to the *Hosts file* in client devices that will connect to your test server.
 
-This is a quick and dirty technique, but has the drawback of having to do the change separately on each client. Also, doing this is easy in desktop computers, but not so easy (or outright impossible) on mobile devices.
+This is an easy thing to do, but has the drawback of having to change each client separately. Also, doing this is easy on desktop computers, but not so easy (or outright impossible) on mobile devices.
 
-On Linux and macOS, add a line like this to your ``/etc/hosts`` file (but with the correct IP address of your server):
+For Linux and macOS you just need to add a line like this to your ``/etc/hosts`` file (but with the correct IP address of your server):
 
 .. code-block:: text
 
-   192.168.1.50  dev.home.arpa
+   192.168.1.50  server.home.arpa
 
-Now, opening ``dev.home.arpa`` on a client's web browser will access your test server at 192.168.1.50.
+Now, opening ``server.home.arpa`` on that client will access your test server located at 192.168.1.50.
 
-On Windows you can do the same; the Hosts file is located at ``%SystemRoot%\System32\drivers\etc\hosts``. Different systems have this file in different locations, so check here for a more complete list: :wikipedia:`Hosts_(file)#Location_in_the_file_system`.
+On Windows you can do the same; the Hosts file is located at ``%SystemRoot%\System32\drivers\etc\hosts``.
+
+Different systems have this file in different locations, so check here for a more complete list: :wikipedia:`Hosts_(file)#Location_in_the_file_system`.
 
 
 
-With Zeroconf
--------------
+With Zeroconf (mDNS)
+--------------------
 
-You can publish your server IP address as a temporary domain name in your LAN. This is a more flexible solution than editing Hosts files in every client machine, as it only needs to be done once, in the server itself.
+You can publish your server IP address as a **discoverable Zeroconf name** in your LAN. This is a more flexible solution than editing Hosts files in every client device, as it only needs to be done once, in the server itself.
 
-This could be done with a full-fledged DNS server, but a simpler solution is to assign your machine a **discoverable Zeroconf address**.
+An even more general solution than this would be to use a full-fledged DNS server, but using Zeroconf is a simpler solution that can be set up quickly by any developer.
 
-For example, if your test server uses Ubuntu, run this:
+For example, if your test server uses Ubuntu, ensure the *avahi-publish* tool is installed:
 
 .. code-block:: shell
 
-   # Get and publish the IP address to the default network gateway.
+   sudo apt-get update && sudo apt-get install avahi-utils
+
+And run this:
+
+.. code-block:: shell
+
+   # Get the IP address to the default network gateway.
    IP_ADDRESS="$(ip -4 -oneline route get 1.0.0.0 | grep -Po 'src \K([\d.]+)')"
-   avahi-publish --address --no-reverse -v "dev.home.arpa" "$IP_ADDRESS"
 
-This technique is very handy, because practically all modern platforms include an mDNS client to discover Zeroconf addresses in the LAN.
+   # Publish the IP address as a Zeroconf name.
+   avahi-publish --address --no-reverse "server.home.local" "$IP_ADDRESS"
 
-.. note::
+This technique is very handy, because all popular modern platforms include mDNS clients to discover Zeroconf addresses:
 
-   As of this writing, Android seems to be the only major platform unable to resolve Zeroconf addresses. All other systems support them in one way or another:
-
-   * Windows: `mDNS and DNS-SD slowly making their way into Windows 10 <https://www.ctrl.blog/entry/windows-mdns-dnssd.html>`__.
-   * Mac and iOS include mDNS natively.
-   * Linux systems support mDNS if the appropriate Avahi packages are installed.
-
-   You can vote for adding mDNS to Android by adding a star ⭐ (top, next to the title) on this issue: `#140786115 Add .local mDNS resolving to Android <https://issuetracker.google.com/140786115>`__ (requires login; any Google account will do). **Please refrain from commenting "+1"**, which sends a useless email to all other users who follow the issue.
+* Windows, since Windows 10: `mDNS and DNS-SD slowly making their way into Windows 10 <https://www.ctrl.blog/entry/windows-mdns-dnssd.html>`__.
+* Mac and iOS include mDNS natively.
+* Linux systems support mDNS if the appropriate `Avahi <https://www.avahi.org/>`__ packages are installed.
+* Android supports mDNS resolution since API Level 32 aka. Android 12.1: `mDNS .local resolution <https://source.android.com/docs/core/ota/modular-system/dns-resolver#mdns-local-resolution>`__. Android 12.0 might also have the feature backported on some devices, according to user comments in the `feature issue <https://issuetracker.google.com/issues/140786115>`__.
 
 
 
@@ -113,9 +123,9 @@ This technique is very handy, because practically all modern platforms include a
 Trusting a self-signed certificate
 ==================================
 
-Most if not all clients of any kind, will not trust a self-signed certificate when they connect to a server that uses one. What the client will do is to block the connection with an error message (this is what iOS Safari does, also Node.js apps); or show a security warning page (Chrome and Firefox web browsers).
+Most clients won't trust a self-signed certificate when connecting to a server that uses one. What the client will do is to block the connection with an error message (this is what iOS Safari does, also Node.js apps); or show a security warning page (like with Chrome and Firefox web browsers).
 
-Normally, there is some way to override this behavior. Either by installing your Root CA in the device's root storage, or by setting some configuration. Then, the self-signed certificate will be trusted just like if it had been issued by a reputable Authority.
+Normally, there is some way to override this behavior. Either by installing your Root CA in the device's or client's special cert storage, or by setting some configuration. Then, the self-signed certificate will be trusted just like if it had been issued by a reputable Authority.
 
 
 
@@ -135,7 +145,7 @@ On mobile devices
 
 Installing the Root CA is a bit more difficult:
 
-* With iOS, you can either email the ``rootCA.pem`` file to yourself, use AirDrop, or serve it from an HTTP server. Normally, a dialog should pop up asking if you want to install the new certificate; afterwards, you must `enable full trust in it <https://support.apple.com/en-nz/HT204477>`__. When finished, your self-signed certs will be trusted by the system, and iOS Safari will allow accessing pages on the ``*.home.arpa`` subdomain.
+* With iOS, you can either email the ``rootCA.pem`` file to yourself, use AirDrop, or serve it from an HTTP server. Normally, a dialog should pop up asking if you want to install the new certificate; afterwards, you must `enable full trust in it <https://support.apple.com/en-us/HT204477>`__. When finished, your self-signed certs will be trusted by the system, and iOS Safari will allow accessing pages on the ``.home.arpa`` subdomain.
 
   .. note::
 
@@ -154,4 +164,4 @@ Node.js does not use the system root store, so it won't accept mkcert certificat
 
    export NODE_EXTRA_CA_CERTS="/path/to/rootCA.pem"
 
-One good way to do this is by adding the export to the file ``~/.profile``, so it will get automatically set on every system startup.
+You could add such env var on every launch, on the project's ``package.json`` file, or on the system's ``~/.profile`` file, so it will get automatically set for you.

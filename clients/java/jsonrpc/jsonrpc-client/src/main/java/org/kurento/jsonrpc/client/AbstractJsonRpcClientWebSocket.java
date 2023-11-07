@@ -543,7 +543,9 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
     Response<JsonElement> response = fromJsonResponse(message, JsonElement.class);
 
-    setSessionId(response.getSessionId());
+    if (response.getSessionId() != null) {
+      setSessionId(response.getSessionId());
+    }
 
     pendingRequests.handleResponse(response);
   }

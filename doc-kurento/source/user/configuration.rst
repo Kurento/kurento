@@ -235,3 +235,28 @@ Then, configure the path to ``cert+key.pem``:
 **Docker**
 
 * Pass environment variables ``KMS_PEM_CERTIFICATE_RSA`` or ``KMS_PEM_CERTIFICATE_ECDSA`` with the path *inside the container*. Also, make sure the file is actually found in that path; normally you would do that with a bind-mount, a Docker volume, or a custom Docker image. For more information and examples, check :ref:`faq-docker`.
+
+
+
+Recorder packet loss correction
+-------------------------------
+
+The parameter ``gapsFix`` determines which of the packet loss correction techniques should be used for recordings. Packet loss can happen for example when an RTP or WebRTC media flow suffers from network congestion and some packets don't arrive at the media server. When this happens, it causes gaps in the recorded stream.
+
+Currently there are two techniques implemented:
+
+* ``NONE``: Do not fix gaps.
+
+  Leave the stream as-is, and store it with any gaps that the stream might have. Some players are clever enough to adapt to this during playback, so that the gaps are reduced to a minimum and no problems are perceived by the user; other players are not so sophisticated, and will struggle trying to decode a file that contains gaps. For example, trying to play such a file directly with Chrome will cause lipsync issues (audio and video will fall out of sync).
+
+  This is the best choice if you need consistent durations across multiple simultaneous recordings (i.e. you are recording N participants of a room, and you want the N videos to have the same exact duration). Another usual reason to prefer this mode is if you are anyway going to post-process the recordings (e.g. with an extra FFmpeg step).
+
+* ``GENPTS``: Adjust timestamps to generate a smooth progression over all frames.
+
+  This technique rewrites the timestamp of all frames, so that gaps are suppressed. It provides the best playback experience for recordings that need to be played as-is (i.e. they won't be post-processed). However, fixing timestamps might cause a change in the total duration of a file. So different recordings from the same session might end up with slightly different durations.
+
+See the `extended description of GapsFixMethod <../_static/client-javadoc/org/kurento/client/GapsFixMethod.html>`__ for more details about these settings.
+
+**Local install**
+
+* Set ``gapsFix`` with the preferred gaps fix method in ``/etc/kurento/modules/kurento/RecorderEndpoint.conf.ini``.
