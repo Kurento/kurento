@@ -1,4 +1,4 @@
-name: "Clients: Build Java module (Reusable workflow)"
+name: "clients/java module (child)"
 
 on:
   # Triggered from other workflows.

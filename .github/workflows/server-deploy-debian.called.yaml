@@ -1,4 +1,4 @@
-name: "Server: Deploy DEB"
+name: "server deploy debian (child)"
 
 on:
   # Triggered from other workflows.

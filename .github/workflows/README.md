@@ -12,7 +12,7 @@ Information of interest that is common for all workflows:
 
   - [Workflow syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
   - [Workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions)
-  - [Docker actions](https://docs.docker.com/build/ci/github-actions/)
+  - [Reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
 
 * Advanced:
 

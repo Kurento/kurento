@@ -1,4 +1,4 @@
-name: "Server: Deploy AWS CloudFormation"
+name: "server deploy aws (child)"
 
 on:
   # Triggered from other workflows.

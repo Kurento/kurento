@@ -1,4 +1,4 @@
-name: "Server: Deploy Docker"
+name: "server deploy docker (child)"
 
 on:
   # Triggered from other workflows.
@@ -12,7 +12,7 @@ on:
         type: "string"
         default: '["focal"]'
       jobRelease:
-        description: "jobRelease: Enable to build release versions Disable for development builds"
+        description: "jobRelease: Enable to build release versions; disable for development builds"
         required: false
         type: "boolean"
         default: false

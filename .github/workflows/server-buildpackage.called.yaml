@@ -1,4 +1,4 @@
-name: "Server: Build module (Reusable workflow)"
+name: "server module (child)"
 
 on:
   # Triggered from other workflows.

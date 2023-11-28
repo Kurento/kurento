@@ -1,4 +1,4 @@
-name: "Documentation build"
+name: "doc-kurento"
 
 on:
   # Manual trigger.
