@@ -166,10 +166,10 @@ WebRTC dump example (see https://blog.mozilla.org/webrtc/debugging-encrypted-rtp
    /usr/bin/firefox -no-remote -profile "$(mktemp --directory)" \
        "https://localhost:8443/"
 
-   grep -E '(RTP_PACKET|RTCP_PACKET)' firefox.*.moz_log \
-       | cut -d '|' -f 2 \
-       | cut -d ' ' -f 5- \
-       | text2pcap -D -n -l 1 -i 17 -u 1234,1235 -t '%H:%M:%S.' - firefox-rtp.pcap
+   grep -E "(RTP_PACKET|RTCP_PACKET)" firefox.*.moz_log \
+       | cut -d "|" -f 2 \
+       | cut -d " " -f 5- \
+       | text2pcap -D -n -l 1 -i 17 -u 1234,1235 -t "%H:%M:%S." - firefox-rtp.pcap
 
 Media decoding (audio sandbox can be enabled or disabled with the user preference ``media.cubeb.sandbox``):
 
@@ -212,46 +212,75 @@ Debug logging
 
 Sources:
 
-* https://www.chromium.org/for-testers/enable-logging
-* https://www.chromium.org/developers/how-tos/run-chromium-with-flags
+* https://www.chromium.org/for-testers/enable-logging/
+* https://www.chromium.org/developers/how-tos/run-chromium-with-flags/
 * https://peter.sh/experiments/chromium-command-line-switches/
 * https://webrtc.org/web-apis/chrome/
 
-**Linux**:
+Debug logging is enabled with ``--enable-logging=stderr --log-level=0``. With that, the maximum log level for all modules is given by ``--v=N`` (with N = 0, 1, 2, etc, higher is more verbose, default 0), and per-module levels can be set with ``--vmodule="<categories>"``.
+
+Log categories:
+
+* WebRTC:
+
+  - ``connection=0,*/webrtc/*=2``: Everything related to the WebRTC stack, excluding continuous stats updates from the ``connection.cc`` module.
+  - ``*/media/*=2``: Logs from the user media and device capture.
+  - ``tls*=1``: Establishment of SSL/TLS connections.
+
+How to find the module names for ``--vmodule``:
+
+* Run with a very verbose general logging level, such as ``--v=9``.
+
+* Start with ``--vmodule="compositor=0,display=0,layer_tree_*=0,segment_*=0,*/metrics/*=0"`` (these are very noisy modules that would otherwise flood the log).
+
+* Search the log for the lines you are interested in. For example:
+
+  .. code-block:: text
+
+     [VERBOSE2:video_capture_metrics.cc(158)] Device supports PIXEL_FORMAT_I420 at 96x96 (0)
+
+* Open the Google Chromium code search page: https://source.chromium.org/chromium/chromium/src
+
+* Search for the desired module name. In the example, this search term would match exactly:
+
+  .. code-block:: text
+
+     file:video_capture_metrics.cc content:"Device supports"
+
+  Take note of the module path: ``media/capture/video/video_capture_metrics.cc``.
+
+* Add either the module name or path with wildcards to the ``--vmodule`` list. In the example, any of these would enable the given log message:
+
+  .. code-block:: shell
+
+     --vmodule="video_capture_metrics=2"
+     --vmodule="video_capture*=2"
+     --vmodule="*/media/*=2"
+
+
+
+Examples
+~~~~~~~~
+
+Linux:
 
 .. code-block:: shell
 
-   TEST_BROWSER="/usr/bin/chromium"
+   #TEST_BROWSER="/usr/bin/chromium"
    TEST_BROWSER="/usr/bin/google-chrome"
-   #
+
    TEST_PROFILE="/tmp/chrome-profile"
-   #
-   {
-       "$TEST_BROWSER" \
-           --user-data-dir="$TEST_PROFILE" \
-           --use-fake-ui-for-media-stream \
-           --use-fake-device-for-media-stream \
-           --enable-logging=stderr \
-           --log-level=0 \
-           --vmodule='*/webrtc/*=2,*/libjingle/*=2,*=-2' \
-           --v=0 \
-           "https://localhost:8443/" \
-           >chrome_debug.log 2>&1 &
 
-       # Other flags:
-       # --use-file-for-fake-audio-capture="/path/to/audio.wav" \
-       # --use-file-for-fake-video-capture="/path/to/video.y4m" \
-
-       tail -f chrome_debug.log
-   }
-
-**MacOS**:
-
-.. code-block:: shell
-
-   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+   "$TEST_BROWSER" \
+       --user-data-dir="$TEST_PROFILE" \
+       --no-default-browser-check \
+       --use-fake-ui-for-media-stream \
+       --use-fake-device-for-media-stream \
        --enable-logging=stderr \
-       --vmodule=*/webrtc/*=2,*/libjingle/*=2,*=-2
+       --log-level=0 \
+       --v=0 \
+       --vmodule="connection=0,*/webrtc/*=2,*/media/*=2,tls*=1" \
+       "https://localhost:8080/"
 
 
 
@@ -333,7 +362,7 @@ Generate an SDP Offer.
            pc1.addTrack(track, stream);
        });
        pc1.createOffer().then((offer) => {
-           console.log(JSON.stringify(offer).replace(/\\r\\n/g, '\n'));
+           console.log(JSON.stringify(offer).replace(/\\r\\n/g, "\n"));
        });
    });
 
