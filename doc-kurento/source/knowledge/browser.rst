@@ -199,11 +199,37 @@ Chrome
 Test instance
 -------------
 
-To run a new Chrome instance with a clean profile:
+To run a new Chrome instance with a clean profile and no pop-ups (such as the password manager or the "default browser" prompt):
 
 .. code-block:: shell
 
-   /usr/bin/google-chrome --user-data-dir="$(mktemp --directory)"
+   /usr/bin/chromium \
+       --guest \
+       --no-default-browser-check \
+       --user-data-dir="$(mktemp --directory)"
+
+Other flags:
+
+* ``--use-fake-device-for-media-stream``: Use synthetic audio and video media to simulate capture devices (camera, microphone, etc).
+
+  Alternatively, a local file can be provided to be used instead:
+
+  - ``--use-file-for-fake-audio-capture="/path/to/file.wav"``: Use a WAV file as the audio source.
+
+  - ``--use-file-for-fake-video-capture="/path/to/file.y4m"``: Use a YUV4MPEG2 (Y4M) or MJPEG file as the video source. `More <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.h;l=25-35>`__ `details <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.cc;l=70-75>`__:
+
+    - Y4M videos should have *.y4m* file extension and MJPEG videos should have *.mjpeg* file extension.
+    - Only interlaced I420 pixel format is supported.
+    - Example Y4M videos can be found here: https://media.xiph.org/video/derf/
+    - Example MJPEG videos can be found here: https://chromium.googlesource.com/chromium/src/+/refs/tags/120.0.6099.129/media/test/data
+
+* ``--auto-accept-camera-and-microphone-capture``: Automatically accept all requests to access the camera and microphone.
+
+  Note: Preferred over the similar ``--auto-accept-camera-and-microphone-capture`` which affected screen/tab capture.
+
+* ``--unsafely-treat-insecure-origin-as-secure="URL,..."``: Allow insecure origins to use features that would require a `Secure Context <https://www.w3.org/TR/secure-contexts/>`__ (such as ``getUserMedia()``, WebRTC, etc.) when served from localhost or over HTTP.
+
+  A better approach is to serve the origins over HTTPS, but this flag can be useful for one-off testing.
 
 
 
