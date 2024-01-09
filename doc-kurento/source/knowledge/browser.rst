@@ -432,18 +432,33 @@ Here is where you can find URLs to the different web browser source code reposit
 * Code repository (development): https://hg.mozilla.org/mozilla-central/
 * Code repository (release): https://hg.mozilla.org/releases/mozilla-release/
 * List of tagged releases: https://hg.mozilla.org/releases/mozilla-release/tags
-* Sample permalink to a specific line of code in Firefox v121.0: https://hg.mozilla.org/releases/mozilla-release/file/FIREFOX_121_0_RELEASE/path/to/file#l123
+
+* Sample permalink to a specific line of code in Firefox v121.0:
+
+  .. code-block:: text
+
+     https://hg.mozilla.org/releases/mozilla-release/file/FIREFOX_121_0_RELEASE/path/to/file#l123
 
 **Chrome**:
 
 * Code search: https://source.chromium.org/chromium/chromium/src
 * Code repository: https://chromium.googlesource.com/chromium/src/
 * List of tagged releases: https://chromium.googlesource.com/chromium/src/+refs
-* Sample permalink to a specific line of code in Chrome v120.0.6099.129: https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:path/to/file;l=123
+
+* Sample permalink to a specific line of code in Chrome v120.0.6099.129:
+
+  .. code-block:: text
+
+     https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:path/to/file;l=123
 
 **WebRTC**:
 
 * Code search: -
 * Code repository: https://webrtc.googlesource.com/src/
 * List of tagged releases: https://chromiumdash.appspot.com/branches
-* Sample permalink to a specific line of code in WebRTC M120: https://webrtc.googlesource.com/src/+/refs/branch-heads/6099/path/to/file#123
+
+* Sample permalink to a specific line of code in WebRTC M120:
+
+  .. code-block:: text
+
+     https://webrtc.googlesource.com/src/+/refs/branch-heads/6099/path/to/file#123
