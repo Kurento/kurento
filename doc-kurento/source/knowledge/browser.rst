@@ -36,7 +36,7 @@ To run a new Firefox instance with a clean profile:
 
 Other options:
 
-* ``-jsconsole``: Start Firefox with the `Browser Console <https://developer.mozilla.org/en-US/docs/Tools/Browser_Console>`__.
+* ``-jsconsole``: Start Firefox with the `Browser Console <https://firefox-source-docs.mozilla.org/devtools-user/browser_console/index.html>`__.
 * ``[-url] <URL>``: Open URL in a new tab or window.
 
 
@@ -46,10 +46,10 @@ Debug logging
 
 Sources:
 
+* https://firefox-source-docs.mozilla.org/xpcom/logging.html
+* https://firefox-source-docs.mozilla.org/networking/http/logging.html
+* https://wiki.mozilla.org/Firefox/CommandLineOptions
 * https://wiki.mozilla.org/Media/WebRTC/Logging
-* https://developer.mozilla.org/en-US/docs/Mozilla/Debugging/HTTP_logging
-* https://developer.mozilla.org/en-US/docs/Mozilla/Command_Line_Options
-* https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Gecko_Logging
 
 Debug logging can be enabled with the parameters *MOZ_LOG* and *MOZ_LOG_FILE*. These are controlled either with environment variables, or command-line flags.
 
@@ -215,7 +215,6 @@ Sources:
 * https://www.chromium.org/for-testers/enable-logging/
 * https://www.chromium.org/developers/how-tos/run-chromium-with-flags/
 * https://peter.sh/experiments/chromium-command-line-switches/
-* https://webrtc.org/web-apis/chrome/
 
 Debug logging is enabled with ``--enable-logging=stderr --log-level=0``. With that, the maximum log level for all modules is given by ``--v=N`` (with N = 0, 1, 2, etc, higher is more verbose, default 0), and per-module levels can be set with ``--vmodule="<categories>"``.
 
@@ -300,14 +299,14 @@ H.264 codec
 
 Chrome uses OpenH264 (same lib as Firefox uses) for encoding, and FFmpeg (which is already used elsewhere in Chrome) for decoding.
 
-* Feature page: https://www.chromestatus.com/feature/6417796455989248
+* Feature page: https://chromestatus.com/feature/6417796455989248
 * Since Chrome 52.
 * Bug tracker: https://bugs.chromium.org/p/chromium/issues/detail?id=500605
 
 Autoplay:
 
-* https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#best-practices
-* https://www.chromium.org/audio-video/autoplay
+* https://developer.chrome.com/blog/autoplay/#best_practices_for_web_developers
+* https://www.chromium.org/audio-video/autoplay/
 
 
 
@@ -347,47 +346,26 @@ Firefox
 
 
 
-WebRTC JavaScript API
-=====================
-
-Generate an SDP Offer.
-
-.. code-block:: text
-
-   let pc1 = new RTCPeerConnection();
-   navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-   .then((stream) => {
-       stream.getTracks().forEach((track) => {
-           console.log("Local track available: " + track.kind);
-           pc1.addTrack(track, stream);
-       });
-       pc1.createOffer().then((offer) => {
-           console.log(JSON.stringify(offer).replace(/\\r\\n/g, "\n"));
-       });
-   });
-
-
-
 .. _browser-mtu:
 
 Browser MTU
 ===========
 
-The default **Maximum Transmission Unit (MTU)** in the official `libwebrtc <https://webrtc.org/>`__ implementation is **1200 Bytes** (`source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/constants.cc#15>`__). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same MTU:
+The default **Maximum Transmission Unit (MTU)** in the official `libwebrtc <https://webrtc.org/>`__ implementation is **1200 Bytes** (`source <https://webrtc.googlesource.com/src/+/refs/branch-heads/6099/media/base/media_constants.cc#17>`__). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same MTU:
 
-* `Chrome source code <https://codesearch.chromium.org/chromium/src/third_party/webrtc/media/engine/constants.cc?rcl=f092e4d0ff252f52404a0c867f20cf103bbaa663&l=15>`__.
-* `Firefox source code <https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/media/engine/constants.cc#16>`__.
-* Safari: No public source code, but Safari uses Webkit, and `Webkit uses libwebrtc <https://www.webrtcinwebkit.org/blog/2017/7/2/webrtc-in-safari-11-and-ios-11>`__, so probably same MTU as the others.
+* `Firefox <https://hg.mozilla.org/releases/mozilla-release/file/FIREFOX_121_0_RELEASE/third_party/libwebrtc/media/base/media_constants.cc#l17>`__.
+* `Chrome <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:third_party/webrtc/media/base/media_constants.cc;l=17>`__.
+* Safari: No public source code, but Safari uses Webkit, and `Webkit uses libwebrtc <https://webrtcinwebkit.org/webrtc-in-safari-11-and-ios-11/>`__, so probably same MTU as the others.
 
 
 
 Bandwidth Estimation
 ====================
 
-WebRTC **bandwidth estimation (BWE)** was implemented first with *Google REMB*, and later with *Transport-CC*. Clients need to start "somewhere" with their estimations, and the official `libwebrtc <https://webrtc.org/>`__ implementation chose to do so at 300 kbps (kilobits per second) (`source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/api/transport/bitrate_settings.h#45>`__). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same initial BWE:
+WebRTC **bandwidth estimation (BWE)** was implemented first with *Google REMB*, and later with *Transport-CC*. Clients need to start "somewhere" with their estimations, and the official `libwebrtc <https://webrtc.org/>`__ implementation chose to do so at 300 kbps (kilobits per second) (`source <https://webrtc.googlesource.com/src/+/refs/branch-heads/6099/api/transport/bitrate_settings.h#45>`__). All browsers base their WebRTC implementation on *libwebrtc*, so this means that all use the same initial BWE:
 
-* `Chrome source code <https://codesearch.chromium.org/chromium/src/third_party/webrtc/api/transport/bitrate_settings.h?rcl=f092e4d0ff252f52404a0c867f20cf103bbaa663&l=45>`__.
-* `Firefox source code <https://dxr.mozilla.org/mozilla-central/rev/4c982daa151954c59f20a9b9ac805c1768a350c2/media/webrtc/trunk/webrtc/call/call.h#84>`__.
+* `Firefox <https://hg.mozilla.org/releases/mozilla-release/file/FIREFOX_121_0_RELEASE/third_party/libwebrtc/api/transport/bitrate_settings.h#l45>`__.
+* `Chrome <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:third_party/webrtc/api/transport/bitrate_settings.h;l=45>`__.
 
 
 
@@ -409,7 +387,7 @@ The **maximum video bitrate** is calculated for WebRTC by following a simple rul
 * 2500 kbps (2.5 Mbps) for bigger video sizes.
 * Never less than 1200 kbps, if the video is a screen capture.
 
-Source: The ``GetMaxDefaultVideoBitrateKbps()`` function in `libwebrtc source code <https://webrtc.googlesource.com/src/+/d82a02c837d33cdfd75121e40dcccd32515e42d6/media/engine/webrtc_video_engine.cc#231>`__.
+Source: The ``GetMaxDefaultVideoBitrateKbps()`` function in `libwebrtc source code <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:third_party/webrtc/video/config/encoder_stream_factory.cc;l=79>`__.
 
 To verify what is exactly being sent by your web browser, check its internal WebRTC stats. For example, to check the outbound stats in Chrome:
 
