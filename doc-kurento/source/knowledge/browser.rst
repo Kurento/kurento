@@ -248,9 +248,22 @@ Log categories:
 
 * WebRTC:
 
-  - ``connection=0,*/webrtc/*=2``: Everything related to the WebRTC stack, excluding continuous stats updates from the ``connection.cc`` module.
+  - ``*/webrtc/*=2``: Everything related to the WebRTC stack.
+
+    It's strongly suggested to disable some modules that would otherwise flood the logs:
+
+    - ``basic_ice_controller=0``
+    - ``connection=0``
+    - ``encoder_bitrate_adjuster=0``
+    - ``goog_cc_network_control=0``
+    - ``pacing_controller=0``
+    - ``video_stream_encoder=0``
+
   - ``*/media/*=2``: Logs from the user media and device capture.
+
   - ``tls*=1``: Establishment of SSL/TLS connections.
+
+  See below for a full example command that can be copy-pasted.
 
 How to find the module names for ``--vmodule``:
 
@@ -291,20 +304,16 @@ Linux:
 
 .. code-block:: shell
 
-   #TEST_BROWSER="/usr/bin/chromium"
-   TEST_BROWSER="/usr/bin/google-chrome"
-
-   TEST_PROFILE="/tmp/chrome-profile"
-
-   "$TEST_BROWSER" \
-       --user-data-dir="$TEST_PROFILE" \
+   /usr/bin/chromium \
+       --guest \
        --no-default-browser-check \
-       --use-fake-ui-for-media-stream \
+       --user-data-dir="$(mktemp --directory)" \
        --use-fake-device-for-media-stream \
+       --auto-accept-camera-and-microphone-capture \
        --enable-logging=stderr \
        --log-level=0 \
        --v=0 \
-       --vmodule="connection=0,*/webrtc/*=2,*/media/*=2,tls*=1" \
+       --vmodule="basic_ice_controller=0,connection=0,encoder_bitrate_adjuster=0,goog_cc_network_control=0,pacing_controller=0,video_stream_encoder=0,*/webrtc/*=2,*/media/*=2,tls*=1" \
        "https://localhost:8080/"
 
 
@@ -316,7 +325,7 @@ A command line for 3% sent packet loss and 5% received packet loss is:
 
 .. code-block:: shell
 
-   --force-fieldtrials=WebRTCFakeNetworkSendLossPercent/3/WebRTCFakeNetworkReceiveLossPercent/5/
+   --force-fieldtrials="WebRTCFakeNetworkSendLossPercent/3/WebRTCFakeNetworkReceiveLossPercent/5/"
 
 
 
@@ -333,42 +342,6 @@ Autoplay:
 
 * https://developer.chrome.com/blog/autoplay/#best_practices_for_web_developers
 * https://www.chromium.org/audio-video/autoplay/
-
-
-
-Command-line
-============
-
-Chrome
-------
-
-.. code-block:: shell
-
-   export WEB_APP_HOST_PORT="198.51.100.1:8443"
-
-   /usr/bin/google-chrome \
-       --user-data-dir="$(mktemp --directory)" \
-       --enable-logging=stderr \
-       --no-first-run \
-       --allow-insecure-localhost \
-       --allow-running-insecure-content \
-       --disable-web-security \
-       --unsafely-treat-insecure-origin-as-secure="https://${WEB_APP_HOST_PORT}" \
-       "https://${WEB_APP_HOST_PORT}"
-
-
-Firefox
--------
-
-.. code-block:: text
-
-   export SERVER_PUBLIC_IP="198.51.100.1"
-
-   /usr/bin/firefox \
-       -profile "$(mktemp --directory)" \
-       -no-remote \
-       "https://${SERVER_PUBLIC_IP}:4443/" \
-       "http://${SERVER_PUBLIC_IP}:4200/#/test-sessions"
 
 
 
