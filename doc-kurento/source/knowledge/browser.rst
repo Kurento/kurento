@@ -225,7 +225,7 @@ Other flags:
 
 * ``--auto-accept-camera-and-microphone-capture``: Automatically accept all requests to access the camera and microphone.
 
-  Note: Preferred over the similar ``--auto-accept-camera-and-microphone-capture`` which affected screen/tab capture.
+  Preferred over the similar and older ``--auto-accept-camera-and-microphone-capture``, which affected screen/tab capture.
 
 * ``--unsafely-treat-insecure-origin-as-secure="URL,..."``: Allow insecure origins to use features that would require a `Secure Context <https://www.w3.org/TR/secure-contexts/>`__ (such as ``getUserMedia()``, WebRTC, etc.) when served from localhost or over HTTP.
 
