@@ -440,3 +440,32 @@ By default, Chrome uses this line in the SDP Offer for an H.264 media:
 * `level_idc` = 0x1F = 31
 
 These values translate into the **Constrained Baseline Profile, Level 3.1**.
+
+
+
+Source Code URLs
+================
+
+Here is where you can find URLs to the different web browser source code repositories. Also, for linking to specific lines of code, it's always a good idea to use permalinks such that future visitors find the exact same source code that was linked, and not a newer version of it which might have changed.
+
+**Firefox**:
+
+* Code search: https://searchfox.org/mozilla-central/source/
+* Code repository (development): https://hg.mozilla.org/mozilla-central/
+* Code repository (release): https://hg.mozilla.org/releases/mozilla-release/
+* List of tagged releases: https://hg.mozilla.org/releases/mozilla-release/tags
+* Sample permalink to a specific line of code in Firefox v121.0: https://hg.mozilla.org/releases/mozilla-release/file/FIREFOX_121_0_RELEASE/path/to/file#l123
+
+**Chrome**:
+
+* Code search: https://source.chromium.org/chromium/chromium/src
+* Code repository: https://chromium.googlesource.com/chromium/src/
+* List of tagged releases: https://chromium.googlesource.com/chromium/src/+refs
+* Sample permalink to a specific line of code in Chrome v120.0.6099.129: https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:path/to/file;l=123
+
+**WebRTC**:
+
+* Code search: -
+* Code repository: https://webrtc.googlesource.com/src/
+* List of tagged releases: https://chromiumdash.appspot.com/branches
+* Sample permalink to a specific line of code in WebRTC M120: https://webrtc.googlesource.com/src/+/refs/branch-heads/6099/path/to/file#123
