@@ -67,15 +67,16 @@ Optionally, make a bit of cleanup in case old Sphinx versions were installed:
 
    python3 -m pip freeze | grep -i '^sphinx' | xargs sudo -H python3 -m pip uninstall
 
-And finally, install Sphinx:
+Finally, install and run Sphinx:
 
 .. code-block:: shell
 
-   # Create and load the Python virtual environment
+   # Create and load a Python virtual environment.
    python3 -m venv python_modules
    source python_modules/bin/activate
 
-   # Install Sphinx and the Read the Docs theme
+   # Install packages.
+   python3 -m pip install --upgrade wheel
    python3 -m pip install --upgrade -r requirements.txt
 
 
@@ -87,10 +88,10 @@ Run ``make html`` inside the documentation directory, and open the newly built f
 
 .. code-block:: shell
 
-   # Load the Python virtual environment
+   # Load the Python virtual environment.
    source python_modules/bin/activate
 
-   # Build and open the documentation files
+   # Build and open the documentation files.
    make html
    firefox build/html/index.html
 
