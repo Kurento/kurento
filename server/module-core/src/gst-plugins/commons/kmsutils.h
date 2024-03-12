@@ -32,7 +32,6 @@ gboolean kms_element_for_each_sink_pad (GstElement * element,
   KmsPadCallback action, gpointer data);
 
 void kms_utils_debug_graph_delay (GstBin * bin, guint interval);
-gboolean kms_is_valid_uri (const gchar * url);
 
 gboolean gst_element_sync_state_with_parent_target_state (GstElement * element);
 
