@@ -1,4 +1,4 @@
-name: "Server: Build All (Parent)"
+name: "server all (parent)"
 
 on:
   # Triggered manually.
@@ -80,7 +80,7 @@ jobs:
       jobRelease: ${{ inputs.jobRelease }}
 
   module-creator:
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -90,7 +90,7 @@ jobs:
       copyArtifacts: false
 
   cmake-utils:
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -101,7 +101,7 @@ jobs:
 
   jsonrpc:
     needs: ["cmake-utils"]
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -111,7 +111,7 @@ jobs:
 
   module-core:
     needs: ["module-creator", "cmake-utils", "jsonrpc"]
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -121,7 +121,7 @@ jobs:
 
   module-elements:
     needs: ["openh264-gst-plugin", "libnice", "module-core"]
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -131,7 +131,7 @@ jobs:
 
   module-filters:
     needs: ["module-elements"]
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -141,7 +141,7 @@ jobs:
 
   media-server:
     needs: ["libsrtp", "gst-plugins-good", "module-filters"]
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -151,7 +151,7 @@ jobs:
 
   module-chroma:
     needs: ["module-filters"]
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -161,7 +161,7 @@ jobs:
 
   module-datachannelexample:
     needs: ["module-filters"]
-    uses: "./.github/workflows/server-buildpackage.reusable.yaml"
+    uses: "./.github/workflows/server-buildpackage.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitName: "${{ inputs.jobGitName }}"
@@ -171,7 +171,7 @@ jobs:
 
   deploy-deb:
     needs: ["media-server", "module-chroma", "module-datachannelexample"]
-    uses: "./.github/workflows/server-deploy-debian.reusable.yaml"
+    uses: "./.github/workflows/server-deploy-debian.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -181,7 +181,7 @@ jobs:
 
   deploy-docker:
     needs: ["deploy-deb"]
-    uses: "./.github/workflows/server-deploy-docker.reusable.yaml"
+    uses: "./.github/workflows/server-deploy-docker.called.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -194,6 +194,6 @@ jobs:
   # TODO: Move script to use Kurento ci-scripts/ and not openvidu ci-scripts/
   # deploy-aws:
   #   needs: ["media-server"]
-  #   uses: "./.github/workflows/server-deploy-aws.reusable.yaml"
+  #   uses: "./.github/workflows/server-deploy-aws.called.yaml"
   #   with:
   #     jobRelease: ${{ inputs.jobRelease }}

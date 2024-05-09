@@ -814,12 +814,16 @@ For this reason, the documentation must be built only after all the other module
 
    .. code-block:: shell
 
+      # Create and load a Python virtual environment.
       python3 -m venv python_modules
       source python_modules/bin/activate
-      python3 -m pip install --upgrade -r requirements.txt
-      make html
 
-   Repeat the *pip install* command if it fails. Python package management is so abysmally bad that this usually solves the issue.
+      # Install packages.
+      python3 -m pip install --upgrade wheel
+      python3 -m pip install --upgrade -r requirements.txt
+
+      # Build docs.
+      make html
 
    JavaDoc and JsDoc pages can be generated separately with ``make langdoc``.
 
