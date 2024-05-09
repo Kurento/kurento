@@ -107,7 +107,7 @@ apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --
 # Add Kurento repository key for apt-get.
 RUN \
 apt-key adv \
-    --keyserver keyserver.ubuntu.com \
+    --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 # Add Kurento repository line for apt-get.
@@ -153,7 +153,7 @@ RUN \
 apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
     ubuntu-dbgsym-keyring \
 || apt-key adv \
-    --keyserver keyserver.ubuntu.com \
+    --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622 \
 && rm -rf /var/lib/apt/lists/*
 

@@ -160,7 +160,7 @@ Make sure you have the kurento development repository:
 ```
 # Import the Kurento repository signing key
 sudo apt-key adv \
-    --keyserver keyserver.ubuntu.com \
+    --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 # Get Ubuntu version definitions

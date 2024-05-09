@@ -18,7 +18,7 @@ RUN apt-get update \
 # Default to UTF-8 file.encoding
 ENV LANG C.UTF-8
 
-RUN gpg --keyserver keyserver.ubuntu.com --recv EB9B1D8886F44E2A \
+RUN gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv EB9B1D8886F44E2A \
 	&& gpg --export --armor EB9B1D8886F44E2A | apt-key add - \
 	&& echo 'deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu xenial main ' > /etc/apt/sources.list.d/openjdk-8.list \
   && apt-get update \

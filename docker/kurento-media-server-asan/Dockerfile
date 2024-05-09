@@ -110,7 +110,7 @@ apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --
 
 # Add Kurento Apt package repository.
 RUN \
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
 && echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
 
 # Install development tools.
@@ -127,7 +127,7 @@ apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --
 RUN \
 echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
     >/etc/apt/sources.list.d/ubuntu-toolchain.list \
-&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
+&& apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BA9EF27F \
 && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
     "gcc-${GCC_VERSION}" \
     "g++-${GCC_VERSION}" \
@@ -163,7 +163,7 @@ apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --
     gnupg \
 && echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu $UBUNTU_CODENAME main" \
     >/etc/apt/sources.list.d/ubuntu-toolchain.list \
-&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA9EF27F \
+&& apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BA9EF27F \
 && apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
     libgcc1 \
     libstdc++6 \

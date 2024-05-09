@@ -7,11 +7,11 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>7.0.0</version>
+		<version>7.0.1-SNAPSHOT</version>
 		<relativePath>../qa-pom</relativePath>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>7.0.0</version>
+	<version>7.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -69,9 +69,9 @@
 		It's not critical that these versions coincide with the latest available,
 		but whenever an API update is done in those files and released,
 		these version numbers should get updated accordingly. -->
-		<version.kms-api-core>7.0.0</version.kms-api-core>
-		<version.kms-api-elements>7.0.0</version.kms-api-elements>
-		<version.kms-api-filters>7.0.0</version.kms-api-filters>
+		<version.kms-api-core>7.0.1-SNAPSHOT</version.kms-api-core>
+		<version.kms-api-elements>7.0.1-SNAPSHOT</version.kms-api-elements>
+		<version.kms-api-filters>7.0.1-SNAPSHOT</version.kms-api-filters>
 
 		<!-- Kurento miscellaneous tools -->
 		<version.kurento-maven-plugin>7.0.0</version.kurento-maven-plugin>

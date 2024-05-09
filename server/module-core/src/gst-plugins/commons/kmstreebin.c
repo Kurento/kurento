@@ -180,9 +180,10 @@ kms_tree_bin_init (KmsTreeBin * self)
 
   g_mutex_init (&self->priv->input_caps_mutex);
 
-  self->priv->output_tee = kms_utils_element_factory_make ("tee", "treebin");
-  fakesink = kms_utils_element_factory_make ("fakesink", "treebin");
+  self->priv->output_tee =
+      kms_utils_element_factory_make ("tee", GST_DEFAULT_NAME);
 
+  fakesink = kms_utils_element_factory_make ("fakesink", GST_DEFAULT_NAME);
   g_object_set (fakesink, "async", FALSE, "sync", FALSE, NULL);
 
   sink = gst_element_get_static_pad (self->priv->output_tee, "sink");

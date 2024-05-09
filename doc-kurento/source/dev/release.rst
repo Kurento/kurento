@@ -212,6 +212,18 @@ Last, but not least, the project maintains a set of Docker images and documentat
 
 
 
+FIRST: Open a new Release Process
+=================================
+
+To start with a new release, first of all create a new git branch that will contain all changes related to the release itself:
+
+.. code-block:: shell
+
+   git switch --create release-1.0.0
+   git push --set-upstream origin HEAD
+
+
+
 .. _dev-release-media-server:
 
 Kurento Media Server
@@ -367,7 +379,7 @@ Release steps
 
    Search for the ``-dev`` suffix.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Server Build All`_ job with parameters:
 
@@ -383,12 +395,12 @@ Release steps
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
    NEW_DEBIAN="<DebianRevision>"  # Eg.: 1kurento1
 
-   function do_release {
-       pushd server/ \
-       || { echo "ERROR: Command failed: pushd"; return 1; }
+   cd server/
 
+   function do_release {
        # Set the new version.
-       bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" --release --commit \
+       bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
+           --release --commit \
        || { echo "ERROR: Command failed: set-versions"; return 1; }
 
        # Check for development versions.
@@ -399,8 +411,6 @@ Release steps
            --exclude-dir 'test*/' \
            -- '\d+\.\d+\.\d+-dev' \
        && { echo "ERROR: Development versions not allowed!"; return 1; }
-
-       popd
 
        echo "Done!"
    }
@@ -459,7 +469,7 @@ Release steps
 
    Search for the ``-dev`` suffix.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Clients Build All JavaScript`_ job with parameters:
 
@@ -665,7 +675,7 @@ Release steps
 
    Search for the ``-SNAPSHOT`` suffix. Note that most versions are defined as properties in ``clients/java/parent-pom/pom.xml``.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Clients Build All Java`_ job with parameters:
 
@@ -692,16 +702,21 @@ Release steps
            || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION" --release --commit \
+           bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION" \
+               --release --commit \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
 
            # Check for development versions.
            grep -Fr --include pom.xml -- '-SNAPSHOT' \
            && { echo "ERROR: Development versions not allowed!"; return 1; }
 
-           # Test the build.
-           # Also install the project into local cache; this allows the next
-           # projects to update their parent version.
+           # Skip "test/tutorial" because the testing framework has rotted
+           # and isn't able to spawn new browser windows for the tests.
+           if [[ "$PROJECT" == "test/tutorial" ]]; then
+               continue
+           fi
+
+           # Install the project.
            # * Build and run tests.
            # * Do not use `-U` because for each project we want Maven to find
            #   the locally cached artifacts from previous project.
@@ -799,20 +814,27 @@ For this reason, the documentation must be built only after all the other module
 
    .. code-block:: shell
 
+      # Create and load a Python virtual environment.
       python3 -m venv python_modules
       source python_modules/bin/activate
+
+      # Install packages.
+      python3 -m pip install --upgrade wheel
       python3 -m pip install --upgrade -r requirements.txt
+
+      # Build docs.
       make html
 
    JavaDoc and JsDoc pages can be generated separately with ``make langdoc``.
 
-#. Commit changes (rebase and squash as needed).
+#. Commit (rebase and squash as needed) and push changes.
 
 #. Run the `Documentation build`_ job with parameters:
 
+   - Workflow branch: Release branch name (e.g. *release-1.0.0*).
    - *jobRelease*: **ENABLED**.
 
-#. CI automatically tags Release versions in ReadTheDocs generated repo `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
+#. CI automatically tags Release versions in the ReadTheDocs-generated repo `doc-kurento-readthedocs`_, so the release will show up in the ReadTheDocs dashboard.
 
    .. note::
 
@@ -827,15 +849,18 @@ For this reason, the documentation must be built only after all the other module
    # Change here.
    NEW_VERSION="<ReleaseVersion>" # Eg.: 1.0.0
 
+   cd doc-kurento/
+
    function do_release {
        local COMMIT_MSG="Prepare documentation release $NEW_VERSION"
+       local SHORT_VERSION="${NEW_VERSION%.*}" # Major.Minor (no .Patch)
 
        # Set [VERSION_RELEASE]="true".
        sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="true"/' VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 1; }
 
        # Set [VERSION_DOC].
-       local VERSION_DOC="$NEW_VERSION"
+       local VERSION_DOC="$SHORT_VERSION"
        sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 2; }
 
@@ -854,13 +879,52 @@ For this reason, the documentation must be built only after all the other module
 
 
 
-New Development Iteration
-=========================
+LAST: Close the Release Process
+===============================
+
+To finish the release, go to GitHub and create a new Pull Request from the release branch:
+
+.. code-block:: text
+
+   https://github.com/Kurento/kurento/pull/new/release-1.0.0
+
+Review all the changes, and accept the PR with a **merge commit**. Do not use the other options (squash or rebase), because we want all changes to get separately recorded with author and date information.
+
+After merging the PR, fetch the new commit:
+
+.. code-block:: shell
+
+   git switch main
+   git fetch --all --tags --prune --prune-tags
+   git pull --autostash
+
+Tag the commit with the new version number (change ``1.0.0`` to the correct one):
+
+.. code-block:: shell
+
+   git tag --force --annotate -m "1.0.0" "1.0.0"
+   git push --force origin "1.0.0"
+
+And now you can optionally do some cleanup in your local clone:
+
+.. code-block:: shell
+
+   git branch --force --delete release-1.0.0
+
+Then, proceed to start a new development iteration for all of the Kurento components.
+
+
 
 Kurento Media Server
 --------------------
 
-**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *.PATCH* number and resetting the **Debian revision** to 1.
+#. Bump to a new development version. Do this by incrementing the *.PATCH* number and resetting the **Debian revision** to 1.
+
+#. Run the `Server Build All`_ job with parameters:
+
+   - *jobGitName*: (Default value).
+   - *jobRelease*: **DISABLED**.
+   - *jobOnlyKurento*: **DISABLED**.
 
 **All-In-One script**:
 
@@ -876,27 +940,19 @@ Kurento Media Server
    bin/set-versions.sh "$NEW_VERSION" --debian "$NEW_DEBIAN" \
        --new-development --commit
 
-   # Push committed changes.
-   git push
-
-Then start the `Server Build All`_ job with parameters:
-
-   - *jobGitName*: Empty (default value).
-   - *jobRelease*: **DISABLED**.
-   - *jobOnlyKurento*: **DISABLED**.
-
 
 
 Kurento JavaScript client
 -------------------------
 
-**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *.PATCH* number.
+#. Bump to a new development version. Do this by incrementing the *.PATCH* number.
+
+#. Run the `Clients Build All JavaScript`_ job with parameters:
+
+   - *jobRelease*: **DISABLED**.
+   - *jobServerVersion*: (Default value).
 
 **All-In-One script**:
-
-.. note::
-
-   The *jq* command-line JSON processor must be installed.
 
 .. code-block:: shell
 
@@ -904,40 +960,20 @@ Kurento JavaScript client
    NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
 
    function do_release {
-       local COMMIT_MSG="Prepare for next development iteration"
-
-       cd server/
-
        local PROJECTS=(
            browser/kurento-utils-js
-           clients/javascript/jsonrpc
-           clients/javascript/client
+           clients/javascript
            tutorials/javascript-node
            tutorials/javascript-browser
        )
 
        for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
+           pushd "$PROJECT" \
+           || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           bin/set-versions.sh "$NEW_VERSION" --git-add \
+           bin/set-versions.sh "$NEW_VERSION" --new-development --commit \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
-
-           popd
-       done
-
-       echo "Everything seems OK; proceed to commit and push"
-
-       for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Commit all modified files.
-           git commit -m "$COMMIT_MSG" \
-           || { echo "ERROR: Command failed: git commit"; return 1; }
-
-           # Push new commit(s).
-           git push \
-           || { echo "ERROR: Command failed: git push"; return 1; }
 
            popd
        done
@@ -953,11 +989,11 @@ Kurento JavaScript client
 Kurento Java client
 -------------------
 
-.. warning::
+#. Bump to a new development version. Do this by incrementing the *.PATCH* number.
 
-   You should wait for a full nightly run of the Kurento Media Server pipeline, so the next development packages become available from KMS API modules: *kms-api-core*, *kms-api-elements*, and *kms-api-filters*. This way, the properties in ``kurento-parent-pom/pom.xml`` will get updated to the latest SNAPSHOT version.
+#. Run the `Clients Build All Java`_ job with parameters:
 
-**After the whole release has been completed**, bump to a new development version. Do this by incrementing the *.PATCH* number.
+   - *jobServerVersion*: (Default value).
 
 **All-In-One script**:
 
@@ -967,46 +1003,22 @@ Kurento Java client
    NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
 
    function do_release {
-       local COMMIT_MSG="Prepare for next development iteration"
-
        local PROJECTS=(
            clients/java/qa-pom
            clients/java
-
-           # Do nothing; tutorials are left depending on release versions.
-           #tutorials/java
-           #test/tutorial
+           tutorials/java
+           test/integration
+           test/tutorial
        )
 
        for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
+           pushd "$PROJECT" \
+           || { echo "ERROR: Command failed: pushd"; return 1; }
 
            # Set the new version.
-           bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION-SNAPSHOT" --git-add \
+           bin/set-versions.sh "$NEW_VERSION" --kms-api "$NEW_VERSION-SNAPSHOT" \
+               --new-development --commit \
            || { echo "ERROR: Command failed: set-versions"; return 1; }
-
-           # Install the project.
-           # * Skip running the tests.
-           # * Do not use `-U` because for each project we want Maven to find
-           #   the locally installed artifacts from previous $PROJECT.
-           mvn -Psnapshot -DskipTests=true clean install \
-           || { echo "ERROR: Command failed: mvn clean install"; return 1; }
-
-           popd
-       done
-
-       echo "Everything seems OK; proceed to commit and push"
-
-       for PROJECT in "${PROJECTS[@]}"; do
-           pushd "$PROJECT" || { echo "ERROR: Command failed: pushd"; return 1; }
-
-           # Commit all modified files.
-           git commit -m "$COMMIT_MSG" \
-           || { echo "ERROR: Command failed: git commit"; return 1; }
-
-           # Push new commit(s).
-           git push \
-           || { echo "ERROR: Command failed: git push"; return 1; }
 
            popd
        done
@@ -1022,7 +1034,13 @@ Kurento Java client
 Kurento documentation
 ---------------------
 
-**AFTER THE WHOLE RELEASE HAS BEEN COMPLETED**: Set *VERSION_RELEASE* to **false**. Now, create a Release Notes document template where to write changes that will accumulate for the next release.
+#. Set *VERSION_RELEASE* to **false**.
+
+#. Create a Release Notes document template where to write changes that will accumulate for the next release.
+
+#. Run the `Documentation build`_ job with parameters:
+
+   - *jobRelease*: **DISABLED**.
 
 **All-In-One script**:
 
@@ -1030,34 +1048,42 @@ Kurento documentation
 
    # Change here.
    NEW_VERSION="<NextVersion>" # Eg.: 1.0.1
+   IS_MINOR="<IsMinor?>" # "true" for 1.1.0, "false" for 1.0.1
+
+   cd doc-kurento/
 
    function do_release {
-       local COMMIT_MSG="Prepare for next development iteration"
+       local SHORT_VERSION="${NEW_VERSION%.*}" # Major.Minor (no .Patch)
 
        # Set [VERSION_RELEASE]="false"
        sed -r -i 's/\[VERSION_RELEASE\]=.*/[VERSION_RELEASE]="false"/' VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 1; }
 
        # Set [VERSION_DOC]
-       local VERSION_DOC="$NEW_VERSION-dev"
+       local VERSION_DOC="$SHORT_VERSION-dev"
        sed -r -i "s/\[VERSION_DOC\]=.*/[VERSION_DOC]=\"$VERSION_DOC\"/" VERSIONS.env \
        || { echo "ERROR: Command failed: sed"; return 2; }
 
        # Add a new Release Notes document
-       local RELNOTES_NAME="v${NEW_VERSION//./_}"
-       cp source/project/relnotes/v0_TEMPLATE.rst \
-           "source/project/relnotes/$RELNOTES_NAME.rst" \
-       && sed -i "s/1.2.3/$NEW_VERSION/" \
-           "source/project/relnotes/$RELNOTES_NAME.rst" \
-       && sed -i "8i\   $RELNOTES_NAME" \
-           source/project/relnotes/index.rst \
-       || { echo "ERROR: Command failed: sed"; return 3; }
+       if [[ "$IS_MINOR" == "true" ]]; then
+           local RELNOTES_NAME="$SHORT_VERSION"
+           cp source/project/relnotes/0.0_TEMPLATE.rst \
+               "source/project/relnotes/$RELNOTES_NAME.rst" \
+           && sed -i "s/00.00/$RELNOTES_NAME/" \
+               "source/project/relnotes/$RELNOTES_NAME.rst" \
+           && sed -i "8i\   $RELNOTES_NAME" \
+               source/project/relnotes/index.rst \
+           || { echo "ERROR: Command failed: sed"; return 3; }
+       fi
 
+       # Amend last commit with these changes.
+       # This assumes that previous modules have been committed already,
+       # otherwise just replace `--amend --no-edit`
+       # with `-m "Prepare for next development iteration"`.
        git add \
            VERSIONS.env \
            source/project/relnotes/ \
-       && git commit -m "$COMMIT_MSG" \
-       && git push \
+       && git commit --amend --no-edit \
        || { echo "ERROR: Command failed: git"; return 4; }
 
        echo "Done!"

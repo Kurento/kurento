@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento.tutorial</groupId>
 		<artifactId>kurento-tutorial</artifactId>
-		<version>7.0.0</version>
+		<version>7.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>kurento-hello-world</artifactId>
 	<packaging>jar</packaging>
@@ -19,7 +19,7 @@
 
 	<properties>
 		<demo.port>8443</demo.port>
-		<start-class>org.kurento.tutorial.helloworld.Application</start-class>
+		<start-class>org.kurento.tutorial.helloworld.HelloWorldApp</start-class>
 	</properties>
 
 	<dependencies>

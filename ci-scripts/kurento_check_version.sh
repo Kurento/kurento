@@ -7,6 +7,13 @@
 #/ Arguments
 #/ =========
 #/
+#/ --minor
+#/
+#/   Only expects a SemVer number with the form Major.Minor, without .Patch.
+#/   Without this flag, a full Semver number is expected: Major.Minor.Patch.
+#/
+#/   Optional. Default: Disabled.
+#/
 #/ --release
 #/
 #/   Enforce release version numbers. The script will exit with an error if
@@ -33,11 +40,15 @@ set -o xtrace
 # Parse call arguments
 # ====================
 
+CFG_MINOR="false"
 CFG_RELEASE="false"
 CFG_GET_VERSION_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
+        --minor)
+            CFG_MINOR="true"
+            ;;
         --release)
             CFG_RELEASE="true"
             ;;
@@ -53,6 +64,7 @@ done
 # Validate config
 # ===============
 
+log "CFG_MINOR=$CFG_MINOR"
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GET_VERSION_ARGS=${CFG_GET_VERSION_ARGS[*]}"
 
@@ -101,8 +113,14 @@ if [[ -f debian/changelog ]]; then
 fi
 
 # Check conformity to Semantic Versioning style.
-REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
+if [[ "$CFG_MINOR" == "true" ]]; then
+    # Major.Minor
+    REGEX='^[[:digit:]]+\.[[:digit:]]+$'
+else
+    # Major.Minor.Patch
+    REGEX='^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$'
+fi
 [[ "$PROJECT_VERSION" =~ $REGEX ]] || {
-    log "ERROR: '$PROJECT_VERSION' is not SemVer (<Major>.<Minor>.<Patch>)"
+    log "ERROR: '$PROJECT_VERSION' is not SemVer (<Major>.<Minor>.<Patch?>)"
     exit 1
 }

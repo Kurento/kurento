@@ -57,7 +57,7 @@ Open a terminal and run these commands:
 
       # Add Kurento repository key for apt-get.
       sudo apt-key adv \
-          --keyserver keyserver.ubuntu.com \
+          --keyserver hkp://keyserver.ubuntu.com:80 \
           --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
       # Add Kurento repository line for apt-get.

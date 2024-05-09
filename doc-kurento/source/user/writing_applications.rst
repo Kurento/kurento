@@ -151,9 +151,9 @@ From the application developer perspective, Media Elements are like *Lego* piece
 
    *Simple Example of a Media Pipeline*
 
-The connectivity is controlled through the *connect* primitive, exposed on all Kurento Client APIs.
+The connectivity is controlled through the *connect* method, exposed on all Kurento Client APIs.
 
-This primitive is always invoked in the element acting as source and takes as argument the sink element following this scheme:
+This method is always invoked in the element acting as source and takes as argument the sink element following this scheme:
 
 .. code-block:: java
 

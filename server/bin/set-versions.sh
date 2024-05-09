@@ -98,6 +98,10 @@ command -v astyle >/dev/null || {
     log "ERROR: 'astyle' is not installed; please install it"
     exit 1
 }
+command -v dch >/dev/null || {
+    log "ERROR: 'devscripts' is not installed; please install it"
+    exit 1
+}
 
 
 
@@ -254,9 +258,11 @@ function git_commit {
     fi
 
     # Amend the last commit if one already exists with same message.
-    local GIT_COMMIT_ARGS=(--message "$COMMIT_MSG")
-    if ! git log --max-count 1 --grep "^${COMMIT_MSG}$" --format="" --exit-code; then
-        GIT_COMMIT_ARGS+=(--amend)
+    local GIT_COMMIT_ARGS=()
+    if git show --no-patch --format='format:%s' HEAD | grep --quiet "^${COMMIT_MSG}$"; then
+        GIT_COMMIT_ARGS=(--amend --no-edit)
+    else
+        GIT_COMMIT_ARGS=(--message "$COMMIT_MSG")
     fi
 
     git commit "${GIT_COMMIT_ARGS[@]}"

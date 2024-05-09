@@ -78,6 +78,11 @@ log "CFG_SERVER_VERSION=$CFG_SERVER_VERSION"
 # Create container
 # ================
 
+if [[ "$CFG_JS" == "true" ]]; then
+    # shellcheck disable=SC2054
+    DOCKER_ARGS+=(--mount type=bind,src="$GIT_SSH_KEY_PATH",dst=/id_git_ssh)
+fi
+
 CONTAINER_NAME="kurento_ci_job_generate_module_${JOB_TIMESTAMP}_$(mktemp --dry-run XXXXXX)"
 
 # Create a new container that runs Bash indefinitely.
@@ -86,8 +91,6 @@ docker run -t --detach \
     --pull always \
     --rm --name "$CONTAINER_NAME" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
-    --mount type=bind,src="$GIT_SSH_KEY_PATH",dst=/id_git_ssh \
-    --mount type=bind,src="$MAVEN_SETTINGS_PATH",dst=/maven-settings.xml \
     --mount type=bind,src="$PWD",dst=/workdir \
     kurento/kurento-ci-buildtools:focal
 
@@ -138,7 +141,7 @@ if [[ "$CFG_JAVA" == "true" ]]; then
     GENERATE_CMD="kurento_generate_java_module.sh"
 elif [[ "$CFG_JS" == "true" ]]; then
     GENERATE_CMD="kurento_generate_js_module.sh"
-    GENERATE_ARGS+=("--git-ssh-key /id_git_ssh")
+    GENERATE_ARGS+=(--git-ssh-key /id_git_ssh)
 
     if [[ "$JOB_RELEASE" == "true" ]]; then
         GENERATE_ARGS+=(--release)

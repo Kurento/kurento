@@ -1,0 +1,105 @@
+======================================
+Kurento 7.1 Release Notes (UNRELEASED)
+======================================
+
+This is a template for changes that are being added to the next release.
+
+Kurento 7.1.0 was originally released on 31 March 1999.
+
+.. The latest `bug-fix release <#bug-fix-releases>`__ in the stable 7.1 series is **7.1.1**.
+
+See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.1.html for the latest version of this document.
+
+To install Kurento Media Server: :doc:`/user/installation`.
+
+.. contents:: Table of Contents
+
+
+
+Added
+=====
+
+* **Small addition**. Description.
+
+
+
+Big addition name
+-----------------
+
+Full description, with images, code samples, external links, etc. Some useful syntax examples:
+
+* Documentation section: :doc:`/user/tutorials`.
+
+* Glossary term: :term:`SDP`.
+
+* Inline link: `How to avoid Data Channel breaking <https://blog.mozilla.org/webrtc/how-to-avoid-data-channel-breaking/>`__.
+
+* Blocks:
+
+  .. code-block:: java
+
+     System.out.println("Some example Java code");
+
+  .. code-block:: text
+
+     Some literal command output
+
+  .. note::
+
+     Something to keep in mind.
+
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{issue_id} <https://github.com/Kurento/kurento/issues/{issue_id}>`__ (*Issue title*).
+Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{pr_id} <https://github.com/Kurento/kurento/pull/{pr_id}>`__ (*Pull Request title*).
+
+
+
+Changed
+=======
+
+* Description.
+
+
+
+Deprecated
+==========
+
+* Description.
+
+
+
+Fixed
+=====
+
+* Description.
+
+
+
+Other changes
+=============
+
+This list includes other changes and fixes contributed by users and/or fellow developers, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
+
+**RepoName 1**
+
+* "Username for PR" ...
+
+**RepoName 2**
+
+* "Username for PR" ...
+
+
+
+..
+   Bug-fix releases
+   ================
+
+   7.1.1
+   -----
+
+   * Fix 1.
+
+     Description.
+
+   * Fix 2.
+
+     Description.

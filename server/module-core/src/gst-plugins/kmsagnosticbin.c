@@ -31,6 +31,10 @@
 
 #define PLUGIN_NAME "agnosticbin"
 
+#define TARGET_ENCODER_BITRATE "target-encoder-bitrate"
+#define MIN_ENCODER_BITRATE "min-encoder-bitrate"
+#define MAX_ENCODER_BITRATE "max-encoder-bitrate"
+
 #define UNLINKING_DATA "unlinking-data"
 G_DEFINE_QUARK (UNLINKING_DATA, unlinking_data);
 
@@ -79,6 +83,12 @@ enum
 
 static guint kms_agnostic_bin2_signals[LAST_SIGNAL] = { 0 };
 
+typedef enum {
+  TRANSCODING_STATE_NONE, // No value
+  TRANSCODING_STATE_ACTIVE, // Transcoding is not happening
+  TRANSCODING_STATE_INACTIVE, // Transcoding is taking place
+} TranscodingState;
+
 struct _KmsAgnosticBin2Private
 {
   GHashTable *bins;
@@ -104,7 +114,7 @@ struct _KmsAgnosticBin2Private
   GstStructure *codec_config;
   gboolean bitrate_unlimited;
 
-  gboolean transcoding_emitted;
+  TranscodingState transcoding_state;
 };
 
 enum
@@ -420,7 +430,7 @@ static void
 kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
     GstElement * tee, GstCaps * caps)
 {
-  GstElement *queue = kms_utils_element_factory_make ("queue", "agnosticbin");
+  GstElement *queue = kms_utils_element_factory_make ("queue", PLUGIN_NAME);
   GstPad *target;
   GstProxyPad *proxy;
 
@@ -429,9 +439,9 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
 
   if (!(gst_caps_is_any (caps) || gst_caps_is_empty (caps))
       && kms_utils_caps_is_raw (caps)) {
-    GstElement *convert = kms_utils_create_convert_for_caps (caps);
-    GstElement *rate = kms_utils_create_rate_for_caps (caps);
-    GstElement *mediator = kms_utils_create_mediator_element (caps);
+    GstElement *convert = kms_utils_create_convert_for_caps (caps, PLUGIN_NAME);
+    GstElement *rate = kms_utils_create_rate_for_caps (caps, PLUGIN_NAME);
+    GstElement *mediator = kms_utils_create_mediator_element (caps, PLUGIN_NAME);
 
     g_object_set (queue, "leaky", 2, "max-size-time", LEAKY_TIME, NULL);
 
@@ -484,14 +494,11 @@ check_bin (KmsTreeBin * tree_bin, const GstCaps * caps)
   GstPad *tee_sink = gst_element_get_static_pad (output_tee, "sink");
   GstCaps *current_caps = kms_tree_bin_get_input_caps (tree_bin);
 
-  GST_LOG_OBJECT (tree_bin,
-      "Check compatibility for bin: %" GST_PTR_FORMAT " ...", tree_bin);
-
   if (current_caps == NULL) {
     current_caps = gst_pad_get_allowed_caps (tee_sink);
   }
 
-  GST_LOG_OBJECT (tree_bin, "TreeBin '%" GST_PTR_FORMAT "' caps: %"
+  GST_DEBUG_OBJECT (tree_bin, "TreeBin %" GST_PTR_FORMAT " caps: %"
       GST_PTR_FORMAT, tree_bin, current_caps);
 
   if (current_caps != NULL && gst_caps_get_size (current_caps) > 0) {
@@ -712,40 +719,53 @@ kms_agnostic_bin2_find_or_create_bin_for_caps (KmsAgnosticBin2 * self,
     media_type = g_strdup ("video");
   }
 
-  GST_LOG_OBJECT (self, "Find TreeBin with wanted caps: %" GST_PTR_FORMAT, caps);
+  GST_DEBUG_OBJECT (self, "Find TreeBin with wanted caps: %" GST_PTR_FORMAT, caps);
 
   bin = kms_agnostic_bin2_find_bin_for_caps (self, caps);
 
+  // TODO: This code only runs during connection of new elements that might need
+  // transcoding. But there is no handling of disconnection of elements that
+  // were using transcoding until that moment.
+  // For example, this could happen:
+  // 1. Have a WebRtcEndpoint source with H.264.
+  // 2. Connect a WebRtcEndpoint sink that wants H.264.
+  //    Media is compatible so no encoding is needed.
+  //    transcoding_state = INACTIVE.
+  // 3. Connect a RecorderEndpoint with WEBM profile (needs VP8).
+  //    A compatible source bin is not found so a new EncTreeBin is created.
+  //    transcoding_state = ACTIVE.
+  // 4. Stop and disconnect the RecorderEndpoint.
+  //    The transcoding from H.264 to VP8 is not needed any more!
+  //    transcoding_state should be INACTIVE but that won't happen.
+
   if (bin == NULL) {
-    GST_LOG_OBJECT (self, "TreeBin not found! Transcoding required for %s",
+    GST_DEBUG_OBJECT (self, "TreeBin not found! Transcoding required for %s",
         media_type);
 
     bin = kms_agnostic_bin2_create_bin_for_caps (self, caps);
-    GST_TRACE_OBJECT (self, "Created TreeBin: %" GST_PTR_FORMAT, bin);
+    GST_DEBUG_OBJECT (self, "Created TreeBin: %" GST_PTR_FORMAT, bin);
 
-    if (!self->priv->transcoding_emitted) {
-      self->priv->transcoding_emitted = TRUE;
+    // Emit this event in all cases. I.e. regardless of whether this is the
+    // first time it gets emitted or not, warn the app about the transcoding.
+    if (self->priv->transcoding_state != TRANSCODING_STATE_ACTIVE) {
+      self->priv->transcoding_state = TRANSCODING_STATE_ACTIVE;
       g_signal_emit (GST_BIN (self),
           kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, TRUE, type);
       GST_INFO_OBJECT (self, "TRANSCODING ACTIVE for %s", media_type);
     }
-    else {
-      GST_LOG_OBJECT (self, "Suppressed - TRANSCODING ACTIVE for %s",
-          media_type);
-    }
-  }
-  else {
-    GST_LOG_OBJECT (self, "TreeBin found! Use it for %s", media_type);
+  } else {
+    GST_DEBUG_OBJECT (self, "TreeBin found! Using %" GST_PTR_FORMAT " for %s",
+        bin, media_type);
 
-    if (!self->priv->transcoding_emitted) {
-      self->priv->transcoding_emitted = TRUE;
+    // Emit this event only if it is the first one. E.g. if a first element that
+    // needs transcoding is connected, "transcoding active" happens, *then* a
+    // second element that doesn't require transcoding is connected, the latter
+    // one should not cause a "transcoding inactive" event.
+    if (self->priv->transcoding_state == TRANSCODING_STATE_NONE) {
+      self->priv->transcoding_state = TRANSCODING_STATE_INACTIVE;
       g_signal_emit (GST_BIN (self),
           kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, FALSE, type);
       GST_DEBUG_OBJECT (self, "TRANSCODING INACTIVE for %s", media_type);
-    }
-    else {
-      GST_LOG_OBJECT (self, "Suppressed - TRANSCODING INACTIVE for %s",
-          media_type);
     }
   }
 
@@ -802,7 +822,7 @@ end:
 
 /**
  * Process a pad for connecting or disconnecting, it should be always called
- * whint the agnostic lock hold.
+ * with the agnostic lock hold.
  *
  * @self: The #KmsAgnosticBin2 owner of the pad
  * @pad: The pad to be processed
@@ -971,15 +991,14 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
 
   self = KMS_AGNOSTIC_BIN2 (user_data);
 
-  GST_TRACE_OBJECT (pad, "Self: %s, event: %" GST_PTR_FORMAT,
-      GST_ELEMENT_NAME (self), event);
-
   gst_event_parse_caps (event, &new_caps);
 
-  if (new_caps == NULL) {
-    GST_ERROR_OBJECT (self, "Unexpected NULL input caps");
+  if (!new_caps || gst_caps_get_size (new_caps) == 0) {
+    GST_ERROR_OBJECT (self, "Invalid CAPS event: %" GST_PTR_FORMAT, event);
     return GST_PAD_PROBE_OK;
   }
+
+  GST_LOG_OBJECT (self, "Processing CAPS event");
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
   current_caps = self->priv->input_caps;
@@ -987,15 +1006,12 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   if (current_caps != NULL) {
-    GstStructure *st;
+    GST_LOG_OBJECT (self, "Current input caps: %" GST_PTR_FORMAT, current_caps);
 
-    GST_LOG_OBJECT (self, "Current input caps: %" GST_PTR_FORMAT,
-        current_caps);
+    GstStructure *st = gst_caps_get_structure (current_caps, 0);
 
-    st = gst_caps_get_structure (current_caps, 0);
-    // Remove famerate, width, height, streamheader that make unecessary
-    // agnostic reconstruction happen
-
+    // Remove fields that can change dynamically without needing
+    // an agnostic bin reconstruction.
     gst_structure_remove_fields (st, "width", "height", "framerate",
         "streamheader", "codec_data", NULL);
 
@@ -1004,8 +1020,7 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
         && !kms_utils_caps_is_raw (new_caps)) {
       GST_LOG_OBJECT (self, "Set new input caps: %" GST_PTR_FORMAT, new_caps);
       kms_agnostic_bin2_configure_input (self, new_caps);
-    }
-    else {
+    } else {
       // REVIEW: Why no need when old or new caps are RAW?
       GST_LOG_OBJECT (self, "No need to set new input caps");
     }
@@ -1162,8 +1177,9 @@ kms_agnostic_bin_set_encoders_bitrate (KmsAgnosticBin2 * self)
   bins = g_hash_table_get_values (self->priv->bins);
   for (l = bins; l != NULL; l = l->next) {
     if (KMS_IS_ENC_TREE_BIN (l->data)) {
-      kms_enc_tree_bin_set_bitrate_limits (KMS_ENC_TREE_BIN (l->data),
-          self->priv->min_encoder_bitrate, self->priv->max_encoder_bitrate);
+      kms_enc_tree_bin_set_bitrate (KMS_ENC_TREE_BIN (l->data),
+          self->priv->target_encoder_bitrate, self->priv->min_encoder_bitrate,
+          self->priv->max_encoder_bitrate);
     }
   }
 }
@@ -1178,15 +1194,8 @@ kms_agnostic_bin2_set_property (GObject * object, guint property_id,
     case PROP_TARGET_ENCODER_BITRATE: {
       gint v = g_value_get_int (value);
       KMS_AGNOSTIC_BIN2_LOCK (self);
-      if (v < self->priv->min_encoder_bitrate
-          || v > self->priv->max_encoder_bitrate) {
-        v = DEFAULT_TARGET_ENCODER_BITRATE;
-        GST_WARNING_OBJECT (self,
-            "Ignoring out of bounds requested target bitrate; setting default: %d",
-            v);
-      }
       self->priv->target_encoder_bitrate = v;
-      GST_DEBUG_OBJECT (self, "target-encoder-bitrate set: %d",
+      GST_DEBUG_OBJECT (self, "\"%s\" set: %d", TARGET_ENCODER_BITRATE,
           self->priv->target_encoder_bitrate);
       kms_agnostic_bin_set_encoders_bitrate (self);
       KMS_AGNOSTIC_BIN2_UNLOCK (self);
@@ -1195,13 +1204,8 @@ kms_agnostic_bin2_set_property (GObject * object, guint property_id,
     case PROP_MIN_ENCODER_BITRATE: {
       gint v = g_value_get_int (value);
       KMS_AGNOSTIC_BIN2_LOCK (self);
-      if (v > self->priv->max_encoder_bitrate) {
-        v = self->priv->max_encoder_bitrate;
-        GST_WARNING_OBJECT (self,
-            "Ignoring requested bitrate min > max; setting max: %d", v);
-      }
       self->priv->min_encoder_bitrate = v;
-      GST_DEBUG_OBJECT (self, "min-encoder-bitrate set: %d",
+      GST_DEBUG_OBJECT (self, "\"%s\" set: %d", MIN_ENCODER_BITRATE,
           self->priv->min_encoder_bitrate);
       kms_agnostic_bin_set_encoders_bitrate (self);
       KMS_AGNOSTIC_BIN2_UNLOCK (self);
@@ -1214,14 +1218,14 @@ kms_agnostic_bin2_set_property (GObject * object, guint property_id,
       if (v == 0) {
         self->priv->bitrate_unlimited = TRUE;
         v = DEFAULT_MAX_ENCODER_BITRATE;
-      } else if (v < self->priv->min_encoder_bitrate) {
-        v = self->priv->min_encoder_bitrate;
-        GST_WARNING_OBJECT (self,
-            "Ignoring requested bitrate max < min; setting min: %d", v);
       }
       self->priv->max_encoder_bitrate = v;
-      GST_DEBUG_OBJECT (self, "max-encoder-bitrate set: %d",
-          self->priv->max_encoder_bitrate);
+      if (self->priv->bitrate_unlimited) {
+        GST_DEBUG_OBJECT (self, "\"%s\" set: unlimited", MAX_ENCODER_BITRATE);
+      } else {
+        GST_DEBUG_OBJECT (self, "\"%s\" set: %d", MAX_ENCODER_BITRATE,
+            self->priv->max_encoder_bitrate);
+      }
       kms_agnostic_bin_set_encoders_bitrate (self);
       KMS_AGNOSTIC_BIN2_UNLOCK (self);
       break;
@@ -1311,17 +1315,17 @@ kms_agnostic_bin2_class_init (KmsAgnosticBin2Class * klass)
       GST_DEBUG_FUNCPTR (kms_agnostic_bin2_release_pad);
 
   g_object_class_install_property (gobject_class, PROP_TARGET_ENCODER_BITRATE,
-      g_param_spec_int ("target-encoder-bitrate", "target encoder bitrate",
+      g_param_spec_int (TARGET_ENCODER_BITRATE, "target encoder bitrate",
           "Target video bitrate for media transcoding (in bps)",
           0, G_MAXINT, DEFAULT_TARGET_ENCODER_BITRATE, G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, PROP_MIN_ENCODER_BITRATE,
-      g_param_spec_int ("min-encoder-bitrate", "min encoder bitrate",
+      g_param_spec_int (MIN_ENCODER_BITRATE, "min encoder bitrate",
           "Minimum video bitrate for media transcoding (in bps)",
           0, G_MAXINT, DEFAULT_MIN_ENCODER_BITRATE, G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, PROP_MAX_ENCODER_BITRATE,
-      g_param_spec_int ("max-encoder-bitrate", "max encoder bitrate",
+      g_param_spec_int (MAX_ENCODER_BITRATE, "max encoder bitrate",
           "Maximum video bitrate for media transcoding (in bps)",
           0, G_MAXINT, DEFAULT_MAX_ENCODER_BITRATE, G_PARAM_READWRITE));
 
@@ -1392,7 +1396,7 @@ check_ret_error (GstPad * pad, GstFlowReturn ret)
       GST_FIXME_OBJECT (pad, "REPLACE FAKESINK");
       GstElement *fakesink = self->priv->input_fakesink;
       kms_utils_bin_remove (GST_BIN (self), fakesink);
-      fakesink = kms_utils_element_factory_make ("fakesink", "agnosticbin");
+      fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
       self->priv->input_fakesink = fakesink;
       g_object_set (fakesink, "async", FALSE, "sync", FALSE,
           "silent", FALSE,
@@ -1462,10 +1466,10 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 
   self->priv = KMS_AGNOSTIC_BIN2_GET_PRIVATE (self);
 
-  tee = kms_utils_element_factory_make ("tee", "agnosticbin");
+  tee = kms_utils_element_factory_make ("tee", PLUGIN_NAME);
   self->priv->input_tee = tee;
 
-  fakesink = kms_utils_element_factory_make ("fakesink", "agnosticbin");
+  fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
   self->priv->input_fakesink = fakesink;
   g_object_set (fakesink, "async", FALSE, "sync", FALSE,
       "silent", FALSE, // FIXME used to print log in check_ret_error()
@@ -1501,7 +1505,7 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   self->priv->min_encoder_bitrate = DEFAULT_MIN_ENCODER_BITRATE;
   self->priv->max_encoder_bitrate = DEFAULT_MAX_ENCODER_BITRATE;
   self->priv->bitrate_unlimited = TRUE;
-  self->priv->transcoding_emitted = FALSE;
+  self->priv->transcoding_state = TRANSCODING_STATE_NONE;
 }
 
 gboolean

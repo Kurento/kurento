@@ -70,9 +70,9 @@ public class MessageUtils {
     return requestP;
   }
 
-  private static <R> R convertJsonTo(JsonElement resultJsonObject, Class<R> resultClass) {
+  private static <R> R convertJsonTo(JsonElement resultElement, Class<R> resultClass) {
 
-    if (resultJsonObject == null) {
+    if (resultElement == null) {
       return null;
     }
 
@@ -86,20 +86,25 @@ public class MessageUtils {
         || resultClass.isPrimitive()) {
 
       JsonElement value;
-      if (resultJsonObject.isJsonObject()) {
+      if (resultElement.isJsonObject()) {
+        JsonObject resultObject = resultElement.getAsJsonObject();
 
-        Set<Entry<String, JsonElement>> properties = ((JsonObject) resultJsonObject).entrySet();
+        Set<Entry<String, JsonElement>> properties = resultObject.entrySet();
 
         if (properties.size() > 1) {
+          if (resultObject.has("value")) {
+            value = resultObject.get("value");
+          }
+          else {
+            Entry<String, JsonElement> prop = properties.iterator().next();
 
-          Entry<String, JsonElement> prop = properties.iterator().next();
+            log.warn(
+                "Converting a result with {} properties into a value"
+                    + " of type {}. Selecting property '{}'",
+                Integer.valueOf(properties.size()), resultClass, prop.getKey());
 
-          log.warn(
-              "Converting a result with {} properties in a value"
-                  + " of type {}. Selecting propoerty '{}'",
-              Integer.valueOf(properties.size()), resultClass, prop.getKey());
-
-          value = prop.getValue();
+            value = prop.getValue();
+          }
 
         } else if (properties.size() == 1) {
           value = properties.iterator().next().getValue();
@@ -107,24 +112,25 @@ public class MessageUtils {
           value = null;
         }
 
-      } else if (resultJsonObject.isJsonArray()) {
-        JsonArray array = (JsonArray) resultJsonObject;
-        if (array.size() > 1) {
+      } else if (resultElement.isJsonArray()) {
+        JsonArray resultArray = resultElement.getAsJsonArray();
+
+        if (resultArray.size() > 1) {
           log.warn(
-              "Converting an array with {} elements in a value "
+              "Converting an array with {} elements into a value "
                   + "of type {}. Selecting first element",
-              Integer.valueOf(array.size()), resultClass);
+              Integer.valueOf(resultArray.size()), resultClass);
 
         }
 
-        value = array.get(0);
+        value = resultArray.get(0);
       } else {
-        value = resultJsonObject;
+        value = resultElement;
       }
 
       resultR = getGson().fromJson(value, resultClass);
     } else {
-      resultR = getGson().fromJson(resultJsonObject, resultClass);
+      resultR = getGson().fromJson(resultElement, resultClass);
     }
     return resultR;
   }

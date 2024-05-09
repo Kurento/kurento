@@ -19,14 +19,14 @@
  *
  * With a webcam:
  *
- *     gst-launch-1.0 --gst-plugin-path="$PWD/src/gst-plugins" \
+ *     GST_PLUGIN_PATH="$PWD/src/gst-plugins" gst-launch-1.0 \
  *         v4l2src ! videoconvert \
  *         ! gstreamerexample type=0 edge-value=125 \
  *         ! videoconvert ! autovideosink
  *
  * With an input file:
  *
- *     gst-launch-1.0 --gst-plugin-path="$PWD/src/gst-plugins" \
+ *     GST_PLUGIN_PATH="$PWD/src/gst-plugins" gst-launch-1.0 \
  *         uridecodebin uri='file:///path/to/video.mp4' ! videoconvert \
  *         ! gstreamerexample type=0 edge-value=125 \
  *         ! videoconvert ! autovideosink

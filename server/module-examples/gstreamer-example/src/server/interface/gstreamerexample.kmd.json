@@ -1,5 +1,5 @@
 {
   "name": "gstreamerexample",
-  "version": "7.0.0",
-  "kurentoVersion": "^7.0.0"
+  "version": "7.0.2-dev",
+  "kurentoVersion": "^7.0.2-dev"
 }

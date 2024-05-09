@@ -22,7 +22,7 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 #=========
 # Firefox
 #=========
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AF316E81A155146718A6FBD7A6DCF7707EBC211F  \
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AF316E81A155146718A6FBD7A6DCF7707EBC211F  \
   && echo "deb http://ppa.launchpad.net/ubuntu-mozilla-security/ppa/ubuntu trusty main" >> /etc/apt/sources.list.d/firefox.list \
   && apt-get update -qqy \
   && apt-get -qqy --no-install-recommends install \

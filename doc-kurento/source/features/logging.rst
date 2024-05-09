@@ -173,6 +173,7 @@ Example:
 
    export G_MESSAGES_DEBUG="libnice,libnice-stun"
    export GST_DEBUG="${GST_DEBUG:-2},glib:5"
+
    /usr/bin/kurento-media-server
 
 You can also set this configuration in the Kurento service settings file, which gets installed at ``/etc/default/kurento-media-server``.
@@ -189,7 +190,51 @@ It is possible to enable detailed debug logging of the HTTP request/response hea
 .. code-block:: shell
 
    export SOUP_DEBUG=1
+
    /usr/bin/kurento-media-server
+
+
+
+libusrsctp (WebRTC DataChannels)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**libusrsctp** is a userland library that implements the SCTP protocol. Sadly, the version packaged by Ubuntu 20.04 doesn't come with debug facilities enabled, but its corresponding GStreamer plugin does have them, so we can enable logging from GStreamer and see if there is any issue with establishing a connection.
+
+Set both the generic *glib* log category, and the environment variable *G_MESSAGES_DEBUG*, in order to enable messages concerning SCTP. As of this writing, *G_MESSAGES_DEBUG* must be set to "all", but in future versions we'l be able to filter specifically for SCTP messages:
+
+.. code-block:: shell
+
+   export GST_DEBUG="${GST_DEBUG:-2},sctp*:5,glib:5"
+
+   if (( "$(bc <<< "$DISTRIB_RELEASE > 20.04")" )); then
+       export G_MESSAGES_DEBUG='GStreamer-SCTP'
+   else
+       export G_MESSAGES_DEBUG='all'
+   fi
+
+   /usr/bin/kurento-media-server
+
+As of Ubuntu 20.04, to enable internal debug logs from *libusrsctp* it must be manually done by modifying its source code. This might seem like a daunting task but it should be easy to achieve on a developer machine with these commands:
+
+.. code-block:: shell
+
+   # Install build tools.
+   sudo apt-get update && sudo apt-get install devscripts equivs dpkg-dev
+
+   # Download and patch the source code of *libusrsctp*.
+   apt-get source libusrsctp
+   cd libusrsctp-*/
+   sed -i 's/SCTPCTL_DEBUG_DEFAULT/SCTP_DEBUG_ALL/' usrsctplib/netinet/sctp_sysctl.c
+
+   # Build and install a new package.
+   source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
+   sudo apt-get update && sudo mk-build-deps --install --remove \
+       --tool="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --no-remove" \
+       ./debian/control
+   sudo dpkg-buildpackage -b -uc -us
+   dpkg -i ../libusrsctp1_*.deb
+
+Note that for ``apt-get source`` to work, you'll have to enable *Source Code* packages in your repository manager.
 
 
 

@@ -64,7 +64,7 @@ pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
 
 include(GenericFind)
-generic_find(LIBNAME KMSCORE VERSION ^7.0.0 REQUIRED)
+generic_find(LIBNAME KMSCORE VERSION ^7.0.2-dev REQUIRED)
 generic_find(LIBNAME KmsGstCommons REQUIRED)
 generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 

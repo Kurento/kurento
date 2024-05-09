@@ -223,7 +223,7 @@ For example, to build the Kurento *core* module:
    source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
    sudo apt-get update ; sudo mk-build-deps --install --remove \
-       --tool="apt-get -o Debug::pkgProblemResolver=yes --target-release 'a=${DISTRIB_CODENAME}-backports' --no-install-recommends --no-remove" \
+       --tool="apt-get -o Debug::pkgProblemResolver=yes --target-release 'a=$DISTRIB_CODENAME-backports' --no-install-recommends --no-remove" \
        ./debian/control
 
 
@@ -236,6 +236,7 @@ Run:
 .. code-block:: shell
 
    git clone https://github.com/Kurento/kurento.git
+
    cd kurento/
 
    git submodule update --init --recursive
@@ -270,7 +271,7 @@ To leave the system in a clean state, remove all Kurento packages and related de
 
    sudo aptitude remove '?installed?version(kurento)'
 
-Use *purge* instead of *remove* to also delete any leftover configuration files in ``/etc/``.
+Use ``purge`` instead of ``remove`` to also delete any leftover configuration files in ``/etc/``.
 
 
 
@@ -293,13 +294,13 @@ After having :doc:`installed Kurento </user/installation>`, first thing to do is
    # Add Ubuntu debug repository key for apt-get.
    apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
    || apt-key adv \
-      --keyserver keyserver.ubuntu.com \
+      --keyserver hkp://keyserver.ubuntu.com:80 \
       --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622
 
    # Add Ubuntu debug repository line for apt-get.
    sudo tee "/etc/apt/sources.list.d/ddebs.list" >/dev/null <<EOF
    deb http://ddebs.ubuntu.com $DISTRIB_CODENAME main restricted universe multiverse
-   deb http://ddebs.ubuntu.com ${DISTRIB_CODENAME}-updates main restricted universe multiverse
+   deb http://ddebs.ubuntu.com $DISTRIB_CODENAME-updates main restricted universe multiverse
    EOF
 
 Now, install all debug packages that are relevant to Kurento:
@@ -526,7 +527,9 @@ For example, say you want to build the development branch of *kurento-module-cor
 .. code-block:: shell
 
    git clone https://github.com/Kurento/kurento.git
+
    cd kurento/server/module-core/
+
    ../../ci-scripts/kurento-buildpackage.sh \
        --install-kurento 7.0.0 \
        --apt-add-repo

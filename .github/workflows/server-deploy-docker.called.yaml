@@ -1,4 +1,4 @@
-name: "Server: Deploy Docker"
+name: "server deploy docker (child)"
 
 on:
   # Triggered from other workflows.
@@ -12,7 +12,7 @@ on:
         type: "string"
         default: '["focal"]'
       jobRelease:
-        description: "jobRelease: Enable to build release versions Disable for development builds"
+        description: "jobRelease: Enable to build release versions; disable for development builds"
         required: false
         type: "boolean"
         default: false
@@ -40,7 +40,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "dev"]
+    runs-on: ["self-hosted"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.
@@ -54,7 +54,7 @@ jobs:
     steps:
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
-        uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
+        uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
 
       - name: "Configure the environment for ci-scripts/"
         working-directory: "ci-scripts/"

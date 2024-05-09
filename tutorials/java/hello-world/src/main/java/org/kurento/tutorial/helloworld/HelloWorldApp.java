@@ -30,12 +30,12 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
  */
 @SpringBootApplication
 @EnableWebSocket
-public class Application implements WebSocketConfigurer
+public class HelloWorldApp implements WebSocketConfigurer
 {
   @Bean
-  public Handler handler()
+  public HelloWorldHandler handler()
   {
-    return new Handler();
+    return new HelloWorldHandler();
   }
 
   @Bean
@@ -59,6 +59,6 @@ public class Application implements WebSocketConfigurer
 
   public static void main(String[] args) throws Exception
   {
-    SpringApplication.run(Application.class, args);
+    SpringApplication.run(HelloWorldApp.class, args);
   }
 }

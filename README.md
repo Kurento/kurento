@@ -2,20 +2,12 @@
 
 
 
-<!---
-TODO: Replace
-doc-kurento/source/(.*)\.rst
-with
-https://doc-kurento.readthedocs.io/en/latest/$1.html
--->
-
-
-
 # Kurento Media Server
 
-| :house:[Homepage](https://kurento.openvidu.io/) | :books:[Documentation (under construction)](doc-kurento/source/index.rst) | [![Docker Pulls](https://img.shields.io/docker/pulls/kurento/kurento-media-server?color=blue&label=Docker&logo=docker&logoColor=blue)](https://hub.docker.com/r/kurento/kurento-media-server) |
-| --- | --- | --- |
+| :house:[Homepage](https://kurento.openvidu.io/)                                                                                                                                                                                    | :books:[Documentation](https://doc-kurento.readthedocs.io/)                                                                                                                 | [![Docker Pulls](https://img.shields.io/docker/pulls/kurento/kurento-media-server?color=blue&label=Docker&logo=docker&logoColor=blue)](https://hub.docker.com/r/kurento/kurento-media-server)                           |
+| ---                                                                                                                                                                                                                                | ---                                                                                                                                                                         | ---                                                                                                                                                                                                                     |
 | [![GitHub commits](https://img.shields.io/github/commits-difference/Kurento/kurento?base=eabf6de352fb927df91baa2ec26794dac8c64d78&head=HEAD&label=Commits&logo=github)](https://github.com/Kurento/kurento/graphs/commit-activity) | [![GitHub contributors](https://img.shields.io/github/contributors/Kurento/kurento?label=Contributors&logo=github)](https://github.com/Kurento/kurento/graphs/contributors) | [![Stack Exchange questions](https://img.shields.io/stackexchange/stackoverflow/t/kurento?color=orange&label=Stack%20Overflow&logo=stackoverflow&logoColor=orange)](https://stackoverflow.com/questions/tagged/kurento) |
+| [![Sourcegraph](https://img.shields.io/badge/Explore%20with%20Sourcegraph-Kurento-00CBEC?logo=sourcegraph)](https://sourcegraph.com/github.com/Kurento/kurento)                                                                    |                                                                                                                                                                             |                                                                                                                                                                                                                         |
 
 Kurento Media Server is responsible for media transmission, processing, loading and recording. It is implemented in low level technologies based on the GStreamer multimedia toolkit, and provides the following features:
 
@@ -27,20 +19,25 @@ Kurento Media Server is responsible for media transmission, processing, loading 
 
 
 
-## About Kurento
+## Project status
 
-Kurento is an open source software project providing a platform suitable for creating modular applications with advanced real-time communication capabilities. To know more about Kurento, please visit the project website: https://kurento.openvidu.io/.
-
-All source code belonging to the Kurento project can be found in the [Kurento GitHub organization page](https://github.com/Kurento).
-
-[![Sourcegraph](https://img.shields.io/badge/Explore%20with%20Sourcegraph-Kurento-00CBEC?logo=sourcegraph)](https://sourcegraph.com/github.com/Kurento/kurento)
+> [!CAUTION]
+> **This project is on bare minimum maintenance mode**.
+>
+> **There are no major new features planned for Kurento, and even minor issues may take some time to be addressed**.
+>
+> Kurento won't implement several WebRTC features such as Simulcast, End-To-End Encryption, Insertable Streams, or even support for more than 1 video + 1 audio in the same WebRTC peer connection.
+>
+> For new videoconferencing projects we recommend to build on top of a higher-level platform such as [OpenVidu](https://openvidu.io/) (from the same team as Kurento). It hides to some extent the sheer complexity of scalable WebRTC systems, and allows you to focus on your app instead.
+>
+> If you're just looking for a bare-bones, low-level WebRTC SFU like Kurento, [mediasoup](https://mediasoup.org/) is a very good, modern and actively developed alternative.
 
 
 
 ## FIWARE Platform
 
 | [![FIWARE Chapter](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/media-streams.svg)](https://www.fiware.org/developers/catalogue/) | [![FIWARE Member Status](https://nexus.lab.fiware.org/static/badges/statuses/kurento.svg)](https://www.fiware.org/developers/catalogue/) | :mortar_board: [FIWARE Academy](https://fiware-academy.readthedocs.io/en/latest/processing/kurento) |
-| --- | --- | --- |
+| ---                                                                                                                                                     | ---                                                                                                                                      | ---                                                                                                 |
 
 The Kurento project is part of [FIWARE]. For more information check the FIWARE documentation for [Real-Time Media Stream Processing](https://fiwaretourguide.readthedocs.io/en/latest/processing/kurento/introduction/).
 
@@ -70,7 +67,7 @@ The Open API specification, also known as [Kurento Protocol](https://doc-kurento
 
 ## Documentation
 
-Kurento provides detailed [Documentation (under construction)](doc-kurento/source/index.rst) including tutorials, installation and development guides.
+Kurento provides detailed [Documentation](https://doc-kurento.readthedocs.io/) including tutorials, installation and development guides.
 
 
 
@@ -78,10 +75,10 @@ Kurento provides detailed [Documentation (under construction)](doc-kurento/sourc
 
 Usage:
 
-* [Installation Guide](doc-kurento/source/user/installation.rst)
+* [Installation Guide](https://doc-kurento.readthedocs.io/en/latest/user/installation.html)
 * [Docker Image](https://hub.docker.com/r/kurento/kurento-media-server)
 * [Contribution Guide](https://doc-kurento.readthedocs.io/en/latest/project/contributing.html)
-* [Developer Guide](doc-kurento/source/dev/dev_guide.rst)
+* [Developer Guide](https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html)
 
 Issues:
 

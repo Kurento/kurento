@@ -135,7 +135,7 @@ kms_base_media_muxer_get_sink_fallback (KmsBaseMediaMuxer * self,
 
     if (kms_is_valid_uri (uri)) {
       /* We use the GStreamer CURL plugin */
-      sink = gst_element_factory_make ("curlhttpsink", NULL);
+      sink = kms_utils_element_factory_make ("curlhttpsink", OBJECT_NAME);
       if (sink != NULL) {
         g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE,
             "async", FALSE, NULL);
@@ -182,7 +182,8 @@ kms_base_media_muxer_get_sink (KmsBaseMediaMuxer * self, const gchar * uri)
     g_clear_error (&err);
   }
 
-  GST_DEBUG_OBJECT (sink, "Muxer sink created for URI '%s'", uri);
+  GST_DEBUG_OBJECT (sink, "Muxer sink '%s' created for URI '%s'",
+      GST_OBJECT_NAME (gst_element_get_factory (sink)), uri);
 
   /* Try to configure the sink element */
   sink_class = G_OBJECT_GET_CLASS (sink);
@@ -250,7 +251,7 @@ kms_base_media_muxer_create_sink_impl (KmsBaseMediaMuxer * self,
 
   if (sink == NULL) {
     GST_ERROR_OBJECT (self, "No available sink for uri %s", uri);
-    sink = gst_element_factory_make ("fakesink", NULL);
+    sink = kms_utils_element_factory_make ("fakesink", OBJECT_NAME);
   }
 
   return sink;

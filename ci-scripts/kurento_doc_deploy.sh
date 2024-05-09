@@ -74,6 +74,10 @@ log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
 {
     CHECK_VERSION_ARGS=()
 
+    # Doc versions are only composed of Major.Minor, while .Patch or bug-fix
+    # versions are all summarized under the same Minor release.
+    CHECK_VERSION_ARGS+=(--minor)
+
     if [[ "$CFG_RELEASE" == "true" ]]; then
         CHECK_VERSION_ARGS+=(--release)
     fi
@@ -132,7 +136,7 @@ log "Commit and push changes to Kurento/$REPO_NAME"
     pushd "$REPO_DIR"
 
     # Check if there are any changes; if so, commit them.
-    git update-index --refresh
+    git update-index -q --refresh
     if ! git diff-index --quiet --exit-code HEAD; then
         # `--all` to include possibly deleted files.
         git add --all .

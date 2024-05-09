@@ -362,11 +362,15 @@ fi
 RUN_VARS=()
 RUN_WRAPPER=""
 
+# Special variables support.
+G_DEBUG_VALUES=()
+G_SLICE_VALUES=()
+
 if [[ "$CFG_JEMALLOC" == "true" ]]; then
     # Find the full path to the Jemalloc library file.
     JEMALLOC_PATH="$(find /usr/lib/x86_64-linux-gnu/ | grep 'libjemalloc\.so\.[0-9]+' | sort --version-sort --reverse | head --lines 1)" || {
         log "ERROR: Jemalloc not found, please install it:"
-        log "sudo apt-get update && sudo apt-get install '^libjemalloc[0-9]+$'"
+        log "sudo apt-get update ; sudo apt-get install '^libjemalloc[0-9]+$'"
         exit 1
     }
 
@@ -376,23 +380,29 @@ if [[ "$CFG_JEMALLOC" == "true" ]]; then
     RUN_VARS+=(
         "LD_PRELOAD='$JEMALLOC_PATH'"
         "MALLOC_CONF='$JEMALLOC_CONF'"
+    )
 
+    G_DEBUG_VALUES+=(
         # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
+        "gc-friendly"
+    )
 
+    G_SLICE_VALUES+=(
         # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        "G_SLICE='always-malloc'"
+        "always-malloc"
     )
 fi
 
 if [[ "$CFG_GDB" == "true" ]]; then
     RUN_WRAPPER="gdb --args"
     RUN_VARS+=(
-        # fatal-warnings: Abort on calls to `g_warning()`` or `g_critical()`.
-        "G_DEBUG='fatal-warnings'"
-
         # Prevent GStreamer from forking at startup.
         "GST_REGISTRY_FORK='no'"
+    )
+
+    G_DEBUG_VALUES+=(
+        # fatal-warnings: Abort on calls to `g_warning()` or `g_critical()`.
+        "fatal-warnings"
     )
 fi
 
@@ -401,15 +411,21 @@ if [[ "$CFG_VALGRIND_MEMCHECK" == "true" ]]; then
     source "$SELF_DIR/valgrind.conf.sh" || exit 1
     RUN_WRAPPER="valgrind --tool=memcheck --log-file='valgrind-memcheck-%p.log' ${VALGRIND_ARGS[*]}"
     RUN_VARS+=(
-        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
-
-        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        # debug-blocks: Enable sanity checks on released memory slices.
-        "G_SLICE='always-malloc,debug-blocks'"
-
         # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
+    )
+
+    G_DEBUG_VALUES+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "gc-friendly"
+    )
+
+    G_SLICE_VALUES+=(
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "always-malloc"
+
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "debug-blocks"
     )
 
 elif [[ "$CFG_VALGRIND_MASSIF" == "true" ]]; then
@@ -451,15 +467,21 @@ elif [[ "$CFG_ADDRESS_SANITIZER" == "true" ]]; then
         "LD_PRELOAD='$LIBSAN'"
         "ASAN_OPTIONS='$ASAN_OPTIONS'"
 
-        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
-
-        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        # debug-blocks: Enable sanity checks on released memory slices.
-        "G_SLICE='always-malloc,debug-blocks'"
-
         # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
+    )
+
+    G_DEBUG_VALUES+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "gc-friendly"
+    )
+
+    G_SLICE_VALUES+=(
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "always-malloc"
+
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "debug-blocks"
     )
 
 elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
@@ -477,34 +499,62 @@ elif [[ "$CFG_THREAD_SANITIZER" == "true" ]]; then
     RUN_VARS+=(
         "TSAN_OPTIONS='suppressions=${PWD}/bin/sanitizers/tsan.supp ignore_interceptors_accesses=1 ignore_noninstrumented_modules=1'"
 
-        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
-        "G_DEBUG='gc-friendly'"
-
-        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
-        # debug-blocks: Enable sanity checks on released memory slices.
-        "G_SLICE='always-malloc,debug-blocks'"
-
         # Prevent GStreamer from forking at startup
         "GST_REGISTRY_FORK='no'"
     )
+
+    G_DEBUG_VALUES+=(
+        # gc-friendly: Initialize memory with 0s. Useful for memory checkers.
+        "gc-friendly"
+    )
+
+    G_SLICE_VALUES+=(
+        # always-malloc: Disable custom allocator and use `malloc` instead. Useful for memory checkers.
+        "always-malloc"
+
+        # debug-blocks: Enable sanity checks on released memory slices.
+        "debug-blocks"
+    )
 fi
 
-# Set default debug log settings, if none given
+# Pass debug log settings, or defaults if none are set.
 if [[ -n "${GST_DEBUG:-}" ]]; then
-    RUN_VARS+=(
-        "GST_DEBUG='$GST_DEBUG'"
-    )
+    RUN_VARS+=("GST_DEBUG='$GST_DEBUG'")
 else
-    RUN_VARS+=(
-        "GST_DEBUG='2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'"
-    )
+    RUN_VARS+=("GST_DEBUG='2,Kurento*:4,kms*:4,sdp*:4,webrtc*:4,*rtpendpoint:4,rtp*handler:4,rtpsynchronizer:4,agnosticbin:4'")
 fi
 
-# (Optional) Extra GST_DEBUG categories
-# export GST_DEBUG="${GST_DEBUG:-2},aggregator:5,compositor:5,compositemixer:5"
-# export GST_DEBUG="${GST_DEBUG:-2},baseparse:6,h264parse:6"
-# export GST_DEBUG="${GST_DEBUG:-2},Kurento*:5,agnosticbin*:5"
-# export GST_DEBUG="${GST_DEBUG:-2},kmswebrtcsession:6"
+# Pass other relevant environment variables, if set.
+
+# GST_DEBUG_DUMP_DOT_DIR
+# https://gstreamer.freedesktop.org/documentation/tutorials/basic/debugging-tools.html#getting-pipeline-graphs
+if [[ -n "${GST_DEBUG_DUMP_DOT_DIR:-}" ]]; then
+    RUN_VARS+=("GST_DEBUG_DUMP_DOT_DIR='$GST_DEBUG_DUMP_DOT_DIR'")
+fi
+
+# G_DEBUG
+# https://docs.gtk.org/glib/running.html#environment-variables
+for G_DEBUG_VALUE in "${G_DEBUG_VALUES[@]}"; do
+    G_DEBUG+="${G_DEBUG:+,}$G_DEBUG_VALUE"
+done
+if [[ -n "${G_DEBUG:-}" ]]; then
+    RUN_VARS+=("G_DEBUG='$G_DEBUG'")
+fi
+
+# G_SLICE
+# https://docs.gtk.org/glib/running.html#environment-variables
+for G_SLICE_VALUE in "${G_SLICE_VALUES[@]}"; do
+    G_SLICE+="${G_SLICE:+,}$G_SLICE_VALUE"
+done
+if [[ -n "${G_SLICE:-}" ]]; then
+    RUN_VARS+=("G_SLICE='$G_SLICE'")
+fi
+
+# G_MESSAGES_DEBUG
+# https://docs.gtk.org/glib/logging.html#debug-message-output
+if [[ -n "${G_MESSAGES_DEBUG:-}" ]]; then
+    RUN_VARS+=("G_MESSAGES_DEBUG='$G_MESSAGES_DEBUG'")
+fi
 
 
 
@@ -545,30 +595,29 @@ ulimit -c unlimited
 #log "Set kernel core dump path: $KERNEL_CORE_PATH"
 #echo "$KERNEL_CORE_PATH" | sudo tee /proc/sys/kernel/core_pattern >/dev/null
 
+# Set main config file path.
+RUN_VARS+=(
+    "KURENTO_CONF_FILE='${KURENTO_CONF_FILE:-$PWD/config/kurento.conf.json}'"
+)
+
 # Set modules path.
 # Equivalent to `--modules-path`, `--modules-config-path`, `--gst-plugin-path`.
 RUN_VARS+=(
-    # Use the former to include modules already installed in the system.
-    #"KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/kurento/modules'"
-    "KURENTO_MODULES_PATH='${KURENTO_MODULES_PATH:+$KURENTO_MODULES_PATH:}$PWD'"
+    "KURENTO_MODULES_PATH='$PWD${KURENTO_MODULES_PATH:+:$KURENTO_MODULES_PATH}:/usr/lib/x86_64-linux-gnu/kurento'"
 
-    "KURENTO_MODULES_CONFIG_PATH='${KURENTO_MODULES_CONFIG_PATH:+$KURENTO_MODULES_CONFIG_PATH:}$PWD/config'"
+    "KURENTO_MODULES_CONFIG_PATH='$PWD/config${KURENTO_MODULES_CONFIG_PATH:+:$KURENTO_MODULES_CONFIG_PATH}:/etc/kurento/modules'"
 
-    # Use the former to include plugins already installed in the system.
-    #"GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
-    "GST_PLUGIN_PATH='${GST_PLUGIN_PATH:+$GST_PLUGIN_PATH:}$PWD'"
+    "GST_PLUGIN_PATH='$PWD${GST_PLUGIN_PATH:+:$GST_PLUGIN_PATH}:/usr/lib/x86_64-linux-gnu/gstreamer-1.0'"
 )
 
 # Use `env` to set the environment variables just for our target program,
 # without affecting the wrapper.
-COMMAND="$RUN_WRAPPER env -i"
+COMMAND="$RUN_WRAPPER env --ignore-environment"
 for RUN_VAR in "${RUN_VARS[@]}"; do
     [[ -n "$RUN_VAR" ]] && COMMAND+=" $RUN_VAR"
 done
 
-COMMAND+=" media-server/server/kurento-media-server \
-    --conf-file='$PWD/config/kurento.conf.json' \
-"
+COMMAND+=" media-server/server/kurento-media-server"
 
 log "Run command: $COMMAND"
 eval "$COMMAND" "$CFG_KMS_ARGS"

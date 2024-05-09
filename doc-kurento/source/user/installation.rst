@@ -178,7 +178,7 @@ Open a terminal and run these commands:
 
       # Add Kurento repository key for apt-get.
       sudo apt-key adv \
-          --keyserver keyserver.ubuntu.com \
+          --keyserver hkp://keyserver.ubuntu.com:80 \
           --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
       # Add Kurento repository line for apt-get.
@@ -303,21 +303,21 @@ To check whether KMS is up and listening for connections, use the following comm
 .. code-block:: shell
 
    curl \
-     --include \
-     --header "Connection: Upgrade" \
-     --header "Upgrade: websocket" \
-     --header "Host: 127.0.0.1:8888" \
-     --header "Origin: 127.0.0.1" \
-     http://127.0.0.1:8888/kurento
+       --include \
+       --header "Connection: Upgrade" \
+       --header "Upgrade: websocket" \
+       --header "Host: 127.0.0.1:8888" \
+       --header "Origin: 127.0.0.1" \
+       "http://127.0.0.1:8888/kurento"
 
 You should get a response similar to this one:
 
 .. code-block:: text
 
    HTTP/1.1 500 Internal Server Error
-   Server: WebSocket++/0.7.0
+   Server: WebSocket++/0.8.1
 
-Ignore the "*Server Error*" message: this is expected, and it actually proves that KMS is up and listening for connections.
+Ignore the "*Server Error*" message: this is expected because we didn't send any actual message, but it is enough to prove that Kurento is up and listening for WebSocketconnections.
 
 If you need to automate this, you could write a script similar to `healthchecker.sh`_, the one we use in `Kurento Docker images`_.
 

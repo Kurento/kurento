@@ -57,7 +57,7 @@ g_log_level_to_gst_debug_level (GLogLevelFlags log_level)
   case G_LOG_LEVEL_ERROR:    return GST_LEVEL_ERROR;
   case G_LOG_LEVEL_CRITICAL: return GST_LEVEL_ERROR;
   case G_LOG_LEVEL_WARNING:  return GST_LEVEL_WARNING;
-  case G_LOG_LEVEL_MESSAGE:  return GST_LEVEL_FIXME;
+  case G_LOG_LEVEL_MESSAGE:  return GST_LEVEL_INFO;
   case G_LOG_LEVEL_INFO:     return GST_LEVEL_INFO;
   case G_LOG_LEVEL_DEBUG:    return GST_LEVEL_DEBUG;
   default:                   return GST_LEVEL_DEBUG;
@@ -65,10 +65,10 @@ g_log_level_to_gst_debug_level (GLogLevelFlags log_level)
 }
 
 /*
- * Based on the Glib 2.48.2 default message handler, g_log_default_handler()
+ * Based on the GLib 2.48.2 default message handler, g_log_default_handler()
  * https://github.com/GNOME/glib/blob/2.48.2/glib/gmessages.c#L1429
  *
- * NOTE: In Glib 2.50 they added a new logging mode, "structured logging", that
+ * NOTE: In GLib 2.50 they added a new logging mode, "structured logging", that
  * maybe we need to check out in the future.
  */
 /* these are emitted by the default log handler */
@@ -76,10 +76,10 @@ g_log_level_to_gst_debug_level (GLogLevelFlags log_level)
 /* these are filtered by G_MESSAGES_DEBUG by the default log handler */
 #define INFO_LEVELS (G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG)
 static void
-kms_glib_log_handler (const gchar   *log_domain,
-                      GLogLevelFlags log_level,
-                      const gchar   *message,
-                      gpointer       unused_data)
+kms_glib_log_handler (const gchar *log_domain,
+    GLogLevelFlags log_level,
+    const gchar *message,
+    gpointer unused_data)
 {
   const gchar *domains;
 
@@ -88,34 +88,55 @@ kms_glib_log_handler (const gchar   *log_domain,
   }
 
   domains = g_getenv ("G_MESSAGES_DEBUG");
-  if (((log_level & INFO_LEVELS) == 0) ||
-      domains == NULL ||
-      (strcmp (domains, "all") != 0 && (!log_domain || !strstr (domains, log_domain))))
-  {
+  if (((log_level & INFO_LEVELS) == 0) || domains == NULL
+      || (strcmp (domains, "all") != 0
+          && (!log_domain || !strstr (domains, log_domain)))) {
     return;
   }
 
- emit:
+emit:
   /* we can be called externally with recursion for whatever reason */
-  if (log_level & G_LOG_FLAG_RECURSION)
-    {
-      //_g_log_fallback_handler (log_domain, log_level, message, unused_data);
-      return;
-    }
+  if (log_level & G_LOG_FLAG_RECURSION) {
+    //_g_log_fallback_handler (log_domain, log_level, message, unused_data);
+    return;
+  }
 
-    // Forward Glib log messages through GStreamer logging
-    GstDebugCategory *category = kms_glib_debug;
-    GstDebugLevel level = g_log_level_to_gst_debug_level (log_level);
-    gst_debug_log (category, level, GST_STR_NULL (log_domain), "", 0, NULL,
-        "%s", GST_STR_NULL (message));
+  // Forward GLib log messages through GStreamer logging
+  GstDebugCategory *category = kms_glib_debug;
+  GstDebugLevel level = g_log_level_to_gst_debug_level (log_level);
+  gst_debug_log (category, level, GST_STR_NULL (log_domain), "", 0, NULL, "%s",
+      GST_STR_NULL (message));
+}
+
+GLogWriterOutput
+kms_glib_log_structured_handler (GLogLevelFlags log_level,
+    const GLogField *fields,
+    gsize n_fields,
+    gpointer user_data)
+{
+  const gchar *log_domain = NULL;
+  const gchar *message = NULL;
+
+  for (gsize i = 0; i < n_fields; i++) {
+    if (g_strcmp0 (fields[i].key, "GLIB_DOMAIN") == 0) {
+      log_domain = (const gchar *)fields[i].value;
+    } else if (g_strcmp0 (fields[i].key, "MESSAGE") == 0) {
+      message = (const gchar *)fields[i].value;
+    }
+  }
+
+  kms_glib_log_handler (log_domain, log_level, message, user_data);
+
+  return G_LOG_WRITER_HANDLED;
 }
 
 void
 kms_init_logging ()
 {
-  // Forward Glib log messages through GStreamer logging
-  GST_DEBUG_CATEGORY_INIT (kms_glib_debug, "glib", 0, "Glib logging");
+  // Forward GLib log messages through GStreamer logging
+  GST_DEBUG_CATEGORY_INIT (kms_glib_debug, "glib", 0, "GLib logging");
   g_log_set_default_handler (kms_glib_log_handler, NULL);
+  g_log_set_writer_func (kms_glib_log_structured_handler, NULL, NULL);
 }
 
 // ----------------------------------------------------------------------------

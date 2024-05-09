@@ -19,12 +19,14 @@
 #include "config.h"
 #endif
 
-#include <gst/gst.h>
-
+#include "kmsagnosticbin.h"
 #include "kmsaudiomixer.h"
 #include "kmsloop.h"
 #include "kmsrefstruct.h"
-#include "kmsagnosticbin.h"
+#include "kmsutils.h"
+
+#include <gst/gst.h>
+#include <gst/base/gstaggregator.h> // GstAggregatorStartTimeSelection
 
 #define PLUGIN_NAME "kmsaudiomixer"
 
@@ -120,13 +122,22 @@ cb_latency (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 static GstElement *
 kms_audio_selector_create_capsfilter (KmsAudioMixer * self)
 {
-  GstElement *capsfilter = gst_element_factory_make ("capsfilter", NULL);
+  GstElement *capsfilter = kms_utils_element_factory_make ("capsfilter", PLUGIN_NAME);
 
   if (!self->priv->filtercaps) {
+    const guint64 channel_mask = 0x03;
     self->priv->filtercaps =
-        gst_caps_new_simple ("audio/x-raw", "format", G_TYPE_STRING, "S16LE",
-        "rate", G_TYPE_INT, 48000, "channels", G_TYPE_INT, 2, NULL);
+        // clang-format off
+        gst_caps_new_simple ("audio/x-raw",
+            "format", G_TYPE_STRING, "S16LE",
+            "layout", G_TYPE_STRING, "interleaved",
+            "rate", G_TYPE_INT, 48000,
+            "channels", G_TYPE_INT, 2,
+            "channel-mask", GST_TYPE_BITMASK, channel_mask,
+            NULL);
+        // clang-format on
   }
+
   g_object_set (G_OBJECT (capsfilter), "caps", self->priv->filtercaps, NULL);
 
   return capsfilter;
@@ -532,10 +543,10 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
     return;
   }
 
-  audiorate = gst_element_factory_make ("audiorate", NULL);
+  audiorate = kms_utils_element_factory_make ("audiorate", PLUGIN_NAME);
   g_object_set (audiorate, "skip-to-first", TRUE, NULL);
 
-  agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+  agnosticbin = kms_utils_element_factory_make ("agnosticbin", PLUGIN_NAME);
   g_object_set_qdata_full (G_OBJECT (agnosticbin), key_sink_pad_name_quark (),
       g_strdup (padname), g_free);
 
@@ -818,7 +829,7 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
   GstPad *srcpad = NULL, *pad, *sinkpad = NULL;
   GstElement *adder;
   GstElement *audiotestsrc;
-  GstElement *tee, *fakesink, *capsfilter;
+  GstElement *tee, *fakesink;
   gchar *srcname;
   gint id;
 
@@ -827,27 +838,34 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
     return FALSE;
   }
 
-  adder = gst_element_factory_make ("audiomixer", NULL);
-  tee = gst_element_factory_make ("tee", NULL);
-  fakesink = gst_element_factory_make ("fakesink", NULL);
+  adder = kms_utils_element_factory_make ("audiomixer", PLUGIN_NAME);
+  tee = kms_utils_element_factory_make ("tee", PLUGIN_NAME);
+  fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
 
+  // clang-format off
+  g_object_set (adder,
+      "latency", LATENCY * GST_MSECOND,
+      "start-time-selection", "first",
+      NULL);
+  // clang-format on
   g_object_set (tee, "allow-not-linked", TRUE, NULL);
   g_object_set (fakesink, "sync", FALSE, "async", FALSE, NULL);
-  g_object_set (adder, "latency", LATENCY * GST_MSECOND, "start-time-selection",
-    1, NULL);
 
   g_object_set_qdata_full (G_OBJECT (adder), key_sink_pad_name_quark (),
       g_strdup (padname), g_free);
-  audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
-  g_object_set (audiotestsrc, "is-live", TRUE, "wave", /*silence */ 4, NULL);
 
-  capsfilter = kms_audio_selector_create_capsfilter (self);
+  audiotestsrc = kms_utils_element_factory_make ("audiotestsrc", PLUGIN_NAME);
+  g_object_set (audiotestsrc, "is-live", TRUE, NULL);
+  gst_util_set_object_arg (G_OBJECT (audiotestsrc), "wave", "silence");
 
-  gst_bin_add_many (GST_BIN (self), audiotestsrc, capsfilter, adder, tee,
-      fakesink, NULL);
+  GstElement* capsfilter_src = kms_audio_selector_create_capsfilter (self);
+  GstElement* capsfilter_sink = kms_audio_selector_create_capsfilter (self);
 
-  gst_element_link (audiotestsrc, capsfilter);
-  srcpad = gst_element_get_static_pad (capsfilter, "src");
+  gst_bin_add_many (GST_BIN (self), audiotestsrc, capsfilter_src, adder,
+      capsfilter_sink, tee, fakesink, NULL);
+
+  gst_element_link (audiotestsrc, capsfilter_src);
+  srcpad = gst_element_get_static_pad (capsfilter_src, "src");
   if (srcpad == NULL) {
     GST_ERROR ("Could not get src pad in %" GST_PTR_FORMAT, audiotestsrc);
     goto no_audiotestsrc;
@@ -872,7 +890,7 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
     gst_element_release_request_pad (adder, sinkpad);
   }
 
-  gst_element_link_many (adder, tee, fakesink, NULL);
+  gst_element_link_many (adder, capsfilter_sink, tee, fakesink, NULL);
 
 no_audiotestsrc:
   if (srcpad != NULL) {
@@ -884,8 +902,9 @@ no_audiotestsrc:
 
   gst_element_sync_state_with_parent (fakesink);
   gst_element_sync_state_with_parent (tee);
-  gst_element_sync_state_with_parent (capsfilter);
+  gst_element_sync_state_with_parent (capsfilter_sink);
   gst_element_sync_state_with_parent (adder);
+  gst_element_sync_state_with_parent (capsfilter_src);
   gst_element_sync_state_with_parent (audiotestsrc);
 
   KMS_AUDIO_MIXER_LOCK (self);
@@ -894,11 +913,11 @@ no_audiotestsrc:
   g_hash_table_insert (self->priv->adders, g_strdup (padname), adder);
 
   srcname = g_strdup_printf ("src_%u", id);
-
   pad = gst_ghost_pad_new_no_target (srcname, GST_PAD_SRC);
-  g_signal_connect_object (pad, "linked", G_CALLBACK (set_target_cb), tee, 0);
+  g_signal_connect_object (pad, "linked", G_CALLBACK (set_target_cb), tee,
+      (GConnectFlags)0);
   g_signal_connect_object (pad, "unlinked", G_CALLBACK (remove_target_cb), tee,
-      0);
+      (GConnectFlags)0);
   g_free (srcname);
 
   g_object_set_qdata (G_OBJECT (adder), key_tee_quark (), tee);
@@ -949,7 +968,7 @@ kms_audio_mixer_request_new_pad (GstElement * element,
               (element)), AUDIO_SINK_PAD))
     return NULL;
 
-  typefind = gst_element_factory_make ("typefind", NULL);
+  typefind = kms_utils_element_factory_make ("typefind", PLUGIN_NAME);
   sinkpad = gst_element_get_static_pad (typefind, "sink");
   if (sinkpad == NULL) {
     gst_object_unref (typefind);

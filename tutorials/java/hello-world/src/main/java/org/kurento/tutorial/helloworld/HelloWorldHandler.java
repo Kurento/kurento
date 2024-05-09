@@ -55,9 +55,9 @@ import org.kurento.client.NewCandidatePairSelectedEvent;
 /**
  * Kurento Java Tutorial - WebSocket message handler.
  */
-public class Handler extends TextWebSocketHandler
+public class HelloWorldHandler extends TextWebSocketHandler
 {
-  private static final Logger log = LoggerFactory.getLogger(Handler.class);
+  private static final Logger log = LoggerFactory.getLogger(HelloWorldHandler.class);
   private static final Gson gson = new GsonBuilder().create();
 
   private final ConcurrentHashMap<String, UserSession> users =
@@ -74,7 +74,7 @@ public class Handler extends TextWebSocketHandler
   public void afterConnectionEstablished(WebSocketSession session)
       throws Exception
   {
-    log.info("[Handler::afterConnectionEstablished] New WebSocket connection, sessionId: {}",
+    log.info("[HelloWorldHandler::afterConnectionEstablished] New WebSocket connection, sessionId: {}",
         session.getId());
   }
 
@@ -89,7 +89,7 @@ public class Handler extends TextWebSocketHandler
       CloseStatus status) throws Exception
   {
     if (!status.equalsCode(CloseStatus.NORMAL)) {
-      log.warn("[Handler::afterConnectionClosed] status: {}, sessionId: {}",
+      log.warn("[HelloWorldHandler::afterConnectionClosed] status: {}, sessionId: {}",
           status, session.getId());
     }
 
@@ -107,7 +107,7 @@ public class Handler extends TextWebSocketHandler
     JsonObject jsonMessage = gson.fromJson(message.getPayload(),
         JsonObject.class);
 
-    log.info("[Handler::handleTextMessage] message: {}, sessionId: {}",
+    log.info("[HelloWorldHandler::handleTextMessage] message: {}, sessionId: {}",
         jsonMessage, sessionId);
 
     try {
@@ -128,12 +128,12 @@ public class Handler extends TextWebSocketHandler
           break;
         default:
           // Ignore the message
-          log.warn("[Handler::handleTextMessage] Skip, invalid message, id: {}",
+          log.warn("[HelloWorldHandler::handleTextMessage] Skip, invalid message, id: {}",
               messageId);
           break;
       }
     } catch (Throwable ex) {
-      log.error("[Handler::handleTextMessage] Exception: {}, sessionId: {}",
+      log.error("[HelloWorldHandler::handleTextMessage] Exception: {}, sessionId: {}",
           ex, sessionId);
       sendError(session, "[Kurento] Exception: " + ex.getMessage());
     }
@@ -146,7 +146,7 @@ public class Handler extends TextWebSocketHandler
   public void handleTransportError(WebSocketSession session,
       Throwable exception) throws Exception
   {
-    log.error("[Handler::handleTransportError] Exception: {}, sessionId: {}",
+    log.error("[HelloWorldHandler::handleTransportError] Exception: {}, sessionId: {}",
         exception, session.getId());
 
     session.close(CloseStatus.SERVER_ERROR);
@@ -155,16 +155,16 @@ public class Handler extends TextWebSocketHandler
   private synchronized void sendMessage(final WebSocketSession session,
       String message)
   {
-    log.debug("[Handler::sendMessage] {}", message);
+    log.debug("[HelloWorldHandler::sendMessage] {}", message);
 
     if (!session.isOpen()) {
-      log.warn("[Handler::sendMessage] Skip, WebSocket session isn't open");
+      log.warn("[HelloWorldHandler::sendMessage] Skip, WebSocket session isn't open");
       return;
     }
 
     final String sessionId = session.getId();
     if (!users.containsKey(sessionId)) {
-      log.warn("[Handler::sendMessage] Skip, unknown user, id: {}",
+      log.warn("[HelloWorldHandler::sendMessage] Skip, unknown user, id: {}",
           sessionId);
       return;
     }
@@ -172,7 +172,7 @@ public class Handler extends TextWebSocketHandler
     try {
       session.sendMessage(new TextMessage(message));
     } catch (IOException ex) {
-      log.error("[Handler::sendMessage] Exception: {}", ex.getMessage());
+      log.error("[HelloWorldHandler::sendMessage] Exception: {}", ex.getMessage());
     }
   }
 
@@ -193,7 +193,7 @@ public class Handler extends TextWebSocketHandler
   private void initBaseEventListeners(final WebSocketSession session,
       BaseRtpEndpoint baseRtpEp, final String className)
   {
-    log.info("[Handler::initBaseEventListeners] name: {}, class: {}, sessionId: {}",
+    log.info("[HelloWorldHandler::initBaseEventListeners] name: {}, class: {}, sessionId: {}",
         baseRtpEp.getName(), className, session.getId());
 
     // Event: Some error happened
@@ -268,7 +268,7 @@ public class Handler extends TextWebSocketHandler
   private void initWebRtcEventListeners(final WebSocketSession session,
       final WebRtcEndpoint webRtcEp)
   {
-    log.info("[Handler::initWebRtcEventListeners] name: {}, sessionId: {}",
+    log.info("[HelloWorldHandler::initWebRtcEventListeners] name: {}, sessionId: {}",
         webRtcEp.getName(), session.getId());
 
     // Event: The ICE backend found a local candidate during Trickle ICE
@@ -340,7 +340,7 @@ public class Handler extends TextWebSocketHandler
 
     But it can also be configured per-application, as shown:
 
-    log.info("[Handler::initWebRtcEndpoint] Using STUN server: 193.147.51.12:3478");
+    log.info("[HelloWorldHandler::initWebRtcEndpoint] Using STUN server: 193.147.51.12:3478");
     webRtcEp.setStunServerAddress("193.147.51.12");
     webRtcEp.setStunServerPort(3478);
     */
@@ -348,9 +348,9 @@ public class Handler extends TextWebSocketHandler
     // Continue the SDP Negotiation: Generate an SDP Answer
     final String sdpAnswer = webRtcEp.processOffer(sdpOffer);
 
-    log.info("[Handler::initWebRtcEndpoint] name: {}, SDP Offer from browser to KMS:\n{}",
+    log.info("[HelloWorldHandler::initWebRtcEndpoint] name: {}, SDP Offer from browser to KMS:\n{}",
         name, sdpOffer);
-    log.info("[Handler::initWebRtcEndpoint] name: {}, SDP Answer from KMS to browser:\n{}",
+    log.info("[HelloWorldHandler::initWebRtcEndpoint] name: {}, SDP Answer from KMS to browser:\n{}",
         name, sdpAnswer);
 
     JsonObject message = new JsonObject();
@@ -374,8 +374,8 @@ public class Handler extends TextWebSocketHandler
 
     final String sessionId = session.getId();
 
-    log.info("[Handler::handleStart] User count: {}", users.size());
-    log.info("[Handler::handleStart] New user, id: {}", sessionId);
+    log.info("[HelloWorldHandler::handleStart] User count: {}", users.size());
+    log.info("[HelloWorldHandler::handleStart] New user, id: {}", sessionId);
 
     final UserSession user = new UserSession();
     users.put(sessionId, user);
@@ -383,7 +383,7 @@ public class Handler extends TextWebSocketHandler
 
     // ---- Media pipeline
 
-    log.info("[Handler::handleStart] Create Media Pipeline");
+    log.info("[HelloWorldHandler::handleStart] Create Media Pipeline");
 
     final MediaPipeline pipeline = kurento.createMediaPipeline();
     user.setMediaPipeline(pipeline);
@@ -399,7 +399,7 @@ public class Handler extends TextWebSocketHandler
     String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
     initWebRtcEndpoint(session, webRtcEp, sdpOffer);
 
-    log.info("[Handler::handleStart] New WebRtcEndpoint: {}",
+    log.info("[HelloWorldHandler::handleStart] New WebRtcEndpoint: {}",
         webRtcEp.getName());
 
 
@@ -413,7 +413,7 @@ public class Handler extends TextWebSocketHandler
     // try (PrintWriter out = new PrintWriter("pipeline.dot")) {
     //   out.println(pipelineDot);
     // } catch (IOException ex) {
-    //   log.error("[Handler::start] Exception: {}", ex.getMessage());
+    //   log.error("[HelloWorldHandler::start] Exception: {}", ex.getMessage());
     // }
   }
 
@@ -424,7 +424,7 @@ public class Handler extends TextWebSocketHandler
   {
     final String sessionId = session.getId();
     if (!users.containsKey(sessionId)) {
-      log.warn("[Handler::handleAddIceCandidate] Skip, unknown user, id: {}",
+      log.warn("[HelloWorldHandler::handleAddIceCandidate] Skip, unknown user, id: {}",
           sessionId);
       return;
     }
@@ -450,7 +450,7 @@ public class Handler extends TextWebSocketHandler
     if (user != null) {
       MediaPipeline mediaPipeline = user.getMediaPipeline();
       if (mediaPipeline != null) {
-        log.info("[Handler::stop] Release the Media Pipeline");
+        log.info("[HelloWorldHandler::stop] Release the Media Pipeline");
         mediaPipeline.release();
       }
     }

@@ -1,10 +1,18 @@
-===================
-1.22.3 (UNRELEASED)
-===================
+========================================
+Kurento 00.00 Release Notes (UNRELEASED)
+========================================
 
 This is a template for changes that are being added to the next release.
 
+Kurento 00.00.0 was originally released on 31 March 1999.
+
+.. The latest `bug-fix release <#bug-fix-releases>`__ in the stable 00.00 series is **00.00.1**.
+
+See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/00.00.html for the latest version of this document.
+
 To install Kurento Media Server: :doc:`/user/installation`.
+
+.. contents:: Table of Contents
 
 
 
@@ -78,3 +86,20 @@ This list includes other changes and fixes contributed by users and/or fellow de
 **RepoName 2**
 
 * "Username for PR" ...
+
+
+
+..
+   Bug-fix releases
+   ================
+
+   00.00.1
+   -------
+
+   * Fix 1.
+
+     Description.
+
+   * Fix 2.
+
+     Description.

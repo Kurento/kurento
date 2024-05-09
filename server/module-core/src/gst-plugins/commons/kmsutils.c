@@ -127,7 +127,8 @@ kms_utils_bin_remove (GstBin * bin, GstElement * element)
 /* ---- GstElement ---- */
 
 GstElement *
-kms_utils_element_factory_make (const gchar *factoryname, const gchar *prefix)
+kms_utils_element_factory_make (const gchar *factoryname,
+    const gchar *name_prefix)
 {
   g_return_val_if_fail (factoryname != NULL, NULL);
 
@@ -135,12 +136,12 @@ kms_utils_element_factory_make (const gchar *factoryname, const gchar *prefix)
   gchar *new_name = NULL;
   GstElement *element = gst_element_factory_make (factoryname, NULL);
 
-  if (prefix == NULL) {
+  if (name_prefix == NULL) {
     goto end;
   }
 
   old_name = gst_element_get_name (element);
-  new_name = g_strconcat (prefix, "_", old_name, NULL);
+  new_name = g_strconcat (name_prefix, "_", old_name, NULL);
 
   if (new_name == NULL || !gst_element_set_name (element, new_name)) {
     goto end;
@@ -230,32 +231,35 @@ kms_utils_caps_is_raw (const GstCaps * caps)
 /* Caps end */
 
 GstElement *
-kms_utils_create_convert_for_caps (const GstCaps * caps)
+kms_utils_create_convert_for_caps (const GstCaps *caps,
+    const gchar *name_prefix)
 {
   if (kms_utils_caps_is_audio (caps)) {
-    return gst_element_factory_make ("audioconvert", NULL);
+    return kms_utils_element_factory_make ("audioconvert", name_prefix);
   } else {
-    return gst_element_factory_make ("videoconvert", NULL);
+    return kms_utils_element_factory_make ("videoconvert", name_prefix);
   }
 }
 
 GstElement *
-kms_utils_create_mediator_element (const GstCaps * caps)
+kms_utils_create_mediator_element (const GstCaps *caps,
+    const gchar *name_prefix)
 {
   if (kms_utils_caps_is_audio (caps)) {
-    return gst_element_factory_make ("audioresample", NULL);
+    return kms_utils_element_factory_make ("audioresample", name_prefix);
   } else {
-    return gst_element_factory_make ("videoscale", NULL);
+    return kms_utils_element_factory_make ("videoscale", name_prefix);
   }
 }
 
 GstElement *
-kms_utils_create_rate_for_caps (const GstCaps * caps)
+kms_utils_create_rate_for_caps (const GstCaps *caps, const gchar *name_prefix)
 {
   GstElement *rate = NULL;
 
   if (kms_utils_caps_is_video (caps)) {
-    rate = gst_element_factory_make ("videorate", NULL);
+    rate = kms_utils_element_factory_make ("videorate", name_prefix);
+
     g_object_set (G_OBJECT (rate), "average-period", GST_MSECOND * 200,
         "skip-to-first", TRUE, "drop-only", TRUE, NULL);
   }
@@ -1250,11 +1254,11 @@ kms_event_data_destroy (gpointer user_data)
       if (data->next != NULL) {
           kms_event_data_destroy (data->next);
       }
-      
+
       if (data->user_notify != NULL) {
           data->user_notify (data->user_data);
       }
-      
+
       g_slice_free (KmsEventData, data);
   }
 }

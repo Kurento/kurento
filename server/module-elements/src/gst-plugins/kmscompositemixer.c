@@ -23,6 +23,7 @@
 #include <commons/kmshubport.h>
 #include <commons/kmsloop.h>
 #include <commons/kmsrefstruct.h>
+#include <commons/kmsutils.h>
 #include <math.h>
 
 #define LATENCY 600             //ms
@@ -543,9 +544,9 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
 
   // Link VIDEO input
 
-  data->tee = gst_element_factory_make ("tee", NULL);
-  data->fakesink = gst_element_factory_make ("fakesink", NULL);
-  data->capsfilter = gst_element_factory_make ("capsfilter", NULL);
+  data->tee = kms_utils_element_factory_make ("tee", PLUGIN_NAME);
+  data->fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
+  data->capsfilter = kms_utils_element_factory_make ("capsfilter", PLUGIN_NAME);
 
   g_object_set (G_OBJECT (data->capsfilter), "caps-change-mode",
       1 /*delayed */ , NULL);
@@ -659,12 +660,13 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
   KMS_COMPOSITE_MIXER_LOCK (self);
 
   if (self->priv->videomixer == NULL) {
-    self->priv->videomixer = gst_element_factory_make ("compositor", NULL);
+    self->priv->videomixer =
+        kms_utils_element_factory_make ("compositor", PLUGIN_NAME);
     g_object_set (G_OBJECT (self->priv->videomixer), "background",
         1 /*black */ , "start-time-selection", 1 /*first */ ,
         "latency", LATENCY * GST_MSECOND, NULL);
     self->priv->mixer_video_agnostic =
-        gst_element_factory_make ("agnosticbin", NULL);
+        kms_utils_element_factory_make ("agnosticbin", PLUGIN_NAME);
 
     gst_bin_add_many (GST_BIN (mixer), self->priv->videomixer,
         self->priv->mixer_video_agnostic, NULL);
@@ -684,8 +686,8 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
       }
 
       self->priv->videotestsrc =
-          gst_element_factory_make ("videotestsrc", NULL);
-      capsfilter = gst_element_factory_make ("capsfilter", NULL);
+          kms_utils_element_factory_make ("videotestsrc", PLUGIN_NAME);
+      capsfilter = kms_utils_element_factory_make ("capsfilter", PLUGIN_NAME);
       g_object_set (G_OBJECT (capsfilter), "caps-change-mode", 1, NULL);
 
       g_object_set (self->priv->videotestsrc, "is-live", TRUE, "pattern",
@@ -726,7 +728,8 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
   }
 
   if (self->priv->audiomixer == NULL) {
-    self->priv->audiomixer = gst_element_factory_make ("kmsaudiomixer", NULL);
+    self->priv->audiomixer =
+        kms_utils_element_factory_make ("kmsaudiomixer", PLUGIN_NAME);
 
     gst_bin_add (GST_BIN (mixer), self->priv->audiomixer);
 
@@ -738,8 +741,10 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
   }
 
   if (self->priv->datamixer_sink == NULL) {
-    self->priv->datamixer_sink = gst_element_factory_make ("funnel", NULL);
-    self->priv->datamixer_src = gst_element_factory_make ("tee", NULL);
+    self->priv->datamixer_sink =
+        kms_utils_element_factory_make ("funnel", PLUGIN_NAME);
+    self->priv->datamixer_src =
+        kms_utils_element_factory_make ("tee", PLUGIN_NAME);
 
     gst_bin_add_many (GST_BIN (mixer), self->priv->datamixer_sink,
         self->priv->datamixer_src, NULL);
