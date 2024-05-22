@@ -33,6 +33,7 @@ jobs:
       - name: "Some test commands"
         env:
           TEST_VAR_1: "Hello World"
+          # These show that env vars are *not* available from the `env` section.
           TEST_VAR_2: "$RUNNER_TEMP"
           TEST_VAR_3: "${{ env.RUNNER_TEMP }}"
         run: |
