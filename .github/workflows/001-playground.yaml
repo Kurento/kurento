@@ -42,9 +42,14 @@ jobs:
           echo "TEST_VAR_3: $TEST_VAR_3"
           echo "TEMP_PATH: $TEMP_PATH"
           echo "APTLY_GPG_SUBKEY: ${{ vars.APTLY_GPG_SUBKEY }}"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "RUNNER_WORKSPACE: $RUNNER_WORKSPACE"
           echo "====="
-          ls -lA test_file
-          cat test_file
+          echo "Current dir: $PWD"
+          ls -lAh
+          echo "====="
+          ls -lA "$TEMP_PATH"
+          cat "$TEMP_PATH"
           echo "====="
           ls -lA "$TEMP_PATH"
           cat "$TEMP_PATH"
