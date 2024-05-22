@@ -92,9 +92,11 @@ elif [[ -f pom.xml ]]; then
     if [[ -n "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
         MAVEN_CMD+=(--settings "$CFG_MAVEN_SETTINGS_PATH")
     fi
-    # First run, to log all downloading of dependencies.
+
+    log "DRY RUN. Showing Maven logs:" >&2
     "${MAVEN_CMD[@]}" >&2
-    # Second run, suppressing Maven logs to get just the result.
+
+    log "REAL RUN. Suppressing Maven logs, just get the result:" >&2
     MAVEN_CMD+=(--quiet)
     PROJECT_VERSION="$("${MAVEN_CMD[@]}")" || {
         log "ERROR: Command failed: mvn echo \${project.version}" >&2
