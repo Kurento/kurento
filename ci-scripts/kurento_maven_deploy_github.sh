@@ -61,11 +61,21 @@ mvn "${MVN_ARGS[@]}" install || {
 }
 
 # For each submodule, go into its path and delete the current GitHub version.
-# shellcheck disable=SC2207
-MVN_DIRS=( $(mvn "${MVN_ARGS[@]}" --quiet exec:exec -Dexec.executable=pwd) ) || {
-    log "ERROR: Command failed: mvn exec pwd"
-    exit 1
+MVN_DIRS=()
+{
+    MAVEN_CMD=(mvn "${MVN_ARGS[@]}" exec:exec -Dexec.executable=pwd)
+    # First run, to log any error that could happen.
+    # 2024-05-22: This command was failing on CI.
+    "${MAVEN_CMD[@]}"
+    # Second run, suppressing Maven logs to get just the result.
+    MAVEN_CMD+=(--quiet)
+    # shellcheck disable=SC2207
+    MVN_DIRS=( $("${MAVEN_CMD[@]}") ) || {
+        log "ERROR: Command failed: mvn exec pwd"
+        exit 1
+    }
 }
+
 for MVN_DIR in "${MVN_DIRS[@]}"; do
     pushd "$MVN_DIR" || exit 1
     delete_github_version
