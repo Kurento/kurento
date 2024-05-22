@@ -98,7 +98,7 @@ elif [[ -f pom.xml ]]; then
 
     log "REAL RUN. Suppressing Maven logs, just get the result:" >&2
     MAVEN_CMD+=(--quiet)
-    PROJECT_VERSION="$("${MAVEN_CMD[@]}")" || {
+    PROJECT_VERSION="$("${MAVEN_CMD[@]}" 2>/dev/null)" || {
         log "ERROR: Command failed: mvn echo \${project.version}" >&2
         exit 1
     }
