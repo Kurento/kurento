@@ -139,7 +139,11 @@ fi
 # This is what gets archived by CI, and passed along to dependent jobs.
 # The repo is set by the `ci-build` profile from Maven's `settings.xml`.
 
-mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MAVEN_DEPLOY_PLUGIN:deploy" || {
+MVN_ARGS+=(
+    -Pci-build
+)
+
+mvn "${MVN_ARGS[@]}" clean package "$MAVEN_DEPLOY_PLUGIN:deploy" || {
     log "ERROR: Command failed: mvn deploy (local repo)"
     exit 1
 }
@@ -148,6 +152,9 @@ mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MAVEN_DEPLOY_PLUGIN:deploy" || {
 
 # Deploy to remote repo
 # =====================
+
+# Now, do an actual deployment to remote repositories. These are set by the
+# `deploy` profile from Maven's `settings.xml`.
 
 MVN_ARGS+=(
     -Pdeploy
