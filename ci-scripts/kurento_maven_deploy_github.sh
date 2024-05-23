@@ -65,17 +65,17 @@ MAVEN_CMD=(mvn "${MVN_ARGS[@]}" exec:exec -Dexec.executable=pwd)
 
 # 2024-05-22: This command was failing on CI, and errors were suppressed.
 # Use an initial dry run, to be able to see errors in the output logs.
-log "DRY RUN. Showing Maven logs:"
+log "(DRY RUN) Maven logs are shown:"
 "${MAVEN_CMD[@]}"
 
-log "REAL RUN. Suppressing Maven logs, just get the result:"
+log "(REAL RUN) Maven logs are suppressed:"
 MAVEN_CMD+=(--quiet)
-
 # shellcheck disable=SC2207
-MVN_DIRS=($("${MAVEN_CMD[@]}" 2>/dev/null)) || {
+MVN_DIRS=($("${MAVEN_CMD[@]}")) || {
     log "ERROR: Command failed: mvn exec pwd"
     exit 1
 }
+log "MVN_DIRS: ${MVN_DIRS[*]}"
 
 for MVN_DIR in "${MVN_DIRS[@]}"; do
     pushd "$MVN_DIR" || exit 1

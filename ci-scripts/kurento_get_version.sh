@@ -93,12 +93,12 @@ elif [[ -f pom.xml ]]; then
         MAVEN_CMD+=(--settings "$CFG_MAVEN_SETTINGS_PATH")
     fi
 
-    log "DRY RUN. Showing Maven logs:" >&2
+    log "(DRY RUN) Maven logs are shown:" >&2
     "${MAVEN_CMD[@]}" >&2
 
-    log "REAL RUN. Suppressing Maven logs, just get the result:" >&2
+    log "(REAL RUN) Maven logs are suppressed:" >&2
     MAVEN_CMD+=(--quiet)
-    PROJECT_VERSION="$("${MAVEN_CMD[@]}" 2>/dev/null)" || {
+    PROJECT_VERSION="$("${MAVEN_CMD[@]}")" || {
         log "ERROR: Command failed: mvn echo \${project.version}" >&2
         exit 1
     }
