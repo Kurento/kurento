@@ -112,6 +112,17 @@ General considerations
 
 
 
+About version ranges
+====================
+
+All the different modules inside the server (module-elements, module-filters, and all the module-examples) do NOT force their exact same versions on their dependencies; they just depend on a generic major version, like ``^1.0.0``.
+
+This means, for example, that it would be possible to build *kurento-module-elements* v1.0.3 against *kurento-module-core* v1.0.1.
+
+The reason behind this decision is to provide much needed flexibility when building different parts of the media server. For example, Java client code is released at a different pace than server code. So, it could (and does) happen that lower versions of the client code (like v1.0.1) need to be generated from higher versions of the server modules (like v1.0.3).
+
+
+
 Release order
 =============
 

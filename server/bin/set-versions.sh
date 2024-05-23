@@ -360,16 +360,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KmsJsonRpc VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/elements.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/elements.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/elements.kmd.json
     popd
 }
@@ -379,16 +372,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KmsJsonRpc VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/filters.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/filters.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/filters.kmd.json
     popd
 }
@@ -400,12 +386,6 @@ function git_commit {
     perl -i -pe \
         "s/get_git_version\(PROJECT_VERSION \K.*(?=\))/${VERSION_C}/" \
         CMakeLists.txt
-    perl -i -pe \
-        "s/generic_find\(LIBNAME KmsJsonRpc VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
     git_commit \
         CMakeLists.txt
     popd
@@ -416,16 +396,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/chroma.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/chroma.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/chroma.kmd.json
     popd
 }
@@ -435,16 +408,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/crowddetector.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/crowddetector.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/crowddetector.kmd.json
     popd
 }
@@ -456,9 +422,6 @@ function git_commit {
     perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/kmsdatachannelexample.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/kmsdatachannelexample.kmd.json
     git_commit \
         src/server/interface/kmsdatachannelexample.kmd.json
     popd
@@ -469,16 +432,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/gstreamerexample.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/gstreamerexample.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/gstreamerexample.kmd.json
     popd
 }
@@ -488,16 +444,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/armarkerdetector.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/armarkerdetector.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/armarkerdetector.kmd.json
     popd
 }
@@ -507,16 +456,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/opencvexample.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/opencvexample.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/opencvexample.kmd.json
     popd
 }
@@ -526,16 +468,9 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/platedetector.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/platedetector.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/platedetector.kmd.json
     popd
 }
@@ -545,27 +480,11 @@ function git_commit {
     update_debian_changelog
     update_debian_control
     perl -i -pe \
-        "s/generic_find\(LIBNAME KMSCORE VERSION \K.*(?= REQUIRED\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    perl -i -pe \
         "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
         src/server/interface/pointerdetector.kmd.json
-    perl -i -pe \
-        "s/\"kurentoVersion\":\s*\"\K\S*(?=\")/^${VERSION_C}/" \
-        src/server/interface/pointerdetector.kmd.json
     git_commit \
-        CMakeLists.txt \
         src/server/interface/pointerdetector.kmd.json
     popd
-}
-
-{
-    # server/
-    perl -i -pe \
-        "s/generic_find\(LIBNAME KurentoModuleCreator VERSION \K.*(?=\))/^${VERSION_C}/" \
-        CMakeLists.txt
-    git_commit \
-        CMakeLists.txt
 }
 
 log "Done!"
