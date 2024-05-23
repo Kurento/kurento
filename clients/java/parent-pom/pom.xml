@@ -63,15 +63,24 @@
 	<!-- Project configuration -->
 
 	<properties>
-		<!-- Kurento Media Server API.
+		<!--
+		Kurento Media Server API.
+
 		These properties select which version of the Kurento API definition files
 		(the .kmd JSON files found in Kurento Media Server modules) will be used.
 		It's not critical that these versions coincide with the latest available,
-		but whenever an API update is done in those files and released,
-		these version numbers should get updated accordingly. -->
-		<version.kms-api-core>7.0.1-SNAPSHOT</version.kms-api-core>
-		<version.kms-api-elements>7.0.1-SNAPSHOT</version.kms-api-elements>
-		<version.kms-api-filters>7.0.1-SNAPSHOT</version.kms-api-filters>
+		but whenever an API update is done in those files and released, these
+		values should get updated accordingly.
+
+		Flexible range: Take whichever version is available.
+		Server modules can evolve faster than this file, so we don't have
+		an exact version that can be put here. For example: if this is client
+		7.0.1-SNAPSHOT, we cannot assume that the server will also be
+		7.0.1-SNAPSHOT, because it might already be 7.0.2-SNAPSHOT or higher.
+		-->
+		<version.kms-api-core>[7.0.1-SNAPSHOT,8.0.0)</version.kms-api-core>
+		<version.kms-api-elements>[7.0.1-SNAPSHOT,8.0.0)</version.kms-api-elements>
+		<version.kms-api-filters>[7.0.1-SNAPSHOT,8.0.0)</version.kms-api-filters>
 
 		<!-- Kurento miscellaneous tools -->
 		<version.kurento-maven-plugin>7.0.0</version.kurento-maven-plugin>

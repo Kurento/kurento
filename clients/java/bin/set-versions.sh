@@ -268,7 +268,7 @@ function git_commit {
         for MODULE in "${MODULES[@]}"; do
             xmlstarlet edit -S --inplace \
                 --update "/_:project/_:properties/_:version.${MODULE}" \
-                --value "$VERSION_KMS" \
+                --value "[${VERSION_KMS},8.0.0)" \
                 pom.xml
         done
     fi
