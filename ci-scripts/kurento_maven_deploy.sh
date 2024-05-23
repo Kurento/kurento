@@ -137,9 +137,9 @@ fi
 
 # First, make an initial build that gets deployed to a local repository.
 # This is what gets archived by CI, and passed along to dependent jobs.
-# The repo is set by the `ci-build` profile from Maven's `settings.xml`.
+# The repo is set by the `deploy-local` profile from Maven's `settings.xml`.
 
-mvn "${MVN_ARGS[@]}" -Pci-build clean package "$MAVEN_DEPLOY_PLUGIN:deploy" || {
+mvn "${MVN_ARGS[@]}" -Pdeploy-local clean package "$MAVEN_DEPLOY_PLUGIN:deploy" || {
     log "ERROR: Command failed: mvn deploy (local repo)"
     exit 1
 }

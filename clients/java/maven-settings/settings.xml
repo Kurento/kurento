@@ -38,7 +38,7 @@
 	-->
 	<profiles>
 		<profile>
-			<id>ci-build</id>
+			<id>deploy-local</id>
 			<activation>
 				<!--
 				Activate when the environment variable `MAVEN_LOCAL_REPOSITORY_PATH` is defined:
@@ -59,13 +59,13 @@
 			</properties>
 			<repositories>
 				<repository>
-					<id>ci-build</id>
+					<id>deploy-local</id>
 					<url>file://${env.MAVEN_LOCAL_REPOSITORY_PATH}</url>
 				</repository>
 			</repositories>
 			<pluginRepositories>
 				<pluginRepository>
-					<id>ci-build</id>
+					<id>deploy-local</id>
 					<url>file://${env.MAVEN_LOCAL_REPOSITORY_PATH}</url>
 				</pluginRepository>
 			</pluginRepositories>
