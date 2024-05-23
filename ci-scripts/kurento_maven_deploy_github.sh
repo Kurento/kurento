@@ -57,7 +57,7 @@ function delete_github_version {
 # must be already available locally when Maven runs.
 mvn "${MVN_ARGS[@]}" install || {
     log "ERROR: Command failed: mvn install"
-    exit 1
+    return 1
 }
 
 # For each submodule, go into its path and delete the current GitHub version.
@@ -73,14 +73,14 @@ MAVEN_CMD+=(--quiet)
 # shellcheck disable=SC2207
 MVN_DIRS=($("${MAVEN_CMD[@]}")) || {
     log "ERROR: Command failed: mvn exec pwd"
-    exit 1
+    return 1
 }
 log "MVN_DIRS: ${MVN_DIRS[*]}"
 
 for MVN_DIR in "${MVN_DIRS[@]}"; do
-    pushd "$MVN_DIR" || exit 1
+    pushd "$MVN_DIR" || return 1
     delete_github_version
-    popd || exit 1
+    popd || return 1
 done
 
 # And now, finally, deploy the package (and submodules, if any).
