@@ -68,25 +68,13 @@ Requires to first write some useful settings in form of an initial ``user.js`` f
    user_pref("app.update.disabledForTesting", true);
    EOF
 
-And then launch a standalone Firefox instance that points to that directory:
+And then you can just launch a standalone Firefox instance that points to that directory:
 
 .. code-block:: shell
 
    /usr/bin/firefox \
        --no-remote \
        --profile "$PROFILE_DIR"
-
-
-
-Security sandboxes
-------------------
-
-Firefox has several sandboxes that can affect the logging output. For troubleshooting and development, it is recommended that you learn which sandbox might be getting in the way of the logs you need, and disable it:
-
-For example:
-
-* To get logs from ``MOZ_LOG="signaling:5"``, first set ``security.sandbox.content.level`` to *0*.
-* To inspect audio issues, disable the audio sandbox by setting ``media.cubeb.sandbox`` to *false*.
 
 
 
@@ -100,11 +88,9 @@ Sources:
 * https://wiki.mozilla.org/Firefox/CommandLineOptions
 * https://wiki.mozilla.org/Media/WebRTC/Logging
 
-Debug logging can be enabled with the parameters *MOZ_LOG* and *MOZ_LOG_FILE*. These are controlled either with environment variables, or command-line flags.
+Debug logging can be enabled with the parameters *MOZ_LOG* and *MOZ_LOG_FILE*. These are controlled either with environment variables, or command-line flags. You can also open the ``about:networking`` page, and selecting the Logging section, change *MOZ_LOG* / *MOZ_LOG_FILE* options to have them applied without restarting the browser.
 
-In Firefox >= 54, you can use ``about:networking``, and select the Logging option, to change *MOZ_LOG* / *MOZ_LOG_FILE* options without restarting the browser.
-
-You can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*").
+You can also open ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*").
 
 The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special booleans *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
 
@@ -195,6 +181,18 @@ Media decoding (audio sandbox can be enabled or disabled with the user preferenc
 
 
 
+Security sandboxes
+------------------
+
+Firefox has several sandboxes that can affect the logging output. For troubleshooting and development, it is recommended that you learn which sandbox might be getting in the way of the logs you need, and disable it:
+
+For example:
+
+* To get logs from ``MOZ_LOG="signaling:5"``, first set ``security.sandbox.content.level`` to *0*.
+* To inspect audio issues, disable the audio sandbox by setting ``media.cubeb.sandbox`` to *false*.
+
+
+
 Chrome
 ======
 
@@ -228,14 +226,13 @@ Runs a new Chrome instance with a clean profile:
        --enable-logging=stderr \
        --log-level=0 \
        --v=0 \
-       --vmodule="basic_ice_controller=0,connection=0,encoder_bitrate_adjuster=0,goog_cc_network_control=0,pacing_controller=0,video_stream_encoder=0,*/webrtc/*=2,*/media/*=2,tls*=1" \
-       "https://localhost:8080/"
+       --vmodule="basic_ice_controller=0,connection=0,encoder_bitrate_adjuster=0,goog_cc_network_control=0,pacing_controller=0,video_stream_encoder=0,*/webrtc/*=2,*/media/*=2,tls*=1"
 
 Notes:
 
 * ``--guest``: activate "browse without sign-in" (guest session) mode, disabling extensions, sync, bookmarks, and password manager pop-ups.
 
-``--no-default-browser-check``: disable "set as default browser" prompt.
+* ``--no-default-browser-check``: disable "set as default browser" prompt.
 
 * ``--auto-accept-camera-and-microphone-capture``: automatically accept all requests to access the camera and microphone.
 
