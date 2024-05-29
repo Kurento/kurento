@@ -35,34 +35,48 @@ Requires to first write some useful settings in form of an initial ``user.js`` f
    PROFILE_DIR="$(mktemp --directory)"
 
    tee "$PROFILE_DIR/user.js" >/dev/null <<'EOF'
-   // Disable first-start screens.
+   // Disable first-time screens and pop-ups.
    user_pref("browser.aboutwelcome.enabled", false);
    user_pref("browser.newtabpage.activity-stream.feeds.topsites", false);
    user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+   user_pref("browser.translations.enable", false);
+   user_pref("datareporting.policy.dataSubmissionEnabled", false);
    user_pref("datareporting.policy.firstRunURL", "");
+   // Enable fake synthetic audio and video for media capture.
    user_pref("permissions.default.camera", 1);
    user_pref("permissions.default.microphone", 1);
    //
    // Mozilla prefs for testing. Taken directly from Mozilla source code:
    // https://searchfox.org/mozilla-central/source/testing/profiles/web-platform/user.js
-   //
    // Don't use the new tab page but about:blank for opened tabs
    user_pref("browser.newtabpage.enabled", false);
+   // Don't restore the last open set of tabs if the browser has crashed
+   user_pref("browser.sessionstore.resume_from_crash", false);
    // Disable session restore infobar.
    user_pref("browser.startup.couldRestoreSession.count", -1);
    // Don't show the Bookmarks Toolbar on any tab
    user_pref("browser.toolbars.bookmarks.visibility", "never");
    // Expose TestUtils interface
    user_pref("dom.testing.testutils.enabled", true);
+   // Don't open a dialog to show available add-on updates
+   user_pref("extensions.update.notifyUser", false);
    // Enable fake media streams for getUserMedia
    user_pref("media.navigator.streams.fake", true);
    // Disable permission prompt for getUserMedia
    user_pref("media.navigator.permission.disabled", true);
    // Enable direct connection
    user_pref("network.proxy.type", 0);
+   // Suppress automatic safe mode after crashes
+   user_pref("toolkit.startup.max_resumed_crashes", -1);
    // Run the font loader task eagerly for more predictable behavior
    user_pref("gfx.font_loader.delay", 0);
+   // Disable antiphishing popup
+   user_pref("network.http.phishy-userpass-length", 255);
    // Disable safebrowsing components
+   user_pref("browser.safebrowsing.blockedURIs.enabled", false);
+   user_pref("browser.safebrowsing.downloads.enabled", false);
+   user_pref("browser.safebrowsing.malware.enabled", false);
+   user_pref("browser.safebrowsing.phishing.enabled", false);
    user_pref("browser.safebrowsing.update.enabled", false);
    // Turn off update
    user_pref("app.update.disabledForTesting", true);
