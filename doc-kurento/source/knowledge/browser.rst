@@ -13,6 +13,71 @@ Example commands are written for a Linux shell, because that's what Kurento deve
 Firefox
 =======
 
+Quickstart commands
+-------------------
+
+**Basic command**
+
+Runs a new Firefox instance with a clean profile:
+
+.. code-block:: shell
+
+   /usr/bin/firefox \
+       --no-remote \
+       --profile "$(mktemp --directory)"
+
+**Extended command for WebRTC testing**
+
+Requires to first write some useful settings in form of an initial ``user.js`` file:
+
+.. code-block:: shell
+
+   PROFILE_DIR="$(mktemp --directory)"
+
+   tee "$PROFILE_DIR/user.js" >/dev/null <<'EOF'
+   // Disable first-start screens.
+   user_pref("browser.aboutwelcome.enabled", false);
+   user_pref("browser.newtabpage.activity-stream.feeds.topsites", false);
+   user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+   user_pref("datareporting.policy.firstRunURL", "");
+   user_pref("permissions.default.camera", 1);
+   user_pref("permissions.default.microphone", 1);
+   //
+   // Mozilla prefs for testing. Taken directly from Mozilla source code:
+   // https://searchfox.org/mozilla-central/source/testing/profiles/web-platform/user.js
+   //
+   // Don't use the new tab page but about:blank for opened tabs
+   user_pref("browser.newtabpage.enabled", false);
+   // Disable session restore infobar.
+   user_pref("browser.startup.couldRestoreSession.count", -1);
+   // Don't show the Bookmarks Toolbar on any tab
+   user_pref("browser.toolbars.bookmarks.visibility", "never");
+   // Expose TestUtils interface
+   user_pref("dom.testing.testutils.enabled", true);
+   // Enable fake media streams for getUserMedia
+   user_pref("media.navigator.streams.fake", true);
+   // Disable permission prompt for getUserMedia
+   user_pref("media.navigator.permission.disabled", true);
+   // Enable direct connection
+   user_pref("network.proxy.type", 0);
+   // Run the font loader task eagerly for more predictable behavior
+   user_pref("gfx.font_loader.delay", 0);
+   // Disable safebrowsing components
+   user_pref("browser.safebrowsing.update.enabled", false);
+   // Turn off update
+   user_pref("app.update.disabledForTesting", true);
+   EOF
+
+And then launch a standalone Firefox instance that points to that directory:
+
+.. code-block:: shell
+
+   /usr/bin/firefox \
+       --no-remote \
+       --profile "$PROFILE_DIR"
+
+
+
 Security sandboxes
 ------------------
 
@@ -22,22 +87,6 @@ For example:
 
 * To get logs from ``MOZ_LOG="signaling:5"``, first set ``security.sandbox.content.level`` to *0*.
 * To inspect audio issues, disable the audio sandbox by setting ``media.cubeb.sandbox`` to *false*.
-
-
-
-Test instance
--------------
-
-To run a new Firefox instance with a clean profile:
-
-.. code-block:: shell
-
-   /usr/bin/firefox -no-remote -profile "$(mktemp --directory)"
-
-Other options:
-
-* ``-jsconsole``: Start Firefox with the `Browser Console <https://firefox-source-docs.mozilla.org/devtools-user/browser_console/index.html>`__.
-* ``[-url] <URL>``: Open URL in a new tab or window.
 
 
 
@@ -53,23 +102,23 @@ Sources:
 
 Debug logging can be enabled with the parameters *MOZ_LOG* and *MOZ_LOG_FILE*. These are controlled either with environment variables, or command-line flags.
 
-In Firefox >= 54, you can use ``about:networking``, and select the Logging option, to change *MOZ_LOG* / *MOZ_LOG_FILE* options on the fly (without restarting the browser).
+In Firefox >= 54, you can use ``about:networking``, and select the Logging option, to change *MOZ_LOG* / *MOZ_LOG_FILE* options without restarting the browser.
 
 You can also use ``about:config`` and set any log option into the profile preferences, by adding (right-click -> New) a variable named ``logging.<NoduleName>``, and setting it to an integer value of 0-5. For example, setting *logging.foo* to *3* will set the module *foo* to start logging at level 3 ("*Info*").
 
 The special pref *logging.config.LOG_FILE* can be set at runtime to change the log file being output to, and the special booleans *logging.config.sync* and *logging.config.add_timestamp* can be used to control the *sync* and *timestamp* properties:
 
-* **sync**: Print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
-* **timestamp**: Insert timestamp at start of each log line.
+* **sync**: print each log synchronously, this is useful to check behavior in real time or get logs immediately before crash.
+* **timestamp**: insert timestamp at start of each log line.
 
 Logging Levels:
 
-* **(0) DISABLED**: Indicates logging is disabled. This should not be used directly in code.
-* **(1) ERROR**: An error occurred, generally something you would consider asserting in a debug build.
-* **(2) WARNING**: A warning often indicates an unexpected state.
-* **(3) INFO**: An informational message, often indicates the current program state. and rare enough to be logged at this level.
-* **(4) DEBUG**: A debug message, useful for debugging but too verbose to be turned on normally.
-* **(5) VERBOSE**: A message that will be printed a lot, useful for debugging program flow and will probably impact performance.
+* **(0) DISABLED**: indicates logging is disabled. This should not be used directly in code.
+* **(1) ERROR**: an error occurred, generally something you would consider asserting in a debug build.
+* **(2) WARNING**: a warning often indicates an unexpected state.
+* **(3) INFO**: an informational message, often indicates the current program state. and rare enough to be logged at this level.
+* **(4) DEBUG**: a debug message, useful for debugging but too verbose to be turned on normally.
+* **(5) VERBOSE**: a message that will be printed a lot, useful for debugging program flow and will probably impact performance.
 
 Log categories:
 
@@ -107,43 +156,15 @@ Log categories:
 
 
 
-Examples
-~~~~~~~~
+Debug logging examples
+~~~~~~~~~~~~~~~~~~~~~~
 
-Linux:
-
-.. code-block:: shell
-
-   export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
-   export MOZ_LOG_FILE=/tmp/firefox.log
-
-   /usr/bin/firefox
-
-Linux with *MOZ_LOG* passed as command line arguments:
+General logging of various modules:
 
 .. code-block:: shell
 
-   /usr/bin/firefox \
-       -MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5 \
-       -MOZ_LOG_FILE=/tmp/firefox.log
-
-Mac:
-
-.. code-block:: shell
-
-   export MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
-   export MOZ_LOG_FILE=/tmp/firefox.log
-
-   /Applications/Firefox.app/Contents/MacOS/firefox-bin
-
-Windows:
-
-.. code-block:: shell
-
-   set MOZ_LOG=timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5
-   set MOZ_LOG_FILE=%TEMP%\firefox.log
-
-   "C:\Program Files\Mozilla Firefox\firefox.exe"
+   export MOZ_LOG="timestamp,rotate:200,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5"
+   export MOZ_LOG_FILE="/tmp/firefox.log"
 
 :term:`ICE` candidates / :term:`STUN` / :term:`TURN`:
 
@@ -153,19 +174,14 @@ Windows:
    export R_LOG_LEVEL=7
    export R_LOG_VERBOSE=1
 
-   /usr/bin/firefox -no-remote -profile "$(mktemp --directory)" \
-       "https://localhost:8443/"
-
 WebRTC dump example (see https://blog.mozilla.org/webrtc/debugging-encrypted-rtp-is-more-fun-than-it-used-to-be/):
 
 .. code-block:: shell
 
-   export MOZ_LOG=timestamp,signaling:5,jsep:5,RtpLogger:5
-   export MOZ_LOG_FILE="$PWD/firefox"
+   export MOZ_LOG="timestamp,signaling:5,jsep:5,RtpLogger:5"
+   export MOZ_LOG_FILE="/tmp/firefox"
 
-   /usr/bin/firefox -no-remote -profile "$(mktemp --directory)" \
-       "https://localhost:8443/"
-
+   # Later, the resulting logs can be converted into Packet Capture files:
    grep -E "(RTP_PACKET|RTCP_PACKET)" firefox.*.moz_log \
        | cut -d "|" -f 2 \
        | cut -d " " -f 5- \
@@ -175,59 +191,70 @@ Media decoding (audio sandbox can be enabled or disabled with the user preferenc
 
 .. code-block:: shell
 
-   export MOZ_LOG=timestamp,sync,MediaPipeline:5,MediaStream:5,MediaStreamTrack:5,webrtc_trace:5
-
-   /usr/bin/firefox -no-remote -profile "$(mktemp --directory)" \
-       "https://localhost:8443/"
-
-
-
-Safari
-======
-
-To enable the Debug menu in Safari, run this command in a terminal:
-
-.. code-block:: shell
-
-   defaults write com.apple.Safari IncludeInternalDebugMenu 1
+   export MOZ_LOG="timestamp,sync,MediaPipeline:5,MediaStream:5,MediaStreamTrack:5,webrtc_trace:5"
 
 
 
 Chrome
 ======
 
-Test instance
--------------
+Quickstart commands
+-------------------
 
-To run a new Chrome instance with a clean profile and no pop-ups (such as the password manager or the "default browser" prompt):
+**Basic command**
+
+Runs a new Chrome instance with a clean profile:
+
+.. code-block:: shell
+
+   # Depending on your system, you'll want to use either of these:
+   # /usr/bin/chromium
+   # /usr/bin/chromium-browser
+   # /usr/bin/google-chrome
+
+   /usr/bin/chromium \
+       --user-data-dir="$(mktemp --directory)"
+
+**Extended command for WebRTC testing**
 
 .. code-block:: shell
 
    /usr/bin/chromium \
+       --user-data-dir="$(mktemp --directory)" \
        --guest \
        --no-default-browser-check \
-       --user-data-dir="$(mktemp --directory)"
+       --auto-accept-camera-and-microphone-capture \
+       --use-fake-device-for-media-stream \
+       --enable-logging=stderr \
+       --log-level=0 \
+       --v=0 \
+       --vmodule="basic_ice_controller=0,connection=0,encoder_bitrate_adjuster=0,goog_cc_network_control=0,pacing_controller=0,video_stream_encoder=0,*/webrtc/*=2,*/media/*=2,tls*=1" \
+       "https://localhost:8080/"
 
-Other flags:
+Notes:
 
-* ``--use-fake-device-for-media-stream``: Use synthetic audio and video media to simulate capture devices (camera, microphone, etc).
+* ``--guest``: activate "browse without sign-in" (guest session) mode, disabling extensions, sync, bookmarks, and password manager pop-ups.
+
+``--no-default-browser-check``: disable "set as default browser" prompt.
+
+* ``--auto-accept-camera-and-microphone-capture``: automatically accept all requests to access the camera and microphone.
+
+  This flag deprecates the older ``--use-fake-ui-for-media-stream``, which had a negative effect on screen/tab capture.
+
+* ``--use-fake-device-for-media-stream``: use synthetic audio and video media to simulate capture devices (camera, microphone, etc).
 
   Alternatively, a local file can be provided to be used instead:
 
-  - ``--use-file-for-fake-audio-capture="/path/to/file.wav"``: Use a WAV file as the audio source.
+  - ``--use-file-for-fake-audio-capture="/path/to/file.wav"``: use a WAV file as the audio source.
 
-  - ``--use-file-for-fake-video-capture="/path/to/file.y4m"``: Use a YUV4MPEG2 (Y4M) or MJPEG file as the video source. `More <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.h;l=25-35>`__ `details <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.cc;l=70-75>`__:
+  - ``--use-file-for-fake-video-capture="/path/to/file.y4m"``: use a YUV4MPEG2 (Y4M) or MJPEG file as the video source. `More <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.h;l=25-35>`__ `details <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.cc;l=70-75>`__:
 
     - Y4M videos should have *.y4m* file extension and MJPEG videos should have *.mjpeg* file extension.
     - Only interlaced I420 pixel format is supported.
     - Example Y4M videos can be found here: https://media.xiph.org/video/derf/
     - Example MJPEG videos can be found here: https://chromium.googlesource.com/chromium/src/+/refs/tags/120.0.6099.129/media/test/data
 
-* ``--auto-accept-camera-and-microphone-capture``: Automatically accept all requests to access the camera and microphone.
-
-  Preferred over the similar and older ``--auto-accept-camera-and-microphone-capture``, which affected screen/tab capture.
-
-* ``--unsafely-treat-insecure-origin-as-secure="URL,..."``: Allow insecure origins to use features that would require a `Secure Context <https://www.w3.org/TR/secure-contexts/>`__ (such as ``getUserMedia()``, WebRTC, etc.) when served from localhost or over HTTP.
+* ``--unsafely-treat-insecure-origin-as-secure="URL,..."``: allow insecure origins to use features that would require a `Secure Context <https://www.w3.org/TR/secure-contexts/>`__ (such as ``getUserMedia()``, WebRTC, etc.) when served from localhost or over HTTP.
 
   A better approach is to serve the origins over HTTPS, but this flag can be useful for one-off testing.
 
@@ -248,7 +275,7 @@ Log categories:
 
 * WebRTC:
 
-  - ``*/webrtc/*=2``: Everything related to the WebRTC stack.
+  - ``*/webrtc/*=2``: everything related to the WebRTC stack.
 
     It's strongly suggested to disable some modules that would otherwise flood the logs:
 
@@ -259,9 +286,9 @@ Log categories:
     - ``pacing_controller=0``
     - ``video_stream_encoder=0``
 
-  - ``*/media/*=2``: Logs from the user media and device capture.
+  - ``*/media/*=2``: logs from the user media and device capture.
 
-  - ``tls*=1``: Establishment of SSL/TLS connections.
+  - ``tls*=1``: establishment of SSL/TLS connections.
 
   See below for a full example command that can be copy-pasted.
 
@@ -297,27 +324,6 @@ How to find the module names for ``--vmodule``:
 
 
 
-Examples
-~~~~~~~~
-
-Linux:
-
-.. code-block:: shell
-
-   /usr/bin/chromium \
-       --guest \
-       --no-default-browser-check \
-       --user-data-dir="$(mktemp --directory)" \
-       --use-fake-device-for-media-stream \
-       --auto-accept-camera-and-microphone-capture \
-       --enable-logging=stderr \
-       --log-level=0 \
-       --v=0 \
-       --vmodule="basic_ice_controller=0,connection=0,encoder_bitrate_adjuster=0,goog_cc_network_control=0,pacing_controller=0,video_stream_encoder=0,*/webrtc/*=2,*/media/*=2,tls*=1" \
-       "https://localhost:8080/"
-
-
-
 Packet Loss
 -----------
 
@@ -345,6 +351,17 @@ Autoplay:
 
 
 
+Safari
+======
+
+To enable the Debug menu in Safari, run this command in a terminal:
+
+.. code-block:: shell
+
+   defaults write com.apple.Safari IncludeInternalDebugMenu 1
+
+
+
 .. _browser-mtu:
 
 Browser MTU
@@ -354,7 +371,7 @@ The default **Maximum Transmission Unit (MTU)** in the official `libwebrtc <http
 
 * `Firefox <https://hg.mozilla.org/releases/mozilla-release/file/FIREFOX_121_0_RELEASE/third_party/libwebrtc/media/base/media_constants.cc#l17>`__.
 * `Chrome <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:third_party/webrtc/media/base/media_constants.cc;l=17>`__.
-* Safari: No public source code, but Safari uses Webkit, and `Webkit uses libwebrtc <https://webrtcinwebkit.org/webrtc-in-safari-11-and-ios-11/>`__, so probably same MTU as the others.
+* Safari: no public source code, but Safari uses Webkit, and `Webkit uses libwebrtc <https://webrtcinwebkit.org/webrtc-in-safari-11-and-ios-11/>`__, so probably same MTU as the others.
 
 
 
@@ -386,7 +403,7 @@ The **maximum video bitrate** is calculated for WebRTC by following a simple rul
 * 2500 kbps (2.5 Mbps) for bigger video sizes.
 * Never less than 1200 kbps, if the video is a screen capture.
 
-Source: The ``GetMaxDefaultVideoBitrateKbps()`` function in `libwebrtc source code <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:third_party/webrtc/video/config/encoder_stream_factory.cc;l=79>`__.
+Source: the ``GetMaxDefaultVideoBitrateKbps()`` function in `libwebrtc source code <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:third_party/webrtc/video/config/encoder_stream_factory.cc;l=79>`__.
 
 To verify what is exactly being sent by your web browser, check its internal WebRTC stats. For example, to check the outbound stats in Chrome:
 
