@@ -12,9 +12,9 @@ Welcome to Kurento
 
    Kurento won't implement several WebRTC features such as Simulcast, End-To-End Encryption, Insertable Streams, or even support for more than 1 video + 1 audio in the same WebRTC peer connection.
 
-   For new videoconferencing projects we recommend to build on top of a higher-level platform such as [OpenVidu](https://openvidu.io/) (from the same team as Kurento). It hides to some extent the sheer complexity of scalable WebRTC systems, and allows you to focus on your app instead.
+   For new videoconferencing projects we recommend to build on top of a higher-level platform such as `OpenVidu <https://openvidu.io/>`__ (from the same team as Kurento). It hides to some extent the sheer complexity of scalable WebRTC systems, and allows you to focus on your app instead.
 
-   If you're just looking for a bare-bones, low-level WebRTC SFU like Kurento, [mediasoup](https://mediasoup.org/) is a very good, modern and actively developed alternative.
+   If you're just looking for a bare-bones, low-level WebRTC SFU like Kurento, `mediasoup <https://mediasoup.org/>`__ is a very good, modern and actively developed alternative.
 
 **Start here**: :doc:`/user/intro` and :doc:`/user/quickstart`, and then learn to write Kurento applications with :doc:`/user/tutorials`.
 
