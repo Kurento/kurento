@@ -70,7 +70,7 @@ langdoc-client-java:
 	pushd ../clients/java/client/ || { echo "ERROR: 'cd' failed"; exit 1; }
 	$(MAVEN) $(MAVEN_ARGS) -Psnapshot -DskipTests=true clean package \
 		|| { echo "ERROR: '$(MAVEN) clean package' failed"; exit 1; }
-	$(MAVEN) $(MAVEN_ARGS) $(MAVEN_JAVADOC_PLUGIN):javadoc \
+	$(MAVEN) $(MAVEN_ARGS) -Psnapshot $(MAVEN_JAVADOC_PLUGIN):javadoc \
 		-DreportOutputDirectory="$(LANGDOC_PATH)" \
 		-DdestDir="client-javadoc" \
 		-Dsourcepath="src/main/java:target/generated-sources/kmd" \
