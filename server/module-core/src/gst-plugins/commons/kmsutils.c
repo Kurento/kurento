@@ -56,20 +56,6 @@ kms_utils_debug_graph_delay (GstBin * bin, guint interval)
 }
 
 gboolean
-kms_is_valid_uri (const gchar * url)
-{
-  gboolean ret;
-  GRegex *regex;
-
-  regex = g_regex_new ("^(?:((?:https?):)\\/\\/)([^:\\/\\s]+)(?::(\\d*))?(?:\\/"
-      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", 0, 0, NULL);
-  ret = g_regex_match (regex, url, G_REGEX_MATCH_ANCHORED, NULL);
-  g_regex_unref (regex);
-
-  return ret;
-}
-
-gboolean
 gst_element_sync_state_with_parent_target_state (GstElement * element)
 {
   GstElement *parent;

@@ -53,8 +53,10 @@ Both username and password fields should be provided in URL-encoded form:
 
     rtsp://us%3Aer:p%40ssword@example.com/test.mp4?user=token/s3/request&uri=umsp://example.com:1234/
 
-GStreamer will use `:` and `@` to break the string, and perform URL-decoding on
-the resulting fields.
+GStreamer's `rtspsrc` uses the function `gst_rtsp_url_parse()` to break the string at the points
+where `@` and `:` delimit username and password fields, then performs URL-decoding on those fields.
+
+See: https://gitlab.freedesktop.org/gstreamer/gst-plugins-base/-/blob/1.16/gst-libs/gst/rtsp/gstrtspurl.c#L101
 */
 
 void UriEndpointImpl::checkUri ()

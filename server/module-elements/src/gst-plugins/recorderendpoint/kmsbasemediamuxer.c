@@ -122,35 +122,77 @@ kms_base_media_muxer_dot_file_impl (KmsBaseMediaMuxer * obj)
 }
 
 static GstElement *
-kms_base_media_muxer_get_sink_fallback (KmsBaseMediaMuxer * self,
-    const gchar * uri)
+kms_base_media_muxer_get_sink_fallback (KmsBaseMediaMuxer *self,
+    const gchar *uri)
 {
   GstElement *sink = NULL;
-  gchar *prot;
 
-  prot = gst_uri_get_protocol (uri);
+#if GST_CHECK_VERSION(1, 18, 0)
+  // Starting from GStreamer 1.18, this function will be able to support
+  // special characters in username/password URL-encoded fields.
+  GstUri *gst_uri = gst_uri_from_string_escaped (uri);
+#else
+  GstUri *gst_uri = gst_uri_from_string (uri);
+#endif
 
-  if ((g_strcmp0 (prot, HTTP_PROTO) == 0)
-      || (g_strcmp0 (prot, HTTPS_PROTO) == 0)) {
-
-    if (kms_is_valid_uri (uri)) {
-      /* We use the GStreamer CURL plugin */
-      sink = kms_utils_element_factory_make ("curlhttpsink", OBJECT_NAME);
-      if (sink != NULL) {
-        g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE,
-            "async", FALSE, NULL);
-      }
-      else {
-        GST_ERROR_OBJECT (self, "CURL HTTP plugin not available: curlhttpsink");
-      }
-    } else {
-      GST_ERROR_OBJECT (self, "URL not valid");
-    }
+  if (gst_uri == NULL) {
+    GST_ERROR_OBJECT (self, "URL is not valid: parsing failed");
+    goto finish;
   }
 
-  g_free (prot);
+  const gchar *proto = gst_uri_get_scheme (gst_uri);
+  if ((g_strcmp0 (proto, HTTP_PROTO) != 0)
+      && (g_strcmp0 (proto, HTTPS_PROTO) != 0)) {
+    // Other schemes are not supported here.
+    goto finish;
+  }
 
-  /* Add more if required */
+  // We use the GStreamer cURL plugin.
+  sink = kms_utils_element_factory_make ("curlhttpsink", OBJECT_NAME);
+  if (sink == NULL) {
+    GST_ERROR_OBJECT (self, "cURL plugin not available: curlhttpsink");
+    goto finish;
+  }
+
+  g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE, "async", FALSE,
+      NULL);
+
+  // Extract and set username and password, if any.
+  const gchar *userinfo = gst_uri_get_userinfo (gst_uri);
+  if (userinfo == NULL) {
+    GST_DEBUG_OBJECT (self,
+        "'username:password' field is empty, nothing to parse");
+    goto finish;
+  }
+
+  gchar *colon = strchr (userinfo, ':');
+  if (colon == NULL) {
+    GST_ERROR_OBJECT (self,
+        "'username:password' field is not valid: parsing failed");
+    goto finish;
+  }
+
+  {
+    gchar *username = g_uri_unescape_segment (userinfo, colon, NULL);
+    colon++;
+    gchar *password = g_uri_unescape_segment (colon, NULL, NULL);
+
+    GST_DEBUG_OBJECT (self, "'username' parsed as '%s' (password hidden)",
+        username);
+
+    g_object_set (sink, "user", username, "passwd", password, NULL);
+
+    g_free (username);
+    g_free (password);
+  }
+
+finish:
+#if GST_CHECK_VERSION(1, 18, 0)
+  gst_clear_uri (&gst_uri);
+#else
+  g_clear_pointer (&gst_uri, gst_uri_unref);
+#endif
+
   return sink;
 }
 
@@ -177,8 +219,9 @@ kms_base_media_muxer_get_sink (KmsBaseMediaMuxer * self, const gchar * uri)
     /* handle them. We try to find such element before failing to attend */
     /* this request */
     sink = kms_base_media_muxer_get_sink_fallback (self, uri);
-    if (sink == NULL)
+    if (sink == NULL) {
       goto no_sink;
+    }
     g_clear_error (&err);
   }
 
