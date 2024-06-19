@@ -32,48 +32,6 @@ G_DEFINE_TYPE (KmsWebrtcTransportSrc, kms_webrtc_transport_src, GST_TYPE_BIN);
 #define SRTPDEC_FACTORY_NAME "srtpdec"
 
 
-// {{{{ FIXME: This can be deleted when we start using GStreamer >=1.18 for Kurento.
-// Code sourced from GStreamer/gstbin.c >=1.18
-//
-// https://gitlab.freedesktop.org/gstreamer/gstreamer/-/blob/10f72da5040b74678c8f81723971127ee8bee04f/subprojects/gstreamer/gst/gstbin.c#L4526-4537
-static gint
-compare_factory_names (const GValue *velement, GValue *factory_name_val)
-{
-  GstElement *element = g_value_get_object (velement);
-  GstElementFactory *factory = gst_element_get_factory (element);
-  const gchar *factory_name = g_value_get_string (factory_name_val);
-
-  if (factory == NULL)
-    return -1;
-
-  return g_strcmp0 (GST_OBJECT_NAME (factory), factory_name);
-}
-
-//
-// https://gitlab.freedesktop.org/gstreamer/gstreamer/-/blob/10f72da5040b74678c8f81723971127ee8bee04f/subprojects/gstreamer/gst/gstbin.c#L4553-4574
-static GstIterator *
-gst_bin_iterate_all_by_element_factory_name (GstBin *bin,
-    const gchar *factory_name)
-{
-  GstIterator *children;
-  GstIterator *result;
-  GValue factory_name_val = G_VALUE_INIT;
-
-  g_return_val_if_fail (GST_IS_BIN (bin), NULL);
-  g_return_val_if_fail (factory_name && *factory_name, NULL);
-
-  g_value_init (&factory_name_val, G_TYPE_STRING);
-  g_value_set_string (&factory_name_val, factory_name);
-
-  children = gst_bin_iterate_recurse (bin);
-  result = gst_iterator_filter (children, (GCompareFunc)compare_factory_names,
-      &factory_name_val);
-
-  g_value_unset (&factory_name_val);
-
-  return result;
-}
-// }}}}
 
 static GstElement *
 kms_webrtc_transport_src_get_element_in_dtlssrtpdec (

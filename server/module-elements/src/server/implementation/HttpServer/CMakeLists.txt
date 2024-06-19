@@ -42,6 +42,7 @@ set_property (TARGET kmshttpep
     ${libsoup-2.4_INCLUDE_DIRS}
     ${KmsGstCommons_INCLUDE_DIRS}
     ${gstreamer-1.0_INCLUDE_DIRS}
+    ${nice_INCLUDE_DIRS}    
 )
 
 target_link_libraries(kmshttpep
