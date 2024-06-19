@@ -338,7 +338,7 @@ remove_tee_pad_on_unlink (GstPad * pad, GstPad * peer, gpointer user_data)
 static void
 link_element_to_tee (GstElement * tee, GstElement * element)
 {
-  GstPad *tee_src = gst_element_get_request_pad (tee, "src_%u");
+  GstPad *tee_src = gst_element_request_pad_simple (tee, "src_%u");
   GstPad *element_sink = gst_element_get_static_pad (element, "sink");
   GstPadLinkReturn ret;
 
