@@ -1306,6 +1306,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   callbacks.new_preroll = NULL;
   callbacks.new_sample = recv_sample;
   callbacks.new_event = recv_event;
+  callbacks.propose_allocation = NULL; // FIXME: propose a funcion appsink_propose_allocation_cb to process this callback
 
   gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, NULL, NULL);
 

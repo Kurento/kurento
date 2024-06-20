@@ -884,6 +884,7 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
     callbacks.new_preroll = appsink_new_preroll_cb;
     callbacks.new_sample = appsink_new_sample_cb;
     callbacks.new_event = appsink_new_event_cb;
+    callbacks.propose_allocation = NULL; // FIXME: propose a funcion appsink_propose_allocation_cb to process this callback
     gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc,
         NULL);
 

@@ -1200,7 +1200,8 @@ kms_webrtc_session_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
       (GstFlowReturn (*)(GstAppSink *, gpointer)) new_sample_callback;
   callbacks.new_event =
       (gboolean (*)(GstAppSink *, gpointer)) new_event_callback;
-  
+  callbacks.propose_allocation = NULL; // FIXME: propose a funcion appsink_propose_allocation_cb to process this callback
+
 
   gst_app_sink_set_callbacks (GST_APP_SINK (channel->appsink), &callbacks,
       kms_ref_struct_ref (KMS_REF_STRUCT_CAST (channel)),
