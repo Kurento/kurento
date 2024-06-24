@@ -222,10 +222,10 @@ kms_http_ep_server_remove_timeout (KmsHttpEPServer *self, GstElement *httpep)
 }
 
 static GstElement *
-kms_http_ep_server_get_ep_from_msg (KmsHttpEPServer *self, SoupMessage *msg)
+kms_http_ep_server_get_ep_from_msg (KmsHttpEPServer *self, SoupServerMessage *msg)
 {
-  SoupURI *suri = soup_message_get_uri (msg);
-  const char *uri = soup_uri_get_path (suri);
+  GUri *suri = soup_server_message_get_uri (msg);
+  const char *uri = g_uri_get_path (suri);
 
   if (uri == nullptr || self->priv->handlers == nullptr) {
     return nullptr;
@@ -240,8 +240,8 @@ emit_expiration_signal_cb (gpointer user_data)
   SoupMessage *msg = (SoupMessage *) user_data;
   KmsHttpEPServer *serv = (KmsHttpEPServer *) g_object_get_qdata (G_OBJECT (msg),
                           key_http_ep_server_quark () );
-  SoupURI *uri = soup_message_get_uri (msg);
-  const char *path = soup_uri_get_path (uri);
+  GUri *uri = soup_message_get_uri (msg);
+  const char *path = g_uri_get_path (uri);
   GstElement *httpep;
 
   GST_DEBUG ("Cookie expired for %s", path);
@@ -267,29 +267,32 @@ emit_expiration_signal (SoupMessage *msg, GstElement *httpep)
 {
   KmsHttpEPServer *serv;
   double t_timeout;
-  SoupDate *now;
+  GDateTime *now;
+  GDateTime *then;
   guint *timeout, *id;
 
   /* Set a timeout if no more connection are done over this httpendpoint */
   /* and the cookie expires */
-  now = soup_date_new_from_now (0);
+  now = g_date_time_new_now_local ();
   timeout = (guint *) g_object_get_qdata (G_OBJECT (httpep),
                                           key_param_timeout_quark () );
 
-  t_timeout = difftime (soup_date_to_time_t (now) + *timeout,
-                        soup_date_to_time_t (now) );
+  then = g_date_time_add_seconds (now, *timeout);
+  t_timeout = g_date_time_difference(then, now);
+  t_timeout /= 1000.0;
 
   serv = (KmsHttpEPServer *) g_object_get_qdata (G_OBJECT (msg),
          key_http_ep_server_quark () );
   id = g_slice_new (guint);
   *id = kms_loop_timeout_add_full (serv->priv->loop,
-                                   G_PRIORITY_DEFAULT, t_timeout * 1000,
+                                   G_PRIORITY_DEFAULT, t_timeout,
                                    emit_expiration_signal_cb,
                                    g_object_ref (G_OBJECT (msg) ),
                                    g_object_unref);
   g_object_set_qdata_full (G_OBJECT (httpep), key_timeout_id_quark (), id,
                            (GDestroyNotify) destroy_guint);
-  soup_date_free (now);
+  g_date_time_unref (now);
+  g_date_time_unref(then);
 }
 
 static void
@@ -299,7 +302,7 @@ destroy_ulong (gulong *handlerid)
 }
 
 static void
-got_post_data_cb (KmsHttpPost *post_obj, SoupBuffer *buffer, gpointer data)
+got_post_data_cb (KmsHttpPost *post_obj, GByteArray *buffer, gpointer data)
 {
   GstElement *httpep = GST_ELEMENT (data);
   GstFlowReturn ret;
@@ -308,7 +311,7 @@ got_post_data_cb (KmsHttpPost *post_obj, SoupBuffer *buffer, gpointer data)
   GstMapInfo info{};
 
   new_buffer = gst_buffer_new ();
-  memory = gst_allocator_alloc(nullptr, buffer->length, nullptr);
+  memory = gst_allocator_alloc(nullptr, buffer->len, nullptr);
   gst_buffer_append_memory (new_buffer, memory);
 
   gst_buffer_map (new_buffer, &info, GST_MAP_WRITE);
@@ -430,15 +433,15 @@ uninstall_http_post_signals (GstElement *httpep)
 static void
 add_access_control_headers (SoupMessage *msg)
 {
-  soup_message_headers_append (msg->response_headers, "Allow", "POST");
+  soup_message_headers_append (soup_message_get_response_headers(msg), "Allow", "POST");
 
   /* We allow access from all domains. This is generally not appropriate */
   /* TODO: Provide a configuration file containing all allowed domains */
-  soup_message_headers_append (msg->response_headers,
+  soup_message_headers_append (soup_message_get_response_headers(msg),
                                "Access-Control-Allow-Origin", "*");
 
   /* Next header is required by chrome to work */
-  soup_message_headers_append (msg->response_headers,
+  soup_message_headers_append (soup_message_get_response_headers(msg),
                                "Access-Control-Allow-Headers", "Content-Type");
 }
 
@@ -570,7 +573,7 @@ stop_http_ep_server_cb (struct tmp_data *tdata)
   kms_http_ep_server_remove_handlers (tdata->server);
 
   /* Stops processing for server */
-  soup_server_quit (tdata->server->priv->server);
+  soup_server_disconnect (tdata->server->priv->server);
 
 end:
 
@@ -604,7 +607,7 @@ kms_http_ep_server_stop_impl (KmsHttpEPServer *self,
 }
 
 static void
-destroy_pending_message (SoupMessage *msg)
+destroy_pending_message (SoupServerMessage *msg)
 {
   KmsHttpEPServer *serv = KMS_HTTP_EP_SERVER (g_object_get_qdata (G_OBJECT (msg),
                           key_http_ep_server_quark () ) );
@@ -612,7 +615,7 @@ destroy_pending_message (SoupMessage *msg)
 
   GST_DEBUG ("Destroy pending message %" GST_PTR_FORMAT, (gpointer) msg);
 
-  if (msg->method == SOUP_METHOD_GET) {
+  if (soup_server_message_get_method(msg) == SOUP_METHOD_GET) {
     gulong *handlerid;
 
     if (httpep != nullptr) {
@@ -626,9 +629,9 @@ destroy_pending_message (SoupMessage *msg)
     g_signal_handler_disconnect (G_OBJECT (msg), *handlerid);
 
     soup_server_unpause_message (serv->priv->server, msg);
-    soup_message_body_complete (msg->response_body);
+    soup_message_body_complete (soup_server_message_get_response_body (msg));
 
-  } else if (msg->method == SOUP_METHOD_POST) {
+  } else if (soup_server_message_get_method(msg) == SOUP_METHOD_POST) {
     KmsHttpPost *post_obj = nullptr;
 
     if (httpep != nullptr)
@@ -701,7 +704,7 @@ kms_http_ep_server_set_cookie (KmsHttpEPServer *self, GstElement *httpep,
   g_free (id_str);
 
   header = soup_cookie_to_set_cookie_header (cookie);
-  soup_message_headers_append (msg->response_headers, "Set-Cookie", header);
+  soup_message_headers_append (soup_message_get_response_headers(msg), "Set-Cookie", header);
   g_free (header);
 
   g_object_set_qdata_full (G_OBJECT (httpep), key_cookie_quark (), cookie,
@@ -773,7 +776,7 @@ static void
 kms_http_ep_server_options_handler (KmsHttpEPServer *self, SoupMessage *msg,
                                     GstElement *httpep)
 {
-  soup_message_set_status (msg, SOUP_STATUS_OK);
+  g_object_set(msg, "status-code", SOUP_STATUS_OK, NULL);
 
   add_access_control_headers (msg);
 }
@@ -783,23 +786,21 @@ got_headers_handler (SoupMessage *msg, gpointer data)
 {
   KmsHttpEndPointAction action = KMS_HTTP_END_POINT_ACTION_UNDEFINED;
   KmsHttpEPServer *self = KMS_HTTP_EP_SERVER (data);
-  SoupURI *uri = soup_message_get_uri (msg);
-  const char *path = soup_uri_get_path (uri);
+  GUri *uri = soup_message_get_uri (msg);
+  const char *path = g_uri_get_path (uri);
   GstElement *httpep;
 
   httpep = (GstElement *) g_hash_table_lookup (self->priv->handlers, path);
 
   if (httpep == nullptr) {
     /* URI is not registered */
-    soup_message_set_status_full (msg, SOUP_STATUS_NOT_FOUND,
-                                  "Http end point not found");
+    g_object_set (msg, "status-code", SOUP_STATUS_NOT_FOUND, NULL);
     return;
   }
 
   if (!kms_http_ep_server_manage_cookie_session (self, httpep, msg, path) ) {
     GST_WARNING ("Request declined because of a cookie error");
-    soup_message_set_status_full (msg, SOUP_STATUS_BAD_REQUEST,
-                                  "Invalid cookie");
+    g_object_set (msg, "status-code", SOUP_STATUS_BAD_REQUEST, NULL);
     return;
   }
 
@@ -814,16 +815,15 @@ got_headers_handler (SoupMessage *msg, gpointer data)
   g_object_set_qdata_full (G_OBJECT (msg), key_http_ep_server_quark (),
                            g_object_ref (self), g_object_unref);
 
-  if (msg->method == SOUP_METHOD_POST) {
+  if (soup_message_get_method(msg) == SOUP_METHOD_POST) {
     kms_http_ep_server_post_handler (self, msg, httpep);
     action = KMS_HTTP_END_POINT_ACTION_POST;
-  } else if (msg->method == SOUP_METHOD_OPTIONS) {
+  } else if (soup_message_get_method(msg) == SOUP_METHOD_OPTIONS) {
     kms_http_ep_server_options_handler (self, msg, httpep);
     return;
   } else {
-    GST_WARNING ("HTTP operation %s is not allowed", msg->method);
-    soup_message_set_status_full (msg, SOUP_STATUS_METHOD_NOT_ALLOWED,
-                                  "Not allowed");
+    GST_WARNING ("HTTP operation %s is not allowed", soup_message_get_method(msg));
+    g_object_set(msg, "status-cocde", SOUP_STATUS_METHOD_NOT_ALLOWED, NULL);
     return;
   }
 
@@ -832,14 +832,13 @@ got_headers_handler (SoupMessage *msg, gpointer data)
 }
 
 static void
-request_started_handler (SoupServer *server, SoupMessage *msg,
-                         SoupClientContext *client, gpointer data)
+request_started_handler (SoupServer *server, SoupServerMessage *msg, gpointer data)
 {
   g_signal_connect (msg, "got-headers", G_CALLBACK (got_headers_handler), data);
 }
 
 static void
-kms_http_ep_server_create_server (KmsHttpEPServer *self, SoupAddress *addr)
+kms_http_ep_server_create_server (KmsHttpEPServer *self, GNetworkAddress *addr)
 {
   SoupSocket *listener;
   GMainContext *ctx;
@@ -937,7 +936,7 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
                                gpointer user_data, GDestroyNotify notify)
 {
   struct tmp_data *tdata;
-  SoupAddress *addr = nullptr;
+  GNetworkAddress *addr = nullptr;
   GCancellable *cancel;
 
   if (self->priv->server != nullptr) {
@@ -962,7 +961,7 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
                                          G_PRIORITY_DEFAULT_IDLE, RESOLV_TIMEOUT, (GSourceFunc) cancel_resolution,
                                          cancel, g_object_unref);
 
-  addr = soup_address_new (self->priv->iface, self->priv->port);
+  addr = g_network_address_new  (self->priv->iface, self->priv->port);
 
   soup_address_resolve_async(addr, nullptr, cancel,
                              (SoupAddressCallback)soup_address_callback, tdata);

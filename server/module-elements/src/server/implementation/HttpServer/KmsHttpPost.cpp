@@ -109,7 +109,7 @@ kms_http_post_concat_previous_buffer (KmsHttpPost *self, const char **start,
 static void
 kms_notify_buffer_data (KmsHttpPost *self, const char *start, const char *end)
 {
-  SoupBuffer *buffer;
+  GByteArray *buffer;
 
   buffer = soup_buffer_new (SOUP_MEMORY_STATIC, start, end - start);
 
