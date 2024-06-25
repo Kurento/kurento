@@ -47,7 +47,7 @@ typedef struct _KmsHttpPostMultipart {
 
 struct _KmsHttpPostPrivate {
   KmsHttpPostMultipart *multipart;
-  SoupMessage *msg;
+  SoupServerMessage *msg;
   gulong chunk_id;
   gulong finish_id;
 };
@@ -110,12 +110,14 @@ static void
 kms_notify_buffer_data (KmsHttpPost *self, const char *start, const char *end)
 {
   GByteArray *buffer;
+  guint8 *buff = const_cast<guint8*>(reinterpret_cast<const guint8*>(start));
 
-  buffer = soup_buffer_new (SOUP_MEMORY_STATIC, start, end - start);
+  buffer = g_byte_array_new ();
+  buffer = g_byte_array_append(buffer, buff, end - start);
 
   g_signal_emit (G_OBJECT (self), obj_signals[GOT_DATA], 0, buffer);
 
-  soup_buffer_free (buffer);
+  g_byte_array_unref (buffer);
 }
 
 static void
@@ -512,18 +514,21 @@ kms_http_post_parse_multipart_data (KmsHttpPost *self, const char *start,
 }
 
 static void
-got_chunk_cb (SoupMessage *msg, SoupBuffer *chunk, gpointer data)
+got_chunk_cb (SoupMessage *msg, GBytes *chunk, gpointer data)
 {
   KmsHttpPost *self = KMS_HTTP_POST (data);
+  const char *start, *end;
+
+  start = static_cast<const char *> (g_bytes_get_data(chunk, NULL));
+  end = start + g_bytes_get_size(chunk);
 
   if (self->priv->multipart != nullptr) {
     /* Extract data from body parts */
-    kms_http_post_parse_multipart_data (self, chunk->data,
-                                        chunk->data + chunk->length);
+    kms_http_post_parse_multipart_data (self, start, end);
   } else {
     /* Data received in a non multipart POST request is */
     /* provided as it is without any further processing */
-    kms_notify_buffer_data (self, chunk->data, chunk->data + chunk->length);
+    kms_notify_buffer_data (self, start, end);
   }
 }
 
@@ -537,7 +542,7 @@ kms_http_post_destroy_multipart (KmsHttpPost *self)
   g_free (self->priv->multipart->boundary);
 
   if (self->priv->multipart->headers != nullptr) {
-    soup_message_headers_free (self->priv->multipart->headers);
+    soup_message_headers_unref (self->priv->multipart->headers);
   }
 
   g_free (self->priv->multipart->tmp_buff);
@@ -597,12 +602,12 @@ kms_http_post_configure_msg (KmsHttpPost *self)
   GHashTable *params = nullptr;
 
   content_type =
-    soup_message_headers_get_content_type (self->priv->msg->request_headers,
+    soup_message_headers_get_content_type (soup_server_message_get_request_headers (self->priv->msg),
         &params);
 
   if (content_type == nullptr) {
     GST_WARNING ("Content-type header is not present in request");
-    soup_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE);
+    soup_server_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE, "Request not acceptable, no content-type header present");
     goto end;
   }
 
@@ -617,21 +622,21 @@ kms_http_post_configure_msg (KmsHttpPost *self)
       if (self->priv->multipart->boundary == nullptr) {
         GST_WARNING ("Malformed multipart POST request");
         kms_http_post_destroy_multipart (self);
-        soup_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE);
+        soup_server_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE, "Request nor aceptable, malformed multipar POST request");
         goto end;
       }
     } else {
       GST_WARNING ("Unsupported multipart format: %s", content_type);
-      soup_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE);
+      soup_server_message_set_status (self->priv->msg, SOUP_STATUS_NOT_ACCEPTABLE, "Request not acceptable, unsupported multipart format");
       goto end;
     }
   }
 
-  soup_message_set_status (self->priv->msg, SOUP_STATUS_OK);
+  soup_server_message_set_status (self->priv->msg, SOUP_STATUS_OK, "OK");
 
   /* Get chunks without filling-in body's data field after */
   /* the body is fully sent/received */
-  soup_message_body_set_accumulate (self->priv->msg->request_body, FALSE);
+  soup_message_body_set_accumulate (soup_server_message_get_request_body (self->priv->msg), FALSE);
 
   self->priv->chunk_id = g_signal_connect (self->priv->msg, "got-chunk",
                          G_CALLBACK (got_chunk_cb), self);
@@ -655,8 +660,8 @@ kms_http_post_set_property (GObject *obj, guint prop_id,
     kms_http_post_release_message (self);
     kms_http_post_destroy_multipart (self);
 
-    if (SOUP_IS_MESSAGE (g_value_get_object (value) ) ) {
-      self->priv->msg = SOUP_MESSAGE (g_object_ref (
+    if (SOUP_IS_SERVER_MESSAGE (g_value_get_object (value) ) ) {
+      self->priv->msg = SOUP_SERVER_MESSAGE (g_object_ref (
                                         g_value_get_object (value) ) );
       kms_http_post_configure_msg (self);
     }
@@ -734,7 +739,7 @@ kms_http_post_class_init (KmsHttpPostClass *klass)
   obj_signals[GOT_DATA] = g_signal_new(
       "got-data", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET(KmsHttpPostClass, got_data), nullptr, nullptr,
-      g_cclosure_marshal_VOID__OBJECT, G_TYPE_NONE, 1, SOUP_TYPE_BUFFER);
+      g_cclosure_marshal_VOID__OBJECT, G_TYPE_NONE, 1, g_byte_array_get_type());
 
   obj_signals[FINISHED] = g_signal_new(
       "finished", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,

@@ -838,86 +838,33 @@ request_started_handler (SoupServer *server, SoupServerMessage *msg, gpointer da
 }
 
 static void
-kms_http_ep_server_create_server (KmsHttpEPServer *self, GNetworkAddress *addr)
+kms_http_ep_server_create_server (KmsHttpEPServer *self, GSocketAddress *addr)
 {
-  SoupSocket *listener;
   GMainContext *ctx;
+  GError *error = NULL;
+  gboolean listening;
 
   g_object_get (self->priv->loop, "context", &ctx, NULL);
-  self->priv->server = soup_server_new (SOUP_SERVER_PORT, self->priv->port,
-                                        SOUP_SERVER_INTERFACE, addr,
-                                        SOUP_SERVER_ASYNC_CONTEXT, ctx, NULL);
+  self->priv->server = soup_server_new ("server-header", "simple-httpd ", NULL);
   g_main_context_unref (ctx);
 
   /* Connect server signals handlers */
   g_signal_connect (self->priv->server, "request-started",
                     G_CALLBACK (request_started_handler), self);
 
-  soup_server_run_async (self->priv->server);
+  if (addr != NULL) {
+    listening = soup_server_listen (self->priv->server, addr, (SoupServerListenOptions) 0, &error);
+  } else {
+    listening = soup_server_listen_all (self->priv->server, self->priv->port, (SoupServerListenOptions) 0, &error);
+  }
 
-  listener = soup_server_get_listener (self->priv->server);
-
-  if (!soup_socket_is_connected (listener) ) {
+  if (!listening ) {
     GST_ERROR ("Server socket is not connected");
     return;
   }
 
-  addr = soup_socket_get_local_address (listener);
-
-  if (self->priv->iface == nullptr) {
-    /* Update the recently id adrress */
-    self->priv->iface = g_strdup (soup_address_get_physical (addr) );
-    /* TODO: Emit property change signal */
-  }
-
-  if (self->priv->port == 0) {
-    /* Update the recently id adrress */
-    self->priv->port = soup_address_get_port (addr);
-    /* TODO: Emit property change signal */
-  }
-
   GST_DEBUG ("Http end point server running in %s:%d", self->priv->iface,
              self->priv->port );
-}
-
-static void
-soup_address_callback (SoupAddress *addr, guint status, gpointer user_data)
-{
-  struct tmp_data *tdata = (struct tmp_data *) user_data;
-  GError *gerr = nullptr;
-
-  switch (status) {
-  case SOUP_STATUS_OK:
-    GST_DEBUG ("Domain name resolved");
-    kms_http_ep_server_create_server (tdata->server, addr);
-    break;
-
-  case SOUP_STATUS_CANCELLED:
-    g_set_error (&gerr, KMS_HTTP_EP_SERVER_ERROR,
-                 HTTPEPSERVER_RESOLVE_CANCELED_ERROR,
-                 "Domain name resolution canceled");
-    tdata->id = 0;
-    break;
-
-  case SOUP_STATUS_CANT_RESOLVE:
-    g_set_error (&gerr, KMS_HTTP_EP_SERVER_ERROR,
-                 HTTPEPSERVER_CANT_RESOLVE_ERROR,
-                 "Domain name can not be resolved");
-    break;
-
-  default:
-    g_set_error (&gerr, KMS_HTTP_EP_SERVER_ERROR,
-                 HTTPEPSERVER_UNEXPECTED_ERROR,
-                 "Domain name can not be resolved");
-    break;
-  }
-
-  if (tdata->cb != nullptr) {
-    tdata->cb (tdata->server, gerr, tdata->data);
-  }
-
-  g_clear_error (&gerr);
-  destroy_tmp_data (tdata);
 }
 
 static gboolean
@@ -936,7 +883,7 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
                                gpointer user_data, GDestroyNotify notify)
 {
   struct tmp_data *tdata;
-  GNetworkAddress *addr = nullptr;
+  GSocketAddress *addr = nullptr;
   GCancellable *cancel;
 
   if (self->priv->server != nullptr) {
@@ -961,10 +908,16 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
                                          G_PRIORITY_DEFAULT_IDLE, RESOLV_TIMEOUT, (GSourceFunc) cancel_resolution,
                                          cancel, g_object_unref);
 
-  addr = g_network_address_new  (self->priv->iface, self->priv->port);
+  addr = g_inet_socket_address_new_from_string (self->priv->iface, self->priv->port);
 
-  soup_address_resolve_async(addr, nullptr, cancel,
-                             (SoupAddressCallback)soup_address_callback, tdata);
+  if (addr != NULL) {
+    GError *gerr = nullptr;
+    
+    kms_http_ep_server_create_server (tdata->server, addr);
+    if (tdata->cb != NULL) {
+      tdata->cb (tdata->server, gerr, tdata->data);
+    }
+  }
 }
 
 static void
