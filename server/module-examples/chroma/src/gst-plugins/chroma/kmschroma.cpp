@@ -116,22 +116,53 @@ load_from_url (gchar *file_name, gchar *url)
 {
   SoupSession *session;
   SoupMessage *msg;
-  FILE *dst;
+  GFile *dst = NULL;
+  GError *error = NULL;
+  GInputStream *result = NULL;
+  GOutputStream *out_stream = NULL;
 
   session = soup_session_new ();
   msg = soup_message_new ("GET", url);
-  soup_session_send_message (session, msg);
+  result = soup_session_send (session,msg, NULL, &error);
 
-  dst = fopen (file_name, "w+");
+  if (error) {
+    GST_ERROR ("It is not possible to get uri %s", url);
+    goto end;
+  }
+
+  dst = g_file_new_for_path (file_name);
 
   if (dst == NULL) {
     GST_ERROR ("It is not possible to create the file");
     goto end;
   }
-  fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
-  fclose (dst);
 
+  out_stream = (GOutputStream*) g_file_create (dst, G_FILE_CREATE_REPLACE_DESTINATION, NULL, &error);
+
+  if (error) {
+    GST_ERROR ("It is not possible to create the file");
+    goto end;
+  }
+  g_output_stream_splice (out_stream, result,
+        (GOutputStreamSpliceFlags) (G_OUTPUT_STREAM_SPLICE_CLOSE_SOURCE | G_OUTPUT_STREAM_SPLICE_CLOSE_TARGET),
+        NULL, &error);
+
+  if (error) {
+    g_print ("Download failed: %s\n", error->message);
+  }
 end:
+  if (error) {
+        g_error_free (error);
+  }
+  if (out_stream) {
+    g_object_unref (out_stream);
+  }
+  if (result) {
+    g_object_unref (result);
+  }
+  if (dst) {
+    g_object_unref(dst);
+  }
   g_object_unref (msg);
   g_object_unref (session);
 }
