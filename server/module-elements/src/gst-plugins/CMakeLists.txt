@@ -59,7 +59,7 @@ target_link_libraries(${LIBRARY_NAME}
   ${gstreamer-base-1.0_LIBRARIES}
   ${gstreamer-app-1.0_LIBRARIES}
   ${gstreamer-pbutils-1.0_LIBRARIES}
-  ${libsoup-2.4_LIBRARIES}
+  ${libsoup-3.0_LIBRARIES}
 )
 
 install(
