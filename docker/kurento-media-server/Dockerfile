@@ -59,7 +59,7 @@
 
 
 # Global arguments for FROM.
-ARG UBUNTU_CODENAME="focal"
+ARG UBUNTU_CODENAME="noble"
 
 
 

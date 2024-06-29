@@ -23,7 +23,7 @@
 #
 #   Optional. Default: "focal".
 
-ARG UBUNTU_CODENAME=focal
+ARG UBUNTU_CODENAME=noble
 
 FROM kurento/kurento-buildpackage:${UBUNTU_CODENAME}
 
