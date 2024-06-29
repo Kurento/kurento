@@ -11,7 +11,7 @@ Build-Depends:
  kurento-module-elements-dev (>= 7.0.2),
  kurento-module-filters-dev (>= 7.0.2),
  libopencv-dev,
- libsoup2.4-dev,
+ libsoup-3.0-dev,
  pkg-config,
 Standards-Version: 4.5.1
 Homepage: https://kurento.openvidu.io/

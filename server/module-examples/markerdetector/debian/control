@@ -8,7 +8,7 @@ Build-Depends:
  kurento-module-elements-dev (>= 7.0.2),
  kurento-module-filters-dev (>= 7.0.2),
  libopencv-dev,
- libsoup2.4-dev,
+ libsoup-3.0-dev,
  libtinyxml-dev,
  pkg-config,
 Standards-Version: 4.5.1
@@ -46,7 +46,7 @@ Depends:
  kurento-module-filters-dev (>= 7.0.2),
  kurento-module-markerdetector (= ${binary:Version}),
  libopencv-dev,
- libsoup2.4-dev,
+ libsoup-3.0-dev,
  libtinyxml-dev,
 Breaks:
  ar-markerdetector-dev,
