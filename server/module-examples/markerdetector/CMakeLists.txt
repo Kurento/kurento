@@ -32,10 +32,6 @@ common_buildflags_set()
 # For example:
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 
-# FIXME Disable error from deprecated "soup_session_sync_new" in libsoup
-# (Since Ubuntu 18.04)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
-
 # FIXME Disable miscellaneous errors from ALVAR library
 # These all happen because the ALVAR library was written for GCC 4.4
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=return-type -Wno-error=reorder -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=sign-compare -Wno-error=comment -Wno-error=unused-value -Wno-error=delete-non-virtual-dtor")
