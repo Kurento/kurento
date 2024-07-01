@@ -753,7 +753,7 @@ kms_base_rtp_endpoint_create_rtp_session (KmsBaseRtpEndpoint * self,
   GstPad *pad;
 
   /* Create RtpSession requesting the pad */
-  pad = gst_element_get_request_pad (rtpbin, rtpbin_pad_name);
+  pad = gst_element_request_pad_simple (rtpbin, rtpbin_pad_name);
   g_object_unref (pad);
 
   g_signal_emit_by_name (rtpbin, "get-internal-session", session_id,
@@ -905,14 +905,14 @@ kms_base_rtp_endpoint_request_rtp_sink (KmsIRtpSessionManager * manager,
     pad = gst_element_get_static_pad (self->priv->rtpbin,
         AUDIO_RTPBIN_RECV_RTP_SINK);
     if (pad == NULL) {
-      pad = gst_element_get_request_pad (self->priv->rtpbin,
+      pad = gst_element_request_pad_simple (self->priv->rtpbin,
           AUDIO_RTPBIN_RECV_RTP_SINK);
     }
   } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
     pad = gst_element_get_static_pad (self->priv->rtpbin,
         VIDEO_RTPBIN_RECV_RTP_SINK);
     if (pad == NULL) {
-      pad = gst_element_get_request_pad (self->priv->rtpbin,
+      pad = gst_element_request_pad_simple (self->priv->rtpbin,
           VIDEO_RTPBIN_RECV_RTP_SINK);
     }
   } else {
@@ -1002,7 +1002,7 @@ kms_base_rtp_endpoint_request_rtcp_sink (KmsIRtpSessionManager *manager,
   if (rtpbin_sink == NULL) {
     // Make a new sink pad on the GstBin, and a funnel for it. This allows
     // multiple upstream elements to push RTCP packets to the same RTCP sink.
-    rtpbin_sink = gst_element_get_request_pad (self->priv->rtpbin, pad_name);
+    rtpbin_sink = gst_element_request_pad_simple (self->priv->rtpbin, pad_name);
 
     GstElement *funnel = gst_element_factory_make ("funnel", NULL);
     gst_bin_add (GST_BIN (manager), funnel);
@@ -1016,7 +1016,7 @@ kms_base_rtp_endpoint_request_rtcp_sink (KmsIRtpSessionManager *manager,
 
   GstPad *funnel_src = gst_pad_get_peer (rtpbin_sink);
   GstElement *funnel = gst_pad_get_parent_element (funnel_src);
-  GstPad *funnel_sink = gst_element_get_request_pad (funnel, "sink_%u");
+  GstPad *funnel_sink = gst_element_request_pad_simple (funnel, "sink_%u");
 
   g_object_unref (funnel);
   g_object_unref (funnel_src);
@@ -1036,11 +1036,11 @@ kms_base_rtp_endpoint_request_rtcp_src (KmsIRtpSessionManager * manager,
 
   if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
     pad =
-        gst_element_get_request_pad (self->priv->rtpbin,
+        gst_element_request_pad_simple (self->priv->rtpbin,
         AUDIO_RTPBIN_SEND_RTCP_SRC);
   } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
     pad =
-        gst_element_get_request_pad (self->priv->rtpbin,
+        gst_element_request_pad_simple (self->priv->rtpbin,
         VIDEO_RTPBIN_SEND_RTCP_SRC);
   } else {
     GST_ERROR_OBJECT (self, "'%s' not valid", media_str);

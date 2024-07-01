@@ -107,7 +107,7 @@ static gboolean
 reconnect_elements (gpointer data)
 {
   ElementsData *elements = data;
-  GstPad *pad = gst_element_get_request_pad (elements->agnosticbin, "src_%u");
+  GstPad *pad = gst_element_request_pad_simple (elements->agnosticbin, "src_%u");
 
   gst_element_link_pads (elements->agnosticbin, GST_OBJECT_NAME (pad),
       elements->fakesink, NULL);
@@ -955,7 +955,7 @@ GST_START_TEST (create_test)
   GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
   GstPad *pad;
 
-  pad = gst_element_get_request_pad (agnosticbin, "src_%u");
+  pad = gst_element_request_pad_simple (agnosticbin, "src_%u");
 
   GST_DEBUG_OBJECT (pad, "Pad created");
 

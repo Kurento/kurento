@@ -501,7 +501,7 @@ kms_base_hub_link_sink_pad (KmsBaseHub * hub, gint id,
 
   target = gst_element_get_static_pad (internal_element, pad_name);
   if (target == NULL) {
-    target = gst_element_get_request_pad (internal_element, pad_name);
+    target = gst_element_request_pad_simple (internal_element, pad_name);
 
     if (target != NULL && remove_on_unlink) {
       g_signal_connect (G_OBJECT (target), "unlinked",
@@ -632,7 +632,7 @@ kms_base_hub_link_src_pad (KmsBaseHub * self, const gchar * gp_name,
 
   target = gst_element_get_static_pad (internal_element, pad_name);
   if (target == NULL) {
-    target = gst_element_get_request_pad (internal_element, pad_name);
+    target = gst_element_request_pad_simple (internal_element, pad_name);
 
     if (target != NULL && remove_on_unlink) {
       g_signal_connect (G_OBJECT (target), "unlinked",

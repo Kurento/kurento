@@ -133,7 +133,7 @@ kms_webrtc_bundle_connection_request_rtp_sink (KmsIRtpConnection *
   str = g_strdup_printf ("rtp_sink_%d",
       g_atomic_int_add (&self->priv->tr->rtp_id, 1));
 
-  pad = gst_element_get_request_pad (self->priv->tr->sink->dtlssrtpenc, str);
+  pad = gst_element_request_pad_simple (self->priv->tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;
@@ -161,7 +161,7 @@ kms_webrtc_bundle_connection_request_rtcp_sink (KmsIRtpConnection *
   str = g_strdup_printf ("rtcp_sink_%d",
       g_atomic_int_add (&self->priv->tr->rtcp_id, 1));
 
-  pad = gst_element_get_request_pad (self->priv->tr->sink->dtlssrtpenc, str);
+  pad = gst_element_request_pad_simple (self->priv->tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;
@@ -185,7 +185,7 @@ kms_webrtc_bundle_connection_request_data_src (KmsIRtpConnection *
   KmsWebRtcBundleConnection *self =
       KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_request_pad (self->priv->tr->src->dtlssrtpdec,
+  return gst_element_request_pad_simple (self->priv->tr->src->dtlssrtpdec,
       "data_src");
 }
 
@@ -196,7 +196,7 @@ kms_webrtc_bundle_connection_request_data_sink (KmsIRtpConnection *
   KmsWebRtcBundleConnection *self =
       KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_request_pad (self->priv->tr->sink->dtlssrtpenc,
+  return gst_element_request_pad_simple (self->priv->tr->sink->dtlssrtpenc,
       "data_sink");
 }
 

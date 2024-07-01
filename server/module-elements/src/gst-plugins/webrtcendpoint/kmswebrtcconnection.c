@@ -131,7 +131,7 @@ kms_webrtc_rtp_connection_request_rtp_sink (KmsIRtpConnection * base_rtp_conn)
       g_atomic_int_add (&self->priv->rtp_tr->rtp_id, 1));
 
   pad =
-      gst_element_get_request_pad (self->priv->rtp_tr->sink->dtlssrtpenc, str);
+      gst_element_request_pad_simple (self->priv->rtp_tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;
@@ -157,7 +157,7 @@ kms_webrtc_rtp_connection_request_rtcp_sink (KmsIRtpConnection * base_rtp_conn)
       g_atomic_int_add (&self->priv->rtcp_tr->rtcp_id, 1));
 
   pad =
-      gst_element_get_request_pad (self->priv->rtcp_tr->sink->dtlssrtpenc, str);
+      gst_element_request_pad_simple (self->priv->rtcp_tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;

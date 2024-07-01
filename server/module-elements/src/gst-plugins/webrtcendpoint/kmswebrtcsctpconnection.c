@@ -143,7 +143,7 @@ kms_webrtc_sctp_connection_request_data_src (KmsIRtpConnection * base_conn)
 {
   KmsWebRtcSctpConnection *self = KMS_WEBRTC_SCTP_CONNECTION (base_conn);
 
-  return gst_element_get_request_pad (self->priv->tr->src->dtlssrtpdec,
+  return gst_element_request_pad_simple (self->priv->tr->src->dtlssrtpdec,
       "data_src");
 }
 
@@ -152,7 +152,7 @@ kms_webrtc_sctp_connection_request_data_sink (KmsIRtpConnection * base_conn)
 {
   KmsWebRtcSctpConnection *self = KMS_WEBRTC_SCTP_CONNECTION (base_conn);
 
-  return gst_element_get_request_pad (self->priv->tr->sink->dtlssrtpenc,
+  return gst_element_request_pad_simple (self->priv->tr->sink->dtlssrtpenc,
       "data_sink");
 }
 
