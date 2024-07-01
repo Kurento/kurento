@@ -95,5 +95,8 @@ gboolean kms_webrtc_base_connection_configure (KmsWebRtcBaseConnection * self,
 void kms_webrtc_base_connection_set_latency_callback (KmsIRtpConnection *self, BufferLatencyCallback cb, gpointer user_data);
 void kms_webrtc_base_connection_collect_latency_stats (KmsIRtpConnection *self, gboolean enable);
 
+void kms_webrtc_base_connection_add_dtls_component (KmsWebRtcBaseConnection * self,
+    GstElement *dtls_componen, const gchar *component, const gchar *direction);
+
 G_END_DECLS
 #endif /* __KMS_WEBRTC_BASE_CONNECTION_H__ */

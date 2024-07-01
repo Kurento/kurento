@@ -415,6 +415,12 @@ Endpoint that provides bidirectional WebRTC capabilities for Kurento.
           "doc": "the ICE connection state for all the connections.",
           "type": "IceConnection[]",
           "readOnly": true
+        },
+        {
+          "name": "DtlsConnectionState",
+          "doc": "the DTLS connection state for all the connections.",
+          "type": "DtlsConnection[]",
+          "readOnly": true
         }
       ],
       "constructor":
@@ -600,6 +606,7 @@ Note that this forces unreliable mode, even if <code>ordered</code> has been act
         "IceCandidateFound",
         "IceGatheringDone",
         "IceComponentStateChanged",
+        "DtlsConnectionStateChange",
         "DataChannelOpened",
         "DataChannelClosed",
         "NewCandidatePairSelected"
@@ -648,6 +655,35 @@ See :rom:cls:`IceComponentState` for a list of possible states.
           "name": "state",
           "doc": "The state of the component",
           "type": "IceComponentState"
+        }
+      ]
+    },
+    {
+      "name": "DtlsConnectionStateChange",
+      "extends": "Media",
+      "doc": "Event fired when and ICE component DTLS connection state changes.
+See :rom:cls:`DtlsComponentState` for a list of possible states.
+      ",
+      "properties": [
+        {
+          "name": "streamId",
+          "doc": "The ID of the stream",
+          "type": "String"
+        },
+        {
+          "name": "componentId",
+          "doc": "The ID of the component",
+          "type": "String"
+        },
+        {
+          "name": "connectionId",
+          "doc": "ID of the underlying DTLS connection",
+          "type": "String"
+        },
+        {
+          "name": "state",
+          "doc": "The state of the component",
+          "type": "DtlsConnectionState"
         }
       ]
     },
@@ -728,6 +764,18 @@ This could also happen in the middle of a session, though not likely.
       ]
     },
     {
+      "name": "DtlsConnectionState",
+      "typeFormat": "ENUM",
+      "doc": "States of a DTLS connection.",
+      "values": [
+        "NEW",
+        "CLOSED",
+        "FAILED",
+        "CONNECTING",
+        "CONNECTED"
+      ]
+    },
+    {
       "typeFormat": "REGISTER",
       "name": "IceCandidatePair",
       "doc": "The ICE candidate pair used by the ICE library, for a certain stream.",
@@ -773,6 +821,33 @@ This could also happen in the middle of a session, though not likely.
           "name": "state",
           "doc": "The state of the component",
           "type": "IceComponentState"
+        }
+      ]
+    },
+    {
+      "name": "DtlsConnection",
+      "typeFormat": "REGISTER",
+      "doc": "The DTLS connection state for a certain stream and component.",
+      "properties": [
+        {
+          "name": "streamId",
+          "doc": "The ID of the stream",
+          "type": "String"
+        },
+        {
+          "name": "componentId",
+          "doc": "The ID of the component",
+          "type": "String"
+        },
+        {
+          "name": "connectionId",
+          "doc": "The ID of the underlying DTLS connection",
+          "type": "String"
+        },
+        {
+          "name": "state",
+          "doc": "The state of the component",
+          "type": "DtlsConnectionState"
         }
       ]
     },

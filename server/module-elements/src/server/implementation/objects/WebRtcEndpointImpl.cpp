@@ -27,6 +27,8 @@
 #include "CertificateKeyType.hpp"
 #include <webrtcendpoint/kmsicecandidate.h>
 #include <IceComponentState.hpp>
+#include <DtlsConnectionState.hpp>
+#include <DtlsConnection.hpp>
 #include <SignalHandler.hpp>
 #include <webrtcendpoint/kmsicebaseagent.h>
 
@@ -39,6 +41,7 @@
 #include <commons/gstsdpdirection.h>
 
 #include "webrtcendpoint/kmswebrtcdatachannelstate.h"
+#include "webrtcendpoint/kmswebrtcdtlsconnectionstate.h"
 #include <boost/algorithm/string.hpp>
 
 #include <CertificateManager.hpp>
@@ -281,6 +284,69 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
   }
 }
 
+void WebRtcEndpointImpl::onDtlsConnectionStateChanged (gchar *sessId,
+    const gchar *streamId,
+    gchar *componentId, gchar *connection_id, guint state)
+{
+  DtlsConnectionState::type type;
+  std::shared_ptr<DtlsConnection> connectionState;
+  std::map < std::string, std::shared_ptr<DtlsConnection>>::iterator it;
+  std::string key;
+
+  switch (state) {
+  case DTLS_CONNECTION_STATE_NEW:
+    type = DtlsConnectionState::NEW;
+    break;
+
+  case DTLS_CONNECTION_STATE_CONNECTING:
+    type = DtlsConnectionState::CONNECTING;
+    break;
+
+  case DTLS_CONNECTION_STATE_CONNECTED:
+    type = DtlsConnectionState::CONNECTED;
+    break;
+
+  case DTLS_CONNECTION_STATE_FAILED:
+    type = DtlsConnectionState::FAILED;
+    break;
+
+  case DTLS_CONNECTION_STATE_CLOSED:
+    type = DtlsConnectionState::CLOSED;
+    break;
+
+  default:
+    type = DtlsConnectionState::FAILED;
+    break;
+  }
+
+  DtlsConnectionState *newComponentState_event = new DtlsConnectionState (type);
+  DtlsConnectionState *componentState_property = new DtlsConnectionState (type);
+
+  connectionState = std::make_shared<DtlsConnection> (std::string(streamId), std::string(componentId), std::string(connection_id),
+                    std::shared_ptr<DtlsConnectionState> (componentState_property) );
+
+  key = std::string (streamId) + '_' + std::string (componentId);
+
+  std::unique_lock<std::mutex> mutex (mut);
+  it = dtlsConnectionState.find (key);
+  dtlsConnectionState[key] = connectionState;
+  dtlsConnectionState.insert (std::pair
+                             <std::string, std::shared_ptr <DtlsConnection>> (key, connectionState) );
+
+  try {
+    DtlsConnectionStateChange event (shared_from_this (),
+        DtlsConnectionStateChange::getName (), streamId, componentId, connection_id,
+        std::shared_ptr<DtlsConnectionState> (newComponentState_event));
+    GST_DEBUG_OBJECT(element,"DTLS connection state change sesId: %s, connId: %s, comp: %s, source: %s, stream: %s, state: %s", 
+              sessId, connection_id,  event.getComponentId().c_str(), event.getSource()->getId().c_str(), event.getStreamId().c_str(), event.getState()->getString().c_str());
+    sigcSignalEmit(signalDtlsConnectionStateChange, event);
+  } catch (const std::bad_weak_ptr &e) {
+    // shared_from_this()
+    GST_ERROR ("BUG creating %s: %s",
+        DtlsConnectionStateChange::getName ().c_str (), e.what ());
+  }
+}
+
 void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
     const gchar *streamId,
     guint componentId, KmsIceCandidate *localCandidate,
@@ -396,6 +462,15 @@ void WebRtcEndpointImpl::postConstructor ()
                                       (std::bind (&WebRtcEndpointImpl::onIceComponentStateChanged, this,
                                           std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
                                           std::placeholders::_5) ),
+                                      std::dynamic_pointer_cast<WebRtcEndpointImpl>
+                                      (shared_from_this() ) );
+
+  handlerOnDtlsConnectionStateChanged = register_signal_handler (G_OBJECT (element),
+                                      "on-dtls-connection-state-changed",
+                                      std::function <void (GstElement *, gchar *, gchar *, gchar *, char *,guint) >
+                                      (std::bind (&WebRtcEndpointImpl::onDtlsConnectionStateChanged, this,
+                                          std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
+                                          std::placeholders::_5, std::placeholders::_6) ),
                                       std::dynamic_pointer_cast<WebRtcEndpointImpl>
                                       (shared_from_this() ) );
 
@@ -894,6 +969,20 @@ std::vector<std::shared_ptr<IceConnection>>
   std::unique_lock<std::mutex> mutex (mut);
 
   for (it = iceConnectionState.begin(); it != iceConnectionState.end(); it++) {
+    connections.push_back ( (*it).second);
+  }
+
+  return connections;
+}
+
+std::vector<std::shared_ptr<DtlsConnection>>
+    WebRtcEndpointImpl::getDtlsConnectionState ()
+{
+  std::vector<std::shared_ptr<DtlsConnection>> connections;
+  std::map<std::string, std::shared_ptr <DtlsConnection>>::iterator it;
+  std::unique_lock<std::mutex> mutex (mut);
+
+  for (it = dtlsConnectionState.begin(); it != dtlsConnectionState.end(); it++) {
     connections.push_back ( (*it).second);
   }
 

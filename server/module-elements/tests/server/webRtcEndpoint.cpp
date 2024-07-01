@@ -29,6 +29,8 @@
 #include <MediaSet.hpp>
 #include <MediaElementImpl.hpp>
 #include <ConnectionState.hpp>
+#include <DtlsConnectionState.hpp>
+#include <DtlsConnectionStateChange.hpp>
 
 #define NUMBER_OF_RECONNECTIONS 5
 
@@ -50,7 +52,7 @@ struct GF {
   ~GF();
 };
 
-BOOST_GLOBAL_FIXTURE (GF)
+BOOST_GLOBAL_FIXTURE (GF);
 
 GF::GF()
 {
@@ -224,6 +226,88 @@ ice_state_changes (bool useIpv6)
 
   releaseWebRtc (webRtcEpOfferer);
   releaseWebRtc (webRtcEpAnswerer);
+}
+
+static  void
+dtls_connection_state_changes (bool useIpv6)
+{
+  DtlsConnectionState offerer_dtls_connection_state = DtlsConnectionState::NEW;
+  DtlsConnectionState answerer_dtls_connection_state = DtlsConnectionState::NEW;
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
+
+  webRtcEpOfferer->setName ("offerer");
+  webRtcEpAnswerer->setName ("answerer");
+
+  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
+    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  });
+
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
+    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+  });
+
+//  webRtcEpOfferer->signalOnIceComponentStateChanged.connect ([&] (
+//  OnIceComponentStateChanged event) {
+//    ice_state_changed = true;
+//    cv.notify_one();
+//  });
+
+  webRtcEpOfferer->signalDtlsConnectionStateChange.connect ([&] (
+    DtlsConnectionStateChange event) {
+      offerer_dtls_connection_state = *(event.getState());
+      BOOST_TEST_MESSAGE("Offerer DTLS connection state: " + offerer_dtls_connection_state.getString() + " component: " + event.getComponentId() + " stream " + event.getStreamId());
+      if ((offerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED) && (answerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED)) {
+        cv.notify_one();
+      }
+    });
+
+
+  webRtcEpAnswerer->signalDtlsConnectionStateChange.connect ([&] (
+    DtlsConnectionStateChange event) {
+      answerer_dtls_connection_state = *(event.getState());
+      BOOST_TEST_MESSAGE("Answerer DTLS connection state: " + answerer_dtls_connection_state.getString() + " component: " + event.getComponentId() + " stream " + event.getStreamId());
+      if ((offerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED) && (answerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED)) {
+        cv.notify_one();
+      }
+    });
+
+
+  std::string offer = webRtcEpOfferer->generateOffer ();
+  std::string answer = webRtcEpAnswerer->processOffer (offer);
+  webRtcEpOfferer->processAnswer (answer);
+
+  webRtcEpOfferer->gatherCandidates ();
+  webRtcEpAnswerer->gatherCandidates ();
+
+  if (!cv.wait_for (lck, std::chrono::seconds (TIMEOUT), [&] () {
+    return ((offerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED) && (answerer_dtls_connection_state.getValue() == DtlsConnectionState::CONNECTED));
+  }) ) {
+    BOOST_ERROR ("Timeout waiting for ICE state change");
+  }
+
+  if ((answerer_dtls_connection_state.getValue() != DtlsConnectionState::CONNECTED) || (offerer_dtls_connection_state.getValue() != DtlsConnectionState::CONNECTED)) {
+    BOOST_ERROR ("DTLS state not connected");
+  }
+
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
+}
+
+static void 
+dtls_connection_state_changes_ipv4 ()
+{
+  dtls_connection_state_changes (false);
+}
+
+static void 
+dtls_connection_state_changes_ipv6 ()
+{
+  dtls_connection_state_changes (true);
 }
 
 static void
@@ -982,11 +1066,15 @@ init_unit_test_suite ( int , char *[] )
 
   test->add (BOOST_TEST_CASE ( &gathering_done ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &ice_state_changes_ipv4 ), 0, /* timeout */ 15);
+
   test->add (BOOST_TEST_CASE ( &ice_state_changes_ipv6 ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &stun_turn_properties ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &media_state_changes_ipv4 ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &media_state_changes_ipv6 ), 0, /* timeout */ 15);
 
+  test->add (BOOST_TEST_CASE ( &dtls_connection_state_changes_ipv4 ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &dtls_connection_state_changes_ipv6 ), 0, /* timeout */ 15);
+//if (false) {
   /* These tests depend on GStreamer 1.17+ and feature on https://github.com/naevatec/kms-elements/tree/dtls-connection-state*/
   //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv4), 0, /* timeout */ 15);
   //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv6), 0, /* timeout */ 15);

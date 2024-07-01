@@ -302,6 +302,9 @@ kms_webrtc_bundle_connection_new (KmsIceBaseAgent * agent,
   g_signal_connect (priv->tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (connected_cb), conn);
 
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->sink->dtlssrtpenc, "bundle", "dtlssrtpenc");
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->src->dtlssrtpdec, "bundle", "dtlssrtpdec");
+  
   return conn;
 }
 

@@ -21,6 +21,7 @@
 
 #include "kmswebrtcendpoint.h"
 #include "kmswebrtcsession.h"
+#include "kmswebrtctransport.h"
 #include <commons/constants.h>
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
@@ -80,6 +81,7 @@ enum
   SIGNAL_ON_ICE_CANDIDATE,
   SIGNAL_ON_ICE_GATHERING_DONE,
   SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED,
+  SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED,
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
   SIGNAL_DATA_SESSION_ESTABLISHED,
@@ -156,6 +158,40 @@ on_ice_component_state_change (KmsWebrtcSession * sess, const gchar * stream_id,
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
       sdp_sess->id_str, stream_id, component_id, state);
+}
+
+static const gchar*
+dtls_state_to_string (guint state)
+{
+  switch (state) {
+    case DTLS_CONNECTION_STATE_NEW:
+      return "New connection";
+    case DTLS_CONNECTION_STATE_CLOSED:
+      return "Closed connection on either side";
+    case DTLS_CONNECTION_STATE_FAILED:
+      return "Failed connection";
+    case DTLS_CONNECTION_STATE_CONNECTING:
+      return "Connecting";
+    case DTLS_CONNECTION_STATE_CONNECTED:
+      return "Successfully connected";
+    default:
+      return "invalid";
+  }
+}
+
+static void
+on_dtls_connection_state_change (KmsWebrtcSession * sess, const gchar * stream_id,
+    gchar *component, gchar *connection_id, guint state, KmsWebrtcEndpoint * self)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  GST_DEBUG_OBJECT (self,
+      "[DtlsConnectionStateChanged] state: %s, stream_id: %s, component_id: %s",
+      dtls_state_to_string (state), stream_id, component);
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_endpoint_signals[SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED], 0,
+      sdp_sess->id_str, stream_id, component, connection_id, state);
 }
 
 static void
@@ -361,9 +397,10 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       G_CALLBACK (on_ice_gathering_done), self);
   g_signal_connect (webrtc_sess, "on-ice-component-state-changed",
       G_CALLBACK (on_ice_component_state_change), self);
+  g_signal_connect (webrtc_sess, "on-dtls-connection-state-changed",
+      G_CALLBACK (on_dtls_connection_state_change), self);
   g_signal_connect (webrtc_sess, "new-selected-pair-full",
       G_CALLBACK (new_selected_pair_full), self);
-
   g_signal_connect (webrtc_sess, "data-session-established",
       G_CALLBACK (on_data_session_established), self);
   g_signal_connect (webrtc_sess, "data-channel-opened",
@@ -873,6 +910,23 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       g_signal_new ("on-ice-component-state-changed",
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
       G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT,
+      G_TYPE_INVALID);
+
+  /**
+   * KmsWebrtcEndpoint::on-dtls-connection-state-changed
+   * @self: the object which received the signal
+   * @sess_id: id of the related WebRTC session
+   * @stream_id: The ID of the stream
+   * @component_id: The ID of the component
+   * @connection_id: GStreamer connection Id
+   * @state: The #DtlsConnectionState of the component
+   *
+   * This signal is fired whenever a component's DTLS connection state changes
+   */
+  kms_webrtc_endpoint_signals[SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED] =
+      g_signal_new ("on-dtls-connection-state-changed",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
       G_TYPE_INVALID);
 
   kms_webrtc_endpoint_signals[SIGNAL_NEW_SELECTED_PAIR_FULL] =
