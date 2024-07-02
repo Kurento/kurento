@@ -1599,6 +1599,7 @@ Pipeline, towards the associated producer. Only valid for video consumers.
     {
       "typeFormat": "ENUM",
       "values": [
+        "VP9",
         "VP8",
         "H264",
         "RAW"

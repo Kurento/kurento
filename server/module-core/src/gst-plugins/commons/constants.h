@@ -72,5 +72,6 @@
 /* RTP enconding names */
 #define OPUS_ENCONDING_NAME "OPUS"
 #define VP8_ENCONDING_NAME "VP8"
+#define VP9_ENCONDING_NAME "VP9"
 
 #endif /* __KMS_CONSTANTS_H__ */

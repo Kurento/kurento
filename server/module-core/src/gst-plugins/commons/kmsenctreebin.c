@@ -43,6 +43,7 @@ G_DEFINE_TYPE (KmsEncTreeBin, kms_enc_tree_bin, KMS_TYPE_TREE_BIN);
 
 typedef enum
 {
+  VP9,
   VP8,
   X264,
   OPENH264,
@@ -68,6 +69,8 @@ static const gchar *
 kms_enc_tree_bin_get_name_from_type (EncoderType enc_type)
 {
   switch (enc_type) {
+    case VP9:
+      return "vp9";
     case VP8:
       return "vp8";
     case X264:
@@ -139,6 +142,19 @@ configure_encoder (GstElement * encoder, EncoderType type,
 {
   GST_DEBUG ("Configure encoder: %" GST_PTR_FORMAT, encoder);
   switch (type) {
+    case VP9:
+    {
+      /* *INDENT-OFF* */
+      g_object_set (G_OBJECT (encoder),
+                    "deadline", G_GINT64_CONSTANT (200000),
+                    "threads", 1,
+                    "cpu-used", 16,
+                    "resize-allowed", TRUE,
+                    "end-usage", /* cbr */ 1,
+                    NULL);
+      /* *INDENT-ON* */
+      break;
+    }
     case VP8:
     {
       /* *INDENT-OFF* */
@@ -197,6 +213,8 @@ kms_enc_tree_bin_set_encoder_type (KmsEncTreeBin * self)
 
   if (g_str_has_prefix (name, "vp8enc")) {
     self->priv->enc_type = VP8;
+  } else if (g_str_has_prefix (name, "vp9enc")) {
+    self->priv->enc_type = VP9;
   } else if (g_str_has_prefix (name, "x264enc")) {
     self->priv->enc_type = X264;
   } else if (g_str_has_prefix (name, "openh264enc")) {
@@ -293,22 +311,26 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
   }
 
   switch (self->priv->enc_type) {
-  case VP8:
-    property_name = vpx_property_name;
-    kbps_div = 1000;
-    break;
-  case X264:
-    property_name = h264_property_name;
-    kbps_div = 1;
-    new_bitrate /= 1000;
-    break;
-  case OPENH264:
-    property_name = h264_property_name;
-    kbps_div = 1000;
-    break;
-  default:
-    GST_DEBUG ("Skip setting bitrate, encoder not supported");
-    return;
+    case VP9:
+      property_name = vpx_property_name;
+      kbps_div = 1000;
+      break;
+    case VP8:
+      property_name = vpx_property_name;
+      kbps_div = 1000;
+      break;
+    case X264:
+      property_name = h264_property_name;
+      kbps_div = 1;
+      new_bitrate /= 1000;
+      break;
+    case OPENH264:
+      property_name = h264_property_name;
+      kbps_div = 1000;
+      break;
+    default:
+      GST_DEBUG ("Skip setting bitrate, encoder not supported");
+      return;
   }
 
   gint old_bitrate;
