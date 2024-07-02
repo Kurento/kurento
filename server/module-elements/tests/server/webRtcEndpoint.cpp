@@ -31,6 +31,8 @@
 #include <ConnectionState.hpp>
 #include <DtlsConnectionState.hpp>
 #include <DtlsConnectionStateChange.hpp>
+#include <IceComponentState.hpp>
+#include <IceComponentStateChanged.hpp>
 
 #define NUMBER_OF_RECONNECTIONS 5
 
@@ -59,7 +61,7 @@ GF::GF()
   boost::property_tree::ptree ac, audioCodecs, vc, videoCodecs;
   gst_init (NULL, NULL);
 
-  moduleManager.loadModulesFromDirectories ("../../src/server");
+  moduleManager.loadModulesFromDirectories ("../../src/server:../../..");
 
   config.add ("configPath", "../../../tests" );
   config.add ("modules.kurento.SdpEndpoint.numAudioMedias", 1);
@@ -184,7 +186,6 @@ ice_state_changes (bool useIpv6)
   std::condition_variable cv;
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
-  bool active = true;
 
   std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
   std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
@@ -218,7 +219,6 @@ ice_state_changes (bool useIpv6)
   }) ) {
     BOOST_ERROR ("Timeout waiting for ICE state change");
   }
-  active = false;
 
   if (!ice_state_changed) {
     BOOST_ERROR ("ICE state not chagned");
@@ -326,8 +326,7 @@ ice_state_changes_ipv6 ()
 // feature of DTLS connection state and event on property changes as implemented on
 // https://github.com/naevatec/kms-elements/tree/dtls-connection-state
 //
-// That feature will be PR'd when KMS reaches at least GStreamer 1.17
-/******************************************************
+
 static  void
 dtls_quick_connection_dtls_client_test (bool useIpv6)
 {
@@ -350,11 +349,11 @@ dtls_quick_connection_dtls_client_test (bool useIpv6)
   webRtcEpOfferer->setName ("offerer");
   webRtcEpAnswerer->setName ("answerer");
 
-  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpOfferer, useIpv6);
   });
 
@@ -429,11 +428,11 @@ dtls_quick_connection_dtls_client_test (bool useIpv6)
 }
 
 static void
-send_pending_candidates (std::shared_ptr <WebRtcEndpointImpl> endpoint, std::list<kurento::OnIceCandidate> candidates, bool useIpv6)
+send_pending_candidates (std::shared_ptr <WebRtcEndpointImpl> endpoint, std::list<kurento::IceCandidateFound> candidates, bool useIpv6)
 {
   GST_WARNING ("Pushing queued candidate");
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  std::for_each (candidates.begin(), candidates.end(), [endpoint, useIpv6](const OnIceCandidate event) {exchange_candidate (event, endpoint, useIpv6); });
+  std::for_each (candidates.begin(), candidates.end(), [endpoint, useIpv6](const IceCandidateFound event) {exchange_candidate (event, endpoint, useIpv6); });
 }
 
 static  void
@@ -451,7 +450,7 @@ dtls_quick_connection_dtls_server_test (bool useIpv6)
   uint64_t dtls_connection_connecting_answerer = 0;
   uint64_t dtls_connection_connected_offerer = 0;
   uint64_t dtls_connection_connected_answerer = 0;
-  std::list<kurento::OnIceCandidate> answerer_candidates = {};
+  std::list<kurento::IceCandidateFound> answerer_candidates = {};
   std::shared_ptr<std::thread> async_deliver = NULL;
 
   std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
@@ -460,11 +459,11 @@ dtls_quick_connection_dtls_server_test (bool useIpv6)
   webRtcEpOfferer->setName ("offerer");
   webRtcEpAnswerer->setName ("answerer");
 
-  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
     exchange_candidate (event, webRtcEpOfferer, useIpv6);
     //answerer_candidates.push_back (event);
   });
@@ -477,12 +476,12 @@ dtls_quick_connection_dtls_server_test (bool useIpv6)
 
 
 
-  webRtcEpAnswerer->signalIceComponentStateChange.connect ([&] (IceComponentStateChange event) {
+  webRtcEpAnswerer->signalIceComponentStateChanged.connect ([&] (IceComponentStateChanged event) {
     std::shared_ptr<IceComponentState> state = event.getState ();
 
     GST_WARNING ("Answerer ICE connection state change to %s", state->getString().c_str());
   });
-  webRtcEpOfferer->signalIceComponentStateChange.connect ([&] (IceComponentStateChange event) {
+  webRtcEpOfferer->signalIceComponentStateChanged.connect ([&] (IceComponentStateChanged event) {
     std::shared_ptr<IceComponentState> state = event.getState ();
 
     GST_WARNING ("Offerer ICE connection state change to %s", state->getString().c_str());
@@ -586,9 +585,6 @@ dtls_quick_connection_dtls_server_test_ipv4 ()
 {
   dtls_quick_connection_dtls_server_test (false);
 }
-
-
-******************************/
 
 static  void
 stun_turn_properties ()
@@ -1074,12 +1070,11 @@ init_unit_test_suite ( int , char *[] )
 
   test->add (BOOST_TEST_CASE ( &dtls_connection_state_changes_ipv4 ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &dtls_connection_state_changes_ipv6 ), 0, /* timeout */ 15);
-//if (false) {
   /* These tests depend on GStreamer 1.17+ and feature on https://github.com/naevatec/kms-elements/tree/dtls-connection-state*/
-  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv4), 0, /* timeout */ 15);
-  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv6), 0, /* timeout */ 15);
-  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_server_test_ipv4), 0, /* timeout */ 15);
-  //test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_server_test_ipv6), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv4), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_client_test_ipv6), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_server_test_ipv4), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE (&dtls_quick_connection_dtls_server_test_ipv6), 0, /* timeout */ 15);
 
   test->add (BOOST_TEST_CASE ( &connection_state_changes_ipv4 ),
              0, /* timeout */ 15);
