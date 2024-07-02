@@ -585,13 +585,11 @@ playerendpoint_suite (void)
   suite_add_tcase (s, tc_chain);
 
   tcase_add_test (tc_chain, check_states);
-if (FALSE) {
   tcase_add_test (tc_chain, check_live_stream);
   tcase_add_test (tc_chain, check_eos);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
   tcase_add_test (tc_chain, check_set_encoded_media);
 #endif
-}
 
   return s;
 }
