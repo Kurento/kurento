@@ -17,14 +17,14 @@ on:
 
 jobs:
   kurento-utils-js:
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "browser/kurento-utils-js/"
     secrets: inherit
 
   module-core:
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-core/"
@@ -33,7 +33,7 @@ jobs:
     secrets: inherit
 
   module-elements:
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-elements/"
@@ -42,7 +42,7 @@ jobs:
     secrets: inherit
 
   module-filters:
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-filters/"
@@ -51,7 +51,7 @@ jobs:
     secrets: inherit
 
   jsonrpc:
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "clients/javascript/jsonrpc/"
@@ -59,14 +59,14 @@ jobs:
 
   client:
     needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "clients/javascript/client/"
     secrets: inherit
 
   module-chroma:
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-examples/chroma/"
@@ -77,7 +77,7 @@ jobs:
   #module-crowddetector:
 
   module-datachannelexample:
-    uses: "./.github/workflows/clients-javascript.called.yaml"
+    uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-examples/datachannelexample/"

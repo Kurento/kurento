@@ -13,20 +13,20 @@ digraph scripts {
   {
     rank = "same";
 
-    "clients-java.caller.yaml";
-    "clients-javascript.caller.yaml";
+    "clients-java.parent.yaml";
+    "clients-javascript.parent.yaml";
     "doc-kurento.yaml";
     "docker-kurento-buildpackage.yaml";
     "docker-kurento-ci-buildtools.yaml";
-    "server.caller.yaml";
+    "server.parent.yaml";
   }
 
   // Root parent jobs.
-  "clients-java.caller.yaml" -> {
-    "clients-java.called.yaml"
+  "clients-java.parent.yaml" -> {
+    "clients-java.child.yaml"
   };
-  "clients-javascript.caller.yaml" -> {
-    "clients-javascript.called.yaml"
+  "clients-javascript.parent.yaml" -> {
+    "clients-javascript.child.yaml"
   };
   "doc-kurento.yaml" -> {
     "ci_job_deploy_doc.sh"
@@ -38,32 +38,32 @@ digraph scripts {
   "docker-kurento-ci-buildtools.yaml" -> {
     "container_build.sh"
   };
-  "server.caller.yaml" -> {
-    "server-buildpackage.called.yaml"
-    "server-deploy-aws.called.yaml"
-    "server-deploy-debian.called.yaml"
-    "server-deploy-docker.called.yaml"
+  "server.parent.yaml" -> {
+    "server-buildpackage.child.yaml"
+    "server-deploy-aws.child.yaml"
+    "server-deploy-debian.child.yaml"
+    "server-deploy-docker.child.yaml"
   };
 
   // Child jobs ("reusable workflows")
-  "clients-java.called.yaml" -> {
+  "clients-java.child.yaml" -> {
     "ci_job_deploy_java.sh"
     "ci_job_generate_module.sh"
   };
-  "clients-javascript.called.yaml" -> {
+  "clients-javascript.child.yaml" -> {
     "ci_job_deploy_js.sh"
     "ci_job_generate_module.sh"
   };
-  "server-buildpackage.called.yaml" -> {
+  "server-buildpackage.child.yaml" -> {
     "ci_job_package_debian.sh"
   };
-  "server-deploy-aws.called.yaml" -> {
+  "server-deploy-aws.child.yaml" -> {
     "ci_job_deploy_aws_cf.sh"
   };
-  "server-deploy-debian.called.yaml" -> {
+  "server-deploy-debian.child.yaml" -> {
     "ci_job_deploy_debian.sh"
   };
-  "server-deploy-docker.called.yaml" -> {
+  "server-deploy-docker.child.yaml" -> {
     "ci_job_deploy_docker.sh"
     "ci_job_deploy_docker_asan.sh"
   };

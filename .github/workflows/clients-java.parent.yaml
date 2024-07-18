@@ -12,14 +12,14 @@ on:
 
 jobs:
   qa-pom:
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "clients/java/qa-pom/"
       copyArtifacts: false
     secrets: inherit
 
   module-creator:
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-creator/"
       copyArtifacts: false
@@ -27,14 +27,14 @@ jobs:
 
   maven-plugin:
     needs: ["module-creator"]
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "clients/java/maven-plugin/"
     secrets: inherit
 
   module-core:
     needs: ["maven-plugin"]
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-core/"
       genModuleEnable: true
@@ -43,7 +43,7 @@ jobs:
 
   module-elements:
     needs: ["module-core"]
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-elements/"
       genModuleEnable: true
@@ -52,7 +52,7 @@ jobs:
 
   module-filters:
     needs: ["module-elements"]
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-filters/"
       genModuleEnable: true
@@ -61,14 +61,14 @@ jobs:
 
   client:
     needs: ["qa-pom", "module-filters"]
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "clients/java/"
     secrets: inherit
 
   module-chroma:
     needs: ["client"]
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-examples/chroma/"
       genModuleEnable: true
@@ -78,7 +78,7 @@ jobs:
   # Unavailable since Kurento 7.0.0
   #module-crowddetector:
   #  needs: ["client"]
-  #  uses: "./.github/workflows/clients-java.called.yaml"
+  #  uses: "./.github/workflows/clients-java.child.yaml"
   #  with:
   #    directory: "server/module-examples/crowddetector/"
   #    genModuleEnable: true
@@ -87,7 +87,7 @@ jobs:
 
   module-datachannelexample:
     needs: ["client"]
-    uses: "./.github/workflows/clients-java.called.yaml"
+    uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-examples/datachannelexample/"
       genModuleEnable: true
@@ -97,7 +97,7 @@ jobs:
   # Unavailable since Kurento 7.0.0
   #module-markerdetector:
   #  needs: ["client"]
-  #  uses: "./.github/workflows/clients-java.called.yaml"
+  #  uses: "./.github/workflows/clients-java.child.yaml"
   #  with:
   #    directory: "server/module-examples/markerdetector/"
   #    genModuleEnable: true
@@ -107,7 +107,7 @@ jobs:
   # Unavailable since Kurento 7.0.0
   #module-platedetector:
   #  needs: ["client"]
-  #  uses: "./.github/workflows/clients-java.called.yaml"
+  #  uses: "./.github/workflows/clients-java.child.yaml"
   #  with:
   #    directory: "server/module-examples/platedetector/"
   #    genModuleEnable: true
@@ -117,7 +117,7 @@ jobs:
   # Unavailable since Kurento 7.0.0
   #module-pointerdetector:
   #  needs: ["client"]
-  #  uses: "./.github/workflows/clients-java.called.yaml"
+  #  uses: "./.github/workflows/clients-java.child.yaml"
   #  with:
   #    directory: "server/module-examples/pointerdetector/"
   #    genModuleEnable: true
