@@ -98,7 +98,9 @@ exchange_candidate (IceCandidateFound event,
 
   BOOST_TEST_MESSAGE ("Offerer: adding candidate " +
                       event.getCandidate()->getCandidate() );
-  peer->addIceCandidate (event.getCandidate() );
+  if (peer != nullptr) {
+    peer->addIceCandidate (event.getCandidate() );
+  }
 }
 
 static std::shared_ptr <WebRtcEndpointImpl>
@@ -993,8 +995,10 @@ check_data_channel ()
 {
   std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc (true);
   std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc (true);
-  std::atomic<bool> pass_cond (false);
-  std::condition_variable cv;
+  std::atomic<bool> pass_cond_open (false);
+  std::atomic<bool> pass_cond_close (false);
+  std::condition_variable cv_open;
+  std::condition_variable cv_close;
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
   int chanId = -1;
@@ -1005,48 +1009,52 @@ check_data_channel ()
   DataChannelOpened event) {
     BOOST_TEST_MESSAGE ("Data channel " << event.getChannelId() << " opened");
 
-    if (chanId < 0) {
-      chanId = event.getChannelId();
-    }
+    if (!pass_cond_open) {
+      if (chanId < 0) {
+        chanId = event.getChannelId();
+      }
 
-    pass_cond = true;
-    cv.notify_one();
+      pass_cond_open = true;
+    }
+    cv_open.notify_one();
   });
 
   webRtcEpOfferer->signalDataChannelClosed.connect ([&] (
   DataChannelClosed event) {
     BOOST_TEST_MESSAGE ("Data channel " << event.getChannelId() << " closed");
 
-    if (chanId != event.getChannelId() ) {
-      BOOST_ERROR ("Unexpected data channel closed");
-    }
+    if (!pass_cond_close) {
+      if (chanId != event.getChannelId() ) {
+        BOOST_ERROR ("Unexpected data channel closed");
+      }
 
-    pass_cond = true;
-    cv.notify_one();
+      pass_cond_close = true;
+    }
+    cv_close.notify_one();
   });
 
   for (int i = 0; i < NUMBER_OF_RECONNECTIONS; i++) {
-    pass_cond = false;
+    pass_cond_open = false;
     chanId = -1;
 
     webRtcEpOfferer->createDataChannel ("TestDataChannel");
 
-    cv.wait (lck, [&] () {
-      return pass_cond.load();
+    cv_open.wait (lck, [&] () {
+      return pass_cond_open.load();
     });
 
-    if (!pass_cond) {
+    if (!pass_cond_open) {
       BOOST_ERROR ("No data channel opened");
     }
 
-    pass_cond = false;
+    pass_cond_close = false;
     webRtcEpAnswerer->closeDataChannel (chanId);
 
-    cv.wait (lck, [&] () {
-      return pass_cond.load();
+    cv_close.wait (lck, [&] () {
+      return pass_cond_close.load();
     });
 
-    if (!pass_cond) {
+    if (!pass_cond_close) {
       BOOST_ERROR ("No data channel closed");
     }
   }

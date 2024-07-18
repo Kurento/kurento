@@ -43,6 +43,7 @@ G_DEFINE_TYPE (KmsEncTreeBin, kms_enc_tree_bin, KMS_TYPE_TREE_BIN);
 
 typedef enum
 {
+  AV1,
   VP9,
   VP8,
   X264,
@@ -69,6 +70,8 @@ static const gchar *
 kms_enc_tree_bin_get_name_from_type (EncoderType enc_type)
 {
   switch (enc_type) {
+    case AV1:
+      return "av1";
     case VP9:
       return "vp9";
     case VP8:
@@ -142,6 +145,20 @@ configure_encoder (GstElement * encoder, EncoderType type,
 {
   GST_DEBUG ("Configure encoder: %" GST_PTR_FORMAT, encoder);
   switch (type) {
+    case AV1:
+    {
+      /* *INDENT-OFF* */
+      g_object_set (G_OBJECT (encoder),
+                    "threads", 1,
+                    "cpu-used", 10,
+                    "end-usage", /* cbr */ 1,
+                    "usage-profile", /* realtime */ 1,
+                    "keyframe-mode", /* auto */ 1,
+                    "keyframe-max-dist", /* 90 frames*/ 90,
+                    NULL);
+      /* *INDENT-ON* */
+      break;
+    }
     case VP9:
     {
       /* *INDENT-OFF* */
@@ -219,6 +236,8 @@ kms_enc_tree_bin_set_encoder_type (KmsEncTreeBin * self)
     self->priv->enc_type = X264;
   } else if (g_str_has_prefix (name, "openh264enc")) {
     self->priv->enc_type = OPENH264;
+  } else if (g_str_has_prefix (name, "av1enc")) {
+    self->priv->enc_type = AV1;
   } else if (g_str_has_prefix (name, "opusenc")) {
     self->priv->enc_type = OPUS;
   } else {
@@ -327,6 +346,10 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
     case OPENH264:
       property_name = h264_property_name;
       kbps_div = 1000;
+      break;
+    case AV1:
+      property_name = vpx_property_name;
+      kbps_div = 1;
       break;
     default:
       GST_DEBUG ("Skip setting bitrate, encoder not supported");

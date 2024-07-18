@@ -1226,27 +1226,80 @@ kms_base_rtp_endpoint_get_caps_from_rtpmap (const gchar * media,
   return caps;
 }
 
+static GstElementFactory*
+select_payloader (GList *filtered_list) 
+{
+  GstElementFactory *payloader_factory = NULL;
+  GList *l;
+
+  for (l = filtered_list; l != NULL && payloader_factory == NULL; l = l->next) {
+    gchar *factory_name;
+
+    payloader_factory = GST_ELEMENT_FACTORY (l->data);
+    if (gst_element_factory_get_num_pad_templates (payloader_factory) != 2) {
+      payloader_factory = NULL;
+    }
+    // Avoid non payloader elements that cab be confused
+    factory_name = gst_object_get_name (GST_OBJECT(payloader_factory));
+    if (g_str_equal ("rtpredenc", factory_name)) {
+      payloader_factory = NULL;
+    }
+    if (g_str_equal ("rtpulpfecenc", factory_name)) {
+      payloader_factory = NULL;
+    }
+    if (g_str_equal ("rtppassthroughpay", factory_name)) {
+      payloader_factory = NULL;
+    }
+    g_free (factory_name);
+  }
+
+  return payloader_factory;
+
+}
+
+static GstElementFactory*
+search_payloader(const GstCaps *caps)
+{
+  GList *payloader_list, *filtered_list;
+  GstElementFactory *payloader_factory = NULL;
+
+  payloader_list =
+      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_PAYLOADER,
+      GST_RANK_NONE);
+
+  filtered_list =
+      gst_element_factory_list_filter (payloader_list, caps, GST_PAD_SRC,
+      TRUE);
+
+  payloader_factory = select_payloader (filtered_list);
+  
+  if (payloader_factory == NULL) {
+    gst_plugin_feature_list_free (filtered_list);
+    filtered_list = 
+      gst_element_factory_list_filter (payloader_list, caps, GST_PAD_SRC,
+      FALSE);
+
+      payloader_factory = select_payloader (filtered_list);
+  }
+
+  gst_plugin_feature_list_free (filtered_list);
+  gst_plugin_feature_list_free (payloader_list);
+
+  return payloader_factory;
+
+}
+
+
 static GstElement *
 kms_base_rtp_endpoint_get_payloader_for_caps (KmsBaseRtpEndpoint * self,
     GstCaps * caps)
 {
   GstElementFactory *factory;
   GstElement *payloader = NULL;
-  GList *payloader_list, *filtered_list;
   GParamSpec *pspec;
 
-  payloader_list =
-      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_PAYLOADER,
-      GST_RANK_NONE);
-  filtered_list =
-      gst_element_factory_list_filter (payloader_list, caps, GST_PAD_SRC,
-      FALSE);
+  factory =  search_payloader (caps);
 
-  if (filtered_list == NULL) {
-    goto end;
-  }
-
-  factory = GST_ELEMENT_FACTORY (filtered_list->data);
   if (factory == NULL) {
     goto end;
   }
@@ -1285,8 +1338,6 @@ kms_base_rtp_endpoint_get_payloader_for_caps (KmsBaseRtpEndpoint * self,
   }
 
 end:
-  gst_plugin_feature_list_free (filtered_list);
-  gst_plugin_feature_list_free (payloader_list);
 
   return payloader;
 }
@@ -1470,14 +1521,32 @@ kms_base_rtp_endpoint_connect_payloader (KmsBaseRtpEndpoint * self,
     const gchar * rtpbin_pad_name)
 {
   GstElement *rtpbin = self->priv->rtpbin;
+  GstElement *input_element;
+  gchar *payloader_name;
 
   gst_bin_add (GST_BIN (self), payloader);
-
   gst_element_sync_state_with_parent (payloader);
+
+  payloader_name = gst_object_get_name (GST_OBJECT(payloader));
+  if (g_str_has_prefix (payloader_name, "rtpav1pay")) {
+    GstElement *parser = gst_element_factory_make ("av1parse", NULL);
+
+    // FIXME: we could set it automatically using the auto-header-extension
+    // and not setting it on kms_base_rtp_endpoint_add_rtp_hdr_ext_probe on kmsbasertpendpoint.c
+    g_object_set (payloader, "auto-header-extension", FALSE, NULL);
+    gst_bin_add (GST_BIN(self), parser);
+    gst_element_sync_state_with_parent (parser);
+    gst_element_link (parser, payloader);
+    input_element = parser;
+  } else {
+    input_element = payloader;
+  }
+  g_free (payloader_name);
+
 
   gst_element_link_pads (payloader, "src", rtpbin, rtpbin_pad_name);
 
-  kms_base_rtp_endpoint_connect_payloader_async (self, conn, payloader, type);
+  kms_base_rtp_endpoint_connect_payloader_async (self, conn, input_element, type);
 }
 
 static void
