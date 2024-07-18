@@ -93,7 +93,7 @@ fi
 # * Install debug symbols: https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#install-debug-symbols
 # * Build from sources: https://doc-kurento.readthedocs.io/en/latest/dev/dev_guide.html#build-from-sources
 
-# In-place Docker container commands BEGIN
+# BEGIN in-place Docker container commands.
 docker run --pull always --rm -i \
     --env DOCKER_KMS_VERSION="$DOCKER_KMS_VERSION" \
     "ubuntu:$JOB_DISTRO" /bin/bash <<'DOCKERCOMMANDS'
@@ -217,7 +217,7 @@ bin/build-run.sh --build-only
 echo "Done! Everything got installed and built successfully"
 
 DOCKERCOMMANDS
-# In-place Docker container commands END
+# END in-place Docker container commands.
 
 
 

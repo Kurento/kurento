@@ -254,13 +254,13 @@ Notes:
 
 * ``--use-fake-device-for-media-stream``: use synthetic audio and video media to simulate capture devices (camera, microphone, etc).
 
-  Alternatively, a local file can be provided to be used instead:
+  Alternatively, a local file can be provided; it will be played back as if it were a capture device:
 
   - ``--use-file-for-fake-audio-capture="/path/to/file.wav"``: use a WAV file as the audio source.
 
   - ``--use-file-for-fake-video-capture="/path/to/file.y4m"``: use a YUV4MPEG2 (Y4M) or MJPEG file as the video source. `More <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.h;l=25-35>`__ `details <https://source.chromium.org/chromium/chromium/src/+/refs/tags/120.0.6099.129:media/capture/video/file_video_capture_device.cc;l=70-75>`__:
 
-    - Y4M videos should have *.y4m* file extension and MJPEG videos should have *.mjpeg* file extension.
+    - Y4M and MJPEG videos must have *.y4m* and *.mjpeg* file extensions, respectively.
     - Only interlaced I420 pixel format is supported.
     - Example Y4M videos can be found here: https://media.xiph.org/video/derf/
     - Example MJPEG videos can be found here: https://chromium.googlesource.com/chromium/src/+/refs/tags/120.0.6099.129/media/test/data
