@@ -475,6 +475,7 @@ GST_START_TEST (input_reconfiguration)
   GstElement *fakesink = gst_element_factory_make ("fakesink", "fakesink");
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  int event_source_tag;
 
   loop = g_main_loop_new (NULL, TRUE);
 
@@ -493,12 +494,13 @@ GST_START_TEST (input_reconfiguration)
 
   g_timeout_add_seconds (1, change_input_cb, pipeline);
 
-  g_timeout_add_seconds (6, timeout_check, pipeline);
+  event_source_tag = g_timeout_add_seconds (6, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (pipeline);
@@ -539,6 +541,7 @@ GST_START_TEST (input_caps_reconfiguration)
       NULL);
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  int event_source_tag;
 
   loop = g_main_loop_new (NULL, TRUE);
 
@@ -549,12 +552,13 @@ GST_START_TEST (input_caps_reconfiguration)
 
   g_timeout_add_seconds (1, change_input_caps_cb, pipeline);
 
-  g_timeout_add_seconds (6, timeout_check, pipeline);
+  event_source_tag =g_timeout_add_seconds (6, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (pipeline);
@@ -571,6 +575,7 @@ GST_START_TEST (add_later)
   GstElement *typefind = gst_element_factory_make ("typefind", NULL);
   GstElement *fakesink = gst_element_factory_make ("fakesink", "fakesink");
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  int event_source_tag;
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
@@ -589,12 +594,13 @@ GST_START_TEST (add_later)
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  g_timeout_add_seconds (10, timeout_check, pipeline);
+  event_source_tag =g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (pipeline);
@@ -611,6 +617,7 @@ GST_START_TEST (delay_stream)
       gst_element_factory_make ("agnosticbin", "agnosticbin");
   GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  int event_source_tag;
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
@@ -626,12 +633,13 @@ GST_START_TEST (delay_stream)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   g_timeout_add_seconds (1, link_source, pipeline);
-  g_timeout_add_seconds (11, timeout_check, pipeline);
+  event_source_tag =g_timeout_add_seconds (11, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (pipeline);
@@ -652,6 +660,7 @@ GST_START_TEST (valve_test)
   gboolean ret;
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
   GThread *thread;
+  int event_source_tag;
 
   g_object_set_qdata (G_OBJECT (pipeline), valve_key_quark (), valve);
 
@@ -688,6 +697,7 @@ GST_START_TEST (valve_test)
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (pipeline);
@@ -706,6 +716,7 @@ GST_START_TEST (reconnect_test)
   GstElement *decoder = gst_element_factory_make ("vp8dec", NULL);
   GstElement *fakesink2 = gst_element_factory_make ("fakesink", NULL);
   gboolean ret;
+  int event_source_tag;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -735,12 +746,13 @@ GST_START_TEST (reconnect_test)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   mark_point ();
-  g_timeout_add_seconds (10, timeout_check, pipeline);
+  event_source_tag = g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
@@ -759,6 +771,7 @@ GST_START_TEST (static_link)
   GstElement *decoder = gst_element_factory_make ("vp8dec", NULL);
   GstElement *fakesink2 = gst_element_factory_make ("fakesink", NULL);
   gboolean ret;
+  int event_source_tag;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -785,12 +798,13 @@ GST_START_TEST (static_link)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   mark_point ();
-  g_timeout_add_seconds (10, timeout_check, pipeline);
+  event_source_tag = g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
@@ -808,6 +822,7 @@ GST_START_TEST (encoded_input_n_encoded_output)
       gst_element_factory_make ("agnosticbin", "agnosticbin");
   gboolean ret;
   int *count, i;
+  int event_source_tag;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -835,7 +850,7 @@ GST_START_TEST (encoded_input_n_encoded_output)
       g_free);
   GST_INFO ("Connecting %d outputs", N_ITERS);
 
-  g_timeout_add_seconds (6, timeout_check, pipeline);
+  event_source_tag = g_timeout_add_seconds (6, timeout_check, pipeline);
   for (i = 0; i < N_ITERS; i++) {
     g_timeout_add (700, connect_output, pipeline);
   }
@@ -844,6 +859,7 @@ GST_START_TEST (encoded_input_n_encoded_output)
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
@@ -863,6 +879,7 @@ GST_START_TEST (encoded_input_link)
   GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
   GstCaps *caps;
   gboolean ret;
+  int event_source_tag;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -891,12 +908,13 @@ GST_START_TEST (encoded_input_link)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   mark_point ();
-  g_timeout_add_seconds (10, timeout_check, pipeline);
+  event_source_tag = g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
@@ -913,6 +931,7 @@ GST_START_TEST (simple_link)
   GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
   GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
   gboolean ret;
+  int event_source_tag;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -936,12 +955,13 @@ GST_START_TEST (simple_link)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   mark_point ();
-  g_timeout_add_seconds (10, timeout_check, pipeline);
+  event_source_tag = g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
@@ -1108,6 +1128,7 @@ GST_START_TEST (video_dimension_change)
        "  ! fakesink name=sink async=true sync=true signal-handoffs=true",
        NULL);
   gst_element_set_name(pipeline, __FUNCTION__);
+  int event_source_tag;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -1136,12 +1157,13 @@ GST_START_TEST (video_dimension_change)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   mark_point ();
-  g_timeout_add_seconds (10, timeout_check, pipeline);
+  event_source_tag =g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
@@ -1167,6 +1189,7 @@ GST_START_TEST (video_dimension_change_force_output)
   gst_element_set_name(pipeline, __FUNCTION__);
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  int event_source_tag;
 
   loop = g_main_loop_new (NULL, TRUE);
 
@@ -1188,12 +1211,13 @@ GST_START_TEST (video_dimension_change_force_output)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   mark_point ();
-  g_timeout_add_seconds (10, timeout_check, pipeline);
+  event_source_tag =g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
+  g_source_remove (event_source_tag);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
@@ -1211,6 +1235,240 @@ GST_START_TEST (test_raw_to_rtp)
       ("videotestsrc is-live=true"
        "  ! agnosticbin ! application/x-rtp,media=(string)video,"
        "    encoding-name=(string)VP8,clock-rate=(int)90000"
+       "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
+      NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  fakesink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+
+  g_signal_connect (G_OBJECT (fakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
+
+  g_object_unref (fakesink);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_raw_to_rtp_vp9)
+{
+  GstElement *fakesink;
+  GstElement *pipeline =
+      gst_parse_launch
+      ("videotestsrc is-live=true"
+       "  ! agnosticbin ! application/x-rtp,media=(string)video,"
+       "    encoding-name=(string)VP9,clock-rate=(int)90000"
+       "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
+      NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  fakesink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+
+  g_signal_connect (G_OBJECT (fakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
+
+  g_object_unref (fakesink);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_raw_to_rtp_h264)
+{
+  GstElement *fakesink;
+  GstElement *pipeline =
+      gst_parse_launch
+      ("videotestsrc is-live=true"
+       "  ! agnosticbin ! application/x-rtp,media=(string)video,"
+       "    encoding-name=(string)H264,clock-rate=(int)90000"
+       "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
+      NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  fakesink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+
+  g_signal_connect (G_OBJECT (fakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
+
+  g_object_unref (fakesink);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_raw_to_rtp_av1)
+{
+  GstElement *fakesink;
+  GstElement *pipeline =
+      gst_parse_launch
+      ("videotestsrc is-live=true"
+       "  ! agnosticbin ! application/x-rtp,media=(string)video,"
+       "    encoding-name=(string)AV1,clock-rate=(int)90000"
+       "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
+      NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  fakesink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+
+  g_signal_connect (G_OBJECT (fakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
+
+  g_object_unref (fakesink);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_raw_to_rtp_opus)
+{
+  GstElement *fakesink;
+  GstElement *pipeline =
+      gst_parse_launch
+      ("audiotestsrc is-live=true"
+       "  ! agnosticbin ! application/x-rtp,media=(string)audio,"
+       "    encoding-name=(string)OPUS,clock-rate=(int)48000"
+       "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
+      NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  fakesink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+
+  g_signal_connect (G_OBJECT (fakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
+
+  g_object_unref (fakesink);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_raw_to_rtp_pcmu)
+{
+  GstElement *fakesink;
+  GstElement *pipeline =
+      gst_parse_launch
+      ("audiotestsrc is-live=true"
+       "  ! agnosticbin ! application/x-rtp,media=(string)audio,"
+       "    encoding-name=(string)PCMU,clock-rate=(int)8000"
+       "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
+      NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  fakesink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+
+  g_signal_connect (G_OBJECT (fakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
+
+  g_object_unref (fakesink);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_raw_to_rtp_amr)
+{
+  GstElement *fakesink;
+  GstElement *pipeline =
+      gst_parse_launch
+      ("audiotestsrc is-live=true"
+       "  ! agnosticbin ! application/x-rtp,media=(string)audio,"
+       "    encoding-name=(string)AMR-WB,clock-rate=(int)16000"
        "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
       NULL);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -1417,6 +1675,38 @@ test_codec_config (const gchar * pipeline_str, const gchar * config_str,
   g_main_loop_unref (loop);
 }
 
+GST_START_TEST (test_codec_config_vp9)
+{
+  const gchar *pipeline_str =
+      "videotestsrc is-live=true"
+      "  ! agnosticbin name=ag ! capsfilter caps=video/x-vp9"
+      "  ! fakesink async=true sync=true name=sink signal-handoffs=true";
+  const gchar *config_str =
+      "vp8,deadline=(string)10,threads=(string)1,cpu-used=16,keyframe-mode=auto";
+  const gchar *codec_name = "vp9";
+  const gchar *agnostic_name = "ag";
+
+  test_codec_config (pipeline_str, config_str, codec_name, agnostic_name);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_codec_config_av1)
+{
+  const gchar *pipeline_str =
+      "videotestsrc is-live=true"
+      "  ! agnosticbin name=ag ! capsfilter caps=video/x-av1"
+      "  ! fakesink async=true sync=true name=sink signal-handoffs=true";
+  const gchar *config_str =
+      "av1,threads=(string)1,cpu-used=10,keyframe-mode=auto,usage-profile=1";
+  const gchar *codec_name = "av1";
+  const gchar *agnostic_name = "ag";
+
+  test_codec_config (pipeline_str, config_str, codec_name, agnostic_name);
+}
+
+GST_END_TEST;
+
 GST_START_TEST (test_codec_config_vp8)
 {
   const gchar *pipeline_str =
@@ -1496,8 +1786,16 @@ agnostic2_suite (void)
   tcase_add_test (tc_chain, test_codec_config_vp8);
   tcase_add_test (tc_chain, test_codec_config_x264);
   tcase_add_test (tc_chain, test_codec_config_openh264);
+  tcase_add_test (tc_chain, test_codec_config_vp9);
+  tcase_add_test (tc_chain, test_codec_config_av1);
 
   tcase_add_test (tc_chain, test_raw_to_rtp);
+  tcase_add_test (tc_chain, test_raw_to_rtp_vp9);
+  tcase_add_test (tc_chain, test_raw_to_rtp_h264);
+  tcase_add_test (tc_chain, test_raw_to_rtp_av1);
+  tcase_add_test (tc_chain, test_raw_to_rtp_opus);
+  tcase_add_test (tc_chain, test_raw_to_rtp_pcmu);
+  tcase_add_test (tc_chain, test_raw_to_rtp_amr);
   tcase_add_test (tc_chain, test_codec_to_rtp);
 
   return s;
