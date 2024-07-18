@@ -48,7 +48,7 @@ set -o xtrace
 export PATH="/ci-scripts:\$PATH"
 
 # Compile, package, and deploy the current project.
-kurento_deploy_js.sh \
+deploy_js.sh \
     --maven-settings /maven-settings.xml \
     --maven-sign-key /maven.gpg
 

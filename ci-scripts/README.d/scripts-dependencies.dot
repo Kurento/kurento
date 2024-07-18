@@ -29,14 +29,14 @@ digraph scripts {
     "clients-javascript.called.yaml"
   };
   "doc-kurento.yaml" -> {
-    "kurento_ci_job_deploy_doc.sh"
+    "ci_job_deploy_doc.sh"
   };
   "docker-kurento-buildpackage.yaml" -> {
-    "kurento_container_build.sh"
+    "container_build.sh"
     "docker/kurento-buildpackage"
   };
   "docker-kurento-ci-buildtools.yaml" -> {
-    "kurento_container_build.sh"
+    "container_build.sh"
   };
   "server.caller.yaml" -> {
     "server-buildpackage.called.yaml"
@@ -47,63 +47,63 @@ digraph scripts {
 
   // Child jobs ("reusable workflows")
   "clients-java.called.yaml" -> {
-    "kurento_ci_job_deploy_java.sh"
-    "kurento_ci_job_generate_module.sh"
+    "ci_job_deploy_java.sh"
+    "ci_job_generate_module.sh"
   };
   "clients-javascript.called.yaml" -> {
-    "kurento_ci_job_deploy_js.sh"
-    "kurento_ci_job_generate_module.sh"
+    "ci_job_deploy_js.sh"
+    "ci_job_generate_module.sh"
   };
   "server-buildpackage.called.yaml" -> {
-    "kurento_ci_job_package_debian.sh"
+    "ci_job_package_debian.sh"
   };
   "server-deploy-aws.called.yaml" -> {
-    "kurento_ci_job_deploy_aws_cf.sh"
+    "ci_job_deploy_aws_cf.sh"
   };
   "server-deploy-debian.called.yaml" -> {
-    "kurento_ci_job_deploy_debian.sh"
+    "ci_job_deploy_debian.sh"
   };
   "server-deploy-docker.called.yaml" -> {
-    "kurento_ci_job_deploy_docker.sh"
-    "kurento_ci_job_deploy_docker_asan.sh"
+    "ci_job_deploy_docker.sh"
+    "ci_job_deploy_docker_asan.sh"
   };
 
 
   // GitHub Actions CI job scripts
   // =============================
 
-  "kurento_ci_aptly_repo_publish.sh";
-  "kurento_ci_github_runner_cleanup.sh";
-  "kurento_ci_github_runner_setup.sh";
-  "kurento_ci_job_deploy_aws_cf.sh";
-  "kurento_ci_job_deploy_debian_test.sh";
-  "kurento_ci_job_deploy_debian.sh" -> {
-    "kurento_ci_aptly_repo_publish.sh"
+  "ci_aptly_repo_publish.sh";
+  "ci_github_runner_cleanup.sh";
+  "ci_github_runner_setup.sh";
+  "ci_job_deploy_aws_cf.sh";
+  "ci_job_deploy_debian_test.sh";
+  "ci_job_deploy_debian.sh" -> {
+    "ci_aptly_repo_publish.sh"
   };
-  "kurento_ci_job_deploy_doc.sh" -> {
-    "kurento_doc_deploy.sh"
+  "ci_job_deploy_doc.sh" -> {
+    "doc_deploy.sh"
   };
-  "kurento_ci_job_deploy_docker.sh" -> {
-    "kurento_container_build.sh"
+  "ci_job_deploy_docker.sh" -> {
+    "container_build.sh"
   };
-  "kurento_ci_job_deploy_docker_asan.sh" -> {
-    "kurento_container_build.sh"
+  "ci_job_deploy_docker_asan.sh" -> {
+    "container_build.sh"
   };
-  "kurento_ci_job_deploy_java.sh" -> {
-    "kurento_maven_deploy.sh"
+  "ci_job_deploy_java.sh" -> {
+    "maven_deploy.sh"
   };
-  "kurento_ci_job_deploy_js.sh" -> {
-    "kurento_deploy_js.sh"
+  "ci_job_deploy_js.sh" -> {
+    "deploy_js.sh"
   };
-  "kurento_ci_job_generate_module.sh" -> {
-    "kurento_generate_java_module.sh"
-    "kurento_generate_js_module.sh"
-    "kurento_get_name.sh"
-    "kurento_install_server.sh"
+  "ci_job_generate_module.sh" -> {
+    "generate_java_module.sh"
+    "generate_js_module.sh"
+    "get_name.sh"
+    "install_server.sh"
   };
-  "kurento_ci_job_package_debian.sh" -> {
-    "kurento_git_checkout_name.sh"
-    "kurento_git_default_branch.sh"
+  "ci_job_package_debian.sh" -> {
+    "git_checkout_name.sh"
+    "git_default_branch.sh"
   };
 
 
@@ -122,44 +122,44 @@ digraph scripts {
   // Concrete CI operations
   // ======================
 
-  "kurento_container_build.sh" -> {
+  "container_build.sh" -> {
     "parse_yaml.sh"
   };
-  "kurento_deploy_js.sh" -> {
-    "kurento_check_version.sh"
-    "kurento_deploy_js_bower.sh"
-    "kurento_deploy_js_http.sh"
-    "kurento_deploy_js_npm.sh"
-    "kurento_get_name.sh"
-    "kurento_get_version.sh"
-    "kurento_maven_deploy.sh"
-    "kurento_mavenize_js_project.sh"
+  "deploy_js.sh" -> {
+    "check_version.sh"
+    "deploy_js_bower.sh"
+    "deploy_js_http.sh"
+    "deploy_js_npm.sh"
+    "get_name.sh"
+    "get_version.sh"
+    "maven_deploy.sh"
+    "mavenize_js_project.sh"
   };
-  "kurento_deploy_js_bower.sh" -> {
-    "kurento_clone_repo.sh"
-    "kurento_get_version.sh"
-    "kurento_git_default_branch.sh"
+  "deploy_js_bower.sh" -> {
+    "clone_repo.sh"
+    "get_version.sh"
+    "git_default_branch.sh"
   };
-  "kurento_deploy_js_http.sh";
-  "kurento_deploy_js_npm.sh";
-  "kurento_doc_deploy.sh" -> {
-    "kurento_check_version.sh"
-    "kurento_get_version.sh"
+  "deploy_js_http.sh";
+  "deploy_js_npm.sh";
+  "doc_deploy.sh" -> {
+    "check_version.sh"
+    "get_version.sh"
   };
-  "kurento_generate_java_module.sh";
-  "kurento_generate_js_module.sh" -> {
-    "kurento_get_name.sh"
-    "kurento_get_version.sh"
+  "generate_java_module.sh";
+  "generate_js_module.sh" -> {
+    "get_name.sh"
+    "get_version.sh"
   };
-  "kurento_maven_deploy.sh" -> {
-    "kurento_check_version.sh"
-    "kurento_get_version.sh"
-    "kurento_maven_deploy_github.sh"
+  "maven_deploy.sh" -> {
+    "check_version.sh"
+    "get_version.sh"
+    "maven_deploy_github.sh"
   };
-  "kurento_maven_deploy_github.sh";
-  "kurento_mavenize_js_project.sh" -> {
-    "kurento_get_name.sh"
-    "kurento_get_version.sh"
+  "maven_deploy_github.sh";
+  "mavenize_js_project.sh" -> {
+    "get_name.sh"
+    "get_version.sh"
   };
   "kurento-buildpackage.sh";
 
@@ -167,19 +167,19 @@ digraph scripts {
   // Utilities
   // =========
 
-  "kurento_check_version.sh" -> {
-    "kurento_get_version.sh"
+  "check_version.sh" -> {
+    "get_version.sh"
   };
-  "kurento_clone_repo.sh" -> {
-    "kurento_git_default_branch.sh"
+  "clone_repo.sh" -> {
+    "git_default_branch.sh"
   };
-  "kurento_get_name.sh";
-  "kurento_get_version.sh";
-  "kurento_git_checkout_name.sh" -> {
-    "kurento_git_default_branch.sh"
+  "get_name.sh";
+  "get_version.sh";
+  "git_checkout_name.sh" -> {
+    "git_default_branch.sh"
   };
-  "kurento_git_default_branch.sh";
-  "kurento_install_server.sh";
-  "kurento_update_test_files.sh";
+  "git_default_branch.sh";
+  "install_server.sh";
+  "update_test_files.sh";
   "parse_yaml.sh";
 }

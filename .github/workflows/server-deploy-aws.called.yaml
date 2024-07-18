@@ -44,4 +44,4 @@ jobs:
         env:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
         working-directory: "artifacts/"
-        run: "kurento_ci_job_deploy_aws_cf.sh"
+        run: "ci_job_deploy_aws_cf.sh"

@@ -118,13 +118,13 @@ set -o xtrace
 export PATH="/ci-scripts:\$PATH"
 
 # Get the name of the current project, to only install its dev package.
-PROJECT_NAME="\$(kurento_get_name.sh)" || {
-   echo "ERROR: Command failed: kurento_get_name"
+PROJECT_NAME="\$(get_name.sh)" || {
+   echo "ERROR: Command failed: get_name.sh"
    exit 1
 }
 
 # Install the appropriate dev package.
-kurento_install_server.sh \
+install_server.sh \
     --server-package "\${PROJECT_NAME}-dev" \
     --server-version "$CFG_SERVER_VERSION"
 
@@ -138,9 +138,9 @@ DOCKERCOMMANDS
 GENERATE_ARGS=()
 
 if [[ "$CFG_JAVA" == "true" ]]; then
-    GENERATE_CMD="kurento_generate_java_module.sh"
+    GENERATE_CMD="generate_java_module.sh"
 elif [[ "$CFG_JS" == "true" ]]; then
-    GENERATE_CMD="kurento_generate_js_module.sh"
+    GENERATE_CMD="generate_js_module.sh"
     GENERATE_ARGS+=(--git-ssh-key /id_git_ssh)
 
     if [[ "$JOB_RELEASE" == "true" ]]; then

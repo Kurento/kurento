@@ -106,8 +106,8 @@ if [[ -n "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
     CHECK_VERSION_ARGS+=(--maven-settings "$CFG_MAVEN_SETTINGS_PATH")
 fi
 
-kurento_check_version.sh "${CHECK_VERSION_ARGS[@]}" || {
-    log "ERROR: Command failed: kurento_check_version"
+check_version.sh "${CHECK_VERSION_ARGS[@]}" || {
+    log "ERROR: Command failed: check_version.sh"
     exit 1
 }
 
@@ -158,8 +158,8 @@ MVN_ARGS+=(
 
 GET_VERSION_ARGS=("${CHECK_VERSION_ARGS[@]}")
 
-PROJECT_VERSION="$(kurento_get_version.sh "${GET_VERSION_ARGS[@]}")" || {
-    log "ERROR: Command failed: kurento_get_version"
+PROJECT_VERSION="$(get_version.sh "${GET_VERSION_ARGS[@]}")" || {
+    log "ERROR: Command failed: get_version.sh"
     exit 1
 }
 
@@ -173,8 +173,8 @@ log "Build and deploy version: $PROJECT_VERSION"
 {
     MVN_ARGS+=(-Psnapshot)
 
-    source kurento_maven_deploy_github.sh || {
-        log "ERROR: Command failed: kurento_maven_deploy_github"
+    source maven_deploy_github.sh || {
+        log "ERROR: Command failed: maven_deploy_github.sh"
         exit 1
     }
 }

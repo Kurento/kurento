@@ -5,7 +5,7 @@ npm-shrinkwrap.json
 package-lock.json
 yarn.lock
 
-# Artifacts from mavenization (ci-scripts/kurento_mavenize_js_project.sh)
+# Artifacts from mavenization (ci-scripts/mavenize_js_project.sh)
 assembly.xml
 maven_script.sh
 pom.xml

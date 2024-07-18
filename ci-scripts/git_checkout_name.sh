@@ -75,7 +75,7 @@ done
 
 if [[ -z "$CFG_NAME" || -z "$CFG_FALLBACK" ]]; then
     # Default repo branch.
-    GIT_DEFAULT="$(kurento_git_default_branch.sh)"
+    GIT_DEFAULT="$(git_default_branch.sh)"
 
     CFG_NAME="${CFG_NAME:-$GIT_DEFAULT}"
     CFG_FALLBACK="${CFG_FALLBACK:-$GIT_DEFAULT}"
@@ -115,7 +115,7 @@ else
         CHECKOUT_TARGET="$BRANCH_NAME"
     else
         # Default HEAD branch in the remote origin.
-        CHECKOUT_TARGET="$(kurento_git_default_branch.sh)"
+        CHECKOUT_TARGET="$(git_default_branch.sh)"
     fi
 fi
 

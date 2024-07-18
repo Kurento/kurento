@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 # Checked with ShellCheck (https://www.shellcheck.net/)
 
-#/ Generate API client module for the current project.
-#/
-#/ Generates client code from Kurento API definition files (.kmd).
+#/ Generate and commit source files for Read The Docs.
 
 
 
@@ -21,21 +19,12 @@ set -o xtrace
 
 
 
-# Check dependencies
-# ==================
-
-command -v jq >/dev/null || {
-    log "ERROR: 'jq' is not installed; please install it"
-    exit 1
-}
-
-
-
 # Parse call arguments
 # ====================
 
 CFG_RELEASE="false"
 CFG_GIT_SSH_KEY_PATH=""
+CFG_MAVEN_SETTINGS_PATH=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -48,6 +37,15 @@ while [[ $# -gt 0 ]]; do
                 shift
             else
                 log "ERROR: --git-ssh-key expects <Path>"
+                exit 1
+            fi
+            ;;
+        --maven-settings)
+            if [[ -n "${2-}" ]]; then
+                CFG_MAVEN_SETTINGS_PATH="$(realpath "$2")"
+                shift
+            else
+                log "ERROR: --maven-settings expects <Path>"
                 exit 1
             fi
             ;;
@@ -66,37 +64,48 @@ done
 
 log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GIT_SSH_KEY_PATH=$CFG_GIT_SSH_KEY_PATH"
+log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH"
 
 
 
-# Generate client code
-# ====================
+# Verify project
+# ==============
 
-rm -rf build/
-mkdir build/
-cd build/
+{
+    CHECK_VERSION_ARGS=()
 
-cmake -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE ..
+    # Doc versions are only composed of Major.Minor, while .Patch or bug-fix
+    # versions are all summarized under the same Minor release.
+    CHECK_VERSION_ARGS+=(--minor)
 
-cd js || {
-  log "ERROR: Expected directory doesn't exist: $PWD/js"
-  exit 1
+    if [[ "$CFG_RELEASE" == "true" ]]; then
+        CHECK_VERSION_ARGS+=(--release)
+    fi
+
+    check_version.sh "${CHECK_VERSION_ARGS[@]}" || {
+        log "ERROR: Command failed: check_version.sh"
+        exit 1
+    }
 }
 
-# When generating from kurento-module-filters, the JSON keys in
-# `src/filters.kmd.json` change ordering each time this job runs, which pollutes
-# git logs with meaningless variations in key order.
-# I haven't found the cause for this issue, and it is really a time sink without
-# much payoff, so the easy way is to enforce a sorting order right here.
-for FILE in src/*.kmd.json; do
-    jq '.remoteClasses? |= sort_by(.name)' "$FILE" >"$FILE.tmp"
-    mv "$FILE.tmp" "$FILE"
-done
+
+
+# Generate doc
+# ============
+
+if [[ -n "${CFG_MAVEN_SETTINGS_PATH:-}" ]]; then
+    sed "s|MAVEN_ARGS :=|MAVEN_ARGS := --settings $CFG_MAVEN_SETTINGS_PATH|" Makefile >Makefile.ci
+else
+    cp Makefile Makefile.ci
+fi
+
+make --file=Makefile.ci ci-readthedocs
+rm Makefile.ci
 
 
 
-# Commit client code
-# ==================
+# Commit generated doc
+# ====================
 
 if [[ -n "${CFG_GIT_SSH_KEY_PATH:-}" ]]; then
     # SSH is hardcoded to assume that the current UID is an already existing
@@ -108,16 +117,16 @@ if [[ -n "${CFG_GIT_SSH_KEY_PATH:-}" ]]; then
     export GIT_SSH_COMMAND="LD_PRELOAD=libnss_wrapper.so NSS_WRAPPER_PASSWD=/tmp/passwd NSS_WRAPPER_GROUP=/tmp/group ssh -i $CFG_GIT_SSH_KEY_PATH -o IdentitiesOnly=yes -o StrictHostKeychecking=no"
 fi
 
-PROJECT_NAME="$(kurento_get_name.sh)"
-PROJECT_VERSION="$(kurento_get_version.sh)"
+PROJECT_VERSION="$(get_version.sh)"
 
-REPO_NAME="$PROJECT_NAME-js"
+REPO_NAME="doc-kurento-readthedocs"
 REPO_URL="git@github.com:Kurento/$REPO_NAME.git"
 REPO_DIR="$(mktemp --directory)"
 
 git clone --depth 1 "$REPO_URL" "$REPO_DIR"
 
 rsync -av --delete \
+    --exclude-from=.gitignore \
     --exclude='.git*' \
     ./ "$REPO_DIR"/
 

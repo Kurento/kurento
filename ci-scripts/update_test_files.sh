@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-echo "##################### EXECUTE: kurento_update_test_files #####################"
+echo "##################### EXECUTE: update_test_files.sh #####################"
 
 # This script must be started in the test files root
 

@@ -90,21 +90,44 @@ if [[ -z "$KMS_VERSION" ]]; then
     exit 1
 fi
 
-# Extract version number components
-KMS_VERSION_MAJ_MIN="$(echo "$KMS_VERSION" | cut -d. -f1,2)"
-KMS_VERSION_MAJ="$(echo "$KMS_VERSION" | cut -d. -f1)"
-
 # Define parameters for the Docker container.
 # NOTE: `DOCKER_KMS_VERSION` must match an existing Debian repo with that name.
+# NOTE: `DOCKER_SOURCE_TAG` must match an existing Docker image with that tag.
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy a release image"
     DOCKER_KMS_VERSION="$KMS_VERSION"
+    DOCKER_SOURCE_TAG="$KMS_VERSION"
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
     log "Deploy a feature branch image"
     DOCKER_KMS_VERSION="dev-$JOB_DEPLOY_NAME"
+    DOCKER_SOURCE_TAG="dev-$JOB_DEPLOY_NAME"
 else
     log "Deploy a development branch image"
     DOCKER_KMS_VERSION="dev"
+    DOCKER_SOURCE_TAG="dev-$KMS_VERSION"
+fi
+
+# Best effort to check if the given source tag does actually exist.
+DOCKER_KMS_IMAGE="kurento/kurento-media-server:$DOCKER_SOURCE_TAG"
+if docker manifest >/dev/null 2>&1; then
+    # The experimental command `docker manifest` is available.
+    if ! docker manifest inspect "$DOCKER_KMS_IMAGE" >/dev/null 2>&1; then
+        # The given image tag does not exist. Revert to the default tag.
+        DOCKER_KMS_IMAGE="kurento/kurento-media-server"
+    fi
+fi
+
+# Select the GCC version to install, based on what is available for the system.
+# Source: https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test
+if [[ "$JOB_DISTRO" == "focal" ]]; then
+    DOCKER_GCC_VERSION="11"
+    log "Ubuntu 20.04 (Focal) --> Use GCC $DOCKER_GCC_VERSION"
+elif [[ "$JOB_DISTRO" == "jammy" ]]; then
+    DOCKER_GCC_VERSION="11"
+    log "Ubuntu 22.04 (Jammy) --> Use GCC $DOCKER_GCC_VERSION"
+else
+    DOCKER_GCC_VERSION="9"
+    log "WARNING: Unknown system version --> Use GCC $DOCKER_GCC_VERSION"
 fi
 
 # Run the Docker image builder
@@ -112,24 +135,24 @@ export PUSH_IMAGES="yes"
 BUILD_ARGS=""
 BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
+BUILD_ARGS+=" KMS_IMAGE=$DOCKER_KMS_IMAGE"
+BUILD_ARGS+=" GCC_VERSION=$DOCKER_GCC_VERSION"
 export BUILD_ARGS
 export TAG_COMMIT="no"
 if [[ "$JOB_RELEASE" == "true" ]]; then
-    # Main tag: "1.2.3"
-    # Moving tag(s): "1.2", "1", "latest"
-    export TAG="$KMS_VERSION"
-    export EXTRA_TAGS="$KMS_VERSION_MAJ_MIN $KMS_VERSION_MAJ latest"
+    # Main tag: "1.2.3-asan"
+    export TAG="${KMS_VERSION}-asan"
+    export EXTRA_TAGS=""
 elif [[ "$DEPLOY_SPECIAL" == "true" ]]; then
-    # Main tag: "dev-deploy-name"
-    export TAG="dev-$JOB_DEPLOY_NAME"
+    # Main tag: "dev-deploy-name-asan"
+    export TAG="dev-${JOB_DEPLOY_NAME}-asan"
     export EXTRA_TAGS=""
 else
-    # Main tag: "dev-1.2.3"
-    # Moving tag(s): "dev-1.2", "dev"
-    export TAG="dev-$KMS_VERSION"
-    export EXTRA_TAGS="dev-$KMS_VERSION_MAJ_MIN dev-$KMS_VERSION_MAJ dev"
+    # Main tag: "dev-1.2.3-asan"
+    export TAG="dev-${KMS_VERSION}-asan"
+    export EXTRA_TAGS=""
 fi
-"$KURENTO_SCRIPTS_HOME/kurento_container_build.sh"
+"$KURENTO_SCRIPTS_HOME/container_build.sh"
 
 log "New Docker image built: 'kurento/kurento-media-server:$TAG'"
 

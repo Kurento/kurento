@@ -47,7 +47,7 @@ jobs:
 
       - name: "Configure the environment for job script"
         run: |
-          # Env vars used by `kurento_ci_job_deploy_js.sh`.
+          # Env vars used by `ci_job_deploy_js.sh`.
           echo "ENV_PATH=$GITHUB_ENV" >>$GITHUB_ENV
 
           # Commit that triggered this build.
@@ -56,14 +56,14 @@ jobs:
           # Path to the Maven settings.xml file.
           echo "MAVEN_SETTINGS_PATH=$GITHUB_WORKSPACE/clients/java/maven-settings/settings.xml" >>$GITHUB_ENV
 
-          # Path to the SSH key used by `kurento_generate_js_module.sh`.
+          # Path to the SSH key used by `generate_js_module.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
           GIT_SSH_KEY_PATH="$RUNNER_TEMP/id_git_ssh"
           echo "GIT_SSH_KEY_PATH=$GIT_SSH_KEY_PATH" >>$GITHUB_ENV
           echo "${{ secrets.KURENTOCI_PRIVATE_SSH_KEY }}" >"$GIT_SSH_KEY_PATH"
           chmod 0400 "$GIT_SSH_KEY_PATH"
 
-          # Env vars used by `kurento_deploy_js_npm.sh`.
+          # Env vars used by `deploy_js_npm.sh`.
           echo "KURENTO_NPM_TOKEN=${{ secrets.KURENTO_NPM_TOKEN }}" >>$GITHUB_ENV
 
           # Env vars used by the Maven settings.xml file.
@@ -74,7 +74,7 @@ jobs:
           echo "KURENTO_MAVEN_UPLOAD_USERNAME=${{ secrets.KURENTO_MAVEN_UPLOAD_USERNAME }}" >>$GITHUB_ENV
           echo "KURENTO_MAVEN_UPLOAD_PASSWORD=${{ secrets.KURENTO_MAVEN_UPLOAD_PASSWORD }}" >>$GITHUB_ENV
 
-          # Env vars used by `kurento_maven_deploy_github.sh`.
+          # Env vars used by `maven_deploy_github.sh`.
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >>$GITHUB_ENV
 
           # Env vars used by `run` steps.
@@ -86,14 +86,14 @@ jobs:
         env:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
         run: |
-          kurento_ci_job_generate_module.sh --js --server-version "${{ inputs.genModuleServerVersion }}"
+          ci_job_generate_module.sh --js --server-version "${{ inputs.genModuleServerVersion }}"
 
           # Change WORKING_DIRECTORY so it points to the newly generated dir.
           echo "WORKING_DIRECTORY=$WORKING_DIRECTORY/build/js" >>$GITHUB_ENV
 
       - name: "Configure the environment for job script (deploy)"
         run: |
-          # Path to the GPG key used by `kurento_maven_deploy.sh`.
+          # Path to the GPG key used by `maven_deploy.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
           MAVEN_GPG_KEY_PATH="$RUNNER_TEMP/maven.gpg"
           echo "MAVEN_GPG_KEY_PATH=$MAVEN_GPG_KEY_PATH" >>$GITHUB_ENV
@@ -101,4 +101,4 @@ jobs:
 
       - name: "Run job script (deploy)"
         working-directory: "${{ env.WORKING_DIRECTORY }}"
-        run: "kurento_ci_job_deploy_js.sh"
+        run: "ci_job_deploy_js.sh"

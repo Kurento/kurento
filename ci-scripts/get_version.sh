@@ -5,8 +5,8 @@
 #/
 #/ This script should be called like this:
 #/
-#/     PROJECT_VERSION="$(kurento_get_version.sh)" || {
-#/         echo "ERROR: Command failed: kurento_get_version"
+#/     PROJECT_VERSION="$(get_version.sh)" || {
+#/         echo "ERROR: Command failed: get_version.sh"
 #/         exit 1
 #/     }
 
@@ -69,7 +69,7 @@ log "CFG_MAVEN_SETTINGS_PATH=$CFG_MAVEN_SETTINGS_PATH" >&2
 # ===================
 
 # WARNING: Several scripts have implicit dependency on the ORDER of these checks.
-# For example: kurento_mavenize_js_project assumes that pom.xml will be checked
+# For example: mavenize_js_project.sh assumes that pom.xml will be checked
 # BEFORE package.json.
 
 if [[ -f CMakeLists.txt ]]; then

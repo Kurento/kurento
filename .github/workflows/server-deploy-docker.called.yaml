@@ -80,7 +80,7 @@ jobs:
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
         working-directory: "docker/kurento-media-server/"
-        run: "kurento_ci_job_deploy_docker.sh"
+        run: "ci_job_deploy_docker.sh"
 
       - name: "Run job script (AddressSanitizer)"
         if: ${{ inputs.buildAsan }}
@@ -92,4 +92,4 @@ jobs:
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
         working-directory: "docker/kurento-media-server-asan/"
-        run: "kurento_ci_job_deploy_docker_asan.sh"
+        run: "ci_job_deploy_docker_asan.sh"

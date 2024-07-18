@@ -70,7 +70,7 @@ fi
 
     # If no checkout reference, use the repo default branch.
     if [[ -z "$CLONE_REF" ]]; then
-        CLONE_REF="$(kurento_git_default_branch.sh)"
+        CLONE_REF="$(git_default_branch.sh)"
     fi
 
     log "Git clone $CLONE_URL ($CLONE_REF) to $PWD/$CLONE_DIR"

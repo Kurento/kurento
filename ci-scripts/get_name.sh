@@ -5,8 +5,8 @@
 #/
 #/ This script should be called like this:
 #/
-#/     PROJECT_NAME="$(kurento_get_name.sh)" || {
-#/         echo "ERROR: Command failed: kurento_get_name"
+#/     PROJECT_NAME="$(get_name.sh)" || {
+#/         echo "ERROR: Command failed: get_name.sh"
 #/         exit 1
 #/     }
 

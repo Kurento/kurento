@@ -89,7 +89,7 @@ jobs:
           DISABLE_APT_PROXY: "true"
           INSTALL_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
         working-directory: "${{ inputs.directory }}"
-        run: "kurento_ci_job_package_debian.sh"
+        run: "ci_job_package_debian.sh"
 
       # Action: https://github.com/actions/upload-artifact
       - name: "Archive the artifacts"

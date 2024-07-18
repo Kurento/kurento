@@ -83,8 +83,8 @@ set -o xtrace
 # ---------
 
 # Check out the requested branch
-GIT_DEFAULT="$(kurento_git_default_branch.sh)"
-"${KURENTO_SCRIPTS_HOME}/kurento_git_checkout_name.sh" \
+GIT_DEFAULT="$(git_default_branch.sh)"
+"${KURENTO_SCRIPTS_HOME}/git_checkout_name.sh" \
     --name "${JOB_GIT_NAME:-$GIT_DEFAULT}" \
     --fallback "${JOB_GIT_NAME_FALLBACK:-$JOB_DISTRO}"
 

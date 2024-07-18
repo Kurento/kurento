@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Extension for `kurento_maven_deploy`, to deploy SNAPSHOT versions in the
+# Extension for `maven_deploy.sh`, to deploy SNAPSHOT versions in the
 # Kurento GitHub repository for Maven artifacts.
 
 

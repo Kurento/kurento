@@ -50,7 +50,7 @@ export PATH="/ci-scripts:\$PATH"
 export MAVEN_LOCAL_REPOSITORY_PATH="/maven-repository"
 
 # Compile, package, and deploy the current project.
-kurento_maven_deploy.sh \
+maven_deploy.sh \
     --maven-settings /maven-settings.xml \
     --maven-sign-key /maven.gpg
 

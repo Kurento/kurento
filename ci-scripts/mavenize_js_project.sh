@@ -65,7 +65,7 @@ fi
 
 # Exit if pom already present with correct version.
 if [[ -f pom.xml ]]; then
-    POM_VERSION="$(kurento_get_version.sh)"
+    POM_VERSION="$(get_version.sh)"
     if [[ "$POM_VERSION" == "$MAVEN_VERSION" ]]; then
         log "Exit: Valid pom.xml already exists"
         exit 0
@@ -77,8 +77,8 @@ fi
 # Mavenize
 # ========
 
-PROJECT_NAME="$(kurento_get_name.sh)-js" || {
-    echo "ERROR: Command failed: kurento_get_name"
+PROJECT_NAME="$(get_name.sh)-js" || {
+    echo "ERROR: Command failed: get_name.sh"
     exit 1
 }
 

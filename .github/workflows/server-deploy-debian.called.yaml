@@ -62,7 +62,7 @@ jobs:
 
       - name: "Configure the environment for job script"
         run: |
-          # Path to the SSH key used by `kurento_ci_job_deploy_debian.sh`.
+          # Path to the SSH key used by `ci_job_deploy_debian.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
           APTLY_SSH_KEY_PATH="$RUNNER_TEMP/id_aptly_ssh"
           echo "APTLY_SSH_KEY_PATH=$APTLY_SSH_KEY_PATH" >>$GITHUB_ENV
@@ -76,4 +76,4 @@ jobs:
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
           APTLY_GPG_SUBKEY: "${{ vars.APTLY_GPG_SUBKEY }}"
         working-directory: "artifacts/"
-        run: "kurento_ci_job_deploy_debian.sh"
+        run: "ci_job_deploy_debian.sh"

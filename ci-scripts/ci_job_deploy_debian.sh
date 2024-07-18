@@ -155,14 +155,14 @@ scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-    /ci-scripts/kurento_ci_aptly_repo_publish.sh \
+    /ci-scripts/ci_aptly_repo_publish.sh \
     ubuntu@proxy.openvidu.io:"$TEMP_DIR"
 
 ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     ubuntu@proxy.openvidu.io '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
-           ./kurento_ci_aptly_repo_publish.sh $PUBLISH_ARGS'
+           ./ci_aptly_repo_publish.sh $PUBLISH_ARGS'
 
 DOCKERCOMMANDS
 

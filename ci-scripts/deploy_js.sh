@@ -71,8 +71,8 @@ log "CFG_MAVEN_SIGN_KEY_PATH=$CFG_MAVEN_SIGN_KEY_PATH"
     exit 1
 }
 
-kurento_check_version.sh || {
-    log "ERROR: Command failed: kurento_check_version"
+check_version.sh || {
+    log "ERROR: Command failed: check_version.sh"
     exit 1
 }
 
@@ -81,15 +81,15 @@ kurento_check_version.sh || {
 # Deploy for NPM
 # ==============
 
-kurento_deploy_js_npm.sh
+deploy_js_npm.sh
 
 # Finish if the project is one of the main client modules, which get loaded by
 # kurento-client directly as NPM dependencies:
 # kurento-client-(core|elements|filters)
 # They should not be available independently in Maven or Bower.
 {
-    PROJECT_NAME="$(kurento_get_name.sh)" || {
-        echo "ERROR: Command failed: kurento_get_name"
+    PROJECT_NAME="$(get_name.sh)" || {
+        echo "ERROR: Command failed: get_name.sh"
         exit 1
     }
 
@@ -106,8 +106,8 @@ kurento_deploy_js_npm.sh
 # Deploy for Maven
 # ================
 
-kurento_mavenize_js_project.sh
-kurento_maven_deploy.sh \
+mavenize_js_project.sh
+maven_deploy.sh \
     --maven-settings "$CFG_MAVEN_SETTINGS_PATH" \
     --maven-sign-key "$CFG_MAVEN_SIGN_KEY_PATH"
 
@@ -136,15 +136,15 @@ FILES="$FILES dist/$BASE_NAME.map:js/$BASE_NAME.map"
 [ -f LICENSE ] && FILES="$FILES LICENSE:LICENSE"
 
 export FILES
-CREATE_TAG="true" kurento_deploy_js_bower.sh
+CREATE_TAG="true" deploy_js_bower.sh
 
 
 
 # Deploy for HTTP linking
 # =======================
 
-VERSION="$(kurento_get_version.sh)" || {
-  log "ERROR: Command failed: kurento_get_version"
+VERSION="$(get_version.sh)" || {
+  log "ERROR: Command failed: get_version.sh"
   exit 1
 }
 if [[ $VERSION != *-SNAPSHOT ]]; then
@@ -172,7 +172,7 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
   FILES="$FILES $KURENTO_PROJECT.version:upload/$S_DIR/$KURENTO_PROJECT.version"
 
   export FILES
-  kurento_deploy_js_http.sh
+  deploy_js_http.sh
 else
   log "Skip HTTP publish: Version is SNAPSHOT"
 fi
