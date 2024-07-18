@@ -73,19 +73,6 @@ digraph scripts {
   // =============================
 
   "kurento_ci_aptly_repo_publish.sh";
-  "kurento_ci_container_dnat_hook_handler.sh" -> {
-    "kurento_ci_container_dnat.sh"
-  };
-  "kurento_ci_container_dnat.sh";
-  "kurento_ci_container_dockerhook_monitor.sh" -> {
-    "kurento_ci_container_dnat_hook_handler.sh"
-  };
-  "kurento_ci_container_entrypoint.sh" -> {
-  };
-  "kurento_ci_container_job_setup.sh" -> {
-    "kurento_ci_container_entrypoint.sh"
-    "kurento_update_test_files.sh"
-  };
   "kurento_ci_github_runner_cleanup.sh";
   "kurento_ci_github_runner_setup.sh";
   "kurento_ci_job_deploy_aws_cf.sh";
@@ -190,8 +177,6 @@ digraph scripts {
   "kurento_get_version.sh";
   "kurento_git_checkout_name.sh" -> {
     "kurento_git_default_branch.sh"
-  };
-  "kurento_update_test_files.sh" -> {
   };
   "kurento_git_default_branch.sh";
   "kurento_install_server.sh";
