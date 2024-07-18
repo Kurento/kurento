@@ -1,5 +1,8 @@
 ci-scripts
 ==========
 
-Project including CI & administration scripts.
+Scripts used for all CI actions.
 
+Dependency graph:
+
+![](README.d/scripts-dependencies.svg)

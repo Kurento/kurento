@@ -1,0 +1,200 @@
+digraph scripts {
+  //bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  rankdir = "LR";
+
+
+  // GitHub Actions CI workflows
+  // ===========================
+
+  // Standalone definitions.
+  // Used so these can be applied the same root rank and appear at the same level.
+  {
+    rank = "same";
+
+    "clients-java.caller.yaml";
+    "clients-javascript.caller.yaml";
+    "doc-kurento.yaml";
+    "docker-kurento-buildpackage.yaml";
+    "docker-kurento-ci-buildtools.yaml";
+    "server.caller.yaml";
+  }
+
+  // Root parent jobs.
+  "clients-java.caller.yaml" -> {
+    "clients-java.called.yaml"
+  };
+  "clients-javascript.caller.yaml" -> {
+    "clients-javascript.called.yaml"
+  };
+  "doc-kurento.yaml" -> {
+    "kurento_ci_job_deploy_doc.sh"
+  };
+  "docker-kurento-buildpackage.yaml" -> {
+    "kurento_container_build.sh"
+    "docker/kurento-buildpackage"
+  };
+  "docker-kurento-ci-buildtools.yaml" -> {
+    "kurento_container_build.sh"
+  };
+  "server.caller.yaml" -> {
+    "server-buildpackage.called.yaml"
+    "server-deploy-aws.called.yaml"
+    "server-deploy-debian.called.yaml"
+    "server-deploy-docker.called.yaml"
+  };
+
+  // Child jobs ("reusable workflows")
+  "clients-java.called.yaml" -> {
+    "kurento_ci_job_deploy_java.sh"
+    "kurento_ci_job_generate_module.sh"
+  };
+  "clients-javascript.called.yaml" -> {
+    "kurento_ci_job_deploy_js.sh"
+    "kurento_ci_job_generate_module.sh"
+  };
+  "server-buildpackage.called.yaml" -> {
+    "kurento_ci_job_package_debian.sh"
+  };
+  "server-deploy-aws.called.yaml" -> {
+    "kurento_ci_job_deploy_aws_cf.sh"
+  };
+  "server-deploy-debian.called.yaml" -> {
+    "kurento_ci_job_deploy_debian.sh"
+  };
+  "server-deploy-docker.called.yaml" -> {
+    "kurento_ci_job_deploy_docker.sh"
+    "kurento_ci_job_deploy_docker_asan.sh"
+  };
+
+
+  // GitHub Actions CI job scripts
+  // =============================
+
+  "kurento_ci_aptly_repo_publish.sh";
+  "kurento_ci_container_dnat_hook_handler.sh" -> {
+    "kurento_ci_container_dnat.sh"
+  };
+  "kurento_ci_container_dnat.sh";
+  "kurento_ci_container_dockerhook_monitor.sh" -> {
+    "kurento_ci_container_dnat_hook_handler.sh"
+  };
+  "kurento_ci_container_entrypoint.sh" -> {
+  };
+  "kurento_ci_container_job_setup.sh" -> {
+    "kurento_ci_container_entrypoint.sh"
+    "kurento_update_test_files.sh"
+  };
+  "kurento_ci_github_runner_cleanup.sh";
+  "kurento_ci_github_runner_setup.sh";
+  "kurento_ci_job_deploy_aws_cf.sh";
+  "kurento_ci_job_deploy_debian_test.sh";
+  "kurento_ci_job_deploy_debian.sh" -> {
+    "kurento_ci_aptly_repo_publish.sh"
+  };
+  "kurento_ci_job_deploy_doc.sh" -> {
+    "kurento_doc_deploy.sh"
+  };
+  "kurento_ci_job_deploy_docker.sh" -> {
+    "kurento_container_build.sh"
+  };
+  "kurento_ci_job_deploy_docker_asan.sh" -> {
+    "kurento_container_build.sh"
+  };
+  "kurento_ci_job_deploy_java.sh" -> {
+    "kurento_maven_deploy.sh"
+  };
+  "kurento_ci_job_deploy_js.sh" -> {
+    "kurento_deploy_js.sh"
+  };
+  "kurento_ci_job_generate_module.sh" -> {
+    "kurento_generate_java_module.sh"
+    "kurento_generate_js_module.sh"
+    "kurento_get_name.sh"
+    "kurento_install_server.sh"
+  };
+  "kurento_ci_job_package_debian.sh" -> {
+    "kurento_git_checkout_name.sh"
+    "kurento_git_default_branch.sh"
+  };
+
+
+  // Miscellaneous origins
+  // =====================
+
+  "docker/kurento-buildpackage" -> {
+    "kurento-buildpackage.sh"
+  };
+
+  "server/bin/make-dev-container.sh" -> {
+    "kurento-buildpackage.sh"
+  };
+
+
+  // Concrete CI operations
+  // ======================
+
+  "kurento_container_build.sh" -> {
+    "parse_yaml.sh"
+  };
+  "kurento_deploy_js.sh" -> {
+    "kurento_check_version.sh"
+    "kurento_deploy_js_bower.sh"
+    "kurento_deploy_js_http.sh"
+    "kurento_deploy_js_npm.sh"
+    "kurento_get_name.sh"
+    "kurento_get_version.sh"
+    "kurento_maven_deploy.sh"
+    "kurento_mavenize_js_project.sh"
+  };
+  "kurento_deploy_js_bower.sh" -> {
+    "kurento_clone_repo.sh"
+    "kurento_get_version.sh"
+    "kurento_git_default_branch.sh"
+  };
+  "kurento_deploy_js_http.sh";
+  "kurento_deploy_js_npm.sh";
+  "kurento_doc_deploy.sh" -> {
+    "kurento_check_version.sh"
+    "kurento_get_version.sh"
+  };
+  "kurento_generate_java_module.sh";
+  "kurento_generate_js_module.sh" -> {
+    "kurento_get_name.sh"
+    "kurento_get_version.sh"
+  };
+  "kurento_maven_deploy.sh" -> {
+    "kurento_check_version.sh"
+    "kurento_get_version.sh"
+    "kurento_maven_deploy_github.sh"
+  };
+  "kurento_maven_deploy_github.sh";
+  "kurento_mavenize_js_project.sh" -> {
+    "kurento_get_name.sh"
+    "kurento_get_version.sh"
+  };
+  "kurento-buildpackage.sh";
+
+
+  // Utilities
+  // =========
+
+  "kurento_check_version.sh" -> {
+    "kurento_get_version.sh"
+  };
+  "kurento_clone_repo.sh" -> {
+    "kurento_git_default_branch.sh"
+  };
+  "kurento_get_name.sh";
+  "kurento_get_version.sh";
+  "kurento_git_checkout_name.sh" -> {
+    "kurento_git_default_branch.sh"
+  };
+  "kurento_update_test_files.sh" -> {
+  };
+  "kurento_git_default_branch.sh";
+  "kurento_install_server.sh";
+  "kurento_update_test_files.sh";
+  "parse_yaml.sh";
+}
