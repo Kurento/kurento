@@ -1220,6 +1220,10 @@ void MediaElementImpl::setVideoFormat (std::shared_ptr<VideoCaps> caps)
   fraction = caps->getFramerate();
 
   switch (codec->getValue() ) {
+  case VideoCodec::AV1:
+    str_caps = "video/x-av1";
+    break;
+
   case VideoCodec::VP9:
     str_caps = "video/x-vp9";
     break;
