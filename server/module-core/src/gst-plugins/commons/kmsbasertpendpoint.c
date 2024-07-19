@@ -21,7 +21,6 @@
 #include <string.h>
 #include "kmsbasertpendpoint.h"
 #include "kmsbasertpsession.h"
-#include "kmsrtpsynchronizer.h"
 #include "constants.h"
 
 #include <stdlib.h>
@@ -246,11 +245,6 @@ struct _KmsBaseRtpEndpointPrivate
   /* Timestamps */
   gssize init_stats;
   FILE *stats_file;
-
-  /* Synchronization */
-  KmsRtpSynchronizer *sync_audio;
-  KmsRtpSynchronizer *sync_video;
-  gboolean perform_video_sync;
 };
 
 /* Signals and args */
@@ -1881,27 +1875,6 @@ kms_base_rtp_endpoint_rtpbin_request_pt_map (GstElement * rtpbin, guint session,
   caps = kms_base_rtp_endpoint_get_caps_for_pt (self, pt);
 
   if (caps != NULL) {
-    KmsRtpSynchronizer *sync = NULL;
-
-    if (session == AUDIO_RTP_SESSION) {
-      sync = self->priv->sync_audio;
-    } else if (session == VIDEO_RTP_SESSION) {
-      sync = self->priv->sync_video;
-    }
-
-    if (sync != NULL) {
-      GstStructure *st;
-      gint32 clock_rate;
-
-      st = gst_caps_get_structure (caps, 0);
-      if (gst_structure_get_int (st, "clock-rate", &clock_rate)) {
-        kms_rtp_synchronizer_set_pt_clock_rate (sync, pt, clock_rate, NULL);
-      } else {
-        GST_ERROR_OBJECT (self,
-            "Cannot get clock rate from caps: %" GST_PTR_FORMAT, caps);
-      }
-    }
-
     return caps;
   }
 
@@ -2032,96 +2005,6 @@ kms_base_rtp_endpoint_jitterbuffer_set_latency (GstElement * jitterbuffer,
   g_object_unref (src_pad);
 }
 
-static gboolean
-kms_base_rtp_endpoint_sync_rtp_it (GstBuffer ** buffer, guint idx,
-    KmsRtpSynchronizer * sync)
-{
-  *buffer = gst_buffer_make_writable (*buffer);
-  kms_rtp_synchronizer_process_rtp_buffer_writable (sync, *buffer, NULL);
-
-  return TRUE;
-}
-
-static GstPadProbeReturn
-kms_base_rtp_endpoint_sync_rtp_probe (GstPad * pad, GstPadProbeInfo * info,
-    KmsRtpSynchronizer * sync)
-{
-  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BUFFER) {
-    GstBuffer *buffer = gst_pad_probe_info_get_buffer (info);
-
-    buffer = gst_buffer_make_writable (buffer);
-    kms_rtp_synchronizer_process_rtp_buffer_writable (sync, buffer, NULL);
-    GST_PAD_PROBE_INFO_DATA (info) = buffer;
-  }
-  else if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BUFFER_LIST) {
-    GstBufferList *list = gst_pad_probe_info_get_buffer_list (info);
-
-    list = gst_buffer_list_make_writable (list);
-    gst_buffer_list_foreach (list,
-        (GstBufferListFunc) kms_base_rtp_endpoint_sync_rtp_it, sync);
-    GST_PAD_PROBE_INFO_DATA (info) = list;
-  }
-
-  return GST_PAD_PROBE_OK;
-}
-
-static void
-kms_base_rtp_endpoint_jitterbuffer_monitor_rtp_out (GstElement * jitterbuffer,
-    KmsRtpSynchronizer * sync)
-{
-  GstPad *src_pad;
-
-  GST_INFO_OBJECT (jitterbuffer, "Add probe: Adjust jitterbuffer PTS out");
-
-  src_pad = gst_element_get_static_pad (jitterbuffer, "src");
-  gst_pad_add_probe (src_pad,
-      GST_PAD_PROBE_TYPE_BUFFER | GST_PAD_PROBE_TYPE_BUFFER_LIST,
-      (GstPadProbeCallback) kms_base_rtp_endpoint_sync_rtp_probe, sync, NULL);
-  g_object_unref (src_pad);
-}
-
-static gboolean
-kms_base_rtp_endpoint_sync_rtcp_it (GstBuffer ** buffer, guint idx,
-    KmsRtpSynchronizer * sync)
-{
-  kms_rtp_synchronizer_process_rtcp_buffer (sync, *buffer, NULL);
-
-  return TRUE;
-}
-
-static GstPadProbeReturn
-kms_base_rtp_endpoint_sync_rtcp_probe (GstPad * pad, GstPadProbeInfo * info,
-    KmsRtpSynchronizer * sync)
-{
-  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BUFFER) {
-    GstBuffer *buffer = gst_pad_probe_info_get_buffer (info);
-
-    kms_rtp_synchronizer_process_rtcp_buffer (sync, buffer, NULL);
-  }
-  else if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BUFFER_LIST) {
-    GstBufferList *list = gst_pad_probe_info_get_buffer_list (info);
-
-    gst_buffer_list_foreach (list,
-        (GstBufferListFunc) kms_base_rtp_endpoint_sync_rtcp_it, sync);
-  }
-
-  return GST_PAD_PROBE_OK;
-}
-
-static void
-kms_base_rtp_endpoint_jitterbuffer_monitor_rtcp_in (GstElement * jitterbuffer,
-    GstPad * new_pad, KmsRtpSynchronizer * sync)
-{
-  if (g_strcmp0 (GST_PAD_NAME (new_pad), "sink_rtcp") != 0) {
-    return;
-  }
-
-  GST_INFO_OBJECT (jitterbuffer, "Add probe: Get jitterbuffer RTCP SR timing");
-
-  gst_pad_add_probe (new_pad,
-      GST_PAD_PROBE_TYPE_BUFFER | GST_PAD_PROBE_TYPE_BUFFER_LIST,
-      (GstPadProbeCallback) kms_base_rtp_endpoint_sync_rtcp_probe, sync, NULL);
-}
 
 static void
 kms_base_rtp_endpoint_rtpbin_new_jitterbuffer (GstElement * rtpbin,
@@ -2139,27 +2022,11 @@ kms_base_rtp_endpoint_rtpbin_new_jitterbuffer (GstElement * rtpbin,
       kms_base_rtp_endpoint_jitterbuffer_set_latency (jitterbuffer,
           JB_READY_AUDIO_LATENCY);
 
-      kms_base_rtp_endpoint_jitterbuffer_monitor_rtp_out (jitterbuffer,
-          self->priv->sync_audio);
-
-      g_signal_connect (jitterbuffer, "pad-added",
-          G_CALLBACK (kms_base_rtp_endpoint_jitterbuffer_monitor_rtcp_in),
-          self->priv->sync_audio);
-
       break;
     }
     case VIDEO_RTP_SESSION: {
       kms_base_rtp_endpoint_jitterbuffer_set_latency (jitterbuffer,
           JB_READY_VIDEO_LATENCY);
-
-      kms_base_rtp_endpoint_jitterbuffer_monitor_rtp_out (jitterbuffer,
-          self->priv->sync_video);
-
-      if (self->priv->perform_video_sync) {
-        g_signal_connect (jitterbuffer, "pad-added",
-            G_CALLBACK (kms_base_rtp_endpoint_jitterbuffer_monitor_rtcp_in),
-            self->priv->sync_video);
-      }
 
       break;
     }
@@ -2749,9 +2616,6 @@ kms_base_rtp_endpoint_finalize (GObject * gobject)
     fclose (self->priv->stats_file);
   }
 
-  g_clear_object (&self->priv->sync_audio);
-  g_clear_object (&self->priv->sync_video);
-
   G_OBJECT_CLASS (kms_base_rtp_endpoint_parent_class)->finalize (gobject);
 }
 
@@ -2982,10 +2846,6 @@ kms_base_rtp_endpoint_constructed (GObject * gobject)
   gchar *self_name = gst_object_get_name (GST_OBJECT_CAST (self));
   gchar *audio_name = g_strconcat (self_name, "_audio", NULL);
   gchar *video_name = g_strconcat (self_name, "_video", NULL);
-
-  self->priv->sync_audio = kms_rtp_synchronizer_new (TRUE, audio_name);
-  self->priv->sync_video = kms_rtp_synchronizer_new (TRUE, video_name);
-  self->priv->perform_video_sync = TRUE;
 
   g_free(video_name);
   g_free(audio_name);

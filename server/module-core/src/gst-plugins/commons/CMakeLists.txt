@@ -125,7 +125,6 @@ set(KMS_COMMONS_SOURCES
   kmsparsetreebin.c
   kmsrtppaytreebin.c
   kmslist.c
-  kmsrtpsynchronizer.c
 )
 
 set(KMS_COMMONS_HEADERS
@@ -156,7 +155,6 @@ set(KMS_COMMONS_HEADERS
   kmsparsetreebin.h
   kmsrtppaytreebin.h
   kmslist.h
-  kmsrtpsynchronizer.h
 )
 
 set(ENUM_HEADERS
