@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Always use ShellCheck! -- https://www.shellcheck.net/
 
 #/ CI - Create or update Aptly repos to store Debian packages.
 #/
@@ -92,11 +93,21 @@
 #/
 #/ aptly repo list -raw
 #/ aptly repo drop kurento-focal-exp-bionic-gstreamer
+#/
+#/
+#/ Database cleanup
+#/ ----------------
+#/
+#/ Doc: https://www.aptly.info/doc/aptly/db/cleanup/
+#/
+#/ After deleting a repository, it is a good idea to perform a cleanup.
+#/
+#/ aptly db cleanup -verbose -dry-run
+#/ aptly db cleanup -verbose
 
 
-
-# Shell setup
-# ===========
+# Configure shell
+# ===============
 
 # Bash options for strict error checking.
 set -o errexit -o errtrace -o pipefail -o nounset
@@ -106,9 +117,23 @@ shopt -s inherit_errexit 2>/dev/null || true
 set -o xtrace
 
 
+# Check dependencies
+# ==================
 
-# Parse call arguments
-# ====================
+# Bash Associative Array: [command_name]="package_name"
+declare -A DEP_COMMANDS=(
+    [aptly]="https://www.aptly.info/download/"
+)
+for DEP_COMMAND in "${!DEP_COMMANDS[@]}"; do
+    command -v "$DEP_COMMAND" >/dev/null || {
+        echo "[$0] ERROR: $DEP_COMMAND: command not found (please install from '${DEP_COMMANDS[$DEP_COMMAND]}')" >&2
+        exit 1
+    }
+done
+
+
+# Parse arguments
+# ===============
 
 CFG_DISTRO_NAME=""
 CFG_REPO_NAME=""
@@ -122,8 +147,8 @@ while [[ $# -gt 0 ]]; do
                 CFG_DISTRO_NAME="$2"
                 shift
             else
-                echo "ERROR: --distro-name expects <DistroName>"
-                echo "Run with '--help' to read usage details"
+                echo "ERROR: --distro-name expects <DistroName>" >&2
+                echo "Run with '--help' to read usage details" >&2
                 exit 1
             fi
             ;;
@@ -132,8 +157,8 @@ while [[ $# -gt 0 ]]; do
                 CFG_REPO_NAME="$2"
                 shift
             else
-                echo "ERROR: --repo-name expects <RepoName>"
-                echo "Run with '--help' to read usage details"
+                echo "ERROR: --repo-name expects <RepoName>" >&2
+                echo "Run with '--help' to read usage details" >&2
                 exit 1
             fi
             ;;
@@ -142,8 +167,8 @@ while [[ $# -gt 0 ]]; do
                 CFG_PUBLISH_NAME="$2"
                 shift
             else
-                echo "ERROR: --publish-name expects <PublishName>"
-                echo "Run with '--help' to read usage details"
+                echo "ERROR: --publish-name expects <PublishName>" >&2
+                echo "Run with '--help' to read usage details" >&2
                 exit 1
             fi
             ;;
@@ -151,8 +176,8 @@ while [[ $# -gt 0 ]]; do
             CFG_RELEASE="true"
             ;;
         *)
-            echo "ERROR: Unknown argument '${1-}'"
-            echo "Run with '--help' to read usage details"
+            echo "ERROR: Unknown argument '${1-}'" >&2
+            echo "Run with '--help' to read usage details" >&2
             exit 1
             ;;
     esac
@@ -160,30 +185,28 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-
 # Config restrictions
 # ===================
 
 if [[ -z "$CFG_DISTRO_NAME" ]]; then
-    echo "ERROR: Missing --distro-name <DistroName>"
+    echo "ERROR: Missing --distro-name <DistroName>" >&2
     exit 1
 fi
 
 if [[ -z "$CFG_REPO_NAME" ]]; then
-    echo "ERROR: Missing --repo-name <RepoName>"
+    echo "ERROR: Missing --repo-name <RepoName>" >&2
     exit 1
 fi
 
 if [[ -z "$CFG_PUBLISH_NAME" ]]; then
-    echo "ERROR: Missing --publish-name <PublishName>"
+    echo "ERROR: Missing --publish-name <PublishName>" >&2
     exit 1
 fi
 
-echo "CFG_DISTRO_NAME=$CFG_DISTRO_NAME"
-echo "CFG_REPO_NAME=$CFG_REPO_NAME"
-echo "CFG_PUBLISH_NAME=$CFG_PUBLISH_NAME"
-echo "CFG_RELEASE=$CFG_RELEASE"
-
+echo "CFG_DISTRO_NAME=$CFG_DISTRO_NAME" >&2
+echo "CFG_REPO_NAME=$CFG_REPO_NAME" >&2
+echo "CFG_PUBLISH_NAME=$CFG_PUBLISH_NAME" >&2
+echo "CFG_RELEASE=$CFG_RELEASE" >&2
 
 
 # Step 1: Create repo
@@ -191,17 +214,15 @@ echo "CFG_RELEASE=$CFG_RELEASE"
 
 APTLY_OUTPUT="$(aptly repo list -raw)"
 if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp "$CFG_REPO_NAME"; then
-    echo "Create new repo: $CFG_REPO_NAME"
+    echo "Create new repo: $CFG_REPO_NAME" >&2
     aptly repo create -distribution="$CFG_DISTRO_NAME" -component=main "$CFG_REPO_NAME"
 fi
-
 
 
 # Step 2: Add files to repo
 # =========================
 
 aptly repo add -force-replace -remove-files "$CFG_REPO_NAME" ./*.*deb
-
 
 
 # Step 3: Publish repo
@@ -216,20 +237,19 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
     # > production usage please take snapshot of repository and publish it.
     SNAP_NAME="snap-$CFG_REPO_NAME"
 
-    echo "Create and publish new release snapshot: $SNAP_NAME"
+    echo "Create and publish new release snapshot: $SNAP_NAME" >&2
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
     aptly publish snapshot -gpg-key="$GPGKEY" "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
     APTLY_OUTPUT="$(aptly publish list -raw)"
     if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
-        echo "Publish new development repo: $CFG_REPO_NAME"
+        echo "Publish new development repo: $CFG_REPO_NAME" >&2
         aptly publish repo -gpg-key="$GPGKEY" -force-overwrite "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
     else
-        echo "Update already published development repo: $CFG_REPO_NAME"
+        echo "Update already published development repo: $CFG_REPO_NAME" >&2
         aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
     fi
 fi
 
 
-
-echo "Done!"
+echo "Done!" >&2
