@@ -4,9 +4,9 @@ Priority: optional
 Build-Depends:
  cmake,
  debhelper-compat (= 13),
- kurento-module-core-dev (>= 7.0.2),
- kurento-module-elements-dev (>= 7.0.2),
- kurento-module-filters-dev (>= 7.0.2),
+ kurento-module-core-dev (>= 7.1.0),
+ kurento-module-elements-dev (>= 7.1.0),
+ kurento-module-filters-dev (>= 7.1.0),
  libopencv-dev,
  libsoup-3.0-dev,
  libtinyxml-dev,
@@ -23,9 +23,9 @@ Section: libs
 Depends:
  ${misc:Depends},
  ${shlibs:Depends},
- kurento-module-core (>= 7.0.2),
- kurento-module-elements (>= 7.0.2),
- kurento-module-filters (>= 7.0.2),
+ kurento-module-core (>= 7.1.0),
+ kurento-module-elements (>= 7.1.0),
+ kurento-module-filters (>= 7.1.0),
 Breaks:
  ar-markerdetector,
  kms-markerdetector-6.0,
@@ -41,9 +41,9 @@ Architecture: any
 Section: libdevel
 Depends:
  ${misc:Depends},
- kurento-module-core-dev (>= 7.0.2),
- kurento-module-elements-dev (>= 7.0.2),
- kurento-module-filters-dev (>= 7.0.2),
+ kurento-module-core-dev (>= 7.1.0),
+ kurento-module-elements-dev (>= 7.1.0),
+ kurento-module-filters-dev (>= 7.1.0),
  kurento-module-markerdetector (= ${binary:Version}),
  libopencv-dev,
  libsoup-3.0-dev,
