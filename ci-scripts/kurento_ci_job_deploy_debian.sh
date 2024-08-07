@@ -156,10 +156,10 @@ scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     /ci-scripts/kurento_ci_aptly_repo_publish.sh \
-    ubuntu@proxy.openvidu.io:"$TEMP_DIR"
+    aptly@www.naevatec.com.io:"$TEMP_DIR"
 
 ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-    ubuntu@proxy.openvidu.io '\
+    aptly@www.naevatec.com '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
            ./kurento_ci_aptly_repo_publish.sh $PUBLISH_ARGS'
