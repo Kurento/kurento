@@ -569,6 +569,7 @@ kms_enc_tree_bin_new (const GstCaps * caps, gint target_bitrate,
 {
   KmsEncTreeBin *enc;
 
+  // FIXME: Consider withcing to a an encodebin2 element
   enc = g_object_new (KMS_TYPE_ENC_TREE_BIN, NULL);
   enc->priv->max_bitrate = max_bitrate;
   enc->priv->min_bitrate = min_bitrate;

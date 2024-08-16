@@ -598,6 +598,7 @@ kms_agnostic_bin2_get_or_create_dec_bin (KmsAgnosticBin2 * self, GstCaps * caps)
 {
   GstCaps *raw_caps;
 
+  // FIXME: Considerswitching to a decodebin element
   if (kms_utils_caps_is_raw (self->priv->input_caps)
       || gst_caps_is_empty (caps) || gst_caps_is_any (caps)) {
     return self->priv->input_bin;
@@ -794,6 +795,22 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
   GST_TRACE_OBJECT (self, "Linking: %" GST_PTR_FORMAT
       " to %" GST_PTR_FORMAT, pad, peer);
 
+  // FIXME: There is a corner case not well covered by current implementation that is triggered for example
+  // when we chain two GStreamerFilters
+  // The point is that at the time of pad linking caps are ot yet fixed and that causes uncertainties on the
+  // correct decoder/coder configuration. On the example given, source pad may show an ANY caps
+  // and the sink will accept the same pads accedted by the gstreamer element sink pad in the filter
+  // If that happens, at link time an enctreebin with an encoder suited to any of the accepted caps on Gstreamer 
+  // element sink pad will be chosen and inserted in place.
+  // The problem is that later on, the source caps may get fixed and it happens as the encoder on the sink pad is already
+  // chosen so the sink pads are already fixed, causing the source element agnostic bin to create an encoder
+  // to encode to the requested caps. 
+  // In the example tested: two consecutive GStreamerFilter, first with an audiorate, and second with a videorate
+  // First one will transcode video from whatever codec is (e.g. VP8) to the first codec selected for videorate caps
+  // that is jpegencoder, While a first decoding to video/x-raw would have been more efficient and had also 
+  // matched the required in videorate source caps.
+  // One possible fix would be to reset enctreebin and dectreebin compoennts so that the codec chosen on
+  // initial negotiation is not forced
   pad_caps = gst_pad_query_caps (pad, NULL);
   if (pad_caps != NULL) {
     GST_DEBUG_OBJECT (self, "Upstream provided caps: %" GST_PTR_FORMAT, pad_caps);
