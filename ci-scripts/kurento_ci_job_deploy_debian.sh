@@ -140,25 +140,25 @@ set -o xtrace
 
 # Exit trap, used to clean up.
 on_exit() {
-    ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-        ubuntu@proxy.openvidu.io '\
+    ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh -p 3322 \
+        aptly@www.naevatec.com.io '\
             rm -rf "$TEMP_DIR"'
 }
 trap on_exit EXIT
 
-ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-    ubuntu@proxy.openvidu.io '\
+ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh -p 3322 \
+    aptly@www.naevatec.com.io '\
         mkdir -p "$TEMP_DIR"'
 
-scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
+scp -o StrictHostKeyChecking=no -i /id_aptly_ssh -P 3322 \
     ./*.*deb \
-    ubuntu@proxy.openvidu.io:"$TEMP_DIR"
+    aptly@www.naevatec.com.io:"$TEMP_DIR"
 
-scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
+scp -o StrictHostKeyChecking=no -i /id_aptly_ssh -P3322 \
     /ci-scripts/kurento_ci_aptly_repo_publish.sh \
     aptly@www.naevatec.com.io:"$TEMP_DIR"
 
-ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
+ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh -p 3322 \
     aptly@www.naevatec.com '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
