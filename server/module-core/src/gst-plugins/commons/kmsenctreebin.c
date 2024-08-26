@@ -150,11 +150,12 @@ configure_encoder (GstElement * encoder, EncoderType type,
       /* *INDENT-OFF* */
       g_object_set (G_OBJECT (encoder),
                     "threads", 1,
-                    "cpu-used", 10,
+                    "cpu-used", 4,
                     "end-usage", /* cbr */ 1,
                     "usage-profile", /* realtime */ 1,
                     "keyframe-mode", /* auto */ 1,
                     "keyframe-max-dist", /* 90 frames*/ 90,
+                    "qos", TRUE,
                     NULL);
       /* *INDENT-ON* */
       break;
@@ -359,12 +360,12 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
   gint old_bitrate;
   g_object_get (self->priv->enc, property_name, &old_bitrate, NULL);
 
-  if ((gint)(new_bitrate / kbps_div) == (gint)(old_bitrate / kbps_div)) {
+  if ((gint)(new_bitrate / 1000) == (gint)(old_bitrate / kbps_div)) {
     // Not enough of a difference to grant changing the encoder bitrate.
     return;
   }
 
-  g_object_set (self->priv->enc, property_name, new_bitrate, NULL);
+  g_object_set (self->priv->enc, property_name, new_bitrate * kbps_div / 1000, NULL);
 
   GST_DEBUG_OBJECT (self->priv->enc, "\"%s\" set: %d", property_name,
       new_bitrate);
@@ -568,6 +569,7 @@ kms_enc_tree_bin_new (const GstCaps * caps, gint target_bitrate,
 {
   KmsEncTreeBin *enc;
 
+  // FIXME: Consider withcing to a an encodebin2 element
   enc = g_object_new (KMS_TYPE_ENC_TREE_BIN, NULL);
   enc->priv->max_bitrate = max_bitrate;
   enc->priv->min_bitrate = min_bitrate;
