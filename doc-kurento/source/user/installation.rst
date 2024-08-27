@@ -156,7 +156,7 @@ Local Installation
 
 With this method, you will install Kurento Media Server from the native Ubuntu packages built by us.
 
-Officially supported platforms: **Ubuntu 20.04 (Focal)** (64-bits).
+Officially supported platforms: **Ubuntu 24.04 (noble)** (64-bits).
 
 Open a terminal and run these commands:
 

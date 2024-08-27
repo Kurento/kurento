@@ -77,7 +77,7 @@ ARG APT_ARGS=""
 
 FROM ubuntu_base
 
-LABEL maintainer="Juan Navarro <juan.navarro@gmx.es>"
+LABEL maintainer="Saúl Pablo Labajo Izquierdo <slabajo@naevatec.com>"
 
 ARG UBUNTU_CODENAME
 
@@ -92,29 +92,38 @@ ENV LANG="C.UTF-8"
 # Copy .deb artifacts for deploying
 RUN mkdir /kurento-deb
 
-COPY kurento-cmake-utils_7.0.2-1kurento1.24.04~20240627105042.gitd9d81c2eb.24.04~20240628163822.24.04~20240628163903_all.deb /kurento-deb/kurento-cmake-utils_7.0.2-1kurento1.24.04.deb
-COPY kurento-jsonrpc_7.0.2-1kurento1.24.04~20240628170923_amd64.deb /kurento-deb/kurento-jsonrpc_7.0.2-1kurento1.24.04.deb
-COPY kurento-jsonrpc-dbgsym_7.0.2-1kurento1.24.04~20240628170923_amd64.ddeb /kurento-deb/kurento-jsonrpc-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-module-creator_7.0.2-1kurento1.24.04~20240628171120_all.deb /kurento-deb/kurento-module-creator_7.0.2-1kurento1.24.04.deb
-COPY kurento-module-core_7.0.2-1kurento1.24.04~20240628171316_amd64.deb /kurento-deb/kurento-module-core_7.0.2-1kurento1.24.04.deb
-COPY kurento-module-core-dbgsym_7.0.2-1kurento1.24.04~20240628171316_amd64.ddeb /kurento-deb/kurento-module-core-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-module-elements_7.0.2-1kurento1.24.04~20240628171709.24.04~20240628172907.24.04~20240628173507.24.04~20240628173909.24.04~20240629111357_amd64.deb /kurento-deb/kurento-module-elements_7.0.2-1kurento1.24.04.deb
-COPY kurento-module-elements-dbgsym_7.0.2-1kurento1.24.04~20240628171709.24.04~20240628172907.24.04~20240628173507.24.04~20240628173909.24.04~20240629111357_amd64.ddeb /kurento-deb/kurento-module-elements-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-module-filters_7.0.2-1kurento1.24.04~20240629111717_amd64.deb /kurento-deb/kurento-module-filters_7.0.2-1kurento1.24.04.deb
-COPY kurento-module-filters-dbgsym_7.0.2-1kurento1.24.04~20240629111717_amd64.ddeb /kurento-deb/kurento-module-filters-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-module-chroma_7.0.2-1kurento1.24.04~20240629111937_amd64.deb /kurento-deb/kurento-module-chroma_7.0.2-1kurento1.24.04.deb
-COPY kurento-module-chroma-dbgsym_7.0.2-1kurento1.24.04~20240629111937_amd64.ddeb /kurento-deb/kurento-module-chroma-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-module-gstreamer-example_7.0.2-1kurento1.24.04~20240629112122_amd64.deb /kurento-deb/kurento-module-gstreamer-example_7.0.2-1kurento1.24.04.deb
-COPY kurento-module-gstreamer-example-dbgsym_7.0.2-1kurento1.24.04~20240629112122_amd64.ddeb /kurento-deb/kurento-module-gstreamer-example-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-module-opencv-example_7.0.2-1kurento1.24.04~20240629112305_amd64.deb /kurento-deb/kurento-module-opencv-example_7.0.2-1kurento1.24.04.deb
-COPY kurento-module-opencv-example-dbgsym_7.0.2-1kurento1.24.04~20240629112305_amd64.ddeb /kurento-deb/kurento-module-opencv-example-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-media-server_7.0.2-1kurento1.24.04~20240629112508_amd64.deb /kurento-deb/kurento-media-server_7.0.2-1kurento1.24.04.deb
-COPY kurento-media-server-dbgsym_7.0.2-1kurento1.24.04~20240629112508_amd64.ddeb /kurento-deb/kurento-media-server-dbgsym_7.0.2-1kurento1.24.04.ddeb
-COPY kurento-dbg_7.0.2-1kurento1.24.04~20240629112508_amd64.deb /kurento-deb/kurento-dbg_7.0.2-1kurento1.24.04.deb
+COPY gst-plugin-rtp_0.12.4-1_amd64.deb /kurento-deb/gst-plugin-rtp_0.12.4-1_amd64.deb
+COPY kurento-cmake-utils_7.1.0-1kurento1_all.deb /kurento-deb/
+COPY kurento-jsonrpc_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-jsonrpc-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-creator_7.1.0-1kurento1_all.deb /kurento-deb/
+COPY kurento-module-core_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-core-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-elements_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-elements-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-filters_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-filters-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-chroma_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-chroma-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-gstreamer-example_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-gstreamer-example-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-opencv-example_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-opencv-example-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-datachannelexample_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-datachannelexample-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-platedetector_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-platedetector-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-module-pointerdetector_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-module-pointerdetector-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-media-server_7.1.0-1kurento1_amd64.deb /kurento-deb/
+COPY kurento-media-server-dbgsym_7.1.0-1kurento1_amd64.ddeb /kurento-deb/
+COPY kurento-dbg_7.1.0-1kurento1_amd64.deb /kurento-deb/
 
 
-
-
+# For debugging purposes
+COPY tracedump_gdb.sh /
+COPY tracedump_eu.sh /
+COPY extended_entrypoint.sh /
 
 
 # Install tools:
@@ -132,33 +141,40 @@ apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --
     nano \
 && rm -rf /var/lib/apt/lists/*
 
-
+# Install Gstreamer rust rtp plugins for AV1 support
+RUN apt install --yes /kurento-deb/gst-plugin-rtp_0.12.4-1_amd64.deb
 
 # Install Kurento Media Server.
-#RUN apt install /kurento-deb/kurento-cmake-utils_7.0.2-1kurento1.24.04.deb
+#RUN apt install /kurento-deb/kurento-cmake-utils_7.1.0-1kurento1_all.deb
 RUN apt-get update 
 
-RUN apt install --yes /kurento-deb/kurento-jsonrpc_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-jsonrpc-dbgsym_7.0.2-1kurento1.24.04.ddeb
-RUN apt install --yes /kurento-deb/kurento-module-creator_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-module-core_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-module-core-dbgsym_7.0.2-1kurento1.24.04.ddeb
-RUN apt install --yes /kurento-deb/kurento-module-elements_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-module-elements-dbgsym_7.0.2-1kurento1.24.04.ddeb
-RUN apt install --yes /kurento-deb/kurento-module-filters_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-module-filters-dbgsym_7.0.2-1kurento1.24.04.ddeb
-RUN apt install --yes /kurento-deb/kurento-media-server_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-media-server-dbgsym_7.0.2-1kurento1.24.04.ddeb
+RUN apt install --yes /kurento-deb/kurento-jsonrpc_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-jsonrpc-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-creator_7.1.0-1kurento1_all.deb
+RUN apt install --yes /kurento-deb/kurento-module-core_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-core-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-elements_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-elements-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-filters_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-filters-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-media-server_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-media-server-dbgsym_7.1.0-1kurento1_amd64.ddeb
 
 
 # Install additional modules.
 # These might not be all available, so install separately and allow errors.
-RUN apt install --yes /kurento-deb/kurento-module-chroma_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-module-chroma-dbgsym_7.0.2-1kurento1.24.04.ddeb
-RUN apt install --yes /kurento-deb/kurento-module-gstreamer-example_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-module-opencv-example_7.0.2-1kurento1.24.04.deb
-RUN apt install --yes /kurento-deb/kurento-module-opencv-example-dbgsym_7.0.2-1kurento1.24.04.ddeb
-
+RUN apt install --yes /kurento-deb/kurento-module-chroma_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-chroma-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-gstreamer-example_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-gstreamer-example-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-opencv-example_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-opencv-example-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-datachannelexample_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-datachannelexample-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-platedetector_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-platedetector-dbgsym_7.1.0-1kurento1_amd64.ddeb
+RUN apt install --yes /kurento-deb/kurento-module-pointerdetector_7.1.0-1kurento1_amd64.deb
+RUN apt install --yes /kurento-deb/kurento-module-pointerdetector-dbgsym_7.1.0-1kurento1_amd64.ddeb
 
 
 # Install additional tools that are indirectly used by some GStreamer plugins:
@@ -186,6 +202,11 @@ RUN \
 echo "deb http://ddebs.ubuntu.com $UBUNTU_CODENAME main restricted universe multiverse" >/etc/apt/sources.list.d/ddebs.list \
 && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
 
+# for debugging purposes
+RUN apt clean && apt update  && apt install --no-install-recommends --yes \
+    gdb elfutils
+
+
 # Install debug packages.
 # The debug packages repository fails very often due to bad server state.
 # Try to update, and only if it works install debug symbols.
@@ -203,4 +224,4 @@ COPY healthchecker.sh /
 
 HEALTHCHECK --start-period=15s --interval=30s --timeout=3s --retries=1 CMD /healthchecker.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/extended_entrypoint.sh"]

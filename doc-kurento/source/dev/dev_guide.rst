@@ -15,7 +15,7 @@ Introduction
 
 This is an overview of the tools and technologies used by Kurento:
 
-- Officially supported platform(s): **Ubuntu 20.04 (Focal)** (64-bits).
+- Officially supported platform(s): **Ubuntu 24.04 (noble)** (64-bits).
 - The code is written in C and C++ languages.
 - The code style is heavily influenced by that of Gtk and GStreamer projects.
 - CMake is the build tool of choice, and is used to build all modules.
@@ -545,7 +545,7 @@ In an attempt to make it easier than ever to create Deb packages from Kurento re
 
 To use the `kurento-buildpackage Docker image <https://hub.docker.com/r/kurento/kurento-buildpackage>`__, you'll need to bind-mount the project directory onto the ``/hostdir`` path inside the container. All other options to *kurento-buildpackage* remain the same.
 
-For example, say you want to build all Kurento packages for *Ubuntu 20.04 (Focal)*, from scratch (i.e. without jump-starting from the *apt-get* repositories), you've been saving them into ``$HOME/packages/``, and now it's the turn of *kurento-module-core*. Run these commands:
+For example, say you want to build all Kurento packages for *Ubuntu 24.04 (noble)*, from scratch (i.e. without jump-starting from the *apt-get* repositories), you've been saving them into ``$HOME/packages/``, and now it's the turn of *kurento-module-core*. Run these commands:
 
 .. code-block:: shell
 
@@ -557,7 +557,7 @@ For example, say you want to build all Kurento packages for *Ubuntu 20.04 (Focal
        --mount type=bind,src=server/module-core,dst=/hostdir \
        --mount type=bind,src=ci-scripts,dst=/ci-scripts \
        --mount type=bind,src="$HOME/packages",dst=/packages \
-       kurento/kurento-buildpackage:focal \
+       kurento/kurento-buildpackage:noble \
            --install-files /packages \
            --dstdir /packages
 

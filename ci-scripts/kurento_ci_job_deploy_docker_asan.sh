@@ -119,7 +119,10 @@ fi
 
 # Select the GCC version to install, based on what is available for the system.
 # Source: https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test
-if [[ "$JOB_DISTRO" == "focal" ]]; then
+if [[ "$JOB_DISTRO" == "noble" ]]; then
+    DOCKER_GCC_VERSION="13"
+    log "Ubuntu 24.04 (noble) --> Use GCC $DOCKER_GCC_VERSION"
+elif [[ "$JOB_DISTRO" == "focal" ]]; then
     DOCKER_GCC_VERSION="11"
     log "Ubuntu 20.04 (Focal) --> Use GCC $DOCKER_GCC_VERSION"
 elif [[ "$JOB_DISTRO" == "jammy" ]]; then
