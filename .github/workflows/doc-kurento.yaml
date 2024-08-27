@@ -32,13 +32,13 @@ jobs:
 
       - name: "Configure the environment for job script"
         run: |
-          # Env vars used by `kurento_ci_job_deploy_doc.sh`.
+          # Env vars used by `ci_job_deploy_doc.sh`.
           echo "ENV_PATH=$GITHUB_ENV" >>$GITHUB_ENV
 
-          # Commit that triggered this build. Used by `kurento_doc_deploy.sh`.
+          # Commit that triggered this build. Used by `doc_deploy.sh`.
           echo "GIT_HASH_SHORT=${GITHUB_SHA:0:7}" >>$GITHUB_ENV
 
-          # Path to the SSH key. Used by `kurento_doc_deploy.sh`.
+          # Path to the SSH key. Used by `doc_deploy.sh`.
           # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
           GIT_SSH_KEY_PATH="$RUNNER_TEMP/id_git_ssh"
           echo "GIT_SSH_KEY_PATH=$GIT_SSH_KEY_PATH" >>$GITHUB_ENV
@@ -55,4 +55,4 @@ jobs:
       - name: "Run job script"
         env:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
-        run: "kurento_ci_job_deploy_doc.sh"
+        run: "ci_job_deploy_doc.sh"

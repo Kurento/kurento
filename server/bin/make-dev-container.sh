@@ -77,7 +77,7 @@ echo "CFG_DISTRIB_RELEASE=$CFG_DISTRIB_RELEASE"
 # Create Docker container
 # =======================
 
-# In-place Docker container commands BEGIN
+# BEGIN in-place Docker container commands.
 docker run -i --pull always \
     --name "kurento-dev-$CFG_DISTRIB_RELEASE" \
     "ubuntu:$CFG_DISTRIB_RELEASE" \
@@ -363,7 +363,7 @@ rm -rf /var/lib/apt/lists/*
 echo "Done! Everything got installed successfully"
 
 DOCKERCOMMANDS
-# In-place Docker container commands END
+# END in-place Docker container commands.
 
 
 

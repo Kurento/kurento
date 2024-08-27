@@ -49,4 +49,4 @@ jobs:
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
         working-directory: docker/kurento-buildpackage/
-        run: kurento_container_build.sh
+        run: container_build.sh

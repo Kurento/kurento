@@ -640,7 +640,7 @@ How to add new fork libraries
 How to work with API changes
 ----------------------------
 
-What to do when you are developing a new feature that spans across the media server and the public API? This is a summary of the actions done in CI by ``ci-scripts/kurento_generate_java_module.sh`` and ``ci-scripts/kurento_maven_deploy.sh``:
+What to do when you are developing a new feature that spans across the media server and the public API? This is a summary of the actions done in CI by ``ci-scripts/generate_java_module.sh`` and ``ci-scripts/maven_deploy.sh``:
 
 1. Work on your changes, which may include changing files where the Kurento API is defined.
 

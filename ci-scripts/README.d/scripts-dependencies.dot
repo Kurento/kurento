@@ -1,0 +1,185 @@
+digraph scripts {
+  //bgcolor = "transparent";
+  fontname = "Bitstream Vera Sans";
+  fontsize = 8;
+  rankdir = "LR";
+
+
+  // GitHub Actions CI workflows
+  // ===========================
+
+  // Standalone definitions.
+  // Used so these can be applied the same root rank and appear at the same level.
+  {
+    rank = "same";
+
+    "clients-java.parent.yaml";
+    "clients-javascript.parent.yaml";
+    "doc-kurento.yaml";
+    "docker-kurento-buildpackage.yaml";
+    "docker-kurento-ci-buildtools.yaml";
+    "server.parent.yaml";
+  }
+
+  // Root parent jobs.
+  "clients-java.parent.yaml" -> {
+    "clients-java.child.yaml"
+  };
+  "clients-javascript.parent.yaml" -> {
+    "clients-javascript.child.yaml"
+  };
+  "doc-kurento.yaml" -> {
+    "ci_job_deploy_doc.sh"
+  };
+  "docker-kurento-buildpackage.yaml" -> {
+    "container_build.sh"
+    "docker/kurento-buildpackage"
+  };
+  "docker-kurento-ci-buildtools.yaml" -> {
+    "container_build.sh"
+  };
+  "server.parent.yaml" -> {
+    "server-buildpackage.child.yaml"
+    "server-deploy-aws.child.yaml"
+    "server-deploy-debian.child.yaml"
+    "server-deploy-docker.child.yaml"
+  };
+
+  // Child jobs ("reusable workflows")
+  "clients-java.child.yaml" -> {
+    "ci_job_deploy_java.sh"
+    "ci_job_generate_module.sh"
+  };
+  "clients-javascript.child.yaml" -> {
+    "ci_job_deploy_js.sh"
+    "ci_job_generate_module.sh"
+  };
+  "server-buildpackage.child.yaml" -> {
+    "ci_job_package_debian.sh"
+  };
+  "server-deploy-aws.child.yaml" -> {
+    "ci_job_deploy_aws_cf.sh"
+  };
+  "server-deploy-debian.child.yaml" -> {
+    "ci_job_deploy_debian.sh"
+  };
+  "server-deploy-docker.child.yaml" -> {
+    "ci_job_deploy_docker.sh"
+    "ci_job_deploy_docker_asan.sh"
+  };
+
+
+  // GitHub Actions CI job scripts
+  // =============================
+
+  "ci_aptly_repo_publish.sh";
+  "ci_github_runner_cleanup.sh";
+  "ci_github_runner_setup.sh";
+  "ci_job_deploy_aws_cf.sh";
+  "ci_job_deploy_debian_test.sh";
+  "ci_job_deploy_debian.sh" -> {
+    "ci_aptly_repo_publish.sh"
+  };
+  "ci_job_deploy_doc.sh" -> {
+    "doc_deploy.sh"
+  };
+  "ci_job_deploy_docker.sh" -> {
+    "container_build.sh"
+  };
+  "ci_job_deploy_docker_asan.sh" -> {
+    "container_build.sh"
+  };
+  "ci_job_deploy_java.sh" -> {
+    "maven_deploy.sh"
+  };
+  "ci_job_deploy_js.sh" -> {
+    "deploy_js.sh"
+  };
+  "ci_job_generate_module.sh" -> {
+    "generate_java_module.sh"
+    "generate_js_module.sh"
+    "get_name.sh"
+    "install_server.sh"
+  };
+  "ci_job_package_debian.sh" -> {
+    "git_checkout_name.sh"
+    "git_default_branch.sh"
+  };
+
+
+  // Miscellaneous origins
+  // =====================
+
+  "docker/kurento-buildpackage" -> {
+    "kurento-buildpackage.sh"
+  };
+
+  "server/bin/make-dev-container.sh" -> {
+    "kurento-buildpackage.sh"
+  };
+
+
+  // Concrete CI operations
+  // ======================
+
+  "container_build.sh" -> {
+    "parse_yaml.sh"
+  };
+  "deploy_js.sh" -> {
+    "check_version.sh"
+    "deploy_js_bower.sh"
+    "deploy_js_http.sh"
+    "deploy_js_npm.sh"
+    "get_name.sh"
+    "get_version.sh"
+    "maven_deploy.sh"
+    "mavenize_js_project.sh"
+  };
+  "deploy_js_bower.sh" -> {
+    "clone_repo.sh"
+    "get_version.sh"
+    "git_default_branch.sh"
+  };
+  "deploy_js_http.sh";
+  "deploy_js_npm.sh";
+  "doc_deploy.sh" -> {
+    "check_version.sh"
+    "get_version.sh"
+  };
+  "generate_java_module.sh";
+  "generate_js_module.sh" -> {
+    "get_name.sh"
+    "get_version.sh"
+  };
+  "maven_deploy.sh" -> {
+    "check_version.sh"
+    "get_version.sh"
+    "maven_deploy_github.sh"
+  };
+  "maven_deploy_github.sh";
+  "mavenize_js_project.sh" -> {
+    "get_name.sh"
+    "get_version.sh"
+  };
+  "kurento-buildpackage.sh";
+
+
+  // Utilities
+  // =========
+
+  "check_version.sh" -> {
+    "get_version.sh"
+  };
+  "clone_repo.sh" -> {
+    "git_default_branch.sh"
+  };
+  "get_name.sh";
+  "get_version.sh";
+  "git_checkout_name.sh" -> {
+    "git_default_branch.sh"
+  };
+  "git_default_branch.sh";
+  "install_server.sh";
+  "update_test_files.sh";
+  "parse_yaml.sh";
+}
