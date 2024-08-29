@@ -26,6 +26,11 @@ on:
         required: false
         type: "boolean"
         default: false
+      runnerGroup:
+        description: "runnerGroup: Set of runners where the workflow jobs should be run"
+        required: false
+        type: "string"
+        default: ""
     secrets:
       KURENTO_DOCKERHUB_USERNAME:
         description: "Docker Hub username for pushing images"
@@ -40,7 +45,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.
