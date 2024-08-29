@@ -35,7 +35,7 @@ on:
         description: "runnerGroup: Set of runners where the workflow jobs should be run"
         required: false
         type: "string"
-        default: ""
+        default: "Linux"
 
 jobs:
   libsrtp:
