@@ -472,7 +472,15 @@ srtp_suite (void)
   tcase_add_test (tc_chain, test_window_size);
   tcase_add_test (tc_chain, test_replay_tx_with_allow_repeat_tx_false);
   tcase_add_test (tc_chain, test_replay_tx_with_allow_repeat_tx_true);
+  if (FALSE) {
+    // Removed this test, in Ubuntu 22.04, Gstreamer 1.20.3 
+    // we observe when executing this test with 
+    //     GST_DEBUG="3,srtpdec:5"
+    // We get the line 
+    //     srtpdec gstsrtpdec.c:1400:gst_srtp_dec_decode_buffer:<srtpdec0> Dropping replayed packet, probably retransmission
+    // This means GStreamer is filtering out SRTP retrasnmissions as expected. So fork is no longer needed
   tcase_add_test (tc_chain, test_replay_rx_with_libsrtp_fork);
+  }
 
   return s;
 }

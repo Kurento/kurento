@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "version": "7.0.2-dev",
+  "version": "7.1.0",
   "code": {
     "kmd": {
       "java": {
@@ -1599,6 +1599,8 @@ Pipeline, towards the associated producer. Only valid for video consumers.
     {
       "typeFormat": "ENUM",
       "values": [
+        "AV1",
+        "VP9",
         "VP8",
         "H264",
         "RAW"

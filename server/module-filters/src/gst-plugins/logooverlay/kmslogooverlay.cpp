@@ -133,20 +133,33 @@ tls_certificate_flags_to_reason (GTlsCertificateFlags flags)
 }
 
 static gboolean
+accept_certificate_callback (SoupMessage *msg, GTlsCertificate *certificate,
+                             GTlsCertificateFlags tls_errors, gpointer user_data)
+{
+    // Here you can inspect @certificate or compare it against a trusted one
+    // and you can see what is considered invalid by @tls_errors.
+    // Returning TRUE trusts it anyway.
+    return TRUE;
+}
+
+
+
+static gboolean
 load_from_url (gchar *file_name, gchar *url)
 {
   SoupSession *session;
   SoupMessage *msg;
   FILE *dst;
   gboolean ok = FALSE;
+  GError *error = NULL;
+  GBytes *bytes;
 
-  session = soup_session_new_with_options (SOUP_SESSION_SSL_USE_SYSTEM_CA_FILE,
-      TRUE, SOUP_SESSION_SSL_STRICT, FALSE, NULL);
+  session = soup_session_new ();
 
   // Enable logging in 'libsoup' library
   if (g_strcmp0 (g_getenv ("SOUP_DEBUG"), "1") >= 0) {
     GST_INFO ("Enable debug logging in 'libsoup' library");
-    SoupLogger *logger = soup_logger_new (SOUP_LOGGER_LOG_HEADERS, -1);
+    SoupLogger *logger = soup_logger_new (SOUP_LOGGER_LOG_HEADERS);
     soup_session_add_feature (session, SOUP_SESSION_FEATURE (logger));
   }
 
@@ -155,19 +168,23 @@ load_from_url (gchar *file_name, gchar *url)
     GST_ERROR ("Cannot parse URL: %s", url);
     goto end;
   }
+  g_signal_connect (msg, "accept-certificate", G_CALLBACK (accept_certificate_callback), NULL);
 
   GST_INFO ("HTTP blocking request BEGIN, URL: %s", url);
-  soup_session_send_message (session, msg);
+  bytes = soup_session_send_and_read (session, msg, NULL, &error);
   GST_INFO ("HTTP blocking request END");
 
-  if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code)) {
-    GST_ERROR ("HTTP error code %u: %s", msg->status_code, msg->reason_phrase);
+  if (error) {
+    GST_ERROR ("Could not send message");
+    g_error_free (error);
+  }
+  if (!SOUP_STATUS_IS_SUCCESSFUL (soup_message_get_status(msg))) {
+    GTlsCertificateFlags errors;
 
-    if (msg->status_code == SOUP_STATUS_SSL_FAILED) {
-      GTlsCertificate *certificate;
-      GTlsCertificateFlags errors;
+    GST_ERROR ("HTTP error code %u: %s", soup_message_get_status(msg), soup_message_get_reason_phrase(msg));
 
-      soup_message_get_https_status (msg, &certificate, &errors);
+    errors = soup_message_get_tls_peer_certificate_errors (msg);
+    if (errors != 0) {
       GST_ERROR ("SSL error code 0x%X: %s", errors,
           tls_certificate_flags_to_reason (errors));
     }
@@ -176,17 +193,16 @@ load_from_url (gchar *file_name, gchar *url)
   } else {
     // "ssl-strict" is FALSE, so HTTP status will be OK even if HTTPS fails;
     // in that case, issue a warning.
-    GTlsCertificate *certificate;
     GTlsCertificateFlags errors;
 
-    if (soup_message_get_https_status (msg, &certificate, &errors)
-        && errors != 0) {
+    errors = soup_message_get_tls_peer_certificate_errors (msg);
+    if (errors != 0) {
       GST_WARNING ("HTTPS is NOT SECURE, error 0x%X: %s", errors,
           tls_certificate_flags_to_reason (errors));
     }
   }
 
-  if (msg->response_body->length <= 0) {
+  if (g_bytes_get_size (bytes) <= 0) {
     GST_ERROR ("Write 0 bytes: No data contained in HTTP response");
     goto end;
   }
@@ -197,14 +213,15 @@ load_from_url (gchar *file_name, gchar *url)
     goto end;
   }
 
-  GST_DEBUG ("Write %ld bytes to temp file: %s", msg->response_body->length,
+  GST_DEBUG ("Write %ld bytes to temp file: %s", g_bytes_get_size (bytes),
       file_name);
-  fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
+  fwrite (g_bytes_get_data(bytes,NULL), 1, g_bytes_get_size(bytes), dst);
 
   if (fclose (dst) != 0) {
     GST_ERROR ("Error writing temp file: %s", file_name);
     goto end;
   }
+  g_bytes_unref(bytes);
 
   ok = TRUE;
 
@@ -213,7 +230,6 @@ end:
   g_object_unref (session);
   return ok;
 }
-
 static void
 load_image (cv::Mat &out, gchar *url, gchar *dir, gchar *image_name)
 {

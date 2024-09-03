@@ -47,6 +47,7 @@ set_property(TARGET kmsrtpendpointlib
     ${CMAKE_CURRENT_BINARY_DIR}/../../..
     ${KmsGstCommons_INCLUDE_DIRS}
     ${gstreamer-1.0_INCLUDE_DIRS}
+    ${nice_INCLUDE_DIRS}
 )
 
 target_link_libraries(kmsrtpendpointlib

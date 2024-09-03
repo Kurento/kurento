@@ -46,10 +46,10 @@ GST_START_TEST (connect_srcs)
 
   g_signal_connect (hubport, "pad-added", G_CALLBACK (pad_added), &added_apds);
 
-  src = gst_element_get_request_pad (hubport, "video_src_%u");
+  src = gst_element_request_pad_simple (hubport, "video_src_%u");
   fail_unless (src == NULL);
 
-  sink = gst_element_get_request_pad (hubport, HUB_VIDEO_SINK);
+  sink = gst_element_request_pad_simple (hubport, HUB_VIDEO_SINK);
   fail_unless (sink != NULL);
   fail_unless (g_strcmp0 (GST_OBJECT_NAME (sink), HUB_VIDEO_SINK) == 0);
 
@@ -62,9 +62,9 @@ GST_START_TEST (connect_srcs)
 
   g_object_unref (sink);
 
-  src = gst_element_get_request_pad (hubport, "audio_src_%u");
+  src = gst_element_request_pad_simple (hubport, "audio_src_%u");
   fail_unless (src == NULL);
-  sink = gst_element_get_request_pad (hubport, HUB_AUDIO_SINK);
+  sink = gst_element_request_pad_simple (hubport, HUB_AUDIO_SINK);
   fail_unless (sink != NULL);
   fail_unless (g_strcmp0 (GST_OBJECT_NAME (sink), HUB_AUDIO_SINK) == 0);
 

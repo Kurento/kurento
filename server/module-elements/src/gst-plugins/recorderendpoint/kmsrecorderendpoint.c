@@ -269,6 +269,7 @@ release_base_time_type (gpointer data)
   g_slice_free (BaseTimeType, data);
 }
 
+
 // Adjust timestamps to avoid gaps created by paused recordings.
 static GstFlowReturn
 recv_sample (GstAppSink * appsink, gpointer user_data)
@@ -1009,6 +1010,8 @@ set_appsink_caps (GstElement * appsink, const GstCaps * caps,
     case KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_WEBM:
     case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
+    case KMS_RECORDING_PROFILE_MP4:
+    case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
       /* Allow renegotiation of width and height because webmmux supports it */
       gst_structure_remove_field (str, "width");
       gst_structure_remove_field (str, "height");
@@ -1270,6 +1273,8 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   callbacks.eos = recv_eos;
   callbacks.new_preroll = NULL;
   callbacks.new_sample = recv_sample;
+  callbacks.new_event = NULL;
+  callbacks.propose_allocation = NULL; // FIXME: propose a funcion appsink_propose_allocation_cb to process this callback
 
   gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, NULL, NULL);
 

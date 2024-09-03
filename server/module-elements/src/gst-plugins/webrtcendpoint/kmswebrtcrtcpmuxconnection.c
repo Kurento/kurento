@@ -128,7 +128,7 @@ kms_webrtc_rtcp_mux_connection_request_rtp_sink (KmsIRtpConnection *
   str = g_strdup_printf ("rtp_sink_%d",
       g_atomic_int_add (&self->priv->tr->rtp_id, 1));
 
-  pad = gst_element_get_request_pad (self->priv->tr->sink->dtlssrtpenc, str);
+  pad = gst_element_request_pad_simple (self->priv->tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;
@@ -158,7 +158,7 @@ kms_webrtc_rtcp_mux_connection_request_rtcp_sink (KmsIRtpConnection *
   str = g_strdup_printf ("rtcp_sink_%d",
       g_atomic_int_add (&self->priv->tr->rtcp_id, 1));
 
-  pad = gst_element_get_request_pad (self->priv->tr->sink->dtlssrtpenc, str);
+  pad = gst_element_request_pad_simple (self->priv->tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;
@@ -277,6 +277,9 @@ kms_webrtc_rtcp_mux_connection_new (KmsIceBaseAgent * agent,
   g_signal_connect (priv->tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (connected_cb), conn);
 
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->sink->dtlssrtpenc, "rtcpmux", "dtlssrtpenc");
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->src->dtlssrtpdec, "rtcpmux", "dtlssrtpdec");
+  
   return conn;
 }
 

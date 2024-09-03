@@ -41,6 +41,8 @@ G_DEFINE_TYPE_WITH_CODE (KmsSdpRtpAvpfMediaHandler,
 #define DEFAULT_SDP_MEDIA_RTP_GOOG_REMB TRUE
 
 static gchar *video_rtcp_fb_enc[] = {
+  "AV1",
+  "VP9",
   "VP8",
   "H264"
 };
@@ -152,7 +154,7 @@ no_nack:
     goto no_remb;
   }
 
-  if (g_str_has_prefix (enc, "VP8")) {
+  if (g_str_has_prefix (enc, "VP8") || g_str_has_prefix (enc, "VP9") || g_str_has_prefix (enc, "AV1")) {
     /* Chrome adds goog-remb attribute */
     attr = g_strdup_printf ("%s %s", fmt, SDP_MEDIA_RTCP_FB_GOOG_REMB);
 

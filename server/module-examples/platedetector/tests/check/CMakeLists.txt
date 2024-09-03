@@ -19,7 +19,7 @@ include(TestHelpers)
 set(TEST_VARIABLES
   "GST_PLUGIN_PATH=${CMAKE_BINARY_DIR}"
   "CK_DEFAULT_TIMEOUT=50"
-  "TESSDATA_PREFIX=${CMAKE_SOURCE_DIR}/src/gst-plugins/platedetector"
+  "TESSDATA_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/../../src/gst-plugins/platedetector/tessdata"
 )
 set(SUPPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 

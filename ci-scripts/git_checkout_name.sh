@@ -104,7 +104,7 @@ elif git rev-parse --quiet --verify --end-of-options "$TAG_NAME"; then
 else
     # Use the fallback name
     case "$CFG_FALLBACK" in
-        xenial|bionic|focal|jammy)
+        xenial|bionic|focal|jammy|noble)
             BRANCH_NAME="refs/remotes/origin/ubuntu/$CFG_FALLBACK"
             ;;
         *)

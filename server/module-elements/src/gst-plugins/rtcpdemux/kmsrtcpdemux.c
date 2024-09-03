@@ -148,6 +148,8 @@ kms_rtcp_demux_get_local_rr_ssrc_pair (KmsRtcpDemux * self, guint32 remote_ssrc)
 static void
 handle_rtcp_ssrc (KmsRtcpDemux *self, GstBuffer *buffer, guint32 local_ssrc)
 {
+  gboolean src_pad_created = FALSE;
+
   // Get the output pad for this SSRC.
   GstPad *rtcp_pad = NULL;
   if (g_hash_table_contains (self->priv->rtcp_src_ssrc,
@@ -161,6 +163,8 @@ handle_rtcp_ssrc (KmsRtcpDemux *self, GstBuffer *buffer, guint32 local_ssrc)
     rtcp_pad =
         gst_pad_new_from_static_template (&rtcp_src_ssrc_template, pad_name);
     g_free (pad_name);
+
+    src_pad_created = TRUE;
 
     gst_pad_use_fixed_caps (rtcp_pad);
     gst_pad_set_active (rtcp_pad, TRUE);
@@ -181,6 +185,21 @@ handle_rtcp_ssrc (KmsRtcpDemux *self, GstBuffer *buffer, guint32 local_ssrc)
 
   if (rtcp_pad != NULL) {
     // Push a copy of the RTCP buffer throught the appropriate src pad.
+
+    if (src_pad_created) {
+      GstEvent *start_event;
+      GstEvent *segment_event;
+      GstSegment *segment;
+
+      start_event = gst_event_new_stream_start ("default");
+      segment = gst_segment_new ();
+      gst_segment_init (segment, GST_FORMAT_DEFAULT);
+      segment_event = gst_event_new_segment  (segment);
+      gst_pad_push_event (rtcp_pad, start_event);
+      gst_pad_push_event (rtcp_pad, segment_event);    
+    }
+
+    // FIX: Verify if no previous stream start has been sent and if not generate and senf it
     gst_pad_push (rtcp_pad, gst_buffer_copy (buffer));
   }
 }

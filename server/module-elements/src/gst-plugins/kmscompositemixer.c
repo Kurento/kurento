@@ -459,7 +459,7 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
       gst_element_request_pad (mixer->priv->videomixer,
       sink_pad_template, NULL, NULL);
 
-  tee_src = gst_element_get_request_pad (data->tee, "src_%u");
+  tee_src = gst_element_request_pad_simple (data->tee, "src_%u");
 
   gst_element_link_pads (data->tee, GST_OBJECT_NAME (tee_src),
       mixer->priv->videomixer, GST_OBJECT_NAME (data->video_mixer_pad));
@@ -576,7 +576,7 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
   gst_element_link_pads (data->capsfilter, NULL, data->tee,
       GST_OBJECT_NAME (data->tee_sink_pad));
 
-  tee_src = gst_element_get_request_pad (data->tee, "src_%u");
+  tee_src = gst_element_request_pad_simple (data->tee, "src_%u");
   gst_element_link_pads (data->tee, GST_OBJECT_NAME (tee_src), data->fakesink,
       "sink");
   g_object_unref (tee_src);

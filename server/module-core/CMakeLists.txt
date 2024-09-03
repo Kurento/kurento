@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 project("kurento-module-core")
 message(STATUS "CMake project: ${PROJECT_NAME}")
@@ -62,15 +62,6 @@ CHECK_CXX_COMPILER_FLAG("-Wno-error=date-time" HAS_WARNING_DATE_TIME)
 if(HAS_WARNING_DATE_TIME)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=date-time")
 endif()
-
-# FIXME Disable error from deprecated function gst_element_get_request_pad(),
-#       should use gst_element_request_pad_simple() instead.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
-
-# FIXME GLib < 2.67.1 (until Ubuntu 20.04) used `volatile` as if it provided
-#       atomic guarantees, which it doesn't. GCC-11 started warning about this.
-#       Remove this when upgrading to newer systems.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=incompatible-pointer-types")
 
 # Decide between std::regex or boost::regex
 include(CheckCXXSourceCompiles)

@@ -421,7 +421,7 @@ kms_element_set_target_on_linked (GstPad * pad, GstPad * peer,
 {
   GstPad *target;
 
-  target = gst_element_get_request_pad (element, "src_%u");
+  target = gst_element_request_pad_simple (element, "src_%u");
 
   if (GST_PAD_IS_FLUSHING (peer)) {
     gst_pad_send_event (peer, gst_event_new_flush_start ());

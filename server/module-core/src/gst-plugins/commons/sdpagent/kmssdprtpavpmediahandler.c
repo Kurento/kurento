@@ -1289,6 +1289,14 @@ kms_sdp_rtp_avp_media_handler_add_codec (KmsSdpRtpAvpMediaHandler * self,
     kms_sdp_rtp_avp_media_handler_add_fmtp (self, rtpmap->payload,
         "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
         NULL);
+  } else if (strstr (name, "AV1") != NULL) {
+    kms_sdp_rtp_avp_media_handler_add_fmtp (self, rtpmap->payload,
+        "level-idx=5;profile=0;tier=0",
+        NULL);
+  } else if (strstr (name, "VP9") != NULL) {
+    kms_sdp_rtp_avp_media_handler_add_fmtp (self, rtpmap->payload,
+        "profile-id=0",
+        NULL);
   }
 
   return rtpmap->payload;
