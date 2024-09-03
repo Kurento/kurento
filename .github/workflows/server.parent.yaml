@@ -38,42 +38,43 @@ on:
         default: "Linux"
 
 jobs:
-  libsrtp:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/libsrtp/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
-
-  openh264:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/openh264/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
-
-  openh264-gst-plugin:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    needs: ["openh264"]
-    uses: "Kurento/openh264-gst-plugin/.github/workflows/kurento-buildpackage.reusable.yaml@master"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "master"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
-
-  gst-plugins-good:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/gst-plugins-good/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
+# Not needed for 7.1.0 onwards on ubuntu 24.04
+#  libsrtp:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/libsrtp/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
+#
+#  openh264:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/openh264/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
+#
+#  openh264-gst-plugin:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    needs: ["openh264"]
+#    uses: "Kurento/openh264-gst-plugin/.github/workflows/kurento-buildpackage.reusable.yaml@master"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "master"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
+#
+#  gst-plugins-good:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/gst-plugins-good/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
 
   libnice:
     if: ${{ ! inputs.jobOnlyKurento }}
