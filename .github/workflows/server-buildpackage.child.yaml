@@ -36,6 +36,12 @@ on:
         required: false
         type: "boolean"
         default: true
+      runnerGroup:
+        description: "runnerGroup: Set of runners where the workflow jobs should be run"
+        required: false
+        type: "string"
+        default: ""
+
 
 defaults:
   run:
@@ -43,7 +49,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
     strategy:
       matrix:
         jobDistro: ${{ fromJSON(inputs.jobDistros) }}
