@@ -75,15 +75,15 @@ jobs:
 #      jobGitName: "7.0.0"
 #      jobGitNameFallback: ""
 #      jobRelease: ${{ inputs.jobRelease }}
-
-  libnice:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/libnice/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
+#
+#  libnice:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/libnice/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
 
   module-creator:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
