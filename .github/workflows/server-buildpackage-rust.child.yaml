@@ -15,7 +15,7 @@ on:
         description: "Git repo from where the Rust code is got to build package"
         required: false
         type: "string"
-        default: "GStreamer/gst-plugins-rs"
+        default: "https://github.com/GStreamer/gst-plugins-rs"
       jobGitName:
         description: "Non-default git branch or tag that should be checked out, if it exists"
         required: false
@@ -39,37 +39,16 @@ jobs:
         jobDistro: ${{ fromJson(inputs.jobDistros) }}
     timeout-minutes: 30
     steps:
-      - name: "Check for non-default git ref"
-        id: "git-ref"
-        run: |
-          if [[ -n "${{ inputs.jobGitName }}" ]]; then
-            echo "value=${{ inputs.jobGitName }}" >>$GITHUB_OUTPUT
-          else
-            echo "value=main" >>$GITHUB_OUTPUT
-          fi
-
-      - prepare: "Sets temporary directory for repo checkout"
-        run: |
-          mkdir tmpRepo
-
-      # Action: https://github.com/actions/checkout
-      - name: "Checkout"
-        uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
-        working-directory: "tmpRepo/"
-        with:
-          repository: "${{ inputs.jobGitRepo }}"
-          ref: "${{ steps.git-ref.outputs.value }}"
-
       - name: "Configure the environment for ci-scripts/"
         run: |
           echo "$PWD"/ci-scripts >>$GITHUB_PATH
           echo "KURENTO_SCRIPTS_HOME=$PWD"/ci-scripts >>$GITHUB_ENV
           echo "GSTREAMER_RUST_PATCH_DIR=$PWD/server/gst-plugins-rs" >>$GITHUB_ENV
-          echo "JOB_DIR=$PWD/tmpRepo" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
       - name: "Run job script"
         env:
+          JOB_REPO: "${{ inputs.jobGitRepo }}"
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           DISABLE_APT_PROXY: "true"

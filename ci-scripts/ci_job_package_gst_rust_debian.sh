@@ -36,6 +36,10 @@
 #/
 #/   Numeric timestamp shown in the version of nightly packages.
 #/
+#/ JOB_GIT_REPO
+#/
+#/   Git REpository containing the rust project to build package
+#/
 #/ JOB_GIT_NAME
 #/
 #/   Git branch or tag that should be checked out, if it exists.
@@ -43,11 +47,6 @@
 #/ GSTREAMER_RUST_PATCH_DIR
 #/
 #/   Path to the diffs to apply to gstreamer rust
-#/
-#/ JOB_DIR
-#/
-#/   Path to the rust repository
-#/
 #/
 #/ * Variable(s) from job Multi-Configuration ("Matrix") Project axis:
 #/
@@ -87,7 +86,10 @@ set -o xtrace
 GST_RUST_PACKAGE="gst-plugin-rtp"
 
 # Apply diff to generate deb package
-cd $JOB_DIR
+mkdir tmpRepo
+cd tmpRepo
+git clone $JOB_GIT_REPO
+cd *
 git apply "$GSTREAMER_RUST_PATCH_DIR"/debian.diff
 
 
