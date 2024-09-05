@@ -81,7 +81,7 @@ ANYTHING that you think might be relevant or useful.
 ### About Kurento Media Server
 
 * Kurento version:  <!-- E.g. 7.0.0, nightly -->
-* Server OS:          <!-- E.g. Ubuntu 20.04 (Focal) -->
+* Server OS:          <!-- E.g. Ubuntu 20.04 (noble) -->
 * Installation method:
     <!-- Fill with an 'x' in the boxes that apply. -->
   - [] [apt-get]
