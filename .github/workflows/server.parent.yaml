@@ -89,7 +89,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage-rust.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
-      jobGitRepo: "GStreamer/gst-plugin-rs"
+      jobGitRepo: "GStreamer/gst-plugins-rs"
       jobGitName: "gstreamer-1.24.2"
       jobRelease: ${{ inputs.jobRelease }}
       runnerGroup: ${{ inputs.runnerGroup }}
