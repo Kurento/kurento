@@ -139,7 +139,7 @@ jobs:
       directory: "server/module-core/"
 
   module-elements:
-    needs: ["libnice", "module-core"]
+    needs: ["module-core"]
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
