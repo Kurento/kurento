@@ -48,19 +48,24 @@ jobs:
             echo "value=main" >>$GITHUB_OUTPUT
           fi
 
+      - prepare: "Sets temporary directory for repo checkout"
+        run: |
+          mkdir tmpRepo
+
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
         uses: "actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c" # v3.3.0
+        working-directory: "tmpRepo/"
         with:
           repository: "${{ inputs.jobGitRepo }}"
           ref: "${{ steps.git-ref.outputs.value }}"
 
       - name: "Configure the environment for ci-scripts/"
-        working-directory: "ci-scripts/"
         run: |
-          echo "$PWD" >>$GITHUB_PATH
-          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "$PWD"/ci-scripts >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD"/ci-scripts >>$GITHUB_ENV
           echo "GSTREAMER_RUST_PATCH_DIR=$PWD/server/gst-plugins-rs" >>$GITHUB_ENV
+          echo "JOB_DIR=$PWD/tmpRepo" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
       - name: "Run job script"
@@ -69,7 +74,6 @@ jobs:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           DISABLE_APT_PROXY: "true"
           INSTALL_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
-        working-directory: "${{ inputs.directory }}"
         run: "ci_job_package_gst_rust_debian.sh"
 
 
