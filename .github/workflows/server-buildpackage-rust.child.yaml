@@ -15,7 +15,7 @@ on:
         description: "Git repo from where the Rust code is got to build package"
         required: false
         type: "string"
-        default: "https://github.com/GStreamer/gst-plugins-rs.git"
+        default: "GStreamer/gst-plugin-rs"
       jobGitName:
         description: "Non-default git branch or tag that should be checked out, if it exists"
         required: false
