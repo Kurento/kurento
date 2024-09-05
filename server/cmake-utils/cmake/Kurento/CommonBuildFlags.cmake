@@ -104,7 +104,7 @@ function(common_buildflags_set)
   # CMAKE_POSITION_INDEPENDENT_CODE is ON.
   # See CMP0083: https://cmake.org/cmake/help/latest/policy/CMP0083.html
   # Affects CMake < 3.14 (up to Ubuntu 18.04 "Bionic").
-  # Release 7.0: We're targeting Ubuntu 20.04 "Focal" (CMake 3.16), but still
+  # Release 7.1: We're targeting Ubuntu 24.04 "noble" (CMake 3.28), but still
   # keeping this, to keep `cmake_minimum_required(VERSION 3.0)`.
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie" PARENT_SCOPE)
 
