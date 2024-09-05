@@ -85,6 +85,15 @@ jobs:
 #      jobGitNameFallback: ""
 #      jobRelease: ${{ inputs.jobRelease }}
 
+  gst-rust-plugins:
+    uses: "./.github/workflows/server-buildpackage-rust.child.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitRepo: "https://github.com/GStreamer/gst-plugins-rs.git"
+      jobGitName: "gstreamer-1.24.2"
+      jobRelease: ${{ inputs.jobRelease }}
+      runnerGroup: ${{ inputs.runnerGroup }}
+
   module-creator:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
@@ -119,7 +128,7 @@ jobs:
       directory: "server/jsonrpc/"
 
   module-core:
-    needs: ["module-creator", "cmake-utils", "jsonrpc"]
+    needs: ["module-creator", "cmake-utils", "jsonrpc", "gst-rust-plugins"]
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"

@@ -10,7 +10,7 @@ on:
         # There is no `list` type, so use a raw JSON array and `fromJSON()`.
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
-        default: '["focal"]'
+        default: '["noble"]'
       jobGitName:
         description: "jobGitName: Non-default git branch or tag that should be checked out, if it exists"
         required: false

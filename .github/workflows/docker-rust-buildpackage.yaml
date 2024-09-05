@@ -1,4 +1,4 @@
-name: "docker/kurento-buildpackage"
+name: "docker/rust-buildpackage"
 
 on:
   # Manual trigger.
@@ -45,13 +45,11 @@ jobs:
 
       - name: "Run job script"
         env:
-          PUSH_IMAGES: "yes"
+          PUSH_IMAGES: "no"
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
           TAG: "${{ matrix.jobDistro }}-${{ env.JOB_TIMESTAMP }}"
           # Moving tags, example: "1.2.3", "1.2", "1", "latest"
           EXTRA_TAGS: "${{ matrix.jobDistro }}"
           TAG_COMMIT: "no"
-          KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
-          KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
-        working-directory: docker/kurento-buildpackage/
+        working-directory: docker/rust-buildpackage/
         run: container_build.sh
