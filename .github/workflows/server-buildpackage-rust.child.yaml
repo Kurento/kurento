@@ -68,6 +68,7 @@ jobs:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           DISABLE_APT_PROXY: "true"
           INSTALL_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
+        working-directory: "${{ inputs.directory }}"
         run: "ci_job_package_gst_rust_debian.sh"
 
 
