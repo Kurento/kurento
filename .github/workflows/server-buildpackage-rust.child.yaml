@@ -56,10 +56,11 @@ jobs:
           ref: "${{ steps.git-ref.outputs.value }}"
 
       - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
         run: |
-          echo "$PWD/kurento/ci-scripts" >>$GITHUB_PATH
-          echo "KURENTO_SCRIPTS_HOME=$PWD/kurento/ci-scripts" >>$GITHUB_ENV
-          echo "GSTREAMER_RUST_PATCH_DIR=$PWD/kurento/server/gst-plugins-rs" >>$GITHUB_ENV
+          echo "$PWD" >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "GSTREAMER_RUST_PATCH_DIR=$PWD/server/gst-plugins-rs" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
       - name: "Run job script"
@@ -77,4 +78,4 @@ jobs:
         uses: "actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce" # v3.1.2
         with:
           name: "artifacts"
-          path: "*.*deb"
+          path: "${{ inputs.directory }}/*.*deb"
