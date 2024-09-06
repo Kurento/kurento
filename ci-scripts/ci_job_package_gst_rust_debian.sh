@@ -84,6 +84,7 @@ set -o xtrace
 
 # Check out the requested branch
 GST_RUST_PACKAGE="gst-plugin-rtp"
+CURRENT_PWD=$PWD
 
 # Apply diff to generate deb package
 if [ -d xxtmpRepoxx ]; then rm -rf xxtmpRepoxx; fi
@@ -115,7 +116,7 @@ fi
 # -----
 
 docker run --pull always --rm \
-    --mount type=bind,src="$PWD",dst=/hostdir \
+    --mount type=bind,src="$CURRENT_PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     --mount type=bind,src="${INSTALL_PATH:-$PWD}",dst=/packages \
     "kurento/rust-buildpackage:${JOB_DISTRO}" \
