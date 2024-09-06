@@ -116,13 +116,14 @@ fi
 # -----
 
 docker run --pull always --rm \
-    --mount type=bind,src="$CURRENT_PWD",dst=/hostdir \
+    --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     --mount type=bind,src="${INSTALL_PATH:-$PWD}",dst=/packages \
     "kurento/rust-buildpackage:${JOB_DISTRO}" \
         --timestamp "$JOB_TIMESTAMP" \
         "${KURENTO_BUILDPACKAGE_ARGS[@]}"
 
+mv "$PWD"/*.*deb "$CURRENT_PWD"
 cd ..
 rm -rf xxtmpRepoxx
 
