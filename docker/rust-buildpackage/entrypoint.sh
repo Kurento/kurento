@@ -47,7 +47,7 @@ fi
 
 # Get generated packages out from the Docker container
 if [[ -d /hostdir ]]; then
-    mv ./target/debian/*.*deb /hostdir/ 2>/dev/null || true
+    mv /packages/*.*deb /hostdir/ 2>/dev/null || true
 else
     echo "[Docker entrypoint] WARNING: No host dir where to put built packages"
 fi
