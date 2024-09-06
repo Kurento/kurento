@@ -48,7 +48,7 @@ jobs:
 
       - name: "Run job script"
         env:
-          JOB_REPO: "${{ inputs.jobGitRepo }}"
+          JOB_GIT_REPO: "${{ inputs.jobGitRepo }}"
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           DISABLE_APT_PROXY: "true"
