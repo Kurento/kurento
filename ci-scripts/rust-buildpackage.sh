@@ -50,7 +50,7 @@
 #/
 #/   Doc: https://manpages.ubuntu.com/manpages/man1/apt-transport-http.1.html
 #/
-#/ --platfomr <platform specification>
+#/ --platform <platform specification>
 #/   
 #/   Sets the target binary platform to use (e.g x86_64-linux-gnu or arm64-linux-gnu)
 #/ 

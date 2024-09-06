@@ -45,7 +45,7 @@ jobs:
 
       - name: "Run job script"
         env:
-          PUSH_IMAGES: "no"
+          PUSH_IMAGES: "yes"
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
           TAG: "${{ matrix.jobDistro }}-${{ env.JOB_TIMESTAMP }}"
           # Moving tags, example: "1.2.3", "1.2", "1", "latest"
