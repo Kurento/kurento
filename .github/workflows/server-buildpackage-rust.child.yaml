@@ -46,9 +46,19 @@ jobs:
           echo "GSTREAMER_RUST_PATCH_DIR=$PWD/server/gst-plugins-rs" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
+      # Action: https://github.com/actions/download-artifact
+      - name: "Copy artifacts from previous jobs"
+        id: "copy-artifacts"
+        if: ${{ inputs.copyArtifacts }}
+        uses: "actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a" # v3.0.2
+        with:
+          name: "artifacts"
+          path: "artifacts/"
+
       - name: "Run job script"
         env:
           JOB_GIT_REPO: "${{ inputs.jobGitRepo }}"
+          JOB_GIT_NAME: "${{ inputs.jobGitName }}"
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           DISABLE_APT_PROXY: "true"

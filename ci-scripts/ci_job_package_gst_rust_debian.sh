@@ -90,6 +90,7 @@ mkdir tmpRepo
 cd tmpRepo
 git clone $JOB_GIT_REPO
 cd *
+git checkout $JOB_GIT_NAME
 git apply "$GSTREAMER_RUST_PATCH_DIR"/debian.diff
 
 
