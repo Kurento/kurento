@@ -86,8 +86,9 @@ set -o xtrace
 GST_RUST_PACKAGE="gst-plugin-rtp"
 
 # Apply diff to generate deb package
-mkdir tmpRepo
-cd tmpRepo
+if [ -d xxtmpRepoxx ]; then rm -rf xxtmpRepoxx; fi
+mkdir xxtmpRepoxx
+cd xxtmpRepoxx
 git clone $JOB_GIT_REPO
 cd *
 git checkout $JOB_GIT_NAME
@@ -122,6 +123,6 @@ docker run --pull always --rm \
         "${KURENTO_BUILDPACKAGE_ARGS[@]}"
 
 cd ..
-rm -rf tmpRepo
+rm -rf xxtmpRepoxx
 
 log "==================== END ===================="
