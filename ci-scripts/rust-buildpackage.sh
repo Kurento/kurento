@@ -99,7 +99,7 @@ CFG_PACKAGE="main"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
-        --install-files)
+        --dstdir)
             if [[ -n "${2-}" ]]; then
                 CFG_DSTDIR="$(realpath "$2")"
                 shift

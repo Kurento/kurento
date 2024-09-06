@@ -25,6 +25,11 @@ on:
         description: "Enable to build release versions; disable for development builds"
         required: false
         type: "boolean"
+      directory:
+        description: "directory: Working directory for the job execution"
+        required: true
+        type: "string"
+        default: "./"
       runnerGroup:
         description: "runnerGroup: Set of runners where the workflow jobs should be run"
         required: false
@@ -46,15 +51,6 @@ jobs:
           echo "GSTREAMER_RUST_PATCH_DIR=$PWD/server/gst-plugins-rs" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
-      # Action: https://github.com/actions/download-artifact
-      - name: "Copy artifacts from previous jobs"
-        id: "copy-artifacts"
-        if: ${{ inputs.copyArtifacts }}
-        uses: "actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a" # v3.0.2
-        with:
-          name: "artifacts"
-          path: "artifacts/"
-
       - name: "Run job script"
         env:
           JOB_GIT_REPO: "${{ inputs.jobGitRepo }}"
@@ -62,7 +58,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           DISABLE_APT_PROXY: "true"
-          INSTALL_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
+          INSTALL_PATH: "${{ inputs.directory }}"
         run: "ci_job_package_gst_rust_debian.sh"
 
 

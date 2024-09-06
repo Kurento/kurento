@@ -118,9 +118,10 @@ docker run --pull always --rm \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     --mount type=bind,src="${INSTALL_PATH:-$PWD}",dst=/packages \
     "kurento/rust-buildpackage:${JOB_DISTRO}" \
-        --install-files /packages \
         --timestamp "$JOB_TIMESTAMP" \
         "${KURENTO_BUILDPACKAGE_ARGS[@]}"
 
+cd ..
+rm -rf tmpRepo
 
 log "==================== END ===================="
