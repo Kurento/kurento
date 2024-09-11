@@ -25,7 +25,9 @@ set -o xtrace
 git clone https://github.com/Kurento/kurento.git
 pushd kurento/server/  # Enter server/
 if [[ "$KMS_VERSION" != "dev" ]]; then
-    git checkout "$KMS_VERSION" || true
+    # also look for normalized branch name
+    ALT_KMS_VERSION=$(echo $KMS_VERSION | sed 's/dev-//')
+    git checkout "$KMS_VERSION" || git checkout "$ALT_KMS_VERSION" || true
 fi
 git submodule update --init --recursive
 
