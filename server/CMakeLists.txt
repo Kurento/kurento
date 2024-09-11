@@ -181,18 +181,20 @@ add_custom_target(kurento-media-server-run
 # kurento-module-gstreamer-example
 # ================================
 
-add_subdirectory(module-examples/gstreamer-example)
+# FIXME: readd it, should be working
+# add_subdirectory(module-examples/gstreamer-example)
 
-set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/gstreamer-example/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
+# set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/gstreamer-example/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
 
 
 
 # kurento-module-opencv-example
 # =============================
 
-add_subdirectory(module-examples/opencv-example)
+# FIXME: readd it, should be working
+# add_subdirectory(module-examples/opencv-example)
 
-set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/opencv-example/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
+# set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/opencv-example/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
 
 
 
@@ -225,17 +227,19 @@ set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/modu
 # kurento-module-platedetector
 # =====================
 
-add_subdirectory(module-examples/platedetector)
+# FIXME: readd it, should be working
+# add_subdirectory(module-examples/platedetector)
 
-set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/platedetector/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
+# set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/platedetector/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
 
 
 # kurento-module-pointerdetector
 # =====================
 
-add_subdirectory(module-examples/pointerdetector)
+# FIXME: readd it, should be working
+# add_subdirectory(module-examples/pointerdetector)
 
-set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/pointerdetector/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
+# set(KURENTO_MODULES_DIR "${KURENTO_MODULES_DIR};${CMAKE_CURRENT_BINARY_DIR}/module-examples/pointerdetector/src/server/kmd" CACHE PATH "Path to Kurento Module Descriptor files" FORCE)
 
 
 # kurento-module-markerdetector
