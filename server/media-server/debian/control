@@ -99,7 +99,7 @@ Depends:
  libc6-dbgsym | libc6-dbg,
  libglib2.0-0-dbgsym | libglib2.0-0-dbg | libglib2.0-0t64-dbgsym,
  libgstreamer1.0-0-dbgsym,
- libjsoncpp1-dbgsym,
+ libjsoncpp25-dbgsym,
  libnice10-dbgsym | libnice-dbg,
  libsoup-3.0-0-dbgsym,
  libsrtp2-1-dbgsym,
