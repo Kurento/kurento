@@ -64,7 +64,8 @@ log "==================== BEGIN ===================="
 # Trace all commands
 set -o xtrace
 
-
+# Avoid illegal chars in tag name
+TAG=$(echo $TAG | tr '/' '_')
 
 [[ -z "${PUSH_IMAGES:-}" ]] && PUSH_IMAGES="no"
 [[ -z "${TAG_COMMIT:-}" ]] && TAG_COMMIT="yes"
