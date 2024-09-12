@@ -21,6 +21,11 @@ on:
         required: false
         type: "string"
         default: "gstreamer-1.24.2"
+      jobKurentoGitName:
+        description: "Non-default Kurento git branch or tag that should be checked out, if it exists"
+        required: false
+        type: "string"
+        default: "main"
       jobRelease:
         description: "Enable to build release versions; disable for development builds"
         required: false
@@ -44,6 +49,20 @@ jobs:
         jobDistro: ${{ fromJson(inputs.jobDistros) }}
     timeout-minutes: 30
     steps:
+      - name: "Check for non-default git ref"
+        id: "git-ref"
+        run: |
+          if [[ -n "${{ inputs.jobKurentoGitName }}" ]]; then
+            echo "value=${{ inputs.jobKurentoGitName }}" >>$GITHUB_OUTPUT
+          else
+            echo "value=main" >>$GITHUB_OUTPUT
+          fi
+
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+        with:
+          ref: "${{ steps.git-ref.outputs.value }}"
       - name: "Configure the environment for ci-scripts/"
         run: |
           echo "$PWD"/ci-scripts >>$GITHUB_PATH
