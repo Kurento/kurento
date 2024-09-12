@@ -36,7 +36,7 @@ target_link_libraries(test_constructors
 )
 
 add_test_program(test_webrtc_endpoint webRtcEndpoint.cpp)
-add_dependencies(test_webrtc_endpoint kmselements ${LIBRARY_NAME}impl)
+add_dependencies(test_webrtc_endpoint kmselements)
 set_property(TARGET test_webrtc_endpoint
   PROPERTY INCLUDE_DIRECTORIES
     ${KmsJsonRpc_INCLUDE_DIRS}
