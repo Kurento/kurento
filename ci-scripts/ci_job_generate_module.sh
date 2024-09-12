@@ -92,6 +92,7 @@ docker run -t --detach \
     --rm --name "$CONTAINER_NAME" \
     --mount type=bind,src="$CI_SCRIPTS_PATH",dst=/ci-scripts \
     --mount type=bind,src="$PWD",dst=/workdir \
+    "${DOCKER_ARGS[@]}" \
     kurento/kurento-ci-buildtools:noble
 
 # Stop (which also removes, due to `--rm`) the container upon script exit.
