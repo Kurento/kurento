@@ -151,7 +151,7 @@ public class SphinxLinks implements TemplateMethodModelEx {
    * @param patterns
    *          Array of arrays {target, replacement). The target is substituted by the replacement.
    * @return The translated string
-   * @see http://docs.python.org/3/library/stdtypes.html#str.translate
+   * @see <a href="http://docs.python.org/3/library/stdtypes.html#str.translate">translate</a>
    */
   public String translate(String text, List<String[]> patterns) {
     String res = text;
@@ -174,7 +174,7 @@ public class SphinxLinks implements TemplateMethodModelEx {
    * here. python docutils is public domain.
    * </p>
    *
-   * @see http ://code.nabla.net/doc/docutils/api/docutils/nodes/docutils.nodes. make_id.html
+   * @see <a href="http://code.nabla.net/doc/docutils/api/docutils/nodes/docutils.nodes.make_id.html">make_id</a>
    */
   public String make_id(String txt) {
     // id = string.lower()
