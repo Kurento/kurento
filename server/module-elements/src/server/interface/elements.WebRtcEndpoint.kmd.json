@@ -731,7 +731,7 @@ This could also happen in the middle of a session, though not likely.
       "typeFormat": "REGISTER",
       "name": "IceCandidate",
       "doc": "IceCandidate representation based on <code>RTCIceCandidate</code> interface.
-@see https://www.w3.org/TR/2018/CR-webrtc-20180927/#rtcicecandidate-interface",
+@see <a href=\"https://www.w3.org/TR/2018/CR-webrtc-20180927/#rtcicecandidate-interface\">ice candidate interface</a>",
       "properties": [
         {
           "name": "candidate",

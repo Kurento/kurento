@@ -28,7 +28,7 @@
     {
       "name": "MediaObject",
       "doc": "Base interface used to manage capabilities common to all Kurento elements.
-<h4>Properties</h4>
+<h2>Properties</h2>
 <ul>
   <li>
     <b>id</b>: unique identifier assigned to this <code>MediaObject</code> at
@@ -446,7 +446,7 @@ An example of this, would be a :rom:cls:`PlayerEndpoint` whose URI property coul
     {
       "name": "MediaPipeline",
       "extends": "MediaObject",
-      "doc": "A pipeline is a container for a collection of :rom:cls:`MediaElements<MediaElement>` and :rom:cls:`MediaMixers<MediaMixer>`.
+      "doc": "A pipeline is a container for a collection of :rom:cls:`MediaElements<MediaElement>`.
 It offers the methods needed to control the creation and connection of elements inside a certain pipeline.
       ",
       "constructor": {
@@ -2355,7 +2355,7 @@ Pipeline, towards the associated producer. Only valid for video consumers.
       "properties": [
         {
           "name": "name",
-          "doc": "Name of the codec. Must follow this format: <encoding name>/<clock rate>[/<encoding parameters>]",
+          "doc": "Name of the codec. Must follow this format: &lt;encoding name&gt;/&lt;clock rate&gt;[/&lt;encoding parameters&gt;]",
           "type": "String",
           "optional": true
         },

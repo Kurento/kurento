@@ -3,7 +3,7 @@
     {
       "name": "HttpPostEndpoint",
       "extends": "HttpEndpoint",
-      "doc": "An :rom:cls:`HttpPostEndpoint` contains SINK pads for AUDIO and VIDEO, which provide access to an HTTP file upload function\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSources <MediaSource>` are accessed through the HTTP POST method.",
+      "doc": "An :rom:cls:`HttpPostEndpoint` contains SINK pads for AUDIO and VIDEO, which provide access to an HTTP file upload function\n\n   This type of endpoint provide unidirectional communications. Its MediaSource are accessed through the HTTP POST method.",
       "constructor":
         {
           "doc": "Builder for the :rom:cls:`HttpPostEndpoint`.",
