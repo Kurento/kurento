@@ -22,14 +22,14 @@ public interface TFuture<V> {
   /**
    * Returns <code>true</code> if the transaction associated to this future was rolled back.
    *
-   * @return <code>true</cde> if the transaction associated to this future was rolled back.
+   * @return <code>true</code> if the transaction associated to this future was rolled back.
    */
   boolean isRollback();
 
   /**
    * Returns <code>true</code> if the transaction associated to this future is committed. The
    * transaction can success or fail with exception, in all of these cases, this method will return
-   * <tt>true</tt>.
+   * <code>true</code>.
    *
    * @return <code>true</code> if the transaction associated to this future is committed.
    */
