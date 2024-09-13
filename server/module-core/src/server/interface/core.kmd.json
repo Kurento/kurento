@@ -2355,7 +2355,7 @@ Pipeline, towards the associated producer. Only valid for video consumers.
       "properties": [
         {
           "name": "name",
-          "doc": "Name of the codec. Must follow this format: &amp;lt&#59;encoding name&amp;gt&#59;/&amp;lt&#59;clock rate&gt;[/&amp;lt&#59;encoding parameters&amp;gt&#59;]",
+          "doc": "Name of the codec. Must follow this format: <code>encoding name/clock rate[encoding parameters]<code>",
           "type": "String",
           "optional": true
         },
