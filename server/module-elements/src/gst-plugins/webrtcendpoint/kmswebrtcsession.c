@@ -24,6 +24,7 @@
 #include "kmswebrtcbundleconnection.h"
 #include "kmswebrtcsctpconnection.h"
 #include "kmswebrtcdatasessionbin.h"
+#include "kmswebrtctransport.h"
 #include <commons/constants.h>
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
@@ -68,6 +69,7 @@ enum
   SIGNAL_ON_ICE_CANDIDATE,
   SIGNAL_ON_ICE_GATHERING_DONE,
   SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED,
+  SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED,
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
   SIGNAL_INIT_ICE_AGENT,
@@ -213,6 +215,16 @@ kms_webrtc_session_get_connection (KmsWebrtcSession * self,
   return KMS_WEBRTC_BASE_CONNECTION (conn);
 }
 
+static void
+on_dtls_connection_state_change (GObject * object, gchar *stream_id, gchar *dtls_component, gchar *connection_id, guint state,
+    gpointer user_data)
+{
+  KmsWebrtcSession *self = KMS_WEBRTC_SESSION (user_data);
+
+  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED], 0, stream_id, dtls_component, connection_id, state);
+}
+
+
 static KmsIRtpConnection *
 kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
     const GstSDPMedia * media, const gchar * name, guint16 min_port,
@@ -231,12 +243,17 @@ kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
         KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new
         (self->agent, self->context, name, min_port, max_port,
             self->pem_certificate));
+    g_signal_connect (conn, "on-dtls-connection-state-changed",
+        G_CALLBACK(on_dtls_connection_state_change), self);    
   } else {
     GST_DEBUG_OBJECT (self, "Create RTP connection");
-    conn =
-        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new
+    KmsWebRtcConnection * conn_ = kms_webrtc_connection_new
         (self->agent, self->context, name, min_port, max_port,
-            self->pem_certificate));
+            self->pem_certificate);
+    conn = KMS_WEBRTC_BASE_CONNECTION (conn_);
+
+    g_signal_connect (conn, "on-dtls-connection-state-changed",
+        G_CALLBACK(on_dtls_connection_state_change), self);    
   }
 
   return KMS_I_RTP_CONNECTION (conn);
@@ -253,6 +270,9 @@ kms_webrtc_session_create_rtcp_mux_connection (KmsBaseRtpSession *
       kms_webrtc_rtcp_mux_connection_new (self->agent, self->context, name,
       min_port, max_port, self->pem_certificate);
 
+  g_signal_connect (conn, "on-dtls-connection-state-changed",
+        G_CALLBACK(on_dtls_connection_state_change), self);    
+        
   return KMS_I_RTCP_MUX_CONNECTION (conn);
 }
 
@@ -267,6 +287,9 @@ kms_webrtc_session_create_bundle_connection (KmsBaseRtpSession *
       kms_webrtc_bundle_connection_new (self->agent, self->context, name,
       min_port, max_port, self->pem_certificate);
 
+  g_signal_connect (conn, "on-dtls-connection-state-changed",
+        G_CALLBACK(on_dtls_connection_state_change), self);    
+      
   return KMS_I_BUNDLE_CONNECTION (conn);
 }
 
@@ -1115,6 +1138,12 @@ kms_webrtc_session_data_session_established_cb (KmsWebRtcDataSessionBin *
       connected);
 }
 
+static gboolean
+new_event_callback (GstAppSink * appsink, DataChannel * channel) 
+{
+  return FALSE;
+}
+
 static GstFlowReturn
 new_sample_callback (GstAppSink * appsink, DataChannel * channel)
 {
@@ -1192,6 +1221,10 @@ kms_webrtc_session_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
   callbacks.new_preroll = NULL;
   callbacks.new_sample =
       (GstFlowReturn (*)(GstAppSink *, gpointer)) new_sample_callback;
+  callbacks.new_event =
+      (gboolean (*)(GstAppSink *, gpointer)) new_event_callback;
+  callbacks.propose_allocation = NULL; // FIXME: propose a funcion appsink_propose_allocation_cb to process this callback
+
 
   gst_app_sink_set_callbacks (GST_APP_SINK (channel->appsink), &callbacks,
       kms_ref_struct_ref (KMS_REF_STRUCT_CAST (channel)),
@@ -2121,6 +2154,23 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       g_signal_new ("on-ice-component-state-changed",
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
       G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+
+  /**
+   * KmsWebrtcEndpoint::on-dtls-connection-state-changed
+   * @self: the object which received the signal
+   * @stream_id: The ID of the stream
+   * @component_id: The ID of the component
+   * @connection_id: GStreamer connection Id
+   * @state: The #DtlsConnectionState of the component
+   *
+   * This signal is fired whenever a component's DTLS connection state changes
+   */
+  kms_webrtc_session_signals[SIGNAL_ON_DTLS_CONNECTION_STATE_CHANGED] =
+      g_signal_new ("on-dtls-connection-state-changed",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+      G_TYPE_INVALID);
+
 
   kms_webrtc_session_signals[SIGNAL_GATHER_CANDIDATES] =
       g_signal_new ("gather-candidates",

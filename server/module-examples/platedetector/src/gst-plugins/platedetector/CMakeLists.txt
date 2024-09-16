@@ -8,7 +8,7 @@ include_directories(
 
 set(PLATEDETECTOR_SOURCES
   platedetector.c
-  kmsplatedetector.c kmsplatedetector.h
+  kmsplatedetector.cpp kmsplatedetector.h
 )
 
 add_library(platedetector MODULE ${PLATEDETECTOR_SOURCES})

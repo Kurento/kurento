@@ -276,6 +276,12 @@ kms_utils_get_caps_codec_name_from_sdp (const gchar * codec_name)
   if (g_ascii_strcasecmp (VP8_ENCONDING_NAME, codec_name) == 0) {
     return "VP8";
   }
+  if (g_ascii_strcasecmp (VP9_ENCONDING_NAME, codec_name) == 0) {
+    return "VP9";
+  }
+  if (g_ascii_strcasecmp (AV1_ENCONDING_NAME, codec_name) == 0) {
+    return "AV1";
+  }
 
   return codec_name;
 }

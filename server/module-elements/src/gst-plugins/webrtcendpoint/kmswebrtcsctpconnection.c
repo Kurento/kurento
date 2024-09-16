@@ -143,7 +143,7 @@ kms_webrtc_sctp_connection_request_data_src (KmsIRtpConnection * base_conn)
 {
   KmsWebRtcSctpConnection *self = KMS_WEBRTC_SCTP_CONNECTION (base_conn);
 
-  return gst_element_get_request_pad (self->priv->tr->src->dtlssrtpdec,
+  return gst_element_request_pad_simple (self->priv->tr->src->dtlssrtpdec,
       "data_src");
 }
 
@@ -152,7 +152,7 @@ kms_webrtc_sctp_connection_request_data_sink (KmsIRtpConnection * base_conn)
 {
   KmsWebRtcSctpConnection *self = KMS_WEBRTC_SCTP_CONNECTION (base_conn);
 
-  return gst_element_get_request_pad (self->priv->tr->sink->dtlssrtpenc,
+  return gst_element_request_pad_simple (self->priv->tr->sink->dtlssrtpenc,
       "data_sink");
 }
 
@@ -255,6 +255,9 @@ kms_webrtc_sctp_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
   g_signal_connect (priv->tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (dtls_connected_cb), conn);
 
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->sink->dtlssrtpenc, "sctp", "dtlssrtpenc");
+  kms_webrtc_base_connection_add_dtls_component (KMS_WEBRTC_BASE_CONNECTION(conn), priv->tr->src->dtlssrtpdec, "sctp", "dtlssrtpdec");
+  
   return conn;
 }
 

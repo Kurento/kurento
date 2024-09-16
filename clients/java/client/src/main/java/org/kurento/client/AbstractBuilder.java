@@ -28,8 +28,7 @@ import org.kurento.jsonrpc.Props;
  * Kurento Media Builder base interface. Builds a {@code <T>} object, either synchronously using
  * {@link #build} or asynchronously using {@link #buildAsync}
  *
- * @param T
- *          the type of object to build
+ * @param <T>  the type of object to build
  *
  **/
 public class AbstractBuilder<T> {
@@ -79,7 +78,7 @@ public class AbstractBuilder<T> {
 
   /**
    * Builds an object asynchronously using the builder design pattern.
-   * </p>
+   * <p/>
    * The continuation will have {@link Continuation#onSuccess} called when the object is ready, or
    * {@link Continuation#onError} if an error occurs
    *

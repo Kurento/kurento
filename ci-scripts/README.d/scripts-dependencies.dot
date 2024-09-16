@@ -18,6 +18,7 @@ digraph scripts {
     "doc-kurento.yaml";
     "docker-kurento-buildpackage.yaml";
     "docker-kurento-ci-buildtools.yaml";
+    "docker-rust-buildpackage.yaml";
     "server.parent.yaml";
   }
 
@@ -39,6 +40,7 @@ digraph scripts {
     "container_build.sh"
   };
   "server.parent.yaml" -> {
+    "server-buildpackage-rust.child.yaml"
     "server-buildpackage.child.yaml"
     "server-deploy-aws.child.yaml"
     "server-deploy-debian.child.yaml"
@@ -56,6 +58,9 @@ digraph scripts {
   };
   "server-buildpackage.child.yaml" -> {
     "ci_job_package_debian.sh"
+  };
+  "server-buildpackage-rust.child.yaml" -> {
+    "ci_job_package_gst_rust_debian.sh"
   };
   "server-deploy-aws.child.yaml" -> {
     "ci_job_deploy_aws_cf.sh"
@@ -112,6 +117,10 @@ digraph scripts {
 
   "docker/kurento-buildpackage" -> {
     "kurento-buildpackage.sh"
+  };
+
+  "docker/rust-buildpackage" -> {
+    "rust-buildpackage.sh"
   };
 
   "server/bin/make-dev-container.sh" -> {

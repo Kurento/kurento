@@ -164,13 +164,13 @@ link_new_agnosticbin (gchar * key, GstElement * adder, GstElement * agnosticbin)
     goto end;
   }
 
-  srcpad = gst_element_get_request_pad (agnosticbin, "src_%u");
+  srcpad = gst_element_request_pad_simple (agnosticbin, "src_%u");
   if (srcpad == NULL) {
     GST_ERROR ("Could not get src pad in %" GST_PTR_FORMAT, agnosticbin);
     goto end;
   }
 
-  sinkpad = gst_element_get_request_pad (adder, "sink_%u");
+  sinkpad = gst_element_request_pad_simple (adder, "sink_%u");
   if (sinkpad == NULL) {
     GST_ERROR ("Could not get sink pad in %" GST_PTR_FORMAT, adder);
     gst_element_release_request_pad (agnosticbin, srcpad);
@@ -226,13 +226,13 @@ link_new_adder (gchar * key, GstElement * agnosticbin, GstElement * adder)
   GST_DEBUG ("Linking %s to %s", GST_ELEMENT_NAME (agnosticbin),
       GST_ELEMENT_NAME (adder));
 
-  srcpad = gst_element_get_request_pad (agnosticbin, "src_%u");
+  srcpad = gst_element_request_pad_simple (agnosticbin, "src_%u");
   if (srcpad == NULL) {
     GST_ERROR ("Could not get src pad in %" GST_PTR_FORMAT, agnosticbin);
     goto end;
   }
 
-  sinkpad = gst_element_get_request_pad (adder, "sink_%u");
+  sinkpad = gst_element_request_pad_simple (adder, "sink_%u");
   if (sinkpad == NULL) {
     GST_ERROR ("Could not get sink pad in %" GST_PTR_FORMAT, adder);
     gst_element_release_request_pad (agnosticbin, srcpad);
@@ -805,7 +805,7 @@ end:
 static void
 set_target_cb (GstPad * pad, GstPad * peer, gpointer tee)
 {
-  GstPad *srcpad = gst_element_get_request_pad (GST_ELEMENT (tee), "src_%u");
+  GstPad *srcpad = gst_element_request_pad_simple (GST_ELEMENT (tee), "src_%u");
 
   gst_ghost_pad_set_target (GST_GHOST_PAD (pad), srcpad);
 }
@@ -871,7 +871,7 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
     goto no_audiotestsrc;
   }
 
-  sinkpad = gst_element_get_request_pad (adder, "sink_%u");
+  sinkpad = gst_element_request_pad_simple (adder, "sink_%u");
   if (sinkpad == NULL) {
     GST_ERROR ("Could not get sink pad in %" GST_PTR_FORMAT, adder);
     goto no_audiotestsrc;

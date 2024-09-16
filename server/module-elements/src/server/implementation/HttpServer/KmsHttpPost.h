@@ -83,7 +83,7 @@ struct _KmsHttpPostClass
   GObjectClass parent_class;
 
   /* signal callbacks */
-  void (*got_data) (KmsHttpPost * self, SoupBuffer *buffer);
+  void (*got_data) (KmsHttpPost * self, GBytes *buffer);
   void (*finished) (KmsHttpPost * self);
 };
 

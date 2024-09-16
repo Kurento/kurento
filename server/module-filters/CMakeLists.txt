@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 project("kurento-module-filters")
 message(STATUS "CMake project: ${PROJECT_NAME}")
@@ -53,10 +53,6 @@ if(HAS_WARNING_DATE_TIME)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=date-time")
 endif()
 
-# FIXME Disable error from deprecated function gst_element_get_request_pad(),
-#       should use gst_element_request_pad_simple() instead.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
-
 # Generate file "config.h"
 set(VERSION "${PROJECT_VERSION}")
 set(PACKAGE "${PROJECT_NAME}")
@@ -68,7 +64,7 @@ set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DHAVE_CONFIG_H")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
 
 set(GST_REQUIRED ^1.0.0)
-set(SOUP_REQUIRED ^2.40)
+set(SOUP_REQUIRED ^3.0)
 set(OPENCV_REQUIRED <5.0.0)
 
 include(GenericFind)
@@ -78,7 +74,7 @@ generic_find(LIBNAME gstreamer-base-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-video-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find(LIBNAME gstreamer-check-1.0 VERSION ${GST_REQUIRED})
 generic_find(LIBNAME KmsJsonRpc VERSION ^7.0.0 REQUIRED)
-generic_find(LIBNAME libsoup-2.4 VERSION ${SOUP_REQUIRED} REQUIRED)
+generic_find(LIBNAME libsoup-3.0 VERSION ${SOUP_REQUIRED} REQUIRED)
 generic_find(LIBNAME OpenCV VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 set(CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)

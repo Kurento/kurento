@@ -16,7 +16,7 @@ It runs [kurento-buildpackage](https://github.com/Kurento/kurento/blob/main/ci-s
   cd kurento/server/module-core/
   docker run --rm \
       --mount type=bind,src="$PWD",dst=/hostdir \
-      kurento/kurento-buildpackage:focal \
+      kurento/kurento-buildpackage:noble \
       --install-kurento nightly
   ```
 
@@ -31,7 +31,7 @@ It runs [kurento-buildpackage](https://github.com/Kurento/kurento/blob/main/ci-s
 ## Help output
 
 ```
-$ docker run --rm kurento/kurento-buildpackage:focal --help
+$ docker run --rm kurento/kurento-buildpackage:noble --help
 
 Kurento packaging script for Debian/Ubuntu.
 

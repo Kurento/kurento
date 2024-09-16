@@ -1,9 +1,9 @@
-kurento-module-elements (7.0.2-1kurento1) UNRELEASED; urgency=medium
+kurento-module-elements (7.1.0-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * UNRELEASED
 
- -- Juan Navarro <juan.navarro@gmx.es>  Tue, 13 Jun 2023 18:02:36 +0200
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Mon, 16 Sep 2024 14:29:55 +0000
 
 kms-elements (6.18.0-0kurento1) testing; urgency=medium
 

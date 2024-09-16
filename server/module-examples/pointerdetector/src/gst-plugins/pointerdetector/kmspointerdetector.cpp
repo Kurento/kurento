@@ -35,13 +35,10 @@
 
 // FIXME: Compatibility between OpenCV 2.x and 3.x
 #include <opencv2/core/version.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
 #if CV_MAJOR_VERSION > 2
-#include <opencv2/imgcodecs/imgcodecs_c.h>
-int
-cvRound (double value)
-{
-  return (ceil (value));
-}
+#include <opencv2/imgcodecs/legacy/constants_c.h>
 #endif
 
 #define PLUGIN_NAME "pointerdetector"
@@ -128,16 +125,10 @@ G_DEFINE_TYPE_WITH_CODE (KmsPointerDetector, kms_pointer_detector,
 static void
 dispose_button_struct (gpointer data)
 {
-  ButtonStruct *aux = data;
+  ButtonStruct *aux = (ButtonStruct*)data;
 
   if (aux->id != NULL)
     g_free (aux->id);
-
-  if (aux->inactive_icon != NULL)
-    cvReleaseImage (&aux->inactive_icon);
-
-  if (aux->active_icon != NULL)
-    cvReleaseImage (&aux->active_icon);
 
   g_free (aux);
 }
@@ -158,7 +149,7 @@ is_valid_uri (const gchar * url)
   GRegex *regex;
 
   regex = g_regex_new ("^(?:((?:https?):)\\/\\/)([^:\\/\\s]+)(?::(\\d*))?(?:\\/"
-      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", 0, 0, NULL);
+      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", (GRegexCompileFlags)0, (GRegexMatchFlags)0, NULL);
   ret = g_regex_match (regex, url, G_REGEX_MATCH_ANCHORED, NULL);
   g_regex_unref (regex);
 
@@ -170,11 +161,19 @@ load_from_url (gchar * file_name, gchar * url)
 {
   SoupSession *session;
   SoupMessage *msg;
+  GError *error = NULL;
   FILE *dst;
+  GBytes *bytes;
 
-  session = soup_session_sync_new ();
+
+  session = soup_session_new ();
   msg = soup_message_new ("GET", url);
-  soup_session_send_message (session, msg);
+  bytes = soup_session_send_and_read (session, msg, NULL, &error);
+
+  if (error) {
+    GST_ERROR ("It is not possible to get uri %s", url);
+    goto end;
+  }
 
   dst = fopen (file_name, "w+");
 
@@ -182,7 +181,7 @@ load_from_url (gchar * file_name, gchar * url)
     GST_ERROR ("It is not possible to create the file");
     goto end;
   }
-  fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
+  fwrite (g_bytes_get_data(bytes,NULL), 1, g_bytes_get_size (bytes), dst);
   fclose (dst);
 
 end:
@@ -190,21 +189,21 @@ end:
   g_object_unref (session);
 }
 
-static IplImage *
+static cv::Mat
 load_image (gchar * uri, gchar * dir, gchar * image_name,
     const gchar * name_variant)
 {
-  IplImage *aux;
+  cv::Mat aux;
 
-  aux = cvLoadImage (uri, CV_LOAD_IMAGE_UNCHANGED);
-  if (aux == NULL) {
+  aux = cv::imread (uri, CV_LOAD_IMAGE_UNCHANGED);
+  if (aux.data == NULL) {
     if (is_valid_uri (uri)) {
       gchar *file_name;
 
       file_name =
           g_strconcat (dir, "/", image_name, name_variant, ".png", NULL);
       load_from_url (file_name, uri);
-      aux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+      aux = cv::imread (file_name, CV_LOAD_IMAGE_UNCHANGED);
       g_remove (file_name);
       g_free (file_name);
     }
@@ -238,8 +237,8 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
         gst_structure_get (pointerdetector->priv->buttonsLayout, name,
         GST_TYPE_STRUCTURE, &button, NULL);
     if (ret) {
-      ButtonStruct *structAux = g_malloc0 (sizeof (ButtonStruct));
-      IplImage *aux = NULL;
+      ButtonStruct *structAux = (ButtonStruct*)g_malloc0 (sizeof (ButtonStruct));
+      cv::Mat aux;
 
       gst_structure_get (button, "upRightCornerX", G_TYPE_INT,
           &structAux->cvButtonLayout.x, NULL);
@@ -265,18 +264,13 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
             load_image (inactive_uri, pointerdetector->priv->images_dir,
             structAux->id, INACTIVE_IMAGE_VARIANT_NAME);
 
-        if (aux != NULL) {
+        if (aux.data != NULL) {
           structAux->inactive_icon =
-              cvCreateImage (cvSize (structAux->cvButtonLayout.width,
-                  structAux->cvButtonLayout.height), aux->depth,
-              aux->nChannels);
-          cvResize (aux, structAux->inactive_icon, CV_INTER_CUBIC);
-          cvReleaseImage (&aux);
-        } else {
-          structAux->inactive_icon = NULL;
+              cv::Mat (cvSize (structAux->cvButtonLayout.width,
+                  structAux->cvButtonLayout.height), aux.depth(),
+              aux.channels());
+          cv::resize (aux, structAux->inactive_icon, cv::Size(structAux->cvButtonLayout.width, structAux->cvButtonLayout.height), 0, 0, CV_INTER_CUBIC);
         }
-      } else {
-        structAux->inactive_icon = NULL;
       }
 
       if (have_active_icon) {
@@ -284,18 +278,13 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
             load_image (active_uri, pointerdetector->priv->images_dir,
             structAux->id, ACTIVE_IMAGE_VARIANT_NAME);
 
-        if (aux != NULL) {
+        if (aux.data != NULL) {
           structAux->active_icon =
-              cvCreateImage (cvSize (structAux->cvButtonLayout.width,
-                  structAux->cvButtonLayout.height), aux->depth,
-              aux->nChannels);
-          cvResize (aux, structAux->active_icon, CV_INTER_CUBIC);
-          cvReleaseImage (&aux);
-        } else {
-          structAux->active_icon = NULL;
+              cv::Mat (cvSize (structAux->cvButtonLayout.width,
+                  structAux->cvButtonLayout.height), aux.depth(),
+              aux.channels());
+          cv::resize (aux, structAux->active_icon, cv::Size(structAux->cvButtonLayout.width, structAux->cvButtonLayout.height), 0, 0, CV_INTER_CUBIC);
         }
-      } else {
-        structAux->active_icon = NULL;
       }
 
       if (have_transparency) {
@@ -451,7 +440,7 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
       if (pointerdetector->priv->buttonsLayout != NULL)
         gst_structure_free (pointerdetector->priv->buttonsLayout);
 
-      pointerdetector->priv->buttonsLayout = g_value_dup_boxed (value);
+      pointerdetector->priv->buttonsLayout = (GstStructure*) g_value_dup_boxed (value);
       kms_pointer_detector_load_buttonsLayout (pointerdetector);
       break;
     case PROP_MESSAGE:
@@ -463,7 +452,7 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
     case PROP_CALIBRATION_AREA:{
       GstStructure *aux;
 
-      aux = g_value_dup_boxed (value);
+      aux = (GstStructure*)g_value_dup_boxed (value);
       gst_structure_get (aux, "x", G_TYPE_INT,
           &pointerdetector->priv->x_calibration, NULL);
       gst_structure_get (aux, "y", G_TYPE_INT,
@@ -638,7 +627,7 @@ kms_pointer_detector_check_pointer_into_button (CvPoint * pointer_position,
 }
 
 static void
-kms_pointer_detector_overlay_icon (IplImage * icon,
+kms_pointer_detector_overlay_icon (cv::Mat &icon,
     gint x, gint y,
     gdouble transparency,
     gboolean saturate, KmsPointerDetector * pointerdetector)
@@ -646,31 +635,31 @@ kms_pointer_detector_overlay_icon (IplImage * icon,
   int w, h;
   uchar *row, *image_row;
 
-  row = (uchar *) icon->imageData;
+  row = (uchar *) icon.data;
   image_row = (uchar *) pointerdetector->priv->cvImage->imageData +
       (y * pointerdetector->priv->cvImage->widthStep);
 
-  for (h = 0; h < icon->height; h++) {
+  for (h = 0; h < icon.rows; h++) {
 
     uchar *column = row;
     uchar *image_column = image_row + (x * 3);
 
-    for (w = 0; w < icon->width; w++) {
+    for (w = 0; w < icon.cols; w++) {
       /* Check if point is inside overlay boundaries */
       if (((w + x) < pointerdetector->priv->cvImage->width)
           && ((w + x) >= 0)) {
         if (((h + y) < pointerdetector->priv->cvImage->height)
             && ((h + y) >= 0)) {
 
-          if (icon->nChannels == 1) {
+          if (icon.channels() == 1) {
             *(image_column) = (uchar) (*(column));
             *(image_column + 1) = (uchar) (*(column));
             *(image_column + 2) = (uchar) (*(column));
-          } else if (icon->nChannels == 3) {
+          } else if (icon.channels() == 3) {
             *(image_column) = (uchar) (*(column));
             *(image_column + 1) = (uchar) (*(column + 1));
             *(image_column + 2) = (uchar) (*(column + 2));
-          } else if (icon->nChannels == 4) {
+          } else if (icon.channels() == 4) {
             double proportion =
                 ((double) *(uchar *) (column + 3)) / (double) 255;
             double overlay = transparency * proportion;
@@ -695,11 +684,11 @@ kms_pointer_detector_overlay_icon (IplImage * icon,
         }
       }
 
-      column += icon->nChannels;
+      column += icon.channels();
       image_column += pointerdetector->priv->cvImage->nChannels;
     }
 
-    row += icon->widthStep;
+    row += icon.step1(0);
     image_row += pointerdetector->priv->cvImage->widthStep;
   }
 }
@@ -720,7 +709,7 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
     CvScalar color;
     gboolean is_active_window;
 
-    structAux = l->data;
+    structAux = (ButtonStruct*)l->data;
     upRightCorner.x = structAux->cvButtonLayout.x;
     upRightCorner.y = structAux->cvButtonLayout.y;
     downLeftCorner.x =
@@ -732,17 +721,17 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
         (&pointerdetector->priv->finalPointerPosition, structAux)) {
       buttonClickedCounter++;
 
-      color = GREEN;
+      color = cvScalar(GREEN);
       is_active_window = TRUE;
       actualButtonClickedId = structAux->id;
     } else {
-      color = WHITE;
+      color = cvScalar(WHITE);
       is_active_window = FALSE;;
     }
 
     if (pointerdetector->priv->show_windows_layout) {
       if (!is_active_window) {
-        if (structAux->inactive_icon != NULL) {
+        if (structAux->inactive_icon.data != NULL) {
           kms_pointer_detector_overlay_icon (structAux->inactive_icon,
               structAux->cvButtonLayout.x,
               structAux->cvButtonLayout.y,
@@ -752,12 +741,12 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
               downLeftCorner, color, 1, 8, 0);
         }
       } else {
-        if (structAux->active_icon != NULL) {
+        if (structAux->active_icon.data != NULL) {
           kms_pointer_detector_overlay_icon (structAux->active_icon,
               structAux->cvButtonLayout.x,
               structAux->cvButtonLayout.y,
               structAux->transparency, FALSE, pointerdetector);
-        } else if (structAux->inactive_icon != NULL) {
+        } else if (structAux->inactive_icon.data != NULL) {
           kms_pointer_detector_overlay_icon (structAux->inactive_icon,
               structAux->cvButtonLayout.x,
               structAux->cvButtonLayout.y,
@@ -823,6 +812,7 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
   int distance;
   int best_candidate;
   gint i;
+  float *p=NULL;
 
   if ((pointerdetector->priv->x_calibration == 0)
       && (pointerdetector->priv->y_calibration == 0)
@@ -844,7 +834,7 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
       cvPoint (pointerdetector->priv->x_calibration
           + pointerdetector->priv->width_calibration,
           pointerdetector->priv->y_calibration
-          + pointerdetector->priv->height_calibration), WHITE, 1, 8, 0);
+          + pointerdetector->priv->height_calibration), cvScalar(WHITE), 1, 8, 0);
 
   if ((pointerdetector->priv->h_min == 0) && (pointerdetector->priv->h_max == 0)
       && (pointerdetector->priv->s_min == 0)
@@ -912,7 +902,7 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
       best_candidate = i;
     }
   }
-  float *p = (float *) cvGetSeqElem (circles, best_candidate);
+  p = (float *) cvGetSeqElem (circles, best_candidate);
 
   pointerdetector->priv->finalPointerPosition.x = p[0];
   pointerdetector->priv->finalPointerPosition.y = p[1];
@@ -989,7 +979,7 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
   g_object_class_install_property (gobject_class, PROP_WINDOWS_LAYOUT,
       g_param_spec_boxed ("windows-layout", "windows layout",
           "supply the positions and dimensions of windows into the main window",
-          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          GST_TYPE_STRUCTURE, (GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 
   g_object_class_install_property (gobject_class, PROP_MESSAGE,
       g_param_spec_boolean ("message", "message",
@@ -1003,12 +993,12 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
   g_object_class_install_property (gobject_class, PROP_CALIBRATION_AREA,
       g_param_spec_boxed ("calibration-area", "calibration area",
           "define the window used to calibrate the color to track",
-          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          GST_TYPE_STRUCTURE, (GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 
   kms_pointer_detector_signals[SIGNAL_CALIBRATE_COLOR] =
       g_signal_new ("calibrate-color",
       G_TYPE_FROM_CLASS (klass),
-      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      (GSignalFlags)(G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST),
       G_STRUCT_OFFSET (KmsPointerDetectorClass, calibrate_color), NULL, NULL,
       __kms_core_marshal_VOID__VOID, G_TYPE_NONE, 0);
 

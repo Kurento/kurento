@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 project("kurento-cmake-utils")
 message(STATUS "CMake project: ${PROJECT_NAME}")
@@ -24,7 +24,7 @@ if(HAS_PARENT)
 endif()
 
 include(KurentoGitHelpers)
-get_git_version(PROJECT_VERSION 7.0.2-dev)
+get_git_version(PROJECT_VERSION 7.1.0)
 message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 
 # CMake Config Mode search file. Adds the main Kurento dir to CMAKE_MODULE_PATH.

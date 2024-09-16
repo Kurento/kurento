@@ -300,6 +300,9 @@ GST_START_TEST (check_kms_utils_drop_until_keyframe_bufferlist)
   GstPad *sinkpad, *srcpad;
   GstPadLinkReturn plr;
   GstBufferList *received_bufflist;
+  GstEvent *start_event;
+  GstEvent *segment_event;
+  GstSegment *segment;
 
   srcpad = gst_pad_new ("src", GST_PAD_SRC);
   fail_if (srcpad == NULL);
@@ -315,6 +318,13 @@ GST_START_TEST (check_kms_utils_drop_until_keyframe_bufferlist)
 
   plr = gst_pad_link (srcpad, sinkpad);
   fail_unless (GST_PAD_LINK_SUCCESSFUL (plr));
+
+  start_event = gst_event_new_stream_start ("default");
+  segment = gst_segment_new ();
+  gst_segment_init (segment, GST_FORMAT_DEFAULT);
+  segment_event = gst_event_new_segment  (segment);
+  gst_pad_push_event (srcpad, start_event);
+  gst_pad_push_event (srcpad, segment_event);
 
   GST_DEBUG ("Drop entire list");
   bufflist = gst_buffer_list_new ();
@@ -376,6 +386,8 @@ GST_START_TEST (check_kms_utils_drop_until_keyframe_bufferlist)
   fail_unless (gst_buffer_list_get (received_bufflist, 2) == buf3);
   gst_buffer_list_unref (received_bufflist);
 
+
+  gst_segment_free (segment);
   gst_pad_unlink (srcpad, sinkpad);
   gst_object_unref (srcpad);
   gst_object_unref (sinkpad);
@@ -397,7 +409,7 @@ utils_suite (void)
   tcase_add_test (tc_chain, check_kms_utils_set_pad_event_function_full);
 
   tcase_add_test (tc_chain, check_kms_utils_set_pad_query_function_full);
-
+  
   tcase_add_test (tc_chain, check_kms_utils_drop_until_keyframe_buffer);
   tcase_add_test (tc_chain, check_kms_utils_drop_until_keyframe_bufferlist);
 

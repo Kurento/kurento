@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 project("kurento-module-elements")
 message(STATUS "CMake project: ${PROJECT_NAME}")
@@ -56,18 +56,6 @@ if(HAS_WARNING_DATE_TIME)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=date-time")
 endif()
 
-# FIXME Disable error from deprecated function RSA_generate_key()
-#       in src/server/implementation/CertificateManager.cpp:188
-# FIXME Disable error from deprecated function gst_element_get_request_pad(),
-#       should use gst_element_request_pad_simple() instead.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
-
-# FIXME GLib < 2.67.1 (Ubuntu 20.04) used `volatile` as if it provided atomic
-#       guarantees, which it doesn't. GCC-11 started warning about this.
-#       Remove this when upgrading to newer systems.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=incompatible-pointer-types")
-
 # Generate file "config.h"
 set(VERSION "${PROJECT_VERSION}")
 set(PACKAGE "${PROJECT_NAME}")
@@ -80,7 +68,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
 
 set(GST_REQUIRED ^1.0.0)
 set(GLIB_REQUIRED ^2.38)
-set(SOUP_REQUIRED ^2.40)
+set(SOUP_REQUIRED ^3.0)
 set(NICE_REQUIRED ^0.1.13)
 set(GLIBMM_REQUIRED ^2.37)
 
@@ -98,7 +86,7 @@ generic_find(LIBNAME gstreamer-sctp-1.0 REQUIRED)
 generic_find(LIBNAME glibmm-2.4 VERSION ${GLIBMM_REQUIRED} REQUIRED)
 generic_find(LIBNAME KmsJsonRpc VERSION ^7.0.0 REQUIRED)
 generic_find(LIBNAME KmsGstCommons REQUIRED)
-generic_find(LIBNAME libsoup-2.4 VERSION ${SOUP_REQUIRED} REQUIRED)
+generic_find(LIBNAME libsoup-3.0 VERSION ${SOUP_REQUIRED} REQUIRED)
 generic_find(LIBNAME nice VERSION ${NICE_REQUIRED} REQUIRED)
 generic_find(LIBNAME gio-2.0 VERSION ${GLIB_REQUIRED} REQUIRED)
 generic_find(LIBNAME uuid REQUIRED)

@@ -175,7 +175,7 @@ ModuleManager::loadModules (std::string dir)
 
   for ( boost::filesystem::directory_iterator itr ( path ); itr != end_itr;
         ++itr ) {
-    if (boost::filesystem::is_regular (*itr) ) {
+    if (boost::filesystem::is_regular_file (*itr) ) {
       boost::filesystem::path extension = itr->path().extension();
 
       if (extension.string() == ".so") {

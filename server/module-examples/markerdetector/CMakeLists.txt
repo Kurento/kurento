@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 project("kurento-module-markerdetector")
 message(STATUS "CMake project: ${PROJECT_NAME}")
@@ -32,10 +32,6 @@ common_buildflags_set()
 # For example:
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 
-# FIXME Disable error from deprecated "soup_session_sync_new" in libsoup
-# (Since Ubuntu 18.04)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
-
 # FIXME Disable miscellaneous errors from ALVAR library
 # These all happen because the ALVAR library was written for GCC 4.4
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=return-type -Wno-error=reorder -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=sign-compare -Wno-error=comment -Wno-error=unused-value -Wno-error=delete-non-virtual-dtor")
@@ -62,7 +58,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(GST_REQUIRED ^1.0.0)
-set(SOUP_REQUIRED 2.40) # For URL support
+set(SOUP_REQUIRED 3.0) # For URL support
 set(OPENCV_REQUIRED <5.0.0)
 
 find_package(PkgConfig)
@@ -70,7 +66,7 @@ pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_BASE REQUIRED gstreamer-base-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
-pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
+pkg_check_modules(SOUP REQUIRED libsoup-3.0>=${SOUP_REQUIRED})
 
 include(GenericFind)
 generic_find(LIBNAME KMSCORE VERSION ^7.0.0 REQUIRED)

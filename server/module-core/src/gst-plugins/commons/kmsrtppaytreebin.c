@@ -31,26 +31,77 @@ G_DEFINE_TYPE (KmsRtpPayTreeBin, kms_rtp_pay_tree_bin, KMS_TYPE_TREE_BIN);
 
 #define PICTURE_ID_15_BIT 2
 
-static GstElement *
-create_payloader_for_caps (const GstCaps * caps)
+static GstElementFactory*
+select_payloader (GList *filtered_list) 
 {
-  GList *payloader_list, *filtered_list, *l;
   GstElementFactory *payloader_factory = NULL;
-  GstElement *payloader = NULL;
+  GList *l;
+
+  for (l = filtered_list; l != NULL && payloader_factory == NULL; l = l->next) {
+    gchar *factory_name;
+
+    payloader_factory = GST_ELEMENT_FACTORY (l->data);
+    if (gst_element_factory_get_num_pad_templates (payloader_factory) != 2) {
+      payloader_factory = NULL;
+    }
+    // Avoid non payloader elements that cab be confused
+    factory_name = gst_object_get_name (GST_OBJECT(payloader_factory));
+    if (g_str_equal ("rtpredenc", factory_name)) {
+      payloader_factory = NULL;
+    }
+    if (g_str_equal ("rtpulpfecenc", factory_name)) {
+      payloader_factory = NULL;
+    }
+    if (g_str_equal ("rtppassthroughpay", factory_name)) {
+      payloader_factory = NULL;
+    }
+    g_free (factory_name);
+  }
+
+  return payloader_factory;
+
+}
+
+static GstElementFactory*
+search_payloader(const GstCaps *caps)
+{
+  GList *payloader_list, *filtered_list;
+  GstElementFactory *payloader_factory = NULL;
 
   payloader_list =
       gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_PAYLOADER,
       GST_RANK_NONE);
+
   filtered_list =
+      gst_element_factory_list_filter (payloader_list, caps, GST_PAD_SRC,
+      TRUE);
+
+  payloader_factory = select_payloader (filtered_list);
+  
+  if (payloader_factory == NULL) {
+    gst_plugin_feature_list_free (filtered_list);
+    filtered_list = 
       gst_element_factory_list_filter (payloader_list, caps, GST_PAD_SRC,
       FALSE);
 
-  for (l = filtered_list; l != NULL && payloader_factory == NULL; l = l->next) {
-    payloader_factory = GST_ELEMENT_FACTORY (l->data);
-    if (gst_element_factory_get_num_pad_templates (payloader_factory) != 2)
-      payloader_factory = NULL;
+      payloader_factory = select_payloader (filtered_list);
   }
 
+  gst_plugin_feature_list_free (filtered_list);
+  gst_plugin_feature_list_free (payloader_list);
+
+  return payloader_factory;
+
+}
+
+
+static GstElement *
+create_payloader_for_caps (const GstCaps * caps)
+{
+  GstElementFactory *payloader_factory = NULL;
+  GstElement *payloader = NULL;
+
+  payloader_factory = search_payloader (caps);
   if (payloader_factory != NULL) {
     payloader = gst_element_factory_create (payloader_factory, NULL);
   }
@@ -75,9 +126,6 @@ create_payloader_for_caps (const GstCaps * caps)
     }
   }
 
-  gst_plugin_feature_list_free (filtered_list);
-  gst_plugin_feature_list_free (payloader_list);
-
   return payloader;
 }
 
@@ -87,6 +135,7 @@ kms_rtp_pay_tree_bin_configure (KmsRtpPayTreeBin * self, const GstCaps * caps)
   KmsTreeBin *tree_bin = KMS_TREE_BIN (self);
   GstElement *pay, *output_tee;
   GstPad *pad;
+  gchar *payloader_name;
 
   pay = create_payloader_for_caps (caps);
   if (pay == NULL) {
@@ -103,7 +152,22 @@ kms_rtp_pay_tree_bin_configure (KmsRtpPayTreeBin * self, const GstCaps * caps)
   gst_bin_add (GST_BIN (self), pay);
   gst_element_sync_state_with_parent (pay);
 
-  kms_tree_bin_set_input_element (tree_bin, pay);
+  payloader_name = gst_object_get_name (GST_OBJECT(pay));
+  if (g_str_has_prefix (payloader_name, "rtpav1pay")) {
+    GstElement *parser = gst_element_factory_make ("av1parse", NULL);
+
+    // FIXME: we could set it automatically using the auto-header-extension
+    // and not setting it on kms_base_rtp_endpoint_add_rtp_hdr_ext_probe on kmsbasertpendpoint.c
+    g_object_set (pay, "auto-header-extension", FALSE, NULL);
+    gst_bin_add (GST_BIN(self), parser);
+    gst_element_sync_state_with_parent (parser);
+    gst_element_link (parser, pay);
+    kms_tree_bin_set_input_element (tree_bin, parser);
+  } else {
+    kms_tree_bin_set_input_element (tree_bin, pay);
+  }
+  g_free (payloader_name);
+
   output_tee = kms_tree_bin_get_output_tee (tree_bin);
   gst_element_link (pay, output_tee);
 

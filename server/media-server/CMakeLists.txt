@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 project("kurento-media-server")
 message(STATUS "CMake project: ${PROJECT_NAME}")
@@ -19,7 +19,7 @@ endif()
 
 include(KurentoGitHelpers)
 install_git_hook(pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
-get_git_version(PROJECT_VERSION 7.0.2-dev)
+get_git_version(PROJECT_VERSION 7.1.0)
 message(STATUS "Project version: ${PROJECT_NAME}-${PROJECT_VERSION}")
 
 # Compiler flags
@@ -32,9 +32,6 @@ common_buildflags_set()
 # For example:
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-function")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-variable")
-
-# FIXME Disable error from deprecated dynamic exception specifications in glibmm
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated")
 
 # FIXME Disable error when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered
 include(CheckCXXCompilerFlag)
