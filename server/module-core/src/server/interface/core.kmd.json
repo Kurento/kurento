@@ -64,7 +64,7 @@
 </ul>
 <br />
 <br />
-<h4>Events</h4>
+<h2>Events</h2>
 <ul>
   <li>
     <strong>:rom:evt:`Error`</strong>: reports asynchronous error events. It is recommended to
