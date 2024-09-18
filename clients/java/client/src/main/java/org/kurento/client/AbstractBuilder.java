@@ -78,7 +78,7 @@ public class AbstractBuilder<T> {
 
   /**
    * Builds an object asynchronously using the builder design pattern.
-   * <p/>
+   * <p>
    * The continuation will have {@link Continuation#onSuccess} called when the object is ready, or
    * {@link Continuation#onError} if an error occurs
    *
