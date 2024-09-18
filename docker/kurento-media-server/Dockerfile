@@ -115,6 +115,11 @@ RUN \
 echo "deb [arch=amd64] http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME main" \
     >/etc/apt/sources.list.d/kurento.list
 
+# Install GStremer Rust rtp plugins (custom build for kurento, needed for AV1 RTP support)
+RUN \ 
+apt-get $APT_ARGS update  \
+&& apt-get $APT_ARGS install --no-install-recommends --yes gst-plugin-rtp
+
 # Install Kurento Media Server.
 RUN \
 apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
