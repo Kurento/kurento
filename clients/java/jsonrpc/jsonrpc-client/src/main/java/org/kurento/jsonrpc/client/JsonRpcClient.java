@@ -334,7 +334,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
    *
    * @exception IOException
    *              if an I/O error occurs when closing this client.
-   * @see #isClosed
+   * @see #isClosedByUser
    */
   @Override
   public void close() throws IOException {
