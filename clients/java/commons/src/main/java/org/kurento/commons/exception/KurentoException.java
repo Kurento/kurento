@@ -26,10 +26,10 @@ package org.kurento.commons.exception;
  * cannot recover.
  * <li>Any other unexpected error conditions.
  * </ul>
- * </p>
+ * <p>
  * The original exception cause must be provided within the exception if it is raised due to a
  * previous exception.
- * </p>
+ * <p>
  * This kind of exceptions are not checked and with CMT provoke a roll back at the moment the are
  * thrown.
  *
