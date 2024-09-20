@@ -1,9 +1,9 @@
-kurento-module-core (7.1.0-1kurento1) UNRELEASED; urgency=medium
+kurento-module-core (7.1.1-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * UNRELEASED
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Mon, 16 Sep 2024 14:29:55 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Fri, 20 Sep 2024 09:56:15 +0000
 
 kms-core (6.18.0-0kurento1) testing; urgency=medium
 

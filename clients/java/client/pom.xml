@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>7.1.0</version>
+		<version>7.1.1-SNAPSHOT</version>
 		<relativePath>../parent-pom</relativePath>
 	</parent>
 	<artifactId>kurento-client</artifactId>

@@ -6,7 +6,7 @@
 	<!-- Maven coordinates -->
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-maven-plugin</artifactId>
-	<version>7.1.0</version>
+	<version>7.1.1-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
 	<!-- Project-level information -->
@@ -158,7 +158,7 @@
 			7.0.1-SNAPSHOT, we cannot assume that the server will also be
 			7.0.1-SNAPSHOT, because it might already be 7.0.2-SNAPSHOT or higher.
 			-->
-			<version>[7.1.0,8.0.0)</version>
+			<version>[7.1.1-SNAPSHOT,8.0.0)</version>
 		</dependency>
 	</dependencies>
 
