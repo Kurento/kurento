@@ -14,6 +14,11 @@ on:
         required: false
         type: "string"
         default: "dev"
+      runnerGroup:
+        description: "runnerGroup: Set of runners where the workflow jobs should be run"
+        required: false
+        type: "string"
+        default: "Linux"
 
 jobs:
   kurento-utils-js:
@@ -21,6 +26,7 @@ jobs:
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "browser/kurento-utils-js/"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-core:
@@ -30,6 +36,7 @@ jobs:
       directory: "server/module-core/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-elements:
@@ -39,6 +46,7 @@ jobs:
       directory: "server/module-elements/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-filters:
@@ -48,6 +56,7 @@ jobs:
       directory: "server/module-filters/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   jsonrpc:
@@ -55,6 +64,7 @@ jobs:
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "clients/javascript/jsonrpc/"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   client:
@@ -63,6 +73,7 @@ jobs:
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "clients/javascript/client/"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-chroma:
@@ -72,6 +83,7 @@ jobs:
       directory: "server/module-examples/chroma/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   #module-crowddetector:
@@ -83,6 +95,7 @@ jobs:
       directory: "server/module-examples/datachannelexample/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   #module-markerdetector:

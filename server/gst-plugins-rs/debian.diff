@@ -1,0 +1,61 @@
+diff --git a/net/rtp/Cargo.toml b/net/rtp/Cargo.toml
+index 4c275d4c..230ab7e0 100644
+--- a/net/rtp/Cargo.toml
++++ b/net/rtp/Cargo.toml
+@@ -9,15 +9,35 @@ description = "GStreamer Rust RTP Plugin"
+ rust-version.workspace = true
+ 
+ [dependencies]
+-bitstream-io = "2.0"
+-gst      = { workspace = true, features = ["v1_20"] }
+-gst-rtp  = { workspace = true, features = ["v1_20"]}
+-time = { version = "0.3", default-features = false, features = ["std"] }
++anyhow = "1"
++atomic_refcell = "0.1"
++bitstream-io = "2.1"
++byte-slice-cast = "1.2"
++chrono = { version = "0.4", default-features = false }
++gst       = { workspace = true, features = ["v1_20"] }
++gst-audio = { workspace = true, features = ["v1_20"] }
++gst-base  = { workspace = true, features = ["v1_20"] }
++gst-net   = { workspace = true, features = ["v1_20"] }
++gst-rtp   = { workspace = true, features = ["v1_20"] }
++gst-video = { workspace = true, features = ["v1_20"] }
++futures = "0.3"
++gio.workspace = true
++hex = "0.4.3"
++log = "0.4"
+ once_cell.workspace = true
++rand = { version = "0.8", default-features = false, features = ["std", "std_rng" ] }
++rtp-types = { version = "0.1" }
++rtcp-types = { version = "0.1" }
++slab = "0.4.9"
+ smallvec = { version = "1.11", features = ["union", "write", "const_generics", "const_new"] }
++thiserror = "1"
++time = { version = "0.3", default-features = false, features = ["std"] }
++# TODO: experiment with other async executors (mio, async-std, etc)
++tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "time", "sync"] }
+ 
+ [dev-dependencies]
+ gst-check = { workspace = true, features = ["v1_20"] }
++gst-app   = { workspace = true, features = ["v1_20"] }
+ 
+ [build-dependencies]
+ gst-plugin-version-helper.workspace = true
+@@ -44,4 +64,15 @@ versioning = false
+ import_library = false
+ 
+ [package.metadata.capi.pkg_config]
+-requires_private = "gstreamer-1.0, gstreamer-base-1.0, gstreamer-rtp-1.0, gobject-2.0, glib-2.0, gmodule-2.0"
++requires_private = "gstreamer-1.0, gstreamer-base-1.0, gstreamer-rtp-1.0, gstreamer-net-1.0, gstreamer-video-1.0 gobject-2.0, glib-2.0, gmodule-2.0, gio-2.0"
++
++[package.metadata.deb]
++maintainer = "Saul Pablo Labajo <slabajo@naevatec.com>"
++extended-description = """\
++ package for some GStremer elements AV1 payloading"""
++depends = "$auto"
++section = "utility"
++priority = "optional"
++assets = [
++    ["/build/deb-source/libgstrsrtp.so", "usr/lib/x86_64-linux-gnu/gstreamer-1.0/", "755"],
++]

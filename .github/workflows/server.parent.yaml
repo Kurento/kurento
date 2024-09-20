@@ -10,7 +10,7 @@ on:
         # There is no `list` type, so use a raw JSON array and `fromJSON()`.
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
-        default: '["focal"]'
+        default: '["noble"]'
       jobGitName:
         description: "jobGitName: Non-default git branch or tag that should be checked out, if it exists"
         required: false
@@ -38,51 +38,63 @@ on:
         default: "Linux"
 
 jobs:
-  libsrtp:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/libsrtp/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
+# Not needed for 7.1.0 onwards on ubuntu 24.04
+#  libsrtp:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/libsrtp/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
+#
+#  openh264:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/openh264/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
+#
+#  openh264-gst-plugin:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    needs: ["openh264"]
+#    uses: "Kurento/openh264-gst-plugin/.github/workflows/kurento-buildpackage.reusable.yaml@master"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "master"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
+#
+#  gst-plugins-good:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/gst-plugins-good/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
+#
+#  libnice:
+#    if: ${{ ! inputs.jobOnlyKurento }}
+#    uses: "Kurento/libnice/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+#    with:
+#      jobDistros: "${{ inputs.jobDistros }}"
+#      jobGitName: "7.0.0"
+#      jobGitNameFallback: ""
+#      jobRelease: ${{ inputs.jobRelease }}
 
-  openh264:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/openh264/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
+  gst-rust-plugins:
+    uses: "./.github/workflows/server-buildpackage-rust.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
+      jobGitRepo: "https://github.com/GStreamer/gst-plugins-rs"
+      jobGitName: "gstreamer-1.24.2"
+      jobKurentoGitName: "${{ inputs.jobGitName }}"
       jobRelease: ${{ inputs.jobRelease }}
-
-  openh264-gst-plugin:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    needs: ["openh264"]
-    uses: "Kurento/openh264-gst-plugin/.github/workflows/kurento-buildpackage.reusable.yaml@master"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "master"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
-
-  gst-plugins-good:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/gst-plugins-good/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
-
-  libnice:
-    if: ${{ ! inputs.jobOnlyKurento }}
-    uses: "Kurento/libnice/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
-    with:
-      jobDistros: "${{ inputs.jobDistros }}"
-      jobGitName: "7.0.0"
-      jobGitNameFallback: ""
-      jobRelease: ${{ inputs.jobRelease }}
+      directory: "./"
+      runnerGroup: ${{ inputs.runnerGroup }}
 
   module-creator:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
@@ -118,7 +130,7 @@ jobs:
       directory: "server/jsonrpc/"
 
   module-core:
-    needs: ["module-creator", "cmake-utils", "jsonrpc"]
+    needs: ["module-creator", "cmake-utils", "jsonrpc", "gst-rust-plugins"]
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
@@ -129,7 +141,7 @@ jobs:
       directory: "server/module-core/"
 
   module-elements:
-    needs: ["openh264-gst-plugin", "libnice", "module-core"]
+    needs: ["module-core"]
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
@@ -151,7 +163,7 @@ jobs:
       directory: "server/module-filters/"
 
   media-server:
-    needs: ["libsrtp", "gst-plugins-good", "module-filters"]
+    needs: ["module-filters"]
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"

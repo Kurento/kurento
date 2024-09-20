@@ -9,6 +9,11 @@ on:
         required: false
         type: "string"
         default: "dev"
+      runnerGroup:
+        description: "runnerGroup: Set of runners where the workflow jobs should be run"
+        required: false
+        type: "string"
+        default: "Linux"
 
 jobs:
   qa-pom:
@@ -16,6 +21,7 @@ jobs:
     with:
       directory: "clients/java/qa-pom/"
       copyArtifacts: false
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-creator:
@@ -23,6 +29,7 @@ jobs:
     with:
       directory: "server/module-creator/"
       copyArtifacts: false
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   maven-plugin:
@@ -30,6 +37,7 @@ jobs:
     uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "clients/java/maven-plugin/"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-core:
@@ -39,6 +47,7 @@ jobs:
       directory: "server/module-core/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-elements:
@@ -48,6 +57,7 @@ jobs:
       directory: "server/module-elements/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-filters:
@@ -57,6 +67,7 @@ jobs:
       directory: "server/module-filters/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   client:
@@ -64,6 +75,7 @@ jobs:
     uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "clients/java/"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   module-chroma:
@@ -73,6 +85,7 @@ jobs:
       directory: "server/module-examples/chroma/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   # Unavailable since Kurento 7.0.0
@@ -92,6 +105,7 @@ jobs:
       directory: "server/module-examples/datachannelexample/"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
   # Unavailable since Kurento 7.0.0

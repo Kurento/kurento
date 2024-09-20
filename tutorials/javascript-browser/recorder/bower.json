@@ -1,6 +1,6 @@
 {
   "name": "kurento-recorder",
-  "version": "7.0.1-dev",
+  "version": "7.1.1-dev",
   "description": "Kurento demo with Recorder",
   "keywords": [
     "kurento",

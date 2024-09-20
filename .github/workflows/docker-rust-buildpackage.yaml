@@ -1,0 +1,57 @@
+name: "docker/rust-buildpackage"
+
+on:
+  # Manual trigger.
+  workflow_dispatch:
+    inputs:
+      jobDistros:
+        description: "jobDistros: List of Ubuntu codenames to build for"
+        required: true
+        # There is no `list` type, so use a raw JSON array and `fromJSON()`.
+        # Example: '["xenial", "bionic", "focal"]'
+        type: "string"
+        default: '["noble"]'
+      runnerGroup:
+        description: "runnerGroup: Set of runners where the workflow jobs should be run"
+        required: false
+        type: "string"
+        default: "Linux"
+        
+defaults:
+  run:
+    shell: "bash --noprofile --norc -o errexit -o errtrace -o pipefail -o nounset -o xtrace {0}"
+
+jobs:
+  build:
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
+    strategy:
+      # Run each configuration sequentially.
+      # Docker login & build fails if ran multiple times in parallel.
+      max-parallel: 1
+      matrix:
+        jobDistro: ${{ fromJSON(inputs.jobDistros) }}
+    timeout-minutes: 30
+    steps:
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+
+      - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
+        run: |
+          echo "$PWD" >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
+
+      - name: "Run job script"
+        env:
+          PUSH_IMAGES: "yes"
+          BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
+          TAG: "${{ matrix.jobDistro }}-${{ env.JOB_TIMESTAMP }}"
+          # Moving tags, example: "1.2.3", "1.2", "1", "latest"
+          EXTRA_TAGS: "${{ matrix.jobDistro }}"
+          TAG_COMMIT: "no"
+          KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
+          KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
+        working-directory: docker/rust-buildpackage/
+        run: container_build.sh

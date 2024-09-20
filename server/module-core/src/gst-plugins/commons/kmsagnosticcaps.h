@@ -125,6 +125,8 @@
   "video/mpeg,mpegversion=[1, 2];" \
   "video/x-theora;" \
   "video/x-vp8;" \
+  "video/x-vp9;" \
+  "video/x-av1;" \
   "application/x-yuv4mpeg,y4mversion=2;"
 
 #define KMS_AGNOSTIC_NO_RTP_VIDEO_CAPS \

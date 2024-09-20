@@ -17,6 +17,8 @@
 
 #include "HttpEndPointServer.hpp"
 
+#include <stdexcept>
+
 #define GST_CAT_DEFAULT HttpEndPointServer_
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "HttpEndPointServer"

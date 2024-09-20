@@ -1,6 +1,6 @@
 {
   "name": "kurento-module-tests-api",
-  "version": "7.0.1-dev",
+  "version": "7.1.1-dev",
   "description": "Kurento Module Tests API",
   "homepage": "https://kurento.openvidu.io/",
   "license": "ALv2",

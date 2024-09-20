@@ -9,9 +9,9 @@ Build-Depends:
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-good,
  gstreamer1.0-x,
- kurento-cmake-utils (>= 7.0.2),
- kurento-module-core-dev (>= 7.0.2),
- kurento-module-creator (>= 7.0.2),
+ kurento-cmake-utils (>= 7.1.1),
+ kurento-module-core-dev (>= 7.1.1),
+ kurento-module-creator (>= 7.1.1),
  libboost-filesystem-dev,
  libboost-system-dev,
  libboost-test-dev,
@@ -21,7 +21,7 @@ Build-Depends:
  libgstreamer1.0-dev,
  libnice-dev,
  libsigc++-2.0-dev,
- libsoup2.4-dev,
+ libsoup-3.0-dev,
  libssl-dev,
 Standards-Version: 4.5.1
 Homepage: https://kurento.openvidu.io/
@@ -36,12 +36,10 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends},
  gstreamer1.0-nice,
- gstreamer1.0-plugins-good-kurento,
- kurento-module-core (>= 7.0.2),
+ gstreamer1.0-plugins-good,
+ kurento-module-core (>= 7.1.1),
  libgstreamer-plugins-bad1.0-0,
- libsoup2.4-1,
- libsrtp-kurento,
- openh264-gst-plugin,
+ libsoup-3.0-0,
 Recommends:
  gstreamer1.0-x,
 Breaks:
@@ -58,9 +56,9 @@ Architecture: any
 Section: libdevel
 Depends:
  ${misc:Depends},
- kurento-cmake-utils (>= 7.0.2),
- kurento-module-core-dev (>= 7.0.2),
- kurento-module-creator (>= 7.0.2),
+ kurento-cmake-utils (>= 7.1.1),
+ kurento-module-core-dev (>= 7.1.1),
+ kurento-module-creator (>= 7.1.1),
  kurento-module-elements (= ${binary:Version}),
  libboost-filesystem-dev,
  libboost-system-dev,
@@ -71,7 +69,7 @@ Depends:
  libgstreamer1.0-dev,
  libnice-dev,
  libsigc++-2.0-dev,
- libsoup2.4-dev,
+ libsoup-3.0-dev,
  libssl-dev,
 Breaks:
  kms-elements-6.0-dev,

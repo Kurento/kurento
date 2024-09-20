@@ -8,8 +8,8 @@ include_directories(
 )
 
 set(POINTERDETECTOR_SOURCES
-  pointerdetector.c
-  kmspointerdetector.c kmspointerdetector.h
+  pointerdetector.cpp
+  kmspointerdetector.cpp kmspointerdetector.h
 )
 
 add_library(pointerdetector MODULE ${POINTERDETECTOR_SOURCES})

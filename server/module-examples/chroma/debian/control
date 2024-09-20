@@ -7,11 +7,11 @@ Build-Depends:
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
- kurento-module-core-dev (>= 7.0.2),
- kurento-module-elements-dev (>= 7.0.2),
- kurento-module-filters-dev (>= 7.0.2),
+ kurento-module-core-dev (>= 7.1.1),
+ kurento-module-elements-dev (>= 7.1.1),
+ kurento-module-filters-dev (>= 7.1.1),
  libopencv-dev,
- libsoup2.4-dev,
+ libsoup-3.0-dev,
  pkg-config,
 Standards-Version: 4.5.1
 Homepage: https://kurento.openvidu.io/
@@ -28,9 +28,9 @@ Depends:
  gstreamer1.0-plugins-bad,
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
- kurento-module-core (>= 7.0.2),
- kurento-module-elements (>= 7.0.2),
- kurento-module-filters (>= 7.0.2),
+ kurento-module-core (>= 7.1.1),
+ kurento-module-elements (>= 7.1.1),
+ kurento-module-filters (>= 7.1.1),
 Breaks:
  kms-chroma-6.0,
  kms-chroma,

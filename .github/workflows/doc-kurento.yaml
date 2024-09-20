@@ -9,6 +9,11 @@ on:
         required: false
         type: "boolean"
         default: false
+      runnerGroup:
+        description: "runnerGroup: Set of runners where the workflow jobs should be run"
+        required: false
+        type: "string"
+        default: "Linux"
 
 defaults:
   run:
@@ -16,7 +21,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
     timeout-minutes: 30
     steps:
       # Action: https://github.com/actions/checkout

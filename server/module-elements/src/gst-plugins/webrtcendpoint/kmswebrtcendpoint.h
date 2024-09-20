@@ -20,6 +20,7 @@
 
 #include <commons/kmsbasertpendpoint.h>
 #include "kmsicecandidate.h"
+#include "kmswebrtcdtlsconnectionstate.h"
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */

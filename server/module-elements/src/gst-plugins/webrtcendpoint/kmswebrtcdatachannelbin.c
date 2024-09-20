@@ -811,6 +811,12 @@ kms_webrtc_data_channel_bin_handle_control_message (KmsWebRtcDataChannelBin *
     KMS_WEBRTC_DATA_CHANNEL_RESET (self);
   }
 }
+static gboolean
+new_event_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self) 
+{
+  return FALSE;
+}
+
 
 static GstFlowReturn
 new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
@@ -933,6 +939,10 @@ kms_webrtc_data_channel_bin_init (KmsWebRtcDataChannelBin * self)
   callbacks.new_preroll = NULL;
   callbacks.new_sample =
       (GstFlowReturn (*)(GstAppSink *, gpointer)) new_data_callback;
+  callbacks.new_event =
+      (gboolean (*)(GstAppSink *, gpointer)) new_event_callback;
+  callbacks.propose_allocation = NULL; // FIXME: propose a funcion appsink_propose_allocation_cb to process this callback
+
 
   g_object_set (self->priv->appsink, "async", FALSE, "sync", FALSE,
       "emit-signals", FALSE, "drop", FALSE, "enable-last-sample", FALSE, NULL);
@@ -1064,6 +1074,8 @@ kms_webrtc_data_channel_bin_get_ppid_from_meta (KmsWebRtcDataChannelBin * self,
 
   return TRUE;
 }
+
+
 
 GstFlowReturn
 kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,

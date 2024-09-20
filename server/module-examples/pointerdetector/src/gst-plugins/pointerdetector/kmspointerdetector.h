@@ -19,8 +19,8 @@
 
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/core/core_c.h>
+#include <opencv2/highgui/highgui_c.h>
 #include <stdio.h>
 
 G_BEGIN_DECLS
@@ -36,8 +36,8 @@ typedef struct _KmsPointerDetectorPrivate KmsPointerDetectorPrivate;
 typedef struct _ButtonStruct {
     CvRect cvButtonLayout;
     gchar *id;
-    IplImage* inactive_icon;
-    IplImage* active_icon;
+    cv::Mat inactive_icon;
+    cv::Mat active_icon;
     gdouble transparency;
 } ButtonStruct;
 

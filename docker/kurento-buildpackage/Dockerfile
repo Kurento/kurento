@@ -46,7 +46,7 @@
 #
 # Use '--help' to read about arguments accepted by *kurento-buildpackage*.
 
-ARG UBUNTU_CODENAME=focal
+ARG UBUNTU_CODENAME=noble
 
 FROM ubuntu:${UBUNTU_CODENAME}
 
@@ -123,7 +123,8 @@ git config --system user.name "Kurento" \
 && git config --global --add safe.directory '*'
 
 # Install the Git-BuildPackage tool for creation of .deb files.
-RUN python3 -m pip install --upgrade gbp
+#RUN python3 -m pip install --upgrade gbp
+RUN apt-get update && apt-get $APT_ARGS install --no-install-recommends --yes git-buildpackage
 
 # APT_KEEP_CACHE
 #

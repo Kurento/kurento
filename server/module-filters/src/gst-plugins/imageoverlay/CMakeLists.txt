@@ -13,7 +13,7 @@ target_include_directories(kmsimageoverlay SYSTEM
   PRIVATE
   ${gstreamer-1.0_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${libsoup-2.4_INCLUDE_DIRS}
+  ${libsoup-3.0_INCLUDE_DIRS}
 )
 
 target_include_directories(kmsimageoverlay
@@ -26,7 +26,7 @@ target_link_libraries(kmsimageoverlay
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-video-1.0_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  ${libsoup-2.4_LIBRARIES}
+  ${libsoup-3.0_LIBRARIES}
 )
 
 install(

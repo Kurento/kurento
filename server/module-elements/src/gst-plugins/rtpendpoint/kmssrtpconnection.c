@@ -152,7 +152,7 @@ kms_srtp_connection_request_rtp_sink (KmsIRtpConnection * base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_request_pad (self->srtpenc, "rtp_sink_0");
+  return gst_element_request_pad_simple (self->srtpenc, "rtp_sink_0");
 }
 
 static GstPad *
@@ -168,7 +168,7 @@ kms_srtp_connection_request_rtcp_sink (KmsIRtpConnection * base_rtp_conn)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_request_pad (self->srtpenc, "rtcp_sink_0");
+  return gst_element_request_pad_simple (self->srtpenc, "rtcp_sink_0");
 }
 
 static GstPad *

@@ -360,6 +360,291 @@ play_agnosticbin_raw_to_vorbis (void)
   g_object_unref (pipeline);
 }
 
+static void
+play_agnosticbin_raw_to_vp9 (void)
+{
+  gboolean ret;
+  GstElement *pipeline = gst_pipeline_new (NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+  GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  GstElement *vp9dec = gst_element_factory_make ("vp9dec", NULL);
+  GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  g_object_set (G_OBJECT (videotestsrc), "num-buffers", 100, NULL);
+
+  mark_point ();
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, agnosticbin, vp9dec,
+      fakesink, NULL);
+  mark_point ();
+  ret =
+      gst_element_link_many (videotestsrc, agnosticbin, vp9dec, fakesink, NULL);
+  fail_unless (ret);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, __FUNCTION__);
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_main_loop_unref (loop);
+  g_object_unref (pipeline);
+}
+
+static void
+play_decodebin_vp9_to_raw (void)
+{
+  gboolean ret;
+  GstElement *pipeline = gst_pipeline_new (NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  GstElement *vp9enc = gst_element_factory_make ("vp9enc", NULL);
+  GstElement *decodebin = gst_element_factory_make ("decodebin", NULL);
+  GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  mark_point ();
+  g_object_set (G_OBJECT (videotestsrc), "num-buffers", 100, NULL);
+  g_object_set (G_OBJECT (vp9enc), "keyframe-max-dist", 1, NULL);
+  g_signal_connect (decodebin, "pad-added",
+      G_CALLBACK (decodebin_pad_added), fakesink);
+
+  mark_point ();
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, vp9enc, decodebin,
+      fakesink, NULL);
+  mark_point ();
+  ret = gst_element_link_many (videotestsrc, vp9enc, decodebin, NULL);
+  fail_unless (ret);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "play_agnosticbin_vp9_to_raw_end");
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_main_loop_unref (loop);
+  g_object_unref (pipeline);
+}
+
+
+static void
+play_agnosticbin_vp9_to_raw (void)
+{
+  gboolean ret;
+  GstElement *pipeline = gst_pipeline_new (NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  GstElement *vp9enc = gst_element_factory_make ("vp9enc", NULL);
+  GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+  GstElement *capsfilter = gst_element_factory_make ("capsfilter", NULL);
+  GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  loop = g_main_loop_new (NULL, TRUE);
+  GstCaps *caps;
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  mark_point ();
+  g_object_set (G_OBJECT (videotestsrc), "num-buffers", 100, NULL);
+  g_object_set (G_OBJECT (vp9enc), "keyframe-max-dist", 1, NULL);
+
+  caps = gst_caps_new_empty_simple ("video/x-raw");
+  g_object_set (G_OBJECT (capsfilter), "caps", caps, NULL);
+  gst_caps_unref (caps);
+
+  mark_point ();
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, vp9enc, agnosticbin,
+      capsfilter, fakesink, NULL);
+  mark_point ();
+  ret =
+      gst_element_link_many (videotestsrc, vp9enc, agnosticbin, capsfilter,
+      fakesink, NULL);
+  fail_unless (ret);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "play_agnosticbin_vp9_to_raw_end");
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_main_loop_unref (loop);
+  g_object_unref (pipeline);
+}
+
+static void
+play_agnosticbin_raw_to_av1 (void)
+{
+  gboolean ret;
+  GstElement *pipeline = gst_pipeline_new (NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+  GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  GstElement *av1dec = gst_element_factory_make ("av1dec", NULL);
+  GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  g_object_set (G_OBJECT (videotestsrc), "num-buffers", 100, NULL);
+
+  mark_point ();
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, agnosticbin, av1dec,
+      fakesink, NULL);
+  mark_point ();
+  ret =
+      gst_element_link_many (videotestsrc, agnosticbin, av1dec, fakesink, NULL);
+  fail_unless (ret);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, __FUNCTION__);
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_main_loop_unref (loop);
+  g_object_unref (pipeline);
+}
+
+static void
+play_decodebin_av1_to_raw (void)
+{
+  gboolean ret;
+  GstElement *pipeline = gst_pipeline_new (NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  GstElement *av1enc = gst_element_factory_make ("av1enc", NULL);
+  GstElement *decodebin = gst_element_factory_make ("decodebin", NULL);
+  GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  mark_point ();
+  g_object_set (G_OBJECT (videotestsrc), "num-buffers", 100, NULL);
+  g_object_set (G_OBJECT (vp9enc), "keyframe-max-dist", 1, NULL);
+  g_signal_connect (decodebin, "pad-added",
+      G_CALLBACK (decodebin_pad_added), fakesink);
+
+  mark_point ();
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, av1enc, decodebin,
+      fakesink, NULL);
+  mark_point ();
+  ret = gst_element_link_many (videotestsrc, av1enc, decodebin, NULL);
+  fail_unless (ret);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "play_agnosticbin_av1_to_raw_end");
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_main_loop_unref (loop);
+  g_object_unref (pipeline);
+}
+
+
+static void
+play_agnosticbin_av1_to_raw (void)
+{
+  gboolean ret;
+  GstElement *pipeline = gst_pipeline_new (NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
+  GstElement *av1enc = gst_element_factory_make ("av1enc", NULL);
+  GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+  GstElement *capsfilter = gst_element_factory_make ("capsfilter", NULL);
+  GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  loop = g_main_loop_new (NULL, TRUE);
+  GstCaps *caps;
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  mark_point ();
+  g_object_set (G_OBJECT (videotestsrc), "num-buffers", 100, NULL);
+  g_object_set (G_OBJECT (av1enc), "keyframe-max-dist", 1, NULL);
+
+  caps = gst_caps_new_empty_simple ("video/x-raw");
+  g_object_set (G_OBJECT (capsfilter), "caps", caps, NULL);
+  gst_caps_unref (caps);
+
+  mark_point ();
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, av1enc, agnosticbin,
+      capsfilter, fakesink, NULL);
+  mark_point ();
+  ret =
+      gst_element_link_many (videotestsrc, av1enc, agnosticbin, capsfilter,
+      fakesink, NULL);
+  fail_unless (ret);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "play_agnosticbin_av1_to_raw_end");
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_main_loop_unref (loop);
+  g_object_unref (pipeline);
+}
+
+
 GST_START_TEST (test_create_valve)
 {
   int i;
@@ -499,6 +784,64 @@ GST_START_TEST (test_play_agnosticbin_vp8_to_raw)
   }
 }
 
+GST_START_TEST (test_play_agnosticbin_raw_to_vp9)
+{
+  int i;
+
+  for (i = 0; i < iterations; i++) {
+    play_agnosticbin_raw_to_vp9 ();
+  }
+}
+
+KMS_END_TEST
+GST_START_TEST (test_play_decodebin_vp9_to_raw)
+{
+  int i;
+
+  for (i = 0; i < iterations; i++) {
+    play_decodebin_vp9_to_raw ();
+  }
+}
+
+KMS_END_TEST
+GST_START_TEST (test_play_agnosticbin_vp9_to_raw)
+{
+  int i;
+
+  for (i = 0; i < iterations; i++) {
+    play_agnosticbin_vp9_to_raw ();
+  }
+}
+
+GST_START_TEST (test_play_agnosticbin_raw_to_av1)
+{
+  int i;
+
+  for (i = 0; i < iterations; i++) {
+    play_agnosticbin_raw_to_vp9 ();
+  }
+}
+
+KMS_END_TEST
+GST_START_TEST (test_play_decodebin_av1_to_raw)
+{
+  int i;
+
+  for (i = 0; i < iterations; i++) {
+    play_decodebin_vp9_to_raw ();
+  }
+}
+
+KMS_END_TEST
+GST_START_TEST (test_play_agnosticbin_av1_to_raw)
+{
+  int i;
+
+  for (i = 0; i < iterations; i++) {
+    play_agnosticbin_vp9_to_raw ();
+  }
+}
+
 KMS_END_TEST
 GST_START_TEST (test_play_agnosticbin_audio_passthrough)
 {
@@ -557,6 +900,14 @@ agnosticbin_suite (void)
 
   tcase_add_test (tc_chain, test_play_decodebin_vp8_to_raw);
   tcase_add_test (tc_chain, test_play_agnosticbin_vp8_to_raw);
+
+  tcase_add_test (tc_chain, test_play_agnosticbin_raw_to_vp9);
+  tcase_add_test (tc_chain, test_play_decodebin_vp9_to_raw);
+  tcase_add_test (tc_chain, test_play_agnosticbin_vp9_to_raw);
+
+  tcase_add_test (tc_chain, test_play_agnosticbin_raw_to_av1);
+  tcase_add_test (tc_chain, test_play_decodebin_av1_to_raw);
+  tcase_add_test (tc_chain, test_play_agnosticbin_av1_to_raw);
 
   tcase_add_test (tc_chain, test_play_agnosticbin_audio_passthrough);
   tcase_add_test (tc_chain, test_play_agnosticbin_raw_to_vorbis);

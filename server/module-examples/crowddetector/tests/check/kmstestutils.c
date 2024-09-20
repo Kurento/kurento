@@ -76,7 +76,7 @@ connect_to_sink (GstElement * sink, const gchar * sinkname, GstPad * srcpad)
   sinkpad = gst_element_get_static_pad (sink, sinkname);
 
   if (sinkpad == NULL)
-    sinkpad = gst_element_get_request_pad (sink, sinkname);
+    sinkpad = gst_element_request_pad_simple (sink, sinkname);
 
   if (sinkpad == NULL) {
     GST_ERROR ("Can not get sink pad.");
@@ -111,7 +111,7 @@ agnosticbin_added_cb (GstElement * element, gpointer data)
     goto end;
   }
 
-  pad = gst_element_get_request_pad (element, tmp->src_pad_name);
+  pad = gst_element_request_pad_simple (element, tmp->src_pad_name);
   if (pad == NULL) {
     goto end;
   }
@@ -133,7 +133,7 @@ kms_element_link_pads (GstElement * src, const gchar * src_pad_name,
 {
   GstPad *pad;
 
-  pad = gst_element_get_request_pad (src, src_pad_name);
+  pad = gst_element_request_pad_simple (src, src_pad_name);
   if (pad == NULL) {
     struct tmp_data *tmp;
 

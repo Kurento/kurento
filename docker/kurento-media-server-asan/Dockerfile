@@ -69,7 +69,7 @@
 
 
 # Global arguments for FROM.
-ARG UBUNTU_CODENAME="focal"
+ARG UBUNTU_CODENAME="noble"
 ARG KMS_IMAGE="kurento/kurento-media-server:dev"
 
 

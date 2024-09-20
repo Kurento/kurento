@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "version": "7.0.2-dev",
+  "version": "7.1.1-dev",
   "code": {
     "kmd": {
       "java": {
@@ -28,7 +28,7 @@
     {
       "name": "MediaObject",
       "doc": "Base interface used to manage capabilities common to all Kurento elements.
-<h4>Properties</h4>
+<h2>Properties</h2>
 <ul>
   <li>
     <b>id</b>: unique identifier assigned to this <code>MediaObject</code> at
@@ -64,7 +64,7 @@
 </ul>
 <br />
 <br />
-<h4>Events</h4>
+<h2>Events</h2>
 <ul>
   <li>
     <strong>:rom:evt:`Error`</strong>: reports asynchronous error events. It is recommended to
@@ -446,7 +446,7 @@ An example of this, would be a :rom:cls:`PlayerEndpoint` whose URI property coul
     {
       "name": "MediaPipeline",
       "extends": "MediaObject",
-      "doc": "A pipeline is a container for a collection of :rom:cls:`MediaElements<MediaElement>` and :rom:cls:`MediaMixers<MediaMixer>`.
+      "doc": "A pipeline is a container for a collection of :rom:cls:`MediaElements<MediaElement>`.
 It offers the methods needed to control the creation and connection of elements inside a certain pipeline.
       ",
       "constructor": {
@@ -1599,6 +1599,8 @@ Pipeline, towards the associated producer. Only valid for video consumers.
     {
       "typeFormat": "ENUM",
       "values": [
+        "AV1",
+        "VP9",
         "VP8",
         "H264",
         "RAW"
@@ -2353,7 +2355,7 @@ Pipeline, towards the associated producer. Only valid for video consumers.
       "properties": [
         {
           "name": "name",
-          "doc": "Name of the codec. Must follow this format: <encoding name>/<clock rate>[/<encoding parameters>]",
+          "doc": "Name of the codec. Must follow this format: <code>encoding name/clock rate[encoding parameters]</code>",
           "type": "String",
           "optional": true
         },

@@ -286,7 +286,7 @@ public class VersionManager {
    * version strings. e.g. "1.10".compareTo("1.6").
    * </p>
    *
-   * @note It does not work if "1.10" is supposed to be equal to "1.10.0".
+   * note: It does not work if "1.10" is supposed to be equal to "1.10.0".
    *
    * @param str1
    *          a string of ordinal numbers separated by decimal points.

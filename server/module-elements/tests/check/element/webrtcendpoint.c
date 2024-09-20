@@ -439,7 +439,13 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   if (check_request_local_key_frame) {
     GST_INFO ("Check request_local_key_frame");
 
-    g_object_set (video_enc, "keyframe-max-dist", 10000, NULL);
+    if (g_str_equal (video_enc_name, "av1enc")) {
+        // FIXME: There seems to be an error requesting keyframes to AV1 encoder, 
+        // So for the moment, the encoder will generate kayframes periodically
+        g_object_set (video_enc, "keyframe-max-dist", 10, NULL);
+    } else {
+        g_object_set (video_enc, "keyframe-max-dist", 10000, NULL);
+    }
     hod->check_request_local_key_frame = TRUE;
     hod->webrtcep = sender;
   }
@@ -1768,6 +1774,8 @@ GST_END_TEST
 
 /* Video tests */
 static GstStaticCaps vp8_expected_caps = GST_STATIC_CAPS ("video/x-vp8");
+static GstStaticCaps vp9_expected_caps = GST_STATIC_CAPS ("video/x-vp9");
+static GstStaticCaps av1_expected_caps = GST_STATIC_CAPS ("video/x-av1");
 
 GST_START_TEST (test_vp8_sendonly_recvonly)
 {
@@ -1778,6 +1786,32 @@ GST_START_TEST (test_vp8_sendonly_recvonly)
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, TRUE,
       FALSE, NULL);
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
+      TRUE, NULL);
+}
+GST_END_TEST
+
+GST_START_TEST (test_vp9_sendonly_recvonly)
+{
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", FALSE, FALSE,
+      FALSE, NULL);
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", TRUE, FALSE,
+      FALSE, NULL);
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", TRUE, TRUE,
+      FALSE, NULL);
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", TRUE, FALSE,
+      TRUE, NULL);
+}
+GST_END_TEST
+
+GST_START_TEST (test_av1_sendonly_recvonly)
+{
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", FALSE, FALSE,
+      FALSE, NULL);
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", TRUE, FALSE,
+      FALSE, NULL);
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", TRUE, TRUE,
+      FALSE, NULL);
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", TRUE, FALSE,
       TRUE, NULL);
 }
 GST_END_TEST
@@ -1834,6 +1868,22 @@ GST_START_TEST (test_vp8_sendonly_recvonly_rsa)
 }
 GST_END_TEST
 
+GST_START_TEST (test_vp9_sendonly_recvonly_rsa)
+{
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", FALSE, FALSE,
+      FALSE, rsa_pem);
+}
+GST_END_TEST
+
+
+GST_START_TEST (test_av1_sendonly_recvonly_rsa)
+{
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", FALSE, FALSE,
+      FALSE, rsa_pem);
+}
+GST_END_TEST
+
+
 const gchar *ecdsa_pem = "-----BEGIN EC PARAMETERS-----\r\n"
     "BggqhkjOPQMBBw==\r\n"
     "-----END EC PARAMETERS-----\r\n"
@@ -1858,6 +1908,20 @@ GST_START_TEST (test_vp8_sendonly_recvonly_ecdsa)
 }
 GST_END_TEST
 
+GST_START_TEST (test_vp9_sendonly_recvonly_ecdsa)
+{
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", FALSE, FALSE,
+      FALSE, ecdsa_pem);
+}
+GST_END_TEST
+
+GST_START_TEST (test_av1_sendonly_recvonly_ecdsa)
+{
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", FALSE, FALSE,
+      FALSE, ecdsa_pem);
+}
+GST_END_TEST
+
 GST_START_TEST (test_vp8_sendrecv)
 {
   test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE);
@@ -1866,11 +1930,45 @@ GST_START_TEST (test_vp8_sendrecv)
 }
 GST_END_TEST
 
+GST_START_TEST (test_vp9_sendrecv)
+{
+  test_video_sendrecv ("vp9enc", vp9_expected_caps, "VP9/90000", FALSE, FALSE);
+  test_video_sendrecv ("vp9enc", vp9_expected_caps, "VP9/90000", FALSE, TRUE);
+  test_video_sendrecv ("vp9enc", vp9_expected_caps, "VP9/90000", TRUE, TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_av1_sendrecv)
+{
+  test_video_sendrecv ("av1enc", av1_expected_caps, "AV1/90000", FALSE, FALSE);
+  test_video_sendrecv ("av1enc", av1_expected_caps, "AV1/90000", FALSE, TRUE);
+  test_video_sendrecv ("av1enc", av1_expected_caps, "AV1/90000", TRUE, TRUE);
+}
+GST_END_TEST
+
 GST_START_TEST (test_vp8_sendrecv_but_sendonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
       FALSE, NULL);
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE,
+      FALSE, NULL);
+}
+GST_END_TEST
+
+GST_START_TEST (test_vp9_sendrecv_but_sendonly)
+{
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", TRUE, FALSE,
+      FALSE, NULL);
+  test_video_sendonly ("vp9enc", vp9_expected_caps, "VP9/90000", FALSE, FALSE,
+      FALSE, NULL);
+}
+GST_END_TEST
+
+GST_START_TEST (test_av1_sendrecv_but_sendonly)
+{
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", TRUE, FALSE,
+      FALSE, NULL);
+  test_video_sendonly ("av1enc", av1_expected_caps, "AV1/90000", FALSE, FALSE,
       FALSE, NULL);
 }
 GST_END_TEST
@@ -1895,12 +1993,50 @@ GST_START_TEST (test_pcmu_vp8_sendonly_recvonly)
 }
 GST_END_TEST
 
+/* Audio and video tests */
+GST_START_TEST (test_pcmu_vp9_sendonly_recvonly)
+{
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
+      "PCMU/8000", "vp9enc", vp9_expected_caps, "VP9/90000", FALSE);
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
+      "PCMU/8000", "vp9enc", vp9_expected_caps, "VP9/90000", TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_pcmu_av1_sendonly_recvonly)
+{
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
+      "PCMU/8000", "av1enc", av1_expected_caps, "AV1/90000", FALSE);
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
+      "PCMU/8000", "av1enc", av1_expected_caps, "AV1/90000", TRUE);
+}
+GST_END_TEST
+
+
 GST_START_TEST (test_pcmu_vp8_sendrecv)
 {
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
       "vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
       "vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_pcmu_vp9_sendrecv)
+{
+  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "vp9enc", vp9_expected_caps, "VP9/90000", FALSE);
+  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "vp9enc", vp9_expected_caps, "VP9/90000", TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_pcmu_av1_sendrecv)
+{
+  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "av1enc", av1_expected_caps, "AV1/90000", FALSE);
+  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "av1enc", av1_expected_caps, "AV1/90000", TRUE);
 }
 GST_END_TEST
 
@@ -1911,6 +2047,17 @@ GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
       FALSE);
   test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
       pcmu_expected_caps, "PCMU/8000", "vp8enc", vp8_expected_caps, "VP8/90000",
+      TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp9_sendrecv)
+{
+  test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
+      pcmu_expected_caps, "PCMU/8000", "vp9enc", vp9_expected_caps, "VP9/90000",
+      FALSE);
+  test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
+      pcmu_expected_caps, "PCMU/8000", "vp9enc", vp9_expected_caps, "VP9/90000",
       TRUE);
 }
 GST_END_TEST
@@ -2411,6 +2558,23 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
 
+  tcase_add_test (tc_chain, test_vp9_sendrecv_but_sendonly);
+  tcase_add_test (tc_chain, test_vp9_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_vp9_sendonly_recvonly_rsa);
+  tcase_add_test (tc_chain, test_vp9_sendonly_recvonly_ecdsa);
+  tcase_add_test (tc_chain, test_vp9_sendrecv);
+  tcase_add_test (tc_chain, test_offerer_pcmu_vp8_answerer_vp9_sendrecv);
+  tcase_add_test (tc_chain, test_pcmu_vp9_sendrecv);
+  tcase_add_test (tc_chain, test_pcmu_vp9_sendonly_recvonly);
+
+  tcase_add_test (tc_chain, test_av1_sendrecv_but_sendonly);
+  tcase_add_test (tc_chain, test_av1_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_av1_sendonly_recvonly_rsa);
+  tcase_add_test (tc_chain, test_av1_sendonly_recvonly_ecdsa);
+  tcase_add_test (tc_chain, test_av1_sendrecv);
+  tcase_add_test (tc_chain, test_pcmu_av1_sendrecv);
+  tcase_add_test (tc_chain, test_pcmu_av1_sendonly_recvonly);
+
   tcase_add_test (tc_chain, test_remb_params);
   tcase_add_test (tc_chain, test_session_creation);
   tcase_add_test (tc_chain, test_port_range);
@@ -2422,7 +2586,6 @@ webrtcendpoint_test_suite (void)
 
   tcase_add_test (tc_chain, set_external_ipv4_test);
   tcase_add_test (tc_chain, set_external_ipv6_test);
-
   return s;
 }
 
