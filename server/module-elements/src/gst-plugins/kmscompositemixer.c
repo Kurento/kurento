@@ -97,7 +97,7 @@ struct _KmsCompositeMixerPrivate
   KmsLoop *loop;
   GRecMutex mutex;
   gint n_elems;
-  gint output_width, output_height;
+  gint output_width, output_height, output_framerate;
 };
 
 /* class initialization */
@@ -162,7 +162,7 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
 {
   KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (data);
   GstCaps *filtercaps;
-  gint width, height, top, left, counter, n_columns, n_rows;
+  gint width, height, top, left, counter, n_columns, n_rows, fps;
   GList *l;
   GList *values = g_hash_table_get_values (self->priv->ports);
 
@@ -180,6 +180,7 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
 
   width = self->priv->output_width / n_columns;
   height = self->priv->output_height / n_rows;
+  fps = self->priv->fps;
 
   for (l = values; l != NULL; l = l->next) {
     KmsCompositeMixerData *port_data = l->data;
@@ -564,6 +565,7 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
       gst_caps_new_simple ("video/x-raw",
       "width", G_TYPE_INT, mixer->priv->output_width,
       "height", G_TYPE_INT, mixer->priv->output_height,
+      "framerate", GST_TYPE_FRACTION, mixer->priv->output_framerate,
       "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, NULL);
   g_object_set (data->capsfilter, "caps", filtercaps, NULL);
   gst_caps_unref (filtercaps);
@@ -697,7 +699,7 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
           gst_caps_new_simple ("video/x-raw",
           "width", G_TYPE_INT, self->priv->output_width,
           "height", G_TYPE_INT, self->priv->output_height,
-          "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
+          "framerate", GST_TYPE_FRACTION, self->priv->output_framerate, 1, NULL);
       g_object_set (G_OBJECT (capsfilter), "caps", filtercaps, NULL);
       gst_caps_unref (filtercaps);
 
@@ -841,6 +843,7 @@ kms_composite_mixer_init (KmsCompositeMixer * self)
   //TODO:Obtain the dimensions of the bigger input stream
   self->priv->output_height = 600;
   self->priv->output_width = 800;
+  self->priv->output_framerate = 15;
   self->priv->n_elems = 0;
 
   self->priv->loop = kms_loop_new ();
