@@ -12,6 +12,21 @@
               "name": "mediaPipeline",
               "doc": "the :rom:cls:`MediaPipeline` to which the dispatcher belongs",
               "type": "MediaPipeline"
+            },
+            {
+              "name": "width",
+              "doc": "screen width",
+              "type": "gInt"
+            },
+            {
+              "name": "height",
+              "doc": "screen height",
+              "type": "gInt"
+            },
+            {
+              "name": "framerate",
+              "doc": "frames per second",
+              "type": "gFraction"
             }
           ]
         }
