@@ -57,6 +57,14 @@ typedef struct _KmsCompositeMixer KmsCompositeMixer;
 typedef struct _KmsCompositeMixerClass KmsCompositeMixerClass;
 typedef struct _KmsCompositeMixerPrivate KmsCompositeMixerPrivate;
 
+enum
+{
+  PROP_WIDTH,
+  PROP_HEIGHT,
+  PROP_FRAMERATE,
+  N_PROPERTIES
+};
+
 struct _KmsCompositeMixer
 {
   KmsBaseHub parent;

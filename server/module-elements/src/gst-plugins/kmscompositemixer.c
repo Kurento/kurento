@@ -817,6 +817,21 @@ kms_composite_mixer_class_init (KmsCompositeMixerClass *klass)
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_composite_mixer_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_composite_mixer_finalize);
 
+  gobject_class->set_property = kms_composite_mixer_set_property;
+  gobject_class->get_property = kms_composite_mixer_get_property;
+
+  g_object_class_install_property (gobject_class, PROP_WIDTH,
+      g_param_spec_int64 ("width", "width",
+          "Width of the screen",
+          0, G_MAXINT64, 0, G_PARAM_READABLE | GST_PARAM_MUTABLE_READY));
+  g_object_class_install_property (gobject_class, PROP_HEIGHT,
+      g_param_spec_int64 ("height", "height",
+          "Height of the screen",
+          0, G_MAXINT64, 0, G_PARAM_READABLE | GST_PARAM_MUTABLE_READY));
+            g_object_class_install_property (gobject_class, PROP_FRAMERATE,
+      g_param_spec_int64 ("framerate", "framerate",
+          "Framerate of the screen",
+          0, G_MAXINT64, 0, G_PARAM_READABLE | GST_PARAM_MUTABLE_READY));
   base_hub_class->handle_port =
       GST_DEBUG_FUNCPTR (kms_composite_mixer_handle_port);
   base_hub_class->unhandle_port =
@@ -845,9 +860,9 @@ kms_composite_mixer_init (KmsCompositeMixer *self)
   self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
       release_gint, kms_composite_mixer_port_data_destroy);
   //TODO:Obtain the dimensions of the bigger input stream
-  self->priv->output_height = 600;
-  self->priv->output_width = 800;
-  self->priv->output_framerate = 15;
+  // self->priv->output_height = 600;
+  // self->priv->output_width = 800;
+  // self->priv->output_framerate = 15;
   self->priv->n_elems = 0;
 
   self->priv->loop = kms_loop_new ();
@@ -858,4 +873,51 @@ kms_composite_mixer_plugin_init (GstPlugin *plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
       KMS_TYPE_COMPOSITE_MIXER);
+}
+
+void
+kms_composite_mixer_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsCompositeMixer *compositeMixer = KMS_COMPOSITE_MIXER (object);
+
+  switch (property_id) {
+    case PROP_WIDTH:{
+      compositeMixer->priv->width = g_value_get_int (value);
+      break;
+    }
+    case PROP_HEIGHT:
+      compositeMixer->priv->height = g_value_get_int (value);
+      break;
+    case PROP_FRAMERATE:
+      compositeMixer->priv->framerate = g_value_get_int (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+void
+kms_composite_mixer_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsCompositeMixer *compositeMixer = KMS_COMPOSITE_MIXER(object);
+
+  switch (property_id) {
+    case PROP_WIDTH:
+      g_value_set_int64 (value, compositeMixer->priv->width);
+      break;
+    case PROP_HEIGHT:{
+      g_value_set_int64 (value, compositeMixer->priv->height);
+      break;
+    }
+    case PROP_FRAMERATE:{
+      g_value_set_int64 (value, compositeMixer->priv->framerate);
+      break;
+    }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
 }
