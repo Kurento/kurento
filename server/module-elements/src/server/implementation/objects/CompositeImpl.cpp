@@ -39,23 +39,26 @@ CompositeImpl::CompositeImpl (const boost::property_tree::ptree &conf,
                               std::shared_ptr<MediaPipeline> mediaPipeline, int64_t width, int64_t height,
                               int64_t framerate) : HubImpl (conf,
                                     std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME),
-  width (width), height (height), framerate (framerate) )
+  width (width), height (height), framerate (framerate) 
 {
-  // Width property
-  if (getConfigValue <uint64_t, WIDTH_PROPERTY>(&width,
-      WIDTH_PROPERTY)) {
+  // // Width property
+  // if (getConfigValue <uint64_t, WIDTH_PROPERTY>(width,
+  //     WIDTH_PROPERTY, NULL)) {
+  //   g_object_set(G_OBJECT(element), WIDTH_PROPERTY, width, NULL);
+  // }
+  // // Height property
+  // if (getConfigValue <uint64_t, HEIGHT_PROPERTY>(height,
+  //     HEIGHT_PROPERTY, NULL)) {
+  //   g_object_set(G_OBJECT(element), HEIGHT_PROPERTY, height, NULL);
+  // }
+  // // Framerate property
+  // if (getConfigValue <uint64_t, FRAMERATE_PROPERTY>(framerate,
+  //     FRAMERATE_PROPERTY, NULL)) {
+  //   g_object_set(G_OBJECT(element), FRAMERATE_PROPERTY, framerate, NULL);
+  // }
     g_object_set(G_OBJECT(element), WIDTH_PROPERTY, width, NULL);
-  }
-    // Height property
-  if (getConfigValue <uint64_t, HEIGHT_PROPERTY>(&height,
-      HEIGHT_PROPERTY)) {
     g_object_set(G_OBJECT(element), HEIGHT_PROPERTY, height, NULL);
-  }
-    // Framerate property
-  if (getConfigValue <uint64_t, FRAMERATE_PROPERTY>(&framerate,
-      FRAMERATE_PROPERTY)) {
     g_object_set(G_OBJECT(element), FRAMERATE_PROPERTY, framerate, NULL);
-  }
 }
 
 MediaObjectImpl *

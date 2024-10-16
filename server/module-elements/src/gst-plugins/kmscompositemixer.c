@@ -162,7 +162,7 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
 {
   KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (data);
   GstCaps *filtercaps;
-  gint width, height, top, left, counter, n_columns, n_rows, fps;
+  gint width, height, top, left, counter, n_columns, n_rows;
   GList *l;
   GList *values = g_hash_table_get_values (self->priv->ports);
 
@@ -180,7 +180,7 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
 
   width = self->priv->output_width / n_columns;
   height = self->priv->output_height / n_rows;
-  fps = self->priv->output_framerate;
+  //fps = self->priv->output_framerate;
 
   for (l = values; l != NULL; l = l->next) {
     KmsCompositeMixerData *port_data = l->data;
@@ -802,7 +802,52 @@ kms_composite_mixer_finalize (GObject *object)
 
   G_OBJECT_CLASS (kms_composite_mixer_parent_class)->finalize (object);
 }
+void
+kms_composite_mixer_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsCompositeMixer *compositeMixer = KMS_COMPOSITE_MIXER (object);
 
+  switch (property_id) {
+    case PROP_WIDTH:{
+      compositeMixer->priv->output_width = g_value_get_int (value);
+      break;
+    }
+    case PROP_HEIGHT:
+      compositeMixer->priv->output_height = g_value_get_int (value);
+      break;
+    case PROP_FRAMERATE:
+      compositeMixer->priv->output_framerate = g_value_get_int (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+void
+kms_composite_mixer_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsCompositeMixer *compositeMixer = KMS_COMPOSITE_MIXER(object);
+
+  switch (property_id) {
+    case PROP_WIDTH:
+      g_value_set_int64 (value, compositeMixer->priv->output_width);
+      break;
+    case PROP_HEIGHT:{
+      g_value_set_int64 (value, compositeMixer->priv->output_height);
+      break;
+    }
+    case PROP_FRAMERATE:{
+      g_value_set_int64 (value, compositeMixer->priv->output_framerate);
+      break;
+    }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
 static void
 kms_composite_mixer_class_init (KmsCompositeMixerClass *klass)
 {
@@ -860,9 +905,9 @@ kms_composite_mixer_init (KmsCompositeMixer *self)
   self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
       release_gint, kms_composite_mixer_port_data_destroy);
   //TODO:Obtain the dimensions of the bigger input stream
-  // self->priv->output_height = 600;
-  // self->priv->output_width = 800;
-  // self->priv->output_framerate = 15;
+  self->priv->output_height = 600;
+  self->priv->output_width = 800;
+  self->priv->output_framerate = 15;
   self->priv->n_elems = 0;
 
   self->priv->loop = kms_loop_new ();
@@ -875,49 +920,3 @@ kms_composite_mixer_plugin_init (GstPlugin *plugin)
       KMS_TYPE_COMPOSITE_MIXER);
 }
 
-void
-kms_composite_mixer_set_property (GObject * object, guint property_id,
-    const GValue * value, GParamSpec * pspec)
-{
-  KmsCompositeMixer *compositeMixer = KMS_COMPOSITE_MIXER (object);
-
-  switch (property_id) {
-    case PROP_WIDTH:{
-      compositeMixer->priv->width = g_value_get_int (value);
-      break;
-    }
-    case PROP_HEIGHT:
-      compositeMixer->priv->height = g_value_get_int (value);
-      break;
-    case PROP_FRAMERATE:
-      compositeMixer->priv->framerate = g_value_get_int (value);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
-}
-
-void
-kms_composite_mixer_get_property (GObject * object, guint property_id,
-    GValue * value, GParamSpec * pspec)
-{
-  KmsCompositeMixer *compositeMixer = KMS_COMPOSITE_MIXER(object);
-
-  switch (property_id) {
-    case PROP_WIDTH:
-      g_value_set_int64 (value, compositeMixer->priv->width);
-      break;
-    case PROP_HEIGHT:{
-      g_value_set_int64 (value, compositeMixer->priv->height);
-      break;
-    }
-    case PROP_FRAMERATE:{
-      g_value_set_int64 (value, compositeMixer->priv->framerate);
-      break;
-    }
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
-}
