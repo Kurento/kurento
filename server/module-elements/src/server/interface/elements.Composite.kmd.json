@@ -16,17 +16,17 @@
             {
               "name": "width",
               "doc": "screen width",
-              "type": "gInt"
+              "type": "int64"
             },
             {
               "name": "height",
               "doc": "screen height",
-              "type": "gInt"
+              "type": "int64"
             },
             {
               "name": "framerate",
               "doc": "frames per second",
-              "type": "gFraction"
+              "type": "int64"
             }
           ]
         }
