@@ -36,7 +36,8 @@ class CompositeImpl : public HubImpl, public virtual Composite
 public:
 
   CompositeImpl (const boost::property_tree::ptree &conf,
-                 std::shared_ptr<MediaPipeline> mediaPipeline);
+                 std::shared_ptr<MediaPipeline> mediaPipeline,
+                 int64_t width, int64_t height, int64_t framerate);
 
   virtual ~CompositeImpl () {};
 
@@ -51,7 +52,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
-
+  int64_t width, height, framerate;
   class StaticConstructor
   {
   public:

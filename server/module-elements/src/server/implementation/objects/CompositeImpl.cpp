@@ -32,16 +32,19 @@ namespace kurento
 {
 
 CompositeImpl::CompositeImpl (const boost::property_tree::ptree &conf,
-                              std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (conf,
-                                    std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
+                              std::shared_ptr<MediaPipeline> mediaPipeline, int64_t width, int64_t height,
+                              int64_t framerate) : HubImpl (conf,
+                                    std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME),
+  width (width), height (height), framerate (framerate) )
 {
 }
 
 MediaObjectImpl *
 CompositeImplFactory::createObject (const boost::property_tree::ptree &conf,
-                                    std::shared_ptr<MediaPipeline> mediaPipeline) const
+                     std::shared_ptr<MediaPipeline> mediaPipeline,
+                     int64_t width, int64_t height, int64_t framerate) const
 {
-  return new CompositeImpl (conf, mediaPipeline);
+  return new CompositeImpl (conf, mediaPipeline, width, height, framerate);
 }
 
 CompositeImpl::StaticConstructor CompositeImpl::staticConstructor;
