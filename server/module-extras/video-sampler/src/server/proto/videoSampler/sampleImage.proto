@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package videoSampler;
+
+service ImageDeliver {
+    rpc deliverImage (SampleImage) returns (Empty) {}
+}
+
+message SampleImage {
+    string codec        = 1;
+    bytes  data         = 2;
+    string timestamp    = 3;
+}
+
+message Empty { }
