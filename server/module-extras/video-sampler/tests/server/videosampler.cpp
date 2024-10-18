@@ -61,7 +61,7 @@ GF::GF()
 {
   boost::property_tree::ptree ac, audioCodecs, vc, videoCodecs;
   gst_init(nullptr, nullptr);
-  moduleManager.loadModulesFromDirectories ("../../src/server:./:../../../..");
+  moduleManager.loadModulesFromDirectories ("../../src/server:./:../../../../module-core");
 
   config.add ("configPath", "../../../tests" );
   config.add ("modules.kurento.SdpEndpoint.numAudioMedias", 1);
@@ -150,7 +150,18 @@ class ImageDeliverImpl final : public ImageDeliver::Service {
     BOOST_TEST_MESSAGE ("Received image");
     std::string codec = request->codec();
     std::string data = request->data();
+    std::string timestamp = request->timestamp();
 
+    std::ofstream file("./"+timestamp+".jpg", std::ios::out | std::ios::binary);
+    if (!file) {
+      BOOST_ERROR ("No se pudo abrir el fichero para escribir.");
+    } else {
+      // Escribir el array de bytes en el fichero
+      file.write(data.data(), data.length());
+
+      // Cerrar el fichero
+      file.close();
+    }
     return ::grpc::Status::OK;
   }
 
