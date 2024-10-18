@@ -27,7 +27,7 @@
 #include <gst/gstbin.h>
 
 #define MAX_FRAMES_STORED "50"
-#define VIDEO_LEG_BIN " capsfilter caps=\"video/x-raw\" ! agnosticbin ! capsfilter name=\"video\" caps=\"%s\" ! tee name=t ! queue leaky=1 max-size-buffers=2  t. ! queue leaky=1 max-size-buffers="MAX_FRAMES_STORED" ! agnosticbin ! capsfilter name=\"encoder\" caps=\"%s\" ! appsink async=false sync=false emit-signals=true name=\"sink\""
+#define VIDEO_LEG_BIN " capsfilter name=\"input-caps\" caps=\"video/x-raw\" ! agnosticbin ! capsfilter name=\"video\" caps=\"%s\" ! tee name=t ! queue leaky=1 max-size-buffers=2  t. ! queue leaky=1 max-size-buffers="MAX_FRAMES_STORED" ! agnosticbin ! capsfilter name=\"encoder\" caps=\"%s\" ! appsink async=false sync=false emit-signals=true name=\"sink\""
 
 #define PLUGIN_NAME "videosampler"
 
@@ -158,11 +158,11 @@ kms_videosampler_connect_appsink (KmsVideoSampler *self)
 }
 
 static gchar*
-kms_video_sampler_calculate_framerate (KmsVideoSampler *self)
+calculate_framerate (gulong frame_period)
 {
-  if (self->priv->frame_period > 0) {
+  if (frame_period > 0) {
     gchar* fr_str;
-    gfloat period = self->priv->frame_period;
+    gfloat period = frame_period;
     gfloat freq = 1000.0 / period; // frame_period is measured in miliseconds
     guint freq_uint = roundf (freq * 100.0);
 
@@ -178,27 +178,27 @@ kms_video_sampler_calculate_framerate (KmsVideoSampler *self)
 }
 
 static gchar* 
-kms_video_sampler_calculate_video_caps (KmsVideoSampler *self)
+calculate_video_caps_for_output (gint width, gint height, gulong frame_period)
 {
   gchar *framerate_str = NULL;
   GString *caps;
   gchar *caps_str;
   
-  framerate_str = kms_video_sampler_calculate_framerate (self);
+  framerate_str = calculate_framerate (frame_period);
   caps = g_string_new ("video/x-raw");
   if (framerate_str != NULL) {
     g_string_append (caps, ",framerate=");
     g_string_append (caps, framerate_str);
     g_free (framerate_str);
   }
-  if (self->priv->height > 0) {
-    gchar *number = g_strdup_printf ("%ld", self->priv->height);
+  if (height > 0) {
+    gchar *number = g_strdup_printf ("%d", height);
     g_string_append (caps, ",height=");
     g_string_append (caps, number);
     g_free (number);
   }
-  if (self->priv->width > 0) {
-    gchar *number = g_strdup_printf ("%ld", self->priv->width);
+  if (width > 0) {
+    gchar *number = g_strdup_printf ("%d", width);
     g_string_append (caps, ",width=");
     g_string_append (caps, number);
     g_free (number);
@@ -209,21 +209,21 @@ kms_video_sampler_calculate_video_caps (KmsVideoSampler *self)
 }
 
 static gchar*
-kms_video_sampler_calculate_encoder (KmsVideoSampler *self)
+calculate_encoder (gchar *encoding)
 {
   gchar* encoder;
 
-  if (self->priv->encoding == NULL) {
+  if (encoding == NULL) {
     encoder = g_strdup_printf("%s", "video/x-raw");
-  }else if (g_str_equal (self->priv->encoding, "PNG")){
+  }else if (g_str_equal (encoding, "PNG")){
     encoder = g_strdup_printf("%s", "image/png");
-  } else if (g_str_equal (self->priv->encoding, "JPEG")){
+  } else if (g_str_equal (encoding, "JPEG")){
     encoder = g_strdup_printf("%s", "image/jpeg");
-  } else if (g_str_equal (self->priv->encoding, "BMP")){
+  } else if (g_str_equal (encoding, "BMP")){
     encoder = g_strdup_printf("%s", "image/bmp");
-  } else if (g_str_equal (self->priv->encoding, "PBM")){
+  } else if (g_str_equal (encoding, "PBM")){
     encoder = g_strdup_printf("%s", "image/pbm");
-  } else if (g_str_equal (self->priv->encoding, "PPM")){
+  } else if (g_str_equal (encoding, "PPM")){
     encoder = g_strdup_printf("%s", "image/ppm");
   } else {
     encoder = g_strdup_printf("%s", "video/x-raw");
@@ -237,8 +237,8 @@ kms_video_sampler_calculate_encoder (KmsVideoSampler *self)
 static gchar*
 kms_videosampler_create_description (KmsVideoSampler *self)
 {
-  gchar* video_caps = kms_video_sampler_calculate_video_caps (self);
-  gchar* encoder_class = kms_video_sampler_calculate_encoder (self);
+  gchar* video_caps = calculate_video_caps_for_output (self->priv->width, self->priv->height, self->priv->frame_period);
+  gchar* encoder_class = calculate_encoder (self->priv->encoding);
   gchar* description;
 
   description = g_strdup_printf  (VIDEO_LEG_BIN, video_caps, encoder_class);
@@ -247,7 +247,112 @@ kms_videosampler_create_description (KmsVideoSampler *self)
   return description;
 }
 
+static void
+kms_videosampler_update_video_caps_for_output (KmsVideoSampler *self, gint width, gint height, gulong frame_period)
+{
+  gchar* video_caps = calculate_video_caps_for_output (width, height, frame_period);
+  GstElement *capsfilter = gst_bin_get_by_name (GST_BIN(self->priv->video_leg), "video");
+  GstCaps *caps = gst_caps_from_string(video_caps);
 
+  g_object_set (capsfilter, "caps", caps, NULL);
+  gst_caps_unref (caps);
+  gst_object_unref (capsfilter);
+  g_free (video_caps);
+}
+
+
+static void 
+kms_videosampler_set_output_resolution_preserving_aspect_ratio (KmsVideoSampler *self, gint orig_width, gint orig_height)
+{
+  if (self->priv->height > 0) {
+    // We need to calculate width for aspect ratio preservation
+    gint calculated_width;
+
+    calculated_width = orig_width * self->priv->height / orig_height;
+    kms_videosampler_update_video_caps_for_output(self, calculated_width, self->priv->height, self->priv->frame_period);
+  } else if (self->priv->width > 0) {
+    // We need to calculate width for aspect ratio preservation
+    gint calculated_height;
+
+    calculated_height = orig_height * self->priv->width / orig_width;
+    kms_videosampler_update_video_caps_for_output(self, self->priv->width, calculated_height, self->priv->frame_period);
+  }
+}
+
+static gchar*
+calculate_video_caps_for_input (gint width, gint height)
+{
+  GString *caps;
+  gchar *caps_str;
+  
+  caps = g_string_new ("video/x-raw");
+  if (height > 0) {
+    gchar *number = g_strdup_printf ("%d", height);
+    g_string_append (caps, ",height=");
+    g_string_append (caps, number);
+    g_free (number);
+  }
+  if (width > 0) {
+    gchar *number = g_strdup_printf ("%d", width);
+    g_string_append (caps, ",width=");
+    g_string_append (caps, number);
+    g_free (number);
+  }
+  caps_str = g_strdup_printf ("%s", caps->str);
+  g_string_free (caps, TRUE);
+  return caps_str;
+}
+
+static void 
+kms_videosampler_set_input_resolution (KmsVideoSampler *self, gint orig_width, gint orig_height)
+{
+  if (self->priv->video_leg != NULL) {
+    GstElement *input_caps;
+
+    input_caps = gst_bin_get_by_name (GST_BIN(self->priv->video_leg), "input-caps");
+    if (input_caps != NULL) {
+      gchar *caps_str = calculate_video_caps_for_input (orig_width, orig_height);
+      GstCaps *caps = gst_caps_from_string(caps_str);
+
+      g_object_set (input_caps, "caps", caps, NULL);
+      gst_caps_unref (caps);
+      g_free (caps_str);
+      gst_object_unref (input_caps);
+    }
+  }
+}
+
+static GstPadProbeReturn
+kms_videosampler_resolution_change (GstPad *pad, GstPadProbeInfo *info, gpointer user_data) 
+{
+  KmsVideoSampler *self = (KmsVideoSampler*) user_data;
+  GstEvent *event;
+
+  // If no aspect ratio preservation is needed no action taken
+  if ((self->priv->height == 0) && (self->priv->width == 0)) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  event = gst_pad_probe_info_get_event (info);
+  if (GST_EVENT_TYPE(event) == GST_EVENT_CAPS) {
+      GstCaps *caps;
+      GstStructure *structure;
+      gint width, height;
+
+      gst_event_parse_caps(event, &caps);
+      structure = gst_caps_get_structure(caps, 0);
+
+      if (gst_structure_get_int(structure, "width", &width) && gst_structure_get_int(structure, "height", &height)) {
+        if (!((self->priv->height > 0) && (self->priv->width > 0))) {
+          // We have definitive souorce resolution, set the output resolution
+          kms_videosampler_set_output_resolution_preserving_aspect_ratio (self, width, height);
+        }
+        kms_videosampler_set_input_resolution (self, width, height);
+      }
+  }
+
+  return GST_PAD_PROBE_OK;
+}
 
 static void
 kms_videosampler_connect_video_leg (KmsVideoSampler *self)
@@ -255,6 +360,7 @@ kms_videosampler_connect_video_leg (KmsVideoSampler *self)
   gchar *description = kms_videosampler_create_description (self);
   GError *error= NULL;
   GstElement *output;
+  GstPad *sinkpad;
 
   output = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
   self->priv->video_leg = gst_parse_bin_from_description (description, TRUE, &error);
@@ -268,6 +374,11 @@ kms_videosampler_connect_video_leg (KmsVideoSampler *self)
     gst_element_link (self->priv->video_leg, output);
     kms_videosampler_connect_passthrough (self, KMS_ELEMENT_PAD_TYPE_VIDEO,
       self->priv->video_leg);    
+
+    // Add probe to dynamically calculate resolutions in case neede to respect aspect ratio
+    sinkpad = gst_element_get_static_pad(self->priv->video_leg, "sink");
+    gst_pad_add_probe(sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, (GstPadProbeCallback)kms_videosampler_resolution_change, (gpointer) self, NULL);
+    gst_object_unref (sinkpad);
   }
   g_free (description);
 }
@@ -294,40 +405,27 @@ kms_videosampler_init (KmsVideoSampler *self)
 }
 
 static void
-kms_videosampler_update_video_caps (KmsVideoSampler *self)
-{
-  gchar* video_caps = kms_video_sampler_calculate_video_caps (self);
-  GstElement *capsfilter = gst_bin_get_by_name (GST_BIN(self->priv->video_leg), "video");
-  GstCaps *caps = gst_caps_from_string(video_caps);
-
-  g_object_set (capsfilter, "caps", caps, NULL);
-  gst_caps_unref (caps);
-  gst_object_unref (capsfilter);
-  g_free (video_caps);
-}
-
-static void
 kms_videosampler_update_frame_period (KmsVideoSampler *self)
 {
-  kms_videosampler_update_video_caps(self);
+  kms_videosampler_update_video_caps_for_output(self, self->priv->width, self->priv->height, self->priv->frame_period);
 }
 
 static void
 kms_videosampler_update_height (KmsVideoSampler *self)
 {
-  kms_videosampler_update_video_caps(self);
+  kms_videosampler_update_video_caps_for_output(self, self->priv->width, self->priv->height, self->priv->frame_period);
 }
 
 static void
 kms_videosampler_update_width (KmsVideoSampler *self)
 {
-  kms_videosampler_update_video_caps(self);
+  kms_videosampler_update_video_caps_for_output(self, self->priv->width, self->priv->height, self->priv->frame_period);
 }
 
 static void
 kms_videosampler_update_image_encoding (KmsVideoSampler *self)
 {
-  gchar* encoder_class = kms_video_sampler_calculate_encoder (self);
+  gchar* encoder_class = calculate_encoder (self->priv->encoding);
   GstElement *capsfilter = gst_bin_get_by_name (GST_BIN(self->priv->video_leg), "encoder");
   GstCaps *caps = gst_caps_from_string(encoder_class);
 
