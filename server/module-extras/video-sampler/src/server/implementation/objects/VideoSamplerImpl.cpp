@@ -105,6 +105,24 @@ VideoSamplerGRPC::VideoSamplerGRPC (const boost::property_tree::ptree &config,
   }
 }
 
+static std::string 
+epochToString() {
+  // Obtener el tiempo actual en formato epoch
+  auto now = std::chrono::system_clock::now();
+  std::time_t epoch_time = std::chrono::system_clock::to_time_t(now);
+
+  // Convertir el tiempo epoch a una cadena de caracteres
+  std::stringstream ss;
+  ss << std::ctime(&epoch_time);
+
+  // Eliminar el carácter de nueva línea al final de la cadena
+  std::string time_str = ss.str();
+  if (!time_str.empty() && time_str.back() == '\n') {
+    time_str.pop_back();
+  }
+
+  return time_str;
+}
 
 bool
 VideoSamplerGRPC::send_frame_data (guint8 *data, guint len)
@@ -116,6 +134,7 @@ VideoSamplerGRPC::send_frame_data (guint8 *data, guint len)
 
   request.set_codec (getEncodingStr());
   request.set_data (data, len);
+  request.set_timestamp (epochToString());
 
   status = imageDeliverStub->deliverImage(&context, request, &reply);
 
