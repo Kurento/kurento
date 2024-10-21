@@ -13,7 +13,8 @@ Build-Depends:
  pkg-config,
  protobuf-compiler-grpc,
  libgrpc-dev,
- libgrpc++-dev
+ libgrpc++-dev,
+ libprotobuf-dev
 Standards-Version: 4.5.1
 Homepage: https://kurento.openvidu.io/
 Vcs-Browser: https://github.com/Kurento/kurento
@@ -32,8 +33,8 @@ Depends:
  kurento-module-core (>= 7.1.1),
  kurento-module-elements (>= 7.1.1),
  kurento-module-filters (>= 7.1.1),
- libgrpc++1.51t64
- libgrpc29t64
+ libgrpc++1.51t64,
+ libgrpc29t64,
  libprotobuf32t64
 Breaks:
  kms-chroma-6.0,
@@ -41,21 +42,15 @@ Breaks:
 Replaces:
  kms-chroma-6.0,
  kms-chroma,
-Description: Kurento Chroma filter
+Description: Kurento Video sampler element
 
-Package: kurento-module-chroma-dev
+Package: kurento-module-videosampler-dev
 Architecture: any
 Section: libdevel
 Depends:
  ${misc:Depends},
- kurento-module-chroma (= ${binary:Version}),
+ kurento-module-videosampler (= ${binary:Version}),
  kurento-module-core-dev,
  kurento-module-elements-dev,
  kurento-module-filters-dev,
-Breaks:
- kms-chroma-6.0-dev,
- kms-chroma-dev,
-Replaces:
- kms-chroma-6.0-dev,
- kms-chroma-dev,
-Description: Kurento Chroma filter - Development files
+Description: Kurento video sampler element - Development files
