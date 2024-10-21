@@ -41,30 +41,26 @@ CompositeImpl::CompositeImpl (const boost::property_tree::ptree &conf,
                                     std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME),
   width (width), height (height), framerate (framerate) 
 {
-  // // Width property
-  // if (getConfigValue <uint64_t, WIDTH_PROPERTY>(width,
-  //     WIDTH_PROPERTY, NULL)) {
-  //   g_object_set(G_OBJECT(element), WIDTH_PROPERTY, width, NULL);
-  // }
-  // // Height property
-  // if (getConfigValue <uint64_t, HEIGHT_PROPERTY>(height,
-  //     HEIGHT_PROPERTY, NULL)) {
-  //   g_object_set(G_OBJECT(element), HEIGHT_PROPERTY, height, NULL);
-  // }
-  // // Framerate property
-  // if (getConfigValue <uint64_t, FRAMERATE_PROPERTY>(framerate,
-  //     FRAMERATE_PROPERTY, NULL)) {
-  //   g_object_set(G_OBJECT(element), FRAMERATE_PROPERTY, framerate, NULL);
-  // }
-    g_object_set(G_OBJECT(element), WIDTH_PROPERTY, width, NULL);
-    g_object_set(G_OBJECT(element), HEIGHT_PROPERTY, height, NULL);
-    g_object_set(G_OBJECT(element), FRAMERATE_PROPERTY, framerate, NULL);
+    // Check if "width" exists in the config
+    if (width != 0 || kurento::MediaObjectImpl::getConfigValue(&width, "width", conf)) {
+        g_object_set(G_OBJECT(element), WIDTH_PROPERTY, width, NULL);
+    }
+
+    // Check if "height" exists in the config
+    if (height != 0 || kurento::MediaObjectImpl::getConfigValue(&height, "height", conf)) {
+        g_object_set(G_OBJECT(element), HEIGHT_PROPERTY, height, NULL);
+    }
+
+    // Check if "framerate" exists in the config
+    if (framerate != 0 || kurento::MediaObjectImpl::getConfigValue(&framerate, "framerate", conf)) {
+        g_object_set(G_OBJECT(element), FRAMERATE_PROPERTY, framerate, NULL);
+    }
 }
 
 MediaObjectImpl *
 CompositeImplFactory::createObject (const boost::property_tree::ptree &conf,
                      std::shared_ptr<MediaPipeline> mediaPipeline,
-                     int64_t width, int64_t height, int64_t framerate) const
+                     int64_t width = DEFAULT_WIDTH, int64_t height = DEFAULT_HEIGHT, int64_t framerate = DEFAULT_FRAMERATE) const
 {
   return new CompositeImpl (conf, mediaPipeline, width, height, framerate);
 }
