@@ -8,6 +8,8 @@ Build-Depends:
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
  kurento-module-core-dev (>= 7.1.1),
+ kurento-module-elements-dev (>= 7.1.1),
+ kurento-module-filters-dev (>= 7.1.1),
  pkg-config,
  protobuf-compiler-grpc,
  libgrpc-dev,
@@ -29,6 +31,8 @@ Depends:
  gstreamer1.0-plugins-base,
  gstreamer1.0-plugins-good,
  kurento-module-core (>= 7.1.1),
+ kurento-module-elements (>= 7.1.1),
+ kurento-module-filters (>= 7.1.1),
  libgrpc++1.51t64,
  libgrpc29t64,
  libprotobuf32t64
@@ -47,4 +51,6 @@ Depends:
  ${misc:Depends},
  kurento-module-videosampler (= ${binary:Version}),
  kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev,
 Description: Kurento video sampler element - Development files
