@@ -196,7 +196,7 @@ jobs:
       directory: "server/module-examples/datachannelexample/"
 
   module-videosampler:
-    needs: ["module-core"]
+    needs: ["module-filters"]
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
