@@ -50,6 +50,11 @@
 #
 #     docker logs --follow kms >"kms-$(date '+%Y%m%dT%H%M%S').log" 2>&1
 
+
+# Global arguments for FROM.
+ARG KMS_VERSION="latest"
+
+
 FROM kurento-media-server:${KMS_VERSION}
 
 LABEL maintainer="Saúl Pablo Labajo Izquierdo <slabajo@naevatec.com>"
