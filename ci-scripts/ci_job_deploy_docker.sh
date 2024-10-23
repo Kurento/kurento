@@ -108,7 +108,7 @@ else
 fi
 
 # Run the Docker image builder
-export PUSH_IMAGES="no"
+export PUSH_IMAGES="yes"
 BUILD_ARGS=""
 BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
