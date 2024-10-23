@@ -55,7 +55,7 @@
 ARG KMS_VERSION_TAG="latest"
 
 
-FROM kurento-media-server:${KMS_VERSION_TAG}
+FROM kurento/kurento-media-server:${KMS_VERSION_TAG}
 
 LABEL maintainer="Saúl Pablo Labajo Izquierdo <slabajo@naevatec.com>"
 
