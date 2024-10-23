@@ -1,0 +1,2 @@
+# Kurento Media Server - Nightly packages
+deb [arch=amd64] http://ubuntu.openvidu.io/7.0.0 focal main
