@@ -66,6 +66,8 @@ set -o xtrace
 
 # Avoid illegal chars in tag name
 TAG=$(echo $TAG | tr '/' '_')
+KMS_VERSION_TAG=$(echo $KMS_VERSION | tr '/' '_')
+BUILD_ARGS+=" KMS_VERSION_TAG=$KMS_VERSION_TAG"
 
 [[ -z "${PUSH_IMAGES:-}" ]] && PUSH_IMAGES="no"
 [[ -z "${TAG_COMMIT:-}" ]] && TAG_COMMIT="yes"

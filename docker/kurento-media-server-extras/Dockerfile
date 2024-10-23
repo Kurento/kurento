@@ -52,10 +52,10 @@
 
 
 # Global arguments for FROM.
-ARG KMS_VERSION="latest"
+ARG KMS_VERSION_TAG="latest"
 
 
-FROM kurento-media-server:${KMS_VERSION}
+FROM kurento-media-server:${KMS_VERSION_TAG}
 
 LABEL maintainer="Saúl Pablo Labajo Izquierdo <slabajo@naevatec.com>"
 
