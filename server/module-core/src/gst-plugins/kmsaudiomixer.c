@@ -845,7 +845,7 @@ kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
   // clang-format off
   g_object_set (adder,
       "latency", LATENCY * GST_MSECOND,
-      "start-time-selection", "first",
+      "start-time-selection", 1 , // "first"
       NULL);
   // clang-format on
   g_object_set (tee, "allow-not-linked", TRUE, NULL);
