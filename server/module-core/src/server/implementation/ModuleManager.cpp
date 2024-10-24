@@ -58,83 +58,89 @@ ModuleManager::loadModule (std::string modulePath)
     return -1;
   }
 
-  Glib::Module module (modulePath);
+  try {
+    Glib::Module module (modulePath);
 
-  if (!module) {
-    GST_WARNING ("Module %s cannot be loaded: %s", modulePath.c_str(),
+    if (!module) {
+      GST_WARNING ("Module %s cannot be loaded: %s", modulePath.c_str(),
+                  Glib::Module::get_last_error().c_str() );
+      return -1;
+    }
+
+    if (!module.get_symbol ("getFactoryRegistrar", registrarFactory) ) {
+      GST_DEBUG ("Symbol 'getFactoryRegistrar' not found in library %s",
+                  moduleFileName.c_str() );
+      return -1;
+    }
+
+    registrar = ( (RegistrarFactoryFunc) registrarFactory) ();
+    const std::map <std::string, std::shared_ptr <kurento::Factory > > &factories =
+      registrar->getFactories();
+
+    for (auto it : factories) {
+      if (loadedFactories.find (it.first) != loadedFactories.end() ) {
+        GST_DEBUG ("Factory %s is already registered, skiping module %s",
+                  it.first.c_str(), module.get_name().c_str() );
+        return -1;
+      }
+    }
+
+    module.make_resident();
+
+    GST_INFO ("Load file: %s, module name: %s", modulePath.c_str(),
+              module.get_name().c_str() );
+
+    loadedFactories.insert (factories.begin(), factories.end() );
+
+    if (!module.get_symbol ("getModuleVersion", getVersion) ) {
+      GST_WARNING ("Cannot get module version");
+    } else {
+      moduleVersion = ( (GetNameFunc) getVersion) ();
+    }
+
+    if (!module.get_symbol ("getModuleName", getName) ) {
+      GST_WARNING ("Cannot get module name");
+    } else {
+      std::string finalModuleName;
+
+      moduleName = ( (GetVersionFunc) getName) ();
+
+      // Factories are also registered using the module name as a prefix
+      // Modules core, elements and filters use kurento as prefix
+      if (moduleName == "core" || moduleName == "elements"
+          || moduleName == "filters")  {
+        finalModuleName = "kurento";
+      } else {
+        finalModuleName = moduleName;
+      }
+
+      for (auto it : factories) {
+        loadedFactories [finalModuleName + "." + it.first] = it.second;
+      }
+    }
+
+    if (!module.get_symbol ("getModuleDescriptor", getDescriptor) ) {
+      GST_WARNING ("Cannot get module descriptor");
+    } else {
+      moduleDescriptor = ( (GetDescFunc) getDescriptor) ();
+    }
+
+    if (!module.get_symbol ("getGenerationTime", getGenerationTime) ) {
+      GST_WARNING ("Cannot get module generationTime");
+    } else {
+      generationTime = ( (GetGenerationTimeFunc) getGenerationTime) ();
+    }
+
+    loadedModules[moduleFileName] = std::make_shared<ModuleData>(
+        moduleName, moduleVersion, generationTime, moduleDescriptor, factories);
+
+    GST_INFO ("Loaded module: %s, version: %s, date: %s", moduleName.c_str(),
+              moduleVersion.c_str(), generationTime.c_str() );
+  } catch (...) {
+    GST_WARNING ("Module %s cannot be loaded due to exception: %s", modulePath.c_str(),
                  Glib::Module::get_last_error().c_str() );
     return -1;
   }
-
-  if (!module.get_symbol ("getFactoryRegistrar", registrarFactory) ) {
-    GST_DEBUG ("Symbol 'getFactoryRegistrar' not found in library %s",
-                 moduleFileName.c_str() );
-    return -1;
-  }
-
-  registrar = ( (RegistrarFactoryFunc) registrarFactory) ();
-  const std::map <std::string, std::shared_ptr <kurento::Factory > > &factories =
-    registrar->getFactories();
-
-  for (auto it : factories) {
-    if (loadedFactories.find (it.first) != loadedFactories.end() ) {
-      GST_DEBUG ("Factory %s is already registered, skiping module %s",
-                 it.first.c_str(), module.get_name().c_str() );
-      return -1;
-    }
-  }
-
-  module.make_resident();
-
-  GST_INFO ("Load file: %s, module name: %s", modulePath.c_str(),
-            module.get_name().c_str() );
-
-  loadedFactories.insert (factories.begin(), factories.end() );
-
-  if (!module.get_symbol ("getModuleVersion", getVersion) ) {
-    GST_WARNING ("Cannot get module version");
-  } else {
-    moduleVersion = ( (GetNameFunc) getVersion) ();
-  }
-
-  if (!module.get_symbol ("getModuleName", getName) ) {
-    GST_WARNING ("Cannot get module name");
-  } else {
-    std::string finalModuleName;
-
-    moduleName = ( (GetVersionFunc) getName) ();
-
-    // Factories are also registered using the module name as a prefix
-    // Modules core, elements and filters use kurento as prefix
-    if (moduleName == "core" || moduleName == "elements"
-        || moduleName == "filters")  {
-      finalModuleName = "kurento";
-    } else {
-      finalModuleName = moduleName;
-    }
-
-    for (auto it : factories) {
-      loadedFactories [finalModuleName + "." + it.first] = it.second;
-    }
-  }
-
-  if (!module.get_symbol ("getModuleDescriptor", getDescriptor) ) {
-    GST_WARNING ("Cannot get module descriptor");
-  } else {
-    moduleDescriptor = ( (GetDescFunc) getDescriptor) ();
-  }
-
-  if (!module.get_symbol ("getGenerationTime", getGenerationTime) ) {
-    GST_WARNING ("Cannot get module generationTime");
-  } else {
-    generationTime = ( (GetGenerationTimeFunc) getGenerationTime) ();
-  }
-
-  loadedModules[moduleFileName] = std::make_shared<ModuleData>(
-      moduleName, moduleVersion, generationTime, moduleDescriptor, factories);
-
-  GST_INFO ("Loaded module: %s, version: %s, date: %s", moduleName.c_str(),
-            moduleVersion.c_str(), generationTime.c_str() );
 
   return 0;
 }
