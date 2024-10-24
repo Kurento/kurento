@@ -114,3 +114,23 @@ target_link_libraries(test_player
   ${LIBRARY_NAME}impl
   ${KMSCORE_LIBRARIES}
 )
+
+add_test_program(test_composite composite.cpp)
+add_dependencies(test_composite kmselements)
+set_property(TARGET test_composite
+  PROPERTY INCLUDE_DIRECTORIES
+    ${KmsJsonRpc_INCLUDE_DIRS}
+    ${sigc++-2.0_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/implementation/objects
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/implementation
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/interface
+    ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
+    ${KMSCORE_INCLUDE_DIRS}
+    ${gstreamer-1.0_INCLUDE_DIRS}
+)
+target_link_libraries(test_composite
+  ${LIBRARY_NAME}impl
+  ${KMSCORE_LIBRARIES}
+)
+
