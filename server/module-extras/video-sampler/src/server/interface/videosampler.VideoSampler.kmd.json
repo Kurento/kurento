@@ -3,7 +3,26 @@
     {
       "name": "VideoSampler",
       "extends": "MediaElement",
-      "doc": "VideoSampler interface. This type of :rom:cls:`Filter` samples at a configured rate frames from its video source and delivers it using gRPC to a configured destination.",
+      "doc": "VideoSampler interface. This type of :rom:cls:`Filter` samples at a configured rate frames from its video source and delivers it using gRPC to a configured destination.
+              The specification of the GRPC service that should receive images is as follows:
+              <p>
+              <code>
+              syntax = &quot;proto3&quot;;
+
+              package videoSampler;
+
+              service ImageDeliver {
+                  rpc deliverImage (SampleImage) returns (Empty) {}
+              }
+
+              message SampleImage {
+                  string codec        = 1;
+                  bytes  data         = 2;
+                  string timestamp    = 3;
+              }
+
+              message Empty { }
+              </code>",
       "constructor": {
         "doc": "Create a :rom:cls:`VideoSampler`",
         "params": [
