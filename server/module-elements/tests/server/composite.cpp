@@ -84,7 +84,23 @@ createComposite ()
 
   return std::dynamic_pointer_cast <CompositeImpl> (composite);
 }
+static std::shared_ptr <CompositeImpl>
+createComposite (int64_t width, int64_t height, int64_t framerate)
+{
+  std::shared_ptr <kurento::MediaObjectImpl> composite;
+  Json::Value constructorParams;
 
+  constructorParams ["mediaPipeline"] = mediaPipelineId;
+  constructorParams ["width"] = width;
+  constructorParams ["height"] = height;
+  constructorParams ["framerate"] = framerate;
+
+  composite = moduleManager.getFactory ("Composite")->createObject (
+                       config, "",
+                       constructorParams );
+
+  return std::dynamic_pointer_cast <CompositeImpl> (composite);
+}
 static void
 releaseComposite (std::shared_ptr<CompositeImpl> &ep)
 {
@@ -198,6 +214,7 @@ releasePassTrhough (std::shared_ptr<PassThroughImpl> &ep)
 
 static void
 composite_setup ()
+
 {
   std::atomic<bool> media_state_changed (false);
   std::condition_variable cv;
@@ -269,13 +286,82 @@ composite_setup ()
   releaseTestSrc(src2);
 
 }
+static void composite_param_setup (){
+std::atomic<bool> media_state_changed (false);
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+  std::shared_ptr<CompositeImpl> composite = createComposite (800, 600, 15);
+  std::shared_ptr<MediaElementImpl> src1 = createTestSrc();
+  std::shared_ptr<MediaElementImpl> src2 = createTestSrc();
+  std::shared_ptr<PassThroughImpl> pt = createPassThrough(mediaPipelineId);
+  std::shared_ptr<HubPortImpl> port1 = createHubPort (composite);
+  std::shared_ptr<HubPortImpl> port2 = createHubPort (composite);
 
+  bool audio_flowing = false;
+  bool video_flowing = false;
+
+  sigc::connection conn = getMediaElement(pt)->signalMediaFlowInStateChanged.connect([&] (
+		  MediaFlowInStateChanged event) {
+	  	  	  std::shared_ptr<MediaFlowState> state = event.getState();
+	  	  	  if (state->getValue() == MediaFlowState::FLOWING) {
+		  	  	  BOOST_CHECK (state->getValue() == MediaFlowState::FLOWING);
+                if (event.getMediaType ()->getValue() == MediaType::AUDIO) {
+                    BOOST_TEST_MESSAGE ("Audio flowing");
+                    audio_flowing = true;
+                } else if (event.getMediaType ()->getValue() == MediaType::VIDEO) {
+                    BOOST_TEST_MESSAGE ("Video flowing");
+                    video_flowing = true;
+                }
+      	  	  } else if (state->getValue() == MediaFlowState::NOT_FLOWING) {
+                if (event.getMediaType ()->getValue() == MediaType::AUDIO) {
+                    BOOST_TEST_MESSAGE ("Audio not flowing");
+                    audio_flowing = false;
+                } else if (event.getMediaType ()->getValue() == MediaType::VIDEO) {
+                    BOOST_TEST_MESSAGE ("Video not flowing");
+                    video_flowing = false;
+                }
+              }
+              if (audio_flowing && video_flowing) {
+		  	  	  media_state_changed = true; 
+		  	  	  cv.notify_one();
+              }
+          }
+  );
+
+  src1->connect (port1);
+  src2->connect (port2);
+  port1->connect (pt);
+
+
+  dumpPipeline (mediaPipelineId, "composite_start.dot");
+  // First stream
+  cv.wait_for (lck, std::chrono::seconds(10), [&] () {
+    return media_state_changed.load();
+  });
+  conn.disconnect ();
+
+  dumpPipeline (mediaPipelineId, "composite_end.dot");
+
+  if (!((getMediaElement(pt)->isMediaFlowingIn (std::make_shared<MediaType>(MediaType::AUDIO))) && ((getMediaElement(pt)->isMediaFlowingIn (std::make_shared<MediaType>(MediaType::VIDEO)))))) {
+    BOOST_ERROR ("Media is not flowing out from composite");
+  }
+
+ 
+
+  releasePassTrhough(pt);
+  releaseHubPort(port1);
+  releaseHubPort(port2);
+  releaseComposite (composite);
+  releaseTestSrc(src1);
+  releaseTestSrc(src2);
+}
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
   test_suite *test = BOOST_TEST_SUITE ( "RecorderEndpoint" );
 
   test->add (BOOST_TEST_CASE ( &composite_setup), 0, /* timeout */ 100);
-
+  test->add (BOOST_TEST_CASE ( &composite_param_setup), 0, /* timeout */ 100);
   return test;
 }
