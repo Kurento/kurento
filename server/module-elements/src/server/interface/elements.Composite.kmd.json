@@ -16,14 +16,14 @@
             {
               "name": "width",
               "doc": "screen width",
-              "type": "int64",
+              "type": "int",
               "optional": true,
               "defaultValue": 800
             },
             {
               "name": "height",
               "doc": "screen height",
-              "type": "int64",
+              "type": "int",
               "optional": true,
               "defaultValue": 600
 
@@ -31,7 +31,7 @@
             {
               "name": "framerate",
               "doc": "frames per second",
-              "type": "int64",
+              "type": "int",
               "optional": true,
               "defaultValue": 15
             }
