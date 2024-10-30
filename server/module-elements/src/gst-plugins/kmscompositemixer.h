@@ -59,6 +59,7 @@ typedef struct _KmsCompositeMixerPrivate KmsCompositeMixerPrivate;
 
 enum
 {
+  PROP_ZERO,
   PROP_WIDTH,
   PROP_HEIGHT,
   PROP_FRAMERATE,
