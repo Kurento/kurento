@@ -104,7 +104,7 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
 fi
 
 if [[ "${DISABLE_APT_PROXY:-}" != "true" ]]; then
-    KURENTO_BUILDPACKAGE_ARGS+=(--apt-proxy http://proxy.openvidu.io:3142)
+    KURENTO_BUILDPACKAGE_ARGS+=(--apt-proxy http://apt-proxy.naevatec.com:3142)
 fi
 if [[ -n "$GST_RUST_PACKAGE" ]]; then
     KURENTO_BUILDPACKAGE_ARGS+=(--package "$GST_RUST_PACKAGE")
