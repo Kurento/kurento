@@ -21,9 +21,10 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <MediaPipelineImpl.hpp>
+#include <MediaElementImpl.hpp>
 #include <objects/CompositeImpl.hpp>
-#include <HubPort.hpp>
-#include <objects/PassThroughImpl.hpp>
+#include <HubPortImpl.hpp>
+#include <PassThroughImpl.hpp>
 #include <MediaFlowInStateChanged.hpp>
 #include <MediaFlowState.hpp>
 #include <MediaType.hpp>
@@ -95,7 +96,7 @@ releaseComposite (std::shared_ptr<CompositeImpl> &ep)
 }
 
 
-static std::shared_ptr <HubPort>
+static std::shared_ptr <HubPortImpl>
 createHubPort (std::shared_ptr<CompositeImpl> composite)
 {
   std::shared_ptr <kurento::MediaObjectImpl> port;
@@ -103,15 +104,15 @@ createHubPort (std::shared_ptr<CompositeImpl> composite)
 
   constructorParams ["hub"] = composite->getId();
 
-  port = moduleManager.getFactory ("HubPort")->createObject (
+  port = moduleManager.getFactory ("HubPortImpl")->createObject (
                        config, "",
                        constructorParams );
 
-  return std::dynamic_pointer_cast <HubPort> (port);
+  return std::dynamic_pointer_cast <HubPortImpl> (port);
 }
 
 static void
-releaseHubPort (std::shared_ptr<HubPort> &ep)
+releaseHubPort (std::shared_ptr<HubPortImpl> &ep)
 {
   std::string id = ep->getId();
 
@@ -207,8 +208,8 @@ composite_setup ()
   std::shared_ptr<MediaElementImpl> src1 = createTestSrc();
   std::shared_ptr<MediaElementImpl> src2 = createTestSrc();
   std::shared_ptr<PassThroughImpl> pt = createPassThrough(mediaPipelineId);
-  std::shared_ptr<HubPort> port1 = createHubPort (composite);
-  std::shared_ptr<HubPort> port2 = createHubPort (composite);
+  std::shared_ptr<HubPortImpl> port1 = createHubPort (composite);
+  std::shared_ptr<HubPortImpl> port2 = createHubPort (composite);
 
   bool audio_flowing = false;
   bool video_flowing = false;
