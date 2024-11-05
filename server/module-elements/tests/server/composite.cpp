@@ -104,7 +104,7 @@ createHubPort (std::shared_ptr<CompositeImpl> composite)
 
   constructorParams ["hub"] = composite->getId();
 
-  port = moduleManager.getFactory ("HubPortImpl")->createObject (
+  port = moduleManager.getFactory ("HubPort")->createObject (
                        config, "",
                        constructorParams );
 
