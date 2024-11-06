@@ -1,6 +1,6 @@
-kurento-module-opencv-example (7.1.1-1kurento1) UNRELEASED; urgency=medium
+kurento-module-opencv-example (7.1.2-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * Initial release.
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Thu, 24 Oct 2024 17:13:25 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Wed, 06 Nov 2024 11:57:30 +0000
