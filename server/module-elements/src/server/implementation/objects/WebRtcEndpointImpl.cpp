@@ -641,7 +641,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   std::string enableH265;
 
-  if (getConfigValue<std::string,WebRtcEndpoint>(&cfg_dscp_value, PARAM_ENABLE_H265)) {
+  if (getConfigValue<std::string,WebRtcEndpoint>(&enableH265, PARAM_ENABLE_H265)) {
     GST_INFO ("ENABLE-H265 configured value is %s", enableH265.c_str());
     if (enableH265 == "true") {
       add_support_for_h265 ();
