@@ -21,9 +21,10 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <MediaPipelineImpl.hpp>
+#include <MediaElementImpl.hpp>
 #include <objects/CompositeImpl.hpp>
-#include <objects/HubPortImpl.hpp>
-#include <objects/PassThroughImpl.hpp>
+#include <HubPortImpl.hpp>
+#include <PassThroughImpl.hpp>
 #include <MediaFlowInStateChanged.hpp>
 #include <MediaFlowState.hpp>
 #include <MediaType.hpp>

@@ -3,4 +3,4 @@ kurento-module-gstreamer-example (7.1.1-1kurento1) UNRELEASED; urgency=medium
   [ Kurento ]
   * Initial release.
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Fri, 20 Sep 2024 09:56:17 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Thu, 24 Oct 2024 17:13:25 +0000

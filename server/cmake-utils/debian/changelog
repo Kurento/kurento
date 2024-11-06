@@ -3,7 +3,7 @@ kurento-cmake-utils (7.1.1-1kurento1) UNRELEASED; urgency=medium
   [ Kurento ]
   * UNRELEASED
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Fri, 20 Sep 2024 09:56:15 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Thu, 24 Oct 2024 17:13:23 +0000
 
 kms-cmake-utils (6.18.0-0kurento1) testing; urgency=medium
 
