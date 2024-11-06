@@ -76,6 +76,7 @@ jobs:
           JOB_GIT_NAME: "${{ inputs.jobGitName }}"
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
+          APT_PROXY_URL: "${{ vars.APT_PROXY_URL }}"
           DISABLE_APT_PROXY: "true"
         working-directory: "${{ inputs.directory }}"
         run: "ci_job_package_gst_rust_debian.sh"
