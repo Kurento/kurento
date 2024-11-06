@@ -2114,7 +2114,19 @@ GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
 }
 GST_END_TEST
 
-GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp9_sendrecv)
+GST_START_TEST (test_offerer_pcmu_h265_answerer_h265_sendrecv)
+{
+  test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
+      pcmu_expected_caps, "PCMU/8000", "x265enc", h265_expected_caps, "H265/90000",
+      FALSE);
+  test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
+      pcmu_expected_caps, "PCMU/8000", "x265enc", h265_expected_caps, "H265/90000",
+      TRUE);
+}
+GST_END_TEST
+
+
+GST_START_TEST (test_offerer_pcmu_vp9_answerer_vp9_sendrecv)
 {
   test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
       pcmu_expected_caps, "PCMU/8000", "vp9enc", vp9_expected_caps, "VP9/90000",
@@ -2626,7 +2638,7 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_vp9_sendonly_recvonly_rsa);
   tcase_add_test (tc_chain, test_vp9_sendonly_recvonly_ecdsa);
   tcase_add_test (tc_chain, test_vp9_sendrecv);
-  tcase_add_test (tc_chain, test_offerer_pcmu_vp8_answerer_vp9_sendrecv);
+  tcase_add_test (tc_chain, test_offerer_pcmu_vp9_answerer_vp9_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp9_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp9_sendonly_recvonly);
 
@@ -2643,7 +2655,7 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_h265_sendonly_recvonly_rsa);
   tcase_add_test (tc_chain, test_h265_sendonly_recvonly_ecdsa);
   tcase_add_test (tc_chain, test_h265_sendrecv);
-  tcase_add_test (tc_chain, test_offerer_pcmu_h265_answerer_vp8_sendrecv);
+  tcase_add_test (tc_chain, test_offerer_pcmu_h265_answerer_h265_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_h265_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_h265_sendonly_recvonly);
 
