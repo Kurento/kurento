@@ -342,6 +342,8 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
 
   gint new_bitrate = kms_enc_tree_bin_get_bitrate (self);
   gint kbps_div;
+  guint min_bitrate = 0;
+  guint br;
 
   if (new_bitrate <= 0) {
     return;
@@ -352,6 +354,7 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
       property_name = h265_property_name;
       kbps_div = 1;
       new_bitrate /= 1000;
+      min_bitrate = 1;
       break;
     case VP9:
       property_name = vpx_property_name;
@@ -387,7 +390,11 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
     return;
   }
 
-  g_object_set (self->priv->enc, property_name, new_bitrate * kbps_div / 1000, NULL);
+  br = new_bitrate * kbps_div / 1000;
+  if (br < min_bitrate) {
+    br = min_bitrate;
+  }
+  g_object_set (self->priv->enc, property_name, br, NULL);
 
   GST_DEBUG_OBJECT (self->priv->enc, "\"%s\" set: %d", property_name,
       new_bitrate);
