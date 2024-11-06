@@ -18,6 +18,7 @@
         { "name": "AMR/8000" }
     ],
     "videoCodecs": [
+        { "name": "H265/90000" }
         { "name": "AV1/90000" },
         { "name": "VP9/90000" },
         { "name": "VP8/90000" },
