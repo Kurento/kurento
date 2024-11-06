@@ -19,6 +19,11 @@
 #/   Added for GitHub Actions: No proxy is needed.
 #/   Optional.
 #/
+#/ APT_PROXY_URL
+#/
+#/   Sets the URL that points to the Apt proxy to be used (if not diabled)
+#/   Madatory if DISABLE_APT_PROXY is set to false
+#/
 #/ INSTALL_PATH
 #/
 #/   Path where to find the packages that should be installed.
@@ -96,7 +101,7 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
 fi
 
 if [[ "${DISABLE_APT_PROXY:-}" != "true" ]]; then
-    KURENTO_BUILDPACKAGE_ARGS+=(--apt-proxy http://apt-proxy.naevatec.com:3142)
+    KURENTO_BUILDPACKAGE_ARGS+=(--apt-proxy "$APT_PROXY_URL")
 fi
 
 

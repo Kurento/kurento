@@ -92,6 +92,7 @@ jobs:
           JOB_GIT_NAME: "${{ inputs.jobGitName }}"
           JOB_GIT_NAME_FALLBACK: "${{ inputs.jobGitNameFallback }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
+          APT_PROXY_URL: "${{ vars.APT_PROXY_URL }}"
           DISABLE_APT_PROXY: "true"
           INSTALL_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
         working-directory: "${{ inputs.directory }}"
