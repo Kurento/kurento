@@ -1,9 +1,9 @@
-kurento-module-platedetector (7.1.1-1kurento1) UNRELEASED; urgency=medium
+kurento-module-platedetector (7.1.2-1kurento1) UNRELEASED; urgency=medium
 
   [ Juan Navarro ]
   * UNRELEASED
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Fri, 20 Sep 2024 09:56:17 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Wed, 06 Nov 2024 11:57:30 +0000
 
 kms-platedetector (6.18.0-0kurento1) testing; urgency=medium
 

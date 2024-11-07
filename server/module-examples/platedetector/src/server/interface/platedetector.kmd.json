@@ -1,6 +1,6 @@
 {
   "name": "platedetector",
-  "version": "7.1.1-dev",
+  "version": "7.1.2-dev",
   "kurentoVersion": "^7.1.0",
   "code": {
     "api": {

@@ -13,6 +13,10 @@
 #/
 #/ * Variable(s) from Jenkins global configuration:
 #/
+#/ APTLY_SERVER
+#/ 
+#/   IP address of the ssh server that hosts the aptly service. A DNS name is not allowed just an IPv4
+#/
 #/ APTLY_GPG_SUBKEY
 #/
 #/   The GnuPG key used to sign Debian package repositories with Aptly.
@@ -128,6 +132,7 @@ docker run --pull always --rm -i \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     --mount type=bind,src="$APTLY_SSH_KEY_PATH",dst=/id_aptly_ssh \
     --mount type=bind,src="$PWD",dst=/workdir \
+    --add-host aptly=$APTLY_SERVER \
     --workdir /workdir \
     buildpack-deps:20.04-scm /bin/bash <<DOCKERCOMMANDS
 
@@ -141,25 +146,25 @@ set -o xtrace
 # Exit trap, used to clean up.
 on_exit() {
     ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-        aptly@www.naevatec.com -p 3322 '\
+        aptly@aptly -p 3322 '\
             rm -rf "$TEMP_DIR"'
 }
 trap on_exit EXIT
 
 ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-    aptly@www.naevatec.com -p 3322 '\
+    aptly@aptly -p 3322 '\
         mkdir -p "$TEMP_DIR"'
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     -P 3322 ./*.*deb \
-    aptly@www.naevatec.com:"$TEMP_DIR"
+    aptly@aptly:"$TEMP_DIR"
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
     -P 3322 /ci-scripts/ci_aptly_repo_publish.sh \
-    aptly@www.naevatec.com:"$TEMP_DIR"
+    aptly@aptly:"$TEMP_DIR"
 
 ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-    aptly@www.naevatec.com -p 3322 '\
+    aptly@aptly -p 3322 '\
         cd "$TEMP_DIR" \
         && GPGKEY="$APTLY_GPG_SUBKEY" \
            ./ci_aptly_repo_publish.sh $PUBLISH_ARGS'

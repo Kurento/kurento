@@ -81,5 +81,6 @@ jobs:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
           APTLY_GPG_SUBKEY: "${{ vars.APTLY_GPG_SUBKEY }}"
+          APTLY_SERVER: "${{ vars.APTLY_SERVER }}"
         working-directory: "artifacts/"
         run: "ci_job_deploy_debian.sh"
