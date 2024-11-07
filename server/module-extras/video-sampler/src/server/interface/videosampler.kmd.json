@@ -1,0 +1,14 @@
+{
+  "name": "videosampler",
+  "version": "7.1.1-dev",
+  "kurentoVersion": "^7.1.0",
+  "code": {
+    "api": {
+      "js": {
+        "nodeName": "kurento-module-videosampler",
+        "npmDescription": "JavaScript Client API for Kurento Media Server",
+        "npmGit": "https://github.com/Kurento/kurento-module-videosampler-js.git"
+      }
+    }
+  }
+}
