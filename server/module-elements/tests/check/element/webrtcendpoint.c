@@ -443,6 +443,8 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
         // FIXME: There seems to be an error requesting keyframes to AV1 encoder, 
         // So for the moment, the encoder will generate kayframes periodically
         g_object_set (video_enc, "keyframe-max-dist", 10, NULL);
+    } else if (g_str_equal (video_enc_name, "x265enc")) {
+        g_object_set (video_enc, "key-int-max", 10000, NULL);
     } else {
         g_object_set (video_enc, "keyframe-max-dist", 10000, NULL);
     }
