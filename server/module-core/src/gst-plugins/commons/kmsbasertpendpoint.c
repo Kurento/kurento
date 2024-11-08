@@ -1543,50 +1543,6 @@ kms_base_rtp_endpoint_connect_payloader (KmsBaseRtpEndpoint * self,
   kms_base_rtp_endpoint_connect_payloader_async (self, conn, input_element, type);
 }
 
-
-static gboolean 
-av1_replace_pt  (GstBuffer **buffer, guint idx, gpointer user_data)
-{
-  gint payload = GPOINTER_TO_INT (user_data);
-  GstRTPBuffer rtp = GST_RTP_BUFFER_INIT;;
-
-  gst_rtp_buffer_map (*buffer, GST_MAP_READWRITE, &rtp);
-  gst_rtp_buffer_set_payload_type (&rtp, payload);
-  gst_rtp_buffer_unmap (&rtp);
-
-  return GST_PAD_PROBE_OK;
-}
-
-// Intercept the accpet caps on AV1 when PT is out of range to avoid setting up the incorrect PT on peer pad
-static GstPadProbeReturn
-intercept_av1_replace_pt (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
-{
-  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BUFFER_LIST) {
-    GstBufferList *bufflist = gst_pad_probe_info_get_buffer_list (info);
-
-    bufflist = gst_buffer_list_make_writable (bufflist);
-    gst_buffer_list_foreach (bufflist,
-        (GstBufferListFunc) av1_replace_pt, user_data);
-
-    GST_PAD_PROBE_INFO_DATA (info) = bufflist;
-  } else if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BUFFER) {
-    GstBuffer *buffer = gst_pad_probe_info_get_buffer (info);
-
-    buffer = gst_buffer_make_writable (buffer);
-    av1_replace_pt (&buffer, 0, user_data);
-  }
-
-  return GST_PAD_PROBE_OK;
-}
-
-static void 
-set_av1_payload (GstPad * self,
-                 GstPad * peer,
-                 gpointer user_data)
-{
-    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_BUFFER_LIST | GST_PAD_PROBE_TYPE_BUFFER, intercept_av1_replace_pt, user_data, NULL);
-}
-
 static void
 kms_base_rtp_endpoint_set_media_payloader (KmsBaseRtpEndpoint * self,
     KmsBaseRtpSession * sess, KmsSdpMediaHandler * handler,
@@ -1614,40 +1570,7 @@ kms_base_rtp_endpoint_set_media_payloader (KmsBaseRtpEndpoint * self,
 
   GST_DEBUG_OBJECT (self, "Found caps: %" GST_PTR_FORMAT, caps);
 
-  // AV1 encoding is special because the payloder / depayloader plugins specify that PT should be between 
-  // 96 and 127, while chrome sets it at 45, which causes caps negotiation to fail
-  GstStructure *st = gst_caps_get_structure (caps, 0);
-  const gchar *encoding;
-
-  // rtpav1pay forces caps to use PT from 96 to 127 but chrome sets it to 45 for AV1
-  // so we need first trick kurento to select correct depayloader, 
-  // and second trick gstreamer to not negotiate real caps but an adequate superset.
-  encoding = gst_structure_get_string (st, "encoding-name");
-  if ((encoding != NULL) && g_str_equal (encoding, "AV1")) {
-    GstCaps *av1_caps;
-    GstStructure *st = gst_caps_get_structure (caps, 0);
-    gint payload;
-
-    // This is the quick and dirty hack that forces the selection of the av1 rtp payloader 
-    av1_caps = gst_caps_from_string ("application/x-rtp, media=video, clock-rate=90000, encoding-name=AV1");
-    payloader = kms_base_rtp_endpoint_get_payloader_for_caps (self, av1_caps);
-
-    // We have located the payload without specifying the PT, but now we need to setup the correct PT
-    if ((payloader != NULL) && gst_structure_get_int (st, "payload", &payload)) {
-      g_object_set (payloader, "pt", payload, NULL);
-      // If payload presented by browser is outside of accepted payload range we will need to change PT on RTP buffers
-      if ((payload < 96) || (payload > 127)) {
-        GstPad *pay_src = gst_element_get_static_pad (payloader, "src");
-
-        g_signal_connect (pay_src, "linked", (GCallback)set_av1_payload, GINT_TO_POINTER(payload));
-        gst_object_unref (pay_src);
-      }
-    }
-    gst_caps_unref (av1_caps);
-  } else {
-    payloader = kms_base_rtp_endpoint_get_payloader_for_caps (self, caps);
-  }
-
+  payloader = kms_base_rtp_endpoint_get_payloader_for_caps (self, caps);
   gst_caps_unref (caps);
 
   if (payloader == NULL) {
@@ -1987,7 +1910,6 @@ kms_base_rtp_endpoint_update_stats (KmsBaseRtpEndpoint * self,
   KMS_ELEMENT_UNLOCK (self);
 }
 
-#define AV1_DEPAY_EXPECTED_CAPS "application/x-rtp, media=video, payload=98, clock-rate=90000, encoding-name=AV1"
 static void
 kms_base_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     KmsBaseRtpEndpoint * self)
@@ -1996,7 +1918,6 @@ kms_base_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   gboolean added = TRUE;
   KmsMediaType media;
   GstCaps *caps;
-  gboolean av1_depay_selected = FALSE;
 
   GST_PAD_STREAM_LOCK (pad);
 
@@ -2021,36 +1942,7 @@ kms_base_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
       "New pad: %" GST_PTR_FORMAT " for linking to %" GST_PTR_FORMAT
       " with caps %" GST_PTR_FORMAT, pad, agnostic, caps);
 
-  // AV1 encoding is special because the payloder / depayloader plugins specify that PT should be between 
-  // 96 and 127, while chrome sets it at 45, which causes caps negotiation to fail
-  GstStructure *st = gst_caps_get_structure (caps, 0);
-  const gchar *encoding;
-
-  // rtpav1depay forces caps to use PT from 96 to 127 but chrome sets it to 45 for AV1
-  // so we need first trick kurento to select correct depayloader, 
-  // and second trick gstreamer to not negotiate real caps but an adequate superset.
-  depayloader = NULL;
-  encoding = gst_structure_get_string (st, "encoding-name");
-  if ((encoding != NULL) && g_str_equal (encoding, "AV1")) {
-    gint pt;
-    gboolean pt_exists = FALSE;
-
-    pt_exists = gst_structure_get_int (st, "payload", &pt);
-    if (pt_exists && ((pt < 96) || (pt > 127))) {
-      GstCaps *av1_caps;
-
-      // This is the quick and dirty hack that forces the correct AV1 rtp depayloader
-      av1_caps = gst_caps_from_string (AV1_DEPAY_EXPECTED_CAPS);
-      depayloader = kms_base_rtp_endpoint_get_depayloader_for_caps (av1_caps);
-      av1_depay_selected = TRUE;
-      gst_caps_unref (av1_caps);
-    }
-  } 
-  
-  // For other caps than av1 normal selection is done
-  if (!av1_depay_selected) {
-    depayloader = kms_base_rtp_endpoint_get_depayloader_for_caps (caps);
-  }
+  depayloader = kms_base_rtp_endpoint_get_depayloader_for_caps (caps);
 
   gst_caps_unref (caps);
 
@@ -2060,31 +1952,6 @@ kms_base_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     gst_bin_add (GST_BIN (self), depayloader);
     gst_element_link_pads (depayloader, "src", agnostic, "sink");
     gst_element_sync_state_with_parent (depayloader);
-
-    // In case we need to adapt an incorrect PT to the depayloader
-    // we  setup a cappsetter in the middle of rtpbin and depayloader to adapt caps to the correct PT
-    // In this case we just fix a PT that is valid for depayloader, as it has no other impact
-    if (av1_depay_selected) {
-      GstElement *capssetter;
-      GstCaps *av1_caps;
-
-      av1_caps = gst_caps_from_string ("application/x-rtp, media=video, payload=98, clock-rate=90000, encoding-name=AV1");
-      capssetter = gst_element_factory_make ("capssetter", NULL);
-      g_object_set (capssetter, "caps", av1_caps, "join", TRUE, NULL);
-      gst_bin_add (GST_BIN(self), capssetter);
-      if (!gst_element_link_pads (rtpbin, GST_OBJECT_NAME (pad), capssetter, "sink")) {
-        GST_WARNING_OBJECT (self, "Could not link rtpbin to capssetter");
-      }
-      if (!gst_element_link (capssetter, depayloader)) {
-        GST_WARNING_OBJECT (self, "Could not link capssetter to depayloader");
-      }
-      gst_element_sync_state_with_parent (capssetter);
-      gst_caps_unref (av1_caps);
-    } else {
-      if (!gst_element_link_pads (rtpbin, GST_OBJECT_NAME (pad), depayloader, "sink")) {
-        GST_WARNING_OBJECT (self, "Could not link rtpbin to depayloader");
-      }
-    }
   } else {
     GstElement *fake = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
 
