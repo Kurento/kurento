@@ -27,6 +27,10 @@ namespace kurento
 class MediaPipeline;
 class CompositeImpl;
 
+const int64_t DEFAULT_WIDTH = 800;
+const int64_t DEFAULT_HEIGHT = 600;
+const int64_t DEFAULT_FRAMERATE = 15;
+
 void Serialize (std::shared_ptr<CompositeImpl> &object,
                 JsonSerializer &serializer);
 
@@ -36,7 +40,9 @@ class CompositeImpl : public HubImpl, public virtual Composite
 public:
 
   CompositeImpl (const boost::property_tree::ptree &conf,
-                 std::shared_ptr<MediaPipeline> mediaPipeline);
+                 std::shared_ptr<MediaPipeline> mediaPipeline,
+                 int width = DEFAULT_WIDTH, int height = DEFAULT_HEIGHT,
+                 int framerate = DEFAULT_FRAMERATE);
 
   virtual ~CompositeImpl () {};
 
@@ -51,7 +57,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
-
+  int width, height, framerate;
   class StaticConstructor
   {
   public:
