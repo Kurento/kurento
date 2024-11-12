@@ -61,4 +61,15 @@ generateDotGraph (GstBin *bin, std::shared_ptr<GstreamerDotDetails> details)
   return retString;
 }
 
+void
+dumpDotGraph (GstBin *bin, std::shared_ptr<GstreamerDotDetails> details, std::string name)
+{
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (
+      bin,
+      convert_details (details),
+      name.c_str ()
+  );
+}
+
+
 } /* kurento */

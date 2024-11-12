@@ -50,6 +50,10 @@ public:
   virtual std::string getGstreamerDot (std::shared_ptr<GstreamerDotDetails>
                                        details);
 
+  virtual void dumpGstreamerDot ();
+  virtual void dumpGstreamerDot (std::shared_ptr<GstreamerDotDetails>
+                                       details);
+
   virtual bool getLatencyStats ();
   virtual void setLatencyStats (bool latencyStats);
 

@@ -43,6 +43,16 @@ std::string HubImpl::getGstreamerDot()
       std::make_shared<GstreamerDotDetails>(GstreamerDotDetails::SHOW_VERBOSE));
 }
 
+void HubImpl::dumpGstreamerDot ()
+{
+  dumpGstreamerDot (std::make_shared<GstreamerDotDetails>(GstreamerDotDetails::SHOW_VERBOSE));
+}
+
+void HubImpl::dumpGstreamerDot (std::shared_ptr<GstreamerDotDetails> details)
+{
+  dumpDotGraph (GST_BIN(element), details, getId());
+}
+
 HubImpl::HubImpl (const boost::property_tree::ptree &config,
                   std::shared_ptr<MediaObjectImpl> parent,
                   const std::string &factoryName) : MediaObjectImpl (config, parent)
