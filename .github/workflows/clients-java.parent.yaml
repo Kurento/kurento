@@ -108,6 +108,16 @@ jobs:
       runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
+  module-videosampler:
+    needs: ["client"]
+    uses: "./.github/workflows/clients-java.child.yaml"
+    with:
+      directory: "server/module-extras/video-sampler/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
+    secrets: inherit
+
   # Unavailable since Kurento 7.0.0
   #module-markerdetector:
   #  needs: ["client"]

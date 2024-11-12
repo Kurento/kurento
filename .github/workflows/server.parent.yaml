@@ -195,8 +195,19 @@ jobs:
       runnerGroup: ${{ inputs.runnerGroup }}
       directory: "server/module-examples/datachannelexample/"
 
+  module-videosampler:
+    needs: ["module-filters"]
+    uses: "./.github/workflows/server-buildpackage.child.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobGitName: "${{ inputs.jobGitName }}"
+      jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      runnerGroup: ${{ inputs.runnerGroup }}
+      directory: "server/module-extras/video-sampler/"
+
   deploy-deb:
-    needs: ["media-server", "module-chroma", "module-datachannelexample"]
+    needs: ["media-server", "module-chroma", "module-datachannelexample", "module-videosampler"]
     uses: "./.github/workflows/server-deploy-debian.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"

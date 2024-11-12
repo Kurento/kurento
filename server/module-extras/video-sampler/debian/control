@@ -1,0 +1,56 @@
+Source: kurento-module-videosampler
+Maintainer: Kurento <kurento@openvidu.io>
+Priority: optional
+Build-Depends:
+ cmake,
+ debhelper-compat (= 13),
+ gstreamer1.0-plugins-bad,
+ gstreamer1.0-plugins-base,
+ gstreamer1.0-plugins-good,
+ kurento-module-core-dev (>= 7.1.1),
+ kurento-module-elements-dev (>= 7.1.1),
+ kurento-module-filters-dev (>= 7.1.1),
+ pkg-config,
+ protobuf-compiler-grpc,
+ libgrpc-dev,
+ libgrpc++-dev,
+ libprotobuf-dev
+Standards-Version: 4.5.1
+Homepage: https://kurento.openvidu.io/
+Vcs-Browser: https://github.com/Kurento/kurento
+Vcs-Git: https://github.com/Kurento/kurento.git
+Rules-Requires-Root: no
+
+Package: kurento-module-videosampler
+Architecture: any
+Section: libs
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+ gstreamer1.0-plugins-bad,
+ gstreamer1.0-plugins-base,
+ gstreamer1.0-plugins-good,
+ kurento-module-core (>= 7.1.1),
+ kurento-module-elements (>= 7.1.1),
+ kurento-module-filters (>= 7.1.1),
+ libgrpc++1.51t64,
+ libgrpc29t64,
+ libprotobuf32t64
+Breaks:
+ kms-chroma-6.0,
+ kms-chroma,
+Replaces:
+ kms-chroma-6.0,
+ kms-chroma,
+Description: Kurento Video sampler element
+
+Package: kurento-module-videosampler-dev
+Architecture: any
+Section: libdevel
+Depends:
+ ${misc:Depends},
+ kurento-module-videosampler (= ${binary:Version}),
+ kurento-module-core-dev,
+ kurento-module-elements-dev,
+ kurento-module-filters-dev,
+Description: Kurento video sampler element - Development files

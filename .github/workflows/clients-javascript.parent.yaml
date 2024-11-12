@@ -98,6 +98,16 @@ jobs:
       runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
+  module-videosampler:
+    uses: "./.github/workflows/clients-javascript.child.yaml"
+    with:
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "server/module-extras/video-sampler/"
+      genModuleEnable: true
+      genModuleServerVersion: "${{ inputs.jobServerVersion }}"
+      runnerGroup: ${{ inputs.runnerGroup }}
+    secrets: inherit
+
   #module-markerdetector:
   #  needs: ["client"]
 
