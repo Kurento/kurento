@@ -20,7 +20,7 @@ on:
         description: "Non-default git branch or tag that should be checked out, if it exists"
         required: false
         type: "string"
-        default: "gstreamer-1.24.2"
+        default: "0.12.7"
       jobKurentoGitName:
         description: "Non-default Kurento git branch or tag that should be checked out, if it exists"
         required: false
