@@ -2,7 +2,7 @@
 
 git clone https://github.com/GStreamer/gst-plugins-rs.git
 cd gst-plugins-rs
-git checkout gstreamer-1.24.2
+git checkout 0.12.7
 git apply ../debian.diff
 
 cargo build --package gst-plugin-rtp --release

@@ -90,7 +90,7 @@ jobs:
     with:
       jobDistros: "${{ inputs.jobDistros }}"
       jobGitRepo: "https://github.com/GStreamer/gst-plugins-rs"
-      jobGitName: "gstreamer-1.24.2"
+      jobGitName: "0.12.7"
       jobKurentoGitName: "${{ inputs.jobGitName }}"
       jobRelease: ${{ inputs.jobRelease }}
       directory: "./"
