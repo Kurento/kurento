@@ -69,6 +69,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 #define PARAM_QOS_DSCP "qos-dscp"
 
+#define PARAM_ENABLE_H265 "enable-h265"
+
 namespace kurento
 {
 
@@ -131,6 +133,12 @@ remove_not_supported_codecs (GstElement *element)
   g_object_get (element, "video-codecs", &codecs, NULL);
   remove_not_supported_codecs_from_array (element, codecs);
   g_array_unref (codecs);
+}
+
+static void
+add_support_for_h265 ()
+{
+  supported_codecs.emplace_back("H265");
 }
 
 static void
@@ -630,6 +638,15 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   std::call_once (check_openh264, check_support_for_h264);
   std::call_once (certificates_flag,
                   std::bind (&WebRtcEndpointImpl::generateDefaultCertificates, this) );
+
+  std::string enableH265;
+
+  if (getConfigValue<std::string,WebRtcEndpoint>(&enableH265, PARAM_ENABLE_H265)) {
+    GST_INFO ("ENABLE-H265 configured value is %s", enableH265.c_str());
+    if (enableH265 == "true") {
+      add_support_for_h265 ();
+    }
+  }
 
   this->qosDscp = qosDscp;
   if (qosDscp->getValue () == DSCPValue::NO_VALUE) {

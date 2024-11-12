@@ -1220,6 +1220,10 @@ void MediaElementImpl::setVideoFormat (std::shared_ptr<VideoCaps> caps)
   fraction = caps->getFramerate();
 
   switch (codec->getValue() ) {
+  case VideoCodec::H265:
+    str_caps = "video/x-h265";
+    break;
+
   case VideoCodec::AV1:
     str_caps = "video/x-av1";
     break;

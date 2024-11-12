@@ -44,7 +44,8 @@ static gchar *video_rtcp_fb_enc[] = {
   "AV1",
   "VP9",
   "VP8",
-  "H264"
+  "H264",
+  "H265"
 };
 
 #define KMS_SDP_RTP_AVPF_MEDIA_HANDLER_GET_PRIVATE(obj) (  \
