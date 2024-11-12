@@ -120,7 +120,7 @@
   "video/x-theora;" \
   "video/x-h264;" \
   "video/x-gst_ff-libxvid;" \
-  "video/x-h264;" \
+  "video/x-h265;" \
   "video/x-xvid;" \
   "video/mpeg,mpegversion=[1, 2];" \
   "video/x-theora;" \

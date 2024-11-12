@@ -43,6 +43,7 @@ G_DEFINE_TYPE (KmsEncTreeBin, kms_enc_tree_bin, KMS_TYPE_TREE_BIN);
 
 typedef enum
 {
+  X265,
   AV1,
   VP9,
   VP8,
@@ -70,6 +71,8 @@ static const gchar *
 kms_enc_tree_bin_get_name_from_type (EncoderType enc_type)
 {
   switch (enc_type) {
+    case X265:
+      return "x265";
     case AV1:
       return "av1";
     case VP9:
@@ -145,6 +148,17 @@ configure_encoder (GstElement * encoder, EncoderType type,
 {
   GST_DEBUG ("Configure encoder: %" GST_PTR_FORMAT, encoder);
   switch (type) {
+    case X265:
+    {
+      /* *INDENT-OFF* */
+      g_object_set (G_OBJECT (encoder),
+                    "speed-preset", /* veryfast */ 3,
+                    "key-int-max", 60,
+                    "tune", /* zero-latency */ 4,
+                    NULL);
+      /* *INDENT-ON* */
+      break;
+    }
     case AV1:
     {
       /* *INDENT-OFF* */
@@ -229,7 +243,9 @@ kms_enc_tree_bin_set_encoder_type (KmsEncTreeBin * self)
 
   g_object_get (self->priv->enc, "name", &name, NULL);
 
-  if (g_str_has_prefix (name, "vp8enc")) {
+  if (g_str_has_prefix (name, "x265enc")) {
+    self->priv->enc_type = X265;
+  } else if (g_str_has_prefix (name, "vp8enc")) {
     self->priv->enc_type = VP8;
   } else if (g_str_has_prefix (name, "vp9enc")) {
     self->priv->enc_type = VP9;
@@ -321,16 +337,25 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
 {
   const gchar *vpx_property_name = "target-bitrate";
   const gchar *h264_property_name = "bitrate";
+  const gchar *h265_property_name = "bitrate";
   const gchar *property_name;
 
   gint new_bitrate = kms_enc_tree_bin_get_bitrate (self);
   gint kbps_div;
+  guint min_bitrate = 0;
+  guint br;
 
   if (new_bitrate <= 0) {
     return;
   }
 
   switch (self->priv->enc_type) {
+    case X265:
+      property_name = h265_property_name;
+      kbps_div = 1;
+      new_bitrate /= 1000;
+      min_bitrate = 1;
+      break;
     case VP9:
       property_name = vpx_property_name;
       kbps_div = 1000;
@@ -365,7 +390,11 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
     return;
   }
 
-  g_object_set (self->priv->enc, property_name, new_bitrate * kbps_div / 1000, NULL);
+  br = new_bitrate * kbps_div / 1000;
+  if (br < min_bitrate) {
+    br = min_bitrate;
+  }
+  g_object_set (self->priv->enc, property_name, br, NULL);
 
   GST_DEBUG_OBJECT (self->priv->enc, "\"%s\" set: %d", property_name,
       new_bitrate);
