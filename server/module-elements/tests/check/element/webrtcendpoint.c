@@ -2022,11 +2022,19 @@ GST_END_TEST
 
 /* Audio tests */
 static GstStaticCaps pcmu_expected_caps = GST_STATIC_CAPS ("audio/x-mulaw");
+static GstStaticCaps pcma_expected_caps = GST_STATIC_CAPS ("audio/x-alaw");
 
 GST_START_TEST (test_pcmu_sendrecv)
 {
   test_audio_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000", FALSE);
   test_audio_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000", TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_pcma_sendrecv)
+{
+  test_audio_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000", FALSE);
+  test_audio_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000", TRUE);
 }
 GST_END_TEST
 
@@ -2040,12 +2048,31 @@ GST_START_TEST (test_pcmu_h265_sendonly_recvonly)
 }
 GST_END_TEST
 
+/* Audio and video tests */
+GST_START_TEST (test_pcma_h265_sendonly_recvonly)
+{
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "x265enc", h265_expected_caps, "H265/90000", FALSE);
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "x265enc", h265_expected_caps, "H265/90000", TRUE);
+}
+GST_END_TEST
+
 GST_START_TEST (test_pcmu_vp8_sendonly_recvonly)
 {
   test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
       "PCMU/8000", "vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
   test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
       "PCMU/8000", "vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_pcma_vp8_sendonly_recvonly)
+{
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
 }
 GST_END_TEST
 
@@ -2059,6 +2086,16 @@ GST_START_TEST (test_pcmu_vp9_sendonly_recvonly)
 }
 GST_END_TEST
 
+/* Audio and video tests */
+GST_START_TEST (test_pcma_vp9_sendonly_recvonly)
+{
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "vp9enc", vp9_expected_caps, "VP9/90000", FALSE);
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "vp9enc", vp9_expected_caps, "VP9/90000", TRUE);
+}
+GST_END_TEST
+
 GST_START_TEST (test_pcmu_av1_sendonly_recvonly)
 {
   test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
@@ -2068,12 +2105,31 @@ GST_START_TEST (test_pcmu_av1_sendonly_recvonly)
 }
 GST_END_TEST
 
+GST_START_TEST (test_pcma_av1_sendonly_recvonly)
+{
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "av1enc", av1_expected_caps, "AV1/90000", FALSE);
+  test_audio_video_sendonly_recvonly ("alawenc", pcma_expected_caps,
+      "PCMA/8000", "av1enc", av1_expected_caps, "AV1/90000", TRUE);
+}
+GST_END_TEST
+
+
 
 GST_START_TEST (test_pcmu_h265_sendrecv)
 {
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
       "x265enc", h265_expected_caps, "H265/90000", FALSE);
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "x265enc", h265_expected_caps, "H265/90000", TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_pcma_h265_sendrecv)
+{
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
+      "x265enc", h265_expected_caps, "H265/90000", FALSE);
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
       "x265enc", h265_expected_caps, "H265/90000", TRUE);
 }
 GST_END_TEST
@@ -2087,6 +2143,15 @@ GST_START_TEST (test_pcmu_vp8_sendrecv)
 }
 GST_END_TEST
 
+GST_START_TEST (test_pcma_vp8_sendrecv)
+{
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
+      "vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
+      "vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
+}
+GST_END_TEST
+
 GST_START_TEST (test_pcmu_vp9_sendrecv)
 {
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
@@ -2096,11 +2161,29 @@ GST_START_TEST (test_pcmu_vp9_sendrecv)
 }
 GST_END_TEST
 
+GST_START_TEST (test_pcma_vp9_sendrecv)
+{
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
+      "vp9enc", vp9_expected_caps, "VP9/90000", FALSE);
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
+      "vp9enc", vp9_expected_caps, "VP9/90000", TRUE);
+}
+GST_END_TEST
+
 GST_START_TEST (test_pcmu_av1_sendrecv)
 {
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
       "av1enc", av1_expected_caps, "AV1/90000", FALSE);
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "av1enc", av1_expected_caps, "AV1/90000", TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_pcma_av1_sendrecv)
+{
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
+      "av1enc", av1_expected_caps, "AV1/90000", FALSE);
+  test_audio_video_sendrecv ("alawenc", pcma_expected_caps, "PCMA/8000",
       "av1enc", av1_expected_caps, "AV1/90000", TRUE);
 }
 GST_END_TEST
@@ -2116,6 +2199,17 @@ GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
 }
 GST_END_TEST
 
+GST_START_TEST (test_offerer_pcma_vp8_answerer_vp8_sendrecv)
+{
+  test_offerer_audio_video_answerer_video_sendrecv ("alawenc",
+      pcma_expected_caps, "PCMA/8000", "vp8enc", vp8_expected_caps, "VP8/90000",
+      FALSE);
+  test_offerer_audio_video_answerer_video_sendrecv ("alawenc",
+      pcma_expected_caps, "PCMA/8000", "vp8enc", vp8_expected_caps, "VP8/90000",
+      TRUE);
+}
+GST_END_TEST
+
 GST_START_TEST (test_offerer_pcmu_h265_answerer_h265_sendrecv)
 {
   test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
@@ -2127,6 +2221,16 @@ GST_START_TEST (test_offerer_pcmu_h265_answerer_h265_sendrecv)
 }
 GST_END_TEST
 
+GST_START_TEST (test_offerer_pcma_h265_answerer_h265_sendrecv)
+{
+  test_offerer_audio_video_answerer_video_sendrecv ("alawenc",
+      pcma_expected_caps, "PCMA/8000", "x265enc", h265_expected_caps, "H265/90000",
+      FALSE);
+  test_offerer_audio_video_answerer_video_sendrecv ("alawenc",
+      pcma_expected_caps, "PCMA/8000", "x265enc", h265_expected_caps, "H265/90000",
+      TRUE);
+}
+GST_END_TEST
 
 GST_START_TEST (test_offerer_pcmu_vp9_answerer_vp9_sendrecv)
 {
@@ -2135,6 +2239,17 @@ GST_START_TEST (test_offerer_pcmu_vp9_answerer_vp9_sendrecv)
       FALSE);
   test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
       pcmu_expected_caps, "PCMU/8000", "vp9enc", vp9_expected_caps, "VP9/90000",
+      TRUE);
+}
+GST_END_TEST
+
+GST_START_TEST (test_offerer_pcma_vp9_answerer_vp9_sendrecv)
+{
+  test_offerer_audio_video_answerer_video_sendrecv ("alawenc",
+      pcma_expected_caps, "PCMA/8000", "vp9enc", vp9_expected_caps, "VP9/90000",
+      FALSE);
+  test_offerer_audio_video_answerer_video_sendrecv ("alawenc",
+      pcma_expected_caps, "PCMA/8000", "vp9enc", vp9_expected_caps, "VP9/90000",
       TRUE);
 }
 GST_END_TEST
@@ -2626,6 +2741,7 @@ webrtcendpoint_test_suite (void)
   suite_add_tcase (s, tc_chain);
 
   tcase_add_test (tc_chain, test_pcmu_sendrecv);
+  tcase_add_test (tc_chain, test_pcma_sendrecv);
   tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
   tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
   tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_rsa);
@@ -2633,7 +2749,9 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_vp8_sendrecv);
   tcase_add_test (tc_chain, test_offerer_pcmu_vp8_answerer_vp8_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
+  tcase_add_test (tc_chain, test_pcma_vp8_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_pcma_vp8_sendonly_recvonly);
 
   tcase_add_test (tc_chain, test_vp9_sendrecv_but_sendonly);
   tcase_add_test (tc_chain, test_vp9_sendonly_recvonly);
@@ -2641,8 +2759,11 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_vp9_sendonly_recvonly_ecdsa);
   tcase_add_test (tc_chain, test_vp9_sendrecv);
   tcase_add_test (tc_chain, test_offerer_pcmu_vp9_answerer_vp9_sendrecv);
+  tcase_add_test (tc_chain, test_offerer_pcma_vp9_answerer_vp9_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp9_sendrecv);
+  tcase_add_test (tc_chain, test_pcma_vp9_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp9_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_pcma_vp9_sendonly_recvonly);
 
   tcase_add_test (tc_chain, test_av1_sendrecv_but_sendonly);
   tcase_add_test (tc_chain, test_av1_sendonly_recvonly);
@@ -2650,7 +2771,9 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_av1_sendonly_recvonly_ecdsa);
   tcase_add_test (tc_chain, test_av1_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_av1_sendrecv);
+  tcase_add_test (tc_chain, test_pcma_av1_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_av1_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_pcma_av1_sendonly_recvonly);
 
   tcase_add_test (tc_chain, test_h265_sendrecv_but_sendonly);
   tcase_add_test (tc_chain, test_h265_sendonly_recvonly);
@@ -2658,8 +2781,11 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_h265_sendonly_recvonly_ecdsa);
   tcase_add_test (tc_chain, test_h265_sendrecv);
   tcase_add_test (tc_chain, test_offerer_pcmu_h265_answerer_h265_sendrecv);
+  tcase_add_test (tc_chain, test_offerer_pcma_h265_answerer_h265_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_h265_sendrecv);
+  tcase_add_test (tc_chain, test_pcma_h265_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_h265_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_pcma_h265_sendonly_recvonly);
 
   tcase_add_test (tc_chain, test_remb_params);
   tcase_add_test (tc_chain, test_session_creation);

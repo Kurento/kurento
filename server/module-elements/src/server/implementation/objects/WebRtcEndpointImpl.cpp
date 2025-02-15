@@ -80,7 +80,7 @@ static std::once_flag check_openh264, certificates_flag;
 static std::string defaultCertificateRSA, defaultCertificateECDSA;
 
 // "H264" gets added at runtime by check_support_for_h264()
-static std::vector<std::string> supported_codecs = { "AV1", "VP9", "VP8", "opus", "PCMU" };
+static std::vector<std::string> supported_codecs = { "AV1", "VP9", "VP8", "opus", "PCMU", "PCMA" };
 
 static void
 remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)

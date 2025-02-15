@@ -346,6 +346,29 @@ It connects several :rom:cls:`endpoints <Endpoint>` together
             "doc": "The dot graph.",
             "type": "String"
           }
+        },
+        {
+          "name": "dumpGstreamerDot",
+          "doc": "If GST_DEBUG_DUMP_DOT_DIR  environment variable is defined dumps in that directoy a file with the GStreamer dot of the Hub.
+          <p>The element can be queried for certain type of data:</p>
+<ul>
+  <li>SHOW_ALL: default value</li>
+  <li>SHOW_CAPS_DETAILS</li>
+  <li>SHOW_FULL_PARAMS</li>
+  <li>SHOW_MEDIA_TYPE</li>
+  <li>SHOW_NON_DEFAULT_PARAMS</li>
+  <li>SHOW_STATES</li>
+  <li>SHOW_VERBOSE</li>
+</ul>
+          ",
+          "params": [
+            {
+              "name": "details",
+              "type": "GstreamerDotDetails",
+              "doc": "Details of graph",
+              "optional": true
+            }
+          ]
         }
       ]
     },
@@ -478,6 +501,18 @@ It offers the methods needed to control the creation and connection of elements 
             "doc": "The dot graph.",
             "type": "String"
           }
+        },
+        {
+          "name": "dumpGstreamerDot",
+          "doc": "If GST_DEBUG_DUMP_DOT_DIR  environment variable is defined dumps in that directoy a file with the GStreamer dot of the pipeline",
+          "params": [
+            {
+              "name": "details",
+              "type": "GstreamerDotDetails",
+              "doc": "Details of graph",
+              "optional": true
+            }
+          ]
         }
       ]
     },
@@ -1240,6 +1275,29 @@ Pipeline, towards the associated producer. Only valid for video consumers.
           ]
         },
         {
+          "name": "dumpGstreamerDot",
+          "doc": "If GST_DEBUG_DUMP_DOT_DIR  environment variable is defined dumps in that directoy a file with the GStreamer dot of the Media Element.
+          <p>The element can be queried for certain type of data:</p>
+<ul>
+  <li>SHOW_ALL: default value</li>
+  <li>SHOW_CAPS_DETAILS</li>
+  <li>SHOW_FULL_PARAMS</li>
+  <li>SHOW_MEDIA_TYPE</li>
+  <li>SHOW_NON_DEFAULT_PARAMS</li>
+  <li>SHOW_STATES</li>
+  <li>SHOW_VERBOSE</li>
+</ul>
+          ",
+          "params": [
+            {
+              "name": "details",
+              "type": "GstreamerDotDetails",
+              "doc": "Details of graph",
+              "optional": true
+            }
+          ]
+        },
+        {
           "name": "getGstreamerDot",
           "doc": "Return a .dot file describing the topology of the media element.
 <p>The element can be queried for certain type of data:</p>
@@ -1614,6 +1672,7 @@ Pipeline, towards the associated producer. Only valid for video consumers.
       "values": [
         "OPUS",
         "PCMU",
+        "PCMA",
         "RAW"
       ],
       "name": "AudioCodec",

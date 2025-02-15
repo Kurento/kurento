@@ -1192,6 +1192,10 @@ void MediaElementImpl::setAudioFormat (std::shared_ptr<AudioCaps> caps)
     str_caps = "audio/x-mulaw";
     break;
 
+  case AudioCodec::PCMA:
+    str_caps = "audio/x-alaw";
+    break;
+
   case AudioCodec::RAW:
     str_caps = "audio/x-raw";
     break;
@@ -1269,6 +1273,17 @@ std::string MediaElementImpl::getGstreamerDot()
       GST_BIN(element),
       std::make_shared<GstreamerDotDetails>(GstreamerDotDetails::SHOW_VERBOSE));
 }
+
+void MediaElementImpl::dumpGstreamerDot ()
+{
+  dumpGstreamerDot (std::make_shared<GstreamerDotDetails>(GstreamerDotDetails::SHOW_VERBOSE));
+}
+
+void MediaElementImpl::dumpGstreamerDot (std::shared_ptr<GstreamerDotDetails> details)
+{
+  dumpDotGraph (GST_BIN(element), details, getId());
+}
+
 
 int
 MediaElementImpl::getEncoderBitrate ()
