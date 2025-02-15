@@ -87,6 +87,17 @@ jobs:
         working-directory: "docker/kurento-media-server/"
         run: "ci_job_deploy_docker.sh"
 
+      - name: "Run job script (modules extras)"
+        env:
+          JOB_DISTRO: "${{ matrix.jobDistro }}"
+          JOB_RELEASE: "${{ inputs.jobRelease }}"
+          JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
+          PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
+          KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
+          KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
+        working-directory: "docker/kurento-media-server-extras/"
+        run: "ci_job_deploy_docker.sh"
+
       - name: "Run job script (AddressSanitizer)"
         if: ${{ inputs.buildAsan }}
         env:

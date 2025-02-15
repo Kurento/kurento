@@ -28,6 +28,9 @@ namespace kurento
 std::string
 generateDotGraph (GstBin *bin, std::shared_ptr<GstreamerDotDetails> details);
 
+void
+dumpDotGraph (GstBin *bin, std::shared_ptr<GstreamerDotDetails> details, std::string name);
+
 } /* kurento */
 
 #endif /* __KMS_DOT_GRAPH_H__ */
