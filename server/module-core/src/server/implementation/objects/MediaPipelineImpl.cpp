@@ -76,6 +76,16 @@ std::string MediaPipelineImpl::getGstreamerDot()
       std::make_shared<GstreamerDotDetails>(GstreamerDotDetails::SHOW_VERBOSE));
 }
 
+void MediaPipelineImpl::dumpGstreamerDot ()
+{
+  dumpGstreamerDot (std::make_shared<GstreamerDotDetails>(GstreamerDotDetails::SHOW_VERBOSE));
+}
+
+void MediaPipelineImpl::dumpGstreamerDot (std::shared_ptr<GstreamerDotDetails> details)
+{
+  dumpDotGraph (GST_BIN(pipeline), details, getId());
+}
+
 bool
 MediaPipelineImpl::getLatencyStats ()
 {
