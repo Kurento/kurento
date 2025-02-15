@@ -353,7 +353,6 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
     case X265:
       property_name = h265_property_name;
       kbps_div = 1;
-      new_bitrate /= 1000;
       min_bitrate = 1;
       break;
     case VP9:
@@ -367,7 +366,7 @@ kms_enc_tree_bin_set_target_bitrate (KmsEncTreeBin *self)
     case X264:
       property_name = h264_property_name;
       kbps_div = 1;
-      new_bitrate /= 1000;
+      min_bitrate = 1;
       break;
     case OPENH264:
       property_name = h264_property_name;
