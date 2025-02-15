@@ -1614,6 +1614,7 @@ Pipeline, towards the associated producer. Only valid for video consumers.
       "values": [
         "OPUS",
         "PCMU",
+        "PCMA",
         "RAW"
       ],
       "name": "AudioCodec",

@@ -51,6 +51,7 @@ typedef void (*CheckSdpNegotiationFunc) (const GstSDPMessage * offer,
 
 static gchar *audio_codecs[] = {
   "PCMU/8000/1",
+  "PCMA/8000/1",
   "opus/48000/2",
   "AMR/8000/1"
 };
@@ -5536,8 +5537,8 @@ check_valid_offer (const GstSDPMessage * offer)
     return FALSE;
   }
 
-  if (gst_sdp_media_formats_len (media) != 2) {
-    GST_ERROR ("Supported audio payloads must be equal to 2");
+  if (gst_sdp_media_formats_len (media) < 2) {
+    GST_ERROR ("Supported audio payloads must be at least 2");
     return FALSE;
   }
 

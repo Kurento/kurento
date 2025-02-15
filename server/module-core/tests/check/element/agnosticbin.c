@@ -1500,6 +1500,45 @@ GST_START_TEST (test_raw_to_rtp_pcmu)
 
 GST_END_TEST;
 
+GST_START_TEST (test_raw_to_rtp_pcma)
+{
+  GstElement *fakesink;
+  GstElement *pipeline =
+      gst_parse_launch
+      ("audiotestsrc is-live=true"
+       "  ! agnosticbin ! application/x-rtp,media=(string)audio,"
+       "    encoding-name=(string)PCMA,clock-rate=(int)8000"
+       "  ! fakesink async=true sync=true name=sink signal-handoffs=true",
+      NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  loop = g_main_loop_new (NULL, TRUE);
+
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  fakesink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+
+  g_signal_connect (G_OBJECT (fakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
+
+  g_object_unref (fakesink);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  mark_point ();
+  g_main_loop_run (loop);
+  mark_point ();
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
 GST_START_TEST (test_raw_to_rtp_amr)
 {
   GstElement *fakesink;
@@ -1852,6 +1891,7 @@ agnostic2_suite (void)
   tcase_add_test (tc_chain, test_raw_to_rtp_av1);
   tcase_add_test (tc_chain, test_raw_to_rtp_opus);
   tcase_add_test (tc_chain, test_raw_to_rtp_pcmu);
+  tcase_add_test (tc_chain, test_raw_to_rtp_pcma);
   tcase_add_test (tc_chain, test_raw_to_rtp_amr);
   tcase_add_test (tc_chain, test_codec_to_rtp);
 
