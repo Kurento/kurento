@@ -21,8 +21,6 @@
 #include <gst/check/gstharness.h>
 #include <glib.h>
 
-GST_END_TEST;
-
 /* *INDENT-OFF* */
 static const gchar *sdp_str = "v=0\r\n"
     "o=- 0 0 IN IP4 0.0.0.0\r\n"
