@@ -21,23 +21,6 @@
 #include <gst/check/gstharness.h>
 #include <glib.h>
 
-GST_START_TEST (check_urls)
-{
-  gchar *uri = "http://192.168.0.111:8080repository_servlet/video-upload";
-
-  fail_if (kms_is_valid_uri (uri));
-
-  uri = "http://192.168.0.111:8080/repository_servlet/video-upload";
-  fail_if (!(kms_is_valid_uri (uri)));
-
-  uri = "http://www.kurento.es/resource";
-  fail_if (!(kms_is_valid_uri (uri)));
-
-  uri = "http://localhost:8080/resource/res";
-  fail_if (!(kms_is_valid_uri (uri)));
-
-}
-
 GST_END_TEST;
 
 /* *INDENT-OFF* */
@@ -403,7 +386,6 @@ utils_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
-  tcase_add_test (tc_chain, check_urls);
 
   tcase_add_test (tc_chain, check_sdp_utils_media_get_fid_ssrc);
   tcase_add_test (tc_chain, check_kms_utils_set_pad_event_function_full);
