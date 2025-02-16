@@ -42,7 +42,7 @@ on:
         type: "string"
         default: ""
       artifactName:
-        descripon: "Name of the artifact to be uploaded"
+        description: "Name of the artifact to be uploaded"
         required: true
         type: "string"
 
