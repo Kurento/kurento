@@ -93,7 +93,7 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
 
     # Get version number from the package file itself
     # shellcheck disable=SC2012
-    KMS_DEB_FILE="$(ls -v -1 (find . -name 'kurento-media-server_*.deb') | tail -n 1)"
+    KMS_DEB_FILE="$(ls -v -1 $(find . -name 'kurento-media-server_*.deb') | tail -n 1)"
     if [[ -z "$KMS_DEB_FILE" ]]; then
         log "ERROR: Cannot find KMS package file: kurento-media-server_*.deb"
         exit 1
