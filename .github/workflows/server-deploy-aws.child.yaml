@@ -37,7 +37,6 @@ jobs:
         id: "copy-artifacts"
         uses: "actions/download-artifact@v4"
         with:
-          name: "artifacts"
           path: "artifacts/"
 
       - name: "Run job script"
