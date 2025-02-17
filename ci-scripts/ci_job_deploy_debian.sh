@@ -156,7 +156,7 @@ ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
         mkdir -p "$TEMP_DIR"'
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-    -P 3322 $(find . -name '*.*deb') \
+    -P 3322 $(find . -name '*.*deb' | paste -sd ' ') \
     aptly@aptly:"$TEMP_DIR"
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
