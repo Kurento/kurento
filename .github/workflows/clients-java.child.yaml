@@ -72,9 +72,16 @@ jobs:
 
           # Make sure that the output directory for artifacts exists.
           # When `!inputs.copyArtifacts`, `copy-artifacts` output is empty.
-          MAVEN_LOCAL_REPOSITORY_PATH="${{ steps.copy-artifacts.outputs.download-path }}"
-          MAVEN_LOCAL_REPOSITORY_PATH="${MAVEN_LOCAL_REPOSITORY_PATH:-"$PWD/maven-repository"}"
+          ARTIFACT_PATH="${{ steps.copy-artifacts.outputs.download-path }}"
+          MAVEN_LOCAL_REPOSITORY_PATH="$PWD/maven-repository"
           mkdir --parents "$MAVEN_LOCAL_REPOSITORY_PATH"
+          if [[ -n "$ARTIFACT_PATH" ]]; then
+            for dir in "$ARTIFACT_PATH"/*/; do
+              if [[ -d "$dir" ]]; then
+                cp -r "$dir/"* "$MAVEN_LOCAL_REPOSITORY_PATH/"
+              fi
+            done
+          fi
 
           # Env vars used by the Maven settings.xml file.
           echo "MAVEN_LOCAL_REPOSITORY_PATH=$MAVEN_LOCAL_REPOSITORY_PATH" >>$GITHUB_ENV
