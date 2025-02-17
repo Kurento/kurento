@@ -78,7 +78,7 @@ jobs:
           if [[ -n "$ARTIFACT_PATH" ]]; then
             for dir in "$ARTIFACT_PATH"/*/; do
               if [[ -d "$dir" ]]; then
-                cp -r "$dir/"* "$MAVEN_LOCAL_REPOSITORY_PATH/"
+                cp -r -u "$dir/"* "$MAVEN_LOCAL_REPOSITORY_PATH/"
               fi
             done
           fi
