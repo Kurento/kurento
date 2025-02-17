@@ -93,7 +93,7 @@ if [[ "$JOB_RELEASE" == "true" ]]; then
 
     # Get version number from the package file itself
     # shellcheck disable=SC2012
-    KMS_DEB_FILE="$(ls -v -1 kurento-media-server_*.deb | tail -n 1)"
+    KMS_DEB_FILE="$(ls -v -1 (find . -name 'kurento-media-server_*.deb') | tail -n 1)"
     if [[ -z "$KMS_DEB_FILE" ]]; then
         log "ERROR: Cannot find KMS package file: kurento-media-server_*.deb"
         exit 1
@@ -156,7 +156,7 @@ ssh -n -o StrictHostKeyChecking=no -i /id_aptly_ssh \
         mkdir -p "$TEMP_DIR"'
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
-    -P 3322 ./*.*deb \
+    -P 3322 $(find . -name '*.*deb') \
     aptly@aptly:"$TEMP_DIR"
 
 scp -o StrictHostKeyChecking=no -i /id_aptly_ssh \
