@@ -327,7 +327,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
         @Override
         public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
           boolean writable = ctx.channel().isWritable();
-          log.info("{} channel writability changed {}", label. writable);
+          log.info("{} channel writability changed {}", label, writable);
           if (writable) {
             lock.lock();
             try {
@@ -336,7 +336,8 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
               lock.unlock();
             }
           }
-      });
+      }
+    });
 
     }
 
