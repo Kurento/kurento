@@ -129,6 +129,8 @@ install_server.sh \
     --server-package "\${PROJECT_NAME}-dev" \
     --server-version "$CFG_SERVER_VERSION"
 
+install_build_deps.sh
+
 DOCKERCOMMANDS
 
 

@@ -68,23 +68,6 @@ log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GIT_SSH_KEY_PATH=$CFG_GIT_SSH_KEY_PATH"
 
 
-log "Install build dependencies"
-
-# Notes:
-# * DEBIAN_FRONTEND: In clean Ubuntu systems 'tzdata' might not be installed
-#   yet, but it may be now, so make sure interactive dialogues are disabled.
-# * Debug::pkgProblemResolver=yes: Show details about the dependency resolution.
-#   Doc: http://manpages.ubuntu.com/manpages/man5/apt.conf.5.html
-# * --target-release '*-backports': Prefer installing newer versions of packages
-#   from the backports repository.
-(
-    export DEBIAN_FRONTEND=noninteractive
-
-    apt-get update ; mk-build-deps --install --remove \
-        --tool="apt-get -o Debug::pkgProblemResolver=yes --target-release --no-install-recommends --no-remove --yes" \
-        ./debian/control
-)
-
 # Generate client code
 # ====================
 
