@@ -18,6 +18,7 @@ package org.kurento.jsonrpc.client;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.Future;
 
 import javax.net.ssl.SSLException;
 
@@ -294,11 +295,11 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
     handler = null;
   }
 
-  private void closeChannel() {
+  private Future<Void> closeChannel() {
     if (channel != null) {
       log.debug("{} Closing client", label);
       try {
-        channel.close().sync();
+        return channel.close();
       } catch (Exception e) {
         log.debug("{} Could not properly close websocket client. Reason: {}", label, e.getMessage(),
             e);
@@ -307,6 +308,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
     } else {
       log.warn("{} Trying to close a JsonRpcClientNettyWebSocket with channel == null", label);
     }
+    return null;
   }
 
 }
