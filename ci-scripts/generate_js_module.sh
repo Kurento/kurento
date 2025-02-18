@@ -68,7 +68,6 @@ log "CFG_RELEASE=$CFG_RELEASE"
 log "CFG_GIT_SSH_KEY_PATH=$CFG_GIT_SSH_KEY_PATH"
 
 
-
 # Generate client code
 # ====================
 

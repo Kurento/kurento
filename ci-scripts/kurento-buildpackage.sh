@@ -328,8 +328,8 @@ fi
 if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     log "Install package files from '$CFG_INSTALL_FILES_DIR'"
 
-    if ls -f "$CFG_INSTALL_FILES_DIR"/*.*deb >/dev/null 2>&1; then
-        dpkg --install "$CFG_INSTALL_FILES_DIR"/*.*deb || {
+    if ls -f $(find "$CFG_INSTALL_FILES_DIR" -name '*.*deb') >/dev/null 2>&1; then
+        dpkg --install $(find "$CFG_INSTALL_FILES_DIR" -name '*.*deb') || {
             log "Try to install remaining dependencies"
             apt-get update ; apt-get "${APT_ARGS[@]}" install --fix-broken --no-remove --yes
         }

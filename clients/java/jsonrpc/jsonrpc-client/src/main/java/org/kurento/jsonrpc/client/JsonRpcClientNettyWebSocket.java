@@ -17,11 +17,16 @@
 package org.kurento.jsonrpc.client;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.net.ssl.SSLException;
 
+import org.kurento.commons.exception.KurentoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +35,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -152,6 +158,9 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
 
   private static final Logger log = LoggerFactory.getLogger(JsonRpcClientNettyWebSocket.class);
 
+  private final Lock lock = new ReentrantLock();
+  private final Condition condition = lock.newCondition();
+  
   private volatile Channel channel;
   private volatile EventLoopGroup group;
   private volatile JsonRpcWebSocketClientHandler handler;
@@ -165,16 +174,53 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
     log.debug("{} Creating JsonRPC NETTY Websocket client", label);
   }
 
+  public void waitForChannelWritability() throws InterruptedException, KurentoException {
+    lock.lock();
+    try {
+      // 1 second is way too much, but we need to be sure that the channel is writable
+      if (!condition.await(1, TimeUnit.SECONDS)) {
+        // If the channel is not writable after 1 second, we throw an exception
+        if (!channel.isWritable()) {
+          log.warn("{} channel is not writable, request is discarded", label);
+          throw new KurentoException("label channel is not writable, request is discarded");
+        }
+      }
+    } finally {
+        lock.unlock();
+    }
+  }  
+
   @Override
   protected void sendTextMessage(String jsonMessage) throws IOException {
+    boolean delivered = false;
 
-    if (channel == null || !channel.isWritable() || !channel.isActive()) {
+    if (channel == null || !channel.isActive()) {
       throw new IllegalStateException(
           label + " JsonRpcClient is disconnected from WebSocket server at '" + this.uri + "'");
     }
 
-    synchronized (channel) {
-      channel.writeAndFlush(new TextWebSocketFrame(jsonMessage));
+    while (! delivered) {
+      boolean retry = false;
+
+      synchronized (channel) {
+        if (channel.isWritable()) {
+          channel.writeAndFlush(new TextWebSocketFrame(jsonMessage));
+          delivered = true;
+        } else {
+          log.warn("{} channel is not writable, request will be enqueued", label);
+          retry = true;
+        }
+      }
+      if (retry) {
+        // Backpressure: wait for channel to be writable
+        // We wait for at most 1 second and if not writable an exception is thrown
+        try {
+          waitForChannelWritability();
+        } catch (InterruptedException e) {
+          log.warn("{} Interrupted while waiting for channel writability", label);
+          throw new IOException("Interrupted while waiting for channel writability", e);
+        }
+      }
     }
   }
 
@@ -277,6 +323,22 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
           handleReconnectDisconnection(1001, "Channel closed");
         }
       });
+
+      channel.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+        @Override
+        public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+          boolean writable = ctx.channel().isWritable();
+          log.info("{} channel writability changed {}", label, writable);
+          if (writable) {
+            lock.lock();
+            try {
+              condition.signalAll();
+            } finally {
+              lock.unlock();
+            }
+          }
+      }
+    });
 
     }
 

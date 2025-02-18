@@ -40,8 +40,14 @@ command -v npm >/dev/null || {
 projectName="$(jq --raw-output '.name' package.json)"
 localVersion="$(jq --raw-output '.version' package.json)"
 localRelease="$(echo "$localVersion" | awk -F '-' '{print $1}')"
-pubVersion="$(npm info --json "$projectName" | jq --raw-output '.version')"
-pubRelease="$(echo "$pubVersion" | awk -F '-' '{print $1}')"
+# If npm info returns an error, don't stop the script, just set pubVersion to an empty string
+pubVersion="$(npm info --json "$projectName" 2>/dev/null | jq --raw-output '.version' || echo '')"
+if [[ -n "$pubVersion" ]]; then
+    pubRelease="$(echo "$pubVersion" | awk -F '-' '{print $1}')"
+else
+    pubRelease=""
+fi
+
 
 log "Local version: $localVersion (release: $localRelease)"
 log "Public version: $pubVersion (release: $pubRelease)"
