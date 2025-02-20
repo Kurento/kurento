@@ -291,7 +291,7 @@ fi
 if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
 
     REPO="$CFG_INSTALL_KURENTO_VERSION"
-    LIST_LINE="deb [arch=amd64] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main"
+    LIST_LINE="deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$REPO $DISTRIB_CODENAME main"
 
     if LIST_FILE="$(grep --recursive --files-with-matches --include='*.list' "$LIST_LINE" /etc/apt/)"; then
         log "Found Kurento repository line for apt-get:"
@@ -300,7 +300,9 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
         # If requested, add the repository
         if [[ "$CFG_APT_ADD_REPO" == "true" ]]; then
             log "Add Kurento repository key for apt-get"
-            apt-key adv \
+            # Add Kurento repository key for apt-get.
+            gpg -k
+            gpg --no-default-keyring --keyring /etc/apt/keyrings/kurento.gpg \
                 --keyserver hkp://keyserver.ubuntu.com:80 \
                 --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
@@ -314,9 +316,9 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
             log ""
             log "Suggested solution 2:"
             log "    Run commands:"
-            log "    $ apt-key adv \\"
-            log "        --keyserver hkp://keyserver.ubuntu.com:80 \\"
-            log "        --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83"
+            log "    $ gpg --no-default-keyring --keyring /etc/apt/keyrings/kurento.gpg \\"
+            log "          --keyserver hkp://keyserver.ubuntu.com:80 \\"
+            log "          --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83"
             log "    $ echo '$LIST_LINE' | sudo tee -a /etc/apt/sources.list.d/kurento.list"
             log ""
             exit 1

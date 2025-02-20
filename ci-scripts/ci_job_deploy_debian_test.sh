@@ -131,13 +131,14 @@ apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
 
 # Add Kurento repository key for apt-get.
-apt-key adv \
+gpg -k
+gpg --no-default-keyring --keyring /etc/apt/keyrings/kurento.gpg \
     --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 # Add Kurento repository line for apt-get.
 tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-deb [arch=amd64] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME main
+deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME main
 EOF
 
 # Install Kurento Media Server.

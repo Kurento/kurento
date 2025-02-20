@@ -284,13 +284,25 @@ echo "# (Optional) Install Kurento Media Server"
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
 
-# Add Kurento repository key for apt-get.
-apt-key adv \
-    --keyserver hkp://keyserver.ubuntu.com:80 \
-    --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
-
 # Add Kurento repository line for apt-get.
-if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
+if [[ "$DISTRIB_RELEASE" == "24.04" ]]; then
+    # Add Kurento repository key for apt-get.
+    gpg -k
+    gpg --no-default-keyring \
+        --keyring /etc/apt/keyrings/kurento.gpg \
+        --keyserver hkp://keyserver.ubuntu.com:80 \
+        --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
+
+    # Repo for Kurento 7.1 monorepo.
+    echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME main" \
+        >/etc/apt/sources.list.d/kurento.list
+
+elif [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
+    # Add Kurento repository key for apt-get.
+    apt-key adv \
+        --keyserver hkp://keyserver.ubuntu.com:80 \
+        --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
+
     # Repo for Kurento 7 monorepo.
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME main" \
         >/etc/apt/sources.list.d/kurento.list
@@ -299,6 +311,11 @@ if [[ "$DISTRIB_RELEASE" == "20.04" ]]; then
     #echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev-7.0.0 $DISTRIB_CODENAME kms6" \
     #    >/etc/apt/sources.list.d/kurento.list
 else
+    # Add Kurento repository key for apt-get.
+    apt-key adv \
+        --keyserver hkp://keyserver.ubuntu.com:80 \
+        --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
+
     echo "deb [arch=amd64] http://ubuntu.openvidu.io/dev $DISTRIB_CODENAME kms6" \
         >/etc/apt/sources.list.d/kurento.list
     echo "#deb [arch=amd64] http://ubuntu.openvidu.io/6.18.0 $DISTRIB_CODENAME kms6" \
