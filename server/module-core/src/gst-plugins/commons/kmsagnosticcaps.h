@@ -127,7 +127,8 @@
   "video/x-vp8;" \
   "video/x-vp9;" \
   "video/x-av1;" \
-  "application/x-yuv4mpeg,y4mversion=2;"
+  "application/x-yuv4mpeg,y4mversion=2;" \
+  "video/x-simulcast;" /* For simulcast support */
 
 #define KMS_AGNOSTIC_NO_RTP_VIDEO_CAPS \
   KMS_AGNOSTIC_RAW_VIDEO_CAPS \
