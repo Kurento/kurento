@@ -1,6 +1,6 @@
 {
   "name": "kurento-jsonrpc",
-  "version": "7.1.2-dev",
+  "version": "7.2.0",
   "description": "Kurento RPC client library for Browser and Node.js",
   "keywords": [
     "kurento",
