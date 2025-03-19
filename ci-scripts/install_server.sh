@@ -83,7 +83,7 @@ gpg --no-default-keyring --keyring /etc/apt/keyrings/kurento.gpg \
 
 # Add Kurento repository line for apt-get.
 tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$DOCKER_KMS_VERSION $DISTRIB_CODENAME main
+deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$CFG_SERVER_VERSION $DISTRIB_CODENAME main
 EOF
 
 # Install package.
