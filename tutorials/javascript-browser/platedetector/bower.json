@@ -1,6 +1,6 @@
 {
   "name": "kurento-platedetector",
-  "version": "7.1.2-dev",
+  "version": "7.2.0",
   "description": "Kurento Browser JavaScript Tutorial: Plate Detector",
   "keywords": [
     "kurento",
@@ -65,8 +65,8 @@
     "bootstrap": "~3.3.0",
     "demo-console": "1.5.1",
     "ekko-lightbox": "~3.3.0",
-    "kurento-client": "git+https://github.com/Kurento/kurento-client-bower.git",
-    "kurento-module-platedetector": "git+https://github.com/Kurento/kurento-module-platedetector-bower.git",
-    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git"
+    "kurento-client": "7.2.0",
+    "kurento-module-platedetector": "7.2.0",
+    "kurento-utils": "7.2.0"
   }
 }
