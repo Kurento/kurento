@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>7.2.0</version>
+		<version>7.2.1-SNAPSHOT</version>
 	</parent>
 	<groupId>org.kurento.tutorial</groupId>
 	<artifactId>kurento-tutorial</artifactId>

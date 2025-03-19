@@ -6,7 +6,7 @@
 	<!-- Maven coordinates -->
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-module-creator</artifactId>
-	<version>7.2.0</version>
+	<version>7.2.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<!-- Project-level information -->

@@ -1,9 +1,9 @@
-kurento-module-creator (7.2.0-1kurento1) UNRELEASED; urgency=medium
+kurento-module-creator (7.2.1-1kurento1) UNRELEASED; urgency=medium
 
   [ Kurento ]
   * UNRELEASED
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Mon, 17 Mar 2025 17:56:47 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Wed, 19 Mar 2025 19:30:35 +0000
 
 kurento-module-creator (6.18.0-0kurento1) testing; urgency=medium
 
