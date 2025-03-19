@@ -35,7 +35,7 @@ Added
 * **H265 codec**.  provide H.265 video codec support to Kurento including WebRTC and RTP services (not enabled by default, enabling it is solely reposnability of the user).
 * **Add serverside dump Gstreamer**. allows the server to write the dump dot files directly in theserver filesystem without size limitations
 * **Stand alone docker image**. Provide a script that generates a local docker image for Kurento media server. This is useful for local testing and debugging..
-* **Added Audio CPMA support**. Adds the audio PCMA codec to the available ones in SDP negotiation.
+* **Added Audio PCMA support**. Adds the audio PCMA codec to the available ones in SDP negotiation.
 
 
 Fixed
