@@ -1,6 +1,6 @@
 {
   "name": "kurento-chroma",
-  "version": "7.1.2-dev",
+  "version": "7.2.0",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"
@@ -11,8 +11,8 @@
     "express-session": "^1.17.0",
     "minimist": "^1.1.1",
     "ws": "^7.1.0",
-    "kurento-client": "git+https://github.com/Kurento/kurento-client-js.git",
-    "kurento-module-chroma": "git+https://github.com/Kurento/kurento-module-chroma-js.git"
+    "kurento-client": "7.2.0",
+    "kurento-module-chroma": "7.2.0"
   },
   "devDependencies": {
     "bower": "^1.4.1"
