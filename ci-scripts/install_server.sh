@@ -75,13 +75,15 @@ source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 # Add Kurento repository key for apt-get.
 apt-get update ; apt-get install --no-install-recommends --yes \
     gnupg
-apt-key adv \
+# Add Kurento repository key for apt-get.
+gpg -k
+gpg --no-default-keyring --keyring /etc/apt/keyrings/kurento.gpg \
     --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83
 
 # Add Kurento repository line for apt-get.
 tee "/etc/apt/sources.list.d/kurento.list" >/dev/null <<EOF
-deb [arch=amd64] http://ubuntu.openvidu.io/$CFG_SERVER_VERSION $DISTRIB_CODENAME main
+deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$CFG_SERVER_VERSION $DISTRIB_CODENAME main
 EOF
 
 # Install package.

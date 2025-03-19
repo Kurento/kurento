@@ -36,7 +36,7 @@ Added
 * **UPdate to libSoup 3.4.4**,
 * **Added DTLS state**, On WebRTCEndpoint, now DTLS state is reflected on a status property and changes are communicated to application throough Kurento events
 * **Added VP9 support**, Thanks to the update to GStreamer we hae been able to add VP9 support to Kurento, including WebRTC VP9 support 
-* **Initial AV1 support**, Initial AV1 support has been added to Kurento, however it is ot yet functional for WebRTC
+* **Initial AV1 support**, Initial AV1 support has been added to Kurento, however it is not yet functional for WebRTC
 
 
 

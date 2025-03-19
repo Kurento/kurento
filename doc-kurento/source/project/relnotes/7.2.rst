@@ -2,90 +2,48 @@
 Kurento 7.2 Release Notes (UNRELEASED)
 ======================================
 
-This is a template for changes that are being added to the next release.
+Kurento 7.2.0 is a minor version release over last 7.1.0 version. This new release brings some general updates on codec support and some bug fixing and several pending PRs that have been incorporated.
 
-Kurento 7.2.0 was originally released on 31 March 1999.
+Kurento 7.1.0 was originally released on september 2024.
 
 .. The latest `bug-fix release <#bug-fix-releases>`__ in the stable 7.1 series is **7.1.1**.
 
-See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.1.html for the latest version of this document.
+See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.2.html for the latest version of this document.
 
 To install Kurento Media Server: :doc:`/user/installation`.
 
+This release has been made possible thanks to the support of **Signicat**. It is a company that develops leading technology products in the field of identity proofing, authentication and electronic signing. They make use of Kurento to benefit or real time video on those fields.
+
+.. figure:: data:image/png;base64,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
+   :alt: Signicat company
+   :width: 20%
+   :align: center
+   :target: https://www.signicat.com
+
+
 .. contents:: Table of Contents
+
 
 
 
 Added
 =====
 
-* **Small addition**. Description.
-
-
-
-Big addition name
------------------
-
-Full description, with images, code samples, external links, etc. Some useful syntax examples:
-
-* Documentation section: :doc:`/user/tutorials`.
-
-* Glossary term: :term:`SDP`.
-
-* Inline link: `How to avoid Data Channel breaking <https://blog.mozilla.org/webrtc/how-to-avoid-data-channel-breaking/>`__.
-
-* Blocks:
-
-  .. code-block:: java
-
-     System.out.println("Some example Java code");
-
-  .. code-block:: text
-
-     Some literal command output
-
-  .. note::
-
-     Something to keep in mind.
-
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{issue_id} <https://github.com/Kurento/kurento/issues/{issue_id}>`__ (*Issue title*).
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{pr_id} <https://github.com/Kurento/kurento/pull/{pr_id}>`__ (*Pull Request title*).
-
-
-
-Changed
-=======
-
-* Description.
-
-
-
-Deprecated
-==========
-
-* Description.
-
+* **parse username and passwrod form URLS**. RecorderEndpoint was not able to push to a basic auth-protected HTTP server, because the GSTreamer element curlhttpsink doesn't parse them from the URL, instead it expects them to be set as properties.
+* **Parametrized Composite Mixer**. The previous implementation had fixed values for width, height, and framerate within the compositor's C class, which limited flexibility and required code changes for adjustment.
+* **AV1 codec**. Adds AV1 video codec support to Kurento including WebRTC and RTP communications
+* **H265 codec**.  provide H.265 video codec support to Kurento including WebRTC and RTP services (not enabled by default, enabling it is solely reposnability of the user).
+* **Add serverside dump Gstreamer**. allows the server to write the dump dot files directly in theserver filesystem without size limitations
+* **Stand alone docker image**. Provide a script that generates a local docker image for Kurento media server. This is useful for local testing and debugging..
+* **Added Audio PCMA support**. Adds the audio PCMA codec to the available ones in SDP negotiation.
 
 
 Fixed
 =====
-
-* Description.
-
-
-
-Other changes
-=============
-
-This list includes other changes and fixes contributed by users and/or fellow developers, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
-
-**RepoName 1**
-
-* "Username for PR" ...
-
-**RepoName 2**
-
-* "Username for PR" ...
+* **x264 bitrate**. Encoder bitrate was not correctly set for x264 and x265 encoders
+* **Updated github actions**. New versions for upload-artifact and download-artifact has been integrated.
+* **Added backpressure on Java client**. Java clients can be wrongly disconnected under high load conditions, a backpressure behaviour has been added to avoid disocnnections.
+* **Adapted to apt-key deprecation**. apt-key has been deprectated, so the scripts have adapted to that, Mind about new installing isntructions.
 
 
 

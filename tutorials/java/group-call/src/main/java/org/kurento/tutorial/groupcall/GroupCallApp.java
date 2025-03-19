@@ -27,7 +27,8 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 /**
- *
+ * Group Call application
+ * 
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.3.1
  */

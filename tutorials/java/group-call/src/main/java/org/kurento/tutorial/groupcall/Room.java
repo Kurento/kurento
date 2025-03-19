@@ -39,6 +39,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 /**
+ * Room 
+ * 
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.3.1
  */

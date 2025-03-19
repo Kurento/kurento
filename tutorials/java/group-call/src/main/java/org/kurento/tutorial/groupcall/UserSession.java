@@ -37,7 +37,8 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.gson.JsonObject;
 
 /**
- *
+ * User Session
+ * 
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.3.1
  */

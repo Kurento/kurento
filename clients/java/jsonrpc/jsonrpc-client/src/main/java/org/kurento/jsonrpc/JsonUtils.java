@@ -252,6 +252,8 @@ public class JsonUtils {
 
           builder.registerTypeAdapter(Props.class, new JsonPropsAdapter());
 
+          builder.registerTypeAdapter(Void.class, new VoidDeserializer());
+
           builder.disableHtmlEscaping();
 
           gson = builder.create();
@@ -578,6 +580,21 @@ class JsonRpcRequestDeserializer implements JsonDeserializer<Request<?>> {
 
   }
 }
+
+class VoidDeserializer implements JsonDeserializer<Void>, JsonSerializer<Void> {
+    
+  @Override
+  public Void deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+      throws JsonParseException {
+    return null;
+  }
+
+  @Override
+  public JsonElement serialize(Void src, Type typeOfSrc, JsonSerializationContext context) {
+    return JsonNull.INSTANCE;
+  }
+}
+
 
 class JsonPropsAdapter implements JsonDeserializer<Props>, JsonSerializer<Props> {
 

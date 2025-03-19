@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>7.1.2-SNAPSHOT</version>
+		<version>7.2.0</version>
 	</parent>
 	<groupId>org.kurento.tutorial</groupId>
 	<artifactId>kurento-tutorial</artifactId>
@@ -27,7 +27,7 @@
 
 	<modules>
 		<module>chroma</module>
-		<module>crowddetector</module>
+		<!-- <module>crowddetector</module> -->
 		<module>group-call</module>
 		<module>hello-world</module>
 		<module>hello-world-recording</module>
@@ -37,9 +37,9 @@
 		<module>one2one-call</module>
 		<module>one2one-call-advanced</module>
 		<module>one2one-call-recording</module>
-		<module>platedetector</module>
+		<!-- <module>platedetector</module> -->
 		<module>player</module>
-		<module>pointerdetector</module>
+		<!-- <module>pointerdetector</module> -->
 		<module>rtp-receiver</module>
 		<module>datachannel-send-qr</module>
 		<module>datachannel-show-text</module>

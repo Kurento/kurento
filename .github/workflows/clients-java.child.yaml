@@ -29,6 +29,10 @@ on:
         required: false
         type: "string"
         default: "Linux"
+      artifactName:
+        description: "Name of the artifact to be uploaded"
+        required: true
+        type: "string"
 
 defaults:
   run:
@@ -54,9 +58,8 @@ jobs:
       - name: "Copy artifacts from previous jobs"
         id: "copy-artifacts"
         if: ${{ inputs.copyArtifacts }}
-        uses: "actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a" # v3.0.2
+        uses: "actions/download-artifact@v4"
         with:
-          name: "artifacts"
           path: "artifacts/"
 
       - name: "Configure the environment for job script"
@@ -69,9 +72,16 @@ jobs:
 
           # Make sure that the output directory for artifacts exists.
           # When `!inputs.copyArtifacts`, `copy-artifacts` output is empty.
-          MAVEN_LOCAL_REPOSITORY_PATH="${{ steps.copy-artifacts.outputs.download-path }}"
-          MAVEN_LOCAL_REPOSITORY_PATH="${MAVEN_LOCAL_REPOSITORY_PATH:-"$PWD/maven-repository"}"
+          ARTIFACT_PATH="${{ steps.copy-artifacts.outputs.download-path }}"
+          MAVEN_LOCAL_REPOSITORY_PATH="$PWD/maven-repository"
           mkdir --parents "$MAVEN_LOCAL_REPOSITORY_PATH"
+          if [[ -n "$ARTIFACT_PATH" ]]; then
+            for dir in "$ARTIFACT_PATH"/*/; do
+              if [[ -d "$dir" ]]; then
+                cp -r -u "$dir/"* "$MAVEN_LOCAL_REPOSITORY_PATH/"
+              fi
+            done
+          fi
 
           # Env vars used by the Maven settings.xml file.
           echo "MAVEN_LOCAL_REPOSITORY_PATH=$MAVEN_LOCAL_REPOSITORY_PATH" >>$GITHUB_ENV
@@ -111,7 +121,7 @@ jobs:
 
       # Action: https://github.com/actions/upload-artifact
       - name: "Archive the artifacts"
-        uses: "actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce" # v3.1.2
+        uses: "actions/upload-artifact@v4"
         with:
-          name: "artifacts"
+          name: "${{ inputs.artifactName }}"
           path: "${{ env.MAVEN_LOCAL_REPOSITORY_PATH }}"
