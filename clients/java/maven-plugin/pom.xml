@@ -155,8 +155,8 @@
 			Flexible range: Take whichever version is available.
 			module-creator can evolve faster than this file, so we don't have
 			an exact version that can be put here. For example: if this is client
-			7.0.1-SNAPSHOT, we cannot assume that the server will also be
-			7.0.1-SNAPSHOT, because it might already be 7.0.2-SNAPSHOT or higher.
+			7.0.1-SNAPSxxx, we cannot assume that the server will also be
+			7.0.1-SNAPSxxx, because it might already be 7.0.2-SNAPSxxxx or higher.
 			-->
 			<version>[7.1.2-SNAPSHOT,8.0.0)</version>
 		</dependency>
