@@ -39,7 +39,7 @@
 			<artifactId>chroma</artifactId>
 			<version>7.1.2-SNAPSHOT</version>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>crowddetector</artifactId>
 			<version>7.1.2-SNAPSHOT</version>
@@ -48,7 +48,7 @@
 			<groupId>org.kurento.module</groupId>
 			<artifactId>platedetector</artifactId>
 			<version>7.1.2-SNAPSHOT</version>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
