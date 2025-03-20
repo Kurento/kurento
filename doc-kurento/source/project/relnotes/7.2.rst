@@ -1,5 +1,5 @@
 ======================================
-Kurento 7.2 Release Notes (UNRELEASED)
+Kurento 7.2 Release Notes 
 ======================================
 
 Kurento 7.2.0 is a minor version release over last 7.1.0 version. This new release brings some general updates on codec support and some bug fixing and several pending PRs that have been incorporated.
