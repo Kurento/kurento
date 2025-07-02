@@ -10,6 +10,7 @@ message SampleImage {
     string codec        = 1;
     bytes  data         = 2;
     string timestamp    = 3;
+    string metadata     = 4;
 }
 
 message Empty { }

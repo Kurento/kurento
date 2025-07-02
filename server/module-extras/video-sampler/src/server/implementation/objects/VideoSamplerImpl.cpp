@@ -53,7 +53,8 @@ class VideoSamplerGRPC: public kurento::module::videosampler::VideoSamplerImpl
                   int height,
                   int width,
                   std::shared_ptr<kurento::module::videosampler::ImageEncoding> imageEncoding,
-                  std::string endpointUrl);
+                  std::string endpointUrl,
+                  const std::string &metadata);
 
       bool send_frame_data (guint8* data, guint len);
       void sendImageDeliveredEvent (bool delivered);
@@ -84,7 +85,8 @@ VideoSamplerGRPC::VideoSamplerGRPC (const boost::property_tree::ptree &config,
             int height,
             int width,
             std::shared_ptr<kurento::module::videosampler::ImageEncoding> imageEncoding,
-            std::string endpointUrl): VideoSamplerImpl (config, mediaPipeline, framePeriod, imageDeliveryMethod, height, width, imageEncoding, endpointUrl)
+            std::string endpointUrl,
+            const std::string &metadata): VideoSamplerImpl (config, mediaPipeline, framePeriod, imageDeliveryMethod, height, width, imageEncoding, endpointUrl, metadata)
 {
   imageDeliverStub = nullptr;
   g_object_set(element, "frame-period", msFramePeriod,
@@ -135,6 +137,7 @@ VideoSamplerGRPC::send_frame_data (guint8 *data, guint len)
   request.set_codec (getEncodingStr());
   request.set_data (data, len);
   request.set_timestamp (epochToString());
+  request.set_metadata (getMetadata());
 
   status = imageDeliverStub->deliverImage(&context, request, &reply);
 
@@ -185,7 +188,8 @@ VideoSamplerImpl::VideoSamplerImpl (const boost::property_tree::ptree &config,
                                     int h,
                                     int w,
                                     std::shared_ptr<ImageEncoding> imageEncoding,
-                                    std::string url)  : 
+                                    std::string url,
+                                    std::string metadata)  : 
                                         MediaElementImpl (config, 
                                                           std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline), 
                                                           FACTORY_NAME ),
@@ -194,7 +198,8 @@ VideoSamplerImpl::VideoSamplerImpl (const boost::property_tree::ptree &config,
                                         endpointUrl (url),
                                         width(w),
                                         height(h),
-                                        msFramePeriod(framePeriod)
+                                        msFramePeriod(framePeriod),
+                                        metadata(metadata)
 
 {
 }
@@ -208,9 +213,10 @@ VideoSamplerImplFactory::createObject (const boost::property_tree::ptree &conf,
                                        int height, 
                                        int width, 
                                        std::shared_ptr<ImageEncoding> imageEncoding, 
-                                       const std::string &endpointUrl) const
+                                       const std::string &endpointUrl,
+                                       const std::string &metadata) const
 {
-  return new VideoSamplerGRPC (conf, mediaPipeline, framePeriod, imageDeliveryMethod, height, width, imageEncoding, endpointUrl);
+  return new VideoSamplerGRPC (conf, mediaPipeline, framePeriod, imageDeliveryMethod, height, width, imageEncoding, endpointUrl, metadata);
 }
 
 
