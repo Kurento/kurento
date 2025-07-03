@@ -126,15 +126,17 @@ The reason behind this decision is to provide much needed flexibility when build
 Release order
 =============
 
-First, the C/C++ parts of the code are built, Debian packages are created, and everything is left ready for deployment in an Apt repository (for *apt-get*) managed by `Aptly`_.
+.. First, the C/C++ parts of the code are built, Debian packages are created, and everything is left ready for deployment in an Apt repository (for *apt-get*) managed by `Aptly`_.
 
-Before Kurento Media Server itself, all required forks and libraries must be built and installed:
+.. Before Kurento Media Server itself, all required forks and libraries must be built and installed:
 
-* `libsrtp <https://github.com/Kurento/libsrtp>`__
-* `openh264 <https://github.com/Kurento/openh264>`__
-* `openh264-gst-plugin <https://github.com/Kurento/openh264-gst-plugin>`__
-* `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
-* `libnice <https://github.com/Kurento/libnice>`__
+.. The following libraries must be built and installed before Kurento Media Server itself:
+
+.. * `libsrtp <https://github.com/Kurento/libsrtp>`__
+.. * `openh264 <https://github.com/Kurento/openh264>`__
+.. * `openh264-gst-plugin <https://github.com/Kurento/openh264-gst-plugin>`__
+.. * `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
+.. * `libnice <https://github.com/Kurento/libnice>`__
 
 The main :ref:`dev-release-media-server` modules should be built in this order:
 
@@ -149,6 +151,11 @@ The main :ref:`dev-release-media-server` modules should be built in this order:
 And the example Kurento modules, which depend on Kurento's *core*, *elements*, and *filters*, can be built now:
 
 * ``server/module-examples/chroma``
+
+Extra modules which also depends on the core, elements, and filters can be built in the same way:
+
+* ``server/module-extas/video-sampler``
+
 
 (NOTE: Build disabled on Ubuntu >= 20.04 due to breaking changes in OpenCV 4.0)
 

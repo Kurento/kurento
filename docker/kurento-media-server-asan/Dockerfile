@@ -101,7 +101,7 @@ ENV LANG="C.UTF-8"
 
 # Install tools:
 # * git: For `git clone` in `build.sh`.
-# * gnupg: For `apt-key adv` (Since Ubuntu 18.04).
+# * gnupg: For instaling sw keys (Since Ubuntu 24.04).
 RUN \
 apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
     git \
@@ -110,8 +110,12 @@ apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --
 
 # Add Kurento Apt package repository.
 RUN \
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 \
-&& echo "deb [arch=amd64] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
+gpg -k && \
+gpg --no-default-keyring \
+    --keyring /etc/apt/keyrings/kurento.gpg \
+    --keyserver hkp://keyserver.ubuntu.com:80 \
+    --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 && \
+&& echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
 
 # Install development tools.
 RUN \

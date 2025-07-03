@@ -70,6 +70,13 @@
             "type": "String",
             "optional": true,
             "defaultValue": ""
+          },
+          {
+            "name": "metadata",
+            "doc": "metadata attached to this filter that will be relayed to the gRPC service when delivering images",
+            "type": "String",
+            "optional": true,
+            "defaultValue": ""
           }
         ]
       },

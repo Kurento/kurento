@@ -22,7 +22,7 @@ import sphinx_rtd_theme
 # -- Project information --------------------------------------------------
 
 project = 'Kurento'
-copyright = '2020, Kurento'
+copyright = '2025, Kurento'
 author = 'Kurento'
 
 # The version info for the project you're documenting, acts as replacement for
