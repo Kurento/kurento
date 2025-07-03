@@ -137,7 +137,20 @@ VideoSamplerGRPC::send_frame_data (guint8 *data, guint len)
   request.set_codec (getEncodingStr());
   request.set_data (data, len);
   request.set_timestamp (epochToString());
+  request.set_pipelineid (getMediaPipeline()->getId());
   request.set_metadata (getMetadata());
+
+  // Get VideoSamplerGRPC tags from base class
+  std::vector<std::shared_ptr<kurento::Tag>> tags = this->getTags();
+  for (const auto &tag : tags) {
+    if (tag) {
+      videoSampler::Tag *grpcTag = request.add_tags();
+      grpcTag->set_key(tag->getKey());
+      grpcTag->set_value(tag->getValue());
+    } else {
+      GST_WARNING_OBJECT (this, "Received a null tag in VideoSamplerGRPC");
+    }
+  }
 
   status = imageDeliverStub->deliverImage(&context, request, &reply);
 
