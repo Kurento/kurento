@@ -42,23 +42,23 @@ public class DefaultJsonRpcHandlerRegistration implements JsonRpcHandlerRegistra
 
   @Override
   public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> handler, String... paths) {
-    Assert.notNull(handler);
-    Assert.notEmpty(paths);
+    Assert.notNull(handler, "Handler must not be null");
+    Assert.notEmpty(paths, "Paths must not be empty");
     this.handlerMap.put(handler, Arrays.asList(paths));
     return this;
   }
 
   public JsonRpcHandlerRegistration addPerSessionHandler(
       Class<? extends JsonRpcHandler<?>> handlerClass, String[] paths) {
-    Assert.notNull(handlerClass);
-    Assert.notEmpty(paths);
+    Assert.notNull(handlerClass, "Handler class must not be null");
+    Assert.notEmpty(paths, "Paths must not be empty");
     this.perSessionHandlerClassMap.put(handlerClass, Arrays.asList(paths));
     return this;
   }
 
   public JsonRpcHandlerRegistration addPerSessionHandler(String beanName, String[] paths) {
-    Assert.notNull(beanName);
-    Assert.notEmpty(paths);
+    Assert.notNull(beanName, "Bean name must not be null");
+    Assert.notEmpty(paths, "Paths must not be empty");
     this.perSessionHandlerBeanNameMap.put(beanName, Arrays.asList(paths));
     return this;
   }

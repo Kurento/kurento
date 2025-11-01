@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.kurento.commons.SecretGenerator;
 import org.kurento.jsonrpc.JsonRpcHandler;

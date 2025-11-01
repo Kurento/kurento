@@ -17,18 +17,19 @@
 package org.kurento.jsonrpc.client;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.UpgradeException;
-import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.exceptions.UpgradeException;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
@@ -57,25 +58,25 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
     }
   }
 
-  protected final SslContextFactory sslContextFactory;
+  protected final SslContextFactory.Client sslContextFactory;
 
   protected volatile Session jettyWsSession;
   protected volatile WebSocketClient jettyClient;
 
   public JsonRpcClientWebSocket(String url) {
-    this(url, null, new SslContextFactory());
+    this(url, null, new SslContextFactory.Client());
   }
 
-  public JsonRpcClientWebSocket(String url, SslContextFactory sslContextFactory) {
+  public JsonRpcClientWebSocket(String url, SslContextFactory.Client sslContextFactory) {
     this(url, null, sslContextFactory);
   }
 
   public JsonRpcClientWebSocket(String url, JsonRpcWSConnectionListener connectionListener) {
-    this(url, connectionListener, new SslContextFactory());
+    this(url, connectionListener, new SslContextFactory.Client());
   }
 
   public JsonRpcClientWebSocket(String url, JsonRpcWSConnectionListener connectionListener,
-      SslContextFactory sslContextFactory) {
+      SslContextFactory.Client sslContextFactory) {
     super(url, connectionListener);
     this.sslContextFactory = sslContextFactory;
   }
@@ -106,13 +107,21 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
       log.debug("Connecting JettyWS client with connectionTimeout={} millis",
           this.connectionTimeout);
 
-      jettyClient = new WebSocketClient(sslContextFactory);
-      jettyClient.setConnectTimeout((long)this.connectionTimeout);
-      WebSocketPolicy policy = jettyClient.getPolicy();
-      policy.setMaxBinaryMessageBufferSize(maxPacketSize);
-      policy.setMaxTextMessageBufferSize(maxPacketSize);
-      policy.setMaxBinaryMessageSize(maxPacketSize);
-      policy.setMaxTextMessageSize(maxPacketSize);
+      // Create HttpClient with SSL configuration
+      HttpClient httpClient = new HttpClient();
+      httpClient.setSslContextFactory(sslContextFactory);
+      httpClient.setConnectTimeout(this.connectionTimeout);
+      
+      // Create WebSocketClient with the HttpClient
+      jettyClient = new WebSocketClient(httpClient);
+      
+      // Configure message buffer sizes directly on WebSocketClient
+      jettyClient.setMaxBinaryMessageSize(maxPacketSize);
+      jettyClient.setMaxTextMessageSize(maxPacketSize);
+      jettyClient.setInputBufferSize(maxPacketSize);
+      
+      // Set idle timeout on the WebSocketClient
+      jettyClient.setIdleTimeout(Duration.ofMillis(this.idleTimeout));
 
       jettyClient.start();
 
@@ -127,8 +136,6 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
         jettyWsSession =
             jettyClient.connect(new WebSocketClientSocket(), uri, new ClientUpgradeRequest())
                 .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
-
-        jettyWsSession.setIdleTimeout(this.idleTimeout);
 
         return;
 

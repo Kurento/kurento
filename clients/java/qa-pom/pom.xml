@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- maven-compiler-plugin -->
-		<maven.compiler.release>11</maven.compiler.release>
+		<maven.compiler.release>21</maven.compiler.release>
 
 		<!-- maven-eclipse-plugin -->
 		<downloadSources>true</downloadSources>

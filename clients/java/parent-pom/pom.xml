@@ -100,19 +100,20 @@
 		<webjars.jsnlog.js.version>2.20.1</webjars.jsnlog.js.version>
 		<webjars.webrtc-adapter.version>7.4.0</webjars.webrtc-adapter.version>
 
-		<version.jetty>9.4.49.v20220914</version.jetty>
-		<version.netty>4.1.85.Final</version.netty>
+		<version.jetty>11.0.24</version.jetty>
+		<version.netty>4.1.116.Final</version.netty>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.4</version.apache.commons-fileupload>
 		<version.apache.commons-io>2.11.0</version.apache.commons-io>
-		<version.apache.commons-lang>3.12.0</version.apache.commons-lang>
-		<version.apache.commons-logging>1.2</version.apache.commons-logging>
-		<version.apache.commons-net>3.8.0</version.apache.commons-net>
-		<version.apache.commons-pool>2.11.1</version.apache.commons-pool>
-		<version.apache.fluent-hc>4.5.13</version.apache.fluent-hc>
-		<version.apache.httpclient>5.2</version.apache.httpclient>
-		<version.apache.httpmime>4.5.13</version.apache.httpmime>
+		<version.apache.commons-lang>3.17.0</version.apache.commons-lang>
+		<version.apache.commons-logging>1.3.4</version.apache.commons-logging>
+		<version.apache.commons-net>3.11.1</version.apache.commons-net>
+		<version.apache.commons-pool>2.12.0</version.apache.commons-pool>
+		<version.apache.fluent-hc>4.5.14</version.apache.fluent-hc>
+		<version.apache.httpclient>5.4.1</version.apache.httpclient>
+		<version.apache.httpcore5>5.3.1</version.apache.httpcore5>
+		<version.apache.httpmime>4.5.14</version.apache.httpmime>
 		<version.apache.maven-artifact>3.8.6</version.apache.maven-artifact>
 		<version.apache.source.assembly.descriptor>1.0.6</version.apache.source.assembly.descriptor>
 		<version.apache.tika>2.6.0</version.apache.tika>
@@ -120,25 +121,25 @@
 		<version.cglib>3.3.0</version.cglib>
 		<version.cors-filter>2.10</version.cors-filter>
 		<version.spotbugs>4.7.3</version.spotbugs>
-		<version.google.gson>2.10</version.google.gson>
-		<version.google.guava>31.1-jre</version.google.guava>
-		<version.google.http>1.42.3</version.google.http>
-		<version.google.oauth>1.34.1</version.google.oauth>
+		<version.google.gson>2.11.0</version.google.gson>
+		<version.google.guava>33.3.1-jre</version.google.guava>
+		<version.google.http>1.45.0</version.google.http>
+		<version.google.oauth>1.36.0</version.google.oauth>
 		<version.google.youtube>v3-rev20221108-2.0.0</version.google.youtube>
 		<version.keystone-client>3.2.9</version.keystone-client>
 
 		<version.hamcrest>2.2</version.hamcrest>
 		<version.javax.inject>1</version.javax.inject>
 		<version.junit>4.13.2</version.junit>
-		<version.mockito.core>4.9.0</version.mockito.core>
+		<version.mockito.core>5.14.2</version.mockito.core>
 		<version.paranamer>2.8</version.paranamer>
 		<version.plexus.io>3.4.0</version.plexus.io>
 		<version.powermock>2.0.9</version.powermock>
 
 		<version.reflections>0.10.2</version.reflections>
 		<version.scribe>8.3.3</version.scribe>
-		<version.servlet-api>6.0.0</version.servlet-api>
-		<version.slf4j>1.7.36</version.slf4j>
+		<version.servlet-api>6.1.0</version.servlet-api>
+		<version.slf4j>2.0.16</version.slf4j>
 
 		<!--
 		NOTE: Spring Boot doesn't follow SemVer. Minor version upgrades can break things.
@@ -150,7 +151,7 @@
 		3. Fix all broken tests.
 		4. Fix all WARN and ERROR messages from `PropertiesMigrationListener`.
 		-->
-		<version.spring-boot>2.7.18</version.spring-boot>
+		<version.spring-boot>3.4.0</version.spring-boot>
 
 		<version.websocket-api>1.1</version.websocket-api>
 
@@ -159,9 +160,9 @@
 		<assertj.version>3.23.1</assertj.version>
 		<docker-java.version>3.2.14</docker-java.version>
 		<freemarker.version>2.3.31</freemarker.version>
-		<jackson.version>2.14.1</jackson.version>
-		<jfreechart.version>1.5.3</jfreechart.version>
-		<jmeter-maven-plugin.version>3.6.1</jmeter-maven-plugin.version>
+		<jackson.version>2.18.2</jackson.version>
+		<jfreechart.version>1.5.5</jfreechart.version>
+		<jmeter-maven-plugin.version>3.8.0</jmeter-maven-plugin.version>
 
 		<jna.version>5.12.1</jna.version>
 		<overthere.version>5.3.0</overthere.version>
@@ -179,29 +180,29 @@
 		<version.clean.plugin>3.2.0</version.clean.plugin>
 		<version.clover2.plugin>4.0.6</version.clover2.plugin>
 		<version.cobertura.plugin>2.7</version.cobertura.plugin>
-		<version.compiler.plugin>3.11.0</version.compiler.plugin>
-		<version.dependency.plugin>3.3.0</version.dependency.plugin>
+		<version.compiler.plugin>3.13.0</version.compiler.plugin>
+		<version.dependency.plugin>3.8.1</version.dependency.plugin>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
-		<version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
-		<version.enforcer.rules.plugin>1.3</version.enforcer.rules.plugin>
-		<version.failsafe.plugin>3.0.0-M7</version.failsafe.plugin>
-		<version.gpg.plugin>1.6</version.gpg.plugin>
-		<version.help.plugin>3.3.0</version.help.plugin>
-		<version.install.plugin>3.1.0</version.install.plugin>
-		<version.jar.plugin>3.3.0</version.jar.plugin>
-		<version.javadoc.plugin>3.4.1</version.javadoc.plugin>
+		<version.enforcer.plugin>3.5.0</version.enforcer.plugin>
+		<version.enforcer.rules.plugin>1.8.0</version.enforcer.rules.plugin>
+		<version.failsafe.plugin>3.5.2</version.failsafe.plugin>
+		<version.gpg.plugin>3.2.7</version.gpg.plugin>
+		<version.help.plugin>3.5.0</version.help.plugin>
+		<version.install.plugin>3.1.3</version.install.plugin>
+		<version.jar.plugin>3.4.2</version.jar.plugin>
+		<version.javadoc.plugin>3.11.1</version.javadoc.plugin>
 		<version.javancss.plugin>2.1</version.javancss.plugin>
 		<version.jdepend.plugin>2.0</version.jdepend.plugin>
 		<version.jxr.plugin>3.3.0</version.jxr.plugin>
 		<version.license.plugin>2.0.0</version.license.plugin>
 		<version.pir.plugin>3.4.1</version.pir.plugin>		<!-- maven-project-info-reports-plugins -->
-		<version.resources.plugin>3.3.0</version.resources.plugin>
-		<version.shade.plugin>3.4.1</version.shade.plugin>
+		<version.resources.plugin>3.3.1</version.resources.plugin>
+		<version.shade.plugin>3.8.0</version.shade.plugin>
 		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
-		<version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
-		<version.source.plugin>3.2.1</version.source.plugin>
-		<version.surefire.plugin>3.0.0-M7</version.surefire.plugin>
-		<version.war.plugin>3.3.2</version.war.plugin>
+		<version.sonar.plugin>4.0.0.4121</version.sonar.plugin>
+		<version.source.plugin>3.3.1</version.source.plugin>
+		<version.surefire.plugin>3.5.2</version.surefire.plugin>
+		<version.war.plugin>3.4.0</version.war.plugin>
 
 		<!-- ************** -->
 		<!-- Build settings -->
@@ -212,7 +213,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- maven-compiler-plugin -->
-		<maven.compiler.release>11</maven.compiler.release>
+		<maven.compiler.release>21</maven.compiler.release>
 
 		<!-- maven-enforcer-plugin -->
 		<maven.min.version>3.0.3</maven.min.version>
@@ -455,6 +456,11 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<version>3.0.0</version>
+			</dependency>
+			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
 				<version>${version.reflections}</version>
@@ -547,7 +553,7 @@
 			<dependency>
 				<groupId>org.apache.httpcomponents.core5</groupId>
 				<artifactId>httpcore5</artifactId>
-				<version>${version.apache.httpclient}</version>
+				<version>${version.apache.httpcore5}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -596,7 +602,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-client</artifactId>
+				<artifactId>websocket-jetty-client</artifactId>
+				<version>${version.jetty}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-jetty-api</artifactId>
 				<version>${version.jetty}</version>
 			</dependency>
 			<dependency>

@@ -22,7 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import org.kurento.client.internal.KmsUrlLoader;
 import org.kurento.client.internal.TransactionImpl;
