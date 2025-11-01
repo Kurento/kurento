@@ -90,22 +90,22 @@
 		<version.kurento-java>${project.parent.version}</version.kurento-java>
 
 		<!-- External versions -->
-		<webjars-locator.version>0.46</webjars-locator.version>
-		<webjars.bootstrap.version>5.2.2</webjars.bootstrap.version>
+		<webjars-locator.version>0.52</webjars-locator.version>
+		<webjars.bootstrap.version>5.3.3</webjars.bootstrap.version>
 		<webjars.demo-console.version>1.5.1</webjars.demo-console.version>
 		<webjars.draggabilly.version>2.1.0</webjars.draggabilly.version>
 		<webjars.ekko-lightbox.version>5.2.0</webjars.ekko-lightbox.version>
 		<webjars.event-emitter.version>5.1.0</webjars.event-emitter.version>
-		<webjars.jquery.version>3.6.1</webjars.jquery.version>
+		<webjars.jquery.version>3.7.1</webjars.jquery.version>
 		<webjars.jsnlog.js.version>2.20.1</webjars.jsnlog.js.version>
 		<webjars.webrtc-adapter.version>7.4.0</webjars.webrtc-adapter.version>
 
 		<version.jetty>11.0.24</version.jetty>
-		<version.netty>4.1.116.Final</version.netty>
+		<version.netty>4.1.115.Final</version.netty>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
-		<version.apache.commons-fileupload>1.4</version.apache.commons-fileupload>
-		<version.apache.commons-io>2.11.0</version.apache.commons-io>
+		<version.apache.commons-fileupload>1.5</version.apache.commons-fileupload>
+		<version.apache.commons-io>2.18.0</version.apache.commons-io>
 		<version.apache.commons-lang>3.17.0</version.apache.commons-lang>
 		<version.apache.commons-logging>1.3.4</version.apache.commons-logging>
 		<version.apache.commons-net>3.11.1</version.apache.commons-net>
@@ -116,24 +116,24 @@
 		<version.apache.httpmime>4.5.14</version.apache.httpmime>
 		<version.apache.maven-artifact>3.8.6</version.apache.maven-artifact>
 		<version.apache.source.assembly.descriptor>1.0.6</version.apache.source.assembly.descriptor>
-		<version.apache.tika>2.6.0</version.apache.tika>
-		<version.bcpkix>1.70</version.bcpkix>
+		<version.apache.tika>2.9.2</version.apache.tika>
+		<version.bcpkix>1.79</version.bcpkix>
 		<version.cglib>3.3.0</version.cglib>
 		<version.cors-filter>2.10</version.cors-filter>
-		<version.spotbugs>4.7.3</version.spotbugs>
+		<version.spotbugs>4.8.6</version.spotbugs>
 		<version.google.gson>2.11.0</version.google.gson>
-		<version.google.guava>33.3.1-jre</version.google.guava>
-		<version.google.http>1.45.0</version.google.http>
+		<version.google.guava>33.4.0-jre</version.google.guava>
+		<version.google.http>1.45.1</version.google.http>
 		<version.google.oauth>1.36.0</version.google.oauth>
 		<version.google.youtube>v3-rev20221108-2.0.0</version.google.youtube>
 		<version.keystone-client>3.2.9</version.keystone-client>
 
-		<version.hamcrest>2.2</version.hamcrest>
+		<version.hamcrest>3.0</version.hamcrest>
 		<version.javax.inject>1</version.javax.inject>
 		<version.junit>4.13.2</version.junit>
 		<version.mockito.core>5.14.2</version.mockito.core>
 		<version.paranamer>2.8</version.paranamer>
-		<version.plexus.io>3.4.0</version.plexus.io>
+		<version.plexus.io>3.5.2</version.plexus.io>
 		<version.powermock>2.0.9</version.powermock>
 
 		<version.reflections>0.10.2</version.reflections>
@@ -157,18 +157,18 @@
 
 		<!-- Test Dependencies Versions -->
 		<ApacheJMeter_core.version>5.5</ApacheJMeter_core.version>
-		<assertj.version>3.23.1</assertj.version>
+		<assertj.version>3.26.3</assertj.version>
 		<docker-java.version>3.2.14</docker-java.version>
-		<freemarker.version>2.3.31</freemarker.version>
+		<freemarker.version>2.3.33</freemarker.version>
 		<jackson.version>2.18.2</jackson.version>
 		<jfreechart.version>1.5.5</jfreechart.version>
 		<jmeter-maven-plugin.version>3.8.0</jmeter-maven-plugin.version>
 
-		<jna.version>5.12.1</jna.version>
+		<jna.version>5.16.0</jna.version>
 		<overthere.version>5.3.0</overthere.version>
-		<selenium-java.version>3.141.59</selenium-java.version>
+		<selenium-java.version>4.26.0</selenium-java.version>
 		<version.ocr>4.0.0-1.4.4</version.ocr>
-		<webdrivermanager.version>5.3.1</webdrivermanager.version>
+		<webdrivermanager.version>5.9.2</webdrivermanager.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -185,12 +185,12 @@
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.5.0</version.enforcer.plugin>
 		<version.enforcer.rules.plugin>1.8.0</version.enforcer.rules.plugin>
-		<version.failsafe.plugin>3.5.2</version.failsafe.plugin>
+		<version.failsafe.plugin>3.5.4</version.failsafe.plugin>
 		<version.gpg.plugin>3.2.7</version.gpg.plugin>
 		<version.help.plugin>3.5.0</version.help.plugin>
 		<version.install.plugin>3.1.3</version.install.plugin>
 		<version.jar.plugin>3.4.2</version.jar.plugin>
-		<version.javadoc.plugin>3.11.1</version.javadoc.plugin>
+		<version.javadoc.plugin>3.12.0</version.javadoc.plugin>
 		<version.javancss.plugin>2.1</version.javancss.plugin>
 		<version.jdepend.plugin>2.0</version.jdepend.plugin>
 		<version.jxr.plugin>3.3.0</version.jxr.plugin>
@@ -201,7 +201,7 @@
 		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
 		<version.sonar.plugin>4.0.0.4121</version.sonar.plugin>
 		<version.source.plugin>3.3.1</version.source.plugin>
-		<version.surefire.plugin>3.5.2</version.surefire.plugin>
+		<version.surefire.plugin>3.5.4</version.surefire.plugin>
 		<version.war.plugin>3.4.0</version.war.plugin>
 
 		<!-- ************** -->
