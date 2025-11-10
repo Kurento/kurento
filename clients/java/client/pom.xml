@@ -88,9 +88,6 @@
 					</sourceDirectory>
 
 					<!-- Output directory where the generated Java files are stored -->
-					<generatedSourceOutputFolder>
-						${project.build.directory}/generated-sources/kmd
-					</generatedSourceOutputFolder>
 				</configuration>
 				<executions>
 					<execution>
