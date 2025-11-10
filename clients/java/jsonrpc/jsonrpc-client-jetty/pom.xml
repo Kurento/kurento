@@ -46,11 +46,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-jetty-client</artifactId>
+			<artifactId>jetty-websocket-jetty-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-jetty-api</artifactId>
+			<artifactId>jetty-websocket-jetty-api</artifactId>
 		</dependency>
 	</dependencies>
 
