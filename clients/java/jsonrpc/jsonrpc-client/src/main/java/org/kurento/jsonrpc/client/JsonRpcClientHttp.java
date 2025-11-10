@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.core5.http.ContentType;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.internal.HttpResponseSender;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
@@ -138,9 +138,9 @@ public class JsonRpcClientHttp extends JsonRpcClient {
   private <P, R> Response<R> internalSendRequestHttp(Request<P> request, Class<R> resultClass)
       throws IOException {
 
-    String resultJson = org.apache.http.client.fluent.Request.Post(url)
-        .bodyString(toJson(request), ContentType.APPLICATION_JSON).execute().returnContent()
-        .asString();
+  String resultJson = org.apache.hc.client5.http.fluent.Request.post(url)
+    .bodyString(toJson(request), ContentType.APPLICATION_JSON).execute().returnContent()
+    .asString();
 
     if (resultJson == null || resultJson.trim().isEmpty()) {
       return new Response<>(request.getId(), new ResponseError(3,
@@ -174,7 +174,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 
     try {
 
-      org.apache.http.client.fluent.Request.Post(url).bodyString("", ContentType.APPLICATION_JSON)
+    org.apache.hc.client5.http.fluent.Request.post(url).bodyString("", ContentType.APPLICATION_JSON)
       .execute();
 
     } catch (ClientProtocolException e) {

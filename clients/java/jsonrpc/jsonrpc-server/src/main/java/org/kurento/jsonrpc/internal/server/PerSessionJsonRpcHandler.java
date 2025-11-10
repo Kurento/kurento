@@ -21,23 +21,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.util.Assert;
-import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 
 import com.google.common.collect.ImmutableList;
 
 public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>, BeanFactoryAware {
 
-  private static final Log logger = LogFactory.getLog(PerConnectionWebSocketHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(PerSessionJsonRpcHandler.class);
 
   private final BeanCreatingHelper<JsonRpcHandler<T>> provider;
 

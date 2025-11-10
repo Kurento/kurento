@@ -90,10 +90,10 @@ public class SessionIdMessageTest {
     response.setSessionId("xxxxxxx");
 
     String responseJson = response.toString();
-    JsonParser parser = new JsonParser();
-    JsonObject expected = (JsonObject) parser
-        .parse("{\"id\":1,\"result\":{\"sessionId\":\"xxxxxxx\"},\"jsonrpc\":\"2.0\"}");
-    JsonObject result = (JsonObject) parser.parse(responseJson);
+    JsonObject expected = JsonParser
+        .parseString("{\"id\":1,\"result\":{\"sessionId\":\"xxxxxxx\"},\"jsonrpc\":\"2.0\"}")
+        .getAsJsonObject();
+    JsonObject result = JsonParser.parseString(responseJson).getAsJsonObject();
     Assert.assertEquals(expected, result);
 
     log.debug(responseJson);

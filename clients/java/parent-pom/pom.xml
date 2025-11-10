@@ -104,42 +104,40 @@
 		<version.netty>4.2.7.Final</version.netty>
 
 		<version.apache.activemq>6.1.8</version.apache.activemq>
-		<version.apache.commons-fileupload>1.5</version.apache.commons-fileupload>
+		<version.apache.commons-fileupload>1.6.0</version.apache.commons-fileupload>
 		<version.apache.commons-io>2.18.0</version.apache.commons-io>
 		<version.apache.commons-lang>3.19.0</version.apache.commons-lang>
-		<version.apache.commons-logging>1.3.5</version.apache.commons-logging>
-		<version.apache.commons-net>3.11.1</version.apache.commons-net>
+		<version.apache.commons-net>3.12.0</version.apache.commons-net>
 		<version.apache.commons-pool>2.12.1</version.apache.commons-pool>
 		<version.apache.fluent-hc>4.5.14</version.apache.fluent-hc>
-		<version.apache.httpclient>5.4.1</version.apache.httpclient>
-		<version.apache.httpcore5>5.3.1</version.apache.httpcore5>
-		<version.apache.httpmime>4.5.14</version.apache.httpmime>
-		<version.apache.maven-artifact>3.8.6</version.apache.maven-artifact>
-		<version.apache.source.assembly.descriptor>1.0.6</version.apache.source.assembly.descriptor>
-		<version.apache.tika>2.9.2</version.apache.tika>
-		<version.bcpkix>1.79</version.bcpkix>
+		<version.apache.httpclient>5.5.1</version.apache.httpclient>
+		<version.apache.httpcore5>5.3.6</version.apache.httpcore5>
+		<version.apache.maven-artifact>3.9.11</version.apache.maven-artifact>
+		<version.apache.source.assembly.descriptor>1.7</version.apache.source.assembly.descriptor>
+		<version.apache.tika>3.2.3</version.apache.tika>
+		<version.bcpkix>1.82</version.bcpkix>
 		<version.cglib>3.3.0</version.cglib>
-		<version.cors-filter>2.10</version.cors-filter>
-		<version.spotbugs>4.8.6</version.spotbugs>
-		<version.google.gson>2.11.0</version.google.gson>
-		<version.google.guava>33.4.0-jre</version.google.guava>
+		<version.cors-filter>3.1</version.cors-filter>
+		<version.spotbugs>4.9.8</version.spotbugs>
+		<version.google.gson>2.13.2</version.google.gson>
+		<version.google.guava>33.5.0-jre</version.google.guava>
 		<version.google.http>2.0.2</version.google.http>
 		<version.google.oauth>1.39.0</version.google.oauth>
-		<version.google.youtube>v3-rev20221108-2.0.0</version.google.youtube>
+		<version.google.youtube>v3-rev20250714-2.0.0</version.google.youtube>
 		<version.keystone-client>3.2.9</version.keystone-client>
 
 		<version.hamcrest>3.0</version.hamcrest>
 		<version.javax.inject>1</version.javax.inject>
 		<version.junit>4.13.2</version.junit>
-		<version.mockito.core>5.18.0</version.mockito.core>
+		<version.mockito.core>5.20.0</version.mockito.core>
 		<version.paranamer>2.8.3</version.paranamer>
-		<version.plexus.io>3.5.2</version.plexus.io>
+		<version.plexus.io>3.6.0</version.plexus.io>
 		<version.powermock>2.0.9</version.powermock>
 
 		<version.reflections>0.10.2</version.reflections>
 		<version.scribe>8.3.3</version.scribe>
 		<version.servlet-api>6.1.0</version.servlet-api>
-		<version.slf4j>2.0.16</version.slf4j>
+		<version.slf4j>2.0.17</version.slf4j>
 
 		<!--
 		NOTE: Spring Boot doesn't follow SemVer. Minor version upgrades can break things.
@@ -157,15 +155,15 @@
 
 		<!-- Test Dependencies Versions -->
 		<ApacheJMeter_core.version>5.6.3</ApacheJMeter_core.version>
-		<assertj.version>3.26.3</assertj.version>
-		<docker-java.version>3.4.0</docker-java.version>
-		<freemarker.version>2.3.33</freemarker.version>
+		<assertj.version>3.27.6</assertj.version>
+		<docker-java.version>3.6.0</docker-java.version>
+		<freemarker.version>2.3.34</freemarker.version>
 		<jackson.version>2.20.1</jackson.version>
-		<jfreechart.version>1.5.5</jfreechart.version>
+		<jfreechart.version>1.5.6</jfreechart.version>
 		<jmeter-maven-plugin.version>3.8.0</jmeter-maven-plugin.version>
 
-		<jna.version>5.16.0</jna.version>
-		<overthere.version>5.7.0</overthere.version>
+		<jna.version>5.18.1</jna.version>
+		<overthere.version>5.7.1</overthere.version>
 		<selenium-java.version>4.38.0</selenium-java.version>
 		<version.ocr>5.5.1-1.5.12</version.ocr>
 		<webdrivermanager.version>6.3.3</webdrivermanager.version>
@@ -228,8 +226,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-
-			<!-- Kurento Media Server API -->
 			<dependency>
 				<groupId>org.kurento</groupId>
 				<artifactId>kms-api-core</artifactId>
@@ -425,19 +421,9 @@
 				<version>${version.apache.maven-artifact}</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>${version.apache.commons-logging}</version>
-			</dependency>
-			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
 				<version>${version.apache.commons-net}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-logging-api</artifactId>
-				<version>${version.apache.commons-logging}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -551,14 +537,14 @@
 				<version>${version.apache.httpclient}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5-fluent</artifactId>
+				<version>${version.apache.httpclient}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.httpcomponents.core5</groupId>
 				<artifactId>httpcore5</artifactId>
 				<version>${version.apache.httpcore5}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpmime</artifactId>
-				<version>${version.apache.httpmime}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-fileupload</groupId>

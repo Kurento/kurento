@@ -54,7 +54,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.internal.$Gson$Types;
+import com.google.gson.reflect.TypeToken;
 
 /**
  *
@@ -103,8 +103,7 @@ public class JsonUtils {
       return fromJsonRequestInject(fromJson(json, JsonObject.class), paramsClass);
     }
 
-    return getGson().fromJson(json,
-        $Gson$Types.newParameterizedTypeWithOwner(null, Request.class, paramsClass));
+  return getGson().fromJson(json, parameterizedType(Request.class, paramsClass));
   }
 
   public static <T> Response<T> fromJsonResponse(String json, Class<T> resultClass) {
@@ -114,8 +113,7 @@ public class JsonUtils {
       return fromJsonResponseInject(fromJson(json, JsonObject.class), resultClass);
     }
     try {
-      return getGson().fromJson(json,
-          $Gson$Types.newParameterizedTypeWithOwner(null, Response.class, resultClass));
+    return getGson().fromJson(json, parameterizedType(Response.class, resultClass));
 
     } catch (JsonSyntaxException e) {
       throw new JsonRpcException("Exception converting Json '" + json
@@ -132,8 +130,7 @@ public class JsonUtils {
 
     }
 
-    return getGson().fromJson(json,
-        $Gson$Types.newParameterizedTypeWithOwner(null, Request.class, paramsClass));
+  return getGson().fromJson(json, parameterizedType(Request.class, paramsClass));
 
   }
 
@@ -145,8 +142,7 @@ public class JsonUtils {
       return fromJsonResponseInject(json, resultClass);
     }
 
-    return getGson().fromJson(json,
-        $Gson$Types.newParameterizedTypeWithOwner(null, Response.class, resultClass));
+  return getGson().fromJson(json, parameterizedType(Response.class, resultClass));
 
   }
 
@@ -159,11 +155,10 @@ public class JsonUtils {
 
       Response<T> response;
       if (resultClass != null) {
-        response = JsonUtils.fromJson(jsonObject,
-            $Gson$Types.newParameterizedTypeWithOwner(null, Response.class, resultClass));
+    response = JsonUtils.fromJson(jsonObject, parameterizedType(Response.class, resultClass));
       } else {
-        response = JsonUtils.fromJson(jsonObject,
-            $Gson$Types.newParameterizedTypeWithOwner(null, Response.class, JsonElement.class));
+    response = JsonUtils.fromJson(jsonObject,
+      parameterizedType(Response.class, JsonElement.class));
       }
 
       response.setSessionId(sessionId);
@@ -178,8 +173,8 @@ public class JsonUtils {
   private static <T> Request<T> fromJsonRequestInject(JsonObject jsonObject, Class<T> paramsClass) {
 
     String sessionId = extractSessionId(jsonObject, PARAMS_PROPERTY);
-    Request<T> request = getGson().fromJson(jsonObject,
-        $Gson$Types.newParameterizedTypeWithOwner(null, Request.class, paramsClass));
+  Request<T> request = getGson().fromJson(jsonObject,
+    parameterizedType(Request.class, paramsClass));
 
     request.setSessionId(sessionId);
     return request;
@@ -206,13 +201,13 @@ public class JsonUtils {
   }
 
   public static <T> String toJsonRequest(Request<T> request) {
-    return getGson().toJson(request, $Gson$Types.newParameterizedTypeWithOwner(null, Request.class,
-        getClassOrNull(request.getParams())));
+  Type paramsType = getClassOrNull(request.getParams());
+  return getGson().toJson(request, parameterizedType(Request.class, paramsType));
   }
 
   public static <T> String toJsonResponse(Response<T> request) {
-    return getGson().toJson(request, $Gson$Types.newParameterizedTypeWithOwner(null, Response.class,
-        getClassOrNull(request.getResult())));
+  Type resultType = getClassOrNull(request.getResult());
+  return getGson().toJson(request, parameterizedType(Response.class, resultType));
   }
 
   public static <T> T fromJson(String json, Class<T> clazz) {
@@ -233,6 +228,14 @@ public class JsonUtils {
 
   private static Class<?> getClassOrNull(Object object) {
     return object == null ? null : object.getClass();
+  }
+
+  private static Type parameterizedType(Class<?> rawType, Type... args) {
+    Type[] resolved = args == null ? new Type[0] : new Type[args.length];
+    for (int i = 0; i < resolved.length; i++) {
+      resolved[i] = args[i] == null ? Object.class : args[i];
+    }
+    return TypeToken.getParameterized(rawType, resolved).getType();
   }
 
   /**
