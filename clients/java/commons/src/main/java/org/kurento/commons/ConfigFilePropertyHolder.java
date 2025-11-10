@@ -38,6 +38,7 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
 
 public class ConfigFilePropertyHolder implements PropertyHolder {
@@ -88,7 +89,7 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
     JsonReader reader =
         new JsonReader(Files.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
 
-    reader.setLenient(true);
+    reader.setStrictness(Strictness.LENIENT);
 
     JsonObject configFile = gson.fromJson(reader, JsonObject.class);
 

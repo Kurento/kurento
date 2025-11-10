@@ -28,6 +28,7 @@ import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_SUCCESS
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -409,8 +410,9 @@ public class ProtocolManager {
 
       try {
 
-        Date closeTime = new Date(
-            System.currentTimeMillis() + session.getReconnectionTimeoutInMillis());
+        Instant closeInstant = Instant.now()
+            .plusMillis(session.getReconnectionTimeoutInMillis());
+        Date closeTime = Date.from(closeInstant);
 
         log.debug(label + "Configuring close timeout for session: {} transportId: {} at {}",
             session.getSessionId(), transportId, format.format(closeTime));
@@ -420,7 +422,7 @@ public class ProtocolManager {
           public void run() {
             closeSession(session, reason);
           }
-        }, closeTime);
+        }, closeInstant);
 
         session.setCloseTimerTask(lastStartedTimerFuture);
 

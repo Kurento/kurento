@@ -72,7 +72,7 @@ class BeanCreatingHelper<T> implements BeanFactoryAware {
     }
     if (this.beanFactory == null) {
       logger.warn("No BeanFactory available, attempting to use default constructor");
-      return BeanUtils.instantiate(this.beanType);
+      return BeanUtils.instantiateClass(this.beanType);
     } else {
 
       if (beanType != null) {

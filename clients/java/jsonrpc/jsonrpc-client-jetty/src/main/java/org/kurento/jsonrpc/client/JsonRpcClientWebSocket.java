@@ -142,6 +142,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
       jettyClient.setMaxBinaryMessageSize(maxPacketSize);
       jettyClient.setMaxTextMessageSize(maxPacketSize);
       jettyClient.setInputBufferSize(maxPacketSize);
+      jettyClient.setConnectTimeout(this.connectionTimeout);
 
       // Set idle timeout on the WebSocketClient
       jettyClient.setIdleTimeout(Duration.ofMillis(this.idleTimeout));
@@ -156,7 +157,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
       try {
 
-        jettyWsSession = jettyClient.connect(new WebSocketClientSocket(), uri, new ClientUpgradeRequest())
+        jettyWsSession = jettyClient.connect(new WebSocketClientSocket(), new ClientUpgradeRequest(uri))
             .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
 
         return;

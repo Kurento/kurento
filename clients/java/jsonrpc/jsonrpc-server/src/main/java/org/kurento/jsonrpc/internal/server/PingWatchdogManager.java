@@ -17,7 +17,7 @@
 
 package org.kurento.jsonrpc.internal.server;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -84,8 +84,9 @@ public class PingWatchdogManager {
 
       disablePingWatchdog();
 
-      lastTask = taskScheduler.schedule(closeSessionTask,
-          new Date(System.currentTimeMillis() + NUM_NO_PINGS_TO_CLOSE * pingInterval));
+      Instant executionTime = Instant.now()
+          .plusMillis(NUM_NO_PINGS_TO_CLOSE * pingInterval);
+      lastTask = taskScheduler.schedule(closeSessionTask, executionTime);
     }
 
     public void setSessionId(String sessionId) {

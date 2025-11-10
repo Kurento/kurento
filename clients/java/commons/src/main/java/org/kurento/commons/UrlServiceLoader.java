@@ -111,7 +111,7 @@ public abstract class UrlServiceLoader<P> {
 
       Class<?> providerClass = Class.forName(serviceProviderClassName);
 
-      return (P) providerClass.newInstance();
+      return (P) providerClass.getDeclaredConstructor().newInstance();
 
     } catch (Exception e) {
       throw new RuntimeException("Exception loading url provider class " + serviceProviderClassName,
