@@ -105,7 +105,7 @@
 
 		<version.apache.activemq>6.1.8</version.apache.activemq>
 		<version.apache.commons-fileupload>1.6.0</version.apache.commons-fileupload>
-		<version.apache.commons-io>2.18.0</version.apache.commons-io>
+		<version.apache.commons-io>2.21.0</version.apache.commons-io>
 		<version.apache.commons-lang>3.19.0</version.apache.commons-lang>
 		<version.apache.commons-net>3.12.0</version.apache.commons-net>
 		<version.apache.commons-pool>2.12.1</version.apache.commons-pool>
@@ -138,6 +138,7 @@
 		<version.scribe>8.3.3</version.scribe>
 		<version.servlet-api>6.1.0</version.servlet-api>
 		<version.slf4j>2.0.17</version.slf4j>
+		<argLine/>
 
 		<!--
 		NOTE: Spring Boot doesn't follow SemVer. Minor version upgrades can break things.
@@ -151,7 +152,7 @@
 		-->
 		<version.spring-boot>3.5.7</version.spring-boot>
 
-		<version.websocket-api>1.1</version.websocket-api>
+		<version.websocket-api>2.2.0</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
 		<ApacheJMeter_core.version>5.6.3</ApacheJMeter_core.version>
@@ -165,7 +166,7 @@
 		<jna.version>5.18.1</jna.version>
 		<overthere.version>5.7.1</overthere.version>
 		<selenium-java.version>4.38.0</selenium-java.version>
-		<version.ocr>5.5.1-1.5.12</version.ocr>
+		<version.tesseract>5.5.1-1.5.12</version.tesseract>
 		<webdrivermanager.version>6.3.3</webdrivermanager.version>
 
 		<!-- **************** -->
@@ -173,31 +174,31 @@
 		<!-- **************** -->
 		<version.antrun.plugin>3.2.0</version.antrun.plugin>
 		<version.assembly.plugin>3.7.1</version.assembly.plugin>
-		<version.buildhelper.plugin>3.6.0</version.buildhelper.plugin>
+		<version.buildhelper.plugin>3.6.1</version.buildhelper.plugin>
 		<version.buildnumber.plugin>3.2.1</version.buildnumber.plugin>
-		<version.clean.plugin>3.4.0</version.clean.plugin>
+		<version.clean.plugin>3.5.0</version.clean.plugin>
 		<version.clover2.plugin>4.0.6</version.clover2.plugin>
 		<version.cobertura.plugin>2.7</version.cobertura.plugin>
-		<version.compiler.plugin>3.13.0</version.compiler.plugin>
+		<version.compiler.plugin>3.14.1</version.compiler.plugin>
 		<version.dependency.plugin>3.9.0</version.dependency.plugin>
 		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.enforcer.plugin>3.6.2</version.enforcer.plugin>
-		<version.enforcer.rules.plugin>1.8.0</version.enforcer.rules.plugin>
+		<version.enforcer.rules.plugin>1.11.0</version.enforcer.rules.plugin>
 		<version.failsafe.plugin>3.5.4</version.failsafe.plugin>
 		<version.gpg.plugin>3.2.8</version.gpg.plugin>
 		<version.help.plugin>3.5.1</version.help.plugin>
-		<version.install.plugin>3.1.3</version.install.plugin>
+		<version.install.plugin>3.1.4</version.install.plugin>
 		<version.jar.plugin>3.4.2</version.jar.plugin>
 		<version.javadoc.plugin>3.12.0</version.javadoc.plugin>
 		<version.javancss.plugin>2.1</version.javancss.plugin>
-		<version.jdepend.plugin>2.0</version.jdepend.plugin>
-		<version.jxr.plugin>3.5.0</version.jxr.plugin>
-		<version.license.plugin>2.0.0</version.license.plugin>
-		<version.pir.plugin>3.7.0</version.pir.plugin>		<!-- maven-project-info-reports-plugins -->
+		<version.jdepend.plugin>2.1</version.jdepend.plugin>
+		<version.jxr.plugin>3.6.0</version.jxr.plugin>
+		<version.license.plugin>2.7.0</version.license.plugin>
+		<version.pir.plugin>3.9.0</version.pir.plugin>		<!-- maven-project-info-reports-plugins -->
 		<version.resources.plugin>3.3.1</version.resources.plugin>
 		<version.shade.plugin>3.6.1</version.shade.plugin>
 		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
-		<version.sonar.plugin>4.0.0.4121</version.sonar.plugin>
+		<version.sonar.plugin>5.2.0.4988</version.sonar.plugin>
 		<version.source.plugin>3.3.1</version.source.plugin>
 		<version.surefire.plugin>3.5.4</version.surefire.plugin>
 		<version.war.plugin>3.5.0</version.war.plugin>
@@ -214,7 +215,7 @@
 		<maven.compiler.release>21</maven.compiler.release>
 
 		<!-- maven-enforcer-plugin -->
-		<maven.min.version>3.0.3</maven.min.version>
+		<maven.min.version>3.9.0</maven.min.version>
 
 		<!-- maven-eclipse-plugin -->
 		<downloadSources>true</downloadSources>
@@ -372,12 +373,12 @@
 			<!-- Other dependencies -->
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcpkix-jdk15on</artifactId>
+				<artifactId>bcpkix-jdk18on</artifactId>
 				<version>${version.bcpkix}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcprov-jdk15on</artifactId>
+				<artifactId>bcprov-jdk18on</artifactId>
 				<version>${version.bcpkix}</version>
 			</dependency>
 			<dependency>
@@ -480,8 +481,8 @@
 				<version>${version.slf4j}</version>
 			</dependency>
 			<dependency>
-				<groupId>javax.websocket</groupId>
-				<artifactId>javax.websocket-api</artifactId>
+				<groupId>jakarta.websocket</groupId>
+				<artifactId>jakarta.websocket-api</artifactId>
 				<version>${version.websocket-api}</version>
 			</dependency>
 
@@ -739,9 +740,9 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.bytedeco.javacpp-presets</groupId>
+				<groupId>org.bytedeco</groupId>
 				<artifactId>tesseract</artifactId>
-				<version>${version.ocr}</version>
+				<version>${version.tesseract}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.spotbugs</groupId>
@@ -1038,6 +1039,8 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${version.surefire.plugin}</version>
 					<configuration>
+						<!-- Keeping the agent in argLine is the Maven-standard way to guarantee the instrumentation is attached for every module without asking each developer to remember -javaagent manually -->
+						<argLine>${argLine} -javaagent:${settings.localRepository}/org/mockito/mockito-core/${version.mockito.core}/mockito-core-${version.mockito.core}.jar</argLine>
 						<systemPropertyVariables>
 							<java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
 						</systemPropertyVariables>
