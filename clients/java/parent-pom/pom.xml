@@ -207,12 +207,14 @@
 		<!-- Build settings -->
 		<!-- ************** -->
 
+		<!-- Build JDK requirement: MINIMUM REQUIRED VERSION TO COMPILE THE LIBRARY -->
+		<java.build.version>25</java.build.version>
+		<!-- maven-compiler-plugin: MINIMUM REQUIRED VERSION TO USE THE LIBRARY -->
+		<maven.compiler.release>17</maven.compiler.release>
+
 		<!-- Cross plugins settings -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<!-- maven-compiler-plugin -->
-		<maven.compiler.release>21</maven.compiler.release>
 
 		<!-- maven-enforcer-plugin -->
 		<maven.min.version>3.9.0</maven.min.version>
@@ -828,6 +830,7 @@
 					<configuration>
 						<showDeprecation>true</showDeprecation>
 						<showWarnings>true</showWarnings>
+						<release>${maven.compiler.release}</release>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -1080,8 +1083,8 @@
 									<version>${maven.min.version}</version>
 								</requireMavenVersion>
 								<requireJavaVersion>
-									<version>[21,)</version>
-									<message>To build this project, JDK 21 (or greater) is required. Please configure JAVA_HOME accordingly.</message>
+									<version>[${java.build.version},)</version>
+									<message>To build this project, JDK ${java.build.version} (or greater) is required. Please configure JAVA_HOME accordingly.</message>
 								</requireJavaVersion>
 							</rules>
 						</configuration>
