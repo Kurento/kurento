@@ -68,12 +68,14 @@ public:
                     int height,
                     int width,
                     std::shared_ptr<ImageEncoding> imageEncoding,
-                    std::string endpointUrl);
+                    std::string endpointUrl,
+                    std::string metdata);
 
   sigc::signal<void, SampleImageDelivered> signalSampleImageDelivered;
 
   std::string getEncodingStr () { return encoding->getString(); }
   std::string getEndpointUrl () { return endpointUrl; }
+  std::string getMetadata () { return metadata; }
   
 
   /* Next methods are automatically implemented by code generator */
@@ -94,6 +96,7 @@ protected:
   int width;
   int height;
   int msFramePeriod;
+  std::string metadata;
 
 
 private:

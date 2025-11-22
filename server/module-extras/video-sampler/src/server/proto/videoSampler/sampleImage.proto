@@ -6,10 +6,19 @@ service ImageDeliver {
     rpc deliverImage (SampleImage) returns (Empty) {}
 }
 
+message Tag {
+    string key = 1;
+    string value = 2;
+}
+
+
 message SampleImage {
-    string codec        = 1;
-    bytes  data         = 2;
-    string timestamp    = 3;
+    string codec         = 1;
+    bytes  data          = 2;
+    string timestamp     = 3;
+    string pipelineId    = 4;
+    string metadata      = 5;
+    repeated Tag tags    = 6;
 }
 
 message Empty { }

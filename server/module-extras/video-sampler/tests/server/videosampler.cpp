@@ -151,6 +151,12 @@ class ImageDeliverImpl final : public ImageDeliver::Service {
     std::string codec = request->codec();
     std::string data = request->data();
     std::string timestamp = request->timestamp();
+    std::string metadata = request->metadata();
+    std::string pipelineId = request->pipelineid();
+    for (int i=0; i < request->tags_size(); i++) {
+      BOOST_TEST_MESSAGE ("Tag: " << request->tags(i).key() << " = " << request->tags(i).value());
+    }
+    
 
     std::ofstream file("./"+timestamp+".jpg", std::ios::out | std::ios::binary);
     if (!file) {
@@ -203,6 +209,7 @@ createVideoSampler (std::string mediaPipelineId)
   constructorParams ["height"] = 480;
   constructorParams ["imageEncoding"] = "JPEG";
   constructorParams ["endpointUrl"] = TEST_ENDPOINT;
+  constructorParams ["metadata"] = "test metadata";
 
 
   videosampler = moduleManager.getFactory ("VideoSampler")->createObject (
@@ -291,6 +298,8 @@ test_videosampler ()
       BOOST_ERROR ("Could not create videosampler");
   } else {
       BOOST_TEST_MESSAGE ("VideoSampler created");
+      videosampler->addTag ("tag1", "value1");
+      videosampler->addTag ("tag2", "value2");
       src->connect(videosampler);
       std::dynamic_pointer_cast<MediaElementImpl>(videosampler)->connect(passthrough);
 
