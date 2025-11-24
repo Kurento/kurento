@@ -47,7 +47,7 @@ ENV NODE_OPTIONS="--dns-result-order=ipv4first"
 RUN \
 apt-get update && apt-get install --no-install-recommends --yes \
     wget \
-&& wget --no-verbose -O - https://deb.nodesource.com/setup_24.x | bash - \
+&& wget --no-verbose -O - https://deb.nodesource.com/setup_20.x | bash - \
 && apt-get update && apt-get install --no-install-recommends --yes \
     nodejs \
 && rm -rf /var/lib/apt/lists/* \
