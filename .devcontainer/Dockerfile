@@ -35,18 +35,9 @@ RUN apt update && apt install -y --no-install-recommends \
 
 RUN apt install -y devscripts git-buildpackage equivs
 
-RUN wget https://download.oracle.com/java/25/latest/jdk-25_linux-x64_bin.tar.gz
+RUN apt update && apt install -y openjdk-25-jdk
 
-RUN tar xvf jdk-25_linux-x64_bin.tar.gz
-
-RUN mv jdk-25 /usr/lib/jvm
-
-RUN update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/jdk-25/bin/javac 2211
-RUN update-alternatives --install /usr/bin/java java /usr/lib/jvm/jdk-25/bin/java 2211
-
-RUN rm jdk-25_linux-x64_bin.tar.gz
-
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_24.x | bash -
 
 RUN apt install -y nodejs
 
