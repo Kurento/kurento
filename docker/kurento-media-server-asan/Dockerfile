@@ -115,7 +115,7 @@ gpg --no-default-keyring \
     --keyring /etc/apt/keyrings/kurento.gpg \
     --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 && \
-&& echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
+    echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
 
 # Install development tools.
 RUN \

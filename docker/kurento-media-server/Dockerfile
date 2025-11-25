@@ -138,7 +138,8 @@ apt-get $APT_ARGS update \
     kurento-module-datachannelexample \
     kurento-module-markerdetector \
     kurento-module-platedetector \
-    kurento-module-pointerdetector ; \
+    kurento-module-pointerdetector \
+    kurento-module-videosampler ; \
 do \
     apt-get $APT_ARGS install --no-install-recommends --yes "$PACKAGE" || true ; \
 done \
