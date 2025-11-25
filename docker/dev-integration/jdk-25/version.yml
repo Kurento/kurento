@@ -1,0 +1,6 @@
+image:
+  name: kurento/dev-integration
+  version: jdk-25-node-$NODE_VERSION-1
+  extra_tags:
+    - jdk-25
+    - latest

@@ -1,0 +1,6 @@
+* jdk-25-node-20.x-1
+
+  - Base image updated to Maven 3.9.11 with Eclipse Temurin JDK 25.
+  - Python tooling moved to Python 3 packages plus awscli/boto3 helpers.
+  - Node.js build argument defaults to 20.x and installs Bower from npm registry.
+  - Debian ffmpeg packages are used directly (no external multimedia repo required).

@@ -47,7 +47,7 @@ ENV NODE_OPTIONS="--dns-result-order=ipv4first"
 RUN \
 apt-get update && apt-get install --no-install-recommends --yes \
     wget \
-&& wget --no-verbose -O - https://deb.nodesource.com/setup_18.x | bash - \
+&& wget --no-verbose -O - https://deb.nodesource.com/setup_24.x | bash - \
 && apt-get update && apt-get install --no-install-recommends --yes \
     nodejs \
 && rm -rf /var/lib/apt/lists/* \
@@ -76,15 +76,25 @@ RUN \
 apt-get update && apt-get install --no-install-recommends --yes \
     build-essential cmake \
     curl \
-    default-jdk \
+    openjdk-25-jdk \
     ffmpeg \
     jq \
     libmediainfo-dev \
     libnss-wrapper \
-    maven \
     netcat-openbsd \
     rsync \
 && rm -rf /var/lib/apt/lists/*
+
+
+ENV MAVEN_VERSION=3.9.11
+ENV MAVEN_HOME=/usr/share/maven
+ENV PATH=$MAVEN_HOME/bin:$PATH
+RUN wget -q https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
+    tar -xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz -C /opt && \
+    ln -s /opt/apache-maven-${MAVEN_VERSION} $MAVEN_HOME && \
+    rm apache-maven-${MAVEN_VERSION}-bin.tar.gz
+RUN mvn -v
+
 
 ENTRYPOINT ["/bin/bash"]
 CMD []

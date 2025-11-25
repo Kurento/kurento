@@ -222,8 +222,7 @@ module.exports = function (grunt) {
           "lib/**/*.js",
           "*.js",
           "test/*.js",
-          "test_reconnect/*.js",
-          "scripts/*.js"
+          "test_reconnect/*.js"
         ],
         options: {
           mode: "VERIFY_ONLY"

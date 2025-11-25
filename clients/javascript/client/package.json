@@ -61,7 +61,8 @@
     "test": "scripts/test",
     "testBrowser": "scripts/testBrowser",
     "testReconnect": "scripts/testReconnect",
-    "testWithoutTransactions": "scripts/testWithoutTransactions"
+    "testWithoutTransactions": "scripts/testWithoutTransactions",
+    "postinstall": "scripts/install-kurento.js"
   },
   "dependencies": {
     "async": "^2.0.1",
@@ -71,7 +72,7 @@
     "kurento-client-core": "git+https://github.com/Kurento/kurento-client-core-js.git",
     "kurento-client-elements": "git+https://github.com/Kurento/kurento-client-elements-js.git",
     "kurento-client-filters": "git+https://github.com/Kurento/kurento-client-filters-js.git",
-    "kurento-jsonrpc": "https://gitpkg.now.sh/Kurento/kurento/clients/javascript/jsonrpc?main",
+    "kurento-jsonrpc": "*",
     "minimist": "^1.2.0",
     "promise": "7.1.1",
     "promisecallback": "0.0.4",
