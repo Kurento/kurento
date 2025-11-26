@@ -487,4 +487,16 @@ function git_commit {
     popd
 }
 
+{
+    pushd module-extras/video-sampler/
+    update_debian_changelog
+    update_debian_control
+    perl -i -pe \
+        "s/\"version\":\s*\"\K\S*(?=\")/${VERSION_C}/" \
+        src/server/interface/videosampler.kmd.json
+    git_commit \
+        src/server/interface/videosampler.kmd.json
+    popd
+}
+
 log "Done!"
