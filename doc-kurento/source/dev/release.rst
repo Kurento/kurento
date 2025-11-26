@@ -128,15 +128,7 @@ Release order
 
 .. First, the C/C++ parts of the code are built, Debian packages are created, and everything is left ready for deployment in an Apt repository (for *apt-get*) managed by `Aptly`_.
 
-.. Before Kurento Media Server itself, all required forks and libraries must be built and installed:
-
-.. The following libraries must be built and installed before Kurento Media Server itself:
-
-.. * `libsrtp <https://github.com/Kurento/libsrtp>`__
-.. * `openh264 <https://github.com/Kurento/openh264>`__
-.. * `openh264-gst-plugin <https://github.com/Kurento/openh264-gst-plugin>`__
-.. * `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
-.. * `libnice <https://github.com/Kurento/libnice>`__
+.. Previous versions required that before Kurento Media Server itself, all required forks and libraries must be built and installed. However, now these are provided as Debian packages in the Apt repository, so this step is not needed anymore.
 
 The main :ref:`dev-release-media-server` modules should be built in this order:
 
