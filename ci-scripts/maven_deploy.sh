@@ -256,3 +256,45 @@ else
         exit 1
     }
 fi
+
+# Setup maven central authorization token
+TOKEN=$(printf "${KURENTO_MAVEN_SONATYPE_USERNAME}:${KURENTO_MAVEN_SONATYPE_PASSWORD}" | base64)
+
+# Get open repositories
+RESPONSE=$(curl -H "Authorization: Bearer $TOKEN" https://ossrh-staging-api.central.sonatype.com/manual/search/repositories)
+if [ $? -ne 0 ]; then
+    log "Error finding staging repositories"
+    exit 1
+fi
+REPO_COUNT=$(echo "$RESPONSE" | jq -r '.repositories | length')
+if [ "$REPO_COUNT" -eq 0 ]; then
+    log "Cannot find any open staging repository"
+    exit 1
+fi
+REPO_KEY=$(echo "$RESPONSE" | jq -r '.repositories[0].key')
+DEPLOYMENT_ID=$(echo "$RESPONSE" | jq -r '.repositories[0].portal_deployment_id')
+if [ -z "$REPO_KEY" ] || [ "$REPO_KEY" = "null" ]; then
+    log "Failed to extract the repository key"
+    log "API response: $RESPONSE"
+    exit 1
+fi
+log "Staging repository found:"
+log "  Repository Key: $REPO_KEY"
+log "  Deployment ID: $DEPLOYMENT_ID"
+echo ""
+
+# Uploading repository top deployment portal URL
+UPLOAD_RESPONSE=$(curl -s -i -X POST \
+    -H "Authorization: Bearer $BEARER" \
+    "https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/${REPO_KEY}?publishing_type=user_managed")
+
+HTTP_STATUS=$(echo "$UPLOAD_RESPONSE" | grep -i "^HTTP" | tail -1 | awk '{print $2}')
+
+if [ "$HTTP_STATUS" -ne 200 ] && [ "$HTTP_STATUS" -ne 201 ]; then
+    log "Error uploading staging repository"
+    log "HTTP Status: $HTTP_STATUS"
+    log "Response: $UPLOAD_RESPONSE"
+    exit 1
+fi
+log "Staging repository uploaded successfully"
+log "Complete publishing on https://central.sonatype.com/publishing/deployments"
