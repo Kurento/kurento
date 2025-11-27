@@ -285,7 +285,7 @@ echo ""
 
 # Uploading repository top deployment portal URL
 UPLOAD_RESPONSE=$(curl -s -i -X POST \
-    -H "Authorization: Bearer $BEARER" \
+    -H "Authorization: Bearer $TOKEN" \
     "https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/${REPO_KEY}?publishing_type=user_managed")
 
 HTTP_STATUS=$(echo "$UPLOAD_RESPONSE" | grep -i "^HTTP" | tail -1 | awk '{print $2}')
