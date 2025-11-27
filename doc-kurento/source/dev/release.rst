@@ -585,27 +585,18 @@ When all CI jobs have finished successfully:
   - NPM: `kurento-client-elements <https://www.npmjs.com/package/kurento-client-elements>`__
   - NPM: `kurento-client-filters <https://www.npmjs.com/package/kurento-client-filters>`__
 
-* Open the `Nexus Sonatype Staging Repositories`_ section.
-* Select **kurento** repository.
-* Inspect **Content** to ensure they are as expected:
+* Open the `Maven central application <https://central.sonatype.com/publishing/deployments>`.
+* Inspect **Deployments** to ensure they are as expected:
 
   - kurento-module-chroma-js
-  - kurento-module-crowddetector-js
   - kurento-module-datachannelexample-js
-  - kurento-module-markerdetector-js
-  - kurento-module-platedetector-js
-  - kurento-module-pointerdetector-js
 
   - kurento-utils-js
   - kurento-jsonrpc-js
   - kurento-client-js
 
   All of them must appear in the correct version, ``$NEW_VERSION``.
-
-* **Close** repository.
-* Wait a bit.
-* **Refresh**.
-* **Release** repository.
+* the publish procedure needs a manual publish in that section, so go through each one of the deployments in this section and press on "Publish" to finish publishing. This will take some time to finish.
 * Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
 
 
