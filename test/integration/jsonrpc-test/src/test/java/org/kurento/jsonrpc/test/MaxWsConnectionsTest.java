@@ -23,10 +23,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketOpen;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -48,7 +49,7 @@ public class MaxWsConnectionsTest extends JsonRpcConnectorBaseTest {
 
     }
 
-    @OnWebSocketConnect
+    @OnWebSocketOpen
     public void onConnect(Session session) {
     }
 
@@ -67,10 +68,14 @@ public class MaxWsConnectionsTest extends JsonRpcConnectorBaseTest {
       URI wsUri = new URI("ws", null, "localhost", Integer.parseInt(getPort()), "/jsonrpc", null,
           null);
 
-      WebSocketClient jettyClient = new WebSocketClient(new SslContextFactory(true));
+      HttpClient httpClient = new HttpClient();
+      SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
+      sslContextFactory.setTrustAll(true);
+      httpClient.setSslContextFactory(sslContextFactory);
+      WebSocketClient jettyClient = new WebSocketClient(httpClient);
       jettyClient.start();
       Session session = jettyClient
-          .connect(new WebSocketClientSocket(), wsUri, new ClientUpgradeRequest()).get();
+          .connect(new WebSocketClientSocket(), new ClientUpgradeRequest(wsUri)).get();
 
       clients.add(session);
 

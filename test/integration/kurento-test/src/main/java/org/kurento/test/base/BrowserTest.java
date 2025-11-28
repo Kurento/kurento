@@ -17,8 +17,8 @@
 
 package org.kurento.test.base;
 
-import static org.bytedeco.javacpp.lept.pixDestroy;
-import static org.bytedeco.javacpp.lept.pixReadMem;
+import static org.bytedeco.leptonica.global.leptonica.pixDestroy;
+import static org.bytedeco.leptonica.global.leptonica.pixReadMem;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
@@ -69,8 +69,8 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.javacpp.lept.PIX;
-import org.bytedeco.javacpp.tesseract.TessBaseAPI;
+import org.bytedeco.leptonica.PIX;
+import org.bytedeco.tesseract.TessBaseAPI;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

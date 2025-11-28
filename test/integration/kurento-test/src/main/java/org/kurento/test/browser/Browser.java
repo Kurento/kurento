@@ -64,6 +64,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -90,12 +91,14 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -199,7 +202,7 @@ public class Browser implements Closeable {
 
       LoggingPreferences logs = new LoggingPreferences();
       logs.enable(LogType.BROWSER, Level.INFO);
-      capabilities.setCapability(CapabilityType.LOGGING_PREFS, logs);
+      capabilities.setCapability("goog:loggingPrefs", logs);
 
       if (driverClass.equals(FirefoxDriver.class)) {
 
@@ -212,7 +215,7 @@ public class Browser implements Closeable {
       } else if (driverClass.equals(InternetExplorerDriver.class)) {
 
         if (scope == BrowserScope.SAUCELABS) {
-          capabilities.setBrowserName(DesiredCapabilities.internetExplorer().getBrowserName());
+          capabilities.setBrowserName(new InternetExplorerOptions().getBrowserName());
           capabilities.setCapability("ignoreProtectedModeSettings", true);
           createSaucelabsDriver(capabilities);
         }
@@ -220,7 +223,7 @@ public class Browser implements Closeable {
       } else if (driverClass.equals(SafariDriver.class)) {
 
         if (scope == BrowserScope.SAUCELABS) {
-          capabilities.setBrowserName(DesiredCapabilities.safari().getBrowserName());
+          capabilities.setBrowserName(new SafariOptions().getBrowserName());
           createSaucelabsDriver(capabilities);
         }
       }
@@ -366,8 +369,9 @@ public class Browser implements Closeable {
       }
     }
 
-    capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-    capabilities.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
+    options.merge(capabilities);
+    // capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+    // capabilities.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
 
     createDriver(capabilities, options);
   }
@@ -387,8 +391,9 @@ public class Browser implements Closeable {
     capabilities.setCapability("acceptInsecureCerts", true);
     firefoxOptions.setAcceptInsecureCerts(true);
 
-    capabilities.setCapability(FIREFOX_OPTIONS, firefoxOptions);
-    capabilities.setBrowserName(firefoxOptions.getBrowserName());
+    // capabilities.setCapability(FIREFOX_OPTIONS, firefoxOptions);
+    // capabilities.setBrowserName(firefoxOptions.getBrowserName());
+    firefoxOptions.merge(capabilities);
 
     // Firefox extensions
     if (extensions != null && !extensions.isEmpty()) {
@@ -442,6 +447,14 @@ public class Browser implements Closeable {
     } else {
       driver = newWebDriver(options);
     }
+
+    // Timeouts
+    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeout));
+    driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(timeout));
+    driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(timeout));
+
+    // Maximize
+    driver.manage().window().maximize();
   }
 
   private DockerBrowserManager getDockerManager() {
@@ -530,8 +543,8 @@ public class Browser implements Closeable {
   }
 
   public void changeTimeout(int timeoutSeconds) {
-    driver.manage().timeouts().implicitlyWait(timeoutSeconds, TimeUnit.SECONDS);
-    driver.manage().timeouts().setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
+    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeoutSeconds));
+    driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(timeoutSeconds));
   }
 
   public void createSaucelabsDriver(DesiredCapabilities capabilities) throws MalformedURLException {
@@ -786,7 +799,7 @@ public class Browser implements Closeable {
   }
 
   public Object executeScriptAndWaitOutput(final String command) {
-    WebDriverWait wait = new WebDriverWait(driver, timeout);
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
     wait.withMessage("Timeout executing script: " + command);
 
     final Object[] out = new Object[1];

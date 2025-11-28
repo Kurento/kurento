@@ -59,7 +59,7 @@
 			<artifactId>ekko-lightbox</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.webjars.bower</groupId>
+			<groupId>org.webjars.npm</groupId>
 			<artifactId>webrtc-adapter</artifactId>
 		</dependency>
 
