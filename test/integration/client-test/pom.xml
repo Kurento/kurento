@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
-		<version>7.2.1-SNAPSHOT</version>
+		<version>7.3.0</version>
 	</parent>
 	<artifactId>kurento-client-test</artifactId>
 	<packaging>jar</packaging>
@@ -43,7 +43,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-client</artifactId>
+			<artifactId>jetty-websocket-jetty-client</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>jetty-websocket-jetty-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

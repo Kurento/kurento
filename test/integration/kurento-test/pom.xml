@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
-		<version>7.2.1-SNAPSHOT</version>
+		<version>7.3.0</version>
 	</parent>
 	<artifactId>kurento-test</artifactId>
 	<packaging>jar</packaging>
@@ -37,17 +37,17 @@
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>chroma</artifactId>
-			<version>7.2.1-SNAPSHOT</version>
+			<version>7.3.0</version>
 		</dependency>
 		<!-- <dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>crowddetector</artifactId>
-			<version>7.1.2-SNAPSHOT</version>
+			<version>7.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>platedetector</artifactId>
-			<version>7.1.2-SNAPSHOT</version>
+			<version>7.3.0</version>
 		</dependency> -->
 
 		<dependency>
@@ -56,7 +56,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-client</artifactId>
+			<artifactId>jetty-websocket-jetty-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>jetty-websocket-jetty-api</artifactId>
 		</dependency>
 
 		<!-- WebJars -->
@@ -65,7 +69,7 @@
 			<artifactId>webjars-locator</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.webjars.bower</groupId>
+			<groupId>org.webjars.npm</groupId>
 			<artifactId>webrtc-adapter</artifactId>
 		</dependency>
 
@@ -185,7 +189,7 @@
 
 		<!-- OCR -->
 		<dependency>
-			<groupId>org.bytedeco.javacpp-presets</groupId>
+			<groupId>org.bytedeco</groupId>
 			<artifactId>tesseract</artifactId>
 		</dependency>
 
