@@ -634,6 +634,33 @@
 			</dependency>
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-bom</artifactId>
+				<version>${selenium-java.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-chromium-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-manager</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-json</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-http</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-java</artifactId>
 				<version>${selenium-java.version}</version>
 			</dependency>
@@ -685,6 +712,11 @@
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-server</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-grid</artifactId>
 				<version>${selenium-java.version}</version>
 			</dependency>
 			<dependency>

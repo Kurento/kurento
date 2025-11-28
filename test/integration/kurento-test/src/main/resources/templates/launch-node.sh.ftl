@@ -1,4 +1,4 @@
 #!/bin/sh
 
-xvfb-run -s "-screen 0 1224x768x16" java -cp ${classpath} org.openqa.grid.selenium.GridLauncher -port ${remotePort} -role node -hub http://${hubIp}:${hubPort}/grid/register -browser browserName=${browser},maxInstances=${maxInstances} -maxSession ${maxInstances} -Dwebdriver.chrome.driver=${remoteChromeDriver} -timeout 0 &
+xvfb-run -s "-screen 0 1224x768x16" java -cp ${classpath} org.openqa.selenium.grid.Main node --port ${remotePort} --hub http://${hubIp}:${hubPort} --max-sessions ${maxInstances} -Dwebdriver.chrome.driver=${remoteChromeDriver} &
 echo $! > ${tmpFolder}/${pidFile}

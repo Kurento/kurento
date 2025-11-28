@@ -56,11 +56,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>jetty-websocket-jetty-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>jetty-websocket-jetty-api</artifactId>
+			<artifactId>websocket-client</artifactId>
+			<version>9.4.58.v20250814</version>
 		</dependency>
 
 		<!-- WebJars -->
@@ -97,7 +94,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-server</artifactId>
+			<artifactId>selenium-grid</artifactId>
 			<exclusions>
 				<exclusion>
 					<artifactId>javax.servlet-api</artifactId>
@@ -190,13 +187,31 @@
 		<!-- OCR -->
 		<dependency>
 			<groupId>org.bytedeco</groupId>
-			<artifactId>tesseract</artifactId>
+			<artifactId>tesseract-platform</artifactId>
+			<version>5.5.1-1.5.12</version>
 		</dependency>
 
 		<!-- JNA -->
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
 			<artifactId>jna</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-exec</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jakarta.websocket</groupId>
+			<artifactId>jakarta.websocket-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>jakarta.ws.rs</groupId>
+			<artifactId>jakarta.ws.rs-api</artifactId>
+			<version>4.0.0</version>
 		</dependency>
 
 	</dependencies>

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
