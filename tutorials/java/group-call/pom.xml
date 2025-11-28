@@ -58,6 +58,10 @@
 			<groupId>org.webjars.bower</groupId>
 			<artifactId>webrtc-adapter</artifactId>
 		</dependency>
+		<dependency>
+		<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+		</dependency>
 
 		<!-- Kurento -->
 		<dependency>
