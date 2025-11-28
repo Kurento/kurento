@@ -256,6 +256,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<excludePackageNames>org.kurento.test.base.repository</excludePackageNames>
+					<failOnError>false</failOnError>
 				</configuration>
 			</plugin>
 		</plugins>
