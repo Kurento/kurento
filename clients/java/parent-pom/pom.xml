@@ -7,11 +7,11 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>7.2.1-SNAPSHOT</version>
+		<version>7.3.0</version>
 		<relativePath>../qa-pom</relativePath>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>7.2.1-SNAPSHOT</version>
+	<version>7.3.0</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -78,9 +78,9 @@
 		7.0.1-SNAPSxxx, we cannot assume that the server will also be
 		7.0.1-SNAPSxxx, because it might already be 7.0.2-SNAPSxxx or higher.
 		-->
-		<version.kms-api-core>[7.2.1-SNAPSHOT,8.0.0)</version.kms-api-core>
-		<version.kms-api-elements>[7.2.1-SNAPSHOT,8.0.0)</version.kms-api-elements>
-		<version.kms-api-filters>[7.2.1-SNAPSHOT,8.0.0)</version.kms-api-filters>
+		<version.kms-api-core>[7.3.0,8.0.0)</version.kms-api-core>
+		<version.kms-api-elements>[7.3.0,8.0.0)</version.kms-api-elements>
+		<version.kms-api-filters>[7.3.0,8.0.0)</version.kms-api-filters>
 
 		<!-- Kurento miscellaneous tools -->
 		<version.kurento-maven-plugin>7.0.0</version.kurento-maven-plugin>
