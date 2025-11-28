@@ -312,7 +312,7 @@
 				<version>${webjars.demo-console.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.webjars.bower</groupId>
+				<groupId>org.webjars.npm</groupId>
 				<artifactId>webrtc-adapter</artifactId>
 				<version>${webjars.webrtc-adapter.version}</version>
 			</dependency>
