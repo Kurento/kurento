@@ -808,6 +808,13 @@
 					<configuration>
 						<flattenMode>ossrh</flattenMode>
 						<updatePomFile>true</updatePomFile>
+						<pomElements>
+							<parent>resolve</parent>
+							<dependencyManagement>resolve</dependencyManagement>
+							<dependencies>resolve</dependencies>
+							<pluginManagement>resolve</pluginManagement>
+							<properties>resolve</properties>
+				        </pomElements>
 					</configuration>
 					<executions>
 						<execution>
