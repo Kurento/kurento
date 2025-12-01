@@ -26,6 +26,14 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<build>
+				<plugins>
+					<plugin>
+    			        <groupId>org.codehaus.mojo</groupId>
+            			<artifactId>flatten-maven-plugin</artifactId>
+        			</plugin>
+				</plugins>
+			</build>
 			<modules>
 				<module>jsonrpc-client</module>
 				<module>jsonrpc-server</module>
@@ -47,10 +55,6 @@
 			</modules>
 			<build>
 				<plugins>
-					<plugin>
-    			        <groupId>org.codehaus.mojo</groupId>
-            			<artifactId>flatten-maven-plugin</artifactId>
-        			</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>

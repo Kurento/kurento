@@ -79,7 +79,7 @@
 
 	<profiles>
 		<profile>
-			<id>deploy</id>
+			<id>snapshot</id>
 			<build>
 				<plugins>
 					<plugin>

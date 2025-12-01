@@ -813,13 +813,13 @@
 							<dependencyManagement>resolve</dependencyManagement>
 							<dependencies>resolve</dependencies>
 							<pluginManagement>resolve</pluginManagement>
-							<properties>resolve</properties>
+							<!-- <properties>resolve</properties> -->
 				        </pomElements>
 					</configuration>
 					<executions>
 						<execution>
 							<id>flatten</id>
-							<phase>install</phase>
+							<phase>package</phase>
 							<goals>
 								<goal>flatten</goal>
 							</goals>
