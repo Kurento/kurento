@@ -17,7 +17,115 @@ trap_add 'log "==================== END ===================="' EXIT
 # Trace all commands (to stderr).
 set -o xtrace
 
+remove_maven_artifacts_from_staging() {
+    log "Removing artifacts from Maven Central Staging..."
 
+    # Setup maven central authorization token
+    local TOKEN
+    TOKEN=$(printf "%s:%s" "${KURENTO_MAVEN_SONATYPE_USERNAME}" "${KURENTO_MAVEN_SONATYPE_PASSWORD}" | base64 -w 0)
+
+    # Get open repositories
+    local RESPONSE
+    RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" https://ossrh-staging-api.central.sonatype.com/manual/search/repositories)
+    if [[ $? -ne 0 ]]; then
+        log "Error finding staging repositories"
+        return 1
+    fi
+
+    local REPO_COUNT
+    REPO_COUNT=$(echo "$RESPONSE" | jq -r '.repositories | length')
+    if [[ "$REPO_COUNT" -eq 0 ]]; then
+        log "Cannot find any open staging repository"
+        return 0
+    fi
+
+    local REPO_KEY
+    REPO_KEY=$(echo "$RESPONSE" | jq -r '.repositories[0].key')
+
+    if [[ -z "$REPO_KEY" ]] || [[ "$REPO_KEY" == "null" ]]; then
+        log "Failed to extract the repository key"
+        log "API response: $RESPONSE"
+        return 1
+    fi
+
+    log "Dropping staging repository: $REPO_KEY"
+
+    local DROP_RESPONSE
+    DROP_RESPONSE=$(curl -s -i -X POST \
+        -H "Authorization: Bearer $TOKEN" \
+        "https://ossrh-staging-api.central.sonatype.com/manual/drop/repository/${REPO_KEY}")
+
+    local HTTP_STATUS
+    HTTP_STATUS=$(echo "$DROP_RESPONSE" | grep -i "^HTTP" | tail -1 | awk '{print $2}')
+
+    if [[ "$HTTP_STATUS" -ne 200 ]] && [[ "$HTTP_STATUS" -ne 204 ]]; then
+        log "Error dropping staging repository"
+        log "HTTP Status: $HTTP_STATUS"
+        log "Response: $DROP_RESPONSE"
+        return 1
+    fi
+
+    log "Staging repository dropped successfully"
+}
+
+
+
+push_maven_artifacts_to_staging() {
+    log "Pushing artifacts to Maven Central Staging..."
+
+    # Setup maven central authorization token
+    local TOKEN
+    TOKEN=$(printf "%s:%s" "${KURENTO_MAVEN_SONATYPE_USERNAME}" "${KURENTO_MAVEN_SONATYPE_PASSWORD}" | base64)
+
+    # Get open repositories
+    local RESPONSE
+    RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" https://ossrh-staging-api.central.sonatype.com/manual/search/repositories)
+    if [[ $? -ne 0 ]]; then
+        log "Error finding staging repositories"
+        return 1
+    fi
+
+    local REPO_COUNT
+    REPO_COUNT=$(echo "$RESPONSE" | jq -r '.repositories | length')
+    if [[ "$REPO_COUNT" -eq 0 ]]; then
+        log "Cannot find any open staging repository"
+        return 1
+    fi
+
+    local REPO_KEY
+    REPO_KEY=$(echo "$RESPONSE" | jq -r '.repositories[0].key')
+    local DEPLOYMENT_ID
+    DEPLOYMENT_ID=$(echo "$RESPONSE" | jq -r '.repositories[0].portal_deployment_id')
+
+    if [[ -z "$REPO_KEY" ]] || [[ "$REPO_KEY" == "null" ]]; then
+        log "Failed to extract the repository key"
+        log "API response: $RESPONSE"
+        return 1
+    fi
+
+    log "Staging repository found:"
+    log "  Repository Key: $REPO_KEY"
+    log "  Deployment ID: $DEPLOYMENT_ID"
+
+    # Uploading repository top deployment portal URL
+    local UPLOAD_RESPONSE
+    UPLOAD_RESPONSE=$(curl -s -i -X POST \
+        -H "Authorization: Bearer $TOKEN" \
+        "https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/${REPO_KEY}?publishing_type=user_managed")
+
+    local HTTP_STATUS
+    HTTP_STATUS=$(echo "$UPLOAD_RESPONSE" | grep -i "^HTTP" | tail -1 | awk '{print $2}')
+
+    if [[ "$HTTP_STATUS" -ne 200 ]] && [[ "$HTTP_STATUS" -ne 201 ]]; then
+        log "Error uploading staging repository"
+        log "HTTP Status: $HTTP_STATUS"
+        log "Response: $UPLOAD_RESPONSE"
+        return 1
+    fi
+
+    log "Staging repository uploaded successfully"
+    log "Complete publishing on https://central.sonatype.com/publishing/deployments"
+}
 
 # Check dependencies
 # ==================
@@ -45,6 +153,7 @@ MAVEN_SOURCE_PLUGIN="org.apache.maven.plugins:maven-source-plugin:3.2.1"
 CFG_MAVEN_SETTINGS_PATH=""
 CFG_MAVEN_SIGN_KEY_PATH=""
 CFG_MAVEN_SIGN_ARTIFACTS="true"
+CFG_MAVEN_FLATTEN_POM="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -68,6 +177,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-sign-artifacts)
             CFG_MAVEN_SIGN_ARTIFACTS="false"
+            ;;
+        --flatten-pom)
+            log "INFO: --flatten-pom is deprecated and has no effect anymore"
+            CFG_MAVEN_FLATTEN_POM="true"
             ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
@@ -214,12 +327,21 @@ if [[ $CFG_MAVEN_SIGN_ARTIFACTS == "true" ]]; then
         package
         "$MAVEN_SOURCE_PLUGIN:jar"
         "$MAVEN_JAVADOC_PLUGIN:jar"
+    )
+    if [[ $CFG_MAVEN_FLATTEN_POM == "true" ]]; then
+        log "INFO: Flattening POM before deploy (deprecated and has no effect anymore)"
+        MVN_GOALS+=(flatten:flatten)
+    fi
+    MVN_GOALS+=(
         gpg:sign
         "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
 
     mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
         log "ERROR: Command failed: mvn deploy (signed release)"
+        remove_maven_artifacts_from_staging || {
+            log "ERROR: Command failed: remove_maven_artifacts_from_staging"
+        }
         exit 1
     }
 
@@ -248,11 +370,28 @@ else
         package
         "$MAVEN_SOURCE_PLUGIN:jar"
         "$MAVEN_JAVADOC_PLUGIN:jar"
+    )
+    if [[ $CFG_MAVEN_FLATTEN_POM == "true" ]]; then
+        log "INFO: Flattening POM before deploy (deprecated and has no effect anymore)"
+        MVN_GOALS+=(flatten:flatten)
+    fi
+    MVN_GOALS+=(
         "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
 
     mvn "${MVN_ARGS[@]}" "${MVN_GOALS[@]}" || {
         log "ERROR: Command failed: mvn deploy (unsigned release)"
+        remove_maven_artifacts_from_staging || {
+            log "ERROR: Command failed: remove_maven_artifacts_from_staging"
+        }
         exit 1
     }
 fi
+
+push_maven_artifacts_to_staging || {
+    log "ERROR: Command failed: push_maven_artifacts_to_staging"
+    remove_maven_artifacts_from_staging || {
+        log "ERROR: Command failed: remove_maven_artifacts_from_staging"
+    }
+    exit 1
+}

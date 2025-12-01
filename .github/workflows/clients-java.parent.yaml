@@ -26,6 +26,7 @@ jobs:
     secrets: inherit
 
   module-creator:
+    needs: ["qa-pom"]  # To avoid concurrent execution of maven deployments to central that seems to cause failures due to the new OSSRH policies
     uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-creator/"
@@ -83,6 +84,7 @@ jobs:
       directory: "clients/java/"
       runnerGroup: ${{ inputs.runnerGroup }}
       artifactName: "client"
+      flattenPom: true
     secrets: inherit
 
   module-chroma:
@@ -107,7 +109,7 @@ jobs:
   #  secrets: inherit
 
   module-datachannelexample:
-    needs: ["client"]
+    needs: ["client", "module-chroma"]
     uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-examples/datachannelexample/"
@@ -118,7 +120,7 @@ jobs:
     secrets: inherit
 
   module-videosampler:
-    needs: ["client"]
+    needs: ["client", "module-datachannelexample"]
     uses: "./.github/workflows/clients-java.child.yaml"
     with:
       directory: "server/module-extras/video-sampler/"

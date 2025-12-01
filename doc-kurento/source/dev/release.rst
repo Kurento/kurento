@@ -128,15 +128,7 @@ Release order
 
 .. First, the C/C++ parts of the code are built, Debian packages are created, and everything is left ready for deployment in an Apt repository (for *apt-get*) managed by `Aptly`_.
 
-.. Before Kurento Media Server itself, all required forks and libraries must be built and installed:
-
-.. The following libraries must be built and installed before Kurento Media Server itself:
-
-.. * `libsrtp <https://github.com/Kurento/libsrtp>`__
-.. * `openh264 <https://github.com/Kurento/openh264>`__
-.. * `openh264-gst-plugin <https://github.com/Kurento/openh264-gst-plugin>`__
-.. * `gst-plugins-good <https://github.com/Kurento/gst-plugins-good>`__
-.. * `libnice <https://github.com/Kurento/libnice>`__
+.. Previous versions required that before Kurento Media Server itself, all required forks and libraries must be built and installed. However, now these are provided as Debian packages in the Apt repository, so this step is not needed anymore.
 
 The main :ref:`dev-release-media-server` modules should be built in this order:
 
@@ -593,27 +585,18 @@ When all CI jobs have finished successfully:
   - NPM: `kurento-client-elements <https://www.npmjs.com/package/kurento-client-elements>`__
   - NPM: `kurento-client-filters <https://www.npmjs.com/package/kurento-client-filters>`__
 
-* Open the `Nexus Sonatype Staging Repositories`_ section.
-* Select **kurento** repository.
-* Inspect **Content** to ensure they are as expected:
+* Open the `Maven central application <https://central.sonatype.com/publishing/deployments>`.
+* Inspect **Deployments** to ensure they are as expected:
 
   - kurento-module-chroma-js
-  - kurento-module-crowddetector-js
   - kurento-module-datachannelexample-js
-  - kurento-module-markerdetector-js
-  - kurento-module-platedetector-js
-  - kurento-module-pointerdetector-js
 
   - kurento-utils-js
   - kurento-jsonrpc-js
   - kurento-client-js
 
   All of them must appear in the correct version, ``$NEW_VERSION``.
-
-* **Close** repository.
-* Wait a bit.
-* **Refresh**.
-* **Release** repository.
+* the publish procedure needs a manual publish in that section, so go through each one of the deployments in this section and press on "Publish" to finish publishing. This will take some time to finish.
 * Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
 
 
@@ -757,38 +740,42 @@ Post-Release
 
 When all CI jobs have finished successfully:
 
-* Open the `Nexus Sonatype Staging Repositories`_ section.
-* Select **kurento** repository.
-* Inspect **Content** to ensure it is as expected:
+* Open the `MAven Central publishing deployments <https://central.sonatype.com/publishing/deployments>`_ section.
+* Select **Deployments** repository.
+* Inspect the list of deployments to ensure it is as expected:
 
-  - org.kurento.kms-api-core
-  - org.kurento.kms-api-elements
-  - org.kurento.kms-api-filters
-  - org.kurento.kurento-client
-  - org.kurento.kurento-commons
-  - org.kurento.kurento-java
-  - org.kurento.kurento-jsonrpc
-  - org.kurento.kurento-jsonrpc-client
-  - org.kurento.kurento-jsonrpc-client-jetty
-  - org.kurento.kurento-jsonrpc-server
-  - org.kurento.kurento-maven-plugin
-  - org.kurento.kurento-module-creator
-  - org.kurento.kurento-parent-pom
-  - org.kurento.kurento-qa-config
-  - org.kurento.kurento-qa-pom
-  - org.kurento.module.chroma
-  - org.kurento.module.crowddetector (Unavailable since Kurento 7.0.0)
-  - org.kurento.module.datachannelexample
-  - org.kurento.module.markerdetector (Unavailable since Kurento 7.0.0)
-  - org.kurento.module.platedetector (Unavailable since Kurento 7.0.0)
-  - org.kurento.module.pointerdetector (Unavailable since Kurento 7.0.0)
+  - qa-pom
+   - org.kurento.kurento-qa-pom
+   - org.kurento.kurento-qa-config
+  - kurento-module-creator
+   - org.kurento.kurento-module-creator
+  - kurento-maven-plugin
+   - org.kurento.kurento-maven-plugin
+  - kms-api-core
+   - org.kurento.kms-api-core
+  - kms-api-elements
+   - org.kurento.kms-api-elements
+  - kms-api-filters
+   - org.kurento.kms-api-filters
+  - kurento-client
+   - org.kurento.kurento-client
+   - kurento-commons
+   - kurento-java
+   - kurento-jsonrpc
+   - kurento-jsonrpc-client
+   - kurento-jsonrpc-client-jetty
+   - kurento-jsonrpc-server
+   - kurento-parent-pom
+  - chroma
+   - org.kurento.module.chroma
+  - datachannelexample
+   - org.kurento.module.datachannelexample
+  - video-sampler
+   - org.kurento.module.video-sampler
 
-  All of them must appear in the correct version, ``$NEW_VERSION``.
+  All of them must appear as VALIDATED in the correct version, ``$NEW_VERSION``.
+  If ok, just press publish button for each deployment to finish publishing. This will take some time to finish.
 
-* **Close** repository.
-* Wait a bit.
-* **Refresh**.
-* **Release** repository.
 * Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
 
 

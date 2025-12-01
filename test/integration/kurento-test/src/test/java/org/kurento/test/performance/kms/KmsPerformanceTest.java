@@ -36,11 +36,11 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.client.ZBarFilter;
 import org.kurento.module.chroma.ChromaFilter;
 import org.kurento.module.chroma.WindowParam;
-import org.kurento.module.crowddetector.CrowdDetectorFilter;
+/*import org.kurento.module.crowddetector.CrowdDetectorFilter;
 import org.kurento.module.crowddetector.RegionOfInterest;
 import org.kurento.module.crowddetector.RegionOfInterestConfig;
 import org.kurento.module.crowddetector.RelativePoint;
-import org.kurento.module.platedetector.PlateDetectorFilter;
+import org.kurento.module.platedetector.PlateDetectorFilter;*/
 import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
@@ -206,7 +206,7 @@ public class KmsPerformanceTest extends PerformanceTest {
         log.debug("Pipeline: WebRtcEndpoint -> ImageOverlayFilter -> WebRtcEndpoint");
         break;
 
-      case PLATEDETECTOR:
+/*      case PLATEDETECTOR:
         filter = new PlateDetectorFilter.Builder(mp).build();
         inputEndpoint.connect(filter);
         filter.connect(outputEndpoint);
@@ -219,7 +219,7 @@ public class KmsPerformanceTest extends PerformanceTest {
         inputEndpoint.connect(filter);
         filter.connect(outputEndpoint);
         log.debug("Pipeline: WebRtcEndpoint -> CrowdDetectorFilter -> WebRtcEndpoint");
-        break;
+        break;*/
 
       case CHROMA:
         filter = new ChromaFilter.Builder(mp, new WindowParam(0, 0, 640, 480)).build();
@@ -281,7 +281,7 @@ public class KmsPerformanceTest extends PerformanceTest {
     return outputEndpoint;
   }
 
-  private List<RegionOfInterest> getDummyRois() {
+/*  private List<RegionOfInterest> getDummyRois() {
 
     List<RelativePoint> points = new ArrayList<>();
 
@@ -322,5 +322,5 @@ public class KmsPerformanceTest extends PerformanceTest {
     rois.add(new RegionOfInterest(points, config, "dummyRoy"));
 
     return rois;
-  }
+  }*/
 }

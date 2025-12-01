@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>7.2.1-SNAPSHOT</version>
+		<version>7.3.0</version>
 		<relativePath>../parent-pom</relativePath>
 	</parent>
 	<artifactId>kurento-client</artifactId>
@@ -17,6 +17,33 @@
 	<description>
 		Allows server applications to control media server resources.
 	</description>
+	<url>https://kurento.openvidu.io/</url>
+	<scm>
+		<url>https://github.com/Kurento/kurento</url>
+		<connection>scm:git:https://github.com/Kurento/kurento.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Kurento/kurento.git</developerConnection>
+	</scm>
+
+	<!-- Organization-level information -->
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>Kurento Community</name>
+			<organization>Kurento</organization>
+			<organizationUrl>https://kurento.openvidu.io/</organizationUrl>
+		</developer>
+	</developers>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/Kurento/bugtracker/issues</url>
+	</issueManagement>
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<!-- Project configuration -->
 
@@ -71,6 +98,10 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>

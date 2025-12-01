@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
-		<version>7.2.1-SNAPSHOT</version>
+		<version>7.3.0</version>
 	</parent>
 	<artifactId>kurento-client-test</artifactId>
 	<packaging>jar</packaging>
@@ -44,6 +44,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-client</artifactId>
+			<version>9.4.58.v20250814</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

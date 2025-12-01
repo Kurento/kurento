@@ -7,11 +7,11 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>7.2.1-SNAPSHOT</version>
+		<version>7.3.0</version>
 		<relativePath>../qa-pom</relativePath>
 	</parent>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>7.2.1-SNAPSHOT</version>
+	<version>7.3.0</version>
 	<packaging>pom</packaging>
 
 	<!-- Project-level information -->
@@ -78,9 +78,9 @@
 		7.0.1-SNAPSxxx, we cannot assume that the server will also be
 		7.0.1-SNAPSxxx, because it might already be 7.0.2-SNAPSxxx or higher.
 		-->
-		<version.kms-api-core>[7.2.1-SNAPSHOT,8.0.0)</version.kms-api-core>
-		<version.kms-api-elements>[7.2.1-SNAPSHOT,8.0.0)</version.kms-api-elements>
-		<version.kms-api-filters>[7.2.1-SNAPSHOT,8.0.0)</version.kms-api-filters>
+		<version.kms-api-core>[7.3.0,8.0.0)</version.kms-api-core>
+		<version.kms-api-elements>[7.3.0,8.0.0)</version.kms-api-elements>
+		<version.kms-api-filters>[7.3.0,8.0.0)</version.kms-api-filters>
 
 		<!-- Kurento miscellaneous tools -->
 		<version.kurento-maven-plugin>7.0.0</version.kurento-maven-plugin>
@@ -99,6 +99,7 @@
 		<webjars.jquery.version>3.7.1</webjars.jquery.version>
 		<webjars.jsnlog.js.version>2.20.1</webjars.jsnlog.js.version>
 		<webjars.webrtc-adapter.version>9.0.3</webjars.webrtc-adapter.version>
+		<javax.annotation-api.version>1.3.2</javax.annotation-api.version>
 
 		<version.jetty>12.1.3</version.jetty>
 		<version.netty>4.2.7.Final</version.netty>
@@ -315,6 +316,11 @@
 				<groupId>org.webjars.npm</groupId>
 				<artifactId>webrtc-adapter</artifactId>
 				<version>${webjars.webrtc-adapter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.annotation</groupId>
+				<artifactId>javax.annotation-api</artifactId>
+				<version>${javax.annotation-api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.webjars.bower</groupId>
@@ -628,6 +634,33 @@
 			</dependency>
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-bom</artifactId>
+				<version>${selenium-java.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-chromium-driver</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-manager</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-json</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-http</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-java</artifactId>
 				<version>${selenium-java.version}</version>
 			</dependency>
@@ -679,6 +712,11 @@
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-server</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-grid</artifactId>
 				<version>${selenium-java.version}</version>
 			</dependency>
 			<dependency>
@@ -763,6 +801,11 @@
 		<pluginManagement>
 			<!-- All plugins ordered by shortname (antrun, assembly ...) -->
 			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>flatten-maven-plugin</artifactId>
+					<version>1.7.3</version>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-antrun-plugin</artifactId>
@@ -1172,6 +1215,22 @@
 			<id>kurento-release</id>
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>flatten-maven-plugin</artifactId>
+						<version>1.7.3</version>
+						<configuration>
+							<flattenMode>ossrh</flattenMode>
+							<updatePomFile>true</updatePomFile>
+							<pomElements>
+								<parent>resolve</parent>
+								<dependencyManagement>resolve</dependencyManagement>
+								<dependencies>resolve</dependencies>
+								<pluginManagement>resolve</pluginManagement>
+								<!-- <properties>resolve</properties> -->
+							</pomElements>
+						</configuration>
+					</plugin>
 					<!-- Create a source-release artifact that contains the fully buildable
 					project directory source structure. This should be released to the Maven
 					repository for each JBoss project release. -->
