@@ -1230,22 +1230,6 @@
 								<!-- <properties>resolve</properties> -->
 							</pomElements>
 						</configuration>
-						<executions>
-							<execution>
-								<id>flatten</id>
-								<phase>prepare-package</phase>
-								<goals>
-									<goal>flatten</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>flatten.clean</id>
-								<phase>clean</phase>
-								<goals>
-									<goal>clean</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 					<!-- Create a source-release artifact that contains the fully buildable
 					project directory source structure. This should be released to the Maven

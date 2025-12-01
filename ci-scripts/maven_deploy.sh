@@ -197,8 +197,6 @@ log "Version to deploy is RELEASE"
 #     fi
 # }
 
-MVN_ARGS+=(-Pkurento-release)
-
 if [[ $CFG_MAVEN_SIGN_ARTIFACTS == "true" ]]; then
     log "Artifact signing on deploy is ENABLED"
 
@@ -214,6 +212,8 @@ if [[ $CFG_MAVEN_SIGN_ARTIFACTS == "true" ]]; then
         package
         "$MAVEN_SOURCE_PLUGIN:jar"
         "$MAVEN_JAVADOC_PLUGIN:jar"
+        -Pkurento-release
+        flatten:flatten
         gpg:sign
         "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
@@ -248,6 +248,8 @@ else
         package
         "$MAVEN_SOURCE_PLUGIN:jar"
         "$MAVEN_JAVADOC_PLUGIN:jar"
+        -Pkurento-release
+        flatten:flatten
         "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
 
