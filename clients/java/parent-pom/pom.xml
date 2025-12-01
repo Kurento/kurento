@@ -805,33 +805,6 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
 					<version>1.7.3</version>
-					<configuration>
-						<flattenMode>ossrh</flattenMode>
-						<updatePomFile>true</updatePomFile>
-						<pomElements>
-							<parent>resolve</parent>
-							<dependencyManagement>resolve</dependencyManagement>
-							<dependencies>resolve</dependencies>
-							<pluginManagement>resolve</pluginManagement>
-							<!-- <properties>resolve</properties> -->
-				        </pomElements>
-					</configuration>
-					<executions>
-						<execution>
-							<id>flatten</id>
-							<phase>package</phase>
-							<goals>
-								<goal>flatten</goal>
-							</goals>
-						</execution>
-						<execution>
-							<id>flatten.clean</id>
-							<phase>clean</phase>
-							<goals>
-								<goal>clean</goal>
-							</goals>
-						</execution>
-					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -1242,6 +1215,38 @@
 			<id>kurento-release</id>
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>flatten-maven-plugin</artifactId>
+						<version>1.7.3</version>
+						<configuration>
+							<flattenMode>ossrh</flattenMode>
+							<updatePomFile>true</updatePomFile>
+							<pomElements>
+								<parent>resolve</parent>
+								<dependencyManagement>resolve</dependencyManagement>
+								<dependencies>resolve</dependencies>
+								<pluginManagement>resolve</pluginManagement>
+								<!-- <properties>resolve</properties> -->
+							</pomElements>
+						</configuration>
+						<executions>
+							<execution>
+								<id>flatten</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>flatten</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>flatten.clean</id>
+								<phase>clean</phase>
+								<goals>
+									<goal>clean</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 					<!-- Create a source-release artifact that contains the fully buildable
 					project directory source structure. This should be released to the Maven
 					repository for each JBoss project release. -->
