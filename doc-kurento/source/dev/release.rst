@@ -740,38 +740,42 @@ Post-Release
 
 When all CI jobs have finished successfully:
 
-* Open the `Nexus Sonatype Staging Repositories`_ section.
-* Select **kurento** repository.
-* Inspect **Content** to ensure it is as expected:
+* Open the `MAven Central publishing deployments <https://central.sonatype.com/publishing/deployments>`_ section.
+* Select **Deployments** repository.
+* Inspect the list of deployments to ensure it is as expected:
 
-  - org.kurento.kms-api-core
-  - org.kurento.kms-api-elements
-  - org.kurento.kms-api-filters
-  - org.kurento.kurento-client
-  - org.kurento.kurento-commons
-  - org.kurento.kurento-java
-  - org.kurento.kurento-jsonrpc
-  - org.kurento.kurento-jsonrpc-client
-  - org.kurento.kurento-jsonrpc-client-jetty
-  - org.kurento.kurento-jsonrpc-server
-  - org.kurento.kurento-maven-plugin
-  - org.kurento.kurento-module-creator
-  - org.kurento.kurento-parent-pom
-  - org.kurento.kurento-qa-config
-  - org.kurento.kurento-qa-pom
-  - org.kurento.module.chroma
-  - org.kurento.module.crowddetector (Unavailable since Kurento 7.0.0)
-  - org.kurento.module.datachannelexample
-  - org.kurento.module.markerdetector (Unavailable since Kurento 7.0.0)
-  - org.kurento.module.platedetector (Unavailable since Kurento 7.0.0)
-  - org.kurento.module.pointerdetector (Unavailable since Kurento 7.0.0)
+  - qa-pom
+   - org.kurento.kurento-qa-pom
+   - org.kurento.kurento-qa-config
+  - kurento-module-creator
+   - org.kurento.kurento-module-creator
+  - kurento-maven-plugin
+   - org.kurento.kurento-maven-plugin
+  - kms-api-core
+   - org.kurento.kms-api-core
+  - kms-api-elements
+   - org.kurento.kms-api-elements
+  - kms-api-filters
+   - org.kurento.kms-api-filters
+  - kurento-client
+   - org.kurento.kurento-client
+   - kurento-commons
+   - kurento-java
+   - kurento-jsonrpc
+   - kurento-jsonrpc-client
+   - kurento-jsonrpc-client-jetty
+   - kurento-jsonrpc-server
+   - kurento-parent-pom
+  - chroma
+   - org.kurento.module.chroma
+  - datachannelexample
+   - org.kurento.module.datachannelexample
+  - video-sampler
+   - org.kurento.module.video-sampler
 
-  All of them must appear in the correct version, ``$NEW_VERSION``.
+  All of them must appear as VALIDATED in the correct version, ``$NEW_VERSION``.
+  If ok, just press publish button for each deployment to finish publishing. This will take some time to finish.
 
-* **Close** repository.
-* Wait a bit.
-* **Refresh**.
-* **Release** repository.
 * Maven artifacts will be available `within 30 minutes <https://central.sonatype.org/publish/publish-guide/#releasing-to-central>`__.
 
 
