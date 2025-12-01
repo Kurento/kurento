@@ -50,8 +50,15 @@ export PATH="/ci-scripts:\$PATH"
 export MAVEN_LOCAL_REPOSITORY_PATH="/maven-repository"
 
 # Compile, package, and deploy the current project.
-maven_deploy.sh \
-    --maven-settings /maven-settings.xml \
-    --maven-sign-key /maven.gpg
+if [[ $FLATTEN_POM == "true" ]]; then
+    maven_deploy.sh \
+        --maven-settings /maven-settings.xml \
+        --maven-sign-key /maven.gpg \
+        --flatten-pom
+else
+    maven_deploy.sh \
+        --maven-settings /maven-settings.xml \
+        --maven-sign-key /maven.gpg 
+fi
 
 DOCKERCOMMANDS

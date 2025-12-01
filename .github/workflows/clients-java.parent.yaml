@@ -84,6 +84,7 @@ jobs:
       directory: "clients/java/"
       runnerGroup: ${{ inputs.runnerGroup }}
       artifactName: "client"
+      flattenPom: true
     secrets: inherit
 
   module-chroma:

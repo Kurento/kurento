@@ -153,6 +153,7 @@ MAVEN_SOURCE_PLUGIN="org.apache.maven.plugins:maven-source-plugin:3.2.1"
 CFG_MAVEN_SETTINGS_PATH=""
 CFG_MAVEN_SIGN_KEY_PATH=""
 CFG_MAVEN_SIGN_ARTIFACTS="true"
+CFG_MAVEN_FLATTEN_POM="false"
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -176,6 +177,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-sign-artifacts)
             CFG_MAVEN_SIGN_ARTIFACTS="false"
+            ;;
+        --flatten-pom)
+            log "INFO: --flatten-pom is deprecated and has no effect anymore"
+            CFG_MAVEN_FLATTEN_POM="true"
             ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
@@ -305,6 +310,8 @@ log "Version to deploy is RELEASE"
 #     fi
 # }
 
+MVN_ARGS+=(-Pkurento-release)
+
 if [[ $CFG_MAVEN_SIGN_ARTIFACTS == "true" ]]; then
     log "Artifact signing on deploy is ENABLED"
 
@@ -320,8 +327,12 @@ if [[ $CFG_MAVEN_SIGN_ARTIFACTS == "true" ]]; then
         package
         "$MAVEN_SOURCE_PLUGIN:jar"
         "$MAVEN_JAVADOC_PLUGIN:jar"
-        -Pkurento-release
-        flatten:flatten
+    )
+    if [[ $CFG_MAVEN_FLATTEN_POM == "true" ]]; then
+        log "INFO: Flattening POM before deploy (deprecated and has no effect anymore)"
+        MVN_GOALS+=(flatten:flatten)
+    fi
+    MVN_GOALS+=(
         gpg:sign
         "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
@@ -359,8 +370,12 @@ else
         package
         "$MAVEN_SOURCE_PLUGIN:jar"
         "$MAVEN_JAVADOC_PLUGIN:jar"
-        -Pkurento-release
-        flatten:flatten
+    )
+    if [[ $CFG_MAVEN_FLATTEN_POM == "true" ]]; then
+        log "INFO: Flattening POM before deploy (deprecated and has no effect anymore)"
+        MVN_GOALS+=(flatten:flatten)
+    fi
+    MVN_GOALS+=(
         "$MAVEN_DEPLOY_PLUGIN:deploy"
     )
 
