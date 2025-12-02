@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.kurento.tutorial</groupId>
 		<artifactId>kurento-tutorial</artifactId>
-		<version>7.3.0</version>
+		<version>7.3.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>kurento-datachannel-send-qr</artifactId>
 	<packaging>jar</packaging>
@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>datachannelexample</artifactId>
-			<version>7.3.0</version>
+			<version>7.3.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
