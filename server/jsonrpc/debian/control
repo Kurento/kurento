@@ -4,7 +4,7 @@ Priority: optional
 Build-Depends:
  cmake,
  debhelper-compat (= 13),
- kurento-cmake-utils (>= 7.3.0),
+ kurento-cmake-utils (>= 7.3.1),
  libboost-dev,
  libboost-test-dev,
  libjsoncpp-dev,

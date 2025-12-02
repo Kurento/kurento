@@ -1,4 +1,4 @@
-kurento-media-server (7.3.0-1kurento1) UNRELEASED; urgency=medium
+kurento-media-server (7.3.1-1kurento1) UNRELEASED; urgency=medium
 
   [ Mario Jr ]
   * GStreamer 1.14 port
@@ -8,7 +8,7 @@ kurento-media-server (7.3.0-1kurento1) UNRELEASED; urgency=medium
   * Add 'libwebsocketpp-dev' to Build-Deps, without versioning
   * debian/control: Drop 'libssl1.0-dev' for Bionic compatibility
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Wed, 26 Nov 2025 10:37:41 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Tue, 02 Dec 2025 09:24:29 +0000
 
 kurento-media-server (6.18.0-0kurento1) testing; urgency=medium
 

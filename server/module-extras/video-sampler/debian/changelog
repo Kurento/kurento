@@ -1,7 +1,7 @@
-kurento-module-videosampler (7.3.0-1kurento1) UNRELEASED; urgency=medium
+kurento-module-videosampler (7.3.1-1kurento1) UNRELEASED; urgency=medium
 
 
- -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Wed, 26 Nov 2025 10:37:45 +0000
+ -- Saul Pablo Labajo Izquierdo <slabajo@naevatec.com>  Tue, 02 Dec 2025 09:24:31 +0000
 
 kurento-module-videosampler (7.1.1-dev) testing; urgency=medium
 
