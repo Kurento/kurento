@@ -168,16 +168,24 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
   
   private volatile Channel channel;
   private volatile EventLoopGroup group;
-  private volatile JsonRpcWebSocketClientHandler handler;
+  private volatile JsonRpcWebSocketClientHandler handler;private final SslContext customSslContext;
 
-  public JsonRpcClientNettyWebSocket(String url) {
-    this(url, null);
-  }
+    public JsonRpcClientNettyWebSocket(String url) {
+        this(url, null, null);
+    }
 
-  public JsonRpcClientNettyWebSocket(String url, JsonRpcWSConnectionListener connectionListener) {
-    super(url, connectionListener);
-    log.debug("{} Creating JsonRPC NETTY Websocket client", label);
-  }
+    public JsonRpcClientNettyWebSocket(String url,
+                                       JsonRpcWSConnectionListener connectionListener) {
+        this(url, connectionListener, null);
+    }
+
+    public JsonRpcClientNettyWebSocket(String url,
+                                       JsonRpcWSConnectionListener connectionListener,
+                                       SslContext sslContext) {
+        super(url, connectionListener);
+        this.customSslContext = sslContext;
+        log.debug("{} Creating JsonRPC NETTY Websocket client (mTLS-capable)", label);
+    }
 
   public void waitForChannelWritability() throws InterruptedException, KurentoException {
     lock.lock();
