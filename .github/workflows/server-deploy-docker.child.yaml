@@ -21,6 +21,11 @@ on:
         required: false
         type: "string"
         default: ""
+      platforms:
+        description: "platforms: Comma-separated list of platforms to build for"
+        required: false
+        type: "string"
+        default: "linux/amd64,linux/arm64"
       buildAsan:
         description: "buildAsan: Whether to also build an image with AddressSanitizer"
         required: false
@@ -61,6 +66,16 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
 
+      # Action: https://github.com/docker/setup-qemu-action
+      - name: "Set up QEMU for multi-arch builds"
+        uses: "docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3" # v3.0.0
+
+      # Action: https://github.com/docker/setup-buildx-action
+      - name: "Set up Docker Buildx"
+        uses: "docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226" # v3.0.0
+        with:
+          driver-opts: network=host
+
       - name: "Configure the environment for ci-scripts/"
         working-directory: "ci-scripts/"
         run: |
@@ -80,6 +95,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
+          PLATFORMS: "${{ inputs.platforms }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -91,6 +107,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
+          PLATFORMS: "${{ inputs.platforms }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -103,6 +120,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
+          PLATFORMS: "${{ inputs.platforms }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"

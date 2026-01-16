@@ -131,7 +131,7 @@ else
     export TAG="dev-$KMS_VERSION"
     export EXTRA_TAGS="dev-$KMS_VERSION_MAJ_MIN dev-$KMS_VERSION_MAJ dev"
 fi
-"$KURENTO_SCRIPTS_HOME/container_build.sh"
+"$KURENTO_SCRIPTS_HOME/container_build_multiarch.sh"
 
 log "New Docker image built: 'kurento/kurento-media-server:$TAG'"
 
