@@ -1,11 +1,16 @@
 # ====================
-# Kurento Media Server - Local Packages Build
+# Kurento Media Server - Local Packages Build (Multi-Architecture)
 # ====================
 ARG UBUNTU_CODENAME="noble"
 
 FROM ubuntu:${UBUNTU_CODENAME}
 
+# Build arguments for architecture-specific packages
+ARG ARCH="amd64"
+ARG PACKAGES_DIR="server/packages/amd64"
+
 LABEL maintainer="Kurento"
+LABEL architecture="${ARCH}"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG="C.UTF-8"
@@ -25,8 +30,9 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 # Create directory for local packages
 WORKDIR /kurento-deb
 
-# Copy all .deb files from the build context (server/packages) to the image
-COPY server/packages/*.deb /kurento-deb/
+# Copy all .deb files from the architecture-specific build context
+# PACKAGES_DIR should be like "server/packages/amd64" or "server/packages/arm64"
+COPY ${PACKAGES_DIR}/*.deb /kurento-deb/
 
 # Install the packages
 # We use a wildcard to install all of them.
