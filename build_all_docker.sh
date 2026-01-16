@@ -1,62 +1,144 @@
 #!/bin/bash
 set -e
 
-# Directory where generated packages will be stored
-PACKAGES_DIR="$(pwd)/server/packages"
-mkdir -p "$PACKAGES_DIR"
+# Target architectures to build for
+ARCHITECTURES="${ARCHITECTURES:-linux/amd64,linux/arm64}"
 
-# Docker image to use
-DOCKER_IMAGE="kurento-buildpackage:local"
+# Parse command line arguments
+COMPONENT="${1:-all}"
+SINGLE_ARCH="${2:-}"
 
-# Check if image exists
-if ! sudo docker image inspect "$DOCKER_IMAGE" >/dev/null 2>&1; then
-    cd docker/kurento-buildpackage
-    sudo docker build -t kurento-buildpackage:local .
-    cd -
-    if ! sudo docker image inspect "$DOCKER_IMAGE" >/dev/null 2>&1; then
-        echo "Error: Docker image '$DOCKER_IMAGE' not found."
-        exit 1
-    fi
+# If single architecture is specified, use only that
+if [[ -n "$SINGLE_ARCH" ]]; then
+    case "$SINGLE_ARCH" in
+        amd64|x86_64)
+            ARCHITECTURES="linux/amd64"
+            ;;
+        arm64|aarch64)
+            ARCHITECTURES="linux/arm64"
+            ;;
+        *)
+            echo "Error: Unknown architecture '$SINGLE_ARCH'"
+            echo "Supported: amd64, arm64"
+            exit 1
+            ;;
+    esac
 fi
 
-# Function to build a component
-build_component() {
+# Base directory for packages
+PACKAGES_BASE_DIR="$(pwd)/server/packages"
+mkdir -p "$PACKAGES_BASE_DIR"
+
+# Docker image base name
+DOCKER_IMAGE_BASE="kurento-buildpackage"
+
+echo "================================================================"
+echo "Multi-Architecture Build Configuration"
+echo "================================================================"
+echo "Target architectures: $ARCHITECTURES"
+echo "Building component: $COMPONENT"
+echo "================================================================"
+echo ""
+
+# Setup Docker buildx builder if not exists
+if ! docker buildx inspect kurento-builder >/dev/null 2>&1; then
+    echo "Creating Docker buildx builder 'kurento-builder'..."
+    docker buildx create --name kurento-builder --use --platform "$ARCHITECTURES"
+else
+    echo "Using existing Docker buildx builder 'kurento-builder'..."
+    docker buildx use kurento-builder
+fi
+
+# Build multi-arch build images
+echo "Building multi-architecture build container images..."
+cd docker/kurento-buildpackage
+
+# Build for each architecture separately to tag them properly
+IFS=',' read -ra ARCH_ARRAY <<< "$ARCHITECTURES"
+for platform in "${ARCH_ARRAY[@]}"; do
+    # Extract arch name (linux/amd64 -> amd64)
+    arch="${platform##*/}"
+
+    echo ""
+    echo "Building buildpackage image for $arch..."
+    docker buildx build \
+        --platform "$platform" \
+        --load \
+        -t "${DOCKER_IMAGE_BASE}:${arch}" \
+        .
+done
+
+cd - > /dev/null
+
+# Function to build a component for a specific architecture
+build_component_arch() {
     local component="$1"
     local run_args="$2"
-    
+    local arch="$3"
+    local packages_dir="$4"
+
     echo ""
     echo "################################################################"
-    echo "Building Component: $component"
+    echo "Building Component: $component for $arch"
     echo "################################################################"
 
     # Remove existing packages for this component to avoid conflicts during build
-    echo "Cleaning up old packages for $component..."
-    rm -f "$PACKAGES_DIR"/*"$component"*.deb
-    rm -f "$PACKAGES_DIR"/*"$component"*.ddeb
-    
+    echo "Cleaning up old packages for $component ($arch)..."
+    rm -f "$packages_dir"/*"$component"*.deb
+    rm -f "$packages_dir"/*"$component"*.ddeb
+
     # We use docker run to build the component
     # Tests keeps timing-out so I added -e DEB_BUILD_OPTIONS="nocheck"
-    # TODO: fix tests 
-    sudo docker run --rm \
+    # TODO: fix tests
+    # Disable LTO to work around GCC 13 jobserver bug (internal_error in return_token)
+    docker run --rm \
+        --platform "linux/$arch" \
         --cap-add=SYS_NICE \
         --security-opt seccomp=unconfined \
         -e DEB_BUILD_OPTIONS="nocheck" \
+        -e DEB_CFLAGS_APPEND="-fno-lto" \
+        -e DEB_CXXFLAGS_APPEND="-fno-lto" \
+        -e DEB_LDFLAGS_APPEND="-fno-lto" \
         -v "$(pwd)/server/$component":/hostdir \
-        -v "$PACKAGES_DIR":/packages \
+        -v "$packages_dir":/packages \
         -v "$(pwd)/ci-scripts":/ci-scripts \
-        "$DOCKER_IMAGE" \
+        "${DOCKER_IMAGE_BASE}:${arch}" \
         --dstdir /packages \
         --allow-dirty \
         $run_args
 }
 
-COMPONENT="${1:-all}"
+# Function to build a component for all architectures
+build_component() {
+    local component="$1"
+    local run_args="$2"
 
+    echo ""
+    echo "================================================================"
+    echo "Building $component for all architectures"
+    echo "================================================================"
+
+    IFS=',' read -ra ARCH_ARRAY <<< "$ARCHITECTURES"
+    for platform in "${ARCH_ARRAY[@]}"; do
+        # Extract arch name (linux/amd64 -> amd64)
+        arch="${platform##*/}"
+
+        # Create architecture-specific package directory
+        packages_dir="$PACKAGES_BASE_DIR/$arch"
+        mkdir -p "$packages_dir"
+
+        # Build for this architecture
+        build_component_arch "$component" "$run_args" "$arch" "$packages_dir"
+    done
+}
+
+# Build specific component or all
 if [[ "$COMPONENT" != "all" ]]; then
     build_component "$COMPONENT" "--install-files /packages"
     exit 0
 fi
 
+# Build all components in dependency order
 # 1. Build cmake-utils
 build_component "cmake-utils" ""
 
@@ -64,11 +146,6 @@ build_component "cmake-utils" ""
 build_component "module-creator" ""
 
 # 3. Build jsonrpc
-# jsonrpc might depend on cmake-utils? 
-# The original script says: # safest to use --install-kurento 7.0.0 or just rely on system
-# But we are in a clean container, so we must rely on what we just built.
-# However, jsonrpc in Kurento 7 usually needs cmake-utils.
-# Let's pass --install-files /packages just in case.
 build_component "jsonrpc" "--install-files /packages"
 
 # 4. Build module-core
@@ -85,6 +162,11 @@ build_component "media-server" "--install-files /packages"
 
 echo ""
 echo "################################################################"
-echo "Build Complete!"
-echo "Packages are located in: $PACKAGES_DIR"
+echo "Multi-Architecture Build Complete!"
+echo "################################################################"
+IFS=',' read -ra ARCH_ARRAY <<< "$ARCHITECTURES"
+for platform in "${ARCH_ARRAY[@]}"; do
+    arch="${platform##*/}"
+    echo "Packages for $arch: $PACKAGES_BASE_DIR/$arch/"
+done
 echo "################################################################"
