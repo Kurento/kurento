@@ -24,7 +24,7 @@ import org.kurento.client.EventListener;
 import org.kurento.client.GStreamerFilter;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.test.util.AsyncResultManager;
-import org.kurento.module.platedetector.PlateDetectorFilter;
+//import org.kurento.module.platedetector.PlateDetectorFilter;
 
 /**
  * {@link PlateDetectorFilter} test suite.

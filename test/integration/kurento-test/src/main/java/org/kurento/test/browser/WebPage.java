@@ -20,6 +20,7 @@ package org.kurento.test.browser;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -260,7 +261,7 @@ public class WebPage {
   }
 
   public void waitColor(long timeoutSeconds, final VideoTag videoTag, final Color color) {
-    WebDriverWait wait = new WebDriverWait(browser.getWebDriver(), timeoutSeconds);
+    WebDriverWait wait = new WebDriverWait(browser.getWebDriver(), Duration.ofSeconds(timeoutSeconds));
     wait.until(new ExpectedCondition<Boolean>() {
       @Override
       public Boolean apply(WebDriver d) {
@@ -394,7 +395,7 @@ public class WebPage {
         "kurentoTest.syncTimeForOcr('" + videoTagId + "', '" + peerConnectionId + "');");
 
     log.debug("Sync time in {} {}", browser.getId(), videoTagId);
-    WebDriverWait wait = new WebDriverWait(browser.getWebDriver(), browser.getTimeout());
+    WebDriverWait wait = new WebDriverWait(browser.getWebDriver(), Duration.ofSeconds(browser.getTimeout()));
     wait.until(new ExpectedCondition<Boolean>() {
       @Override
       public Boolean apply(WebDriver d) {
@@ -571,7 +572,7 @@ public class WebPage {
         browser.executeScript(
             videoTag + ".addEventListener('" + eventType + "', kurentoTest.videoEvent, false);");
         try {
-          new WebDriverWait(browser.getWebDriver(), browser.getTimeout())
+          new WebDriverWait(browser.getWebDriver(), Duration.ofSeconds(browser.getTimeout()))
               .until(new ExpectedCondition<Boolean>() {
                 @Override
                 public Boolean apply(WebDriver d) {

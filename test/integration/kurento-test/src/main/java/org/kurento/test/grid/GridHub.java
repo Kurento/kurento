@@ -17,8 +17,7 @@
 
 package org.kurento.test.grid;
 
-import org.openqa.grid.internal.utils.configuration.GridHubConfiguration;
-import org.openqa.grid.web.Hub;
+import org.openqa.selenium.grid.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ public class GridHub {
   private String bindIp = "0.0.0.0";
   private int port;
   private int timeout;
-  private Hub hub;
+  private Thread hubThread;
 
   public GridHub(int port) {
     this.port = port;
@@ -45,19 +44,20 @@ public class GridHub {
   }
 
   public void start() throws Exception {
-    GridHubConfiguration config = new GridHubConfiguration();
-    config.host = bindIp;
-    config.port = this.port;
-    config.timeout = getTimeout();
-
-    hub = new Hub(config);
     log.debug("Starting hub on {}:{}", this.bindIp, this.port);
-    hub.start();
+    hubThread = new Thread(() -> {
+      try {
+        Main.main(new String[] { "hub", "--port", String.valueOf(port) });
+      } catch (Exception e) {
+        log.error("Exception starting Selenium Grid Hub", e);
+      }
+    });
+    hubThread.start();
   }
 
   public void stop() throws Exception {
-    if (hub != null) {
-      hub.stop();
+    if (hubThread != null) {
+      hubThread.interrupt();
     }
   }
 

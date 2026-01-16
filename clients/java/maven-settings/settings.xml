@@ -17,6 +17,11 @@
 	-->
 	<servers>
 		<server>
+			<id>central</id>
+			<username>${env.KURENTO_MAVEN_SONATYPE_USERNAME}</username>
+			<password>${env.KURENTO_MAVEN_SONATYPE_PASSWORD}</password>
+		</server>
+		<server>
 			<id>sonatype-nexus</id>
 			<username>${env.KURENTO_MAVEN_SONATYPE_USERNAME}</username>
 			<password>${env.KURENTO_MAVEN_SONATYPE_PASSWORD}</password>
@@ -73,8 +78,9 @@
 		<profile>
 			<id>deploy</id>
 			<properties>
-				<!-- Sonatype Nexus (Maven Central) -->
-				<altReleaseDeploymentRepository>sonatype-nexus::https://oss.sonatype.org/service/local/staging/deploy/maven2/</altReleaseDeploymentRepository>
+				<!-- Sonatype Nexus (Maven Central) 
+				<altReleaseDeploymentRepository>sonatype-nexus::https://oss.sonatype.org/service/local/staging/deploy/maven2/</altReleaseDeploymentRepository> -->
+				<altReleaseDeploymentRepository>sonatype-nexus::https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</altReleaseDeploymentRepository>
 
 				<!-- Kurento GitHub Maven packages -->
 				<altSnapshotDeploymentRepository>kurento-github-upload::https://maven.pkg.github.com/Kurento/kurento</altSnapshotDeploymentRepository>

@@ -2,7 +2,8 @@
 Kurento Team
 ============
 
-The Kurento development team is part of the `CodeURJC Research Group <https://www.codeurjc.es/>`__, which belongs to the spanish `Rey Juan Carlos University <https://www.urjc.es/>`__, located in Madrid. This team is financed by the University and by `NaevaTec <https://www.naevatec.com/>`__.
+The Kurento development team is composed part of the `CodeURJC Research Group <https://www.codeurjc.es/>`__, which belongs to the spanish `Rey Juan Carlos University <https://www.urjc.es/>`__, located in Madrid, and part from `NaevaTec <https://www.naevatec.com/>`. This team is financed by the University and by `NaevaTec <https://www.naevatec.com/>`__.
+* `Saúl Pablo Labajo Izquierdo <https://github.com/slabajo>` __ is a senior software engineer at NaevaTec working on Kurento since 2014. He is the main developer of the Kurento JavaScript client library and has contributed to many other parts of the project including the Kurento Media Server core, the Java client library, and several Kurento modules.
 
 * `Micael Gallego <https://github.com/micaelgallego>`__ is the current lead of the Kurento project. He is involved mainly in the development of the Kurento Java client, Java tutorials, testing infrastructure, and Kurento Module Creator.
 

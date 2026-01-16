@@ -33,6 +33,11 @@ on:
         description: "Name of the artifact to be uploaded"
         required: true
         type: "string"
+      flattenPom:
+        description: "flattenPom: Whether to flatten the POM before deploying to Maven Central"
+        required: false
+        type: "boolean"
+        default: false
 
 defaults:
   run:
@@ -97,6 +102,9 @@ jobs:
 
           # Env vars used by `run` steps.
           echo "WORKING_DIRECTORY=${{ inputs.directory }}" >>$GITHUB_ENV
+
+          # Env vars used to flatten the POM before deploying.
+          echo "FLATTEN_POM=${{ inputs.flattenPom }}" >>$GITHUB_ENV
 
       - name: "Run job script (generate)"
         if: ${{ inputs.genModuleEnable }}

@@ -53,8 +53,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServlet;
-
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.LogFactory;
@@ -74,8 +72,9 @@ import org.kurento.test.utils.SshConnection;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.grid.Main;
 import org.openqa.selenium.net.NetworkUtils;
-import org.openqa.selenium.support.events.WebDriverEventListener;
+import org.openqa.selenium.support.events.WebDriverListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,9 +239,9 @@ public class GridHandler {
       final String chromeDriverSource = System.getProperty("webdriver.chrome.driver");
 
       final Class<?>[] classpath = { ImmutableList.class,
-          NetworkUtils.class, WebDriverException.class, LogFactory.class, HttpServlet.class,
+          NetworkUtils.class, WebDriverException.class, LogFactory.class,
           ChromeDriver.class, FirefoxDriver.class, JsonElement.class, HttpEntity.class,
-          HttpClient.class, WebDriverEventListener.class, ExecuteWatchdog.class };
+          HttpClient.class, WebDriverListener.class, ExecuteWatchdog.class, Main.class };
 
       // OverThere SCP need absolute path, so home path must be known
       String remoteHome = node.getHome();
@@ -359,7 +358,7 @@ public class GridHandler {
     int responseStatusCode = 0;
     HttpClient client = HttpClientBuilder.create().build();
     HttpGet httpGet =
-        new HttpGet("http://" + node + ":" + port + "/wd/hub/static/resource/hub.html");
+        new HttpGet("http://" + node + ":" + port + "/status");
 
     // Wait for a max of TIMEOUT_NODE seconds
     long maxSystemTime = System.currentTimeMillis() + TIMEOUT_NODE * 1000;

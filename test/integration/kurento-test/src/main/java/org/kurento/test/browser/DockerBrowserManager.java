@@ -152,7 +152,7 @@ public class DockerBrowserManager {
       } while (driver == null);
 
       log.debug("RemoteWebDriver for browser {} created (Version={}, Capabilities={})", id,
-          driver.getCapabilities().getVersion(), driver.getCapabilities());
+          driver.getCapabilities().getBrowserVersion(), driver.getCapabilities());
 
     }
 
@@ -314,12 +314,12 @@ public class DockerBrowserManager {
 
     String browserName = capabilities.getBrowserName();
 
-    if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
+    if (browserName.equals("chrome")) {
 
       // Chrome
       return getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY, DOCKER_NODE_CHROME_IMAGE_DEFAULT);
 
-    } else if (browserName.equals(DesiredCapabilities.firefox().getBrowserName())) {
+    } else if (browserName.equals("firefox")) {
 
       // Firefox
       return getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY, DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);

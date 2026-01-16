@@ -59,7 +59,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse.Mount;
@@ -72,11 +71,14 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
 
 /**
  * Docker client for tests.
@@ -100,7 +102,6 @@ public class Docker implements Closeable {
   private static Boolean isRunningInContainer;
 
   private DockerClient client;
-  private JerseyDockerCmdExecFactory execFactory;
   private String containerName;
   private String dockerServerUrl;
   private Map<String, String> recordingNameMap = new ConcurrentHashMap<>();
@@ -306,7 +307,6 @@ public class Docker implements Closeable {
   public void close() {
     if (client != null) {
       try {
-        execFactory.close();
         getClient().close();
       } catch (IOException e) {
         log.error("Exception closing Docker client", e);
@@ -318,9 +318,17 @@ public class Docker implements Closeable {
     if (client == null) {
       synchronized (this) {
         if (client == null) {
-          execFactory = new JerseyDockerCmdExecFactory();
-          DockerCmdExecFactory dockerCmdExecFactory = execFactory.withMaxPerRouteConnections(100);
-          client = DockerClientBuilder.getInstance(dockerServerUrl).withDockerCmdExecFactory(dockerCmdExecFactory).build();
+          DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+              .withDockerHost(dockerServerUrl)
+              .build();
+
+          DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+              .dockerHost(config.getDockerHost())
+              .sslConfig(config.getSSLConfig())
+              .maxConnections(100)
+              .build();
+
+          client = DockerClientImpl.getInstance(config, httpClient);
         }
       }
     }

@@ -64,6 +64,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +84,7 @@ import org.kurento.test.grid.GridNode;
 import org.kurento.test.services.WebServerService;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
+import org.openqa.selenium.UnexpectedAlertBehaviour;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -90,12 +92,13 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -199,7 +202,7 @@ public class Browser implements Closeable {
 
       LoggingPreferences logs = new LoggingPreferences();
       logs.enable(LogType.BROWSER, Level.INFO);
-      capabilities.setCapability(CapabilityType.LOGGING_PREFS, logs);
+      capabilities.setCapability("goog:loggingPrefs", logs);
 
       if (driverClass.equals(FirefoxDriver.class)) {
 
@@ -212,7 +215,7 @@ public class Browser implements Closeable {
       } else if (driverClass.equals(InternetExplorerDriver.class)) {
 
         if (scope == BrowserScope.SAUCELABS) {
-          capabilities.setBrowserName(DesiredCapabilities.internetExplorer().getBrowserName());
+          capabilities.setBrowserName(new InternetExplorerOptions().getBrowserName());
           capabilities.setCapability("ignoreProtectedModeSettings", true);
           createSaucelabsDriver(capabilities);
         }
@@ -220,7 +223,7 @@ public class Browser implements Closeable {
       } else if (driverClass.equals(SafariDriver.class)) {
 
         if (scope == BrowserScope.SAUCELABS) {
-          capabilities.setBrowserName(DesiredCapabilities.safari().getBrowserName());
+          capabilities.setBrowserName(new SafariOptions().getBrowserName());
           createSaucelabsDriver(capabilities);
         }
       }
@@ -295,6 +298,25 @@ public class Browser implements Closeable {
 
     // Chrome options
     ChromeOptions options = new ChromeOptions();
+    options.setAcceptInsecureCerts(true);
+    options.addArguments("--ignore-certificate-errors");
+    options.addArguments("--allow-insecure-localhost");
+    options.setUnhandledPromptBehaviour(UnexpectedAlertBehaviour.IGNORE);
+    options.addArguments("--disable-infobars");
+    options.addArguments("--remote-allow-origins=*");
+    options.setExperimentalOption("excludeSwitches", new String[] { "enable-automation" });
+    options.addArguments("--disable-gpu");
+    options.addArguments("--disable-popup-blocking");
+    options.addArguments("--no-first-run");
+    options.addArguments("--no-default-browser-check");
+    options.addArguments("--disable-dev-shm-usage");
+    options.addArguments("--disable-background-networking");
+    options.addArguments("--disable-default-apps");
+    options.addArguments("--use-fake-ui-for-media-stream");
+    options.addArguments("--use-fake-device-for-media-stream");
+    options.addArguments("--auto-select-desktop-capture-source=Entire screen");
+    options.addArguments("--autoplay-policy=no-user-gesture-required");
+    options.addArguments("--allow-file-access-from-files");
 
     // Chrome extensions
     if (extensions != null && !extensions.isEmpty()) {
@@ -366,8 +388,9 @@ public class Browser implements Closeable {
       }
     }
 
-    capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-    capabilities.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
+    options.merge(capabilities);
+    // capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+    // capabilities.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
 
     createDriver(capabilities, options);
   }
@@ -383,12 +406,23 @@ public class Browser implements Closeable {
     // This flag force to use fake user media (synthetic video of multiple color)
     firefoxOptions.addPreference("media.navigator.streams.fake", true);
 
+    // This flag avoids the need of user gesture to play media
+    firefoxOptions.addPreference("media.autoplay.default", 0);
+    firefoxOptions.addPreference("media.autoplay.enabled.user-gestures-needed", false);
+
+    // This flag disables the popup blocking
+    firefoxOptions.addPreference("dom.disable_open_during_load", false);
+
+    // This flag allows to load local files
+    firefoxOptions.addPreference("security.fileuri.strict_origin_policy", false);
+
     // This allows to load pages with self-signed certificates
     capabilities.setCapability("acceptInsecureCerts", true);
     firefoxOptions.setAcceptInsecureCerts(true);
 
-    capabilities.setCapability(FIREFOX_OPTIONS, firefoxOptions);
-    capabilities.setBrowserName(firefoxOptions.getBrowserName());
+    // capabilities.setCapability(FIREFOX_OPTIONS, firefoxOptions);
+    // capabilities.setBrowserName(firefoxOptions.getBrowserName());
+    firefoxOptions.merge(capabilities);
 
     // Firefox extensions
     if (extensions != null && !extensions.isEmpty()) {
@@ -442,6 +476,14 @@ public class Browser implements Closeable {
     } else {
       driver = newWebDriver(options);
     }
+
+    // Timeouts
+    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeout));
+    driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(timeout));
+    driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(timeout));
+
+    // Maximize
+    driver.manage().window().maximize();
   }
 
   private DockerBrowserManager getDockerManager() {
@@ -530,8 +572,8 @@ public class Browser implements Closeable {
   }
 
   public void changeTimeout(int timeoutSeconds) {
-    driver.manage().timeouts().implicitlyWait(timeoutSeconds, TimeUnit.SECONDS);
-    driver.manage().timeouts().setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
+    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeoutSeconds));
+    driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(timeoutSeconds));
   }
 
   public void createSaucelabsDriver(DesiredCapabilities capabilities) throws MalformedURLException {
@@ -736,12 +778,7 @@ public class Browser implements Closeable {
         kurentoTestJsContent = writer.toString();
       }
 
-      String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
-      kurentoTestJs += "kurentoScript.type='text/javascript';";
-      kurentoTestJs += "kurentoScript.text='" + kurentoTestJsContent + "';";
-      kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
-      kurentoTestJs += "return true;";
-      this.executeScript(kurentoTestJs);
+      this.executeScript(kurentoTestJsContent + "\nwindow.kurentoTest = kurentoTest;");
 
       // Disable RecordRTC.js injection
       // String recordingJs = "var recScript=window.document.createElement('script');";
@@ -786,7 +823,7 @@ public class Browser implements Closeable {
   }
 
   public Object executeScriptAndWaitOutput(final String command) {
-    WebDriverWait wait = new WebDriverWait(driver, timeout);
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
     wait.withMessage("Timeout executing script: " + command);
 
     final Object[] out = new Object[1];
