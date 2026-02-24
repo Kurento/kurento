@@ -57,5 +57,5 @@ index 4c275d4c..230ab7e0 100644
 +section = "utility"
 +priority = "optional"
 +assets = [
-+    ["/build/target/release/libgstrsrtp.so", "usr/lib/x86_64-linux-gnu/gstreamer-1.0/", "755"],
++    ["/build/deb-source/libgstrsrtp.so", "usr/lib/x86_64-linux-gnu/gstreamer-1.0/", "755"],
 +]
