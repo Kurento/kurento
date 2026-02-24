@@ -257,7 +257,7 @@ if [[ -n $CFG_PACKAGE ]]; then
         "--package=$CFG_PACKAGE"
     )
 fi
-ls -la `find /build -name 'libgstrsrtp*'`
+
 cargo deb "${BUILD_CMD_ARGS[@]}"
 
 # Move packages
