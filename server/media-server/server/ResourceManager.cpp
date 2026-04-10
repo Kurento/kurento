@@ -42,7 +42,7 @@ get_int (std::string &str, char sep, int nToken)
 
     if (count++ == nToken) {
       str[end] = '\0';
-      return atol (&str.c_str() [start]);
+      return strtol (&str.c_str() [start], NULL, 10);
     }
 
     start = str.find_first_not_of (sep, end);
