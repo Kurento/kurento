@@ -46,7 +46,16 @@ try {
 
   // Clone same branch/commit
   console.log(`Cloning from ${repoUrl} (ref: ${gitRef})...`);
-  execSync(`git clone --depth 1 --filter=blob:none --sparse --branch ${gitRef} ${repoUrl} ${tempDir}`, {
+  // Clone the main branch first, then checkout the specific ref
+  execSync(`git clone --depth 1 --filter=blob:none --sparse --branch main ${repoUrl} ${tempDir}`, {
+    stdio: 'inherit'
+  });
+  
+  // Checkout the specific branch or commit
+  execSync(`cd ${tempDir} && git fetch --depth 1 origin ${gitRef}`, {
+    stdio: 'inherit'
+  });
+  execSync(`cd ${tempDir} && git checkout ${gitRef}`, {
     stdio: 'inherit'
   });
   execSync(`cd ${tempDir} && git sparse-checkout set clients/javascript/jsonrpc`, {
