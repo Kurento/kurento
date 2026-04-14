@@ -1018,8 +1018,10 @@ sdp_utils_get_pt_for_codec_name (const GstSDPMedia * media,
     }
 
     if (g_strcmp0 (found_codec_name, codec_name) == 0) {
-      GST_ERROR ("Found codec name pt is: %u", (gint)strtol(payload, NULL, 10));
-      pt = (gint)strtol(payload, NULL, 10);
+      gint parsed_pt = (gint)strtol(payload, NULL, 10);
+
+      GST_ERROR ("Found codec name pt is: %d", parsed_pt);
+      pt = parsed_pt;
     }
 
     g_free (found_codec_name);
