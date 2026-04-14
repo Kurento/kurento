@@ -618,7 +618,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   NiceCandidate *nice_cand;
-  guint id = (guint) (guint)strtoul(stream_id, NULL, 10);
+  guint id = (guint) strtoul(stream_id, NULL, 10);
   gboolean ret;
   GSList *candidates;
   gchar *candidate_str;
