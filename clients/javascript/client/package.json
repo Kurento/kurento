@@ -58,11 +58,11 @@
   "scripts": {
     "coveralls": "scripts/coveralls",
     "coverallsBrowser": "scripts/coveralls -- testBrowser",
+    "prepare": "scripts/install-kurento.js",
     "test": "scripts/test",
     "testBrowser": "scripts/testBrowser",
     "testReconnect": "scripts/testReconnect",
-    "testWithoutTransactions": "scripts/testWithoutTransactions",
-    "postinstall": "scripts/install-kurento.js"
+    "testWithoutTransactions": "scripts/testWithoutTransactions"
   },
   "dependencies": {
     "async": "^2.0.1",
