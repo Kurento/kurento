@@ -18,7 +18,7 @@ console.log('Installing kurento-jsonrpc from folder...');
 // Allow only hex commit SHAs or refs that pass git check-ref-format.
 function validateGitRef(ref) {
   // Allow hex commit SHA (full 40-char or abbreviated >=7 chars)
-  if (/^[0-9a-f]{7,40}$/.test(ref)) {
+  if (/^[0-9a-fA-F]{7,40}$/.test(ref)) {
     return true;
   }
   // Allow refs that pass git check-ref-format
