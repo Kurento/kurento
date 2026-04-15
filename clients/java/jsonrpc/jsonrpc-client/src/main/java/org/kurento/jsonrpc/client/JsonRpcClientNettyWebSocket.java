@@ -254,8 +254,12 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       final boolean ssl = "wss".equalsIgnoreCase(this.uri.getScheme());
       final SslContext sslCtx;
       try {
-        sslCtx = ssl ? SslContextBuilder.forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE).build() : null;
+        if (ssl) {
+          sslCtx = customSslContext != null ? customSslContext :
+              SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+        } else {
+          sslCtx = null;
+        }
       } catch (SSLException e) {
         log.error("{} Could not create SSL Context", label, e);
         throw new IllegalArgumentException(
