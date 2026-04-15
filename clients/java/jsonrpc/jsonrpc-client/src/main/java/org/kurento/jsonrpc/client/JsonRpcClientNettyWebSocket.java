@@ -168,7 +168,8 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
   
   private volatile Channel channel;
   private volatile EventLoopGroup group;
-  private volatile JsonRpcWebSocketClientHandler handler;private final SslContext customSslContext;
+  private volatile JsonRpcWebSocketClientHandler handler;
+  private final SslContext customSslContext;
 
     public JsonRpcClientNettyWebSocket(String url) {
         this(url, null, null);
