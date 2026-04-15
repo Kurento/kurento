@@ -286,7 +286,9 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
       streamId_int = std::stoi(streamId);
     } catch (const std::invalid_argument& ia) {
       GST_ERROR("Invalid streamId for IceComponentStateChanged event: %s", streamId);
-    }
+    } catch(std::exception &e) {
+      GST_ERROR("Error parsing streamId for IceComponentStateChanged event: %s, error: %s", streamId, e.what());
+    } 
 
     IceComponentStateChanged event (shared_from_this (),
         IceComponentStateChanged::getName (), streamId_int, componentId,
