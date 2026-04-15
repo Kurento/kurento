@@ -386,7 +386,7 @@ kms_sdp_rtp_avp_media_handler_add_rtpmap_attrs (KmsSdpRtpAvpMediaHandler * self,
     guint pt;
 
     payload = g_array_index (media->fmts, gchar *, i);
-    pt = atoi (payload);
+    pt = (guint)strtoul(payload, NULL, 10);
 
     /* [rfc4566] rtpmap attribute can be omitted for static payload type  */
     /* numbers so it is completely defined in the RTP Audio/Video profile */
@@ -511,7 +511,7 @@ kms_sdp_rtp_avp_media_handler_format_supported (KmsSdpRtpAvpMediaHandler * self,
   gint pt;
 
   val = sdp_utils_get_attr_map_value (media, "rtpmap", fmt);
-  pt = atoi (fmt);
+  pt = (gint)strtol(fmt, NULL, 10);
 
   if (val == NULL) {
     /* Check if this is a static payload type so they do not need to be */
@@ -608,7 +608,7 @@ static gboolean
       /* Check if this is a static payload type so they do not need to be */
       /* set in an rtpmap attribute */
 
-      pt = atoi (fmt);
+      pt = (gint)strtol(fmt, NULL, 10);
       if (pt >= 0 && pt <= G_N_ELEMENTS (rtpmaps) && rtpmaps[pt] != NULL) {
         if (kms_sdp_rtp_avp_media_handler_encoding_supported (self, offer,
                 rtpmaps[pt], pt)) {

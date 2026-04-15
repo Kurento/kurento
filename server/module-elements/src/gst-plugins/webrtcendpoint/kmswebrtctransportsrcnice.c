@@ -208,7 +208,7 @@ kms_webrtc_transport_src_nice_configure (KmsWebrtcTransportSrc * self,
     KmsIceBaseAgent * agent, const char *stream_id, guint component_id)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (agent);
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
 
   g_object_set (G_OBJECT (self->src),
       "agent", kms_ice_nice_agent_get_agent (nice_agent),

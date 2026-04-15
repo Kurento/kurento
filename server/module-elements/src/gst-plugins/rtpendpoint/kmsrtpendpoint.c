@@ -35,7 +35,7 @@
 #include "kmsrtpsdescryptosuite.h"
 #include "kmsrandom.h"
 
-#include <stdlib.h> // atoi()
+#include <stdlib.h> // strtoul()
 
 #define PLUGIN_NAME "rtpendpoint"
 
@@ -991,7 +991,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *base_sdp_endpoint,
       const gchar *attr_rtcp_port = gst_sdp_media_get_attribute_val(media,
           "rtcp");
       if (attr_rtcp_port != NULL) {
-        rtcp_port = (guint)atoi (attr_rtcp_port);
+        rtcp_port = (guint)strtoul (attr_rtcp_port, NULL, 10);
       }
 
       kms_rtp_base_connection_set_remote_info (conn,

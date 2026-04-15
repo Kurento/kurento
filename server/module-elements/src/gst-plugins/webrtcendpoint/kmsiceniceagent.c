@@ -489,7 +489,7 @@ static void
 kms_ice_nice_agent_remove_stream (KmsIceBaseAgent * self, const char *stream_id)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
 
   GST_LOG_OBJECT (self, "Remove data stream, stream_id: %u", id);
 
@@ -501,7 +501,7 @@ kms_ice_nice_agent_set_remote_credentials (KmsIceBaseAgent * self,
     const char *stream_id, const char *ufrag, const char *pwd)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
 
   GST_LOG_OBJECT (self, "Set remote credentials, stream_id: %u", id);
 
@@ -514,7 +514,7 @@ kms_ice_nice_agent_get_local_credentials (KmsIceBaseAgent * self,
     const char *stream_id, gchar ** ufrag, gchar ** pwd)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
 
   GST_LOG_OBJECT (self, "Get local credentials, stream_id: %u", id);
 
@@ -574,7 +574,7 @@ kms_ice_nice_agent_add_relay_server (KmsIceBaseAgent * self,
     KmsIceRelayServerInfo server_info)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
-  guint id = atoi (server_info.stream_id);
+  guint id = (guint)strtoul(server_info.stream_id, NULL, 10);
   NiceRelayType type = from_turn_protocol_to_nice_relay (server_info.type);
 
   GST_DEBUG_OBJECT (self, "Add relay server,"
@@ -601,7 +601,7 @@ kms_ice_nice_agent_start_gathering_candidates (KmsIceBaseAgent * self,
     const char *stream_id)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
 
   gboolean ok = nice_agent_gather_candidates (nice_agent->priv->agent, id);
 
@@ -618,7 +618,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   NiceCandidate *nice_cand;
-  guint id = (guint) atoi (stream_id);
+  guint id = (guint) strtoul(stream_id, NULL, 10);
   gboolean ret;
   GSList *candidates;
   gchar *candidate_str;
@@ -671,7 +671,7 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   NiceCandidate *nice_cand;
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
   KmsIceCandidate *ret;
 
   nice_cand =
@@ -691,7 +691,7 @@ kms_ice_nice_agent_get_local_candidates (KmsIceBaseAgent * self,
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   GSList *ret = NULL;
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
   GSList *candidates;
   GSList *walk;
 
@@ -722,7 +722,7 @@ kms_ice_nice_agent_get_remote_candidates (KmsIceBaseAgent * self,
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   GSList *ret = NULL;
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
   GSList *candidates;
   GSList *walk;
 
@@ -752,7 +752,7 @@ kms_ice_nice_agent_get_component_state (KmsIceBaseAgent * self,
     const char *stream_id, guint component_id)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
-  guint id = atoi (stream_id);
+  guint id = (guint)strtoul(stream_id, NULL, 10);
   NiceComponentState state;
 
   state = nice_agent_get_component_state (nice_agent->priv->agent, id,
