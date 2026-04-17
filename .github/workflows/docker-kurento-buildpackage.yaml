@@ -11,11 +11,12 @@ on:
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["noble"]'
-      platforms:
-        description: "platforms: Comma-separated list of platforms to build for"
-        required: false
+      jobArchs:
+        description: "jobArchs: List of CPU architectures to build for"
+        required: true
+        # Example: '["amd64", "arm64"]'
         type: "string"
-        default: "linux/amd64,linux/arm64"
+        default: '["amd64", "arm64"]'
       runnerGroup:
         description: "runnerGroup: Set of runners where the workflow jobs should be run"
         required: false
@@ -35,6 +36,7 @@ jobs:
       max-parallel: 1
       matrix:
         jobDistro: ${{ fromJSON(inputs.jobDistros) }}
+        jobArch: ${{ fromJSON(inputs.jobArchs) }}
     timeout-minutes: 120
     steps:
       # Action: https://github.com/actions/checkout
@@ -61,7 +63,7 @@ jobs:
       - name: "Run job script"
         env:
           PUSH_IMAGES: "yes"
-          PLATFORMS: "${{ inputs.platforms }}"
+          PLATFORMS: "linux/${{ matrix.jobArch }}"
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
           TAG: "${{ matrix.jobDistro }}-${{ env.JOB_TIMESTAMP }}"
           # Moving tags, example: "1.2.3", "1.2", "1", "latest"

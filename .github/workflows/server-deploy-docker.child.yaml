@@ -61,6 +61,7 @@ jobs:
         # The point of Docker is to abstract the base system, so there is no
         # need to publish Docker images with different versions of Ubuntu.
         jobDistro: [ "${{ fromJSON(inputs.jobDistros)[0] }}" ]
+        jobArch: ${{ fromJSON(inputs.jobArchs) }}
     timeout-minutes: 30
     steps:
       # Action: https://github.com/actions/checkout
@@ -84,19 +85,6 @@ jobs:
           echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
-      - name: "Derive platforms from jobArchs"
-        id: "platforms"
-        run: |
-          ARCHS='${{ inputs.jobArchs }}'
-          CLEAN=$(echo "$ARCHS" | sed -e 's/\[//g' -e 's/\]//g' -e 's/"//g' -e 's/ //g')
-          IFS=',' read -ra ADDR <<< "$CLEAN"
-          NEW_PLATFORMS=""
-          for i in "${ADDR[@]}"; do
-             if [ -n "$NEW_PLATFORMS" ]; then NEW_PLATFORMS="$NEW_PLATFORMS,"; fi
-             NEW_PLATFORMS="${NEW_PLATFORMS}linux/$i"
-          done
-          echo "value=$NEW_PLATFORMS" >>$GITHUB_OUTPUT
-
       # Action: https://github.com/actions/download-artifact
       - name: "Copy artifacts from previous jobs"
         id: "copy-artifacts"
@@ -109,7 +97,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
-          PLATFORMS: "${{ steps.platforms.outputs.value }}"
+          PLATFORMS: "linux/${{ matrix.jobArch }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -121,7 +109,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
-          PLATFORMS: "${{ steps.platforms.outputs.value }}"
+          PLATFORMS: "linux/${{ matrix.jobArch }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -134,7 +122,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
-          PLATFORMS: "${{ steps.platforms.outputs.value }}"
+          PLATFORMS: "linux/${{ matrix.jobArch }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"

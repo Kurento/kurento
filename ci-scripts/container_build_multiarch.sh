@@ -129,10 +129,24 @@ for EXTRA_TAG in ${EXTRA_TAGS}; do
     all_tags+=("${IMAGE_NAME}:${EXTRA_TAG}")
 done
 
+# Check for distributed single-architecture build
+IFS=',' read -ra ADDR <<< "$PLATFORMS"
+if [[ ${#ADDR[@]} == 1 ]]; then
+    SINGLE_ARCH_MODE="true"
+    CURRENT_ARCH="${ADDR[0]#linux/}"
+    log "Detected SINGLE architecture build mode ($PLATFORMS). Suffixing tags with -$CURRENT_ARCH"
+else
+    SINGLE_ARCH_MODE="false"
+fi
+
 # Build tag arguments
 tag_args=()
 for tag in "${all_tags[@]}"; do
-    tag_args+=(--tag "$tag")
+    if [[ "$SINGLE_ARCH_MODE" == "true" ]]; then
+        tag_args+=(--tag "${tag}-${CURRENT_ARCH}")
+    else
+        tag_args+=(--tag "$tag")
+    fi
 done
 
 # Docker login if pushing
@@ -176,8 +190,33 @@ log "Command: ${build_cmd[*]}"
     exit 1
 }
 
-log "### BUILT IMAGES (in build cache)"
-docker buildx imagetools inspect "${IMAGE_NAME}:${TAG}" 2>/dev/null || log "Images stored in build cache only"
+log "### BUILT IMAGES"
+if [[ "$SINGLE_ARCH_MODE" == "true" ]]; then
+    docker buildx imagetools inspect "${IMAGE_NAME}:${TAG}-${CURRENT_ARCH}" 2>/dev/null || log "Images stored in build cache only"
+else
+    docker buildx imagetools inspect "${IMAGE_NAME}:${TAG}" 2>/dev/null || log "Images stored in build cache only"
+fi
+
+if [[ "$PUSH_IMAGES" == "yes" && "$SINGLE_ARCH_MODE" == "true" ]]; then
+    log "Checking if peers are available to merge multi-arch manifests..."
+    for t in "${all_tags[@]}"; do
+        can_merge="true"
+        for a in amd64 arm64; do # Assuming your pipeline works on these architectures
+            if ! docker buildx imagetools inspect "${t}-${a}" >/dev/null 2>&1; then
+                can_merge="false"
+                log "Cannot merge ${t}: peer ${t}-${a} is not available yet."
+                break
+            fi
+        done
+        
+        if [[ "$can_merge" == "true" ]]; then
+            log "All peer images found! Creating multi-arch manifest for: $t"
+            docker buildx imagetools create -t "${t}" "${t}-amd64" "${t}-arm64" || {
+                log "WARNING: Manifest creation failed. Missing peer or race condition."
+            }
+        fi
+    done
+fi
 
 # Logout
 if [[ "$PUSH_IMAGES" == "yes" ]]; then
