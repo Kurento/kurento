@@ -127,7 +127,7 @@ fi
 
 # Before checkout: Deinit submodules.
 # Needed because submodule state is not carried over when switching branches.
-git submodule deinit --all
+git submodule deinit --all -f
 
 git checkout "$CHECKOUT_TARGET"
 
