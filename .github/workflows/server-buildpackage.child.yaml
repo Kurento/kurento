@@ -64,7 +64,7 @@ jobs:
       matrix:
         jobDistro: ${{ fromJSON(inputs.jobDistros) }}
         jobArch: ${{ fromJSON(inputs.jobArchs) }}
-    timeout-minutes: 30
+    timeout-minutes: 120
     steps:
       - name: "Check for non-default git ref"
         id: "git-ref"
