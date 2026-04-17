@@ -107,6 +107,13 @@ else
     DOCKER_SOURCE_TAG="dev-$KMS_VERSION"
 fi
 
+# Match the tag suffix logic from container_build_multiarch.sh
+IFS=',' read -ra ADDR <<< "${PLATFORMS:-}"
+if [[ ${#ADDR[@]} == 1 && "${ADDR[0]}" == linux/* ]]; then
+    CURRENT_ARCH="${ADDR[0]#linux/}"
+    DOCKER_SOURCE_TAG="${DOCKER_SOURCE_TAG}-${CURRENT_ARCH}"
+fi
+
 # Best effort to check if the given source tag does actually exist.
 DOCKER_KMS_IMAGE="kurento/kurento-media-server:$DOCKER_SOURCE_TAG"
 if docker manifest >/dev/null 2>&1; then
