@@ -21,11 +21,12 @@ on:
         required: false
         type: "string"
         default: ""
-      platforms:
-        description: "platforms: Comma-separated list of platforms to build for"
-        required: false
+      jobArchs:
+        description: "jobArchs: List of CPU architectures to build for"
+        required: true
+        # Example: '["amd64", "arm64"]'
         type: "string"
-        default: "linux/amd64,linux/arm64"
+        default: '["amd64", "arm64"]'
       buildAsan:
         description: "buildAsan: Whether to also build an image with AddressSanitizer"
         required: false
@@ -83,6 +84,19 @@ jobs:
           echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
+      - name: "Derive platforms from jobArchs"
+        id: "platforms"
+        run: |
+          ARCHS='${{ inputs.jobArchs }}'
+          CLEAN=$(echo "$ARCHS" | sed -e 's/\[//g' -e 's/\]//g' -e 's/"//g' -e 's/ //g')
+          IFS=',' read -ra ADDR <<< "$CLEAN"
+          NEW_PLATFORMS=""
+          for i in "${ADDR[@]}"; do
+             if [ -n "$NEW_PLATFORMS" ]; then NEW_PLATFORMS="$NEW_PLATFORMS,"; fi
+             NEW_PLATFORMS="${NEW_PLATFORMS}linux/$i"
+          done
+          echo "value=$NEW_PLATFORMS" >>$GITHUB_OUTPUT
+
       # Action: https://github.com/actions/download-artifact
       - name: "Copy artifacts from previous jobs"
         id: "copy-artifacts"
@@ -95,7 +109,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
-          PLATFORMS: "${{ inputs.platforms }}"
+          PLATFORMS: "${{ steps.platforms.outputs.value }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -107,7 +121,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
-          PLATFORMS: "${{ inputs.platforms }}"
+          PLATFORMS: "${{ steps.platforms.outputs.value }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -120,7 +134,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
-          PLATFORMS: "${{ inputs.platforms }}"
+          PLATFORMS: "${{ steps.platforms.outputs.value }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"

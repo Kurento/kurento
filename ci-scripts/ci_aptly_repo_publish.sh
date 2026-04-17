@@ -139,6 +139,7 @@ CFG_DISTRO_NAME=""
 CFG_REPO_NAME=""
 CFG_PUBLISH_NAME=""
 CFG_RELEASE="false"
+CFG_ARCHITECTURES=""
 
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
@@ -168,6 +169,16 @@ while [[ $# -gt 0 ]]; do
                 shift
             else
                 echo "ERROR: --publish-name expects <PublishName>" >&2
+                echo "Run with '--help' to read usage details" >&2
+                exit 1
+            fi
+            ;;
+        --architectures)
+            if [[ -n "${2-}" ]]; then
+                CFG_ARCHITECTURES="$2"
+                shift
+            else
+                echo "ERROR: --architectures expects <Architectures>" >&2
                 echo "Run with '--help' to read usage details" >&2
                 exit 1
             fi
@@ -230,6 +241,11 @@ aptly repo add -force-replace -remove-files "$CFG_REPO_NAME" ./*.*deb
 
 PUBLISH_ENDPOINT="s3:ubuntu:$CFG_PUBLISH_NAME"
 
+ARCH_FLAG=""
+if [[ -n "$CFG_ARCHITECTURES" ]]; then
+    ARCH_FLAG="-architectures=$CFG_ARCHITECTURES"
+fi
+
 if [[ "$CFG_RELEASE" == "true" ]]; then
     # Aptly docs:
     # > It is not recommended to publish local repositories directly unless the
@@ -239,12 +255,12 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
 
     echo "Create and publish new release snapshot: $SNAP_NAME" >&2
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
-    aptly publish snapshot -gpg-key="$GPGKEY" "$SNAP_NAME" "$PUBLISH_ENDPOINT"
+    aptly publish snapshot -gpg-key="$GPGKEY" $ARCH_FLAG "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
     APTLY_OUTPUT="$(aptly publish list -raw)"
     if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
         echo "Publish new development repo: $CFG_REPO_NAME" >&2
-        aptly publish repo -gpg-key="$GPGKEY" -force-overwrite "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
+        aptly publish repo -gpg-key="$GPGKEY" -force-overwrite $ARCH_FLAG "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
     else
         echo "Update already published development repo: $CFG_REPO_NAME" >&2
         aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"

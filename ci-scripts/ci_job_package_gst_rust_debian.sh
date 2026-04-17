@@ -115,12 +115,26 @@ if [[ -n "$GST_RUST_PACKAGE" ]]; then
     KURENTO_BUILDPACKAGE_ARGS+=(--package "$GST_RUST_PACKAGE")
 fi
 
-# Skip configuring the platform argument (--platform) to leave it as default for now (x86_64-unknown-linux-gnu)
+# Configure the platform argument
+if [[ -n "${JOB_ARCH:-}" ]]; then
+    if [[ "$JOB_ARCH" == "amd64" ]]; then
+        KURENTO_BUILDPACKAGE_ARGS+=(--platform "x86_64-unknown-linux-gnu")
+    elif [[ "$JOB_ARCH" == "arm64" ]]; then
+        KURENTO_BUILDPACKAGE_ARGS+=(--platform "aarch64-unknown-linux-gnu")
+    else
+        log "WARNING: Unknown JOB_ARCH '$JOB_ARCH', using default platform"
+    fi
+fi
+
+DOCKER_ARGS=(--pull always --rm)
+if [[ -n "${JOB_ARCH:-}" ]]; then
+    DOCKER_ARGS+=(--platform "linux/$JOB_ARCH")
+fi
 
 # Build
 # -----
 
-docker run --pull always --rm \
+docker run "${DOCKER_ARGS[@]}" \
     --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     --mount type=bind,src="${INSTALL_PATH:-$PWD}",dst=/packages \

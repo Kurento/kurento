@@ -11,6 +11,12 @@ on:
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["noble"]'
+      jobArchs:
+        description: "jobArchs: List of CPU architectures to build for"
+        required: true
+        # Example: '["amd64", "arm64"]'
+        type: "string"
+        default: '["amd64", "arm64"]'
       jobRelease:
         description: "jobRelease: Enable to build release versions; disable for development builds"
         required: false
@@ -77,6 +83,7 @@ jobs:
       - name: "Run job script"
         env:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
+          JOB_ARCHS: "${{ inputs.jobArchs }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
           APTLY_GPG_SUBKEY: "${{ vars.APTLY_GPG_SUBKEY }}"

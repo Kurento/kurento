@@ -11,6 +11,12 @@ on:
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["noble"]'
+      jobArchs:
+        description: "jobArchs: List of CPU architectures to build for"
+        required: true
+        # Example: '["amd64", "arm64"]'
+        type: "string"
+        default: '["amd64", "arm64"]'
       jobGitName:
         description: "jobGitName: Non-default git branch or tag that should be checked out, if it exists"
         required: false
@@ -57,6 +63,7 @@ jobs:
     strategy:
       matrix:
         jobDistro: ${{ fromJSON(inputs.jobDistros) }}
+        jobArch: ${{ fromJSON(inputs.jobArchs) }}
     timeout-minutes: 30
     steps:
       - name: "Check for non-default git ref"
@@ -87,11 +94,14 @@ jobs:
         if: ${{ inputs.copyArtifacts }}
         uses: "actions/download-artifact@v4"
         with:
+          pattern: "*-${{ matrix.jobDistro }}-${{ matrix.jobArch }}"
           path: "artifacts/"
+          merge-multiple: true
 
       - name: "Run job script"
         env:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
+          JOB_ARCH: "${{ matrix.jobArch }}"
           JOB_GIT_NAME: "${{ inputs.jobGitName }}"
           JOB_GIT_NAME_FALLBACK: "${{ inputs.jobGitNameFallback }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
@@ -105,5 +115,5 @@ jobs:
       - name: "Archive the artifacts"
         uses: "actions/upload-artifact@v4"
         with:
-          name: "${{ inputs.artifactName }}"
+          name: "${{ inputs.artifactName }}-${{ matrix.jobDistro }}-${{ matrix.jobArch }}"
           path: "${{ inputs.directory }}/*.*deb"

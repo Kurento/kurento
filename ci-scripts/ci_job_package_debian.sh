@@ -139,7 +139,12 @@ fi
 #     pass G_DEBUG="fatal-warnings", to enable breaking on code assertions.
 #   - G_MESSAGES_DEBUG: To set GLib logging categories. Used for libnice logs.
 
-docker run --pull always --rm \
+DOCKER_ARGS=(--pull always --rm)
+if [[ -n "${JOB_ARCH:-}" ]]; then
+    DOCKER_ARGS+=(--platform "linux/$JOB_ARCH")
+fi
+
+docker run "${DOCKER_ARGS[@]}" \
     --mount type=bind,src="$PWD",dst=/hostdir \
     --mount type=bind,src="$KURENTO_SCRIPTS_HOME",dst=/ci-scripts \
     --mount type=bind,src="${INSTALL_PATH:-$PWD}",dst=/packages \

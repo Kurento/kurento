@@ -85,6 +85,11 @@ TEMP_DIR="aptly-$JOB_DISTRO-$JOB_TIMESTAMP"
 # Aptly runner script arguments
 PUBLISH_ARGS=""
 
+if [[ -n "${JOB_ARCHS:-}" ]]; then
+    CLEAN_ARCHS=$(echo "$JOB_ARCHS" | sed -e 's/\[//g' -e 's/\]//g' -e 's/"//g' -e 's/ //g')
+    PUBLISH_ARGS+=" --architectures $CLEAN_ARCHS,source"
+fi
+
 # Get a KMS_VERSION suitable for naming things in Aptly
 if [[ "$JOB_RELEASE" == "true" ]]; then
     log "Deploy a release repo"
