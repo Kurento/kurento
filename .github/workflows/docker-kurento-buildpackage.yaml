@@ -35,7 +35,7 @@ jobs:
       max-parallel: 1
       matrix:
         jobDistro: ${{ fromJSON(inputs.jobDistros) }}
-    timeout-minutes: 30
+    timeout-minutes: 120
     steps:
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
