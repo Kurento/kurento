@@ -294,7 +294,7 @@ sdp_utils_sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
         return NULL;
     }
 
-    pt = atoi (format);
+    pt = (gint)strtol(format, NULL, 10);
     if (pt > 34)
       return NULL;
 
@@ -904,7 +904,7 @@ sdp_utils_get_data_from_rtpmap (const gchar * rtpmap, gchar ** codec_name,
   }
 
   if (clock_rate) {
-    *clock_rate = atoi (tokens[1]);
+    *clock_rate = (gint)strtol(tokens[1], NULL, 10);
   }
 
   if (codec_name) {
@@ -928,7 +928,7 @@ sdp_utils_is_pt_in_fmts (const GstSDPMedia * media, gint pt)
   for (i = 0; i < len; i++) {
     gint payload;
 
-    payload = atoi (gst_sdp_media_get_format (media, i));
+    payload = (gint)strtol(gst_sdp_media_get_format (media, i), NULL, 10);
 
     if (payload == pt) {
       return TRUE;
@@ -973,7 +973,7 @@ sdp_utils_get_data_from_rtpmap_codec (const GstSDPMedia * media,
       continue;
     }
 
-    if (!sdp_utils_is_pt_in_fmts (media, atoi (attrs[0]))) {
+    if (!sdp_utils_is_pt_in_fmts (media, (gint)strtol(attrs[0], NULL, 10))) {
       /* pt is not in the offer */
       g_strfreev (attrs);
       continue;
@@ -985,7 +985,7 @@ sdp_utils_get_data_from_rtpmap_codec (const GstSDPMedia * media,
     }
 
     if (pt != NULL) {
-      *pt = atoi (attrs[0]);
+      *pt = (gint)strtol(attrs[0], NULL, 10);
     }
 
     found = TRUE;
@@ -1018,8 +1018,10 @@ sdp_utils_get_pt_for_codec_name (const GstSDPMedia * media,
     }
 
     if (g_strcmp0 (found_codec_name, codec_name) == 0) {
-      GST_ERROR ("Found codec name pt is: %u", atoi (payload));
-      pt = atoi (payload);
+      gint parsed_pt = (gint)strtol(payload, NULL, 10);
+
+      GST_ERROR ("Found codec name pt is: %d", parsed_pt);
+      pt = parsed_pt;
     }
 
     g_free (found_codec_name);
@@ -1048,7 +1050,7 @@ sdp_utils_get_abs_send_time_id (const GstSDPMedia * media)
 
     tokens = g_strsplit (attr, " ", 0);
     if (g_strcmp0 (RTP_HDR_EXT_ABS_SEND_TIME_URI, tokens[1]) == 0) {
-      gint ret = atoi (tokens[0]);
+      gint ret = (gint)strtol(tokens[0], NULL, 10);
 
       g_strfreev (tokens);
       return ret;

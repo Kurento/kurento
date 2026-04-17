@@ -206,13 +206,14 @@ function run_jq() {
             | .dependencies.\"kurento-client-elements\" = \"$VERSION_JS\"
             | .dependencies.\"kurento-client-filters\" = \"$VERSION_JS\"
             | .dependencies.\"kurento-jsonrpc\" = \"$VERSION_JS\"
+            | del(.scripts.prepare)
         " package.json
     else
         run_jq "
             .dependencies.\"kurento-client-core\" = \"git+https://github.com/Kurento/kurento-client-core-js.git\"
             | .dependencies.\"kurento-client-elements\" = \"git+https://github.com/Kurento/kurento-client-elements-js.git\"
             | .dependencies.\"kurento-client-filters\" = \"git+https://github.com/Kurento/kurento-client-filters-js.git\"
-            | .dependencies.\"kurento-jsonrpc\" = \"https://gitpkg.now.sh/Kurento/kurento/clients/javascript/jsonrpc?main\"
+            | .dependencies.\"kurento-jsonrpc\" = \"*\"
         " package.json
     fi
 

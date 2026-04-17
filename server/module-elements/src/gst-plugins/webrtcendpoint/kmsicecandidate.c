@@ -114,13 +114,13 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
   g_free (self->priv->related_addr);
 
   tmp = g_match_info_fetch_named (match_info, "port");
-  self->priv->port = atoi (tmp);
+  self->priv->port = (guint)strtoul(tmp, NULL, 10);
   g_free (tmp);
 
   self->priv->foundation = g_match_info_fetch_named (match_info, "foundation");
 
   tmp = g_match_info_fetch_named (match_info, "priority");
-  self->priv->priority = atoi (tmp);
+  self->priv->priority = (guint)strtoul(tmp, NULL, 10);
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "componentid");
@@ -182,7 +182,7 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
 
   tmp = g_match_info_fetch_named (match_info, "rport");
   if (tmp != NULL && g_strcmp0 (tmp, "") != 0) {
-    self->priv->related_port = atoi (tmp);
+    self->priv->related_port = (gint)strtol(tmp, NULL, 10);
   } else {
     self->priv->related_port = -1;
   }

@@ -281,8 +281,17 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
                              <std::string, std::shared_ptr <IceConnection>> (key, connectionState) );
 
   try {
+    int streamId_int = 0;
+    try {
+      streamId_int = std::stoi(streamId);
+    } catch (const std::invalid_argument& ia) {
+      GST_ERROR("Invalid streamId for IceComponentStateChanged event: %s", streamId);
+    } catch(std::exception &e) {
+      GST_ERROR("Error parsing streamId for IceComponentStateChanged event: %s, error: %s", streamId, e.what());
+    } 
+
     IceComponentStateChanged event (shared_from_this (),
-        IceComponentStateChanged::getName (), atoi (streamId), componentId,
+        IceComponentStateChanged::getName (), streamId_int, componentId,
         std::shared_ptr<IceComponentState> (componentState_event));
     sigcSignalEmit(signalIceComponentStateChanged, event);
   } catch (const std::bad_weak_ptr &e) {
