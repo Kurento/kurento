@@ -87,7 +87,7 @@ apt-get update && apt-get install --no-install-recommends --yes \
 && rm -rf /var/lib/apt/lists/*
 
 
-ENV MAVEN_VERSION=3.9.11
+ENV MAVEN_VERSION=3.9.15
 ENV MAVEN_HOME=/usr/share/maven
 ENV PATH=$MAVEN_HOME/bin:$PATH
 RUN wget -q https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
