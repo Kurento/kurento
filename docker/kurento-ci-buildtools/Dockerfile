@@ -24,8 +24,9 @@
 #   Optional. Default: "focal".
 
 ARG UBUNTU_CODENAME=noble
+ARG TARGETPLATFORM
 
-FROM kurento/kurento-buildpackage:${UBUNTU_CODENAME}
+FROM --platform=$TARGETPLATFORM kurento/kurento-buildpackage:${UBUNTU_CODENAME}
 
 # Settings from parent image:
 # Re-enable the cleaning of Apt package cache

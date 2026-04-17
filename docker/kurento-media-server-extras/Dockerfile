@@ -53,9 +53,9 @@
 
 # Global arguments for FROM.
 ARG KMS_VERSION_TAG="latest"
+ARG TARGETPLATFORM
 
-
-FROM kurento/kurento-media-server:${KMS_VERSION_TAG}
+FROM --platform=$TARGETPLATFORM kurento/kurento-media-server:${KMS_VERSION_TAG}
 
 LABEL maintainer="Saúl Pablo Labajo Izquierdo <slabajo@naevatec.com>"
 

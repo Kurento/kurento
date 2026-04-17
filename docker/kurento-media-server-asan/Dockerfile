@@ -157,7 +157,8 @@ RUN /build.sh
 # Stage: Copy artifacts
 # =====================
 
-FROM ${KMS_IMAGE}
+ARG TARGETPLATFORM
+FROM --platform=$TARGETPLATFORM ${KMS_IMAGE}
 
 ARG UBUNTU_CODENAME
 
