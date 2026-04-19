@@ -144,7 +144,7 @@ if [[ -n "${JOB_ARCH:-}" ]]; then
     DOCKER_ARGS+=(--platform "linux/$JOB_ARCH")
     if [[ "$JOB_ARCH" == "arm64" ]]; then
         export DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-} nocheck"
-        log "WARNING: Disabled C/C++ tests via DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS' because architecture is arm64 (QEMU emulator bounds)"
+        log "WARNING: Disabled C/C++ tests via DEB_BUILD_OPTIONS='$DEB_BUILD_OPTIONS' because architecture is arm64 (QEMU emulator limitations)"
     fi
 fi
 
