@@ -501,7 +501,10 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
     /* If this pad was previously tagged as going through an EncTreeBin (e.g.
      * during a reconfigure), un-count the old connection first. */
     if (g_object_get_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark ())) {
-      if (self->priv->active_transcoding_pads > 0) {
+      if (G_UNLIKELY (self->priv->active_transcoding_pads == 0)) {
+        GST_WARNING_OBJECT (self,
+            "active_transcoding_pads underflow detected in link_to_tee");
+      } else {
         self->priv->active_transcoding_pads--;
       }
     }
@@ -1180,7 +1183,10 @@ kms_agnostic_bin2_src_unlinked (GstPad * pad, GstPad * peer,
   /* Update active_transcoding_pads before removing the target so that the
    * "was this pad transcoding?" check uses the tag set during link_to_tee. */
   if (g_object_get_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark ())) {
-    if (self->priv->active_transcoding_pads > 0) {
+    if (G_UNLIKELY (self->priv->active_transcoding_pads == 0)) {
+      GST_WARNING_OBJECT (self,
+          "active_transcoding_pads underflow detected in src_unlinked");
+    } else {
       self->priv->active_transcoding_pads--;
     }
     g_object_set_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark (), NULL);
@@ -1210,7 +1216,11 @@ kms_agnostic_bin2_src_unlinked (GstPad * pad, GstPad * peer,
       GST_INFO_OBJECT (self,
           "TRANSCODING INACTIVE (last transcoding pad disconnected)");
     } else {
-      /* Recount was higher than the cached counter – resync. */
+      /* The secondary scan found more transcoding pads than the cached counter.
+       * Resync to prevent a missed transition on the next disconnect. */
+      GST_WARNING_OBJECT (self,
+          "active_transcoding_pads counter drift: cached=0 actual=%u; "
+          "resyncing", ctx.count);
       self->priv->active_transcoding_pads = ctx.count;
     }
   }
