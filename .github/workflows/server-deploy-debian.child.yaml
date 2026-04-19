@@ -55,7 +55,7 @@ jobs:
     steps:
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
-        uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
 
       - name: "Configure the environment for ci-scripts/"
         working-directory: "ci-scripts/"
@@ -67,7 +67,7 @@ jobs:
       # Action: https://github.com/actions/download-artifact
       - name: "Copy artifacts from previous jobs"
         id: "copy-artifacts"
-        uses: "actions/download-artifact@v4"
+        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c" # v8.0.1
         with:
           path: "artifacts/"
 
