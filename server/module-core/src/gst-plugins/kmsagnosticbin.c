@@ -38,6 +38,10 @@
 #define UNLINKING_DATA "unlinking-data"
 G_DEFINE_QUARK (UNLINKING_DATA, unlinking_data);
 
+/* qdata key to mark which src ghost pads route through an EncTreeBin */
+#define USES_ENC_TREEBIN_DATA "uses-enc-treebin-data"
+G_DEFINE_QUARK (USES_ENC_TREEBIN_DATA, uses_enc_treebin_data);
+
 #define KMS_AGNOSTIC_PAD_STARTED (GST_PAD_FLAG_LAST << 1)
 
 static GstStaticCaps static_raw_audio_caps =
@@ -96,7 +100,6 @@ struct _KmsAgnosticBin2Private
   GRecMutex thread_mutex;
 
   GstElement *input_tee;
-  GstElement *input_fakesink;
   GstCaps *input_caps;
   GstBin *input_bin;
   GstCaps *input_bin_src_caps;
@@ -115,6 +118,7 @@ struct _KmsAgnosticBin2Private
   gboolean bitrate_unlimited;
 
   TranscodingState transcoding_state;
+  guint active_transcoding_pads;
 };
 
 enum
@@ -484,6 +488,31 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
 
   g_object_unref (target);
   link_element_to_tee (tee, queue);
+
+  /* Track whether this src pad routes through an EncTreeBin so that we can
+   * emit the media-transcoding(FALSE) signal when the last such pad disconnects
+   * (Issue 3 / transcoding teardown on disconnect). */
+  {
+    GstObject *tee_parent = gst_element_get_parent (tee);
+    gboolean is_enc = KMS_IS_ENC_TREE_BIN (tee_parent);
+
+    g_clear_object (&tee_parent);
+
+    /* If this pad was previously tagged as going through an EncTreeBin (e.g.
+     * during a reconfigure), un-count the old connection first. */
+    if (g_object_get_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark ())) {
+      if (self->priv->active_transcoding_pads > 0) {
+        self->priv->active_transcoding_pads--;
+      }
+    }
+
+    g_object_set_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark (),
+        GINT_TO_POINTER (is_enc));
+
+    if (is_enc) {
+      self->priv->active_transcoding_pads++;
+    }
+  }
 }
 
 static gboolean
@@ -727,36 +756,47 @@ kms_agnostic_bin2_find_or_create_bin_for_caps (KmsAgnosticBin2 * self,
     media_type = g_strdup ("video");
   }
 
-
-  // TODO: This code only runs during connection of new elements that might need
-  // transcoding. But there is no handling of disconnection of elements that
-  // were using transcoding until that moment.
-  // For example, this could happen:
-  // 1. Have a WebRtcEndpoint source with H.264.
-  // 2. Connect a WebRtcEndpoint sink that wants H.264.
-  //    Media is compatible so no encoding is needed.
-  //    transcoding_state = INACTIVE.
-  // 3. Connect a RecorderEndpoint with WEBM profile (needs VP8).
-  //    A compatible source bin is not found so a new EncTreeBin is created.
-  //    transcoding_state = ACTIVE.
-  // 4. Stop and disconnect the RecorderEndpoint.
-  //    The transcoding from H.264 to VP8 is not needed any more!
-  //    transcoding_state should be INACTIVE but that won't happen.
-
   if (bin == NULL) {
-    GST_DEBUG_OBJECT (self, "TreeBin not found! Transcoding required for %s",
-        media_type);
+    /* Issue 4 — deferred codec selection:
+     * When the downstream element has not yet negotiated a specific codec
+     * (peer_caps has more than one structure), avoid creating an EncTreeBin
+     * immediately.  Picking an encoder prematurely may lock us into transcoding
+     * even when the downstream element eventually settles on the same codec as
+     * the source.  Instead, return the passthrough input_bin so that
+     * caps-negotiation can proceed; the RECONFIGURE / ACCEPT_CAPS probe
+     * mechanism will re-trigger kms_agnostic_bin2_process_pad once the
+     * downstream caps are fixed to a single format. */
+    if (!gst_caps_is_any (*caps) && gst_caps_get_size (*caps) > 1
+        && self->priv->input_bin != NULL) {
+      GST_DEBUG_OBJECT (self,
+          "Caps have %u structures – deferring encoder creation, "
+          "using passthrough input_bin for now",
+          gst_caps_get_size (*caps));
+      bin = self->priv->input_bin;
 
-    bin = kms_agnostic_bin2_create_bin_for_caps (self, *caps);
-    GST_DEBUG_OBJECT (self, "Created TreeBin: %" GST_PTR_FORMAT, bin);
+      if (self->priv->transcoding_state == TRANSCODING_STATE_NONE) {
+        self->priv->transcoding_state = TRANSCODING_STATE_INACTIVE;
+        g_signal_emit (GST_BIN (self),
+            kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, FALSE,
+            type);
+        GST_DEBUG_OBJECT (self, "TRANSCODING INACTIVE (deferred) for %s",
+            media_type);
+      }
+    } else {
+      GST_DEBUG_OBJECT (self, "TreeBin not found! Transcoding required for %s",
+          media_type);
 
-    // Emit this event in all cases. I.e. regardless of whether this is the
-    // first time it gets emitted or not, warn the app about the transcoding.
-    if (self->priv->transcoding_state != TRANSCODING_STATE_ACTIVE) {
-      self->priv->transcoding_state = TRANSCODING_STATE_ACTIVE;
-      g_signal_emit (GST_BIN (self),
-          kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, TRUE, type);
-      GST_INFO_OBJECT (self, "TRANSCODING ACTIVE for %s", media_type);
+      bin = kms_agnostic_bin2_create_bin_for_caps (self, *caps);
+      GST_DEBUG_OBJECT (self, "Created TreeBin: %" GST_PTR_FORMAT, bin);
+
+      // Emit this event in all cases. I.e. regardless of whether this is the
+      // first time it gets emitted or not, warn the app about the transcoding.
+      if (self->priv->transcoding_state != TRANSCODING_STATE_ACTIVE) {
+        self->priv->transcoding_state = TRANSCODING_STATE_ACTIVE;
+        g_signal_emit (GST_BIN (self),
+            kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, TRUE, type);
+        GST_INFO_OBJECT (self, "TRANSCODING ACTIVE for %s", media_type);
+      }
     }
   } else {
     GST_DEBUG_OBJECT (self, "TreeBin found! Using %" GST_PTR_FORMAT " for %s",
@@ -990,6 +1030,11 @@ kms_agnostic_bin2_configure_input (KmsAgnosticBin2 * self, const GstCaps * caps)
 
   self->priv->started = FALSE;
 
+  /* All tree bins are torn down; reset transcoding state so that the next
+   * pad connection re-evaluates from scratch (Issue 3). */
+  self->priv->transcoding_state = TRANSCODING_STATE_NONE;
+  self->priv->active_transcoding_pads = 0;
+
   GST_TRACE_OBJECT (self, "Removing old treebins");
   g_hash_table_foreach (self->priv->bins, remove_bin, self);
   g_hash_table_remove_all (self->priv->bins);
@@ -1093,6 +1138,37 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
   return ret;
 }
 
+/* Helper for Issue 3: count src pads (excluding skip_pad) that still have a
+ * target AND are tagged as routing through an EncTreeBin. */
+typedef struct
+{
+  GstPad *skip_pad;
+  guint count;
+} TranscodingPadCount;
+
+static void
+count_active_transcoding_pads (GstPad * pad, gpointer data)
+{
+  TranscodingPadCount *ctx = (TranscodingPadCount *) data;
+
+  if (pad == ctx->skip_pad) {
+    return;
+  }
+
+  if (!g_object_get_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark ())) {
+    return;
+  }
+
+  /* Only count the pad if it still has a target; pads that were cleared by
+   * remove_target_pad() but not yet released should not be counted. */
+  GstPad *target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (target != NULL) {
+    ctx->count++;
+    gst_object_unref (target);
+  }
+}
+
 static void
 kms_agnostic_bin2_src_unlinked (GstPad * pad, GstPad * peer,
     KmsAgnosticBin2 * self)
@@ -1100,7 +1176,45 @@ kms_agnostic_bin2_src_unlinked (GstPad * pad, GstPad * peer,
   GST_TRACE_OBJECT (pad, "Unlinked");
   KMS_AGNOSTIC_BIN2_LOCK (self);
   GST_OBJECT_FLAG_UNSET (pad, KMS_AGNOSTIC_PAD_STARTED);
+
+  /* Update active_transcoding_pads before removing the target so that the
+   * "was this pad transcoding?" check uses the tag set during link_to_tee. */
+  if (g_object_get_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark ())) {
+    if (self->priv->active_transcoding_pads > 0) {
+      self->priv->active_transcoding_pads--;
+    }
+    g_object_set_qdata (G_OBJECT (pad), uses_enc_treebin_data_quark (), NULL);
+  }
+
   remove_target_pad (pad);
+
+  /* If we were in ACTIVE transcoding state, check whether any other src pad
+   * still routes through an EncTreeBin.  If not, the transcoding is no longer
+   * needed and we emit the media-transcoding(FALSE) signal. */
+  if (self->priv->transcoding_state == TRANSCODING_STATE_ACTIVE
+      && self->priv->active_transcoding_pads == 0) {
+    KmsMediaType type = kms_utils_caps_is_audio (self->priv->input_caps)
+        ? KMS_MEDIA_TYPE_AUDIO : KMS_MEDIA_TYPE_VIDEO;
+
+    /* Secondary verification: scan all remaining pads with a live target that
+     * are still tagged as transcoding (covers any counter drift). */
+    TranscodingPadCount ctx = { pad, 0 };
+
+    kms_element_for_each_src_pad (GST_ELEMENT (self),
+        count_active_transcoding_pads, &ctx);
+
+    if (ctx.count == 0) {
+      self->priv->transcoding_state = TRANSCODING_STATE_INACTIVE;
+      g_signal_emit (GST_BIN (self),
+          kms_agnostic_bin2_signals[SIGNAL_MEDIA_TRANSCODING], 0, FALSE, type);
+      GST_INFO_OBJECT (self,
+          "TRANSCODING INACTIVE (last transcoding pad disconnected)");
+    } else {
+      /* Recount was higher than the cached counter – resync. */
+      self->priv->active_transcoding_pads = ctx.count;
+    }
+  }
+
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 }
 
@@ -1407,31 +1521,9 @@ check_ret_error (GstPad * pad, GstFlowReturn ret)
       KmsAgnosticBin2 *self =
           KMS_AGNOSTIC_BIN2 (gst_pad_get_parent_element (pad));
 
-      gchar *fakesink_message;
-      g_object_get (self->priv->input_fakesink, "last-message",
-          &fakesink_message, NULL);
-      GST_FIXME_OBJECT (pad, "Handling flow error, fakesink message: %s",
-          fakesink_message);
-      g_free (fakesink_message);
-
-      GST_FIXME_OBJECT (pad, "REPLACE FAKESINK");
-      GstElement *fakesink = self->priv->input_fakesink;
-      kms_utils_bin_remove (GST_BIN (self), fakesink);
-      fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
-      self->priv->input_fakesink = fakesink;
-      g_object_set (fakesink, "async", FALSE, "sync", FALSE,
-          "silent", FALSE,
-          NULL);
-
-      gst_bin_add (GST_BIN (self), fakesink);
-      gst_element_sync_state_with_parent (fakesink);
-      gst_element_link (self->priv->input_tee, fakesink);
-
-      // fakesink setup
-      GstPad *sink = gst_element_get_static_pad (fakesink, "sink");
-      gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-          kms_agnostic_bin2_sink_caps_probe, self, NULL);
-      g_object_unref (sink);
+      GST_FIXME_OBJECT (pad,
+          "Handling flow error, input caps: %" GST_PTR_FORMAT,
+          self->priv->input_caps);
 
       GST_FIXME_OBJECT (pad, "RECONFIGURE INPUT TREEBIN");
       kms_agnostic_bin2_configure_input (self, self->priv->input_caps);
@@ -1482,22 +1574,19 @@ static void
 kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 {
   GstPadTemplate *templ;
-  GstElement *tee, *fakesink;
-  GstPad *target, *sink;
+  GstElement *tee;
+  GstPad *target;
 
   self->priv = KMS_AGNOSTIC_BIN2_GET_PRIVATE (self);
 
   tee = kms_utils_element_factory_make ("tee", PLUGIN_NAME);
   self->priv->input_tee = tee;
 
-  fakesink = kms_utils_element_factory_make ("fakesink", PLUGIN_NAME);
-  self->priv->input_fakesink = fakesink;
-  g_object_set (fakesink, "async", FALSE, "sync", FALSE,
-      "silent", FALSE, // FIXME used to print log in check_ret_error()
-      NULL);
+  /* Allow input_tee to run with zero src pads during the brief window before
+   * the ParseTreeBin is connected (and after it is torn down on reconfigure). */
+  g_object_set (tee, "allow-not-linked", TRUE, NULL);
 
-  gst_bin_add_many (GST_BIN (self), tee, fakesink, NULL);
-  gst_element_link_many (tee, fakesink, NULL);
+  gst_bin_add (GST_BIN (self), tee);
 
   target = gst_element_get_static_pad (tee, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
@@ -1507,12 +1596,14 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   gst_pad_set_chain_list_function (self->priv->sink,
       kms_agnostic_bin2_sink_chain_list);
   g_object_unref (templ);
-  g_object_unref (target);
 
-  sink = gst_element_get_static_pad (fakesink, "sink");
-  gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+  /* Attach the caps-change probe directly on the input_tee sink pad.
+   * Previously this was placed on a dedicated fakesink, wasting a buffer copy
+   * per incoming buffer.  Events (including CAPS) flow through the tee sink
+   * pad before being forwarded to src pads, so this probe fires identically. */
+  gst_pad_add_probe (target, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       kms_agnostic_bin2_sink_caps_probe, self, NULL);
-  g_object_unref (sink);
+  g_object_unref (target);
 
   gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
@@ -1527,6 +1618,7 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   self->priv->max_encoder_bitrate = DEFAULT_MAX_ENCODER_BITRATE;
   self->priv->bitrate_unlimited = TRUE;
   self->priv->transcoding_state = TRANSCODING_STATE_NONE;
+  self->priv->active_transcoding_pads = 0;
 }
 
 gboolean

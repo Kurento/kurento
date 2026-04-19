@@ -173,7 +173,6 @@ kms_tree_bin_finalize (GObject * object)
 static void
 kms_tree_bin_init (KmsTreeBin * self)
 {
-  GstElement *fakesink;
   GstPad *sink;
 
   self->priv = KMS_TREE_BIN_GET_PRIVATE (self);
@@ -183,8 +182,11 @@ kms_tree_bin_init (KmsTreeBin * self)
   self->priv->output_tee =
       kms_utils_element_factory_make ("tee", GST_DEFAULT_NAME);
 
-  fakesink = kms_utils_element_factory_make ("fakesink", GST_DEFAULT_NAME);
-  g_object_set (fakesink, "async", FALSE, "sync", FALSE, NULL);
+  /* Allow the tee to have zero src pads without returning an error.
+   * Previously a fakesink was linked here as a keep-alive pad, but that
+   * wasted CPU copying every buffer through an extra branch. Modern GStreamer
+   * (>= 1.6) supports this via the "allow-not-linked" property. */
+  g_object_set (self->priv->output_tee, "allow-not-linked", TRUE, NULL);
 
   sink = gst_element_get_static_pad (self->priv->output_tee, "sink");
   if (sink) {
@@ -194,8 +196,7 @@ kms_tree_bin_init (KmsTreeBin * self)
     g_object_unref (sink);
   }
 
-  gst_bin_add_many (GST_BIN (self), self->priv->output_tee, fakesink, NULL);
-  gst_element_link (self->priv->output_tee, fakesink);
+  gst_bin_add (GST_BIN (self), self->priv->output_tee);
 }
 
 static void
