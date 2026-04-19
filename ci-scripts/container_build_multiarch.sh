@@ -67,7 +67,7 @@ log "==================== BEGIN ===================="
 set -o xtrace
 
 # Avoid illegal chars in tag name
-TAG=$(echo $TAG | tr '/' '_')
+TAG=$(echo "${TAG:-}" | tr '/' '_')
 
 [[ -z "${PLATFORMS:-}" ]] && PLATFORMS="linux/amd64,linux/arm64"
 [[ -z "${PUSH_IMAGES:-}" ]] && PUSH_IMAGES="no"
