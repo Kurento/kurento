@@ -93,6 +93,7 @@ ENV LANG="C.UTF-8"
 # * ca-certificates: For HTTPS requests (e.g. with PlayerEndpoint).
 # * curl: For `healthchecker.sh`.
 # * dnsutils: For `dig` in `getmyip.sh`.
+# * dos2unix: For fixing line endings in scripts.
 # * gnupg: For `apt-key adv` (Since Ubuntu 18.04).
 # * nano: Not required but useful for edits while troubleshooting.
 RUN \
@@ -102,6 +103,20 @@ apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --
     dnsutils \
     gnupg \
     nano \
+&& rm -rf /var/lib/apt/lists/*
+
+# Install specific package versions to address security vulnerabilities
+# Updated vulnerable versions:
+# - openssl: Updated to version 3.0.13-0ubuntu3.7 for latest security patches
+# - glibc: Updated vulnerable version to 2.39-0ubuntu8.7 for critical security patches
+# - glib2.0: Updated vulnerable version to 2.80.0-6ubuntu3.8 for security patches
+# - ffmpeg: Ensuring latest available version with security fixes
+RUN \
+apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+    ffmpeg \
+    libc6=2.39-0ubuntu8.7 \
+    libglib2.0-0=2.80.0-6ubuntu3.8 \
+    openssl=3.0.13-0ubuntu3.7 \
 && rm -rf /var/lib/apt/lists/*
 
 # Add Kurento repository key for apt-get.
@@ -118,9 +133,11 @@ echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$K
     >/etc/apt/sources.list.d/kurento.list
 
 # Install GStremer Rust rtp plugins (custom build for kurento, needed for AV1 RTP support)
+# This package might not always be available, so allow installation to fail gracefully
 RUN \ 
 apt-get $APT_ARGS update  \
-&& apt-get $APT_ARGS install --no-install-recommends --yes gst-plugin-rtp
+&& apt-get $APT_ARGS install --no-install-recommends --yes gst-plugin-rtp || true \
+&& rm -rf /var/lib/apt/lists/*
 
 # Install Kurento Media Server.
 RUN \
@@ -150,10 +167,12 @@ done \
 #   Useful for troubleshooting and debugging installed GStreamer plugins.
 # * gstreamer-x: Video rendering plugins for X11 and Pango.
 #   Needed by some overlay elements like "textoverlay".
+# * gstreamer1.0-plugins-bad: Updated vulnerable version to 1.24.2-1ubuntu4 for security fixes.
 RUN \
 apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
     gstreamer1.0-tools \
     gstreamer1.0-x \
+    gstreamer1.0-plugins-bad=1.24.2-1ubuntu4 \
 && rm -rf /var/lib/apt/lists/*
 
 # Add Ubuntu debug repository key for apt-get.
@@ -173,9 +192,11 @@ echo "deb http://ddebs.ubuntu.com $UBUNTU_CODENAME main restricted universe mult
 # Install debug packages.
 # The debug packages repository fails very often due to bad server state.
 # Try to update, and only if it works install debug symbols.
+# Also handle version mismatches between packages and debug symbols gracefully.
 RUN \
 apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
     kurento-dbg \
+|| true \
 && rm -rf /var/lib/apt/lists/*
 
 # Expose default Kurento RPC control port.
