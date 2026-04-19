@@ -152,10 +152,13 @@ done
 # Docker login if pushing
 if [[ "$PUSH_IMAGES" == "yes" ]]; then
     log "Logging in to Docker Hub"
-    docker login -u "$KURENTO_DOCKERHUB_USERNAME" -p "$KURENTO_DOCKERHUB_TOKEN" || {
+    set +o xtrace
+    if ! printf '%s\n' "$KURENTO_DOCKERHUB_TOKEN" | docker login -u "$KURENTO_DOCKERHUB_USERNAME" --password-stdin; then
+        set -o xtrace
         log "ERROR: Docker login failed"
         exit 1
-    }
+    fi
+    set -o xtrace
 fi
 
 # Build command
