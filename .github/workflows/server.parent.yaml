@@ -11,6 +11,12 @@ on:
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["noble"]'
+      jobArchs:
+        description: "jobArchs: List of CPU architectures to build for"
+        required: true
+        # Example: '["amd64", "arm64"]'
+        type: "string"
+        default: '["amd64", "arm64"]'
       jobGitName:
         description: "jobGitName: Non-default git branch or tag that should be checked out, if it exists"
         required: false
@@ -44,6 +50,7 @@ jobs:
 #    uses: "Kurento/libsrtp/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
 #    with:
 #      jobDistros: "${{ inputs.jobDistros }}"
+#      jobArchs: "${{ inputs.jobArchs }}"
 #      jobGitName: "7.0.0"
 #      jobGitNameFallback: ""
 #      jobRelease: ${{ inputs.jobRelease }}
@@ -53,6 +60,7 @@ jobs:
 #    uses: "Kurento/openh264/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
 #    with:
 #      jobDistros: "${{ inputs.jobDistros }}"
+#      jobArchs: "${{ inputs.jobArchs }}"
 #      jobGitName: "7.0.0"
 #      jobGitNameFallback: ""
 #      jobRelease: ${{ inputs.jobRelease }}
@@ -63,6 +71,7 @@ jobs:
 #    uses: "Kurento/openh264-gst-plugin/.github/workflows/kurento-buildpackage.reusable.yaml@master"
 #    with:
 #      jobDistros: "${{ inputs.jobDistros }}"
+#      jobArchs: "${{ inputs.jobArchs }}"
 #      jobGitName: "master"
 #      jobGitNameFallback: ""
 #      jobRelease: ${{ inputs.jobRelease }}
@@ -72,6 +81,7 @@ jobs:
 #    uses: "Kurento/gst-plugins-good/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
 #    with:
 #      jobDistros: "${{ inputs.jobDistros }}"
+#      jobArchs: "${{ inputs.jobArchs }}"
 #      jobGitName: "7.0.0"
 #      jobGitNameFallback: ""
 #      jobRelease: ${{ inputs.jobRelease }}
@@ -81,6 +91,7 @@ jobs:
 #    uses: "Kurento/libnice/.github/workflows/kurento-buildpackage.reusable.yaml@7.0.0"
 #    with:
 #      jobDistros: "${{ inputs.jobDistros }}"
+#      jobArchs: "${{ inputs.jobArchs }}"
 #      jobGitName: "7.0.0"
 #      jobGitNameFallback: ""
 #      jobRelease: ${{ inputs.jobRelease }}
@@ -89,6 +100,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage-rust.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitRepo: "https://github.com/GStreamer/gst-plugins-rs"
       jobGitName: "0.12.7"
       jobKurentoGitName: "${{ inputs.jobGitName }}"
@@ -101,6 +113,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -113,6 +126,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -126,6 +140,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -138,6 +153,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -150,6 +166,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -162,6 +179,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -174,6 +192,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -186,6 +205,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -198,6 +218,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -210,6 +231,7 @@ jobs:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobGitName: "${{ inputs.jobGitName }}"
       jobGitNameFallback: "${{ inputs.jobGitNameFallback }}"
       jobRelease: ${{ inputs.jobRelease }}
@@ -222,6 +244,7 @@ jobs:
     uses: "./.github/workflows/server-deploy-debian.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobRelease: ${{ inputs.jobRelease }}
       jobDeployName: "${{ inputs.jobGitName }}"
       runnerGroup: ${{ inputs.runnerGroup }}
@@ -233,6 +256,7 @@ jobs:
     uses: "./.github/workflows/server-deploy-docker.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
       jobRelease: ${{ inputs.jobRelease }}
       jobDeployName: "${{ inputs.jobGitName }}"
       runnerGroup: ${{ inputs.runnerGroup }}

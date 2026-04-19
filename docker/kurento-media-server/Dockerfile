@@ -60,13 +60,13 @@
 
 # Global arguments for FROM.
 ARG UBUNTU_CODENAME="noble"
-
+ARG TARGETPLATFORM
 
 
 # Stage: Base system configuration
 # ================================
 
-FROM ubuntu:${UBUNTU_CODENAME} AS ubuntu_base
+FROM --platform=$TARGETPLATFORM ubuntu:${UBUNTU_CODENAME} AS ubuntu_base
 
 ARG APT_ARGS=""
 

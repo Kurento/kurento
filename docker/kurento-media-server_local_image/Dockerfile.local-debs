@@ -1,0 +1,66 @@
+# ====================
+# Kurento Media Server - Local Packages Build (Multi-Architecture)
+# ====================
+ARG UBUNTU_CODENAME="noble"
+
+FROM ubuntu:${UBUNTU_CODENAME}
+
+# Build arguments for architecture-specific packages
+ARG ARCH="amd64"
+ARG PACKAGES_DIR="server/packages/amd64"
+
+LABEL maintainer="Kurento"
+LABEL architecture="${ARCH}"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG="C.UTF-8"
+
+# Install runtime dependencies and tools
+RUN apt-get update && apt-get install --no-install-recommends --yes \
+    ca-certificates \
+    curl \
+    dnsutils \
+    gnupg \
+    nano \
+    gstreamer1.0-tools \
+    gstreamer1.0-x \
+    pulseaudio \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create directory for local packages
+WORKDIR /kurento-deb
+
+# Copy all .deb files from the architecture-specific build context
+# PACKAGES_DIR should be like "server/packages/amd64" or "server/packages/arm64"
+COPY ${PACKAGES_DIR}/*.deb /kurento-deb/
+
+# Install the packages
+# We use a wildcard to install all of them.
+# We also run apt-get install -f to fix missing dependencies (like system libraries)
+RUN apt-get update && \
+    (dpkg -i /kurento-deb/*.deb || true) && \
+    apt-get install -f --yes && \
+    rm -rf /var/lib/apt/lists/*
+
+# Clean up
+RUN rm -rf /kurento-deb
+
+# Expose default Kurento RPC control port.
+EXPOSE 8888
+
+# Copy entrypoint scripts from the existing local image directory if available
+# We assume the build context root includes the docker directory or we copy from specific paths
+# But to simplify, we will write a simple entrypoint or expect the user to map one.
+# However, for robustness, we can try to reuse the existing ones if we can access them.
+# Since we are building from the workspace root (likely), we can copy them.
+
+# NOTE: This Dockerfile assumes the build context is the WORKSPACE ROOT.
+COPY docker/kurento-media-server_local_image/entrypoint.sh /
+COPY docker/kurento-media-server_local_image/healthchecker.sh /
+COPY docker/kurento-media-server_local_image/getmyip.sh /
+
+RUN chmod +x /entrypoint.sh /healthchecker.sh /getmyip.sh
+
+HEALTHCHECK --start-period=15s --interval=30s --timeout=3s --retries=1 CMD /healthchecker.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

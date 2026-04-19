@@ -113,6 +113,14 @@ BUILD_ARGS=""
 BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
 KMS_VERSION_TAG=$(echo $DOCKER_KMS_VERSION | tr '/' '_')
+
+# Match the tag suffix logic from container_build_multiarch.sh
+IFS=',' read -ra ADDR <<< "${PLATFORMS:-}"
+if [[ ${#ADDR[@]} == 1 && "${ADDR[0]}" == linux/* ]]; then
+    CURRENT_ARCH="${ADDR[0]#linux/}"
+    KMS_VERSION_TAG="${KMS_VERSION_TAG}-${CURRENT_ARCH}"
+fi
+
 BUILD_ARGS+=" KMS_VERSION_TAG=$KMS_VERSION_TAG"
 export BUILD_ARGS
 export TAG_COMMIT="no"
@@ -131,7 +139,7 @@ else
     export TAG="dev-$KMS_VERSION"
     export EXTRA_TAGS="dev-$KMS_VERSION_MAJ_MIN dev-$KMS_VERSION_MAJ dev"
 fi
-"$KURENTO_SCRIPTS_HOME/container_build.sh"
+"$KURENTO_SCRIPTS_HOME/container_build_multiarch.sh"
 
 log "New Docker image built: 'kurento/kurento-media-server:$TAG'"
 

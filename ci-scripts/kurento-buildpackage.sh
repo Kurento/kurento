@@ -333,7 +333,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f $(find "$CFG_INSTALL_FILES_DIR" -name '*.*deb') >/dev/null 2>&1; then
         dpkg --install $(find "$CFG_INSTALL_FILES_DIR" -name '*.*deb') || {
             log "Try to install remaining dependencies"
-            apt-get update ; apt-get "${APT_ARGS[@]}" install --fix-broken --no-remove --yes
+            apt-get update ; apt-get "${APT_ARGS[@]}" install --fix-broken --yes
         }
     else
         log "No '.deb' package files are present!"
@@ -358,7 +358,7 @@ log "Install build dependencies"
     export DEBIAN_FRONTEND=noninteractive
 
     apt-get update ; mk-build-deps --install --remove \
-        --tool="apt-get ${APT_ARGS[*]} -o Debug::pkgProblemResolver=yes --target-release 'a=$DISTRIB_CODENAME-backports' --no-install-recommends --no-remove --yes" \
+        --tool="apt-get ${APT_ARGS[*]} -o Debug::pkgProblemResolver=yes --target-release 'a=$DISTRIB_CODENAME-backports' --no-install-recommends --yes" \
         ./debian/control
 )
 
@@ -491,3 +491,4 @@ log "Move resulting packages to destination dir: '$CFG_DSTDIR'"
 find "$(realpath ..)" -maxdepth 1 -type f -name '*.*deb' \
     -not -path "$CFG_DSTDIR/*" -print0 \
 | xargs -0 --no-run-if-empty mv --target-directory="$CFG_DSTDIR"
+directory="$CFG_DSTDIR"

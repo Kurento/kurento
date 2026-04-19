@@ -11,6 +11,12 @@ on:
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["noble"]'
+      jobArchs:
+        description: "jobArchs: List of CPU architectures to build for"
+        required: true
+        # Example: '["amd64", "arm64"]'
+        type: "string"
+        default: '["amd64", "arm64"]'
       runnerGroup:
         description: "runnerGroup: Set of runners where the workflow jobs should be run"
         required: false
@@ -30,11 +36,22 @@ jobs:
       max-parallel: 1
       matrix:
         jobDistro: ${{ fromJSON(inputs.jobDistros) }}
-    timeout-minutes: 30
+        jobArch: ${{ fromJSON(inputs.jobArchs) }}
+    timeout-minutes: 120
     steps:
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
         uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+
+      # Action: https://github.com/docker/setup-qemu-action
+      - name: "Set up QEMU for multi-arch builds"
+        uses: "docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3" # v3.0.0
+
+      # Action: https://github.com/docker/setup-buildx-action
+      - name: "Set up Docker Buildx"
+        uses: "docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226" # v3.0.0
+        with:
+          driver-opts: network=host
 
       - name: "Configure the environment for ci-scripts/"
         working-directory: "ci-scripts/"
@@ -46,6 +63,7 @@ jobs:
       - name: "Run job script"
         env:
           PUSH_IMAGES: "yes"
+          PLATFORMS: "linux/${{ matrix.jobArch }}"
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
           TAG: "${{ matrix.jobDistro }}-${{ env.JOB_TIMESTAMP }}"
           # Moving tags, example: "1.2.3", "1.2", "1", "latest"
@@ -54,4 +72,4 @@ jobs:
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
         working-directory: docker/rust-buildpackage/
-        run: container_build.sh
+        run: container_build_multiarch.sh

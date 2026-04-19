@@ -11,6 +11,12 @@ on:
         # Example: '["xenial", "bionic", "focal"]'
         type: "string"
         default: '["noble"]'
+      jobArchs:
+        description: "List of CPU architectures to build for"
+        required: true
+        # Example: '["amd64", "arm64"]'
+        type: "string"
+        default: '["amd64", "arm64"]'
       jobGitRepo:
         description: "Git repo from where the Rust code is got to build package"
         required: false
@@ -52,7 +58,8 @@ jobs:
     strategy:
       matrix:
         jobDistro: ${{ fromJson(inputs.jobDistros) }}
-    timeout-minutes: 30
+        jobArch: ${{ fromJSON(inputs.jobArchs) }}
+    timeout-minutes: 120
     steps:
       - name: "Check for non-default git ref"
         id: "git-ref"
@@ -80,6 +87,7 @@ jobs:
           JOB_GIT_REPO: "${{ inputs.jobGitRepo }}"
           JOB_GIT_NAME: "${{ inputs.jobGitName }}"
           JOB_DISTRO: "${{ matrix.jobDistro }}"
+          JOB_ARCH: "${{ matrix.jobArch }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           APT_PROXY_URL: "${{ vars.APT_PROXY_URL }}"
           DISABLE_APT_PROXY: "true"
@@ -91,5 +99,5 @@ jobs:
       - name: "Archive the artifacts"
         uses: "actions/upload-artifact@v4"
         with:
-          name: "${{ inputs.artifactName }}"
+          name: "${{ inputs.artifactName }}-${{ matrix.jobDistro }}-${{ matrix.jobArch }}"
           path: "${{ inputs.directory }}*.*deb"
