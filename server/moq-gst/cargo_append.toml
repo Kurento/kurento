@@ -1,0 +1,12 @@
+
+[package.metadata.deb]
+maintainer = "Kurento <kurento@openvidu.io>"
+extended-description = """\
+ GStreamer plugin providing moqsrc and moqsink elements \
+ for Media over QUIC (MoQ) streaming."""
+depends = "$auto"
+section = "libs"
+priority = "optional"
+assets = [
+    ["target/release/libgstmoq.so", "usr/lib/@DEB_GNU_ARCH_TRIPLET@/gstreamer-1.0/libgstmoq.so", "755"],
+]

@@ -1,0 +1,87 @@
+{
+  "remoteClasses": [
+    {
+      "name": "MoqSubscriberEndpoint",
+      "extends": "Endpoint",
+      "doc": "Endpoint that receives a live media stream from a Media over QUIC (MoQ) relay.
+<p>
+  <code>MoqSubscriberEndpoint</code> connects to a MoQ relay (e.g. a CDN or a
+  local <code>moq-relay</code> instance), subscribes to the broadcast identified
+  by the <code>broadcast</code> parameter, and injects the decoded audio/video
+  into the Kurento media pipeline so that it can be connected to any other
+  <code>MediaElement</code>.
+</p>
+<p>
+  Under the hood the element uses the <code>moqsrc</code> GStreamer element
+  provided by the <a href='https://github.com/moq-dev/moq'>moq-gst</a> plugin,
+  followed by a <code>decodebin3</code> stage for auto-detection and decoding
+  of the incoming CMAF stream.
+</p>
+<h2>Usage</h2>
+<pre><code>
+  # JavaScript (Kurento Client)
+  let subscriber = await pipeline.create('MoqSubscriberEndpoint', {
+    url: 'https://cdn.moq.dev',
+    broadcast: 'my-broadcast.hang'
+  });
+  await subscriber.subscribe();
+  await subscriber.connect(webRtcEndpoint);
+</code></pre>
+<h2>Events fired</h2>
+<ul>
+  <li><strong>EndOfStreamEvent</strong>: The relay closed the broadcast.</li>
+  <li><strong>Error</strong>: A transport or media error occurred.</li>
+</ul>
+      ",
+      "constructor": {
+        "doc": "Create a MoqSubscriberEndpoint",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "The :rom:cls:`MediaPipeline` this endpoint belongs to.",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "url",
+            "doc": "URL of the MoQ relay. Example: <code>https://cdn.moq.dev</code>",
+            "type": "String"
+          },
+          {
+            "name": "broadcast",
+            "doc": "Name of the broadcast to subscribe to. Example: <code>bbb.hang</code>",
+            "type": "String"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "url",
+          "doc": "URL of the MoQ relay this endpoint is connected to.",
+          "type": "String",
+          "readOnly": true
+        },
+        {
+          "name": "broadcast",
+          "doc": "Name of the broadcast being subscribed to.",
+          "type": "String",
+          "readOnly": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "subscribe",
+          "doc": "Start receiving the MoQ broadcast and injecting media into the pipeline.",
+          "params": []
+        },
+        {
+          "name": "unsubscribe",
+          "doc": "Stop receiving media from the MoQ relay.",
+          "params": []
+        }
+      ],
+      "events": [
+        "EndOfStream"
+      ]
+    }
+  ]
+}

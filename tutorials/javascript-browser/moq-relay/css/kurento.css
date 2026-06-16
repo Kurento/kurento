@@ -1,0 +1,33 @@
+body {
+  padding-top: 70px;
+}
+
+.section-box {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+.section-box h3 {
+  margin-top: 0;
+}
+
+video {
+  width: 100%;
+  background: #111;
+}
+
+.status-box {
+  margin-top: 10px;
+}
+
+.form-inline .form-group {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.democonsole {
+  min-height: 180px;
+}

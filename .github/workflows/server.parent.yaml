@@ -109,6 +109,21 @@ jobs:
       runnerGroup: ${{ inputs.runnerGroup }}
       artifactName: "gst-rust-plugins"
 
+  gst-moq-plugins:
+    uses: "./.github/workflows/server-buildpackage-rust.child.yaml"
+    with:
+      jobDistros: "${{ inputs.jobDistros }}"
+      jobArchs: "${{ inputs.jobArchs }}"
+      jobGitRepo: "https://github.com/moq-dev/moq"
+      jobGitName: "moq-gst-0.2.6"
+      jobKurentoGitName: "${{ inputs.jobGitName }}"
+      jobRelease: ${{ inputs.jobRelease }}
+      directory: "./"
+      runnerGroup: ${{ inputs.runnerGroup }}
+      artifactName: "gst-moq-plugins"
+      jobPackageName: "moq-gst"
+      jobPatchDir: "server/moq-gst"
+
   module-creator:
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
@@ -162,7 +177,7 @@ jobs:
       artifactName: "module-core"
 
   module-elements:
-    needs: ["module-core"]
+    needs: ["module-core", "gst-moq-plugins"]
     uses: "./.github/workflows/server-buildpackage.child.yaml"
     with:
       jobDistros: "${{ inputs.jobDistros }}"
