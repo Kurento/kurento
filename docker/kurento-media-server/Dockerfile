@@ -176,6 +176,7 @@ echo "deb http://ddebs.ubuntu.com $UBUNTU_CODENAME main restricted universe mult
 RUN \
 apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
     kurento-dbg \
+|| true \
 && rm -rf /var/lib/apt/lists/*
 
 # Expose default Kurento RPC control port.
