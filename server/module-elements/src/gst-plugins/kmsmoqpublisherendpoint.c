@@ -450,7 +450,7 @@ kms_moq_publisher_endpoint_init (KmsMoqPublisherEndpoint *self)
           &self->priv->audio_moq_sink_pad)
       && !gst_element_link_pads (audio_enc, "src", self->priv->moqsink, "sink_0")) {
     GST_WARNING_OBJECT (self,
-        "Failed to link audio_enc to moqsink.sink_0; moqsink may use dynamic request pads");
+        "Failed linking audio_enc to requested/named moqsink pad; trying generic link");
     gst_element_link (audio_enc, self->priv->moqsink);
   }
 
@@ -462,7 +462,7 @@ kms_moq_publisher_endpoint_init (KmsMoqPublisherEndpoint *self)
           &self->priv->video_moq_sink_pad)
       && !gst_element_link_pads (video_enc, "src", self->priv->moqsink, "sink_1")) {
     GST_WARNING_OBJECT (self,
-        "Failed to link video_enc to moqsink.sink_1; moqsink may use dynamic request pads");
+        "Failed linking video_enc to requested/named moqsink pad; trying generic link");
     gst_element_link (video_enc, self->priv->moqsink);
   }
 
