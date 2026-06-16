@@ -50,6 +50,16 @@ on:
         description: "Name of the artifact to be uploaded"
         required: true
         type: "string"
+      jobPackageName:
+        description: "Name of the Rust/Cargo package to build as a .deb"
+        required: false
+        type: "string"
+        default: "gst-plugin-rtp"
+      jobPatchDir:
+        description: "Sub-path (relative to the repository root) that contains the debian.diff or cargo_append.toml used to add Debian packaging metadata"
+        required: false
+        type: "string"
+        default: "server/gst-plugins-rs"
 
 
 jobs:
@@ -79,7 +89,7 @@ jobs:
         run: |
           echo "$PWD"/ci-scripts >>$GITHUB_PATH
           echo "KURENTO_SCRIPTS_HOME=$PWD"/ci-scripts >>$GITHUB_ENV
-          echo "GSTREAMER_RUST_PATCH_DIR=$PWD/server/gst-plugins-rs" >>$GITHUB_ENV
+          echo "GSTREAMER_RUST_PATCH_DIR=$PWD/${{ inputs.jobPatchDir }}" >>$GITHUB_ENV
           echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
 
       - name: "Run job script"
@@ -89,6 +99,7 @@ jobs:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_ARCH: "${{ matrix.jobArch }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
+          JOB_PACKAGE_NAME: "${{ inputs.jobPackageName }}"
           APT_PROXY_URL: "${{ vars.APT_PROXY_URL }}"
           DISABLE_APT_PROXY: "true"
         working-directory: "${{ inputs.directory }}"
