@@ -173,11 +173,23 @@ echo "deb http://ddebs.ubuntu.com $UBUNTU_CODENAME main restricted universe mult
 # Install debug packages.
 # The debug packages repository fails very often due to bad server state.
 # Try to update, and only if it works install debug symbols.
+# If it fails (e.g. because ddebs.ubuntu.com hasn't published updated dbgsym
+# packages yet, while noble-security already updated the base libraries),
+# print a warning and continue — debug symbols are optional for runtime.
 RUN \
-apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
+apt-get $APT_ARGS update \
+&& apt-get $APT_ARGS install --no-install-recommends --yes \
     kurento-dbg \
-|| true \
-&& rm -rf /var/lib/apt/lists/*
+|| { \
+    echo ''; \
+    echo 'WARNING: kurento-dbg could not be installed.'; \
+    echo 'This usually happens because ddebs.ubuntu.com has not yet published'; \
+    echo 'updated dbgsym packages that match the versions installed from'; \
+    echo 'noble-security. Debug symbols will be missing from this image.'; \
+    echo 'You can retry the build later once ddebs.ubuntu.com catches up.'; \
+    echo ''; \
+} \
+; rm -rf /var/lib/apt/lists/*
 
 # Expose default Kurento RPC control port.
 EXPOSE 8888
