@@ -121,7 +121,24 @@ elif [[ -f "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml" ]]; then
         exit 1
     fi
     log "Appending cargo_append.toml to ${CARGO_TOML_PATH}"
-    cat "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml" >> "$CARGO_TOML_PATH"
+    if grep -q "@DEB_GNU_ARCH_TRIPLET@" "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml"; then
+        case "${JOB_ARCH:-}" in
+            amd64)
+                DEB_GNU_ARCH_TRIPLET="x86_64-linux-gnu"
+                ;;
+            arm64)
+                DEB_GNU_ARCH_TRIPLET="aarch64-linux-gnu"
+                ;;
+            *)
+                log "ERROR: Unsupported JOB_ARCH '${JOB_ARCH:-}' for @DEB_GNU_ARCH_TRIPLET@ placeholder"
+                exit 1
+                ;;
+        esac
+        sed "s|@DEB_GNU_ARCH_TRIPLET@|$DEB_GNU_ARCH_TRIPLET|g" \
+            "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml" >> "$CARGO_TOML_PATH"
+    else
+        cat "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml" >> "$CARGO_TOML_PATH"
+    fi
 else
     log "WARNING: No debian.diff or cargo_append.toml found in ${GSTREAMER_RUST_PATCH_DIR}, skipping patch step"
 fi

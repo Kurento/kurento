@@ -115,7 +115,7 @@ jobs:
       jobDistros: "${{ inputs.jobDistros }}"
       jobArchs: "${{ inputs.jobArchs }}"
       jobGitRepo: "https://github.com/moq-dev/moq"
-      jobGitName: "moq-gst-0.1.0"
+      jobGitName: "moq-gst-0.2.6"
       jobKurentoGitName: "${{ inputs.jobGitName }}"
       jobRelease: ${{ inputs.jobRelease }}
       directory: "./"

@@ -8,5 +8,5 @@ depends = "$auto"
 section = "libs"
 priority = "optional"
 assets = [
-    ["target/release/libgstmoq.so", "usr/lib/x86_64-linux-gnu/gstreamer-1.0/libgstmoq.so", "755"],
+    ["target/release/libgstmoq.so", "usr/lib/@DEB_GNU_ARCH_TRIPLET@/gstreamer-1.0/libgstmoq.so", "755"],
 ]

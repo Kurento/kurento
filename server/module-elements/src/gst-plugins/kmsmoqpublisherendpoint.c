@@ -70,6 +70,8 @@ struct _KmsMoqPublisherEndpointPrivate
   GstElement *moqsink;
   GstElement *audio_appsrc;
   GstElement *video_appsrc;
+  GstPad     *audio_moq_sink_pad;
+  GstPad     *video_moq_sink_pad;
   KmsLoop    *loop;
 
   /* Appsinks sitting on the KmsElement side (outer pipeline) */
@@ -297,6 +299,39 @@ kms_moq_publisher_endpoint_get_property (GObject *object, guint prop_id,
   }
 }
 
+static gboolean
+link_encoder_to_requested_moq_sink_pad (KmsMoqPublisherEndpoint *self,
+    GstElement *encoder, GstPad **requested_pad)
+{
+  GstPad *srcpad;
+  GstPadLinkReturn link_ret;
+
+  *requested_pad = gst_element_request_pad_simple (self->priv->moqsink, "sink_%u");
+  if (*requested_pad == NULL) {
+    return FALSE;
+  }
+
+  srcpad = gst_element_get_static_pad (encoder, "src");
+  if (srcpad == NULL) {
+    GST_ERROR_OBJECT (self, "Failed to get encoder src pad");
+    gst_clear_object (requested_pad);
+    return FALSE;
+  }
+
+  link_ret = gst_pad_link (srcpad, *requested_pad);
+  g_object_unref (srcpad);
+
+  if (link_ret != GST_PAD_LINK_OK) {
+    GST_WARNING_OBJECT (self, "Failed to link encoder to requested moqsink pad: %s",
+        gst_pad_link_get_name (link_ret));
+    gst_element_release_request_pad (self->priv->moqsink, *requested_pad);
+    gst_clear_object (requested_pad);
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 /* -------------------------------------------------------------------------
  * GObject lifecycle
  * ---------------------------------------------------------------------- */
@@ -310,6 +345,18 @@ kms_moq_publisher_endpoint_dispose (GObject *object)
 
   if (self->priv->pipeline != NULL) {
     GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
+
+    if (self->priv->audio_moq_sink_pad != NULL && self->priv->moqsink != NULL) {
+      gst_element_release_request_pad (self->priv->moqsink,
+          self->priv->audio_moq_sink_pad);
+      gst_clear_object (&self->priv->audio_moq_sink_pad);
+    }
+
+    if (self->priv->video_moq_sink_pad != NULL && self->priv->moqsink != NULL) {
+      gst_element_release_request_pad (self->priv->moqsink,
+          self->priv->video_moq_sink_pad);
+      gst_clear_object (&self->priv->video_moq_sink_pad);
+    }
 
     gst_bus_set_sync_handler (bus, NULL, NULL, NULL);
     gst_bus_remove_watch (bus);
@@ -341,6 +388,8 @@ kms_moq_publisher_endpoint_init (KmsMoqPublisherEndpoint *self)
 
   self->priv = KMS_MOQ_PUBLISHER_ENDPOINT_GET_PRIVATE (self);
   self->priv->loop = kms_loop_new ();
+  self->priv->audio_moq_sink_pad = NULL;
+  self->priv->video_moq_sink_pad = NULL;
 
   /*
    * Internal pipeline:
@@ -397,7 +446,9 @@ kms_moq_publisher_endpoint_init (KmsMoqPublisherEndpoint *self)
   if (!gst_element_link (self->priv->audio_appsrc, audio_enc)) {
     GST_ERROR_OBJECT (self, "Failed to link audio_appsrc ! audio_enc");
   }
-  if (!gst_element_link_pads (audio_enc, "src", self->priv->moqsink, "sink_0")) {
+  if (!link_encoder_to_requested_moq_sink_pad (self, audio_enc,
+          &self->priv->audio_moq_sink_pad)
+      && !gst_element_link_pads (audio_enc, "src", self->priv->moqsink, "sink_0")) {
     GST_WARNING_OBJECT (self,
         "Failed to link audio_enc to moqsink.sink_0; moqsink may use dynamic request pads");
     gst_element_link (audio_enc, self->priv->moqsink);
@@ -407,7 +458,9 @@ kms_moq_publisher_endpoint_init (KmsMoqPublisherEndpoint *self)
   if (!gst_element_link (self->priv->video_appsrc, video_enc)) {
     GST_ERROR_OBJECT (self, "Failed to link video_appsrc ! video_enc");
   }
-  if (!gst_element_link_pads (video_enc, "src", self->priv->moqsink, "sink_1")) {
+  if (!link_encoder_to_requested_moq_sink_pad (self, video_enc,
+          &self->priv->video_moq_sink_pad)
+      && !gst_element_link_pads (video_enc, "src", self->priv->moqsink, "sink_1")) {
     GST_WARNING_OBJECT (self,
         "Failed to link video_enc to moqsink.sink_1; moqsink may use dynamic request pads");
     gst_element_link (video_enc, self->priv->moqsink);
