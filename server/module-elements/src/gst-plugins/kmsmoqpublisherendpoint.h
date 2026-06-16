@@ -58,6 +58,9 @@ struct _KmsMoqPublisherEndpointClass
 GType    kms_moq_publisher_endpoint_get_type (void);
 gboolean kms_moq_publisher_endpoint_plugin_init (GstPlugin *plugin);
 
+void kms_moq_publisher_endpoint_publish   (KmsMoqPublisherEndpoint *self);
+void kms_moq_publisher_endpoint_unpublish (KmsMoqPublisherEndpoint *self);
+
 G_END_DECLS
 
 #endif /* _KMS_MOQ_PUBLISHER_ENDPOINT_H_ */

@@ -61,6 +61,9 @@ struct _KmsMoqSubscriberEndpointClass
 GType    kms_moq_subscriber_endpoint_get_type (void);
 gboolean kms_moq_subscriber_endpoint_plugin_init (GstPlugin *plugin);
 
+void kms_moq_subscriber_endpoint_subscribe   (KmsMoqSubscriberEndpoint *self);
+void kms_moq_subscriber_endpoint_unsubscribe (KmsMoqSubscriberEndpoint *self);
+
 G_END_DECLS
 
 #endif /* _KMS_MOQ_SUBSCRIBER_ENDPOINT_H_ */

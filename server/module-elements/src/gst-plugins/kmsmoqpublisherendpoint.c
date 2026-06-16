@@ -150,8 +150,6 @@ connect_audio_sink (KmsMoqPublisherEndpoint *self)
 {
   KmsMoqPublisherEndpointPrivate *priv = self->priv;
   GstElement *agnosticbin;
-  GstPad *sinkpad;
-  GstPadLinkReturn link_ret;
 
   if (priv->audio_linked) {
     return;
@@ -176,15 +174,10 @@ connect_audio_sink (KmsMoqPublisherEndpoint *self)
 
   gst_bin_add (GST_BIN (self), priv->outer_audio_appsink);
 
-  sinkpad = gst_element_get_static_pad (priv->outer_audio_appsink, "sink");
-  link_ret = gst_element_link (agnosticbin,
-      priv->outer_audio_appsink) ? GST_PAD_LINK_OK : GST_PAD_LINK_REFUSED;
-
-  if (link_ret != GST_PAD_LINK_OK) {
+  if (!gst_element_link (agnosticbin, priv->outer_audio_appsink)) {
     GST_ERROR_OBJECT (self, "Failed to link agnosticbin to outer audio appsink");
   }
 
-  g_object_unref (sinkpad);
   gst_element_sync_state_with_parent (priv->outer_audio_appsink);
 
   priv->audio_linked = TRUE;
