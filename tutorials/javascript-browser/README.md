@@ -20,7 +20,7 @@ sudo npm install -g bower
 ```
 
 Each demo is located in a single folder (e.g. kurento-hello-world,
-kurento-magic-mirror, and so on). For example, to install the kurento-hello-world
+kurento-magic-mirror, kurento-moq-relay, and so on). For example, to install the kurento-hello-world
 demo dependencies, run:
 
 ```bash

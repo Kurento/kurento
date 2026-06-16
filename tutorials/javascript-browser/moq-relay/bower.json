@@ -1,0 +1,44 @@
+{
+  "name": "kurento-moq-relay",
+  "version": "7.3.1-dev",
+  "description": "Kurento Browser JavaScript Tutorial: WebRTC to MoQ relay and MoQ relay to WebRTC",
+  "keywords": [
+    "kurento",
+    "webrtc",
+    "moq",
+    "media over quic",
+    "browser",
+    "relay",
+    "publisher",
+    "subscriber",
+    "streaming"
+  ],
+  "homepage": "https://kurento.openvidu.io/",
+  "license": "Apache-2.0",
+  "authors": [
+    "Kurento <kurento@openvidu.io> (https://kurento.openvidu.io/)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kurento/kurento.git"
+  },
+  "main": "index.html",
+  "moduleType": [
+    "globals"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "webrtc-adapter": "v7.4.0",
+    "bootstrap": "~3.3.0",
+    "demo-console": "1.5.1",
+    "kurento-client": "git+https://github.com/Kurento/kurento-client-bower.git",
+    "kurento-utils": "git+https://github.com/Kurento/kurento-utils-bower.git"
+  }
+}
