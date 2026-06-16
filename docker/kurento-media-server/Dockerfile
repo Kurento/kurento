@@ -181,13 +181,13 @@ apt-get $APT_ARGS update \
 && apt-get $APT_ARGS install --no-install-recommends --yes \
     kurento-dbg \
 || { \
-    echo ''; \
-    echo 'WARNING: kurento-dbg could not be installed.'; \
-    echo 'This usually happens because ddebs.ubuntu.com has not yet published'; \
-    echo 'updated dbgsym packages that match the versions installed from'; \
-    echo 'noble-security. Debug symbols will be missing from this image.'; \
-    echo 'You can retry the build later once ddebs.ubuntu.com catches up.'; \
-    echo ''; \
+    printf '\033[1;31m\n'; \
+    printf '\033[1;31mWARNING: kurento-dbg could not be installed.\033[0m\n'; \
+    printf '\033[1;31mThis usually happens because ddebs.ubuntu.com has not yet published\033[0m\n'; \
+    printf '\033[1;31mupdated dbgsym packages that match the versions installed from\033[0m\n'; \
+    printf '\033[1;31mnoble-security. Debug symbols will be missing from this image.\033[0m\n'; \
+    printf '\033[1;31mYou can retry the build later once ddebs.ubuntu.com catches up.\033[0m\n'; \
+    printf '\033[1;31m\n'; \
 } \
 ; rm -rf /var/lib/apt/lists/*
 
