@@ -271,7 +271,7 @@ else
         # To guarantee the published architecture set is always correct, we drop
         # and re-publish whenever an explicit architecture list is provided.
         # Without an explicit list, fall back to the cheaper 'update' path.
-        if [[ -n "$ARCH_FLAG" ]]; then
+        if [[ -n "${ARCH_FLAG}" ]]; then
             echo "Recreating already published development repo to apply architecture set: $CFG_REPO_NAME" >&2
             aptly publish drop "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
             aptly publish repo -gpg-key="$GPGKEY" -force-overwrite $ARCH_FLAG "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
