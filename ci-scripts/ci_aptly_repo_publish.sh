@@ -262,8 +262,23 @@ else
         echo "Publish new development repo: $CFG_REPO_NAME" >&2
         aptly publish repo -gpg-key="$GPGKEY" -force-overwrite $ARCH_FLAG "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
     else
-        echo "Update already published development repo: $CFG_REPO_NAME" >&2
-        aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
+        # NOTE: 'aptly publish update' cannot change the architecture set of an
+        # existing publication. If the requested architectures differ from those
+        # currently published (e.g. arm64 added to a previously amd64-only repo),
+        # 'update' silently publishes only the original architectures, causing
+        # packages for new architectures to appear missing at install time.
+        #
+        # To guarantee the published architecture set is always correct, we drop
+        # and re-publish whenever an explicit architecture list is provided.
+        # Without an explicit list, fall back to the cheaper 'update' path.
+        if [[ -n "${ARCH_FLAG}" ]]; then
+            echo "Recreating already published development repo to apply architecture set: $CFG_REPO_NAME" >&2
+            aptly publish drop "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
+            aptly publish repo -gpg-key="$GPGKEY" -force-overwrite $ARCH_FLAG "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
+        else
+            echo "Update already published development repo: $CFG_REPO_NAME" >&2
+            aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
+        fi
     fi
 fi
 

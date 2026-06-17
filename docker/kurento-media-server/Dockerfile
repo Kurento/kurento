@@ -118,8 +118,8 @@ echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$K
     >/etc/apt/sources.list.d/kurento.list
 
 # Install GStremer Rust rtp plugins (custom build for kurento, needed for AV1 RTP support)
-RUN \ 
-apt-get $APT_ARGS update  \
+RUN \
+apt-get $APT_ARGS update \
 && apt-get $APT_ARGS install --no-install-recommends --yes gst-plugin-rtp
 
 # Install Kurento Media Server.
