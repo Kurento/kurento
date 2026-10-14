@@ -154,5 +154,7 @@ if(ENABLE_EXPERIMENTAL_TESTS)
     ${LIBRARY_NAME}impl
     ${KMSCORE_LIBRARIES}
   )
-  set_tests_properties(test_moq_endpoints PROPERTIES TIMEOUT 60)
+  if(NOT DISABLE_TESTS)
+    set_tests_properties(test_moq_endpoints PROPERTIES TIMEOUT 60)
+  endif()
 endif()

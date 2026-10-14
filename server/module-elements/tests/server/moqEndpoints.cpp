@@ -24,16 +24,17 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <MediaPipelineImpl.hpp>
-#include <objects/MediaElementImpl.hpp>
+#include <MediaElementImpl.hpp>
 #include <objects/MoqPublisherEndpointImpl.hpp>
 #include <objects/MoqSubscriberEndpointImpl.hpp>
-#include <MediaFlowOutStateChanged.hpp>
+#include <MediaFlowInStateChanged.hpp>
 #include <MediaFlowState.hpp>
 #include <MediaType.hpp>
 #include <ModuleManager.hpp>
 #include <MediaSet.hpp>
 
 #include <condition_variable>
+#include <chrono>
 #include <cstdlib>
 #include <mutex>
 #include <string>
@@ -117,8 +118,9 @@ releaseElement(std::shared_ptr<MediaElementImpl> &element)
   MediaSet::getMediaSet()->release(id);
 }
 
+template <typename Endpoint>
 static void
-releaseEndpoint(std::shared_ptr<MediaObjectImpl> &endpoint)
+releaseEndpoint(std::shared_ptr<Endpoint> &endpoint)
 {
   const std::string id = endpoint->getId();
   endpoint.reset();
@@ -141,8 +143,6 @@ moq_audio_and_video_round_trip()
       createPublisher(relayUrl, broadcast);
   std::shared_ptr<MoqSubscriberEndpointImpl> subscriber =
       createSubscriber(relayUrl, broadcast);
-  std::shared_ptr<MediaElementImpl> subscriberElement =
-      std::dynamic_pointer_cast<MediaElementImpl>(subscriber);
 
   std::mutex mutex;
   std::condition_variable condition;
@@ -150,8 +150,8 @@ moq_audio_and_video_round_trip()
   bool videoFlowing = false;
 
   sigc::connection flowConnection =
-      subscriberElement->signalMediaFlowOutStateChanged.connect(
-          [&](MediaFlowOutStateChanged event) {
+      sink->signalMediaFlowInStateChanged.connect(
+          [&](MediaFlowInStateChanged event) {
             const bool flowing =
                 event.getState()->getValue() == MediaFlowState::FLOWING;
 
@@ -184,8 +184,8 @@ moq_audio_and_video_round_trip()
 
   releaseElement(source);
   releaseElement(sink);
-  releaseEndpoint(std::static_pointer_cast<MediaObjectImpl>(publisher));
-  releaseEndpoint(std::static_pointer_cast<MediaObjectImpl>(subscriber));
+  releaseEndpoint(publisher);
+  releaseEndpoint(subscriber);
 }
 
 test_suite *
