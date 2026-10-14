@@ -74,9 +74,9 @@ Create a ``MoqSubscriberEndpoint`` with the relay URL and broadcast name. Call
    }, function(error, subscriber) {
      if (error) return onError(error);
 
-     subscriber.subscribe(function(error) {
+     subscriber.connect(webRtcEndpoint, function(error) {
        if (error) return onError(error);
-       subscriber.connect(webRtcEndpoint, onError);
+       subscriber.subscribe(onError);
      });
    });
 

@@ -1,6 +1,6 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 JavaScript - WebRTC and MoQ relay
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This browser tutorial demonstrates publishing a camera and microphone stream
 from a ``WebRtcEndpoint`` to a MoQ relay and receiving the same broadcast back
@@ -24,9 +24,11 @@ Requirements
   URL you configure in the tutorial.
 * Use a WebRTC-capable browser and serve the tutorial over HTTPS.
 
-The browser tutorial currently uses Bower for its dependencies. Bower is
-deprecated, and the existing browser examples have not yet been migrated to a
-modern package bundler.
+.. warning::
+
+   This browser tutorial still uses Bower, which is deprecated. Its
+   dependencies have not been migrated for Kurento 7, so ``bower install`` may
+   not be able to download everything needed to run the example.
 
 
 
