@@ -134,3 +134,25 @@ target_link_libraries(test_composite
   ${KMSCORE_LIBRARIES}
 )
 
+if(ENABLE_EXPERIMENTAL_TESTS)
+  add_test_program(test_moq_endpoints moqEndpoints.cpp)
+  add_dependencies(test_moq_endpoints kmselements)
+  set_property(TARGET test_moq_endpoints
+    PROPERTY INCLUDE_DIRECTORIES
+      ${CMAKE_CURRENT_BINARY_DIR}/../..
+      ${KmsJsonRpc_INCLUDE_DIRS}
+      ${sigc++-2.0_INCLUDE_DIRS}
+      ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/implementation/objects
+      ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/implementation
+      ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/interface
+      ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
+      ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
+      ${KMSCORE_INCLUDE_DIRS}
+      ${gstreamer-1.0_INCLUDE_DIRS}
+  )
+  target_link_libraries(test_moq_endpoints
+    ${LIBRARY_NAME}impl
+    ${KMSCORE_LIBRARIES}
+  )
+  set_tests_properties(test_moq_endpoints PROPERTIES TIMEOUT 60)
+endif()
