@@ -49,6 +49,7 @@ Information about *development of Kurento itself* is also available:
 
    /features/kurento_client
    /features/kurento_modules
+   /features/moq_streaming
    /features/kurento_protocol
    /features/kurento_utils_js
    /features/security

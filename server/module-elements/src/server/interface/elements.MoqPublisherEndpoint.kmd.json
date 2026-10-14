@@ -3,37 +3,39 @@
     {
       "name": "MoqPublisherEndpoint",
       "extends": "Endpoint",
-      "doc": "Endpoint that publishes a Kurento media stream to a Media over QUIC (MoQ) relay.
+      "doc": "Publishes audio and video from a Kurento media pipeline to a Media over QUIC (MoQ) relay.
 <p>
-  <code>MoqPublisherEndpoint</code> accepts audio and video from the Kurento
-  media pipeline, encodes them, and publishes the resulting CMAF stream to a
-  MoQ relay under the broadcast name specified at construction time.  From
-  there, any MoQ-capable subscriber (browser, CDN edge node, another
-  <code>MoqSubscriberEndpoint</code>, …) can consume the live stream.
+  Create this endpoint with the relay <code>url</code> and the unique
+  <code>broadcast</code> name under which to publish. Connect a media source
+  (for example, a <code>WebRtcEndpoint</code>) to this endpoint, then call
+  <code>publish()</code> to start the broadcast. Call <code>unpublish()</code>
+  to stop it. MoQ subscribers, including
+  <code>MoqSubscriberEndpoint</code> instances, can receive the broadcast.
 </p>
 <p>
-  Under the hood the element uses the <code>moqsink</code> GStreamer element
-  provided by the <a href='https://github.com/moq-dev/moq'>moq-gst</a> plugin.
-  The endpoint internally encodes the incoming media to H.264/AAC before
-  feeding it to the CMAF muxer inside <code>moqsink</code>.
+  The endpoint encodes video as H.264 and audio as AAC and publishes them using
+  the <code>moqsink</code> element from the
+  <a href='https://github.com/moq-dev/moq'>moq-gst</a> GStreamer plugin. The
+  plugin and the GStreamer H.264/AAC encoders must be installed on the Kurento
+  Media Server host.
 </p>
 <h2>Usage</h2>
 <pre><code>
-  # JavaScript (Kurento Client)
-  let publisher = await pipeline.create('MoqPublisherEndpoint', {
+  // JavaScript (Kurento Client, callback API)
+  pipeline.create('MoqPublisherEndpoint', {
     url: 'https://relay.example.com',
     broadcast: 'my-broadcast.hang'
+  }, function(error, publisher) {
+    if (error) return onError(error);
+    webRtcEndpoint.connect(publisher, function(error) {
+      if (error) return onError(error);
+      publisher.publish(onError);
+    });
   });
-  await webRtcEndpoint.connect(publisher);
-  await publisher.publish();
 </code></pre>
-<h2>Events fired</h2>
-<ul>
-  <li><strong>Error</strong>: A transport or encoding error occurred.</li>
-</ul>
       ",
       "constructor": {
-        "doc": "Create a MoqPublisherEndpoint",
+        "doc": "Create an endpoint that publishes media to a MoQ relay. Connect a media source and call <code>publish()</code> to start publishing.",
         "params": [
           {
             "name": "mediaPipeline",
@@ -42,12 +44,12 @@
           },
           {
             "name": "url",
-            "doc": "URL of the MoQ relay where the stream will be published. Example: <code>https://relay.example.com</code>",
+            "doc": "MoQ relay URL to publish to, including the scheme required by the relay (for example, <code>https://relay.example.com</code>).",
             "type": "String"
           },
           {
             "name": "broadcast",
-            "doc": "Name under which the broadcast will be announced. Example: <code>my-stream.hang</code>",
+            "doc": "Name under which the relay announces this broadcast. Subscribers must use the same name (for example, <code>my-stream.hang</code>).",
             "type": "String"
           }
         ]
@@ -55,13 +57,13 @@
       "properties": [
         {
           "name": "url",
-          "doc": "URL of the MoQ relay this endpoint is publishing to.",
+          "doc": "URL of the MoQ relay configured for this endpoint.",
           "type": "String",
           "readOnly": true
         },
         {
           "name": "broadcast",
-          "doc": "Name of the broadcast being published.",
+          "doc": "Name of the broadcast configured for this endpoint.",
           "type": "String",
           "readOnly": true
         }
@@ -69,12 +71,12 @@
       "methods": [
         {
           "name": "publish",
-          "doc": "Start encoding and publishing media to the MoQ relay.",
+          "doc": "Start encoding connected audio/video media and publishing it to the configured relay and broadcast. Call this after connecting the media source.",
           "params": []
         },
         {
           "name": "unpublish",
-          "doc": "Stop publishing; tears down the connection to the MoQ relay.",
+          "doc": "Stop publishing and close the connection to the MoQ relay.",
           "params": []
         }
       ],

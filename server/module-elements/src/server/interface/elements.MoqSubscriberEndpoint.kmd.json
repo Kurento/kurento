@@ -3,38 +3,38 @@
     {
       "name": "MoqSubscriberEndpoint",
       "extends": "Endpoint",
-      "doc": "Endpoint that receives a live media stream from a Media over QUIC (MoQ) relay.
+      "doc": "Receives audio and video from a Media over QUIC (MoQ) relay into a Kurento media pipeline.
 <p>
-  <code>MoqSubscriberEndpoint</code> connects to a MoQ relay (e.g. a CDN or a
-  local <code>moq-relay</code> instance), subscribes to the broadcast identified
-  by the <code>broadcast</code> parameter, and injects the decoded audio/video
-  into the Kurento media pipeline so that it can be connected to any other
-  <code>MediaElement</code>.
+  Create this endpoint with the relay <code>url</code> and the
+  <code>broadcast</code> name to receive. Call <code>subscribe()</code> to
+  connect to the relay and make the decoded media available to the pipeline.
+  Connect the endpoint to a media sink, such as a <code>WebRtcEndpoint</code>,
+  to forward the received media. Call <code>unsubscribe()</code> to stop
+  receiving.
 </p>
 <p>
-  Under the hood the element uses the <code>moqsrc</code> GStreamer element
-  provided by the <a href='https://github.com/moq-dev/moq'>moq-gst</a> plugin,
-  followed by a <code>decodebin3</code> stage for auto-detection and decoding
-  of the incoming CMAF stream.
+  The endpoint uses the <code>moqsrc</code> element from the
+  <a href='https://github.com/moq-dev/moq'>moq-gst</a> GStreamer plugin and
+  decodes the received audio and video for use by Kurento. The plugin must be
+  installed on the Kurento Media Server host.
 </p>
 <h2>Usage</h2>
 <pre><code>
-  # JavaScript (Kurento Client)
-  let subscriber = await pipeline.create('MoqSubscriberEndpoint', {
+  // JavaScript (Kurento Client, callback API)
+  pipeline.create('MoqSubscriberEndpoint', {
     url: 'https://cdn.moq.dev',
     broadcast: 'my-broadcast.hang'
+  }, function(error, subscriber) {
+    if (error) return onError(error);
+    subscriber.subscribe(function(error) {
+      if (error) return onError(error);
+      subscriber.connect(webRtcEndpoint, onError);
+    });
   });
-  await subscriber.subscribe();
-  await subscriber.connect(webRtcEndpoint);
 </code></pre>
-<h2>Events fired</h2>
-<ul>
-  <li><strong>EndOfStreamEvent</strong>: The relay closed the broadcast.</li>
-  <li><strong>Error</strong>: A transport or media error occurred.</li>
-</ul>
       ",
       "constructor": {
-        "doc": "Create a MoqSubscriberEndpoint",
+        "doc": "Create an endpoint that subscribes to a MoQ relay broadcast. Call <code>subscribe()</code> to start receiving media.",
         "params": [
           {
             "name": "mediaPipeline",
@@ -43,12 +43,12 @@
           },
           {
             "name": "url",
-            "doc": "URL of the MoQ relay. Example: <code>https://cdn.moq.dev</code>",
+            "doc": "MoQ relay URL, including the scheme required by the relay (for example, <code>https://cdn.moq.dev</code>).",
             "type": "String"
           },
           {
             "name": "broadcast",
-            "doc": "Name of the broadcast to subscribe to. Example: <code>bbb.hang</code>",
+            "doc": "Name of the broadcast to receive. This must match the name used by the publisher (for example, <code>bbb.hang</code>).",
             "type": "String"
           }
         ]
@@ -56,13 +56,13 @@
       "properties": [
         {
           "name": "url",
-          "doc": "URL of the MoQ relay this endpoint is connected to.",
+          "doc": "URL of the MoQ relay configured for this endpoint.",
           "type": "String",
           "readOnly": true
         },
         {
           "name": "broadcast",
-          "doc": "Name of the broadcast being subscribed to.",
+          "doc": "Name of the broadcast configured for this endpoint.",
           "type": "String",
           "readOnly": true
         }
@@ -70,12 +70,12 @@
       "methods": [
         {
           "name": "subscribe",
-          "doc": "Start receiving the MoQ broadcast and injecting media into the pipeline.",
+          "doc": "Connect to the configured relay, subscribe to the broadcast, and make the decoded media available to the Kurento pipeline.",
           "params": []
         },
         {
           "name": "unsubscribe",
-          "doc": "Stop receiving media from the MoQ relay.",
+          "doc": "Stop receiving media and disconnect from the MoQ relay.",
           "params": []
         }
       ],
