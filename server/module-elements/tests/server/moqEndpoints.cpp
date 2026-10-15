@@ -108,6 +108,8 @@ public:
 
     const std::string configPath = std::string(directory) + "/relay.toml";
     const std::string relayConfig =
+        "drain_timeout = \"0s\"\n"
+        "\n"
         "[listen]\n"
         "bind = \"127.0.0.1:" + std::to_string(port) + "\"\n"
         "tls.generate = [\"localhost\"]\n"
@@ -116,7 +118,7 @@ public:
         "listen = \"127.0.0.1:" + std::to_string(port) + "\"\n"
         "\n"
         "[auth]\n"
-        "public = \"**\"\n";
+        "public = \"anon/**\"\n";
     GError *configError = nullptr;
     if (!g_file_set_contents(configPath.c_str(), relayConfig.c_str(),
             relayConfig.size(), &configError)) {
@@ -179,7 +181,7 @@ public:
         if (responseLength > 0 &&
             (std::strncmp(response, "HTTP/1.1 200", 12) == 0 ||
             std::strncmp(response, "HTTP/1.0 200", 12) == 0)) {
-          url = "http://localhost:" + std::to_string(port);
+          url = "http://localhost:" + std::to_string(port) + "/anon";
           return true;
         }
       }

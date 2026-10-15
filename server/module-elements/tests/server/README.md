@@ -19,7 +19,7 @@ cmake --build build/module-elements --target test_moq_endpoints
 By default, the test starts an anonymous `moq-relay` process bound to loopback,
 waits for it to accept connections, and stops it when the test finishes. Install
 the relay executable and make sure it is available in `PATH` (for example,
-with `cargo install moq-relay` or the
+with `cargo install moq-relay --version 0.17.5` or the
 [official package](https://github.com/moq-dev/moq/tree/main/rs/moq-relay#install)).
 The test generates a temporary configuration and chooses an available local
 port.
@@ -28,7 +28,7 @@ To use an already-running relay instead, set `KURENTO_MOQ_TEST_RELAY_URL` to
 the URL accepted by `moq-gst`; this skips the local relay process:
 
 ```bash
-KURENTO_MOQ_TEST_RELAY_URL=http://localhost:4443 \
+KURENTO_MOQ_TEST_RELAY_URL=http://localhost:4443/anon \
   ctest --test-dir build/module-elements --output-on-failure \
   -R '^test_moq_endpoints$'
 ```
