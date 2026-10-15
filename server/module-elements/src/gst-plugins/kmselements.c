@@ -25,6 +25,8 @@
 #include "kmsselectablemixer.h"
 #include "kmscompositemixer.h"
 #include "kmsalphablending.h"
+#include "kmsmoqsubscriberendpoint.h"
+#include "kmsmoqpublisherendpoint.h"
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -59,6 +61,14 @@ kurento_init (GstPlugin * kurento)
 
   if (!kms_alpha_blending_plugin_init (kurento))
     return FALSE;
+
+  if (!kms_moq_subscriber_endpoint_plugin_init (kurento)) {
+    return FALSE;
+  }
+
+  if (!kms_moq_publisher_endpoint_plugin_init (kurento)) {
+    return FALSE;
+  }
 
   return TRUE;
 }

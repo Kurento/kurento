@@ -15,6 +15,8 @@ set(KMS_ELEMENTS_SOURCES
   kmsdispatcheronetomany.c
   kmscompositemixer.c
   kmsalphablending.c
+  kmsmoqsubscriberendpoint.c
+  kmsmoqpublisherendpoint.c
 )
 
 set(KMS_ELEMENTS_HEADERS
@@ -27,6 +29,8 @@ set(KMS_ELEMENTS_HEADERS
   kmsdispatcheronetomany.h
   kmscompositemixer.h
   kmsalphablending.h
+  kmsmoqsubscriberendpoint.h
+  kmsmoqpublisherendpoint.h
 )
 
 set(ENUM_HEADERS

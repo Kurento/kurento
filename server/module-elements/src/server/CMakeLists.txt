@@ -2,12 +2,13 @@ add_subdirectory(implementation/HttpServer)
 
 set(KMS_ELEMENTS_IMPL_SOURCES
   implementation/CertificateManager.cpp
+  implementation/objects/MoqSubscriberEndpointImpl.cpp
+  implementation/objects/MoqPublisherEndpointImpl.cpp
 )
 
 set(KMS_ELEMENTS_IMPL_HEADERS
   implementation/CertificateManager.hpp
 )
-
 include(CodeGenerator)
 generate_code(
   MODELS ${CMAKE_CURRENT_SOURCE_DIR}/interface
