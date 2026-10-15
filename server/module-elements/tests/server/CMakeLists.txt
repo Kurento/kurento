@@ -149,10 +149,12 @@ if(ENABLE_EXPERIMENTAL_TESTS)
       ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
       ${KMSCORE_INCLUDE_DIRS}
       ${gstreamer-1.0_INCLUDE_DIRS}
+      ${gio-2.0_INCLUDE_DIRS}
   )
   target_link_libraries(test_moq_endpoints
     ${LIBRARY_NAME}impl
     ${KMSCORE_LIBRARIES}
+    ${gio-2.0_LIBRARIES}
   )
   if(NOT DISABLE_TESTS)
     set_tests_properties(test_moq_endpoints PROPERTIES TIMEOUT 90)

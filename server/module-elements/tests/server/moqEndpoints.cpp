@@ -33,6 +33,7 @@
 #include <ModuleManager.hpp>
 #include <MediaSet.hpp>
 
+#include <gio/gio.h>
 #include <glib/gstdio.h>
 
 #include <condition_variable>
