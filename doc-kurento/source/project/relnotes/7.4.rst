@@ -24,7 +24,7 @@ Added
 Choosing the recording video codec
 ----------------------------------
 
-The new enum ``RecorderVideoCodec`` has the values ``H264``, ``H265``, ``VP8``, ``VP9`` and ``AV1``. When it is not provided, the behavior is the same as before (H.264 for MP4 and MKV, VP8 for WEBM). Invalid combinations of container and codec are rejected when creating the RecorderEndpoint, with a ``MEDIA_OBJECT_ILLEGAL_PARAM_ERROR`` error.
+The new enum ``RecorderVideoCodec`` has the values ``DEFAULT``, ``H264``, ``H265``, ``VP8``, ``VP9`` and ``AV1``. When it is not provided (or it is ``DEFAULT``), the behavior is the same as before (H.264 for MP4 and MKV, VP8 for WEBM). Invalid combinations of container and codec are rejected when creating the RecorderEndpoint, with a ``MEDIA_OBJECT_ILLEGAL_PARAM_ERROR`` error.
 
 If the incoming video already uses the requested codec, it is stored as-is, without any transcoding. H.265 is written as ``hvc1``, which can be played by Safari and QuickTime.
 

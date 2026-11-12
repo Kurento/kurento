@@ -5,7 +5,7 @@ Recording: containers and codecs
 The :rom:cls:`RecorderEndpoint` stores the media that it receives into a file. Two things determine what ends up inside that file:
 
 * The **container** (MP4, MKV, WEBM, ...), chosen with the *mediaProfile* constructor parameter (:rom:enum:`MediaProfileSpecType`).
-* The **video codec** (H.264, H.265, VP8, VP9, AV1), chosen with the optional *videoCodec* constructor parameter (:rom:enum:`RecorderVideoCodec`).
+* The **video codec** (H.264, H.265, VP8, VP9, AV1), chosen with the optional *videoCodec* constructor parameter (:rom:enum:`RecorderVideoCodec`). Its default value is ``DEFAULT``, which means "use the default codec of the container".
 
 .. contents:: Table of Contents
 
@@ -14,7 +14,7 @@ The :rom:cls:`RecorderEndpoint` stores the media that it receives into a file. T
 Default behavior
 ================
 
-If *videoCodec* is not provided, the codec is the default of each container, exactly as in previous versions of Kurento:
+If *videoCodec* is not provided (or it is ``DEFAULT``), the codec is the default of each container, exactly as in previous versions of Kurento:
 
 ======================  =============
 Container               Default codec
@@ -41,7 +41,8 @@ Container               H264   H265   VP8    VP9    AV1
 
 * The ``_VIDEO_ONLY`` variants of each profile (e.g. ``MP4_VIDEO_ONLY``) follow the same rules as their full counterparts.
 * The ``_AUDIO_ONLY`` variants do not store any video, so they ignore *videoCodec*.
-* ``FLV``, ``JPEG_VIDEO_ONLY`` and ``KURENTO_SPLIT_RECORDER`` do not support the *videoCodec* parameter.
+* ``FLV``, ``JPEG_VIDEO_ONLY`` and ``KURENTO_SPLIT_RECORDER`` do not support choosing a codec: they only accept ``DEFAULT``.
+* ``DEFAULT`` is valid with every profile.
 
 If an invalid combination is requested, the RecorderEndpoint is **not created**: the call fails with a ``MEDIA_OBJECT_ILLEGAL_PARAM_ERROR`` error, whose message indicates the offending codec and profile. For example, requesting ``H265`` together with ``WEBM``.
 
