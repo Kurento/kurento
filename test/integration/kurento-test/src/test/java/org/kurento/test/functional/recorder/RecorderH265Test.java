@@ -59,8 +59,11 @@ import org.kurento.test.utils.Shell;
  * Test logic:
  * <ol>
  * <li>(Test) An H.265 file is generated with GStreamer (<code>x265enc</code>) or FFmpeg
- * (<code>libx265</code>). The test is skipped if neither is available, or if KMS runs in a
- * different host and cannot read the file.</li>
+ * (<code>libx265</code>), whichever is installed in the host that runs the test. The test is
+ * skipped (JUnit assumption) if neither is available, or if the recording URL is not a local
+ * <code>file://</code> URL. The test assumes that KMS runs in the same host (or shares the
+ * file system), because the source file is read by KMS, and the recording is read by the
+ * test.</li>
  * <li>(KMS) The file is played with <code>useEncodedMedia</code> and recorded with
  * <code>videoCodec=H265</code>.</li>
  * </ol>
@@ -93,22 +96,32 @@ public class RecorderH265Test extends KurentoClientTest {
   }
 
   /**
+   * Runs a command; returns false if it cannot be executed (e.g. it is not installed).
+   */
+  private boolean tryRun(String... command) {
+    try {
+      Shell.runAndWaitArray(command);
+      return true;
+    } catch (RuntimeException e) {
+      return false;
+    }
+  }
+
+  /**
    * Generates a short H.265 MP4 file with a test pattern; returns false if there is no encoder.
    */
   private boolean generateSource(File source) {
     String[] gst = {"gst-launch-1.0", "-q", "videotestsrc", "num-buffers=" + (FILE_SECONDS * 25),
         "!", "video/x-raw,width=320,height=240,framerate=25/1", "!", "x265enc", "!", "h265parse",
         "!", "mp4mux", "!", "filesink", "location=" + source.getAbsolutePath()};
-    Shell.runAndWaitArray(gst);
-    if (source.length() > 0) {
+    if (tryRun(gst) && source.length() > 0) {
       return true;
     }
 
     String[] ffmpeg = {"ffmpeg", "-y", "-f", "lavfi", "-i",
         "testsrc=size=320x240:rate=25:duration=" + FILE_SECONDS, "-c:v", "libx265", "-tag:v",
         "hvc1", source.getAbsolutePath()};
-    Shell.runAndWaitArray(ffmpeg);
-    return source.length() > 0;
+    return tryRun(ffmpeg) && source.length() > 0;
   }
 
   private String probe(String file, String entries) {
@@ -119,11 +132,13 @@ public class RecorderH265Test extends KurentoClientTest {
   private void doTest(MediaProfileSpecType profile, String extension, String expectedTag)
       throws Exception {
 
+    String recordingFile = getRecordUrl(extension);
+    Assume.assumeTrue("The recording URL must be a local file:// URL: " + recordingFile,
+        recordingFile.startsWith("file://"));
+
     File source = new File(getDefaultOutputFile("-source-h265.mp4"));
     Assume.assumeTrue("Cannot generate the H.265 source file (no x265enc nor libx265)",
         generateSource(source));
-
-    String recordingFile = getRecordUrl(extension);
 
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
@@ -173,7 +188,7 @@ public class RecorderH265Test extends KurentoClientTest {
     AssertMedia.assertGeneralDuration(recordingFile, TimeUnit.SECONDS.toMillis(FILE_SECONDS),
         THRESHOLD_MS);
 
-    String path = recordingFile.substring(recordingFile.indexOf("://") + 3);
+    String path = recordingFile.substring("file://".length());
     String codec = probe(path, "stream=codec_name,codec_tag_string");
     Assert.assertTrue("Unexpected codec: " + codec, codec.contains("codec_name=hevc"));
     if (expectedTag != null) {
