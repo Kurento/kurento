@@ -1,14 +1,12 @@
 ======================================
-Kurento 7.3 Release Notes (UNRELEASED)
+Kurento 7.4 Release Notes (UNRELEASED)
 ======================================
 
-This is a template for changes that are being added to the next release.
+This page collects the changes that are being added to the next release.
 
-Kurento 7.3.0 was originally released on 31 March 1999.
+Kurento 7.4.0 has not been released yet.
 
-.. The latest `bug-fix release <#bug-fix-releases>`__ in the stable 7.1 series is **7.1.1**.
-
-See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.3.html for the latest version of this document.
+See https://doc-kurento.readthedocs.io/en/latest/project/relnotes/7.4.html for the latest version of this document.
 
 To install Kurento Media Server: :doc:`/user/installation`.
 
@@ -19,73 +17,43 @@ To install Kurento Media Server: :doc:`/user/installation`.
 Added
 =====
 
-* **Small addition**. Description.
+* **H.265 recording in MP4 and MKV**. The RecorderEndpoint has a new optional constructor parameter, *videoCodec*, to choose the video codec that is stored in the recording file independently of the container.
 
 
 
-Big addition name
------------------
+Choosing the recording video codec
+----------------------------------
 
-Full description, with images, code samples, external links, etc. Some useful syntax examples:
+The new enum ``RecorderVideoCodec`` has the values ``H264``, ``H265``, ``VP8``, ``VP9`` and ``AV1``. When it is not provided, the behavior is the same as before (H.264 for MP4 and MKV, VP8 for WEBM). Invalid combinations of container and codec are rejected when creating the RecorderEndpoint, with a ``MEDIA_OBJECT_ILLEGAL_PARAM_ERROR`` error.
 
-* Documentation section: :doc:`/user/tutorials`.
+If the incoming video already uses the requested codec, it is stored as-is, without any transcoding. H.265 is written as ``hvc1``, which can be played by Safari and QuickTime.
 
-* Glossary term: :term:`SDP`.
+.. code-block:: java
 
-* Inline link: `How to avoid Data Channel breaking <https://blog.mozilla.org/webrtc/how-to-avoid-data-channel-breaking/>`__.
+   RecorderEndpoint recorder = new RecorderEndpoint
+       .Builder(pipeline, "file:///var/lib/kurento/recording.mp4")
+       .withMediaProfile(MediaProfileSpecType.MP4)
+       .withVideoCodec(RecorderVideoCodec.H265)
+       .build();
 
-* Blocks:
+.. code-block:: js
 
-  .. code-block:: java
+   const recorder = await pipeline.create("RecorderEndpoint", {
+     uri: "file:///var/lib/kurento/recording.mp4",
+     mediaProfile: "MP4",
+     videoCodec: "H265",
+   });
 
-     System.out.println("Some example Java code");
+.. note::
 
-  .. code-block:: text
-
-     Some literal command output
-
-  .. note::
-
-     Something to keep in mind.
-
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{issue_id} <https://github.com/Kurento/kurento/issues/{issue_id}>`__ (*Issue title*).
-Thanks to `@Username <https://github.com/Username>`__ (Full Name, if available) for `Kurento/kurento#{pr_id} <https://github.com/Kurento/kurento/pull/{pr_id}>`__ (*Pull Request title*).
-
-
-
-Changed
-=======
-
-* Description.
-
-
-
-Deprecated
-==========
-
-* Description.
+   Servers older than 7.4.0 silently ignore the *videoCodec* parameter. See :doc:`/knowledge/recording-codecs` for the valid combinations, the cases that need transcoding, and the minimum versions.
 
 
 
 Fixed
 =====
 
-* Description.
-
-
-
-Other changes
-=============
-
-This list includes other changes and fixes contributed by users and/or fellow developers, who merit our sincere appreciation and thanks for sharing their work with the Kurento project:
-
-**RepoName 1**
-
-* "Username for PR" ...
-
-**RepoName 2**
-
-* "Username for PR" ...
+* Transcoding to H.265 (for example, when recording H.265 from a source that sends another codec) now works: the encoder is selected regardless of the stream format, and its output is parsed before being muxed or payloaded.
 
 
 

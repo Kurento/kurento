@@ -29,3 +29,10 @@ An easy solution to the interrupted recording problem is to move the *moov* atom
 MP4 Fast-Start has been tested for recording in Kurento, however the results were not very satisfying. In case of a crash, the files were effectively playable, however this would come at a great cost in terms of resulting file size. MP4 videos with Fast-Start mode enabled would grow in size much faster than those recorded *without* Fast-Start enabled.
 
 Due to this observation, MP4 container format is just considered not the best choice for live recording with Kurento, with WEBM being the better option. Also the popular **MKV** (Matroska container format) has been made available to use for recording since Kurento Media Server release **6.10**. This format is much more robust than MP4 and provides great results for live recording. However, note that most browsers don't have native support for directly opening local MKV files (e.g. with ``<video src="myVideo.mkv">``), while they are able to open WEBM, so we still recommend WEBM as the most compatible container format for recordings.
+
+
+
+Codecs inside MP4
+=================
+
+The MP4 container is not tied to H.264: the *videoCodec* parameter of the RecorderEndpoint allows storing H.265 (as ``hvc1``, playable in Safari and QuickTime), VP9 or AV1 in MP4 files instead. See :doc:`/knowledge/recording-codecs` for the list of valid combinations and for the cases where no transcoding is needed.
