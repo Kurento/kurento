@@ -70,7 +70,7 @@ done
 WORK_DIR="$(mktemp --directory)"
 trap_add 'rm -rf "$WORK_DIR"' EXIT
 
-TARBALL_NAME="$(npm pack --silent --pack-destination "$WORK_DIR" | tail -n 1)"
+TARBALL_NAME="$(npm pack --json --pack-destination "$WORK_DIR" | jq --raw-output '.[0].filename')"
 TARBALL="$WORK_DIR/$TARBALL_NAME"
 [[ -f "$TARBALL" ]] || {
     log "ERROR: npm pack did not produce a tarball"
@@ -95,7 +95,11 @@ for hook in preinstall install postinstall; do
     log "Package declares '$hook' script: $cmd"
 
     # Check each word that looks like a relative path to a local file.
-    for word in $cmd; do
+    # Split without globbing, and strip quotes from each word.
+    read -r -a words <<<"$cmd"
+    for word in "${words[@]}"; do
+        word="${word//\"/}"
+        word="${word//\'/}"
         case "$word" in
             -*|*://*|*=*) continue ;;
             */*|*.js|*.sh)
@@ -121,7 +125,13 @@ fi
 mkdir "$WORK_DIR/project"
 pushd "$WORK_DIR/project"
 npm init --yes >/dev/null
-npm install --no-audit --no-fund "$TARBALL"
+# Don't expose publishing credentials to the install scripts of dependencies.
+env -u KURENTO_NPM_TOKEN -u NPM_TOKEN -u NODE_AUTH_TOKEN \
+    -u KURENTO_MAVEN_SONATYPE_USERNAME -u KURENTO_MAVEN_SONATYPE_PASSWORD \
+    -u KURENTO_MAVEN_DOWNLOAD_USERNAME -u KURENTO_MAVEN_DOWNLOAD_PASSWORD \
+    -u KURENTO_MAVEN_UPLOAD_USERNAME -u KURENTO_MAVEN_UPLOAD_PASSWORD \
+    -u GITHUB_TOKEN \
+    npm install --no-audit --no-fund "$TARBALL"
 popd
 
 log "Package '$TARBALL_NAME' installs correctly"

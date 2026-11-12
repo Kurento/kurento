@@ -2,6 +2,11 @@
 # Checked with ShellCheck (https://www.shellcheck.net/)
 
 #/ Deploy JavaScript packages with NPM.
+#/
+#/ Before publishing, 'check_js_package.sh' verifies that the package installs
+#/ from its packed tarball. Set the environment variable
+#/ CHECK_JS_PACKAGE_SKIP_INSTALL=true to skip the actual installation (e.g. when
+#/ the package dependencies are not yet published in the registry).
 
 
 
@@ -71,7 +76,11 @@ fi
 
 # Make sure that the package can be installed from the tarball that is about to
 # be published, before actually publishing it.
-"$SELF_DIR/check_js_package.sh"
+if [[ "${CHECK_JS_PACKAGE_SKIP_INSTALL:-false}" == "true" ]]; then
+    "$SELF_DIR/check_js_package.sh" --skip-install
+else
+    "$SELF_DIR/check_js_package.sh"
+fi
 
 
 
