@@ -213,8 +213,8 @@
               "doc": "Selects the video codec that will be stored in the recording file, independently of the container chosen with <code>mediaProfile</code>.
 <p>
   If this parameter is not provided (or if it is <code>DEFAULT</code>), the
-  video codec is the default one of the container: H264 for MP4 and MKV, VP8 for
-  WEBM. The
+  server applies its default behavior, which currently is to use the default
+  codec of the container: H264 for MP4 and MKV, VP8 for WEBM. The
   <code>_VIDEO_ONLY</code> profiles behave like their full counterparts, and the
   <code>_AUDIO_ONLY</code> profiles ignore this parameter, because they do not
   store any video. The value <code>DEFAULT</code> is valid with every profile.
@@ -307,8 +307,9 @@
 </p>
 <ul>
   <li>
-    <strong>DEFAULT</strong>: Use the default codec of the container (H264 for
-    MP4 and MKV, VP8 for WEBM). This is the behavior when no codec is requested.
+    <strong>DEFAULT</strong>: Default behavior of the server (currently, the
+    default codec of the container: H264 for MP4 and MKV, VP8 for WEBM). This is
+    the behavior when no codec is requested.
   </li>
   <li><strong>H264</strong>, <strong>H265</strong>, <strong>VP8</strong>,
     <strong>VP9</strong>, <strong>AV1</strong>: Store the video with this codec.
