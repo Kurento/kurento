@@ -2,10 +2,10 @@
 Recording: containers and codecs
 ================================
 
-The :rom:cls:`RecorderEndpoint` stores the media that it receives into a file. Two things determine what ends up inside that file:
+The **RecorderEndpoint** (API docs: `Java <../_static/client-javadoc/org/kurento/client/RecorderEndpoint.html>`__, `JavaScript <../_static/client-jsdoc/module-elements.RecorderEndpoint.html>`__) stores the media that it receives into a file. Two things determine what ends up inside that file:
 
-* The **container** (MP4, MKV, WEBM, ...), chosen with the *mediaProfile* constructor parameter (:rom:enum:`MediaProfileSpecType`).
-* The **video codec** (H.264, H.265, VP8, VP9, AV1), chosen with the optional *videoCodec* constructor parameter (:rom:enum:`RecorderVideoCodec`). Its default value is ``DEFAULT``, which means "use the default codec of the container".
+* The **container** (MP4, MKV, WEBM, ...), chosen with the *mediaProfile* constructor parameter (``MediaProfileSpecType``).
+* The **video codec** (H.264, H.265, VP8, VP9, AV1), chosen with the optional *videoCodec* constructor parameter (``RecorderVideoCodec``). Its default value is ``DEFAULT``, which means "use the default behavior of the server", currently the default codec of the container.
 
 .. contents:: Table of Contents
 
@@ -14,7 +14,7 @@ The :rom:cls:`RecorderEndpoint` stores the media that it receives into a file. T
 Default behavior
 ================
 
-If *videoCodec* is not provided (or it is ``DEFAULT``), the codec is the default of each container, exactly as in previous versions of Kurento:
+If *videoCodec* is not provided (or it is ``DEFAULT``), the server uses its default behavior, which currently is the default codec of each container, exactly as in previous versions of Kurento:
 
 ======================  =============
 Container               Default codec
@@ -58,7 +58,7 @@ Passthrough and transcoding
 Kurento compares the codec of the incoming media with the codec requested for the recording:
 
 * **They match: passthrough.** The video is stored as-is, without being decoded nor encoded again. There is no encoder in the media pipeline, so the CPU usage is minimal and the quality is not degraded.
-* **They differ: transcoding.** The video is decoded and encoded again with the requested codec. This incurs in a noticeable CPU load, and a :rom:evt:`MediaTranscodingStateChanged` event is emitted by the source element, which you can use to detect that this is happening.
+* **They differ: transcoding.** The video is decoded and encoded again with the requested codec. This incurs in a noticeable CPU load, and a ``MediaTranscodingStateChanged`` event is emitted by the source element, which you can use to detect that this is happening.
 
 Some practical notes:
 
