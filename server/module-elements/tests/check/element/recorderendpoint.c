@@ -740,6 +740,9 @@ GST_END_TEST
 #define CODEC_TEST_SRC_H265 \
     CODEC_TEST_SRC_CAPS " ! x265enc tune=zerolatency key-int-max=15 ! " \
     "h265parse ! video/x-h265,stream-format=hvc1,alignment=au ! queue"
+#define CODEC_TEST_SRC_H265_BYTESTREAM \
+    CODEC_TEST_SRC_CAPS " ! x265enc tune=zerolatency key-int-max=15 ! " \
+    "h265parse ! video/x-h265,stream-format=byte-stream,alignment=au ! queue"
 #define CODEC_TEST_SRC_VP8 \
     CODEC_TEST_SRC_CAPS " ! vp8enc deadline=1 keyframe-max-dist=15"
 
@@ -1090,6 +1093,38 @@ GST_START_TEST (check_h265_passthrough_mkv_late_link)
 
 GST_END_TEST;
 
+/* H265 sources that are not hvc1 (TS, filters, other pipelines) are recorded
+ * without transcoding: the recorder repackages them with h265parse */
+GST_START_TEST (check_h265_bytestream_passthrough_mp4)
+{
+  codec_check_recording (CODEC_TEST_SRC_H265_BYTESTREAM,
+      KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, KMS_RECORDING_VIDEO_CODEC_H265,
+      "/tmp/check_h265_bytestream_passthrough.mp4", "qtdemux", FALSE, FALSE,
+      "video/x-h265", "hvc1");
+}
+
+GST_END_TEST;
+
+GST_START_TEST (check_h265_bytestream_passthrough_mkv)
+{
+  codec_check_recording (CODEC_TEST_SRC_H265_BYTESTREAM,
+      KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY, KMS_RECORDING_VIDEO_CODEC_H265,
+      "/tmp/check_h265_bytestream_passthrough.mkv", "matroskademux", FALSE,
+      FALSE, "video/x-h265", "hvc1");
+}
+
+GST_END_TEST;
+
+GST_START_TEST (check_h265_bytestream_passthrough_mp4_late_link)
+{
+  codec_check_recording (CODEC_TEST_SRC_H265_BYTESTREAM,
+      KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, KMS_RECORDING_VIDEO_CODEC_H265,
+      "/tmp/check_h265_bytestream_passthrough_late.mp4", "qtdemux", TRUE,
+      FALSE, "video/x-h265", "hvc1");
+}
+
+GST_END_TEST;
+
 /* (iii) raw source -> H265 (transcoding with x265enc, 4:2:0) */
 GST_START_TEST (check_raw_to_h265_mp4)
 {
@@ -1387,6 +1422,9 @@ recorderendpoint_suite (void)
     tcase_add_test (tc_chain, check_h265_passthrough_mp4_late_link);
     tcase_add_test (tc_chain, check_h265_passthrough_mkv);
     tcase_add_test (tc_chain, check_h265_passthrough_mkv_late_link);
+    tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mp4);
+    tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mkv);
+    tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mp4_late_link);
     tcase_add_test (tc_chain, check_raw_to_h265_mp4);
     tcase_add_test (tc_chain, check_raw_to_h265_mkv);
     tcase_add_test (tc_chain, check_raw_444_to_h265_mp4);

@@ -1401,6 +1401,7 @@ kms_recorder_endpoint_create_base_media_muxer (KmsRecorderEndpoint * self)
   } else {
     mux = KMS_BASE_MEDIA_MUXER (kms_av_muxer_new
         (KMS_BASE_MEDIA_MUXER_PROFILE, self->priv->profile,
+            KMS_BASE_MEDIA_MUXER_VIDEO_CODEC, self->priv->video_codec,
             KMS_BASE_MEDIA_MUXER_URI, KMS_URI_ENDPOINT (self)->uri, NULL));
   }
 
@@ -1573,6 +1574,18 @@ kms_recorder_endpoint_get_caps_from_profile (KmsRecorderEndpoint * self,
   }
 
   gst_encoding_profile_unref (cprof);
+
+  if (caps != NULL && type == KMS_ELEMENT_PAD_TYPE_VIDEO &&
+      self->priv->video_codec == KMS_RECORDING_VIDEO_CODEC_H265) {
+    /* H265 can be recorded without transcoding from any bitstream format:
+     * the muxer chain has an h265parse that outputs the hvc1/au that the
+     * muxers require. hvc1 goes first so that it is preferred. */
+    gst_caps_unref (caps);
+    caps = gst_caps_from_string ("video/x-h265, "
+        "stream-format=(string){ hvc1, hev1, byte-stream }, "
+        "alignment=(string){ au, nal }");
+  }
+
   return caps;
 }
 
