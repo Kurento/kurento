@@ -22,6 +22,10 @@
 #include <boost/test/included/unit_test.hpp>
 #include <MediaPipelineImpl.hpp>
 #include <objects/RecorderEndpointImpl.hpp>
+#include <objects/PlayerEndpointImpl.hpp>
+#include <KurentoException.hpp>
+#include <MediaType.hpp>
+#include <MediaTranscodingState.hpp>
 #include <mutex>
 #include <condition_variable>
 #include <ModuleManager.hpp>
@@ -307,12 +311,245 @@ recorder_state_changes ()
   }
 }
 
+/* Creates a RecorderEndpoint with the given profile and (optional) video codec;
+ * an empty videoCodec means "do not send the parameter". */
+static std::shared_ptr <RecorderEndpointImpl>
+createRecorderEndpointWithCodec (const std::string &profile,
+                                 const std::string &videoCodec, const std::string &extension,
+                                 std::string *dir = nullptr)
+{
+  Json::Value constructorParams;
+  gchar tmp_file_template[] = DIR_TEMPLATE;
+  gchar *tmp_dir = mkdtemp (tmp_file_template);
+
+  constructorParams ["mediaPipeline"] = mediaPipelineId;
+  constructorParams ["uri"] = "file://" + std::string (tmp_dir) +
+                              "/recording." + extension;
+  constructorParams ["mediaProfile"] = profile;
+
+  if (!videoCodec.empty () ) {
+    constructorParams ["videoCodec"] = videoCodec;
+  }
+
+  if (dir) {
+    *dir = tmp_dir;
+  }
+
+  return std::dynamic_pointer_cast <RecorderEndpointImpl> (
+           moduleManager.getFactory ("RecorderEndpoint")->createObject (
+             config, "", constructorParams) );
+}
+
+static void
+check_codec_accepted (const std::string &profile, const std::string &videoCodec,
+                      const std::string &extension)
+{
+  BOOST_TEST_MESSAGE ("Valid: " << profile << " + " << videoCodec);
+
+  std::shared_ptr <RecorderEndpointImpl> recorder;
+
+  BOOST_CHECK_NO_THROW (recorder = createRecorderEndpointWithCodec (profile,
+                                   videoCodec, extension) );
+  BOOST_CHECK (recorder != nullptr);
+
+  if (recorder) {
+    releaseRecorderEndpoint (recorder);
+  }
+}
+
+static void
+check_codec_rejected (const std::string &profile, const std::string &videoCodec,
+                      const std::string &extension)
+{
+  BOOST_TEST_MESSAGE ("Invalid: " << profile << " + " << videoCodec);
+
+  bool thrown = false;
+
+  try {
+    std::shared_ptr <RecorderEndpointImpl> recorder =
+      createRecorderEndpointWithCodec (profile, videoCodec, extension);
+  } catch (const KurentoException &e) {
+    thrown = true;
+    BOOST_CHECK_EQUAL (e.getCode (), MEDIA_OBJECT_ILLEGAL_PARAM_ERROR);
+    BOOST_CHECK (std::string (e.what () ).find (videoCodec) != std::string::npos);
+    BOOST_TEST_MESSAGE ("  error: " << e.what () );
+  }
+
+  BOOST_CHECK_MESSAGE (thrown, "Expected KurentoException for " << profile << " + "
+                       << videoCodec);
+}
+
+static void
+video_codec_matrix ()
+{
+  /* No videoCodec: the default of each container, as before */
+  check_codec_accepted ("WEBM", "", "webm");
+  check_codec_accepted ("MP4", "", "mp4");
+  check_codec_accepted ("MKV", "", "mkv");
+
+  /* DEFAULT is the same as not sending the parameter, valid for any profile */
+  check_codec_accepted ("MP4", "DEFAULT", "mp4");
+  check_codec_accepted ("WEBM", "DEFAULT", "webm");
+  check_codec_accepted ("FLV", "DEFAULT", "flv");
+  check_codec_accepted ("JPEG_VIDEO_ONLY", "DEFAULT", "jpg");
+
+  /* Valid combinations */
+  check_codec_accepted ("MP4", "H264", "mp4");
+  check_codec_accepted ("MP4", "H265", "mp4");
+  check_codec_accepted ("MP4", "VP9", "mp4");
+  check_codec_accepted ("MP4", "AV1", "mp4");
+  check_codec_accepted ("MP4_VIDEO_ONLY", "H265", "mp4");
+  check_codec_accepted ("MKV", "H264", "mkv");
+  check_codec_accepted ("MKV", "H265", "mkv");
+  check_codec_accepted ("MKV", "VP8", "mkv");
+  check_codec_accepted ("MKV", "VP9", "mkv");
+  check_codec_accepted ("MKV", "AV1", "mkv");
+  check_codec_accepted ("MKV_VIDEO_ONLY", "H265", "mkv");
+  check_codec_accepted ("WEBM", "VP8", "webm");
+  check_codec_accepted ("WEBM", "VP9", "webm");
+  check_codec_accepted ("WEBM", "AV1", "webm");
+  check_codec_accepted ("WEBM_VIDEO_ONLY", "VP9", "webm");
+
+  /* Audio-only profiles ignore the codec */
+  check_codec_accepted ("MP4_AUDIO_ONLY", "H265", "mp4");
+  check_codec_accepted ("MKV_AUDIO_ONLY", "H265", "mkv");
+  check_codec_accepted ("WEBM_AUDIO_ONLY", "H265", "webm");
+
+  /* Invalid combinations */
+  check_codec_rejected ("WEBM", "H264", "webm");
+  check_codec_rejected ("WEBM", "H265", "webm");
+  check_codec_rejected ("WEBM_VIDEO_ONLY", "H265", "webm");
+  check_codec_rejected ("MP4", "VP8", "mp4");
+  check_codec_rejected ("MP4_VIDEO_ONLY", "VP8", "mp4");
+  check_codec_rejected ("FLV", "H264", "flv");
+  check_codec_rejected ("FLV", "H265", "flv");
+  check_codec_rejected ("JPEG_VIDEO_ONLY", "H264", "jpg");
+}
+
+static void
+video_codec_unknown_value ()
+{
+  /* A value outside of the enum is rejected when deserializing the parameter */
+  BOOST_CHECK_THROW (createRecorderEndpointWithCodec ("MP4", "H266", "mp4"),
+                     KurentoException);
+}
+
+static std::string
+probe (const std::string &uri, const std::string &args)
+{
+  return exec ("ffprobe -v error " + args + " " + uri + " 2>/dev/null");
+}
+
+/* Records an H265 file played by a PlayerEndpoint (encoded media as-is) into
+ * the given container, with videoCodec=H265, and checks that the result is
+ * H265 and that no transcoding took place. */
+static void
+record_h265_from_player (const std::string &profile,
+                         const std::string &extension, const std::string &expected_tag)
+{
+  std::string dir;
+  std::string src_file;
+  std::atomic<int> transcoding_events (0);
+
+  BOOST_TEST_MESSAGE ("Recording H265 from a PlayerEndpoint into " << profile);
+
+  gchar tmp_file_template[] = DIR_TEMPLATE;
+  src_file = std::string (mkdtemp (tmp_file_template) ) + "/source_h265.mp4";
+
+  int rc = ::system (("gst-launch-1.0 -q videotestsrc num-buffers=75 "
+                      "! video/x-raw,width=320,height=240,framerate=25/1 ! x265enc "
+                      "! h265parse ! mp4mux ! filesink location=" + src_file).c_str () );
+
+  if (rc != 0) {
+    BOOST_ERROR ("Cannot generate the H265 source file (is x265enc available?)");
+    return;
+  }
+
+  std::shared_ptr <RecorderEndpointImpl> recorder =
+    createRecorderEndpointWithCodec (profile, "H265", extension, &dir);
+
+  Json::Value playerParams;
+  playerParams ["mediaPipeline"] = mediaPipelineId;
+  playerParams ["uri"] = "file://" + src_file;
+  playerParams ["useEncodedMedia"] = true;
+
+  std::shared_ptr <PlayerEndpointImpl> player =
+    std::dynamic_pointer_cast <PlayerEndpointImpl> (
+      moduleManager.getFactory ("PlayerEndpoint")->createObject (config, "",
+          playerParams) );
+
+  auto on_transcoding = [&] (MediaTranscodingStateChanged event) {
+    BOOST_TEST_MESSAGE ("Transcoding state: " << event.getState ()->getString ()
+                        << " (" << event.getBinName () << ")");
+
+    if (event.getState ()->getValue () == MediaTranscodingState::TRANSCODING) {
+      transcoding_events++;
+    }
+  };
+
+  player->signalMediaTranscodingStateChanged.connect (on_transcoding);
+  recorder->signalMediaTranscodingStateChanged.connect (on_transcoding);
+
+  std::shared_ptr<MediaType> video (new MediaType (MediaType::VIDEO) );
+
+  player->connect (recorder, video);
+  recorder->record ();
+  player->play ();
+
+  g_usleep (4 * G_USEC_PER_SEC);
+
+  recorder->stopAndWait ();
+
+  std::string uri = recorder->getUri ();
+
+  player->stop ();
+
+  releaseRecorderEndpoint (recorder);
+  player.reset ();
+
+  std::string codec = probe (uri, "-select_streams v:0 -show_entries "
+                             "stream=codec_name,codec_tag_string -of csv=p=0");
+
+  BOOST_TEST_MESSAGE ("ffprobe codec,tag: " << codec);
+  BOOST_CHECK (codec.find ("hevc") != std::string::npos);
+
+  if (!expected_tag.empty () ) {
+    BOOST_CHECK (codec.find (expected_tag) != std::string::npos);
+  }
+
+  float dur = atof (probe (uri, "-show_entries format=duration -of "
+                           "default=noprint_wrappers=1:nokey=1").c_str () );
+  BOOST_CHECK_GE (dur, 2.0);
+
+  BOOST_CHECK_EQUAL (transcoding_events.load (), 0);
+
+  rc = ::system (("rm -rf " + dir + " " + src_file.substr (0,
+                  src_file.rfind ('/') ) ).c_str () );
+  BOOST_WARN_EQUAL (rc, 0);
+}
+
+static void
+record_h265_mp4_from_player ()
+{
+  record_h265_from_player ("MP4_VIDEO_ONLY", "mp4", "hvc1");
+}
+
+static void
+record_h265_mkv_from_player ()
+{
+  record_h265_from_player ("MKV_VIDEO_ONLY", "mkv", "");
+}
+
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
   test_suite *test = BOOST_TEST_SUITE ( "RecorderEndpoint" );
 
   test->add (BOOST_TEST_CASE ( &recorder_state_changes ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &video_codec_matrix ), 0, /* timeout */ 30);
+  test->add (BOOST_TEST_CASE ( &video_codec_unknown_value ), 0, /* timeout */ 10);
+  test->add (BOOST_TEST_CASE ( &record_h265_mp4_from_player ), 0, /* timeout */ 30);
+  test->add (BOOST_TEST_CASE ( &record_h265_mkv_from_player ), 0, /* timeout */ 30);
 
   return test;
 }
