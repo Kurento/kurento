@@ -263,18 +263,43 @@ else
         aptly publish repo -gpg-key="$GPGKEY" -force-overwrite $ARCH_FLAG "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
     else
         # NOTE: 'aptly publish update' cannot change the architecture set of an
-        # existing publication. If the requested architectures differ from those
-        # currently published (e.g. arm64 added to a previously amd64-only repo),
-        # 'update' silently publishes only the original architectures, causing
-        # packages for new architectures to appear missing at install time.
+        # existing publication, so architectures added later (e.g. arm64 on a
+        # repo first published as amd64-only) would never be exposed.
         #
-        # To guarantee the published architecture set is always correct, we drop
-        # and re-publish whenever an explicit architecture list is provided.
-        # Without an explicit list, fall back to the cheaper 'update' path.
-        if [[ -n "${ARCH_FLAG}" ]]; then
-            echo "Recreating already published development repo to apply architecture set: $CFG_REPO_NAME" >&2
-            aptly publish drop "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
-            aptly publish repo -gpg-key="$GPGKEY" -force-overwrite $ARCH_FLAG "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
+        # Only when a requested architecture is missing from the publication,
+        # drop it (keeping the pool files, so the endpoint stays usable) and
+        # publish again with the UNION of published and requested architectures.
+        # Architectures already published are never removed, so a manual run
+        # with a subset of them does not hide existing packages.
+        NEED_REPUBLISH="false"
+        UNION_ARCHS=""
+        if [[ -n "$CFG_ARCHITECTURES" ]]; then
+            # Output line looks like: "Architectures: amd64 arm64 source"
+            PUBLISHED_ARCHS="$(aptly publish show "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" \
+                | sed -n 's/^Architectures:[[:space:]]*//p' | tr ',' ' ')"
+            echo "Published architectures: ${PUBLISHED_ARCHS:-<none>}; requested: $CFG_ARCHITECTURES" >&2
+            if [[ -z "${PUBLISHED_ARCHS// /}" ]]; then
+                # Never republish blindly: it could drop architectures we failed to detect.
+                echo "WARNING: Could not detect published architectures; falling back to 'publish update'" >&2
+            else
+                UNION_ARCHS="$PUBLISHED_ARCHS"
+                REQUESTED_ARCHS="$(echo "${CFG_ARCHITECTURES,,}" | tr ',' ' ')"
+                set -o noglob
+                for ARCH in $REQUESTED_ARCHS; do
+                    if ! echo " $UNION_ARCHS " | grep --quiet -F " $ARCH "; then
+                        NEED_REPUBLISH="true"
+                        UNION_ARCHS="$UNION_ARCHS $ARCH"
+                    fi
+                done
+                set +o noglob
+                UNION_ARCHS="$(echo "$UNION_ARCHS" | xargs | tr ' ' ',')"
+            fi
+        fi
+
+        if [[ "$NEED_REPUBLISH" == "true" ]]; then
+            echo "Republish development repo with architectures: $UNION_ARCHS" >&2
+            aptly publish drop -skip-cleanup "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
+            aptly publish repo -gpg-key="$GPGKEY" -force-overwrite -architectures="$UNION_ARCHS" "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
         else
             echo "Update already published development repo: $CFG_REPO_NAME" >&2
             aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
