@@ -32,6 +32,8 @@
 #include <MediaSet.hpp>
 #include <cstdio> // popen()
 #include <cstdlib> // system()
+#include <ftw.h>
+#include <unistd.h>
 
 #define DIR_TEMPLATE "/tmp/recoder_test_XXXXXX"
 
@@ -311,28 +313,54 @@ recorder_state_changes ()
   }
 }
 
+/* Temporary directory used by the video codec tests; removed by
+ * removeCodecTestDir() at the end of each test case. */
+static std::string codecTestDir;
+
+static const std::string &
+getCodecTestDir ()
+{
+  if (codecTestDir.empty () ) {
+    gchar tmp_file_template[] = DIR_TEMPLATE;
+    gchar *tmp_dir = mkdtemp (tmp_file_template);
+
+    BOOST_REQUIRE_MESSAGE (tmp_dir != nullptr, "Cannot create a temporary dir");
+    codecTestDir = tmp_dir;
+  }
+
+  return codecTestDir;
+}
+
+static int
+removeEntry (const char *path, const struct stat *, int, struct FTW *)
+{
+  return ::remove (path);
+}
+
+static void
+removeCodecTestDir ()
+{
+  if (!codecTestDir.empty () ) {
+    ::nftw (codecTestDir.c_str (), removeEntry, 16, FTW_DEPTH | FTW_PHYS);
+    codecTestDir.clear ();
+  }
+}
+
 /* Creates a RecorderEndpoint with the given profile and (optional) video codec;
  * an empty videoCodec means "do not send the parameter". */
 static std::shared_ptr <RecorderEndpointImpl>
 createRecorderEndpointWithCodec (const std::string &profile,
-                                 const std::string &videoCodec, const std::string &extension,
-                                 std::string *dir = nullptr)
+                                 const std::string &videoCodec, const std::string &extension)
 {
   Json::Value constructorParams;
-  gchar tmp_file_template[] = DIR_TEMPLATE;
-  gchar *tmp_dir = mkdtemp (tmp_file_template);
 
   constructorParams ["mediaPipeline"] = mediaPipelineId;
-  constructorParams ["uri"] = "file://" + std::string (tmp_dir) +
+  constructorParams ["uri"] = "file://" + getCodecTestDir () +
                               "/recording." + extension;
   constructorParams ["mediaProfile"] = profile;
 
   if (!videoCodec.empty () ) {
     constructorParams ["videoCodec"] = videoCodec;
-  }
-
-  if (dir) {
-    *dir = tmp_dir;
   }
 
   return std::dynamic_pointer_cast <RecorderEndpointImpl> (
@@ -379,9 +407,26 @@ check_codec_rejected (const std::string &profile, const std::string &videoCodec,
                        << videoCodec);
 }
 
+/* Counts GStreamer/GLib CRITICAL and WARNING messages while it is installed */
+static std::atomic<int> criticalCount (0);
+
+static void
+countCriticals (const gchar *log_domain, GLogLevelFlags log_level,
+                const gchar *message, gpointer user_data)
+{
+  if (log_level & G_LOG_LEVEL_CRITICAL) {
+    criticalCount++;
+  }
+
+  g_log_default_handler (log_domain, log_level, message, nullptr);
+}
+
 static void
 video_codec_matrix ()
 {
+  criticalCount = 0;
+  GLogFunc previous_handler = g_log_set_default_handler (countCriticals, nullptr);
+
   /* No videoCodec: the default of each container, as before */
   check_codec_accepted ("WEBM", "", "webm");
   check_codec_accepted ("MP4", "", "mp4");
@@ -424,6 +469,13 @@ video_codec_matrix ()
   check_codec_rejected ("FLV", "H264", "flv");
   check_codec_rejected ("FLV", "H265", "flv");
   check_codec_rejected ("JPEG_VIDEO_ONLY", "H264", "jpg");
+
+  /* A rejected request must not create any GStreamer element, so there must
+   * be no CRITICAL messages (e.g. unbalanced bus signal watches) */
+  BOOST_CHECK_EQUAL (criticalCount.load (), 0);
+  g_log_set_default_handler (previous_handler, nullptr);
+
+  removeCodecTestDir ();
 }
 
 static void
@@ -432,12 +484,71 @@ video_codec_unknown_value ()
   /* A value outside of the enum is rejected when deserializing the parameter */
   BOOST_CHECK_THROW (createRecorderEndpointWithCodec ("MP4", "H266", "mp4"),
                      KurentoException);
+  removeCodecTestDir ();
+}
+
+static bool
+programAvailable (const std::string &program)
+{
+  return ::system ((program + " -version > /dev/null 2>&1").c_str () ) == 0;
 }
 
 static std::string
 probe (const std::string &uri, const std::string &args)
 {
   return exec ("ffprobe -v error " + args + " " + uri + " 2>/dev/null");
+}
+
+/* Generates a short H265 MP4 file with a test pattern, inside this process.
+ * Returns false if a needed GStreamer element is not available. */
+static bool
+generateH265Source (const std::string &file)
+{
+  static const char *elements[] = {"videotestsrc", "x265enc", "h265parse",
+                                   "mp4mux", "filesink"};
+
+  for (const char *name : elements) {
+    GstElementFactory *factory = gst_element_factory_find (name);
+
+    if (factory == nullptr) {
+      BOOST_WARN_MESSAGE (false, "GStreamer element '" << name << "' is not "
+                          "available: cannot generate the H265 source");
+      return false;
+    }
+
+    gst_object_unref (factory);
+  }
+
+  std::string description = "videotestsrc num-buffers=75 "
+                            "! video/x-raw,width=320,height=240,framerate=25/1 ! x265enc "
+                            "! h265parse ! mp4mux ! filesink location=" + file;
+  GError *err = nullptr;
+  GstElement *pipeline = gst_parse_launch (description.c_str (), &err);
+
+  if (pipeline == nullptr) {
+    BOOST_ERROR ("Cannot create the source pipeline: " << err->message);
+    g_clear_error (&err);
+    return false;
+  }
+
+  GstBus *bus = gst_element_get_bus (pipeline);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  GstMessage *msg = gst_bus_timed_pop_filtered (bus, 30 * GST_SECOND,
+                    (GstMessageType) (GST_MESSAGE_EOS | GST_MESSAGE_ERROR) );
+  bool ok = msg != nullptr && GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS;
+
+  BOOST_CHECK_MESSAGE (ok, "Generating the H265 source file failed or timed out");
+
+  if (msg != nullptr) {
+    gst_message_unref (msg);
+  }
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (bus);
+  gst_object_unref (pipeline);
+
+  return ok;
 }
 
 /* Records an H265 file played by a PlayerEndpoint (encoded media as-is) into
@@ -447,26 +558,24 @@ static void
 record_h265_from_player (const std::string &profile,
                          const std::string &extension, const std::string &expected_tag)
 {
-  std::string dir;
-  std::string src_file;
   std::atomic<int> transcoding_events (0);
 
   BOOST_TEST_MESSAGE ("Recording H265 from a PlayerEndpoint into " << profile);
 
-  gchar tmp_file_template[] = DIR_TEMPLATE;
-  src_file = std::string (mkdtemp (tmp_file_template) ) + "/source_h265.mp4";
+  if (!programAvailable ("ffprobe") ) {
+    BOOST_WARN_MESSAGE (false, "SKIPPED: ffprobe is not available");
+    return;
+  }
 
-  int rc = ::system (("gst-launch-1.0 -q videotestsrc num-buffers=75 "
-                      "! video/x-raw,width=320,height=240,framerate=25/1 ! x265enc "
-                      "! h265parse ! mp4mux ! filesink location=" + src_file).c_str () );
+  std::string src_file = getCodecTestDir () + "/source_h265.mp4";
 
-  if (rc != 0) {
-    BOOST_ERROR ("Cannot generate the H265 source file (is x265enc available?)");
+  if (!generateH265Source (src_file) ) {
+    removeCodecTestDir ();
     return;
   }
 
   std::shared_ptr <RecorderEndpointImpl> recorder =
-    createRecorderEndpointWithCodec (profile, "H265", extension, &dir);
+    createRecorderEndpointWithCodec (profile, "H265", extension);
 
   Json::Value playerParams;
   playerParams ["mediaPipeline"] = mediaPipelineId;
@@ -487,8 +596,10 @@ record_h265_from_player (const std::string &profile,
     }
   };
 
-  player->signalMediaTranscodingStateChanged.connect (on_transcoding);
-  recorder->signalMediaTranscodingStateChanged.connect (on_transcoding);
+  sigc::connection conn_player =
+    player->signalMediaTranscodingStateChanged.connect (on_transcoding);
+  sigc::connection conn_recorder =
+    recorder->signalMediaTranscodingStateChanged.connect (on_transcoding);
 
   std::shared_ptr<MediaType> video (new MediaType (MediaType::VIDEO) );
 
@@ -504,8 +615,15 @@ record_h265_from_player (const std::string &profile,
 
   player->stop ();
 
-  releaseRecorderEndpoint (recorder);
+  /* The lambda captures local variables: disconnect before leaving */
+  conn_player.disconnect ();
+  conn_recorder.disconnect ();
+
+  std::string player_id = player->getId ();
+
   player.reset ();
+  MediaSet::getMediaSet ()->release (player_id);
+  releaseRecorderEndpoint (recorder);
 
   std::string codec = probe (uri, "-select_streams v:0 -show_entries "
                              "stream=codec_name,codec_tag_string -of csv=p=0");
@@ -523,9 +641,7 @@ record_h265_from_player (const std::string &profile,
 
   BOOST_CHECK_EQUAL (transcoding_events.load (), 0);
 
-  rc = ::system (("rm -rf " + dir + " " + src_file.substr (0,
-                  src_file.rfind ('/') ) ).c_str () );
-  BOOST_WARN_EQUAL (rc, 0);
+  removeCodecTestDir ();
 }
 
 static void
