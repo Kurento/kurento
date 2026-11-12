@@ -57,6 +57,9 @@ typedef enum
 } KmsRecordingVideoCodec;
 
 GstEncodingContainerProfile * kms_recording_profile_create_profile (
+    KmsRecordingProfile profile, gboolean has_audio, gboolean has_video);
+
+GstEncodingContainerProfile * kms_recording_profile_create_profile_with_codec (
     KmsRecordingProfile profile, KmsRecordingVideoCodec video_codec,
     gboolean has_audio, gboolean has_video);
 

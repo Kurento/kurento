@@ -1478,17 +1478,13 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
     case PROP_VIDEO_CODEC:{
       KmsRecordingVideoCodec codec = g_value_get_enum (value);
 
-      /* Like the profile, the codec can only be configured once, and before
-       * any media has been negotiated. It can be set before or after the
-       * profile; the pair is validated when both are known. */
-      if (self->priv->video_codec != KMS_RECORDING_VIDEO_CODEC_NONE) {
-        GST_ERROR_OBJECT (self, "Video codec can only be configured once");
-      } else if (self->priv->profile != KMS_RECORDING_PROFILE_NONE &&
-          !kms_recording_profile_supports_video_codec (self->priv->profile,
-              codec)) {
+      /* The codec selects the muxer chain, which is built when the profile
+       * is set, so it has to be configured before the profile (once). */
+      if (self->priv->profile != KMS_RECORDING_PROFILE_NONE) {
         GST_ERROR_OBJECT (self,
-            "Video codec %d is not supported by profile %d", codec,
-            self->priv->profile);
+            "Video codec must be configured before the profile, ignoring");
+      } else if (self->priv->video_codec != KMS_RECORDING_VIDEO_CODEC_NONE) {
+        GST_ERROR_OBJECT (self, "Video codec can only be configured once");
       } else {
         self->priv->video_codec = codec;
       }
@@ -1543,12 +1539,12 @@ kms_recorder_endpoint_get_caps_from_profile (KmsRecorderEndpoint * self,
   switch (type) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
       cprof =
-          kms_recording_profile_create_profile (self->priv->profile,
+          kms_recording_profile_create_profile_with_codec (self->priv->profile,
           self->priv->video_codec, FALSE, TRUE);
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
       cprof =
-          kms_recording_profile_create_profile (self->priv->profile,
+          kms_recording_profile_create_profile_with_codec (self->priv->profile,
           self->priv->video_codec, TRUE, FALSE);
       break;
     default:
@@ -2044,7 +2040,8 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
   obj_properties[PROP_VIDEO_CODEC] = g_param_spec_enum ("video-codec",
       "Video codec",
       "Video codec stored in the recording; NONE uses the default codec of "
-      "the profile. Can be set once, and must be supported by the profile",
+      "the profile. Must be set before the profile (it is ignored otherwise), "
+      "only once, and must be supported by the profile",
       KMS_TYPE_RECORDING_VIDEO_CODEC, KMS_RECORDING_VIDEO_CODEC_NONE,
       G_PARAM_READWRITE);
 

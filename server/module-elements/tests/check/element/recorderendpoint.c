@@ -746,6 +746,9 @@ GST_END_TEST
 #define CODEC_TEST_SRC_VP8 \
     CODEC_TEST_SRC_CAPS " ! vp8enc deadline=1 keyframe-max-dist=15"
 
+/* Set the profile before the video codec (wrong order) in codec_record() */
+static gboolean codec_profile_first = FALSE;
+
 typedef struct _CodecRecording
 {
   GMainLoop *loop;
@@ -754,6 +757,8 @@ typedef struct _CodecRecording
   GstElement *agnosticbin;
   gboolean link_late;
   guint record_ms;
+  guint late_link_id;
+  guint stop_id;
   gboolean transcoding_signaled;
   gboolean error;
 } CodecRecording;
@@ -810,7 +815,10 @@ codec_link_agnosticbin_to_recorder (CodecRecording * rec)
 static gboolean
 codec_late_link_cb (gpointer data)
 {
-  codec_link_agnosticbin_to_recorder ((CodecRecording *) data);
+  CodecRecording *rec = data;
+
+  rec->late_link_id = 0;
+  codec_link_agnosticbin_to_recorder (rec);
   return FALSE;
 }
 
@@ -819,6 +827,7 @@ codec_stop_cb (gpointer data)
 {
   CodecRecording *rec = data;
 
+  rec->stop_id = 0;
   g_object_set (rec->recorder, "state", KMS_URI_ENDPOINT_STATE_STOP, NULL);
   return FALSE;
 }
@@ -830,7 +839,7 @@ codec_state_changed_cb (GstElement * recorder, KmsUriEndpointState state,
   CodecRecording *rec = user_data;
 
   if (state == KMS_URI_ENDPOINT_STATE_START) {
-    g_timeout_add (rec->record_ms, codec_stop_cb, rec);
+    rec->stop_id = g_timeout_add (rec->record_ms, codec_stop_cb, rec);
   } else if (state == KMS_URI_ENDPOINT_STATE_STOP) {
     g_idle_add (quit_main_loop_idle, rec->loop);
   }
@@ -906,8 +915,13 @@ codec_record (const gchar * src_desc, KmsRecordingProfile profile,
 
   g_unlink (path);
   uri = g_strdup_printf ("file://%s", path);
-  g_object_set (rec.recorder, "uri", uri, "video-codec", codec, "profile",
-      profile, NULL);
+  if (codec_profile_first) {
+    g_object_set (rec.recorder, "uri", uri, "profile", profile, "video-codec",
+        codec, NULL);
+  } else {
+    g_object_set (rec.recorder, "uri", uri, "video-codec", codec, "profile",
+        profile, NULL);
+  }
   g_free (uri);
 
   g_signal_connect (rec.agnosticbin, "media-transcoding",
@@ -925,7 +939,7 @@ codec_record (const gchar * src_desc, KmsRecordingProfile profile,
 
   if (link_late) {
     /* The source is already flowing when the recorder gets connected */
-    g_timeout_add (1500, codec_late_link_cb, &rec);
+    rec.late_link_id = g_timeout_add (1500, codec_late_link_cb, &rec);
   } else {
     codec_link_agnosticbin_to_recorder (&rec);
   }
@@ -940,6 +954,14 @@ codec_record (const gchar * src_desc, KmsRecordingProfile profile,
 
   *transcoding = rec.transcoding_signaled;
   *encoder_in_agnosticbin = codec_has_encoder (rec.agnosticbin);
+
+  /* rec lives on the stack: no callback may fire after returning */
+  if (rec.late_link_id != 0) {
+    g_source_remove (rec.late_link_id);
+  }
+  if (rec.stop_id != 0) {
+    g_source_remove (rec.stop_id);
+  }
 
   gst_element_set_state (rec.pipeline, GST_STATE_NULL);
   gst_object_unref (rec.pipeline);
@@ -1125,6 +1147,20 @@ GST_START_TEST (check_h265_bytestream_passthrough_mp4_late_link)
 
 GST_END_TEST;
 
+/* video-codec set after profile is ignored: H265 is not announced upstream,
+ * so the H265 source is transcoded to the default H264 of MP4 */
+GST_START_TEST (check_video_codec_after_profile_is_ignored)
+{
+  codec_profile_first = TRUE;
+  codec_check_recording (CODEC_TEST_SRC_H265_BYTESTREAM,
+      KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, KMS_RECORDING_VIDEO_CODEC_H265,
+      "/tmp/check_codec_after_profile.mp4", "qtdemux", FALSE, TRUE,
+      "video/x-h264", "avc");
+  codec_profile_first = FALSE;
+}
+
+GST_END_TEST;
+
 /* (iii) raw source -> H265 (transcoding with x265enc, 4:2:0) */
 GST_START_TEST (check_raw_to_h265_mp4)
 {
@@ -1253,7 +1289,8 @@ codec_profile_video_caps (KmsRecordingProfile profile,
   const GList *l;
   GstCaps *caps = NULL;
 
-  cprof = kms_recording_profile_create_profile (profile, codec, FALSE, TRUE);
+  cprof = kms_recording_profile_create_profile_with_codec (profile, codec, FALSE,
+      TRUE);
   if (cprof == NULL) {
     return NULL;
   }
@@ -1332,13 +1369,13 @@ GST_START_TEST (check_video_codec_property)
   fail_unless_equals_int (codec, KMS_RECORDING_VIDEO_CODEC_H265);
   gst_object_unref (rec);
 
-  /* Valid, codec after profile */
+  /* Codec after profile: ignored, the muxer chain is already built */
   rec = gst_element_factory_make ("recorderendpoint", NULL);
   g_object_set (rec, "uri", "file:///tmp/check_prop2.mkv", "profile",
       KMS_RECORDING_PROFILE_MKV, "video-codec", KMS_RECORDING_VIDEO_CODEC_H265,
       NULL);
   g_object_get (rec, "video-codec", &codec, NULL);
-  fail_unless_equals_int (codec, KMS_RECORDING_VIDEO_CODEC_H265);
+  fail_unless_equals_int (codec, KMS_RECORDING_VIDEO_CODEC_NONE);
   gst_object_unref (rec);
 
   /* Invalid (H265 in WebM), codec before profile: rejected, back to default */
@@ -1394,6 +1431,16 @@ codec_have_elements (const gchar * first, ...)
   return ok;
 }
 
+GST_START_TEST (check_codec_elements_available)
+{
+  fail_unless (codec_have_elements ("x265enc", "h265parse", "x264enc",
+          "h264parse", "vp8enc", "qtdemux", "matroskademux", "mp4mux",
+          "matroskamux", NULL),
+      "Elements required by the H265 recording tests are missing");
+}
+
+GST_END_TEST;
+
 /******************************/
 /* RecorderEndpoint test suit */
 /******************************/
@@ -1416,26 +1463,24 @@ recorderendpoint_suite (void)
   tcase_add_test (tc_chain, check_profile_caps_per_codec);
   tcase_add_test (tc_chain, check_video_codec_property);
 
-  if (codec_have_elements ("x265enc", "h265parse", "x264enc", "vp8enc",
-          "qtdemux", "matroskademux", "mp4mux", "matroskamux", NULL)) {
-    tcase_add_test (tc_chain, check_h265_passthrough_mp4);
-    tcase_add_test (tc_chain, check_h265_passthrough_mp4_late_link);
-    tcase_add_test (tc_chain, check_h265_passthrough_mkv);
-    tcase_add_test (tc_chain, check_h265_passthrough_mkv_late_link);
-    tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mp4);
-    tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mkv);
-    tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mp4_late_link);
-    tcase_add_test (tc_chain, check_raw_to_h265_mp4);
-    tcase_add_test (tc_chain, check_raw_to_h265_mkv);
-    tcase_add_test (tc_chain, check_raw_444_to_h265_mp4);
-    tcase_add_test (tc_chain, check_vp8_to_h265_mp4);
-    tcase_add_test (tc_chain, check_default_mp4_is_h264);
-    tcase_add_test (tc_chain, check_default_mp4_from_h265_transcodes_to_h264);
-    tcase_add_test (tc_chain, check_default_webm_is_vp8);
-    tcase_add_test (tc_chain, check_default_mkv_is_h264);
-  } else {
-    GST_WARNING ("Missing codecs/muxers. H265 recording tests skipped");
-  }
+  /* Required codecs/muxers are present in the CI image: do not skip, fail */
+  tcase_add_test (tc_chain, check_codec_elements_available);
+  tcase_add_test (tc_chain, check_h265_passthrough_mp4);
+  tcase_add_test (tc_chain, check_h265_passthrough_mp4_late_link);
+  tcase_add_test (tc_chain, check_h265_passthrough_mkv);
+  tcase_add_test (tc_chain, check_h265_passthrough_mkv_late_link);
+  tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mp4);
+  tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mkv);
+  tcase_add_test (tc_chain, check_h265_bytestream_passthrough_mp4_late_link);
+  tcase_add_test (tc_chain, check_video_codec_after_profile_is_ignored);
+  tcase_add_test (tc_chain, check_raw_to_h265_mp4);
+  tcase_add_test (tc_chain, check_raw_to_h265_mkv);
+  tcase_add_test (tc_chain, check_raw_444_to_h265_mp4);
+  tcase_add_test (tc_chain, check_vp8_to_h265_mp4);
+  tcase_add_test (tc_chain, check_default_mp4_is_h264);
+  tcase_add_test (tc_chain, check_default_mp4_from_h265_transcodes_to_h264);
+  tcase_add_test (tc_chain, check_default_webm_is_vp8);
+  tcase_add_test (tc_chain, check_default_mkv_is_h264);
 
   if (check_support_for_ksr ()) {
     tcase_add_test (tc_chain, check_ksm_sink_request);

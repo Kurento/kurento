@@ -314,7 +314,7 @@ kms_recording_profile_create_jpeg_profile ()
 }
 
 GstEncodingContainerProfile *
-kms_recording_profile_create_profile (KmsRecordingProfile profile,
+kms_recording_profile_create_profile_with_codec (KmsRecordingProfile profile,
     KmsRecordingVideoCodec video_codec, gboolean has_audio,
     gboolean has_video)
 {
@@ -358,6 +358,14 @@ kms_recording_profile_create_profile (KmsRecordingProfile profile,
       return NULL;
   }
 
+}
+
+GstEncodingContainerProfile *
+kms_recording_profile_create_profile (KmsRecordingProfile profile,
+    gboolean has_audio, gboolean has_video)
+{
+  return kms_recording_profile_create_profile_with_codec (profile,
+      KMS_RECORDING_VIDEO_CODEC_NONE, has_audio, has_video);
 }
 
 gboolean
