@@ -17,9 +17,116 @@
 
 #include "kmsrecordingprofile.h"
 
+/* Caps accepted by mp4mux and matroskamux for H265 are hvc1|hev1; hvc1 is the
+ * only tag played by Safari/QuickTime, so it is the one requested upstream. */
+static GstCaps *
+kms_recording_profile_get_video_caps (KmsRecordingVideoCodec codec)
+{
+  switch (codec) {
+    case KMS_RECORDING_VIDEO_CODEC_H264:
+      return gst_caps_from_string ("video/x-h264, "
+          "stream-format=(string)avc, alignment=(string)au");
+    case KMS_RECORDING_VIDEO_CODEC_H265:
+      return gst_caps_from_string ("video/x-h265, "
+          "stream-format=(string)hvc1, alignment=(string)au");
+    case KMS_RECORDING_VIDEO_CODEC_VP8:
+      return gst_caps_from_string ("video/x-vp8");
+    case KMS_RECORDING_VIDEO_CODEC_VP9:
+      return gst_caps_from_string ("video/x-vp9");
+    case KMS_RECORDING_VIDEO_CODEC_AV1:
+      return gst_caps_from_string ("video/x-av1, "
+          "stream-format=(string)obu-stream, alignment=(string)tu");
+    default:
+      return NULL;
+  }
+}
+
+static void
+kms_recording_profile_add_video_profile (GstEncodingContainerProfile * cprof,
+    KmsRecordingVideoCodec codec)
+{
+  GstCaps *vc = kms_recording_profile_get_video_caps (codec);
+
+  g_return_if_fail (vc != NULL);
+
+  gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
+      gst_encoding_video_profile_new (vc, NULL, NULL, 0));
+
+  gst_caps_unref (vc);
+}
+
+static KmsRecordingVideoCodec
+kms_recording_profile_resolve_video_codec (KmsRecordingProfile profile,
+    KmsRecordingVideoCodec codec)
+{
+  if (codec != KMS_RECORDING_VIDEO_CODEC_NONE)
+    return codec;
+
+  return kms_recording_profile_get_default_video_codec (profile);
+}
+
+KmsRecordingVideoCodec
+kms_recording_profile_get_default_video_codec (KmsRecordingProfile profile)
+{
+  switch (profile) {
+    case KMS_RECORDING_PROFILE_WEBM:
+    case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
+    case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
+      return KMS_RECORDING_VIDEO_CODEC_VP8;
+    case KMS_RECORDING_PROFILE_MP4:
+    case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
+    case KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY:
+    case KMS_RECORDING_PROFILE_MKV:
+    case KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY:
+    case KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY:
+    case KMS_RECORDING_PROFILE_FLV:
+      return KMS_RECORDING_VIDEO_CODEC_H264;
+    default:
+      return KMS_RECORDING_VIDEO_CODEC_NONE;
+  }
+}
+
+gboolean
+kms_recording_profile_supports_video_codec (KmsRecordingProfile profile,
+    KmsRecordingVideoCodec codec)
+{
+  /* NONE always means "container's default codec" */
+  if (codec == KMS_RECORDING_VIDEO_CODEC_NONE)
+    return TRUE;
+
+  switch (profile) {
+    case KMS_RECORDING_PROFILE_WEBM:
+    case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
+      return codec == KMS_RECORDING_VIDEO_CODEC_VP8 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_VP9 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_AV1;
+    case KMS_RECORDING_PROFILE_MKV:
+    case KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY:
+      return codec == KMS_RECORDING_VIDEO_CODEC_H264 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_H265 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_VP8 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_VP9 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_AV1;
+    case KMS_RECORDING_PROFILE_MP4:
+    case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
+      return codec == KMS_RECORDING_VIDEO_CODEC_H264 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_H265 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_VP9 ||
+          codec == KMS_RECORDING_VIDEO_CODEC_AV1;
+    case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
+    case KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY:
+    case KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY:
+      /* No video is recorded, so the codec is ignored */
+      return TRUE;
+    default:
+      /* FLV, KSR, JPEG: the video codec is not configurable */
+      return FALSE;
+  }
+}
+
 static GstEncodingContainerProfile *
-kms_recording_profile_create_webm_profile (gboolean has_audio,
-    gboolean has_video)
+kms_recording_profile_create_webm_profile (KmsRecordingVideoCodec codec,
+    gboolean has_audio, gboolean has_video)
 {
   GstEncodingContainerProfile *cprof;
   GstCaps *pc;
@@ -41,26 +148,20 @@ kms_recording_profile_create_webm_profile (gboolean has_audio,
     gst_caps_unref (ac);
   }
 
-  if (has_video) {
-    GstCaps *vc = gst_caps_from_string ("video/x-vp8");
-
-    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
-        gst_encoding_video_profile_new (vc, NULL, NULL, 0));
-
-    gst_caps_unref (vc);
-  }
+  if (has_video)
+    kms_recording_profile_add_video_profile (cprof, codec);
 
   return cprof;
 }
 
 static GstEncodingContainerProfile *
-kms_recording_profile_create_mkv_profile (gboolean has_audio,
-    gboolean has_video)
+kms_recording_profile_create_mkv_profile (KmsRecordingVideoCodec codec,
+    gboolean has_audio, gboolean has_video)
 {
   GstEncodingContainerProfile *cprof;
   GstCaps *pc;
 
-  pc = gst_caps_from_string ("video/quicktime, variant=(string)iso");
+  pc = gst_caps_from_string ("video/x-matroska");
 
   cprof = gst_encoding_container_profile_new ("Mkv", NULL, pc, NULL);
   gst_caps_unref (pc);
@@ -74,22 +175,15 @@ kms_recording_profile_create_mkv_profile (gboolean has_audio,
     gst_caps_unref (ac);
   }
 
-  if (has_video) {
-    GstCaps *vc = gst_caps_from_string ("video/x-h264, "
-        "stream-format=(string)avc, alignment=(string)au");
-
-    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
-        gst_encoding_video_profile_new (vc, NULL, NULL, 0));
-
-    gst_caps_unref (vc);
-  }
+  if (has_video)
+    kms_recording_profile_add_video_profile (cprof, codec);
 
   return cprof;
 }
 
 static GstEncodingContainerProfile *
-kms_recording_profile_create_mp4_profile (gboolean has_audio,
-    gboolean has_video)
+kms_recording_profile_create_mp4_profile (KmsRecordingVideoCodec codec,
+    gboolean has_audio, gboolean has_video)
 {
   GstEncodingContainerProfile *cprof;
   GstCaps *pc;
@@ -108,22 +202,15 @@ kms_recording_profile_create_mp4_profile (gboolean has_audio,
     gst_caps_unref (ac);
   }
 
-  if (has_video) {
-    GstCaps *vc = gst_caps_from_string ("video/x-h264, "
-        "stream-format=(string)avc, alignment=(string)au");
-
-    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
-        gst_encoding_video_profile_new (vc, NULL, NULL, 0));
-
-    gst_caps_unref (vc);
-  }
+  if (has_video)
+    kms_recording_profile_add_video_profile (cprof, codec);
 
   return cprof;
 }
 
 static GstEncodingContainerProfile *
-kms_recording_profile_create_flv_profile (gboolean has_audio,
-    gboolean has_video)
+kms_recording_profile_create_flv_profile (KmsRecordingVideoCodec codec,
+    gboolean has_audio, gboolean has_video)
 {
   GstEncodingContainerProfile *cprof;
   GstCaps *pc;
@@ -143,6 +230,7 @@ kms_recording_profile_create_flv_profile (gboolean has_audio,
   }
 
   if (has_video) {
+    /* FLV only supports H264, requested without alignment as always */
     GstCaps *vc = gst_caps_from_string ("video/x-h264, "
         "stream-format=(string)avc");
 
@@ -227,33 +315,44 @@ kms_recording_profile_create_jpeg_profile ()
 
 GstEncodingContainerProfile *
 kms_recording_profile_create_profile (KmsRecordingProfile profile,
-    gboolean has_audio, gboolean has_video)
+    KmsRecordingVideoCodec video_codec, gboolean has_audio,
+    gboolean has_video)
 {
+  KmsRecordingVideoCodec codec;
+
+  if (!kms_recording_profile_supports_video_codec (profile, video_codec)) {
+    GST_ERROR ("Video codec %d is not supported by recording profile %d",
+        video_codec, profile);
+    return NULL;
+  }
+
+  codec = kms_recording_profile_resolve_video_codec (profile, video_codec);
+
   switch (profile) {
     case KMS_RECORDING_PROFILE_WEBM:
-      return kms_recording_profile_create_webm_profile (has_audio, has_video);
+      return kms_recording_profile_create_webm_profile (codec, has_audio, has_video);
     case KMS_RECORDING_PROFILE_MP4:
-      return kms_recording_profile_create_mp4_profile (has_audio, has_video);
+      return kms_recording_profile_create_mp4_profile (codec, has_audio, has_video);
     case KMS_RECORDING_PROFILE_MKV:
-      return kms_recording_profile_create_mkv_profile (has_audio, has_video);
+      return kms_recording_profile_create_mkv_profile (codec, has_audio, has_video);
     case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
-      return kms_recording_profile_create_webm_profile (FALSE, has_video);
+      return kms_recording_profile_create_webm_profile (codec, FALSE, has_video);
     case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
-      return kms_recording_profile_create_webm_profile (has_audio, FALSE);
+      return kms_recording_profile_create_webm_profile (codec, has_audio, FALSE);
     case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
-      return kms_recording_profile_create_mp4_profile (FALSE, has_video);
+      return kms_recording_profile_create_mp4_profile (codec, FALSE, has_video);
     case KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY:
-      return kms_recording_profile_create_mp4_profile (has_audio, FALSE);
+      return kms_recording_profile_create_mp4_profile (codec, has_audio, FALSE);
     case KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY:
-      return kms_recording_profile_create_mkv_profile (FALSE, has_video);
+      return kms_recording_profile_create_mkv_profile (codec, FALSE, has_video);
     case KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY:
-      return kms_recording_profile_create_mkv_profile (has_audio, FALSE);
+      return kms_recording_profile_create_mkv_profile (codec, has_audio, FALSE);
     case KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY:
       return kms_recording_profile_create_jpeg_profile ();
     case KMS_RECORDING_PROFILE_KSR:
       return kms_recording_profile_create_ksr_profile (has_audio, has_video);
     case KMS_RECORDING_PROFILE_FLV:
-      return kms_recording_profile_create_flv_profile(has_audio, has_video);
+      return kms_recording_profile_create_flv_profile (codec, has_audio, has_video);
     default:
       GST_WARNING ("Invalid recording profile");
       return NULL;

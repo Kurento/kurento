@@ -42,8 +42,30 @@ typedef enum
   KMS_RECORDING_PROFILE_FLV
 } KmsRecordingProfile;
 
+/**
+ * Video codec stored in the recording container. NONE selects the default
+ * codec of the container (H264 for MP4/MKV/FLV, VP8 for WebM).
+ */
+typedef enum
+{
+  KMS_RECORDING_VIDEO_CODEC_NONE = 0,
+  KMS_RECORDING_VIDEO_CODEC_H264,
+  KMS_RECORDING_VIDEO_CODEC_H265,
+  KMS_RECORDING_VIDEO_CODEC_VP8,
+  KMS_RECORDING_VIDEO_CODEC_VP9,
+  KMS_RECORDING_VIDEO_CODEC_AV1
+} KmsRecordingVideoCodec;
+
 GstEncodingContainerProfile * kms_recording_profile_create_profile (
-    KmsRecordingProfile profile, gboolean has_audio, gboolean has_video);
+    KmsRecordingProfile profile, KmsRecordingVideoCodec video_codec,
+    gboolean has_audio, gboolean has_video);
+
+/* Container x codec validation (NONE is always valid) */
+gboolean kms_recording_profile_supports_video_codec (
+    KmsRecordingProfile profile, KmsRecordingVideoCodec codec);
+
+KmsRecordingVideoCodec kms_recording_profile_get_default_video_codec (
+    KmsRecordingProfile profile);
 
 gboolean kms_recording_profile_supports_type (KmsRecordingProfile profile,
     KmsElementPadType type);
