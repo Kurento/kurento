@@ -37,17 +37,12 @@ Changed
 * Updated Node to Node 24
 
 
-..
-   Bug-fix releases
-   ================
+Bug-fix releases
+================
 
-   7.3.1
-   -----
+7.3.1
+-----
 
-   * Fix 1.
+* **JavaScript client: fix installation from NPM**.
 
-     Description.
-
-   * Fix 2.
-
-     Description.
+  ``npm install kurento-client@7.3.0`` failed with ``sh: scripts/install-kurento.js: No such file or directory``, because that version declared an install-time script that was not included in the published package. Release 7.3.1 no longer needs any install script: ``kurento-jsonrpc`` is now resolved from the NPM registry like any other dependency. Users of 7.3.0 should upgrade to ``kurento-client@7.3.1``. The release process now also installs the packed tarball in a clean directory before publishing it.

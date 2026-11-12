@@ -66,6 +66,15 @@ fi
 
 
 
+# Check the package
+# =================
+
+# Make sure that the package can be installed from the tarball that is about to
+# be published, before actually publishing it.
+"$SELF_DIR/check_js_package.sh"
+
+
+
 # Deploy
 # ======
 
