@@ -28,6 +28,7 @@ digraph scripts {
   };
   "clients-javascript.parent.yaml" -> {
     "clients-javascript.child.yaml"
+    "publish_js_npm.sh"
   };
   "doc-kurento.yaml" -> {
     "ci_job_deploy_doc.sh"
