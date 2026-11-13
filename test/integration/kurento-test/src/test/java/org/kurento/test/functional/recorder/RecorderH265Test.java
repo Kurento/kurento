@@ -109,10 +109,14 @@ public class RecorderH265Test extends KurentoClientTest {
 
   /**
    * Generates a short H.265 MP4 file with a test pattern; returns false if there is no encoder.
+   * <p>
+   * B-frames are disabled on purpose: the PlayerEndpoint with <code>useEncodedMedia</code> drops
+   * buffers whose PTS is not increasing, which is what B-frames produce. That is a PlayerEndpoint
+   * matter, covered by other tests; this test is about the recording.
    */
   private boolean generateSource(File source) {
     String[] gst = {"gst-launch-1.0", "-q", "videotestsrc", "num-buffers=" + (FILE_SECONDS * 25),
-        "!", "video/x-raw,width=320,height=240,framerate=25/1", "!", "x265enc", "!", "h265parse",
+        "!", "video/x-raw,width=320,height=240,framerate=25/1", "!", "x265enc", "option-string=bframes=0", "!", "h265parse",
         "!", "mp4mux", "!", "filesink", "location=" + source.getAbsolutePath()};
     if (tryRun(gst) && source.length() > 0) {
       return true;
@@ -120,7 +124,7 @@ public class RecorderH265Test extends KurentoClientTest {
 
     String[] ffmpeg = {"ffmpeg", "-y", "-f", "lavfi", "-i",
         "testsrc=size=320x240:rate=25:duration=" + FILE_SECONDS, "-c:v", "libx265", "-tag:v",
-        "hvc1", source.getAbsolutePath()};
+        "hvc1", "-x265-params", "bframes=0", source.getAbsolutePath()};
     return tryRun(ffmpeg) && source.length() > 0;
   }
 

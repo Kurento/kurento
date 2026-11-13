@@ -524,7 +524,11 @@ generateH265Source (const std::string &file)
   }
 
   std::string description = "videotestsrc num-buffers=75 "
-                            "! video/x-raw,width=320,height=240,framerate=25/1 ! x265enc "
+                            "! video/x-raw,width=320,height=240,framerate=25/1 "
+                            /* No B-frames: PlayerEndpoint with useEncodedMedia drops
+                             * buffers with non-increasing PTS; B-frames are covered by
+                             * other tests */
+                            "! x265enc option-string=bframes=0 "
                             "! h265parse ! mp4mux ! filesink location=" + file;
   GError *err = nullptr;
   GstElement *pipeline = gst_parse_launch (description.c_str (), &err);
