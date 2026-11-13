@@ -47,6 +47,14 @@
 #     A suffix to be appended to the image name.
 #     Optional. Default: None.
 #
+# MANIFEST_ARCHS
+#     Space-separated list of architectures that make up the final multi-arch
+#     manifest, when building each architecture in a separate job (single
+#     platform mode). Tags without an architecture suffix are only created once
+#     all of these architectures are available, and they point only to them.
+#     Example: "amd64" for an amd64-only run.
+#     Optional. Default: "amd64 arm64".
+#
 # BUILDER_NAME
 #     Name of the buildx builder instance to use.
 #     Optional. Default: "kurento-multiarch-builder".
@@ -72,6 +80,7 @@ TAG=$(echo "${TAG:-}" | tr '/' '_')
 [[ -z "${PLATFORMS:-}" ]] && PLATFORMS="linux/amd64,linux/arm64"
 [[ -z "${PUSH_IMAGES:-}" ]] && PUSH_IMAGES="no"
 [[ -z "${TAG_COMMIT:-}" ]] && TAG_COMMIT="yes"
+[[ -z "${MANIFEST_ARCHS:-}" ]] && MANIFEST_ARCHS="amd64 arm64"
 [[ -z "${BUILDER_NAME:-}" ]] && BUILDER_NAME="kurento-multiarch-builder"
 
 if [[ -n "${DOCKERFILE:-}" ]]; then
@@ -204,17 +213,19 @@ if [[ "$PUSH_IMAGES" == "yes" && "$SINGLE_ARCH_MODE" == "true" ]]; then
     log "Checking if peers are available to merge multi-arch manifests..."
     for t in "${all_tags[@]}"; do
         can_merge="true"
-        for a in amd64 arm64; do # Assuming your pipeline works on these architectures
+        peers=()
+        for a in $MANIFEST_ARCHS; do
             if ! docker buildx imagetools inspect "${t}-${a}" >/dev/null 2>&1; then
                 can_merge="false"
                 log "Cannot merge ${t}: peer ${t}-${a} is not available yet."
                 break
             fi
+            peers+=("${t}-${a}")
         done
-        
+
         if [[ "$can_merge" == "true" ]]; then
             log "All peer images found! Creating multi-arch manifest for: $t"
-            docker buildx imagetools create -t "${t}" "${t}-amd64" "${t}-arm64" || {
+            docker buildx imagetools create -t "${t}" "${peers[@]}" || {
                 log "WARNING: Manifest creation failed. Missing peer or race condition."
             }
         fi
