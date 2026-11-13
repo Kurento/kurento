@@ -51,7 +51,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}", "${{ matrix.jobArch }}"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.

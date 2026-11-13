@@ -16,7 +16,7 @@ on:
         required: true
         # Example: '["amd64", "arm64"]'
         type: "string"
-        default: '["amd64", "arm64"]'
+        default: '["amd64"]'
       runnerGroup:
         description: "runnerGroup: Set of runners where the workflow jobs should be run"
         required: false
@@ -29,7 +29,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}", "${{ matrix.jobArch }}"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.
