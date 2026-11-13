@@ -530,6 +530,9 @@ GST_END_TEST
 /*****************************************************************************/
 
 #define BFRAMES_FRAMES 75
+/* While the player may lose the last buffers at EOS under load, at least a
+ * whole GOP has to be delivered */
+#define BFRAMES_MIN_BUFFERS 25
 /* Start time of the sources used to check that the timestamps are rebased */
 #define TS_START_TIME (10 * GST_SECOND)
 #define RECORDER_SINK_VIDEO "sink_video_default"
@@ -541,6 +544,7 @@ typedef struct _BFramesStats
   GstClockTime first_pts;
   GstClockTime first_dts;
   gboolean first_is_key;
+  gint64 second_pts_dts;        /* PTS - DTS of the second buffer */
   GstClockTime max_pts;
   GstClockTime prev_dts;
   gint64 min_dts_gap;           /* between consecutive buffers, from the 2nd */
@@ -572,6 +576,11 @@ bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
     stats->first_dts = GST_BUFFER_DTS (buf);
     stats->first_is_key = !GST_BUFFER_FLAG_IS_SET (buf,
         GST_BUFFER_FLAG_DELTA_UNIT);
+  }
+  if (stats->count == 1 && GST_BUFFER_PTS_IS_VALID (buf) &&
+      GST_BUFFER_DTS_IS_VALID (buf)) {
+    stats->second_pts_dts = (gint64) GST_BUFFER_PTS (buf) -
+        (gint64) GST_BUFFER_DTS (buf);
   }
   /* The gap between the first and the second buffer is not checked: the
    * first one goes through the preroll and gets its own base time */
@@ -839,6 +848,7 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   GstBus *bus;
   gchar *uri, *padname = NULL;
   guint watch_id;
+  GstCheckLogFilter *log_filter;
 
   bframes_stats_init (&play.out);
   play.loop = g_main_loop_new (NULL, FALSE);
@@ -872,6 +882,14 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   g_object_unref (bus);
 
   play.out.pipeline = play.pipeline;
+  /* At the EOS the player flushes the src pad of its appsrc from another
+   * thread (appsink_eos_cb), which may make GStreamer complain about "Got data
+   * flow before segment event". It is a known race of the player that this
+   * test does not check, so do not let gstcheck turn that message (and only
+   * that one) into a failure. */
+  log_filter = gst_check_add_log_filter ("GStreamer", G_LOG_LEVEL_WARNING,
+      g_regex_new ("Got data flow before segment event", 0, 0, NULL), NULL,
+      NULL, NULL);
   gst_element_set_state (play.pipeline, GST_STATE_PLAYING);
 
   g_signal_emit_by_name (play.player, "request-new-pad",
@@ -885,11 +903,6 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   }
   g_object_set (play.player, "state", KMS_URI_ENDPOINT_STATE_START, NULL);
 
-  /* At the EOS the player flushes the src pad of its appsrc from another
-   * thread (appsink_eos_cb), which may make GStreamer complain about "Got data
-   * flow before segment event". It is a known race of the player that this
-   * test does not check, so do not let gstcheck turn it into a failure. */
-  _gst_check_expecting_log = TRUE;
   g_main_loop_run (play.loop);
 
   if (play.timeout_id != 0) {
@@ -899,7 +912,7 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   gst_object_unref (play.pipeline);
   g_source_remove (watch_id);
   g_main_loop_unref (play.loop);
-  _gst_check_expecting_log = FALSE;
+  gst_check_remove_log_filter (log_filter);
 
   if (play.error || !play.player_eos || (out_path != NULL && !play.stopped)) {
     fprintf (stderr, "Playback failed: error=%d player_eos=%d stopped=%d\n",
@@ -975,8 +988,12 @@ GST_START_TEST (check_encoded_bframes_record)
     /* Under load the player may lose the last buffers when it flushes at the
      * EOS (a known issue that this test does not check), but there must be
      * no gaps before: the DTS of the source has a constant step of 40 ms */
-    fail_unless (out.count >= 2, "The player pushed %u buffers", out.count);
+    fail_unless (out.count >= BFRAMES_MIN_BUFFERS,
+        "The player pushed only %u of %u buffers", out.count, BFRAMES_FRAMES);
     fail_unless (out.first_is_key, "The first buffer is not a keyframe");
+    /* The second buffer is the one after the preroll, which is discarded as a
+     * duplicate of the first: it must not be missing */
+    fail_unless_equals_int64 (out.second_pts_dts, stats.second_pts_dts);
     fail_unless (out.count < 4 || (out.min_dts_gap > 0 &&
             out.max_dts_gap <= 40 * GST_MSECOND + GST_MSECOND),
         "Buffers lost: the player pushed %u of %u, DTS gaps between %"
