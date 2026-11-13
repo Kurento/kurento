@@ -110,6 +110,7 @@ Information about *development of Kurento itself* is also available:
    /knowledge/memory_fragmentation
    /knowledge/mp4
    /knowledge/nat
+   /knowledge/recording-codecs
    /knowledge/rtp_streaming
    /knowledge/safari
    /knowledge/selfsigned_certs

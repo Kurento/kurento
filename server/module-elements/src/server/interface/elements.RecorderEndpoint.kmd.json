@@ -207,6 +207,52 @@
               "type": "boolean",
               "optional": true,
               "defaultValue": false
+            },
+            {
+              "name": "videoCodec",
+              "doc": "Selects the video codec that will be stored in the recording file, independently of the container chosen with <code>mediaProfile</code>.
+<p>
+  If this parameter is not provided (or if it is <code>DEFAULT</code>), the
+  server applies its default behavior, which currently is to use the default
+  codec of the container: H264 for MP4 and MKV, VP8 for WEBM. The
+  <code>_VIDEO_ONLY</code> profiles behave like their full counterparts, and the
+  <code>_AUDIO_ONLY</code> profiles ignore this parameter, because they do not
+  store any video. The value <code>DEFAULT</code> is valid with every profile.
+</p>
+<p>These are the valid combinations of container and codec:</p>
+<table>
+  <tr><th>Container</th><th>H264</th><th>H265</th><th>VP8</th><th>VP9</th><th>AV1</th></tr>
+  <tr><td>MP4</td><td>yes</td><td>yes</td><td>no</td><td>yes</td><td>yes</td></tr>
+  <tr><td>MKV</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+  <tr><td>WEBM</td><td>no</td><td>no</td><td>yes</td><td>yes</td><td>yes</td></tr>
+  <tr><td>FLV, JPEG_VIDEO_ONLY, KURENTO_SPLIT_RECORDER</td><td colspan='5'>the parameter is not supported</td></tr>
+</table>
+<p>
+  Requesting an invalid combination makes the constructor fail with a
+  <code>MEDIA_OBJECT_ILLEGAL_PARAM_ERROR</code> error.
+</p>
+<p>
+  If the codec of the incoming media is the same as <code>videoCodec</code>, the
+  video is stored as-is, without being decoded or encoded again
+  (<i>passthrough</i>). Otherwise, the media is transcoded to the requested
+  codec, which incurs in noticeable CPU load.
+</p>
+<p>
+  H265 is stored in the <code>hvc1</code> format, which can be played by Safari
+  and QuickTime. Be aware that H265 is subject to patent licensing, and that
+  transcoding to H265 requires the x265 encoder to be available in the media
+  server.
+</p>
+<p>
+  <strong>NOTE:</strong> This parameter requires a media server version that
+  supports it (see the documentation about recording codecs). Older servers do
+  not know about it and may silently ignore it, recording with the default
+  codec of the container.
+</p>
+              ",
+              "type": "RecorderVideoCodec",
+              "optional": true,
+              "defaultValue": "DEFAULT"
             }
           ]
         },
@@ -250,6 +296,34 @@
     }
   ],
   "complexTypes": [
+    {
+      "name": "RecorderVideoCodec",
+      "typeFormat": "ENUM",
+      "doc": "Video codec to be stored in the recording file of a :rom:cls:`RecorderEndpoint`.
+<p>
+  The codec is independent from the container (see :rom:enum:`MediaProfileSpecType`),
+  although not all combinations are valid; see the documentation of the
+  <code>videoCodec</code> parameter of the RecorderEndpoint constructor.
+</p>
+<ul>
+  <li>
+    <strong>DEFAULT</strong>: Default behavior of the server (currently, the
+    default codec of the container: H264 for MP4 and MKV, VP8 for WEBM). This is
+    the behavior when no codec is requested.
+  </li>
+  <li><strong>H264</strong>, <strong>H265</strong>, <strong>VP8</strong>,
+    <strong>VP9</strong>, <strong>AV1</strong>: Store the video with this codec.
+  </li>
+</ul>",
+      "values": [
+        "DEFAULT",
+        "H264",
+        "H265",
+        "VP8",
+        "VP9",
+        "AV1"
+      ]
+    },
     {
       "name": "GapsFixMethod",
       "typeFormat": "ENUM",
