@@ -1,5 +1,12 @@
 {
   "name": "datachannelexample",
   "version": "7.3.1-dev",
-  "kurentoVersion": "^7.0.0"
+  "kurentoVersion": "^7.0.0",
+  "code": {
+    "api": {
+      "js": {
+        "npmRepository": "https://github.com/Kurento/kurento.git"
+      }
+    }
+  }
 }

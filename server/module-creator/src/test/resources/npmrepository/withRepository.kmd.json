@@ -1,0 +1,19 @@
+{
+  "name": "withRepository",
+  "version": "1.0.0",
+  "kurentoVersion": "1.0.0",
+  "code": {
+    "api": {
+      "js": {
+        "nodeName": "npmWithRepository",
+        "npmGit": "https://github.com/example/mirror-js.git",
+        "npmRepository": "https://github.com/example/monorepo.git"
+      }
+    }
+  },
+  "remoteClasses": [
+    {
+      "name": "ClassA"
+    }
+  ]
+}

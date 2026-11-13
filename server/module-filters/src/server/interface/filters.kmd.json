@@ -18,7 +18,8 @@
       "js": {
         "nodeName": "kurento-client-filters",
         "npmDescription": "JavaScript Client API for Kurento Media Server",
-        "npmGit": "https://github.com/Kurento/kurento-client-filters-js.git"
+        "npmGit": "https://github.com/Kurento/kurento-client-filters-js.git",
+        "npmRepository": "https://github.com/Kurento/kurento.git"
       }
     },
     "implementation": {
