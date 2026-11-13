@@ -125,7 +125,9 @@ fi
 
 if [[ "$CFG_DRY_RUN" != "true" ]]; then
     # The OIDC token can only be requested by jobs with "id-token: write".
-    if [[ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" || -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]]; then
+    # Note: Use `${VAR:+x}` to test the variables, so that their values (secrets)
+    # are not printed by the xtrace option.
+    if [[ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:+x}" || -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+x}" ]]; then
         log "ERROR: Cannot request an OIDC token. Run this in a GitHub-hosted runner, in a job with 'permissions: id-token: write'"
         exit 1
     fi
@@ -133,7 +135,7 @@ if [[ "$CFG_DRY_RUN" != "true" ]]; then
     # Trusted publishing is used only when no other credential is configured.
     # Any token would take precedence, hiding a failure of the OIDC setup.
     for var in NODE_AUTH_TOKEN NPM_TOKEN NPM_CONFIG_USERCONFIG; do
-        if [[ -n "${!var:-}" ]]; then
+        if [[ -n "${!var:+x}" ]]; then
             log "ERROR: Environment variable $var is set; this script publishes only with OIDC"
             exit 1
         fi
