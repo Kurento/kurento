@@ -549,6 +549,49 @@ Release steps
 
 
 
+Publishing to NPM
+-----------------
+
+The `Clients Build All JavaScript`_ job does not publish to NPM with an access token. It uses `NPM trusted publishing <https://docs.npmjs.com/trusted-publishers>`__ (OIDC), so there is no long-lived NPM secret in the repository. How it works:
+
+#. The build jobs (self-hosted runners) pack each NPM package, verify that it installs correctly (``check_js_package.sh``), and upload the verified tarball as a workflow artifact named ``npm-<group>-<directory>``. Packages are only prepared for publishing if their version has no ``-dev`` suffix, and is greater than the one already published in NPM.
+
+#. The jobs ``publish-npm-libs`` and ``publish-npm-final`` (GitHub-hosted runners, in the workflow file ``clients-javascript.parent.yaml``) download the tarballs and run ``ci-scripts/publish_js_npm.sh``, which executes ``npm publish <Tarball> --provenance``. They are skipped if there is nothing to publish (e.g. development builds).
+
+   - ``publish-npm-libs``: ``kurento-client-core``, ``kurento-client-elements``, ``kurento-client-filters`` and ``kurento-jsonrpc``. The build of ``kurento-client`` waits for this job, because it resolves its dependencies from the NPM registry.
+   - ``publish-npm-final``: ``kurento-client``, ``kurento-utils`` and the example modules.
+
+#. Both jobs use the GitHub environment ``npm-publish``, which has *required reviewers*: the job doesn't start until a reviewer approves it in the GitHub Actions page of the run. This is enforced by GitHub, in addition to the release process itself.
+
+Requirements, to be configured once:
+
+* In GitHub, the repository environment ``npm-publish`` (*Settings* -> *Environments*), with the release managers as required reviewers and restricted to the branches used for releases.
+
+* In npmjs.com, for **each** package, a *Trusted Publisher* of type *GitHub Actions* (*Settings* of the package -> *Trusted Publisher*):
+
+  - *Organization or user*: ``Kurento``.
+  - *Repository*: ``kurento``.
+  - *Workflow filename*: ``clients-javascript.parent.yaml``. NPM validates the workflow that started the run, so this is the parent workflow, not the ``*.child.yaml`` ones.
+  - *Environment name*: ``npm-publish``.
+
+  The packages are ``kurento-utils``, ``kurento-client-core``, ``kurento-client-elements``, ``kurento-client-filters``, ``kurento-jsonrpc``, ``kurento-client``, ``kurento-module-chroma``, ``kurento-module-datachannelexample`` and ``kurento-module-videosampler``. NPM doesn't verify the configuration when it is saved, and a new configuration that doesn't complete a successful publish within 48 hours expires, so configure them right before a release.
+
+  If the workflow file or the environment are renamed, this configuration must be updated in all the packages.
+
+* The ``repository.url`` of every package must be exactly ``https://github.com/Kurento/kurento.git``, as required by NPM. For the packages generated from a module definition (``.kmd.json``), this is set with the ``npmRepository`` property of the ``code.api.js`` section.
+
+* **New packages**: NPM trusted publishing cannot create a package. Publish the first version by hand, from a trusted machine and with two-factor authentication (``npm publish <Tarball> --access public``; the tarball can be downloaded from the ``npm-*`` artifact of a build job, which has been verified), and then configure its trusted publisher. ``publish_js_npm.sh`` fails early if a package to publish does not exist in the registry.
+
+* Once a package has been published successfully with trusted publishing, in its *Settings* -> *Publishing access* select *Require two-factor authentication and disallow tokens*, so no token can be used to publish it.
+
+* The repository secret ``KURENTO_NPM_TOKEN`` is not used any more and must be deleted.
+
+To check the setup without publishing, run ``ci-scripts/publish_js_npm.sh --dry-run <Directory>`` over a directory with tarballs.
+
+If the version of a package is not published, check first that the version has no ``-dev`` suffix and is greater than the published one, and that the job log of ``deploy_js_npm.sh`` says that the package is ready to publish.
+
+
+
 Post-Release
 ------------
 
@@ -579,7 +622,7 @@ When all CI jobs have finished successfully:
   - `kurento-module-platedetector-js <https://github.com/Kurento/kurento-module-platedetector-js>`__
   - `kurento-module-pointerdetector-js <https://github.com/Kurento/kurento-module-pointerdetector-js>`__
 
-* Check that the JavaScript packages have been published to NPM:
+* Approve the ``npm-publish`` environment when the NPM publishing jobs ask for it (see `Publishing to NPM`_), and check that the JavaScript packages have been published to NPM, with a provenance badge:
 
   - NPM: `kurento-client-core <https://www.npmjs.com/package/kurento-client-core>`__
   - NPM: `kurento-client-elements <https://www.npmjs.com/package/kurento-client-elements>`__
