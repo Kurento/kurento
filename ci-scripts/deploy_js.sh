@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checked with ShellCheck (https://www.shellcheck.net/)
 
-#/ Deploy JavaScript packages.
+#/ Deploy JavaScript packages (Maven), and prepare them for NPM.
 
 
 
@@ -78,8 +78,10 @@ check_version.sh || {
 
 
 
-# Deploy for NPM
-# ==============
+# Prepare for NPM
+# ===============
+
+# Doesn't publish: leaves the verified tarball in NPM_TARBALL_DIR.
 
 deploy_js_npm.sh
 
