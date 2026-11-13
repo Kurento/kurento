@@ -129,8 +129,13 @@ typedef struct _KmsPtsData
 
   GstClockTime base_time_preroll;
 
+  /* Highest PTS pushed so far (not necessarily the last one, since buffers
+   * with B-frames come in decoding order, so their PTS is not monotonic) */
   GstClockTime last_pts;
-  GstClockTime last_pts_orig;
+  /* DTS of the last pushed buffer (already adjusted) */
+  GstClockTime last_dts;
+  /* Original DTS of the last pushed buffer */
+  GstClockTime last_dts_orig;
   gboolean pts_handled;
 } KmsPtsData;
 
@@ -150,7 +155,8 @@ kms_pts_data_new ()
   data->base_time = GST_CLOCK_TIME_NONE;
   data->offset_time = GST_CLOCK_TIME_NONE;
   data->last_pts = GST_CLOCK_TIME_NONE;
-  data->last_pts_orig = GST_CLOCK_TIME_NONE;
+  data->last_dts = GST_CLOCK_TIME_NONE;
+  data->last_dts_orig = GST_CLOCK_TIME_NONE;
   data->pts_handled = FALSE;
 
   return data;
@@ -160,7 +166,7 @@ static void
 kms_pts_data_reset (KmsPtsData * data)
 {
   data->base_time = GST_CLOCK_TIME_NONE;
-  data->last_pts_orig = GST_CLOCK_TIME_NONE;
+  data->last_dts_orig = GST_CLOCK_TIME_NONE;
 }
 
 static void
@@ -477,7 +483,7 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
   KmsPtsData *pts_data;
   GstBuffer *buffer = NULL;
   GstPad *src, *sink;
-  GstClockTime pts_orig, base_time, offset_time;
+  GstClockTime pts_orig, dts_orig, base_time, offset_time;
   GstFlowReturn ret = GST_FLOW_OK;
   gint64 diff;
 
@@ -520,7 +526,18 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
 
   pts_data->pts_handled = TRUE;
   pts_orig = GST_BUFFER_PTS (buffer);
+  /* Buffers are delivered in decoding order, so with B-frames only the DTS is
+   * monotonic: it is the one that has to be used to detect duplicated or
+   * out-of-order buffers. When the DTS was missing it equals the PTS. */
+  dts_orig = GST_BUFFER_DTS (buffer);
 
+  /* With B-frames the first DTS is lower than its PTS: use the lowest one as
+   * reference so the adjusted DTS never goes below the base time */
+  offset_time = MIN (pts_orig, dts_orig);
+
+  /* Note: base_time is kept above the highest PTS pushed so far, which with
+   * B-frames is some frames ahead of the last DTS, so a small gap may appear
+   * in the timestamps after a reset. It is harmless, they keep increasing. */
   if (is_preroll) {
     GST_DEBUG_OBJECT (appsink, "Preroll: reset base time");
 
@@ -534,8 +551,6 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
        * to avoid setting the same or less PTS for different buffers */
       base_time = MAX (base_time, pts_data->last_pts + GST_MSECOND);
     }
-
-    offset_time = GST_BUFFER_PTS (buffer);
   } else {
     base_time = pts_data->base_time;
     offset_time = pts_data->offset_time;
@@ -551,24 +566,24 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
       }
 
       pts_data->base_time = base_time;
-      pts_data->offset_time = offset_time = GST_BUFFER_PTS (buffer);
+      pts_data->offset_time = offset_time = MIN (pts_orig, dts_orig);
     }
   }
 
-  if (pts_data->last_pts_orig != GST_CLOCK_TIME_NONE) {
-    if (pts_orig < pts_data->last_pts_orig) {
+  if (pts_data->last_dts_orig != GST_CLOCK_TIME_NONE) {
+    if (dts_orig < pts_data->last_dts_orig) {
       GST_ERROR_OBJECT (appsink,
-          "Non incremental original PTS (last original PTS: %"
-          GST_TIME_FORMAT ", original PTS: %" GST_TIME_FORMAT
+          "Non incremental original DTS (last original DTS: %"
+          GST_TIME_FORMAT ", original DTS: %" GST_TIME_FORMAT
           ", is preroll: %d). Not pushing",
-          GST_TIME_ARGS (pts_data->last_pts_orig), GST_TIME_ARGS (pts_orig),
+          GST_TIME_ARGS (pts_data->last_dts_orig), GST_TIME_ARGS (dts_orig),
           is_preroll);
       goto end;
-    } else if (pts_orig == pts_data->last_pts_orig) {
+    } else if (dts_orig == pts_data->last_dts_orig) {
       GST_DEBUG_OBJECT (appsink,
-          "Original PTS equals last PTS (original PTS: %" GST_TIME_FORMAT
+          "Original DTS equals last DTS (original DTS: %" GST_TIME_FORMAT
           ", is preroll: %d). Seems to be already pushed.",
-          GST_TIME_ARGS (pts_orig), is_preroll);
+          GST_TIME_ARGS (dts_orig), is_preroll);
       goto end;
     }
   }
@@ -587,18 +602,22 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
       "Is preroll: %d, buffer: %" GST_PTR_FORMAT ", original pts %"
       GST_TIME_FORMAT, is_preroll, buffer, GST_TIME_ARGS (pts_orig));
 
-  if (pts_data->last_pts != GST_CLOCK_TIME_NONE &&
-      GST_BUFFER_PTS (buffer) <= pts_data->last_pts) {
+  if (pts_data->last_dts != GST_CLOCK_TIME_NONE &&
+      GST_BUFFER_DTS (buffer) <= pts_data->last_dts) {
     GST_ERROR_OBJECT (appsink,
-        "Non incremental PTS assignment (last PTS: %"
-        GST_TIME_FORMAT ", PTS: %" GST_TIME_FORMAT
-        ", is preroll: %d). Not pushing", GST_TIME_ARGS (pts_data->last_pts),
-        GST_TIME_ARGS (GST_BUFFER_PTS (buffer)), is_preroll);
+        "Non incremental DTS assignment (last DTS: %"
+        GST_TIME_FORMAT ", DTS: %" GST_TIME_FORMAT
+        ", is preroll: %d). Not pushing", GST_TIME_ARGS (pts_data->last_dts),
+        GST_TIME_ARGS (GST_BUFFER_DTS (buffer)), is_preroll);
     goto end;
   }
 
-  pts_data->last_pts = GST_BUFFER_PTS (buffer);
-  pts_data->last_pts_orig = pts_orig;
+  pts_data->last_dts = GST_BUFFER_DTS (buffer);
+  pts_data->last_dts_orig = dts_orig;
+  if (pts_data->last_pts == GST_CLOCK_TIME_NONE ||
+      GST_BUFFER_PTS (buffer) > pts_data->last_pts) {
+    pts_data->last_pts = GST_BUFFER_PTS (buffer);
+  }
 
 push:
   src = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
