@@ -33,6 +33,7 @@
 #include <cstdio> // popen()
 #include <cstdlib> // system()
 #include <ftw.h>
+#include <iostream>
 #include <unistd.h>
 
 #define DIR_TEMPLATE "/tmp/recoder_test_XXXXXX"
@@ -513,6 +514,9 @@ generateH265Source (const std::string &file)
     if (factory == nullptr) {
       BOOST_WARN_MESSAGE (false, "GStreamer element '" << name << "' is not "
                           "available: cannot generate the H265 source");
+      std::cerr << "SKIPPED: GStreamer element '" << name
+                << "' is not available: cannot generate the H265 source"
+                << std::endl;
       return false;
     }
 
@@ -564,6 +568,7 @@ record_h265_from_player (const std::string &profile,
 
   if (!programAvailable ("ffprobe") ) {
     BOOST_WARN_MESSAGE (false, "SKIPPED: ffprobe is not available");
+    std::cerr << "SKIPPED: ffprobe is not available" << std::endl;
     return;
   }
 
