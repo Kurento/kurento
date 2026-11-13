@@ -160,7 +160,12 @@ jobs:
   # no job produced a package to publish (e.g. development builds).
   publish-npm-libs:
     needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
-    if: ${{ !cancelled() && contains(needs.*.outputs.npmTarball, 'true') }}
+    # No partial releases: nothing is published if any of these builds fails.
+    if: >-
+      ${{ !cancelled()
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && contains(needs.*.outputs.npmTarball, 'true') }}
     runs-on: "ubuntu-latest"
     timeout-minutes: 15
     environment: "npm-publish"
@@ -170,7 +175,7 @@ jobs:
     steps:
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: "ci-scripts"
@@ -182,12 +187,15 @@ jobs:
           node-version: "24"
 
       - name: "Update npm"
-        # Trusted publishing requires npm >= 11.5.1.
-        run: "npm install --global 'npm@^11.5.1'"
+        # Trusted publishing requires npm >= 11.5.1, which is the exact version
+        # used here. To update it: change it in both publish jobs and, if the
+        # minimum changes, in `ci-scripts/publish_js_npm.sh`; test it with
+        # `npm publish --dry-run` before.
+        run: "npm install --global npm@11.5.1"
 
       # Action: https://github.com/actions/download-artifact
       - name: "Download the NPM tarballs"
-        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c" # v8.0.1
+        uses: "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333" # v8.0.2
         with:
           pattern: "npm-libs-*"
           merge-multiple: true
@@ -198,7 +206,15 @@ jobs:
 
   publish-npm-final:
     needs: ["client", "kurento-utils-js", "module-chroma", "module-datachannelexample", "module-videosampler"]
-    if: ${{ !cancelled() && contains(needs.*.outputs.npmTarball, 'true') }}
+    # No partial releases: nothing is published unless `client` has run
+    # successfully (it is skipped if its dependencies could not be published),
+    # and no build of this group has failed.
+    if: >-
+      ${{ !cancelled()
+      && needs.client.result == 'success'
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && contains(needs.*.outputs.npmTarball, 'true') }}
     runs-on: "ubuntu-latest"
     timeout-minutes: 15
     environment: "npm-publish"
@@ -208,7 +224,7 @@ jobs:
     steps:
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: "ci-scripts"
@@ -220,12 +236,15 @@ jobs:
           node-version: "24"
 
       - name: "Update npm"
-        # Trusted publishing requires npm >= 11.5.1.
-        run: "npm install --global 'npm@^11.5.1'"
+        # Trusted publishing requires npm >= 11.5.1, which is the exact version
+        # used here. To update it: change it in both publish jobs and, if the
+        # minimum changes, in `ci-scripts/publish_js_npm.sh`; test it with
+        # `npm publish --dry-run` before.
+        run: "npm install --global npm@11.5.1"
 
       # Action: https://github.com/actions/download-artifact
       - name: "Download the NPM tarballs"
-        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c" # v8.0.1
+        uses: "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333" # v8.0.2
         with:
           pattern: "npm-final-*"
           merge-multiple: true
