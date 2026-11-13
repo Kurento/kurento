@@ -43,7 +43,7 @@ Bug-fix releases
 7.3.1
 -----
 
-Released on (date to be set when published).
+Released on November 13, 2026.
 
 * **JavaScript client: fix installation from NPM** (`#142 <https://github.com/Kurento/kurento/issues/142>`__).
 
