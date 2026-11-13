@@ -21,6 +21,9 @@
 #include <gst/check/gstcheck.h>
 #include <gst/gst.h>
 #include <commons/kmsuriendpointstate.h>
+#include <commons/kmsrecordingprofile.h>
+#include <glib/gstdio.h>
+#include <string.h>
 
 #include <kmstestutils.h>
 
@@ -521,6 +524,475 @@ GST_START_TEST (check_eos)
 
 GST_END_TEST
 
+
+/*****************************************************************************/
+/* Encoded media from sources with B-frames                                  */
+/*****************************************************************************/
+
+#define BFRAMES_FRAMES 75
+/* Start time of the sources used to check that the timestamps are rebased */
+#define TS_START_TIME (10 * GST_SECOND)
+#define RECORDER_SINK_VIDEO "sink_video_default"
+
+typedef struct _BFramesStats
+{
+  guint count;
+  guint reordered;              /* buffers with DTS != PTS */
+  GstClockTime first_pts;
+  GstClockTime first_dts;
+  gboolean first_is_key;
+  GstClockTime max_pts;
+} BFramesStats;
+
+static void
+bframes_stats_init (BFramesStats * stats)
+{
+  memset (stats, 0, sizeof (*stats));
+  stats->first_pts = GST_CLOCK_TIME_NONE;
+  stats->first_dts = GST_CLOCK_TIME_NONE;
+}
+
+static GstPadProbeReturn
+bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  BFramesStats *stats = data;
+  GstBuffer *buf = GST_PAD_PROBE_INFO_BUFFER (info);
+
+  if (stats->count == 0) {
+    stats->first_pts = GST_BUFFER_PTS (buf);
+    stats->first_dts = GST_BUFFER_DTS (buf);
+    stats->first_is_key = !GST_BUFFER_FLAG_IS_SET (buf,
+        GST_BUFFER_FLAG_DELTA_UNIT);
+  }
+  stats->count++;
+  if (GST_BUFFER_PTS_IS_VALID (buf) && GST_BUFFER_PTS (buf) > stats->max_pts) {
+    stats->max_pts = GST_BUFFER_PTS (buf);
+  }
+  if (GST_BUFFER_PTS_IS_VALID (buf) && GST_BUFFER_DTS_IS_VALID (buf) &&
+      GST_BUFFER_PTS (buf) != GST_BUFFER_DTS (buf)) {
+    stats->reordered++;
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
+/* Demuxes a file and gets the stats of its video buffers. Returns FALSE if the
+ * file cannot be read until EOS. */
+static gboolean
+bframes_inspect_file (const gchar * path, const gchar * demuxer,
+    BFramesStats * stats)
+{
+  GstElement *pipeline, *sink;
+  GstPad *pad;
+  GstMessage *msg;
+  GstBus *bus;
+  GError *err = NULL;
+  gchar *desc;
+  gboolean ok;
+
+  bframes_stats_init (stats);
+  desc = g_strdup_printf ("filesrc location=%s ! %s name=d "
+      "d. ! video/x-h264 ! fakesink name=sink sync=false", path, demuxer);
+  pipeline = gst_parse_launch (desc, &err);
+  g_free (desc);
+  fail_unless (pipeline != NULL, "Cannot read %s: %s", path,
+      err ? err->message : "?");
+
+  sink = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+  pad = gst_element_get_static_pad (sink, "sink");
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_stats_probe,
+      stats, NULL);
+
+  bus = gst_element_get_bus (pipeline);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  msg = gst_bus_timed_pop_filtered (bus, 20 * GST_SECOND,
+      GST_MESSAGE_EOS | GST_MESSAGE_ERROR);
+  ok = msg != NULL && GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS;
+  if (msg != NULL) {
+    gst_message_unref (msg);
+  }
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (pad);
+  gst_object_unref (sink);
+  gst_object_unref (bus);
+  gst_object_unref (pipeline);
+
+  return ok;
+}
+
+/* Generates a file with B-frames in-process. Returns FALSE (test skipped) if
+ * the encoder is not available. */
+static gboolean
+bframes_generate_source (const gchar * muxer, guint bframes,
+    GstClockTime start_time, const gchar * path)
+{
+  GstElement *pipeline;
+  GstMessage *msg;
+  GstBus *bus;
+  GError *err = NULL;
+  gchar *desc;
+  gboolean ok;
+
+  desc = g_strdup_printf ("videotestsrc num-buffers=%d "
+      "timestamp-offset=%" G_GUINT64_FORMAT " ! "
+      "video/x-raw,format=I420,width=320,height=240,framerate=25/1 ! "
+      "x264enc bframes=%u key-int-max=25 ! h264parse ! %s ! "
+      "filesink location=%s", BFRAMES_FRAMES, start_time, bframes, muxer, path);
+  pipeline = gst_parse_launch (desc, &err);
+  g_free (desc);
+  if (pipeline == NULL) {
+    fprintf (stderr, "SKIP: cannot build the source pipeline: %s\n",
+        err ? err->message : "?");
+    g_clear_error (&err);
+    return FALSE;
+  }
+
+  bus = gst_element_get_bus (pipeline);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  msg = gst_bus_timed_pop_filtered (bus, 60 * GST_SECOND,
+      GST_MESSAGE_EOS | GST_MESSAGE_ERROR);
+  ok = msg != NULL && GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS;
+  if (msg != NULL) {
+    gst_message_unref (msg);
+  }
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (bus);
+  gst_object_unref (pipeline);
+
+  fail_unless (ok, "Cannot generate the source %s", path);
+  return TRUE;
+}
+
+typedef struct _BFramesPlayback
+{
+  GMainLoop *loop;
+  GstElement *pipeline;
+  GstElement *player;
+  GstElement *recorder;         /* NULL: just count the buffers of the player */
+  BFramesStats out;
+  gboolean error;
+  gboolean player_eos;
+  gboolean stopped;
+  guint timeout_id;
+} BFramesPlayback;
+
+static gboolean
+bframes_bus_cb (GstBus * bus, GstMessage * msg, gpointer user_data)
+{
+  BFramesPlayback *play = user_data;
+
+  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
+    GError *err = NULL;
+    gchar *dbg = NULL;
+
+    gst_message_parse_error (msg, &err, &dbg);
+    GST_ERROR ("Pipeline error: %s (%s)", err->message, dbg);
+    g_error_free (err);
+    g_free (dbg);
+
+    play->error = TRUE;
+    g_main_loop_quit (play->loop);
+  }
+
+  return TRUE;
+}
+
+static gboolean
+bframes_stop_recorder_cb (gpointer user_data)
+{
+  BFramesPlayback *play = user_data;
+
+  g_object_set (play->recorder, "state", KMS_URI_ENDPOINT_STATE_STOP, NULL);
+  return FALSE;
+}
+
+static void
+bframes_player_eos_cb (GstElement * player, gpointer user_data)
+{
+  BFramesPlayback *play = user_data;
+
+  GST_DEBUG ("Player EOS");
+  play->player_eos = TRUE;
+
+  if (play->recorder == NULL) {
+    g_idle_add (quit_main_loop_idle, play->loop);
+  } else {
+    /* Let the last buffers reach the recorder before stopping it */
+    g_timeout_add (500, bframes_stop_recorder_cb, play);
+  }
+}
+
+static void
+bframes_recorder_state_cb (GstElement * recorder, KmsUriEndpointState state,
+    gpointer user_data)
+{
+  BFramesPlayback *play = user_data;
+
+  if (state == KMS_URI_ENDPOINT_STATE_STOP) {
+    play->stopped = TRUE;
+    g_idle_add (quit_main_loop_idle, play->loop);
+  }
+}
+
+static gboolean
+bframes_timeout_cb (gpointer user_data)
+{
+  BFramesPlayback *play = user_data;
+
+  GST_ERROR ("Timeout waiting for the playback to finish");
+  play->timeout_id = 0;
+  play->error = TRUE;
+  g_main_loop_quit (play->loop);
+  return FALSE;
+}
+
+/* The EOS of the player is not forwarded to the recorder: the recorder is
+ * always stopped explicitly, so the result does not depend on which one of
+ * them gets first to the muxer. */
+static GstPadProbeReturn
+bframes_drop_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) == GST_EVENT_EOS) {
+    return GST_PAD_PROBE_DROP;
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
+static void
+bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
+    gpointer user_data)
+{
+  BFramesPlayback *play = user_data;
+  GstElement *sink = NULL;
+  GstPad *sinkpad;
+
+  if (!g_str_has_prefix (GST_OBJECT_NAME (pad), KMS_VIDEO_PREFIX)) {
+    return;
+  }
+
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_stats_probe,
+      &play->out, NULL);
+
+  if (play->recorder != NULL) {
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        bframes_drop_eos_probe, NULL, NULL);
+    if (!gst_element_link_pads (player, GST_OBJECT_NAME (pad), play->recorder,
+            RECORDER_SINK_VIDEO)) {
+      GST_ERROR ("Cannot link the player to the recorder");
+      play->error = TRUE;
+      g_main_loop_quit (play->loop);
+    }
+    return;
+  }
+
+  sink = gst_element_factory_make ("fakesink", NULL);
+  g_object_set (sink, "async", FALSE, "sync", FALSE, NULL);
+  gst_bin_add (GST_BIN (play->pipeline), sink);
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  fail_unless (gst_pad_link (pad, sinkpad) == GST_PAD_LINK_OK);
+  g_object_unref (sinkpad);
+  gst_element_sync_state_with_parent (sink);
+}
+
+/* Plays src_path with use-encoded-media, into a recorder if out_path is not
+ * NULL. The recorder and the player are started one right after the other, as
+ * the clients do. */
+static gboolean
+bframes_play (const gchar * src_path, KmsRecordingProfile profile,
+    const gchar * out_path, BFramesStats * out)
+{
+  BFramesPlayback play = { 0, };
+  GstBus *bus;
+  gchar *uri, *padname = NULL;
+  guint watch_id;
+
+  bframes_stats_init (&play.out);
+  play.loop = g_main_loop_new (NULL, FALSE);
+  play.pipeline = gst_pipeline_new ("player-bframes-test");
+  play.player = gst_element_factory_make ("playerendpoint", NULL);
+  fail_unless (play.player != NULL);
+  gst_bin_add (GST_BIN (play.pipeline), play.player);
+
+  uri = g_strdup_printf ("file://%s", src_path);
+  g_object_set (play.player, "uri", uri, "use-encoded-media", TRUE, NULL);
+  g_free (uri);
+
+  if (out_path != NULL) {
+    play.recorder = gst_element_factory_make ("recorderendpoint", NULL);
+    fail_unless (play.recorder != NULL);
+    gst_bin_add (GST_BIN (play.pipeline), play.recorder);
+    uri = g_strdup_printf ("file://%s", out_path);
+    g_object_set (play.recorder, "uri", uri, "profile", profile, NULL);
+    g_free (uri);
+    g_signal_connect (play.recorder, "state-changed",
+        G_CALLBACK (bframes_recorder_state_cb), &play);
+  }
+
+  g_signal_connect (play.player, "eos", G_CALLBACK (bframes_player_eos_cb),
+      &play);
+  g_signal_connect (play.player, "pad-added",
+      G_CALLBACK (bframes_player_pad_added_cb), &play);
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (play.pipeline));
+  watch_id = gst_bus_add_watch (bus, bframes_bus_cb, &play);
+  g_object_unref (bus);
+
+  gst_element_set_state (play.pipeline, GST_STATE_PLAYING);
+
+  g_signal_emit_by_name (play.player, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname);
+  fail_if (padname == NULL);
+  g_free (padname);
+
+  play.timeout_id = g_timeout_add_seconds (30, bframes_timeout_cb, &play);
+  if (play.recorder != NULL) {
+    g_object_set (play.recorder, "state", KMS_URI_ENDPOINT_STATE_START, NULL);
+  }
+  g_object_set (play.player, "state", KMS_URI_ENDPOINT_STATE_START, NULL);
+
+  g_main_loop_run (play.loop);
+
+  if (play.timeout_id != 0) {
+    g_source_remove (play.timeout_id);
+  }
+  gst_element_set_state (play.pipeline, GST_STATE_NULL);
+  gst_object_unref (play.pipeline);
+  g_source_remove (watch_id);
+  g_main_loop_unref (play.loop);
+
+  if (play.error || !play.player_eos || (out_path != NULL && !play.stopped)) {
+    fprintf (stderr, "Playback failed: error=%d player_eos=%d stopped=%d\n",
+        play.error, play.player_eos, play.stopped);
+    return FALSE;
+  }
+
+  *out = play.out;
+  return TRUE;
+}
+
+static gchar *
+bframes_make_tmp_dir (void)
+{
+  GError *err = NULL;
+  gchar *dir = g_dir_make_tmp ("kms-player-bframes-XXXXXX", &err);
+
+  fail_unless (dir != NULL, "Cannot create tmp dir: %s",
+      err ? err->message : "?");
+  return dir;
+}
+
+static void
+bframes_remove_tmp_dir (gchar * dir, const gchar * const *files)
+{
+  gint i;
+
+  for (i = 0; files[i] != NULL; i++) {
+    gchar *path = g_build_filename (dir, files[i], NULL);
+
+    g_unlink (path);
+    g_free (path);
+  }
+  g_rmdir (dir);
+  g_free (dir);
+}
+
+/* A source with B-frames recorded without decoding keeps all its frames */
+GST_START_TEST (check_encoded_bframes_record)
+{
+  static const gchar *const files[] =
+      { "src.mp4", "out.mp4", "out.mkv", NULL };
+  KmsRecordingProfile profiles[] = { KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY,
+    KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY
+  };
+  const gchar *outs[] = { "out.mp4", "out.mkv" };
+  const gchar *demuxers[] = { "qtdemux", "matroskademux" };
+  gchar *dir, *src;
+  BFramesStats stats, out;
+  gint i;
+
+  if (gst_element_factory_find ("x264enc") == NULL) {
+    fprintf (stderr, "SKIP: x264enc not available\n");
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.mp4", NULL);
+  fail_unless (bframes_generate_source ("mp4mux", 3, 0, src));
+
+  fail_unless (bframes_inspect_file (src, "qtdemux", &stats));
+  fail_unless_equals_int (stats.count, BFRAMES_FRAMES);
+  fail_unless (stats.reordered > 0, "The source has no B-frames");
+
+  for (i = 0; i < 2; i++) {
+    gchar *path = g_build_filename (dir, outs[i], NULL);
+
+    guint played;
+
+    fail_unless (bframes_play (src, profiles[i], path, &out),
+        "Recording %s failed or did not finish", path);
+    /* The player may lose the very last buffer at EOS (also without
+     * B-frames), but nothing else, and not the first one */
+    fail_unless (out.count == BFRAMES_FRAMES ||
+        out.count == BFRAMES_FRAMES - 1, "The player pushed %u of %u buffers",
+        out.count, BFRAMES_FRAMES);
+    fail_unless (out.first_is_key, "The first buffer is not a keyframe");
+    played = out.count;
+
+    /* The recorder must save all what the player delivered */
+    fail_unless (bframes_inspect_file (path, demuxers[i], &out),
+        "%s is not a valid file", path);
+    fail_unless_equals_int (out.count, played);
+    fail_unless (out.first_is_key, "The first recorded frame is not a keyframe");
+    g_free (path);
+  }
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
+}
+
+GST_END_TEST;
+
+/* The timestamps of a source that does not start at 0 are rebased to the
+ * running time of the pipeline, they do not keep the start time of the source */
+GST_START_TEST (check_encoded_timestamps_rebase)
+{
+  static const gchar *const files[] = { "src.mkv", NULL };
+  gchar *dir, *src;
+  BFramesStats stats, out;
+
+  if (gst_element_factory_find ("x264enc") == NULL) {
+    fprintf (stderr, "SKIP: x264enc not available\n");
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.mkv", NULL);
+  /* Matroska keeps the start time. Its demuxer does not provide DTS, so no
+   * B-frames here */
+  fail_unless (bframes_generate_source ("matroskamux", 0, TS_START_TIME, src));
+
+  fail_unless (bframes_inspect_file (src, "matroskademux", &stats));
+  fail_unless (stats.first_pts >= TS_START_TIME,
+      "The source starts at %" GST_TIME_FORMAT, GST_TIME_ARGS (stats.first_pts));
+
+  fail_unless (bframes_play (src, 0, NULL, &out), "Playback failed");
+  /* The source is not paced here, so some buffers may be lost; at least the
+   * first one after the preroll is needed to check the timestamps */
+  fail_unless (out.count >= 2, "Too few buffers: %u", out.count);
+  fail_unless (GST_CLOCK_TIME_IS_VALID (out.first_pts));
+  /* Without the offset, the start time of the source ends up in the output
+   * of all the buffers after the first one */
+  fail_unless (out.max_pts < TS_START_TIME / 2,
+      "Last PTS is %" GST_TIME_FORMAT, GST_TIME_ARGS (out.max_pts));
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
+}
+
+GST_END_TEST;
+
 #ifdef ENABLE_EXPERIMENTAL_TESTS
 
 GST_START_TEST (check_set_encoded_media)
@@ -591,6 +1063,8 @@ playerendpoint_suite (void)
   if (FALSE){  // FIXME: fix check_eos test
   tcase_add_test (tc_chain, check_eos);
   }
+  tcase_add_test (tc_chain, check_encoded_bframes_record);
+  tcase_add_test (tc_chain, check_encoded_timestamps_rebase);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
   tcase_add_test (tc_chain, check_set_encoded_media);
 #endif
