@@ -93,6 +93,7 @@ target_include_directories(test_webrtcendpoint PRIVATE
                            ${gstreamer-1.0_INCLUDE_DIRS}
                            ${gstreamer-check-1.0_INCLUDE_DIRS}
                            ${nice_INCLUDE_DIRS}
+                           ${openssl_INCLUDE_DIRS}
                            "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
 target_link_libraries(test_webrtcendpoint
                       kmswebrtcendpoint
@@ -100,6 +101,7 @@ target_link_libraries(test_webrtcendpoint
                       ${gstreamer-sdp-1.0_LIBRARIES}
                       ${gstreamer-check-1.0_LIBRARIES}
                       ${nice_LIBRARIES}
+                      ${openssl_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES})
 
 #add_test_program(test_compositemixer compositemixer.c)
