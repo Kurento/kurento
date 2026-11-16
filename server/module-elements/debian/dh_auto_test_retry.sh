@@ -3,12 +3,15 @@
 # Run the package tests (dh_auto_test, which calls CTest), retrying ONLY the
 # tests that are known to fail intermittently.
 #
-# Rationale: test_webrtcendpoint (and test_webrtc_endpoint, whose check_data_channel
-# case fails in about 40% of the runs: re-creating a data channel right after
-# closing it never completes) fail at random. test_webrtcendpoint crashes at random (SIGSEGV / SIGABRT from
-# threads that use OpenSSL / DTLS, heap corruption) in about 1 of every 3 runs,
-# also on unmodified code. Until that bug is fixed, a single random crash
-# should not break the whole package build.
+# Rationale: two test programs of kurento-module-elements fail at random:
+# - test_webrtcendpoint crashes (SIGSEGV / SIGABRT from threads that use
+#   OpenSSL / DTLS, heap corruption at process exit) in about 1 of every 3
+#   runs, also on unmodified code.
+# - test_webrtc_endpoint still crashes at random in a few runs (about 2 s
+#   after starting, in the first test cases).
+# Until those bugs are fixed, a single random crash should not break the whole
+# package build. (The case check_data_channel of test_webrtc_endpoint has its
+# own, different problem and is skipped by default in the test itself.)
 #
 # Behavior:
 # - The test suite runs normally the first time.
