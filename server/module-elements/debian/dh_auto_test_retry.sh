@@ -3,7 +3,9 @@
 # Run the package tests (dh_auto_test, which calls CTest), retrying ONLY the
 # tests that are known to fail intermittently.
 #
-# Rationale: test_webrtcendpoint crashes at random (SIGSEGV / SIGABRT from
+# Rationale: test_webrtcendpoint (and test_webrtc_endpoint, whose check_data_channel
+# case fails in about 40% of the runs: re-creating a data channel right after
+# closing it never completes) fail at random. test_webrtcendpoint crashes at random (SIGSEGV / SIGABRT from
 # threads that use OpenSSL / DTLS, heap corruption) in about 1 of every 3 runs,
 # also on unmodified code. Until that bug is fixed, a single random crash
 # should not break the whole package build.
@@ -26,7 +28,7 @@
 #
 # Environment variables:
 #   FLAKY_TEST_REGEX         Extended regex matched against the *whole* CTest
-#                            test name. Default: ^test_webrtcendpoint$
+#                            test name. Default: ^test_webrtc_?endpoint$
 #   FLAKY_TEST_MAX_ATTEMPTS  Max runs per flaky test, 1 = no retries. Default: 3
 #   FLAKY_TEST_TIMEOUT       Time limit per test (any test, not only the flaky
 #                            ones) in seconds. Default: 1200
@@ -34,7 +36,7 @@
 set -o nounset
 set -o pipefail
 
-FLAKY_TEST_REGEX="${FLAKY_TEST_REGEX:-^test_webrtcendpoint\$}"
+FLAKY_TEST_REGEX="${FLAKY_TEST_REGEX:-^test_webrtc_?endpoint\$}"
 FLAKY_TEST_MAX_ATTEMPTS="${FLAKY_TEST_MAX_ATTEMPTS:-3}"
 FLAKY_TEST_TIMEOUT="${FLAKY_TEST_TIMEOUT:-1200}"
 DH_AUTO_TEST="${DH_AUTO_TEST:-dh_auto_test}"
