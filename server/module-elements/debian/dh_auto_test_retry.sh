@@ -16,7 +16,8 @@
 #   and a test that finally passes is reported with "FLAKY-TEST-PASSED-ON-RETRY".
 # - If any other test fails, or a flaky test fails in all attempts, this script
 #   exits with an error and the build fails.
-# - DEB_BUILD_OPTIONS=nocheck is honored (dh_auto_test does nothing).
+# - DEB_BUILD_OPTIONS=nocheck is honored: dh skips the whole override_dh_auto_test
+#   target, so this script does not even run.
 #
 # This file must be removed once the underlying bug is fixed.
 #
@@ -71,7 +72,7 @@ while [[ "$rc" -ne 0 ]]; do
 
     attempt=$((attempt + 1))
     echo "FLAKY-TEST-RETRY: known flaky test(s) '${failed[*]}' failed; re-running only the failed tests (attempt $attempt of $FLAKY_TEST_MAX_ATTEMPTS)."
-    $DH_AUTO_TEST -- --rerun-failed 2>&1 | tee "$LOG"
+    $DH_AUTO_TEST -- ARGS+=--rerun-failed 2>&1 | tee "$LOG"
     rc="${PIPESTATUS[0]}"
 done
 

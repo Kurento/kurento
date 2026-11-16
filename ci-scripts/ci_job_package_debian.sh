@@ -161,6 +161,8 @@ docker run "${DOCKER_ARGS[@]}" \
     --env CK_RUN_CASE \
     --env CK_RUN_SUITE \
     --env DEB_BUILD_OPTIONS \
+    --env FLAKY_TEST_MAX_ATTEMPTS \
+    --env FLAKY_TEST_REGEX \
     --env GST_DEBUG \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \

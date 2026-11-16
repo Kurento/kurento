@@ -30,8 +30,8 @@ Until this bug is fixed, the package build retries this test in a bounded way, s
 - The full test suite is run normally the first time. If tests fail, and **all** the failed tests are known flaky tests, only those are run again, up to 3 runs in total.
 - Every retry is visible in the job log, with lines starting with ``FLAKY-TEST-RETRY``. A test that fails once and then passes is reported with a ``FLAKY-TEST-PASSED-ON-RETRY`` line, so the frequency of the crashes can still be measured by searching the logs.
 - If any other test fails, or a flaky test fails in all of its runs, the build fails as usual. No test is disabled.
-- The script can be tuned with the environment variables ``FLAKY_TEST_REGEX`` (names of the tests that can be retried, default ``^test_webrtcendpoint$``) and ``FLAKY_TEST_MAX_ATTEMPTS`` (default ``3``; use ``1`` to disable the retries).
-- As usual, ``DEB_BUILD_OPTIONS=nocheck`` skips the tests altogether.
+- The script can be tuned with the environment variables ``FLAKY_TEST_REGEX`` (names of the tests that can be retried, default ``^test_webrtcendpoint$``) and ``FLAKY_TEST_MAX_ATTEMPTS`` (default ``3``; use ``1`` to disable the retries). The job passes both variables from its environment to the build container.
+- As usual, ``DEB_BUILD_OPTIONS=nocheck`` skips the tests altogether (debhelper skips the whole ``override_dh_auto_test`` target).
 
 This is a temporary measure: **the retry must be removed (delete the script and the ``override_dh_auto_test`` rule) once the underlying crash is fixed.**
 
