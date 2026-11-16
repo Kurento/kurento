@@ -163,6 +163,7 @@ docker run "${DOCKER_ARGS[@]}" \
     --env DEB_BUILD_OPTIONS \
     --env FLAKY_TEST_MAX_ATTEMPTS \
     --env FLAKY_TEST_REGEX \
+    --env FLAKY_TEST_TIMEOUT \
     --env GST_DEBUG \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \

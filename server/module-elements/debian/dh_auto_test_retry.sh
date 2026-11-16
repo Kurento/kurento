@@ -16,6 +16,9 @@
 #   and a test that finally passes is reported with "FLAKY-TEST-PASSED-ON-RETRY".
 # - If any other test fails, or a flaky test fails in all attempts, this script
 #   exits with an error and the build fails.
+# - Every test has a time limit (FLAKY_TEST_TIMEOUT, in seconds, applied with
+#   "ctest --timeout" to the first run and to the retries), so a test that
+#   hangs fails the build instead of blocking the job until the CI timeout.
 # - DEB_BUILD_OPTIONS=nocheck is honored: dh skips the whole override_dh_auto_test
 #   target, so this script does not even run.
 #
@@ -25,12 +28,15 @@
 #   FLAKY_TEST_REGEX         Extended regex matched against the *whole* CTest
 #                            test name. Default: ^test_webrtcendpoint$
 #   FLAKY_TEST_MAX_ATTEMPTS  Max runs per flaky test, 1 = no retries. Default: 3
+#   FLAKY_TEST_TIMEOUT       Time limit per test (any test, not only the flaky
+#                            ones) in seconds. Default: 1200
 
 set -o nounset
 set -o pipefail
 
 FLAKY_TEST_REGEX="${FLAKY_TEST_REGEX:-^test_webrtcendpoint\$}"
 FLAKY_TEST_MAX_ATTEMPTS="${FLAKY_TEST_MAX_ATTEMPTS:-3}"
+FLAKY_TEST_TIMEOUT="${FLAKY_TEST_TIMEOUT:-1200}"
 DH_AUTO_TEST="${DH_AUTO_TEST:-dh_auto_test}"
 
 LOG="$(mktemp)"
@@ -46,7 +52,7 @@ failed_tests() {
 }
 
 attempt=1
-$DH_AUTO_TEST 2>&1 | tee "$LOG"
+$DH_AUTO_TEST -- "ARGS+=--timeout $FLAKY_TEST_TIMEOUT" 2>&1 | tee "$LOG"
 rc="${PIPESTATUS[0]}"
 first_failed=""
 
@@ -72,7 +78,7 @@ while [[ "$rc" -ne 0 ]]; do
 
     attempt=$((attempt + 1))
     echo "FLAKY-TEST-RETRY: known flaky test(s) '${failed[*]}' failed; re-running only the failed tests (attempt $attempt of $FLAKY_TEST_MAX_ATTEMPTS)."
-    $DH_AUTO_TEST -- ARGS+=--rerun-failed 2>&1 | tee "$LOG"
+    $DH_AUTO_TEST -- "ARGS+=--timeout $FLAKY_TEST_TIMEOUT" ARGS+=--rerun-failed 2>&1 | tee "$LOG"
     rc="${PIPESTATUS[0]}"
 done
 

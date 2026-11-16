@@ -37,6 +37,11 @@
 #define NUMBER_OF_RECONNECTIONS 5
 
 #include <chrono>
+#include <iostream>
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 using namespace kurento;
 using namespace boost::unit_test;
@@ -44,6 +49,57 @@ using namespace boost::unit_test;
 static const int TIMEOUT = 5; /* seconds */
 
 static const std::string CAND_PREFIX = "candidate:";
+
+/* Returns true if this host has an IPv6 address that can be used to reach a
+ * peer: any IPv6 address that is not loopback (::1), unspecified, nor
+ * link-local (fe80::/10, which needs a scope ID). Containers without IPv6
+ * networking (Docker default) only have ::1, or nothing at all. */
+static bool
+hasUsableIpv6 ()
+{
+  static const bool usable = [] () {
+    struct ifaddrs *ifaddr = nullptr;
+    bool found = false;
+
+    if (getifaddrs (&ifaddr) != 0) {
+      return false;
+    }
+
+    for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+      if (ifa->ifa_addr == nullptr || ifa->ifa_addr->sa_family != AF_INET6 ||
+          (ifa->ifa_flags & IFF_UP) == 0) {
+        continue;
+      }
+
+      const struct in6_addr *a =
+          &reinterpret_cast<struct sockaddr_in6 *> (ifa->ifa_addr)->sin6_addr;
+
+      if (IN6_IS_ADDR_LOOPBACK (a) || IN6_IS_ADDR_UNSPECIFIED (a) ||
+          IN6_IS_ADDR_LINKLOCAL (a)) {
+        continue;
+      }
+
+      found = true;
+      break;
+    }
+
+    freeifaddrs (ifaddr);
+    return found;
+  } ();
+
+  return usable;
+}
+
+/* Skip (visibly) an IPv6 test case when there is no usable IPv6 address. */
+#define SKIP_IF_NO_IPV6() \
+  do { \
+    if (!hasUsableIpv6 ()) { \
+      std::cerr << "SKIPPED: " << __func__ \
+                << ": this host has no usable IPv6 address (only loopback or link-local)" \
+                << std::endl; \
+      return; \
+    } \
+  } while (0)
 
 boost::property_tree::ptree config;
 std::string mediaPipelineId;
@@ -309,6 +365,7 @@ dtls_connection_state_changes_ipv4 ()
 static void 
 dtls_connection_state_changes_ipv6 ()
 {
+  SKIP_IF_NO_IPV6 ();
   dtls_connection_state_changes (true);
 }
 
@@ -321,6 +378,7 @@ ice_state_changes_ipv4 ()
 static void
 ice_state_changes_ipv6 ()
 {
+  SKIP_IF_NO_IPV6 ();
   ice_state_changes (true);
 }
 
@@ -567,6 +625,7 @@ dtls_quick_connection_dtls_server_test (bool useIpv6)
 static void
 dtls_quick_connection_dtls_client_test_ipv6 ()
 {
+  SKIP_IF_NO_IPV6 ();
   dtls_quick_connection_dtls_client_test (true);
 }
 
@@ -579,6 +638,7 @@ dtls_quick_connection_dtls_client_test_ipv4 ()
 static void
 dtls_quick_connection_dtls_server_test_ipv6 ()
 {
+  SKIP_IF_NO_IPV6 ();
   dtls_quick_connection_dtls_server_test (true);
 }
 
@@ -685,6 +745,7 @@ media_state_changes_ipv4 ()
 static void
 media_state_changes_ipv6 ()
 {
+  SKIP_IF_NO_IPV6 ();
   media_state_changes (true);
 }
 
@@ -775,6 +836,7 @@ connection_state_changes_ipv4 ()
 static void
 connection_state_changes_ipv6 ()
 {
+  SKIP_IF_NO_IPV6 ();
   connection_state_changes (true);
 }
 
@@ -830,6 +892,7 @@ check_webrtc_stats_ipv4 ()
 static void
 check_webrtc_stats_ipv6 ()
 {
+  SKIP_IF_NO_IPV6 ();
   check_webrtc_stats (true);
 }
 
