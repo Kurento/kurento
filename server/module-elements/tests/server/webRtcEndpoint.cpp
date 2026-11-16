@@ -1102,23 +1102,29 @@ check_data_channel ()
 
     webRtcEpOfferer->createDataChannel ("TestDataChannel");
 
-    cv_open.wait (lck, [&] () {
+    /* Bounded wait, shorter than the Boost timeout of this test case: if the
+     * channel never opens, fail and still release the endpoints below,
+     * instead of being killed by SIGALRM and leaving them alive (which
+     * blocks the process at exit, in MediaSet::deleteMediaSet()). */
+    cv_open.wait_for (lck, std::chrono::seconds (3), [&] () {
       return pass_cond_open.load();
     });
 
     if (!pass_cond_open) {
       BOOST_ERROR ("No data channel opened");
+      break;
     }
 
     pass_cond_close = false;
     webRtcEpAnswerer->closeDataChannel (chanId);
 
-    cv_close.wait (lck, [&] () {
+    cv_close.wait_for (lck, std::chrono::seconds (3), [&] () {
       return pass_cond_close.load();
     });
 
     if (!pass_cond_close) {
       BOOST_ERROR ("No data channel closed");
+      break;
     }
   }
 
