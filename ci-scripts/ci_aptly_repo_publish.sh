@@ -123,6 +123,7 @@ set -o xtrace
 # Bash Associative Array: [command_name]="package_name"
 declare -A DEP_COMMANDS=(
     [aptly]="https://www.aptly.info/download/"
+    [flock]="https://github.com/util-linux/util-linux"
 )
 for DEP_COMMAND in "${!DEP_COMMANDS[@]}"; do
     command -v "$DEP_COMMAND" >/dev/null || {
@@ -239,7 +240,8 @@ aptly repo add -force-replace -remove-files "$CFG_REPO_NAME" ./*.*deb
 # Step 3: Publish repo
 # ====================
 
-PUBLISH_ENDPOINT="s3:ubuntu:$CFG_PUBLISH_NAME"
+# The storage can be overridden (e.g. "filesystem:ubuntu") to test locally.
+PUBLISH_ENDPOINT="${APTLY_PUBLISH_STORAGE:-s3:ubuntu}:$CFG_PUBLISH_NAME"
 
 ARCH_FLAG=""
 if [[ -n "$CFG_ARCHITECTURES" ]]; then
@@ -257,55 +259,140 @@ if [[ "$CFG_RELEASE" == "true" ]]; then
     aptly snapshot create "$SNAP_NAME" from repo "$CFG_REPO_NAME"
     aptly publish snapshot -gpg-key="$GPGKEY" $ARCH_FLAG "$SNAP_NAME" "$PUBLISH_ENDPOINT"
 else
-    APTLY_OUTPUT="$(aptly publish list -raw)"
-    if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
-        echo "Publish new development repo: $CFG_REPO_NAME" >&2
-        aptly publish repo -gpg-key="$GPGKEY" -force-overwrite $ARCH_FLAG "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
+    # Development repos are published straight from the local repo.
+    #
+    # Aptly 1.5 cannot change the architecture set of an existing publication
+    # ('publish update' and 'publish switch' ignore -architectures, and 'publish
+    # repo' refuses an endpoint/distribution already in use), so adding an
+    # architecture later (e.g. arm64 on a repo first published as amd64-only)
+    # requires dropping and publishing again. To make that safe:
+    #
+    # - Runs are serialized with a lock, so two jobs never race on the drop.
+    # - The architecture set to keep is the UNION of what is published now,
+    #   what a previous run recorded in a state file, and what is requested.
+    #   Architectures are never removed, even if a run asks for a subset.
+    # - If the published architectures cannot be read, nothing is touched.
+    # - The union is recorded in the state file BEFORE dropping, so if a run is
+    #   killed in the window between drop and publish, the next run publishes
+    #   the full set again.
+    # - The drop uses -skip-cleanup (pool files are kept) and the publish is
+    #   retried; if it still fails, the previous publication is restored.
+    STATE_DIR="${APTLY_PUBLISH_STATE_DIR:-$HOME/.aptly-publish-state}"
+    STATE_FILE="$STATE_DIR/${PUBLISH_ENDPOINT//[^A-Za-z0-9._-]/_}__$CFG_DISTRO_NAME.archs"
+    mkdir -p "$STATE_DIR"
+
+    # Serialize concurrent runs for the same endpoint.
+    exec 9>"$STATE_FILE.lock"
+    if ! flock --wait 1800 9; then
+        echo "ERROR: Timeout waiting for the publish lock: $STATE_FILE.lock" >&2
+        exit 1
+    fi
+
+    # Normalize a comma/space separated list: lowercase, no duplicates, one line.
+    normalize_archs() {
+        echo "$*" | tr 'A-Z,' 'a-z ' | tr -s '[:space:]' '\n' | awk 'NF && !seen[$0]++' | paste -sd' '
+    }
+
+    # Publish the local repo to the endpoint with the given architectures
+    # (comma-separated); succeeds only if the publication exists afterwards.
+    publish_dev_repo() {
+        aptly publish repo -gpg-key="$GPGKEY" -force-overwrite ${1:+-architectures="$1"} \
+            "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
+    }
+
+    # Set while the endpoint is dropped and not yet published again.
+    DROPPED="false"
+    PREVIOUS_ARCHS=""
+    restore_on_exit() {
+        local rc=$?
+        trap - EXIT
+        if [[ "$DROPPED" == "true" ]]; then
+            echo "WARNING: Publication was dropped and not completed; restoring architectures: $PREVIOUS_ARCHS" >&2
+            if publish_dev_repo "${PREVIOUS_ARCHS// /,}"; then
+                echo "Previous architectures restored; the state file keeps the full set for the next run." >&2
+            else
+                echo "ERROR: Could not restore the publication! The next run will publish it again using $STATE_FILE" >&2
+            fi
+        fi
+        exit "$rc"
+    }
+    trap restore_on_exit EXIT
+    trap 'exit 143' TERM
+    trap 'exit 130' INT HUP
+
+    REQUESTED_ARCHS="$(normalize_archs "$CFG_ARCHITECTURES")"
+    RECORDED_ARCHS=""
+    if [[ -f "$STATE_FILE" ]]; then
+        RECORDED_ARCHS="$(normalize_archs "$(cat "$STATE_FILE")")"
+    fi
+
+    # Read the publication state. A failure here (e.g. aptly DB locked by
+    # another process) must NOT be interpreted as "not published".
+    if ! PUBLISH_LIST="$(aptly publish list -raw)"; then
+        echo "ERROR: 'aptly publish list' failed; not touching the publication" >&2
+        exit 1
+    fi
+
+    if ! echo "$PUBLISH_LIST" | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
+        # Not published (or dropped by an interrupted run): publish the union.
+        FIRST_ARCHS="$(normalize_archs "$RECORDED_ARCHS $REQUESTED_ARCHS")"
+        echo "Publish new development repo: $CFG_REPO_NAME (architectures: ${FIRST_ARCHS:-<default>})" >&2
+        publish_dev_repo "${FIRST_ARCHS// /,}"
+        echo "$FIRST_ARCHS" > "$STATE_FILE"
     else
-        # NOTE: 'aptly publish update' cannot change the architecture set of an
-        # existing publication, so architectures added later (e.g. arm64 on a
-        # repo first published as amd64-only) would never be exposed.
-        #
-        # Only when a requested architecture is missing from the publication,
-        # drop it (keeping the pool files, so the endpoint stays usable) and
-        # publish again with the UNION of published and requested architectures.
-        # Architectures already published are never removed, so a manual run
-        # with a subset of them does not hide existing packages.
         NEED_REPUBLISH="false"
-        UNION_ARCHS=""
-        if [[ -n "$CFG_ARCHITECTURES" ]]; then
+        if [[ -n "$REQUESTED_ARCHS$RECORDED_ARCHS" ]]; then
+            if ! SHOW_OUTPUT="$(aptly publish show "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT")"; then
+                echo "ERROR: 'aptly publish show' failed; not touching the publication" >&2
+                exit 1
+            fi
             # Output line looks like: "Architectures: amd64 arm64 source"
-            PUBLISHED_ARCHS="$(aptly publish show "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" \
-                | sed -n 's/^Architectures:[[:space:]]*//p' | tr ',' ' ')"
-            echo "Published architectures: ${PUBLISHED_ARCHS:-<none>}; requested: $CFG_ARCHITECTURES" >&2
-            if [[ -z "${PUBLISHED_ARCHS// /}" ]]; then
+            PREVIOUS_ARCHS="$(normalize_archs "$(echo "$SHOW_OUTPUT" | sed -n 's/^Architectures:[[:space:]]*//p')")"
+            echo "Published architectures: ${PREVIOUS_ARCHS:-<none>}; recorded: ${RECORDED_ARCHS:-<none>}; requested: ${REQUESTED_ARCHS:-<none>}" >&2
+            if [[ -z "$PREVIOUS_ARCHS" ]]; then
                 # Never republish blindly: it could drop architectures we failed to detect.
                 echo "WARNING: Could not detect published architectures; falling back to 'publish update'" >&2
             else
-                UNION_ARCHS="$PUBLISHED_ARCHS"
-                REQUESTED_ARCHS="$(echo "${CFG_ARCHITECTURES,,}" | tr ',' ' ')"
-                set -o noglob
-                for ARCH in $REQUESTED_ARCHS; do
-                    if ! echo " $UNION_ARCHS " | grep --quiet -F " $ARCH "; then
-                        NEED_REPUBLISH="true"
-                        UNION_ARCHS="$UNION_ARCHS $ARCH"
-                    fi
-                done
-                set +o noglob
-                UNION_ARCHS="$(echo "$UNION_ARCHS" | xargs | tr ' ' ',')"
+                UNION_ARCHS="$(normalize_archs "$PREVIOUS_ARCHS $RECORDED_ARCHS $REQUESTED_ARCHS")"
+                if [[ -n "$(comm -23 <(tr ' ' '\n' <<<"$UNION_ARCHS" | sort) <(tr ' ' '\n' <<<"$PREVIOUS_ARCHS" | sort))" ]]; then
+                    NEED_REPUBLISH="true"
+                fi
             fi
         fi
 
         if [[ "$NEED_REPUBLISH" == "true" ]]; then
-            echo "Republish development repo with architectures: $UNION_ARCHS" >&2
+            echo "Republish development repo with architectures: ${UNION_ARCHS// /,}" >&2
+            # Record the target set first, so an interrupted run can be recovered.
+            echo "$UNION_ARCHS" > "$STATE_FILE"
             aptly publish drop -skip-cleanup "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
-            aptly publish repo -gpg-key="$GPGKEY" -force-overwrite -architectures="$UNION_ARCHS" "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
+            DROPPED="true"
+            PUBLISHED_OK="false"
+            for ATTEMPT in 1 2 3; do
+                if publish_dev_repo "${UNION_ARCHS// /,}"; then
+                    PUBLISHED_OK="true"
+                    break
+                fi
+                echo "WARNING: Publish attempt $ATTEMPT/3 failed" >&2
+                # A failed attempt may leave the endpoint half-created: drop it again.
+                if aptly publish list -raw | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
+                    aptly publish drop -skip-cleanup "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" || true
+                fi
+                sleep "${APTLY_PUBLISH_RETRY_SLEEP:-10}"
+            done
+            if [[ "$PUBLISHED_OK" == "true" ]]; then
+                DROPPED="false"
+            else
+                echo "ERROR: Could not publish with architectures: ${UNION_ARCHS// /,}" >&2
+                exit 1  # the EXIT trap restores the previous publication
+            fi
         else
             echo "Update already published development repo: $CFG_REPO_NAME" >&2
             aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
+            if [[ -n "${PREVIOUS_ARCHS:-}" ]]; then
+                echo "$(normalize_archs "$PREVIOUS_ARCHS $RECORDED_ARCHS")" > "$STATE_FILE"
+            fi
         fi
     fi
 fi
-
 
 echo "Done!" >&2
