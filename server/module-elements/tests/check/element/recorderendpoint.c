@@ -1273,6 +1273,11 @@ GST_START_TEST (check_video_codec_matrix)
       (KMS_RECORDING_PROFILE_MKV, KMS_RECORDING_VIDEO_CODEC_VP8));
   fail_unless (kms_recording_profile_supports_video_codec
       (KMS_RECORDING_PROFILE_WEBM, KMS_RECORDING_VIDEO_CODEC_VP9));
+  /* VP9 in MP4 is not supported */
+  fail_if (kms_recording_profile_supports_video_codec
+      (KMS_RECORDING_PROFILE_MP4, KMS_RECORDING_VIDEO_CODEC_VP9));
+  fail_if (kms_recording_profile_supports_video_codec
+      (KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, KMS_RECORDING_VIDEO_CODEC_VP9));
   fail_unless (kms_recording_profile_supports_video_codec
       (KMS_RECORDING_PROFILE_MP4, KMS_RECORDING_VIDEO_CODEC_AV1));
   fail_if (kms_recording_profile_supports_video_codec

@@ -117,7 +117,12 @@ public class RecorderH265Test extends KurentoClientTest {
       return false;
     } finally {
       if (process != null) {
-        process.destroyForcibly();
+        try {
+          // Wait for it to die, so that it cannot write to the file after it is deleted
+          process.destroyForcibly().waitFor(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
       }
     }
   }

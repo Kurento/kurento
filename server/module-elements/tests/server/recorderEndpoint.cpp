@@ -36,8 +36,13 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <cerrno>
+#include <csignal>
+#include <cstring>
 #include <unistd.h>
 #include <vector>
+
+extern char **environ;
 
 #define DIR_TEMPLATE "/tmp/recoder_test_XXXXXX"
 
@@ -747,11 +752,30 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   std::shared_ptr<MediaType> video (new MediaType (MediaType::VIDEO) );
 
+  std::mutex eos_mutex;
+  std::condition_variable eos_cv;
+  bool eos = false;
+
+  sigc::connection conn_eos =
+    player->signalEndOfStream.connect ([&] (EndOfStream) {
+    std::unique_lock<std::mutex> lock (eos_mutex);
+    eos = true;
+    eos_cv.notify_all ();
+  });
+
   player->connect (recorder, video);
   recorder->record ();
   player->play ();
 
-  g_usleep (4 * G_USEC_PER_SEC);
+  /* Record until the whole file has been played (it is not safe to assume a
+   * fixed time: the machine may be loaded) */
+  {
+    std::unique_lock<std::mutex> lock (eos_mutex);
+    BOOST_CHECK_MESSAGE (eos_cv.wait_for (lock, std::chrono::seconds (25),
+    [&] { return eos; }), "The player did not reach the end of the stream");
+  }
+
+  g_usleep (500000);
 
   recorder->stopAndWait ();
 
@@ -762,6 +786,7 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
   /* The lambda captures local variables: disconnect before leaving */
   conn_player.disconnect ();
   conn_recorder.disconnect ();
+  conn_eos.disconnect ();
 
   std::string player_id = player->getId ();
 
@@ -793,6 +818,8 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   if (encoded_media) {
     BOOST_CHECK_EQUAL (transcoding_events.load (), 0);
+    /* Not only "no TRANSCODING": the state must have been reported */
+    BOOST_CHECK_GT (not_transcoding_events.load (), 0);
   } else {
     BOOST_CHECK_GT (transcoding_events.load (), 0);
   }
@@ -867,23 +894,54 @@ record_vp9_mp4_known_issue ()
 
   /* Run the pipeline in a new process (this same binary, running only the
    * helper test case below): the crash must not take this process down, and
-   * forking a process that already has GStreamer threads is not safe. */
-  ::setenv ("KMS_TEST_MP4MUX_SRC", src_file.c_str (), 1);
-  ::setenv ("KMS_TEST_MP4MUX_OUT", out_file.c_str (), 1);
+   * forking a process that already has GStreamer threads is not safe. The
+   * variables that tell the helper what to do exist only in the child. */
+  std::vector<std::string> env_strings;
+
+  for (char **e = environ; *e != nullptr; e++) {
+    env_strings.push_back (*e);
+  }
+
+  env_strings.push_back ("KMS_TEST_MP4MUX_CHILD=1");
+  env_strings.push_back ("KMS_TEST_MP4MUX_SRC=" + src_file);
+  env_strings.push_back ("KMS_TEST_MP4MUX_OUT=" + out_file);
+
+  std::vector<char *> envp;
+
+  for (std::string &e : env_strings) {
+    envp.push_back (const_cast<char *> (e.c_str () ) );
+  }
+
+  envp.push_back (nullptr);
 
   pid_t pid = ::fork ();
 
   if (pid == 0) {
-    ::execl ("/proc/self/exe", "test_recorder",
-             "--run_test=RecorderEndpoint/vp9_mp4_known_issue_helper",
-             (char *) nullptr);
+    /* Do not leave an orphan if this process is killed by a timeout */
+    ::alarm (90);
+    /* Let the SIGSEGV kill the child, instead of being caught by Boost */
+    ::execle ("/proc/self/exe", "test_recorder",
+              "--run_test=RecorderEndpoint/vp9_mp4_known_issue_helper",
+              "--catch_system_errors=no", (char *) nullptr, envp.data () );
     ::_exit (3);
   }
 
   BOOST_REQUIRE (pid > 0);
 
   int status = 0;
-  ::waitpid (pid, &status, 0);
+  pid_t waited;
+
+  do {
+    waited = ::waitpid (pid, &status, 0);
+  } while (waited < 0 && errno == EINTR);
+
+  if (waited != pid) {
+    ::kill (pid, SIGKILL);
+    ::waitpid (pid, &status, 0);
+    BOOST_ERROR ("waitpid failed: " << ::strerror (errno) );
+    removeCodecTestDir ();
+    return;
+  }
 
   BOOST_CHECK_MESSAGE (!WIFSIGNALED (status), "vp9parse ! mp4mux crashed with "
                        "signal " << (WIFSIGNALED (status) ? WTERMSIG (status) : 0) );
@@ -894,16 +952,15 @@ record_vp9_mp4_known_issue ()
 }
 
 /* Helper of record_vp9_mp4_known_issue: runs "vp9parse ! mp4mux" and reports
- * the result with the exit status. Does nothing when run as a regular test. */
+ * the result with the exit status. It is only registered in the child process
+ * started by that test (KMS_TEST_MP4MUX_CHILD), never in a regular run. */
 static void
 vp9_mp4_known_issue_helper ()
 {
   const char *src_file = ::getenv ("KMS_TEST_MP4MUX_SRC");
   const char *out_file = ::getenv ("KMS_TEST_MP4MUX_OUT");
 
-  if (src_file == nullptr || out_file == nullptr) {
-    return;
-  }
+  BOOST_REQUIRE (src_file != nullptr && out_file != nullptr);
 
   std::string description = std::string ("filesrc location=") + src_file +
                             " ! matroskademux ! vp9parse ! mp4mux "
@@ -944,7 +1001,11 @@ init_unit_test_suite ( int , char *[] )
   ADD_CASE (av1, webm);
   test->add (BOOST_TEST_CASE ( &record_vp9_mp4_is_rejected ), 0, 10);
   test->add (BOOST_TEST_CASE ( &record_vp9_mp4_known_issue ), 0, 60);
-  test->add (BOOST_TEST_CASE ( &vp9_mp4_known_issue_helper ), 0, 40);
+
+  if (::getenv ("KMS_TEST_MP4MUX_CHILD") != nullptr) {
+    test->add (BOOST_TEST_CASE ( &vp9_mp4_known_issue_helper ), 0, 40);
+  }
+
 
   return test;
 }
