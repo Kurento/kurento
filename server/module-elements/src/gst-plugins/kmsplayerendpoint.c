@@ -456,6 +456,9 @@ kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
       *offset_time_in = offset_time_candidate;
     }
 
+    /* Note: the PlayerEndpoint tests parse the text of this message ("offset
+     * time to: ..., is preroll: ...") to check the offset; keep them in sync
+     * if it changes. */
     GST_DEBUG_OBJECT (self,
         "Setting base time to: %" GST_TIME_FORMAT ", offset time to: %"
         GST_TIME_FORMAT ", is preroll: %d", GST_TIME_ARGS (base_time),
