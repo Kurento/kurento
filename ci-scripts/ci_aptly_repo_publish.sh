@@ -224,7 +224,7 @@ echo "CFG_RELEASE=$CFG_RELEASE" >&2
 # ===================
 
 APTLY_OUTPUT="$(aptly repo list -raw)"
-if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp --fixed-strings "$CFG_REPO_NAME"; then
+if ! grep --quiet --line-regexp --fixed-strings "$CFG_REPO_NAME" <<<"$APTLY_OUTPUT"; then
     echo "Create new repo: $CFG_REPO_NAME" >&2
     aptly repo create -distribution="$CFG_DISTRO_NAME" -component=main "$CFG_REPO_NAME"
 fi
@@ -284,8 +284,9 @@ else
     #
     # Operational notes: the state files live in <aptly rootDir>/.publish-state
     # (override: APTLY_PUBLISH_STATE_DIR) and must persist. There is one
-    # .archs/.lock pair per endpoint, never cleaned up automatically. To REMOVE an architecture on
-    # purpose: delete its .archs file, then 'aptly publish drop' and publish
+    # .archs/.lock pair per endpoint (name: readable prefix + hash of the exact
+    # endpoint and distribution), never cleaned up automatically. To REMOVE an
+    # architecture on purpose: delete that endpoint's .archs file, then 'aptly publish drop' and publish
     # again with the wanted architectures.
     # The state, lock and log live on the aptly data volume (HOME is not
     # persistent in the aptly container): <rootDir>/.publish-state, with
@@ -311,14 +312,17 @@ else
     # "dev-feature_foo" get different files.
     STATE_KEY_SANITIZED="${PUBLISH_ENDPOINT//[^A-Za-z0-9._-]/_}__${CFG_DISTRO_NAME//[^A-Za-z0-9._-]/_}"
     STATE_KEY_HASH="$(printf '%s' "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" | sha256sum | cut -c1-32)"
-    STATE_FILE="$STATE_DIR/${STATE_KEY_SANITIZED}__$STATE_KEY_HASH.archs"
+    # The hash guarantees uniqueness; truncate the readable part (NAME_MAX).
+    STATE_FILE="$STATE_DIR/${STATE_KEY_SANITIZED:0:100}__$STATE_KEY_HASH.archs"
     # Previous naming scheme (sanitized only, ambiguous): read it once and copy
-    # it to the new name. Extra remembered architectures are harmless.
+    # it to the new name and rename it to *.migrated, so deleting the new .archs
+    # file is enough to forget architectures. Extra remembered ones are harmless.
     LEGACY_STATE_FILE="$STATE_DIR/${PUBLISH_ENDPOINT//[^A-Za-z0-9._-]/_}__$CFG_DISTRO_NAME.archs"
     mkdir -p "$STATE_DIR"
     if [[ ! -f "$STATE_FILE" && -f "$LEGACY_STATE_FILE" ]]; then
         echo "Migrating state from $LEGACY_STATE_FILE" >&2
         cp -p "$LEGACY_STATE_FILE" "$STATE_FILE"
+        mv -f "$LEGACY_STATE_FILE" "$LEGACY_STATE_FILE.migrated"
     fi
 
     # Do not die on a broken output pipe (e.g. dropped SSH channel); log durably.
