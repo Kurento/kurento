@@ -581,6 +581,7 @@ typedef struct _BFramesStats
   gint64 max_dts_gap;
   GstElement *pipeline;         /* if set, track max_lead */
   gint64 max_lead;              /* max of PTS - running time of the pipeline */
+  gint64 first_lead;            /* the same, of the first buffer */
 } BFramesStats;
 
 static void
@@ -592,6 +593,7 @@ bframes_stats_init (BFramesStats * stats)
   stats->second_dts = GST_CLOCK_TIME_NONE;
   stats->pts_nth = GST_CLOCK_TIME_NONE;
   stats->max_lead = G_MININT64;
+  stats->first_lead = G_MININT64;
   stats->prev_dts = GST_CLOCK_TIME_NONE;
   stats->min_dts_gap = G_MAXINT64;
   stats->max_dts_gap = G_MININT64;
@@ -644,6 +646,9 @@ bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
       stats->max_lead = MAX (stats->max_lead,
           (gint64) GST_BUFFER_PTS (buf) - running_time);
+      if (stats->first_lead == G_MININT64) {
+        stats->first_lead = (gint64) GST_BUFFER_PTS (buf) - running_time;
+      }
       gst_object_unref (clock);
     }
   }
@@ -805,8 +810,8 @@ bframes_player_eos_cb (GstElement * player, gpointer user_data)
   GST_DEBUG ("Player EOS");
   play->player_eos = TRUE;
 
-  /* With several tracks, the end of one of them is not the end of the rest:
-   * let the last buffers get to the end before stopping */
+  /* The EOS of the player is the one of all its tracks: wait a moment for the
+   * last buffers to get to the end of the test pipeline before stopping */
   if (play->recorder == NULL) {
     g_timeout_add (500, bframes_quit_cb, play);
   } else {
@@ -891,12 +896,13 @@ bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
   gst_element_sync_state_with_parent (sink);
 }
 
-/* Plays src_path with use-encoded-media, into a recorder if out_path is not
+/* Plays src_path with use-encoded-media (or not, if "encoded" is FALSE), into a recorder if out_path is not
  * NULL. The recorder and the player are started one right after the other, as
  * the clients do. */
 static gboolean
 bframes_play (const gchar * src_path, KmsRecordingProfile profile,
-    const gchar * out_path, BFramesStats * out, BFramesStats * out_audio)
+    const gchar * out_path, BFramesStats * out, BFramesStats * out_audio,
+    gboolean encoded, guint wait_before_play)
 {
   BFramesPlayback play = { 0, };
   GstBus *bus;
@@ -914,7 +920,7 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   gst_bin_add (GST_BIN (play.pipeline), play.player);
 
   uri = g_strdup_printf ("file://%s", src_path);
-  g_object_set (play.player, "uri", uri, "use-encoded-media", TRUE, NULL);
+  g_object_set (play.player, "uri", uri, "use-encoded-media", encoded, NULL);
   g_free (uri);
 
   if (out_path != NULL) {
@@ -938,6 +944,7 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   g_object_unref (bus);
 
   play.out.pipeline = play.pipeline;
+  play.out_audio.pipeline = play.pipeline;
   /* At the EOS the player flushes the src pad of its appsrc from another
    * thread (appsink_eos_cb), which may make GStreamer complain about "Got data
    * flow before segment event". It is a known race of the player that this
@@ -959,6 +966,11 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
     g_free (padname);
   }
 
+  /* Let the pipeline run before the playback, as it does in a server that has
+   * been working for some time */
+  if (wait_before_play > 0) {
+    g_usleep (wait_before_play * G_USEC_PER_SEC);
+  }
   play.timeout_id = g_timeout_add_seconds (30, bframes_timeout_cb, &play);
   if (play.recorder != NULL) {
     g_object_set (play.recorder, "state", KMS_URI_ENDPOINT_STATE_START, NULL);
@@ -1048,7 +1060,7 @@ GST_START_TEST (check_encoded_bframes_record)
 
     guint played;
 
-    fail_unless (bframes_play (src, profiles[i], path, &out, NULL),
+    fail_unless (bframes_play (src, profiles[i], path, &out, NULL, TRUE, 0),
         "Recording %s failed or did not finish", path);
     /* Under load the player may lose the last buffers when it flushes at the
      * EOS (a known issue that this test does not check), but there must be
@@ -1103,7 +1115,7 @@ GST_START_TEST (check_encoded_timestamps_rebase)
   fail_unless (stats.first_pts >= TS_START_TIME,
       "The source starts at %" GST_TIME_FORMAT, GST_TIME_ARGS (stats.first_pts));
 
-  fail_unless (bframes_play (src, 0, NULL, &out, NULL), "Playback failed");
+  fail_unless (bframes_play (src, 0, NULL, &out, NULL, TRUE, 0), "Playback failed");
   /* The source is not paced here, so some buffers may be lost; at least the
    * first one after the preroll is needed to check the timestamps */
   fail_unless (out.count >= 2, "Too few buffers: %u", out.count);
@@ -1289,15 +1301,15 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
 
   /* Which stream gets first to the player is not deterministic: repeat */
   for (i = 0; i < rounds; i++) {
-    fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a),
+    fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a, TRUE, 0),
         "Playback failed");
     /* Under load the player may lose the buffers at the end when it flushes
      * at the EOS (a known issue that this test does not check), so there is no
      * check on how many arrive. What matters here is the start: no buffers
      * are lost there (see the buffer BFRAMES_NTH below) */
-    if (out_v.count < BFRAMES_MIN_BUFFERS) {
-      fprintf (stderr, "Only %u of %u video buffers\n", out_v.count,
-          AV_FRAMES);
+    if (out_v.count < BFRAMES_MIN_BUFFERS || out_a.count <= BFRAMES_NTH) {
+      fprintf (stderr, "Only %u of %u video buffers, %u audio buffers\n",
+          out_v.count, AV_FRAMES, out_a.count);
       bad_rounds++;
       continue;
     }
@@ -1345,8 +1357,7 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
       fail_unless (ABS (out_offset - in_offset) <= 2 * GST_MSECOND,
           "A/V offset changed from %" G_GINT64_FORMAT " ms to %" G_GINT64_FORMAT
           " ms", in_offset / GST_MSECOND, out_offset / GST_MSECOND);
-      fail_unless (!GST_CLOCK_TIME_IS_VALID (out_a.pts_nth) ||
-          ABS (out_nth - in_nth) <= 2 * GST_MSECOND,
+      fail_unless (ABS (out_nth - in_nth) <= 2 * GST_MSECOND,
           "A/V offset changed from %" G_GINT64_FORMAT " ms to %" G_GINT64_FORMAT
           " ms in buffer %d", in_nth / GST_MSECOND, out_nth / GST_MSECOND,
           BFRAMES_NTH);
@@ -1384,6 +1395,54 @@ GST_END_TEST;
 GST_START_TEST (check_encoded_bframes_av_delayed_audio)
 {
   bframes_check_av (GST_SECOND, 6, "check_encoded_bframes_av_delayed_audio");
+}
+
+GST_END_TEST;
+
+/* In decoded mode the streams must not come out behind the running time, even
+ * when one starts before the other: the mixers that consume them (e.g. a
+ * composite) drop the late buffers. The pipeline has been running for longer
+ * than the delay between the streams. */
+GST_START_TEST (check_decoded_delayed_audio_running_pipeline)
+{
+  static const gchar *const files[] = { "src.ts", NULL };
+  gchar *dir, *src;
+  BFramesStats out_v, out_a;
+  guint i;
+
+  if (!bframes_have_elements ("check_decoded_delayed_audio_running_pipeline",
+          encoders_av)) {
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.ts", NULL);
+  if (!bframes_generate_av_source (TS_START_TIME, GST_SECOND, src)) {
+    g_free (src);
+    bframes_remove_tmp_dir (dir, files);
+    return;
+  }
+
+  /* Which stream gets first to the player is not deterministic: repeat */
+  for (i = 0; i < 3; i++) {
+    fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a, FALSE, 2),
+        "Playback failed");
+    fail_unless (out_v.first_lead != G_MININT64 &&
+        out_a.first_lead != G_MININT64, "A track without buffers");
+    fprintf (stderr, "DECODED: PTS - running time of the first buffer: video "
+        "%" G_GINT64_FORMAT " ms, audio %" G_GINT64_FORMAT " ms\n",
+        out_v.first_lead / GST_MSECOND, out_a.first_lead / GST_MSECOND);
+    /* Only the time that the probe takes after the buffer is pushed is behind,
+     * not the ~1 s of the delay between the tracks */
+    fail_unless (out_v.first_lead > -300 * GST_MSECOND &&
+        out_a.first_lead > -300 * GST_MSECOND,
+        "A track comes out behind the running time: video %" G_GINT64_FORMAT
+        " ms, audio %" G_GINT64_FORMAT " ms", out_v.first_lead / GST_MSECOND,
+        out_a.first_lead / GST_MSECOND);
+  }
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
 }
 
 GST_END_TEST;
@@ -1462,6 +1521,7 @@ playerendpoint_suite (void)
   tcase_add_test (tc_chain, check_encoded_timestamps_rebase);
   tcase_add_test (tc_chain, check_encoded_bframes_av_sync);
   tcase_add_test (tc_chain, check_encoded_bframes_av_delayed_audio);
+  tcase_add_test (tc_chain, check_decoded_delayed_audio_running_pipeline);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
   tcase_add_test (tc_chain, check_set_encoded_media);
 #endif
