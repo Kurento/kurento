@@ -35,6 +35,7 @@
 #include <ftw.h>
 #include <iostream>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
 
@@ -444,7 +445,6 @@ video_codec_matrix ()
   /* Valid combinations */
   check_codec_accepted ("MP4", "H264", "mp4");
   check_codec_accepted ("MP4", "H265", "mp4");
-  check_codec_accepted ("MP4", "VP9", "mp4");
   check_codec_accepted ("MP4", "AV1", "mp4");
   check_codec_accepted ("MP4_VIDEO_ONLY", "H265", "mp4");
   check_codec_accepted ("MKV", "H264", "mkv");
@@ -468,6 +468,9 @@ video_codec_matrix ()
   check_codec_rejected ("WEBM", "H265", "webm");
   check_codec_rejected ("WEBM_VIDEO_ONLY", "H265", "webm");
   check_codec_rejected ("MP4", "VP8", "mp4");
+  /* VP9 in MP4 is not supported (see record_vp9_mp4_is_rejected) */
+  check_codec_rejected ("MP4", "VP9", "mp4");
+  check_codec_rejected ("MP4_VIDEO_ONLY", "VP9", "mp4");
   check_codec_rejected ("MP4_VIDEO_ONLY", "VP8", "mp4");
   check_codec_rejected ("FLV", "H264", "flv");
   check_codec_rejected ("FLV", "H265", "flv");
@@ -678,33 +681,6 @@ recorderElementsAvailable (const SourceCodec &codec,
   return true;
 }
 
-/* KNOWN ISSUE: VP9 cannot be recorded into MP4 with the GStreamer of Ubuntu
- * 24.04 (1.24.2):
- *  - passthrough: mp4mux (isomp4) dereferences the missing "chroma-site" of the
- *    caps produced by vp9parse and the whole process crashes with SIGSEGV
- *    (reproducible with
- *    "filesrc ! matroskademux ! vp9parse ! mp4mux" in gst-launch-1.0);
- *  - raw media (VP9 encoded by KMS): the encoder output is not parsed, so
- *    mp4mux does not accept its caps and the recording stays empty.
- * These cases are skipped (visibly) unless KMS_TEST_KNOWN_ISSUES is set, so the
- * rest of the suite can run. */
-static bool
-skipKnownIssue (const SourceCodec &codec, const std::string &extension)
-{
-  if (std::string (codec.name) != "VP9" || extension != "mp4") {
-    return false;
-  }
-
-  if (::getenv ("KMS_TEST_KNOWN_ISSUES") != nullptr) {
-    return false;
-  }
-
-  skip ("KNOWN ISSUE: recording VP9 into MP4 crashes (passthrough) or "
-        "produces an empty file (transcoding); set KMS_TEST_KNOWN_ISSUES=1 "
-        "to run this case anyway");
-  return true;
-}
-
 /* Records a file played by a PlayerEndpoint into the given container, with
  * videoCodec=<codec>, and checks that the result has that codec and that the
  * recording is not empty.
@@ -719,10 +695,6 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 {
   std::atomic<int> transcoding_events (0);
   std::atomic<int> not_transcoding_events (0);
-
-  if (skipKnownIssue (codec, extension) ) {
-    return;
-  }
 
   BOOST_TEST_MESSAGE ("Recording " << codec.name << " from a PlayerEndpoint "
                       << (encoded_media ? "(encoded media, passthrough)" :
@@ -840,24 +812,115 @@ record_h265_mkv_from_player ()
   record_from_player (H265_SOURCE, "MKV_VIDEO_ONLY", "mkv", "", true);
 }
 
-/* VP9 and AV1: every container of the support matrix (MP4, MKV, WebM), with
- * encoded media (passthrough) and with raw media (the recorder encodes). */
-#define VP9_AV1_CASES(NAME, SRC, TAG_MP4) \
-  static void record_##NAME##_mp4_passthrough () \
-  { record_from_player (SRC, "MP4_VIDEO_ONLY", "mp4", TAG_MP4, true); } \
-  static void record_##NAME##_mp4_raw () \
-  { record_from_player (SRC, "MP4_VIDEO_ONLY", "mp4", TAG_MP4, false); } \
-  static void record_##NAME##_mkv_passthrough () \
-  { record_from_player (SRC, "MKV_VIDEO_ONLY", "mkv", "", true); } \
-  static void record_##NAME##_mkv_raw () \
-  { record_from_player (SRC, "MKV_VIDEO_ONLY", "mkv", "", false); } \
-  static void record_##NAME##_webm_passthrough () \
-  { record_from_player (SRC, "WEBM_VIDEO_ONLY", "webm", "", true); } \
-  static void record_##NAME##_webm_raw () \
-  { record_from_player (SRC, "WEBM_VIDEO_ONLY", "webm", "", false); }
+/* VP9 and AV1: every container of the support matrix, with encoded media
+ * (passthrough) and with raw media (the recorder encodes). VP9 is not
+ * supported in MP4. */
+#define CODEC_CASES(NAME, SRC, EXT, PROFILE, TAG) \
+  static void record_##NAME##_##EXT##_passthrough () \
+  { record_from_player (SRC, PROFILE, #EXT, TAG, true); } \
+  static void record_##NAME##_##EXT##_raw () \
+  { record_from_player (SRC, PROFILE, #EXT, TAG, false); }
 
-VP9_AV1_CASES (vp9, VP9_SOURCE, "vp09")
-VP9_AV1_CASES (av1, AV1_SOURCE, "av01")
+CODEC_CASES (vp9, VP9_SOURCE, mkv, "MKV_VIDEO_ONLY", "")
+CODEC_CASES (vp9, VP9_SOURCE, webm, "WEBM_VIDEO_ONLY", "")
+CODEC_CASES (av1, AV1_SOURCE, mp4, "MP4_VIDEO_ONLY", "av01")
+CODEC_CASES (av1, AV1_SOURCE, mkv, "MKV_VIDEO_ONLY", "")
+CODEC_CASES (av1, AV1_SOURCE, webm, "WEBM_VIDEO_ONLY", "")
+
+/* VP9 in MP4 must be rejected when creating the RecorderEndpoint, so that the
+ * pipeline never gets to mp4mux with VP9 (see record_vp9_mp4_known_issue). */
+static void
+record_vp9_mp4_is_rejected ()
+{
+  for (const char *profile : {"MP4", "MP4_VIDEO_ONLY"}) {
+    check_codec_rejected (profile, "VP9", "mp4");
+  }
+
+  /* The other video codecs of the container keep working */
+  check_codec_accepted ("MP4", "AV1", "mp4");
+  removeCodecTestDir ();
+}
+
+/* Reproduces, with plain GStreamer, the problem that makes VP9 in MP4 not
+ * supported: with GStreamer 1.24, mp4mux crashes (SIGSEGV) with the caps that
+ * vp9parse produces from a VP9 stream without "chroma-site"; the output of
+ * vp9enc, which is not parsed, is not accepted by mp4mux either. This test
+ * fails while the problem exists, so it only runs if KMS_TEST_KNOWN_ISSUES is
+ * set. It belongs to the follow-up work that will re-enable VP9 in MP4 once the
+ * GStreamer version is upgraded: if it passes, check the support matrix. */
+static void
+record_vp9_mp4_known_issue ()
+{
+  if (::getenv ("KMS_TEST_KNOWN_ISSUES") == nullptr) {
+    skip ("known issue reproduction (VP9 in mp4mux); set "
+          "KMS_TEST_KNOWN_ISSUES=1 to run it");
+    return;
+  }
+
+  std::string src_file = getCodecTestDir () + "/source.mkv";
+  std::string out_file = getCodecTestDir () + "/out.mp4";
+
+  if (!generateSource (VP9_SOURCE, src_file) ) {
+    removeCodecTestDir ();
+    return;
+  }
+
+  /* Run the pipeline in a new process (this same binary, running only the
+   * helper test case below): the crash must not take this process down, and
+   * forking a process that already has GStreamer threads is not safe. */
+  ::setenv ("KMS_TEST_MP4MUX_SRC", src_file.c_str (), 1);
+  ::setenv ("KMS_TEST_MP4MUX_OUT", out_file.c_str (), 1);
+
+  pid_t pid = ::fork ();
+
+  if (pid == 0) {
+    ::execl ("/proc/self/exe", "test_recorder",
+             "--run_test=RecorderEndpoint/vp9_mp4_known_issue_helper",
+             (char *) nullptr);
+    ::_exit (3);
+  }
+
+  BOOST_REQUIRE (pid > 0);
+
+  int status = 0;
+  ::waitpid (pid, &status, 0);
+
+  BOOST_CHECK_MESSAGE (!WIFSIGNALED (status), "vp9parse ! mp4mux crashed with "
+                       "signal " << (WIFSIGNALED (status) ? WTERMSIG (status) : 0) );
+  BOOST_CHECK_MESSAGE (WIFEXITED (status) && WEXITSTATUS (status) == 0,
+                       "vp9parse ! mp4mux did not finish correctly");
+
+  removeCodecTestDir ();
+}
+
+/* Helper of record_vp9_mp4_known_issue: runs "vp9parse ! mp4mux" and reports
+ * the result with the exit status. Does nothing when run as a regular test. */
+static void
+vp9_mp4_known_issue_helper ()
+{
+  const char *src_file = ::getenv ("KMS_TEST_MP4MUX_SRC");
+  const char *out_file = ::getenv ("KMS_TEST_MP4MUX_OUT");
+
+  if (src_file == nullptr || out_file == nullptr) {
+    return;
+  }
+
+  std::string description = std::string ("filesrc location=") + src_file +
+                            " ! matroskademux ! vp9parse ! mp4mux "
+                            "! filesink location=" + out_file;
+  GError *err = nullptr;
+  GstElement *pipeline = gst_parse_launch (description.c_str (), &err);
+
+  if (pipeline == nullptr) {
+    ::_exit (2);
+  }
+
+  GstBus *bus = gst_element_get_bus (pipeline);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  GstMessage *msg = gst_bus_timed_pop_filtered (bus, 20 * GST_SECOND,
+                    (GstMessageType) (GST_MESSAGE_EOS | GST_MESSAGE_ERROR) );
+  ::_exit (msg != nullptr && GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS ? 0 : 1);
+}
 
 test_suite *
 init_unit_test_suite ( int , char *[] )
@@ -870,16 +933,18 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &record_h265_mp4_from_player ), 0, /* timeout */ 30);
   test->add (BOOST_TEST_CASE ( &record_h265_mkv_from_player ), 0, /* timeout */ 30);
 
-#define ADD_CASES(NAME) \
-  test->add (BOOST_TEST_CASE ( &record_##NAME##_mp4_passthrough ), 0, 40); \
-  test->add (BOOST_TEST_CASE ( &record_##NAME##_mp4_raw ), 0, 40); \
-  test->add (BOOST_TEST_CASE ( &record_##NAME##_mkv_passthrough ), 0, 40); \
-  test->add (BOOST_TEST_CASE ( &record_##NAME##_mkv_raw ), 0, 40); \
-  test->add (BOOST_TEST_CASE ( &record_##NAME##_webm_passthrough ), 0, 40); \
-  test->add (BOOST_TEST_CASE ( &record_##NAME##_webm_raw ), 0, 40)
+#define ADD_CASE(NAME, EXT) \
+  test->add (BOOST_TEST_CASE ( &record_##NAME##_##EXT##_passthrough ), 0, 40); \
+  test->add (BOOST_TEST_CASE ( &record_##NAME##_##EXT##_raw ), 0, 40)
 
-  ADD_CASES (vp9);
-  ADD_CASES (av1);
+  ADD_CASE (vp9, mkv);
+  ADD_CASE (vp9, webm);
+  ADD_CASE (av1, mp4);
+  ADD_CASE (av1, mkv);
+  ADD_CASE (av1, webm);
+  test->add (BOOST_TEST_CASE ( &record_vp9_mp4_is_rejected ), 0, 10);
+  test->add (BOOST_TEST_CASE ( &record_vp9_mp4_known_issue ), 0, 60);
+  test->add (BOOST_TEST_CASE ( &vp9_mp4_known_issue_helper ), 0, 40);
 
   return test;
 }
