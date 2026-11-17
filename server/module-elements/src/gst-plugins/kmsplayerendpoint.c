@@ -445,12 +445,21 @@ kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
       base_time = MAX (base_time, KMS_PLAYER_DTS_MARGIN);
     }
     *base_time_in = base_time;
-    *offset_time_in = offset_time_candidate;
+    if (!is_preroll && self->priv->use_encoded_media &&
+        self->priv->offset_time_preroll != GST_CLOCK_TIME_NONE) {
+      /* Only the base time is regenerated, to sync with the clock: the offset
+       * is the one of the preroll, which the buffers of all the streams
+       * already pushed have, so there is no jump between them and the next
+       * ones whichever stream gets here first */
+      *offset_time_in = self->priv->offset_time_preroll;
+    } else {
+      *offset_time_in = offset_time_candidate;
+    }
 
     GST_DEBUG_OBJECT (self,
         "Setting base time to: %" GST_TIME_FORMAT ", offset time to: %"
         GST_TIME_FORMAT ", is preroll: %d", GST_TIME_ARGS (base_time),
-        GST_TIME_ARGS (offset_time_candidate), is_preroll);
+        GST_TIME_ARGS (*offset_time_in), is_preroll);
   }
   *offset_time_out = self->priv->use_encoded_media ?
       *offset_time_in : offset_time_candidate;
