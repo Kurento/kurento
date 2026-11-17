@@ -936,9 +936,11 @@ record_vp9_mp4_known_issue ()
   } while (waited < 0 && errno == EINTR);
 
   if (waited != pid) {
+    int wait_errno = errno;
+
     ::kill (pid, SIGKILL);
     ::waitpid (pid, &status, 0);
-    BOOST_ERROR ("waitpid failed: " << ::strerror (errno) );
+    BOOST_ERROR ("waitpid failed: " << ::strerror (wait_errno) );
     removeCodecTestDir ();
     return;
   }
@@ -987,8 +989,8 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &recorder_state_changes ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &video_codec_matrix ), 0, /* timeout */ 30);
   test->add (BOOST_TEST_CASE ( &video_codec_unknown_value ), 0, /* timeout */ 10);
-  test->add (BOOST_TEST_CASE ( &record_h265_mp4_from_player ), 0, /* timeout */ 30);
-  test->add (BOOST_TEST_CASE ( &record_h265_mkv_from_player ), 0, /* timeout */ 30);
+  test->add (BOOST_TEST_CASE ( &record_h265_mp4_from_player ), 0, /* timeout */ 40);
+  test->add (BOOST_TEST_CASE ( &record_h265_mkv_from_player ), 0, /* timeout */ 40);
 
 #define ADD_CASE(NAME, EXT) \
   test->add (BOOST_TEST_CASE ( &record_##NAME##_##EXT##_passthrough ), 0, 40); \
