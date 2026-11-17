@@ -22,7 +22,7 @@ defaults:
 
 jobs:
   playground:
-    runs-on: ["self-hosted"]
+    runs-on: ["self-hosted", "amd64"]
     steps:
       - name: "Configure the environment"
         run: |

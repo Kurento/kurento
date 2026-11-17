@@ -51,7 +51,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}", "${{ matrix.jobArch }}"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.
@@ -98,6 +98,7 @@ jobs:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
           PLATFORMS: "linux/${{ matrix.jobArch }}"
+          MANIFEST_ARCHS: "${{ join(fromJSON(inputs.jobArchs), ' ') }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -110,6 +111,7 @@ jobs:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
           PLATFORMS: "linux/${{ matrix.jobArch }}"
+          MANIFEST_ARCHS: "${{ join(fromJSON(inputs.jobArchs), ' ') }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"
@@ -123,6 +125,7 @@ jobs:
           JOB_RELEASE: "${{ inputs.jobRelease }}"
           JOB_DEPLOY_NAME: "${{ inputs.jobDeployName }}"
           PLATFORMS: "linux/${{ matrix.jobArch }}"
+          MANIFEST_ARCHS: "${{ join(fromJSON(inputs.jobArchs), ' ') }}"
           PACKAGES_PATH: "${{ steps.copy-artifacts.outputs.download-path }}"
           KURENTO_DOCKERHUB_USERNAME: "${{ secrets.KURENTO_DOCKERHUB_USERNAME }}"
           KURENTO_DOCKERHUB_TOKEN: "${{ secrets.KURENTO_DOCKERHUB_TOKEN }}"

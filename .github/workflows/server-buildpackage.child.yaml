@@ -59,7 +59,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}", "${{ matrix.jobArch }}"]
     strategy:
       matrix:
         jobDistro: ${{ fromJSON(inputs.jobDistros) }}

@@ -16,7 +16,7 @@ on:
         required: true
         # Example: '["amd64", "arm64"]'
         type: "string"
-        default: '["amd64", "arm64"]'
+        default: '["amd64"]'
       jobGitName:
         description: "jobGitName: Non-default git branch or tag that should be checked out, if it exists"
         required: false

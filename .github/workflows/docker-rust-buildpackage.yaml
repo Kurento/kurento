@@ -16,7 +16,7 @@ on:
         required: true
         # Example: '["amd64", "arm64"]'
         type: "string"
-        default: '["amd64", "arm64"]'
+        default: '["amd64"]'
       runnerGroup:
         description: "runnerGroup: Set of runners where the workflow jobs should be run"
         required: false
@@ -29,7 +29,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}"]
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}", "${{ matrix.jobArch }}"]
     strategy:
       # Run each configuration sequentially.
       # Docker login & build fails if ran multiple times in parallel.
@@ -64,6 +64,7 @@ jobs:
         env:
           PUSH_IMAGES: "yes"
           PLATFORMS: "linux/${{ matrix.jobArch }}"
+          MANIFEST_ARCHS: "${{ join(fromJSON(inputs.jobArchs), ' ') }}"
           BUILD_ARGS: "UBUNTU_CODENAME=${{ matrix.jobDistro }}"
           TAG: "${{ matrix.jobDistro }}-${{ env.JOB_TIMESTAMP }}"
           # Moving tags, example: "1.2.3", "1.2", "1", "latest"
