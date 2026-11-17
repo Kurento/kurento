@@ -25,6 +25,25 @@
 #include <nice/address.h>
 #include <nice/interfaces.h>
 
+#include <openssl/crypto.h>
+
+/* Every test runs in a forked process that ends with exit(). Among the exit
+ * handlers there is GStreamer's gst_deinit(), registered by gst_check_init()
+ * before OpenSSL is initialized (which happens when the DTLS elements are
+ * first used), so OpenSSL's own exit handler, OPENSSL_cleanup(), runs first
+ * and frees its global state. Then gst_deinit() stops the GstTask threads and
+ * destroys the leftover DTLS connections, which still use OpenSSL: the
+ * threads' thread-local destructors and SSL_free() hit the already freed
+ * locks and tables and crash randomly (SIGSEGV in CRYPTO_THREAD_read_lock,
+ * SIGABRT in free()). Tell OpenSSL not to register its exit handler; the
+ * process is about to die anyway. This has to happen before OpenSSL is
+ * initialized for the first time. */
+static void __attribute__ ((constructor))
+disable_openssl_atexit_cleanup (void)
+{
+  OPENSSL_init_crypto (OPENSSL_INIT_NO_ATEXIT, NULL);
+}
+
 #define KMS_VIDEO_PREFIX "video_src_"
 #define KMS_AUDIO_PREFIX "audio_src_"
 
