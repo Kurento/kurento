@@ -21,6 +21,7 @@ import static org.kurento.client.MediaProfileSpecType.MKV_VIDEO_ONLY;
 import static org.kurento.client.MediaProfileSpecType.MP4_VIDEO_ONLY;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,14 +97,28 @@ public class RecorderH265Test extends KurentoClientTest {
   }
 
   /**
-   * Runs a command; returns false if it cannot be executed (e.g. it is not installed).
+   * Runs a command and waits for it to finish; returns true only if it could be executed and
+   * exited with status 0 within the timeout (e.g. false if it is not installed, if it fails, or if
+   * it takes too long). The output is discarded.
    */
   private boolean tryRun(String... command) {
+    Process process = null;
     try {
-      Shell.runAndWaitArray(command);
-      return true;
-    } catch (RuntimeException e) {
+      process = new ProcessBuilder(command).redirectErrorStream(true)
+          .redirectOutput(ProcessBuilder.Redirect.to(new File("/dev/null"))).start();
+      if (!process.waitFor(60, TimeUnit.SECONDS)) {
+        return false;
+      }
+      return process.exitValue() == 0;
+    } catch (IOException e) {
       return false;
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    } finally {
+      if (process != null) {
+        process.destroyForcibly();
+      }
     }
   }
 
@@ -121,11 +136,17 @@ public class RecorderH265Test extends KurentoClientTest {
     if (tryRun(gst) && source.length() > 0) {
       return true;
     }
+    // A failed encoding may leave an incomplete file: never reuse it
+    source.delete();
 
     String[] ffmpeg = {"ffmpeg", "-y", "-f", "lavfi", "-i",
         "testsrc=size=320x240:rate=25:duration=" + FILE_SECONDS, "-c:v", "libx265", "-tag:v",
         "hvc1", "-x265-params", "bframes=0", source.getAbsolutePath()};
-    return tryRun(ffmpeg) && source.length() > 0;
+    if (tryRun(ffmpeg) && source.length() > 0) {
+      return true;
+    }
+    source.delete();
+    return false;
   }
 
   private String probe(String file, String entries) {
