@@ -109,9 +109,10 @@ kms_recording_profile_supports_video_codec (KmsRecordingProfile profile,
           codec == KMS_RECORDING_VIDEO_CODEC_AV1;
     case KMS_RECORDING_PROFILE_MP4:
     case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
+      /* VP9 is not supported in MP4: with GStreamer 1.24 mp4mux crashes with
+       * the caps produced by vp9parse, and rejects the output of vp9enc */
       return codec == KMS_RECORDING_VIDEO_CODEC_H264 ||
           codec == KMS_RECORDING_VIDEO_CODEC_H265 ||
-          codec == KMS_RECORDING_VIDEO_CODEC_VP9 ||
           codec == KMS_RECORDING_VIDEO_CODEC_AV1;
     case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
     case KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY:

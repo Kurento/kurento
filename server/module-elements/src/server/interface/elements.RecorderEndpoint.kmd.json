@@ -222,11 +222,14 @@
 <p>These are the valid combinations of container and codec:</p>
 <table>
   <tr><th>Container</th><th>H264</th><th>H265</th><th>VP8</th><th>VP9</th><th>AV1</th></tr>
-  <tr><td>MP4</td><td>yes</td><td>yes</td><td>no</td><td>yes</td><td>yes</td></tr>
+  <tr><td>MP4</td><td>yes</td><td>yes</td><td>no</td><td>no</td><td>yes</td></tr>
   <tr><td>MKV</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
   <tr><td>WEBM</td><td>no</td><td>no</td><td>yes</td><td>yes</td><td>yes</td></tr>
   <tr><td>FLV, JPEG_VIDEO_ONLY, KURENTO_SPLIT_RECORDER</td><td colspan='5'>the parameter is not supported</td></tr>
 </table>
+<p>
+  VP9 is not supported in MP4: use WEBM or MKV to record VP9.
+</p>
 <p>
   Requesting an invalid combination makes the constructor fail with a
   <code>MEDIA_OBJECT_ILLEGAL_PARAM_ERROR</code> error.

@@ -35,4 +35,4 @@ Due to this observation, MP4 container format is just considered not the best ch
 Codecs inside MP4
 =================
 
-The MP4 container is not tied to H.264: the *videoCodec* parameter of the RecorderEndpoint allows storing H.265 (as ``hvc1``, playable in Safari and QuickTime), VP9 or AV1 in MP4 files instead. See :doc:`/knowledge/recording-codecs` for the list of valid combinations and for the cases where no transcoding is needed.
+The MP4 container is not tied to H.264: the *videoCodec* parameter of the RecorderEndpoint allows storing H.265 (as ``hvc1``, playable in Safari and QuickTime) or AV1 in MP4 files instead (VP9 is not supported in MP4: use WebM or MKV). See :doc:`/knowledge/recording-codecs` for the list of valid combinations and for the cases where no transcoding is needed.

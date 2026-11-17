@@ -34,7 +34,7 @@ Valid combinations
 ======================  =====  =====  =====  =====  =====
 Container               H264   H265   VP8    VP9    AV1
 ======================  =====  =====  =====  =====  =====
-``MP4``                 yes    yes    no     yes    yes
+``MP4``                 yes    yes    no     no     yes
 ``MKV``                 yes    yes    yes    yes    yes
 ``WEBM``                no     no     yes    yes    yes
 ======================  =====  =====  =====  =====  =====
@@ -43,12 +43,13 @@ Container               H264   H265   VP8    VP9    AV1
 * The ``_AUDIO_ONLY`` variants do not store any video, so they ignore *videoCodec*.
 * ``FLV``, ``JPEG_VIDEO_ONLY`` and ``KURENTO_SPLIT_RECORDER`` do not support choosing a codec: they only accept ``DEFAULT``.
 * ``DEFAULT`` is valid with every profile.
+* **VP9 is not supported in MP4.** Use ``WEBM`` or ``MKV`` to record VP9.
 
 If an invalid combination is requested, the RecorderEndpoint is **not created**: the call fails with a ``MEDIA_OBJECT_ILLEGAL_PARAM_ERROR`` error, whose message indicates the offending codec and profile. For example, requesting ``H265`` together with ``WEBM``.
 
 .. note::
 
-   Only H.264 and H.265 in MP4 and MKV are covered by automated tests in the current release. The remaining combinations of the table are accepted by the API, but they depend on the codec support of the GStreamer plugins that are installed in the media server.
+   H.264 and H.265 in MP4 and MKV, and VP9 and AV1 in the containers where they are supported (both with passthrough and with transcoding), are covered by automated tests. The combinations of the table depend on the codec support of the GStreamer plugins that are installed in the media server.
 
 
 
