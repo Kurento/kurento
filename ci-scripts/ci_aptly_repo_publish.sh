@@ -224,7 +224,7 @@ echo "CFG_RELEASE=$CFG_RELEASE" >&2
 # ===================
 
 APTLY_OUTPUT="$(aptly repo list -raw)"
-if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp "$CFG_REPO_NAME"; then
+if ! echo "$APTLY_OUTPUT" | grep --quiet --line-regexp --fixed-strings "$CFG_REPO_NAME"; then
     echo "Create new repo: $CFG_REPO_NAME" >&2
     aptly repo create -distribution="$CFG_DISTRO_NAME" -component=main "$CFG_REPO_NAME"
 fi
@@ -306,8 +306,20 @@ else
         fi
     fi
     STATE_DIR="${APTLY_PUBLISH_STATE_DIR:-$APTLY_ROOT_DIR/.publish-state}"
-    STATE_FILE="$STATE_DIR/${PUBLISH_ENDPOINT//[^A-Za-z0-9._-]/_}__$CFG_DISTRO_NAME.archs"
+    # The key is collision-free: readable (sanitized) prefix plus a hash of the
+    # exact "endpoint distribution", so e.g. "dev-feature/foo" and
+    # "dev-feature_foo" get different files.
+    STATE_KEY_SANITIZED="${PUBLISH_ENDPOINT//[^A-Za-z0-9._-]/_}__${CFG_DISTRO_NAME//[^A-Za-z0-9._-]/_}"
+    STATE_KEY_HASH="$(printf '%s' "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" | sha256sum | cut -c1-32)"
+    STATE_FILE="$STATE_DIR/${STATE_KEY_SANITIZED}__$STATE_KEY_HASH.archs"
+    # Previous naming scheme (sanitized only, ambiguous): read it once and copy
+    # it to the new name. Extra remembered architectures are harmless.
+    LEGACY_STATE_FILE="$STATE_DIR/${PUBLISH_ENDPOINT//[^A-Za-z0-9._-]/_}__$CFG_DISTRO_NAME.archs"
     mkdir -p "$STATE_DIR"
+    if [[ ! -f "$STATE_FILE" && -f "$LEGACY_STATE_FILE" ]]; then
+        echo "Migrating state from $LEGACY_STATE_FILE" >&2
+        cp -p "$LEGACY_STATE_FILE" "$STATE_FILE"
+    fi
 
     # Do not die on a broken output pipe (e.g. dropped SSH channel); log durably.
     # 'tee -p' keeps writing the log when its stdout pipe is broken. The ignored
@@ -363,7 +375,7 @@ else
             # (grep on a variable, not a pipe: with pipefail an early grep exit could
             # turn into a false "not registered")
             if LIST_NOW="$(aptly publish list -raw)" \
-                && grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$LIST_NOW"; then
+                && grep --quiet --line-regexp --fixed-strings "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$LIST_NOW"; then
                 # Still registered (drop failed, or the publish just finished):
                 # regenerate its indexes.
                 aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" \
@@ -394,7 +406,7 @@ else
         exit 1
     fi
 
-    if ! grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$PUBLISH_LIST"; then
+    if ! grep --quiet --line-regexp --fixed-strings "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$PUBLISH_LIST"; then
         # Not published (or dropped by an interrupted run): publish the union.
         FIRST_ARCHS="$(normalize_archs "$RECORDED_ARCHS $REQUESTED_ARCHS")"
         echo "Publish new development repo: $CFG_REPO_NAME (architectures: ${FIRST_ARCHS:-<default>})" >&2
@@ -436,7 +448,7 @@ else
                 echo "WARNING: Publish attempt $ATTEMPT/3 failed" >&2
                 # A failed attempt may leave the endpoint half-created: drop it again.
                 if LIST_NOW="$(aptly publish list -raw)" \
-                    && grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$LIST_NOW"; then
+                    && grep --quiet --line-regexp --fixed-strings "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$LIST_NOW"; then
                     aptly publish drop -skip-cleanup "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" || true
                 fi
                 sleep "${APTLY_PUBLISH_RETRY_SLEEP:-10}"
