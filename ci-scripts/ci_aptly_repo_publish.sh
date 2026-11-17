@@ -123,7 +123,6 @@ set -o xtrace
 # Bash Associative Array: [command_name]="package_name"
 declare -A DEP_COMMANDS=(
     [aptly]="https://www.aptly.info/download/"
-    [flock]="https://github.com/util-linux/util-linux"
 )
 for DEP_COMMAND in "${!DEP_COMMANDS[@]}"; do
     command -v "$DEP_COMMAND" >/dev/null || {
@@ -277,13 +276,51 @@ else
     #   the full set again.
     # - The drop uses -skip-cleanup (pool files are kept) and the publish is
     #   retried; if it still fails, the previous publication is restored.
-    STATE_DIR="${APTLY_PUBLISH_STATE_DIR:-$HOME/.aptly-publish-state}"
+    # - The script usually runs through 'ssh' without a pty: if the channel
+    #   drops, the next write to stdout/stderr raises SIGPIPE (not SIGHUP) and
+    #   would kill both aptly and the restore. So SIGPIPE is ignored and all
+    #   output goes to a log file in the state directory (tee'd to the original
+    #   output while it is still there).
+    #
+    # Operational notes: the state files live in <aptly rootDir>/.publish-state
+    # (override: APTLY_PUBLISH_STATE_DIR) and must persist. There is one
+    # .archs/.lock pair per endpoint, never cleaned up automatically. To REMOVE an architecture on
+    # purpose: delete its .archs file, then 'aptly publish drop' and publish
+    # again with the wanted architectures.
+    # The state, lock and log live on the aptly data volume (HOME is not
+    # persistent in the aptly container): <rootDir>/.publish-state, with
+    # rootDir taken from the configuration aptly itself uses.
+    if [[ -z "${APTLY_PUBLISH_STATE_DIR:-}" ]]; then
+        if ! APTLY_CONFIG_JSON="$(aptly config show)"; then
+            echo "ERROR: 'aptly config show' failed; cannot locate the state directory" >&2
+            exit 1
+        fi
+        # Top-level key only (4 spaces): publish endpoints have their own rootDir.
+        APTLY_ROOT_DIR="$(echo "$APTLY_CONFIG_JSON" | sed -n 's/^ \{4\}"rootDir":[[:space:]]*"\(.*\)",\{0,1\}[[:space:]]*$/\1/p')"
+        if [[ -z "$APTLY_ROOT_DIR" || "$APTLY_ROOT_DIR" != /* ]]; then
+            echo "ERROR: Could not resolve aptly rootDir from 'aptly config show'; not touching the publication" >&2
+            exit 1
+        fi
+    fi
+    STATE_DIR="${APTLY_PUBLISH_STATE_DIR:-$APTLY_ROOT_DIR/.publish-state}"
     STATE_FILE="$STATE_DIR/${PUBLISH_ENDPOINT//[^A-Za-z0-9._-]/_}__$CFG_DISTRO_NAME.archs"
     mkdir -p "$STATE_DIR"
 
-    # Serialize concurrent runs for the same endpoint.
+    # Do not die on a broken output pipe (e.g. dropped SSH channel); log durably.
+    # 'tee -p' keeps writing the log when its stdout pipe is broken. The ignored
+    # SIGPIPE disposition is inherited by tee and aptly.
+    LOG_FILE="$STATE_DIR/publish.log"
+    # TERM/INT/HUP are ignored while tee starts, so a signal sent to the whole
+    # process group does not kill tee (aptly dies if stdout/stderr break).
+    trap '' PIPE TERM INT HUP
+    exec > >(tee -p -a "$LOG_FILE") 2>&1
+    echo "=== $(date -u +%FT%TZ) publish run: $CFG_DISTRO_NAME $PUBLISH_ENDPOINT (pid $$)" >&2
+
+    # Serialize concurrent runs for the same endpoint. The wait must stay well
+    # below the job timeout (30 min), or an orphaned run would publish later.
+    command -v flock >/dev/null || { echo "ERROR: flock: command not found" >&2; exit 1; }
     exec 9>"$STATE_FILE.lock"
-    if ! flock --wait 1800 9; then
+    if ! flock --wait 900 9; then
         echo "ERROR: Timeout waiting for the publish lock: $STATE_FILE.lock" >&2
         exit 1
     fi
@@ -300,25 +337,36 @@ else
             "$CFG_REPO_NAME" "$PUBLISH_ENDPOINT"
     }
 
-    # Set while the endpoint is dropped and not yet published again.
+    # Set from just before 'aptly publish drop' until the new publication is
+    # complete (aptly removes dists/ before deleting the DB entry, so even a
+    # failed drop can leave the endpoint broken).
     DROPPED="false"
     PREVIOUS_ARCHS=""
     restore_on_exit() {
         local rc=$?
+        # Nothing here may abort the restore: no errexit, no xtrace, safe writes.
+        set +o errexit +o xtrace
         trap - EXIT
+        trap '' PIPE TERM INT HUP
         if [[ "$DROPPED" == "true" ]]; then
-            echo "WARNING: Publication was dropped and not completed; restoring architectures: $PREVIOUS_ARCHS" >&2
-            if publish_dev_repo "${PREVIOUS_ARCHS// /,}"; then
-                echo "Previous architectures restored; the state file keeps the full set for the next run." >&2
+            echo "WARNING: Publication may be incomplete; restoring it (previous architectures: $PREVIOUS_ARCHS)" >&2 || true
+            if aptly publish list -raw | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
+                # Still registered (drop failed, or the publish just finished):
+                # regenerate its indexes.
+                aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" \
+                    || echo "ERROR: Could not update the publication! The next run will fix it using $STATE_FILE" >&2 || true
+            elif publish_dev_repo "${PREVIOUS_ARCHS// /,}"; then
+                echo "Previous architectures restored; the state file keeps the full set for the next run." >&2 || true
             else
-                echo "ERROR: Could not restore the publication! The next run will publish it again using $STATE_FILE" >&2
+                echo "ERROR: Could not restore the publication! The next run will publish it again using $STATE_FILE" >&2 || true
             fi
         fi
         exit "$rc"
     }
     trap restore_on_exit EXIT
     trap 'exit 143' TERM
-    trap 'exit 130' INT HUP
+    trap 'exit 130' INT
+    trap 'exit 129' HUP
 
     REQUESTED_ARCHS="$(normalize_archs "$CFG_ARCHITECTURES")"
     RECORDED_ARCHS=""
@@ -364,8 +412,8 @@ else
             echo "Republish development repo with architectures: ${UNION_ARCHS// /,}" >&2
             # Record the target set first, so an interrupted run can be recovered.
             echo "$UNION_ARCHS" > "$STATE_FILE"
-            aptly publish drop -skip-cleanup "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
             DROPPED="true"
+            aptly publish drop -skip-cleanup "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
             PUBLISHED_OK="false"
             for ATTEMPT in 1 2 3; do
                 if publish_dev_repo "${UNION_ARCHS// /,}"; then
@@ -389,7 +437,7 @@ else
             echo "Update already published development repo: $CFG_REPO_NAME" >&2
             aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT"
             if [[ -n "${PREVIOUS_ARCHS:-}" ]]; then
-                echo "$(normalize_archs "$PREVIOUS_ARCHS $RECORDED_ARCHS")" > "$STATE_FILE"
+                normalize_archs "$PREVIOUS_ARCHS $RECORDED_ARCHS" > "$STATE_FILE"
             fi
         fi
     fi
