@@ -536,6 +536,7 @@ GST_END_TEST
 /* Start time of the sources used to check that the timestamps are rebased */
 #define TS_START_TIME (10 * GST_SECOND)
 #define RECORDER_SINK_VIDEO "sink_video_default"
+#define AV_FRAMES 75
 
 typedef struct _BFramesStats
 {
@@ -543,6 +544,7 @@ typedef struct _BFramesStats
   guint reordered;              /* buffers with DTS != PTS */
   GstClockTime first_pts;
   GstClockTime first_dts;
+  GstClockTime second_dts;
   gboolean first_is_key;
   gint64 second_pts_dts;        /* PTS - DTS of the second buffer */
   GstClockTime max_pts;
@@ -559,6 +561,7 @@ bframes_stats_init (BFramesStats * stats)
   memset (stats, 0, sizeof (*stats));
   stats->first_pts = GST_CLOCK_TIME_NONE;
   stats->first_dts = GST_CLOCK_TIME_NONE;
+  stats->second_dts = GST_CLOCK_TIME_NONE;
   stats->max_lead = G_MININT64;
   stats->prev_dts = GST_CLOCK_TIME_NONE;
   stats->min_dts_gap = G_MAXINT64;
@@ -576,6 +579,9 @@ bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
     stats->first_dts = GST_BUFFER_DTS (buf);
     stats->first_is_key = !GST_BUFFER_FLAG_IS_SET (buf,
         GST_BUFFER_FLAG_DELTA_UNIT);
+  }
+  if (stats->count == 1) {
+    stats->second_dts = GST_BUFFER_DTS (buf);
   }
   if (stats->count == 1 && GST_BUFFER_PTS_IS_VALID (buf) &&
       GST_BUFFER_DTS_IS_VALID (buf)) {
@@ -712,6 +718,8 @@ typedef struct _BFramesPlayback
   GstElement *player;
   GstElement *recorder;         /* NULL: just count the buffers of the player */
   BFramesStats out;
+  BFramesStats out_audio;
+  gboolean with_audio;
   gboolean error;
   gboolean player_eos;
   gboolean stopped;
@@ -809,14 +817,18 @@ bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
   GstElement *sink = NULL;
   GstPad *sinkpad;
 
-  if (!g_str_has_prefix (GST_OBJECT_NAME (pad), KMS_VIDEO_PREFIX)) {
+  gboolean is_audio = g_str_has_prefix (GST_OBJECT_NAME (pad),
+      KMS_AUDIO_PREFIX);
+
+  if (!is_audio && !g_str_has_prefix (GST_OBJECT_NAME (pad),
+          KMS_VIDEO_PREFIX)) {
     return;
   }
 
   gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_stats_probe,
-      &play->out, NULL);
+      is_audio ? &play->out_audio : &play->out, NULL);
 
-  if (play->recorder != NULL) {
+  if (play->recorder != NULL && !is_audio) {
     gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
         bframes_drop_eos_probe, NULL, NULL);
     if (!gst_element_link_pads (player, GST_OBJECT_NAME (pad), play->recorder,
@@ -842,7 +854,7 @@ bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
  * the clients do. */
 static gboolean
 bframes_play (const gchar * src_path, KmsRecordingProfile profile,
-    const gchar * out_path, BFramesStats * out)
+    const gchar * out_path, BFramesStats * out, BFramesStats * out_audio)
 {
   BFramesPlayback play = { 0, };
   GstBus *bus;
@@ -851,6 +863,8 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   GstCheckLogFilter *log_filter;
 
   bframes_stats_init (&play.out);
+  bframes_stats_init (&play.out_audio);
+  play.with_audio = out_audio != NULL;
   play.loop = g_main_loop_new (NULL, FALSE);
   play.pipeline = gst_pipeline_new ("player-bframes-test");
   play.player = gst_element_factory_make ("playerendpoint", NULL);
@@ -896,6 +910,12 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
       KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname);
   fail_if (padname == NULL);
   g_free (padname);
+  if (play.with_audio) {
+    g_signal_emit_by_name (play.player, "request-new-pad",
+        KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, GST_PAD_SRC, &padname);
+    fail_if (padname == NULL);
+    g_free (padname);
+  }
 
   play.timeout_id = g_timeout_add_seconds (30, bframes_timeout_cb, &play);
   if (play.recorder != NULL) {
@@ -922,6 +942,10 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
 
   *out = play.out;
   out->pipeline = NULL;
+  if (out_audio != NULL) {
+    *out_audio = play.out_audio;
+    out_audio->pipeline = NULL;
+  }
   return TRUE;
 }
 
@@ -983,7 +1007,7 @@ GST_START_TEST (check_encoded_bframes_record)
 
     guint played;
 
-    fail_unless (bframes_play (src, profiles[i], path, &out),
+    fail_unless (bframes_play (src, profiles[i], path, &out, NULL),
         "Recording %s failed or did not finish", path);
     /* Under load the player may lose the last buffers when it flushes at the
      * EOS (a known issue that this test does not check), but there must be
@@ -1039,7 +1063,7 @@ GST_START_TEST (check_encoded_timestamps_rebase)
   fail_unless (stats.first_pts >= TS_START_TIME,
       "The source starts at %" GST_TIME_FORMAT, GST_TIME_ARGS (stats.first_pts));
 
-  fail_unless (bframes_play (src, 0, NULL, &out), "Playback failed");
+  fail_unless (bframes_play (src, 0, NULL, &out, NULL), "Playback failed");
   /* The source is not paced here, so some buffers may be lost; at least the
    * first one after the preroll is needed to check the timestamps */
   fail_unless (out.count >= 2, "Too few buffers: %u", out.count);
@@ -1050,6 +1074,174 @@ GST_START_TEST (check_encoded_timestamps_rebase)
   fail_unless (out.max_lead < TS_START_TIME / 2,
       "The output goes %" G_GINT64_FORMAT " ms ahead of the running time",
       out.max_lead / GST_MSECOND);
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
+}
+
+GST_END_TEST;
+
+/* Demuxes an MPEG-TS with video and audio and gets the stats of both tracks */
+static gboolean
+bframes_inspect_av_file (const gchar * path, BFramesStats * video,
+    BFramesStats * audio)
+{
+  GstElement *pipeline;
+  GstMessage *msg;
+  GstBus *bus;
+  GError *err = NULL;
+  const gchar *names[] = { "vsink", "asink" };
+  BFramesStats *stats[] = { video, audio };
+  gchar *desc;
+  gboolean ok;
+  gint i;
+
+  bframes_stats_init (video);
+  bframes_stats_init (audio);
+  desc = g_strdup_printf ("filesrc location=%s ! tsdemux name=d "
+      "d. ! video/x-h264 ! fakesink name=vsink sync=false async=false "
+      "d. ! audio/mpeg ! fakesink name=asink sync=false async=false", path);
+  pipeline = gst_parse_launch (desc, &err);
+  g_free (desc);
+  fail_unless (pipeline != NULL, "Cannot read %s: %s", path,
+      err ? err->message : "?");
+
+  for (i = 0; i < 2; i++) {
+    GstElement *sink = gst_bin_get_by_name (GST_BIN (pipeline), names[i]);
+    GstPad *pad = gst_element_get_static_pad (sink, "sink");
+
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_stats_probe,
+        stats[i], NULL);
+    gst_object_unref (pad);
+    gst_object_unref (sink);
+  }
+
+  bus = gst_element_get_bus (pipeline);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  msg = gst_bus_timed_pop_filtered (bus, 20 * GST_SECOND,
+      GST_MESSAGE_EOS | GST_MESSAGE_ERROR);
+  ok = msg != NULL && GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS;
+  if (msg != NULL) {
+    gst_message_unref (msg);
+  }
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (bus);
+  gst_object_unref (pipeline);
+
+  return ok;
+}
+
+/* MPEG-TS (its demuxer, unlike the MP4 one, keeps the PTS of the tracks aligned
+ * and gives the video a DTS below its PTS) with H264 video with B-frames and AAC audio, both starting at
+ * start_time. Returns FALSE (test skipped) if the encoders are not available. */
+static gboolean
+bframes_generate_av_source (GstClockTime start_time, const gchar * path)
+{
+  GstElement *pipeline;
+  GstMessage *msg;
+  GstBus *bus;
+  GError *err = NULL;
+  gchar *desc;
+  gboolean ok;
+
+  desc = g_strdup_printf ("mpegtsmux name=m ! filesink location=%s "
+      "videotestsrc num-buffers=%d timestamp-offset=%" G_GUINT64_FORMAT " ! "
+      "video/x-raw,format=I420,width=320,height=240,framerate=25/1 ! "
+      "x264enc bframes=3 key-int-max=25 ! h264parse ! video/x-h264,stream-format=byte-stream,alignment=au ! "
+      "m. "
+      "audiotestsrc num-buffers=%d samplesperbuffer=1920 "
+      "timestamp-offset=%" G_GUINT64_FORMAT " ! "
+      "audio/x-raw,rate=48000,channels=1 ! avenc_aac ! aacparse ! "
+      "audio/mpeg,mpegversion=4,stream-format=adts ! m.",
+      path, AV_FRAMES, start_time, AV_FRAMES * 2, start_time);
+  pipeline = gst_parse_launch (desc, &err);
+  g_free (desc);
+  if (pipeline == NULL) {
+    fprintf (stderr, "SKIP: cannot build the source pipeline: %s\n",
+        err ? err->message : "?");
+    g_clear_error (&err);
+    return FALSE;
+  }
+
+  bus = gst_element_get_bus (pipeline);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  msg = gst_bus_timed_pop_filtered (bus, 60 * GST_SECOND,
+      GST_MESSAGE_EOS | GST_MESSAGE_ERROR);
+  ok = msg != NULL && GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS;
+  if (msg != NULL) {
+    gst_message_unref (msg);
+  }
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (bus);
+  gst_object_unref (pipeline);
+
+  fail_unless (ok, "Cannot generate the source %s", path);
+  return TRUE;
+}
+
+/* A source whose video has B-frames (DTS < PTS) and whose audio does not, with
+ * both tracks starting at the same time: the player must keep the tracks
+ * aligned, and must not open a gap between the first two video buffers. */
+GST_START_TEST (check_encoded_bframes_av_sync)
+{
+  static const gchar *const files[] = { "src.ts", NULL };
+  gchar *dir, *src;
+  BFramesStats in_v, in_a, out_v, out_a;
+  gint64 in_offset, out_offset, first_gap;
+
+  if (gst_element_factory_find ("x264enc") == NULL ||
+      gst_element_factory_find ("avenc_aac") == NULL) {
+    fprintf (stderr, "SKIP: x264enc or avenc_aac not available\n");
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.ts", NULL);
+  if (!bframes_generate_av_source (TS_START_TIME, src)) {
+    g_free (src);
+    bframes_remove_tmp_dir (dir, files);
+    return;
+  }
+
+  fail_unless (bframes_inspect_av_file (src, &in_v, &in_a));
+  fail_unless (in_v.reordered > 0, "The source has no B-frames");
+  fail_unless (GST_CLOCK_TIME_IS_VALID (in_v.first_dts) &&
+      in_v.first_dts < in_v.first_pts, "The first video DTS is not below PTS");
+  in_offset = (gint64) in_v.first_pts - (gint64) in_a.first_pts;
+
+  fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a), "Playback failed");
+  fail_unless (out_v.count >= BFRAMES_MIN_BUFFERS, "Only %u video buffers",
+      out_v.count);
+  fail_unless (out_a.count >= 2, "Only %u audio buffers", out_a.count);
+
+  out_offset = (gint64) out_v.first_pts - (gint64) out_a.first_pts;
+  first_gap = (gint64) out_v.second_dts - (gint64) out_v.first_dts;
+  fprintf (stderr, "AVSYNC: input A/V PTS offset %" G_GINT64_FORMAT " ms, "
+      "output A/V PTS offset %" G_GINT64_FORMAT " ms, first video DTS "
+      "separation %" G_GINT64_FORMAT " ms (source DTS lead %" G_GINT64_FORMAT
+      " ms, video buffers %u, audio buffers %u)\n",
+      in_offset / GST_MSECOND, out_offset / GST_MSECOND,
+      first_gap / GST_MSECOND,
+      ((gint64) in_v.first_pts - (gint64) in_v.first_dts) / GST_MSECOND,
+      out_v.count, out_a.count);
+
+  /* The tracks keep the offset they have in the source */
+  fail_unless (ABS (out_offset - in_offset) <= 2 * GST_MSECOND,
+      "A/V offset changed from %" G_GINT64_FORMAT " ms to %" G_GINT64_FORMAT
+      " ms", in_offset / GST_MSECOND, out_offset / GST_MSECOND);
+  /* The video DTS keep the 40 ms step of the source (25 fps) also between the
+   * buffer of the preroll and the next one; some margin is left for the time
+   * between both in a loaded machine */
+  fail_unless (first_gap > 0 && first_gap < 100 * GST_MSECOND,
+      "The first video DTS are %" G_GINT64_FORMAT " ms apart",
+      first_gap / GST_MSECOND);
+  /* No frames lost with B-frames (as in check_encoded_bframes_record) */
+  fail_unless (out_v.min_dts_gap > 0 &&
+      out_v.max_dts_gap <= 40 * GST_MSECOND + GST_MSECOND,
+      "Video buffers lost: DTS gaps between %" G_GINT64_FORMAT " and %"
+      G_GINT64_FORMAT " ms", out_v.min_dts_gap / GST_MSECOND,
+      out_v.max_dts_gap / GST_MSECOND);
 
   g_free (src);
   bframes_remove_tmp_dir (dir, files);
@@ -1129,6 +1321,7 @@ playerendpoint_suite (void)
   }
   tcase_add_test (tc_chain, check_encoded_bframes_record);
   tcase_add_test (tc_chain, check_encoded_timestamps_rebase);
+  tcase_add_test (tc_chain, check_encoded_bframes_av_sync);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
   tcase_add_test (tc_chain, check_set_encoded_media);
 #endif
