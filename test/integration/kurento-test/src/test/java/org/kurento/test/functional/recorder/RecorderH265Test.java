@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaProfileSpecType;
@@ -200,11 +201,24 @@ public class RecorderH265Test extends KurentoClientTest {
       }
     });
 
+    // play() is asynchronous: wait for the end of the stream (registered before play(), so it
+    // cannot be missed) instead of a fixed time, which can be too short on a loaded server
+    final CountDownLatch eosLatch = new CountDownLatch(1);
+    player.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        eosLatch.countDown();
+      }
+    });
+
     player.connect(recorder, MediaType.VIDEO);
     recorder.record();
     player.play();
 
-    Thread.sleep(TimeUnit.SECONDS.toMillis(FILE_SECONDS + 1));
+    Assert.assertTrue("The player did not reach the end of the stream in 30 seconds",
+        eosLatch.await(30, TimeUnit.SECONDS));
+    // Let the last buffers reach the recorder
+    Thread.sleep(500);
     recorder.stopAndWait();
     Assert.assertTrue("Recorder did not stop",
         stoppedLatch.await(10, TimeUnit.SECONDS));
