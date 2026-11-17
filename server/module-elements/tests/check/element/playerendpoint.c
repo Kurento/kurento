@@ -572,6 +572,7 @@ typedef struct _BFramesStats
   GstClockTime first_pts;
   GstClockTime first_dts;
   GstClockTime second_dts;
+  GstClockTime second_pts;
   GstClockTime pts_nth;         /* PTS of the buffer number BFRAMES_NTH */
   gboolean first_is_key;
   gint64 second_pts_dts;        /* PTS - DTS of the second buffer */
@@ -582,6 +583,8 @@ typedef struct _BFramesStats
   GstElement *pipeline;         /* if set, track max_lead */
   gint64 max_lead;              /* max of PTS - running time of the pipeline */
   gint64 first_lead;            /* the same, of the first buffer */
+  gchar offset_preroll[40];     /* offset time of the player, in the preroll */
+  gchar offset_play[40];        /* and when playing (empty: none) */
 } BFramesStats;
 
 static void
@@ -591,6 +594,7 @@ bframes_stats_init (BFramesStats * stats)
   stats->first_pts = GST_CLOCK_TIME_NONE;
   stats->first_dts = GST_CLOCK_TIME_NONE;
   stats->second_dts = GST_CLOCK_TIME_NONE;
+  stats->second_pts = GST_CLOCK_TIME_NONE;
   stats->pts_nth = GST_CLOCK_TIME_NONE;
   stats->max_lead = G_MININT64;
   stats->first_lead = G_MININT64;
@@ -616,6 +620,7 @@ bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   }
   if (stats->count == 1) {
     stats->second_dts = GST_BUFFER_DTS (buf);
+    stats->second_pts = GST_BUFFER_PTS (buf);
   }
   if (stats->count == 1 && GST_BUFFER_PTS_IS_VALID (buf) &&
       GST_BUFFER_DTS_IS_VALID (buf)) {
@@ -746,6 +751,53 @@ bframes_generate_source (const gchar * muxer, guint bframes,
 
   fail_unless (ok, "Cannot generate the source %s", path);
   return TRUE;
+}
+
+/* The offset that the player maps to its base time is only logged: capture it
+ * to check that the preroll and the playing use the same one */
+static GMutex offsets_mutex;
+static gchar *captured_offset_preroll = NULL;
+static gchar *captured_offset_play = NULL;
+
+static void
+bframes_offsets_log_func (GstDebugCategory * category, GstDebugLevel level,
+    const gchar * file, const gchar * function, gint line, GObject * object,
+    GstDebugMessage * message, gpointer user_data)
+{
+  const gchar *msg = gst_debug_message_get (message);
+  const gchar *pos = msg != NULL ? strstr (msg, "offset time to: ") : NULL;
+  gchar **parts;
+
+  if (pos == NULL || strstr (pos, ", is preroll: ") == NULL) {
+    return;
+  }
+
+  parts = g_strsplit (pos + strlen ("offset time to: "), ", is preroll: ", 2);
+  g_mutex_lock (&offsets_mutex);
+  if (parts[1] != NULL && parts[1][0] == '1' && captured_offset_preroll == NULL) {
+    captured_offset_preroll = g_strdup (parts[0]);
+  } else if (parts[1] != NULL && parts[1][0] == '0' &&
+      captured_offset_play == NULL) {
+    captured_offset_play = g_strdup (parts[0]);
+  }
+  g_mutex_unlock (&offsets_mutex);
+  g_strfreev (parts);
+}
+
+static GstDebugLevel
+bframes_category_threshold (const gchar * name)
+{
+  GstDebugLevel level = GST_LEVEL_NONE;
+  GSList *l, *cats = gst_debug_get_all_categories ();
+
+  for (l = cats; l != NULL; l = l->next) {
+    if (g_strcmp0 (gst_debug_category_get_name (l->data), name) == 0) {
+      level = gst_debug_category_get_threshold (l->data);
+    }
+  }
+  g_slist_free (cats);
+
+  return level;
 }
 
 typedef struct _BFramesPlayback
@@ -908,6 +960,7 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   GstBus *bus;
   gchar *uri, *padname = NULL;
   guint watch_id;
+  GstDebugLevel prev_threshold;
   GstCheckLogFilter *log_filter;
 
   bframes_stats_init (&play.out);
@@ -953,6 +1006,13 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   log_filter = gst_check_add_log_filter ("GStreamer", G_LOG_LEVEL_WARNING,
       g_regex_new ("Got data flow before segment event", 0, 0, NULL), NULL,
       NULL, NULL);
+  g_mutex_lock (&offsets_mutex);
+  g_clear_pointer (&captured_offset_preroll, g_free);
+  g_clear_pointer (&captured_offset_play, g_free);
+  g_mutex_unlock (&offsets_mutex);
+  gst_debug_add_log_function (bframes_offsets_log_func, NULL, NULL);
+  prev_threshold = bframes_category_threshold ("playerendpoint");
+  gst_debug_set_threshold_for_name ("playerendpoint", GST_LEVEL_DEBUG);
   gst_element_set_state (play.pipeline, GST_STATE_PLAYING);
 
   g_signal_emit_by_name (play.player, "request-new-pad",
@@ -987,6 +1047,16 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   g_source_remove (watch_id);
   g_main_loop_unref (play.loop);
   gst_check_remove_log_filter (log_filter);
+  gst_debug_remove_log_function (bframes_offsets_log_func);
+  gst_debug_set_threshold_for_name ("playerendpoint", prev_threshold);
+  g_mutex_lock (&offsets_mutex);
+  g_strlcpy (play.out.offset_preroll, captured_offset_preroll ?
+      captured_offset_preroll : "", sizeof (play.out.offset_preroll));
+  g_strlcpy (play.out.offset_play, captured_offset_play ?
+      captured_offset_play : "", sizeof (play.out.offset_play));
+  g_clear_pointer (&captured_offset_preroll, g_free);
+  g_clear_pointer (&captured_offset_play, g_free);
+  g_mutex_unlock (&offsets_mutex);
 
   if (play.error || !play.player_eos || (out_path != NULL && !play.stopped)) {
     fprintf (stderr, "Playback failed: error=%d player_eos=%d stopped=%d\n",
@@ -1276,8 +1346,7 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
   static const gchar *const files[] = { "src.ts", NULL };
   gchar *dir, *src;
   BFramesStats in_v, in_a, out_v, out_a;
-  gint64 in_offset, out_offset, in_nth, out_nth, first_gap;
-  gint64 min_first_gap = G_MAXINT64;
+  gint64 in_offset, out_offset, in_nth, out_nth, first_gap, audio_step;
   guint i, bad_rounds = 0;
 
   if (!bframes_have_elements (name, encoders_av)) {
@@ -1303,6 +1372,12 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
   for (i = 0; i < rounds; i++) {
     fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a, TRUE, 0),
         "Playback failed");
+    /* The play uses the offset of the preroll, whichever stream gets first: a
+     * different one would make the next buffers jump */
+    fail_unless (out_v.offset_preroll[0] != '\0' &&
+        out_v.offset_play[0] != '\0', "The offsets of the player were not "
+        "logged");
+    fail_unless_equals_string (out_v.offset_preroll, out_v.offset_play);
     /* Under load the player may lose the buffers at the end when it flushes
      * at the EOS (a known issue that this test does not check), so there is no
      * check on how many arrive. What matters here is the start: no buffers
@@ -1336,6 +1411,7 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
       continue;
     }
     first_gap = (gint64) out_v.second_dts - (gint64) out_v.first_dts;
+    audio_step = (gint64) out_a.second_pts - (gint64) out_a.first_pts;
     fprintf (stderr, "AVSYNC: audio delay %" G_GINT64_FORMAT " ms, input A/V "
         "PTS offset %" G_GINT64_FORMAT " ms (buffer %d: %" G_GINT64_FORMAT
         " ms), output %" G_GINT64_FORMAT " ms (buffer %d: %" G_GINT64_FORMAT
@@ -1344,6 +1420,19 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
         in_offset / GST_MSECOND, BFRAMES_NTH, in_nth / GST_MSECOND,
         out_offset / GST_MSECOND, BFRAMES_NTH, out_nth / GST_MSECOND,
         first_gap / GST_MSECOND, out_v.count, out_a.count);
+    fprintf (stderr, "AVSYNC: offset %s (preroll and play), first audio step "
+        "%" G_GINT64_FORMAT " ms\n", out_v.offset_play,
+        audio_step / GST_MSECOND);
+
+    /* The first video DTS keep the 40 ms step of the source (25 fps) also
+     * between the buffer of the preroll and the next one, and so do the first
+     * audio buffers (the time between both adds to it) */
+    fail_unless (first_gap > 0 && first_gap < 100 * GST_MSECOND,
+        "The first video DTS are %" G_GINT64_FORMAT " ms apart",
+        first_gap / GST_MSECOND);
+    fail_unless (audio_step > 0 && audio_step < 100 * GST_MSECOND,
+        "The first audio PTS are %" G_GINT64_FORMAT " ms apart",
+        audio_step / GST_MSECOND);
 
     fail_unless (out_v.min_dts_gap > 0 &&
         out_v.max_dts_gap <= 40 * GST_MSECOND + GST_MSECOND,
@@ -1361,21 +1450,11 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
           "A/V offset changed from %" G_GINT64_FORMAT " ms to %" G_GINT64_FORMAT
           " ms in buffer %d", in_nth / GST_MSECOND, out_nth / GST_MSECOND,
           BFRAMES_NTH);
-      min_first_gap = MIN (min_first_gap, first_gap);
     }
   }
 
   fail_unless (bad_rounds <= 1, "Video buffers lost at the start in %u of %u "
       "rounds", bad_rounds, rounds);
-  /* The video DTS keep the 40 ms step of the source (25 fps) also between the
-   * buffer of the preroll and the next one. The time between both adds to it
-   * in a loaded machine, so the best round is used: without the fix none is
-   * below 121 ms */
-  fail_unless (audio_delay != 0 || (min_first_gap > 0 &&
-          min_first_gap < 100 * GST_MSECOND),
-      "The first video DTS are %" G_GINT64_FORMAT " ms apart at best",
-      min_first_gap / GST_MSECOND);
-
   g_free (src);
   bframes_remove_tmp_dir (dir, files);
 }
