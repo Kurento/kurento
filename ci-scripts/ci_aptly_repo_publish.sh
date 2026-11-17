@@ -291,12 +291,15 @@ else
     # persistent in the aptly container): <rootDir>/.publish-state, with
     # rootDir taken from the configuration aptly itself uses.
     if [[ -z "${APTLY_PUBLISH_STATE_DIR:-}" ]]; then
-        if ! APTLY_CONFIG_JSON="$(aptly config show)"; then
+        # SECURITY: 'aptly config show' prints the whole aptly.conf, including S3
+        # credentials. Never keep its output in a variable or echo it: this
+        # script runs with xtrace and its log is public. Only the sed output
+        # (rootDir) is captured; xtrace shows commands, not their output.
+        # Top-level key only (4 spaces): publish endpoints have their own rootDir.
+        if ! APTLY_ROOT_DIR="$(aptly config show | sed -n 's/^ \{4\}"rootDir":[[:space:]]*"\(.*\)",\{0,1\}[[:space:]]*$/\1/p')"; then
             echo "ERROR: 'aptly config show' failed; cannot locate the state directory" >&2
             exit 1
         fi
-        # Top-level key only (4 spaces): publish endpoints have their own rootDir.
-        APTLY_ROOT_DIR="$(echo "$APTLY_CONFIG_JSON" | sed -n 's/^ \{4\}"rootDir":[[:space:]]*"\(.*\)",\{0,1\}[[:space:]]*$/\1/p')"
         if [[ -z "$APTLY_ROOT_DIR" || "$APTLY_ROOT_DIR" != /* ]]; then
             echo "ERROR: Could not resolve aptly rootDir from 'aptly config show'; not touching the publication" >&2
             exit 1
@@ -310,10 +313,17 @@ else
     # 'tee -p' keeps writing the log when its stdout pipe is broken. The ignored
     # SIGPIPE disposition is inherited by tee and aptly.
     LOG_FILE="$STATE_DIR/publish.log"
+    # Simple rotation (a concurrent run that still has the old file open just
+    # keeps writing to publish.log.1).
+    if [[ -f "$LOG_FILE" ]] && [[ "$(stat -c %s "$LOG_FILE")" -gt 5242880 ]]; then
+        mv -f "$LOG_FILE" "$LOG_FILE.1"
+    fi
     # TERM/INT/HUP are ignored while tee starts, so a signal sent to the whole
     # process group does not kill tee (aptly dies if stdout/stderr break).
+    # Restored for this shell right after tee has inherited them.
     trap '' PIPE TERM INT HUP
     exec > >(tee -p -a "$LOG_FILE") 2>&1
+    trap - TERM INT HUP
     echo "=== $(date -u +%FT%TZ) publish run: $CFG_DISTRO_NAME $PUBLISH_ENDPOINT (pid $$)" >&2
 
     # Serialize concurrent runs for the same endpoint. The wait must stay well
@@ -350,7 +360,10 @@ else
         trap '' PIPE TERM INT HUP
         if [[ "$DROPPED" == "true" ]]; then
             echo "WARNING: Publication may be incomplete; restoring it (previous architectures: $PREVIOUS_ARCHS)" >&2 || true
-            if aptly publish list -raw | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
+            # (grep on a variable, not a pipe: with pipefail an early grep exit could
+            # turn into a false "not registered")
+            if LIST_NOW="$(aptly publish list -raw)" \
+                && grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$LIST_NOW"; then
                 # Still registered (drop failed, or the publish just finished):
                 # regenerate its indexes.
                 aptly publish update -gpg-key="$GPGKEY" -force-overwrite "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" \
@@ -381,7 +394,7 @@ else
         exit 1
     fi
 
-    if ! echo "$PUBLISH_LIST" | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
+    if ! grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$PUBLISH_LIST"; then
         # Not published (or dropped by an interrupted run): publish the union.
         FIRST_ARCHS="$(normalize_archs "$RECORDED_ARCHS $REQUESTED_ARCHS")"
         echo "Publish new development repo: $CFG_REPO_NAME (architectures: ${FIRST_ARCHS:-<default>})" >&2
@@ -422,7 +435,8 @@ else
                 fi
                 echo "WARNING: Publish attempt $ATTEMPT/3 failed" >&2
                 # A failed attempt may leave the endpoint half-created: drop it again.
-                if aptly publish list -raw | grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME"; then
+                if LIST_NOW="$(aptly publish list -raw)" \
+                    && grep --quiet --line-regexp "$PUBLISH_ENDPOINT $CFG_DISTRO_NAME" <<<"$LIST_NOW"; then
                     aptly publish drop -skip-cleanup "$CFG_DISTRO_NAME" "$PUBLISH_ENDPOINT" || true
                 fi
                 sleep "${APTLY_PUBLISH_RETRY_SLEEP:-10}"
