@@ -141,6 +141,8 @@ typedef struct _KmsPtsData
   /* Original DTS of the last pushed buffer */
   GstClockTime last_dts_orig;
   gboolean pts_handled;
+  /* The base time raise of the stream has been warned about */
+  gboolean raise_warned;
 } KmsPtsData;
 
 static void
@@ -171,6 +173,7 @@ kms_pts_data_reset (KmsPtsData * data)
 {
   data->base_time = GST_CLOCK_TIME_NONE;
   data->last_dts_orig = GST_CLOCK_TIME_NONE;
+  data->raise_warned = FALSE;
 }
 
 static void
@@ -410,10 +413,20 @@ kms_player_endpoint_generate_base_time (KmsPlayerEndpoint * self)
  * the timestamp offset. */
 #define KMS_PLAYER_DTS_MARGIN (500 * GST_MSECOND)
 
-/* The base time and the original timestamp that is mapped to it are shared by
- * all the streams of the player. The first buffer that gets here sets both, so
- * the streams keep the offset that they have in the source, even if only one of
- * them has B-frames (and so a DTS lower than its PTS). */
+/* In encoded mode, the base time and the original timestamp that is mapped to
+ * it are shared by all the streams of the player. The first buffer that gets
+ * here sets both, so the streams keep the offset that they have in the source,
+ * even if only one of them has B-frames (and so a DTS lower than its PTS).
+ *
+ * Note that a stream that starts before the one that set the offset gets
+ * timestamps behind the running time when the base time is not high enough to
+ * hold the difference (see kms_player_endpoint_raise_base_time): the offset
+ * between streams is kept at the cost of some lag, which is not a problem for
+ * the encoded consumers (recorder, WebRTC), that do not drop late buffers.
+ *
+ * In decoded mode there are no B-frames in the output, and consumers such as
+ * mixers do drop late buffers, so each stream uses as offset its own first
+ * timestamp (with the shared base time), as it has always been done. */
 static GstClockTime
 kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
     GstClockTime * base_time_in, GstClockTime * offset_time_in,
@@ -439,7 +452,8 @@ kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
         GST_TIME_FORMAT ", is preroll: %d", GST_TIME_ARGS (base_time),
         GST_TIME_ARGS (offset_time_candidate), is_preroll);
   }
-  *offset_time_out = *offset_time_in;
+  *offset_time_out = self->priv->use_encoded_media ?
+      *offset_time_in : offset_time_candidate;
 
   BASE_TIME_UNLOCK (self);
 
@@ -454,18 +468,21 @@ kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
  * represented. */
 static GstClockTime
 kms_player_endpoint_raise_base_time (GstElement * appsink,
-    GstClockTime base_time, GstClockTime offset_time,
+    KmsPtsData * pts_data, GstClockTime base_time, GstClockTime offset_time,
     GstClockTime stream_offset_time)
 {
   if (stream_offset_time < offset_time &&
       base_time < offset_time - stream_offset_time) {
     GstClockTime raised = offset_time - stream_offset_time;
 
-    GST_WARNING_OBJECT (appsink,
-        "The stream starts %" GST_TIME_FORMAT " before the offset time of the "
-        "other streams, so it is shifted %" GST_TIME_FORMAT " later",
-        GST_TIME_ARGS (offset_time - stream_offset_time),
-        GST_TIME_ARGS (raised - base_time));
+    if (!pts_data->raise_warned) {
+      pts_data->raise_warned = TRUE;
+      GST_WARNING_OBJECT (appsink,
+          "The stream starts %" GST_TIME_FORMAT " before the offset time of "
+          "the other streams, so it is shifted %" GST_TIME_FORMAT " later",
+          GST_TIME_ARGS (offset_time - stream_offset_time),
+          GST_TIME_ARGS (raised - base_time));
+    }
     return raised;
   }
 
@@ -478,9 +495,10 @@ kms_player_endpoint_raise_base_time (GstElement * appsink,
  * taken into account. */
 static GstClockTime
 kms_player_endpoint_min_base_time (KmsPtsData * pts_data,
-    GstClockTime pts_orig, GstClockTime offset_time)
+    GstClockTime pts_orig, GstClockTime offset_time, gboolean use_lead)
 {
-  GstClockTime lead = pts_orig > offset_time ? pts_orig - offset_time : 0;
+  GstClockTime lead =
+      use_lead && pts_orig > offset_time ? pts_orig - offset_time : 0;
   GstClockTime min_base = pts_data->last_pts + GST_MSECOND;
 
   return min_base > lead ? min_base - lead : 0;
@@ -618,10 +636,13 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
       /* Ensure that base_time is always greater than the last_pts
        * to avoid setting the same or less PTS for different buffers */
       base_time = MAX (base_time,
-          kms_player_endpoint_min_base_time (pts_data, pts_orig, offset_time));
+          kms_player_endpoint_min_base_time (pts_data, pts_orig, offset_time,
+              self->priv->use_encoded_media));
     }
-    base_time = kms_player_endpoint_raise_base_time (GST_ELEMENT (appsink),
-        base_time, offset_time, MIN (pts_orig, dts_orig));
+    if (self->priv->use_encoded_media) {
+      base_time = kms_player_endpoint_raise_base_time (GST_ELEMENT (appsink),
+          pts_data, base_time, offset_time, MIN (pts_orig, dts_orig));
+    }
   } else {
     base_time = pts_data->base_time;
     offset_time = pts_data->offset_time;
@@ -636,10 +657,12 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
          * to avoid setting the same or less PTS for different buffers */
         base_time = MAX (base_time,
             kms_player_endpoint_min_base_time (pts_data, pts_orig,
-                offset_time));
+                offset_time, self->priv->use_encoded_media));
       }
-      base_time = kms_player_endpoint_raise_base_time (GST_ELEMENT (appsink),
-          base_time, offset_time, MIN (pts_orig, dts_orig));
+      if (self->priv->use_encoded_media) {
+        base_time = kms_player_endpoint_raise_base_time (GST_ELEMENT (appsink),
+            pts_data, base_time, offset_time, MIN (pts_orig, dts_orig));
+      }
 
       pts_data->base_time = base_time;
       pts_data->offset_time = offset_time;
