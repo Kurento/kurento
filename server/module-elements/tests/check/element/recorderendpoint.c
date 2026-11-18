@@ -1222,6 +1222,34 @@ GST_START_TEST (check_vp8_to_h265_mp4)
 
 GST_END_TEST;
 
+/* WebRTC/RTP sources usually have a variable framerate (0/1) and x265enc
+ * cannot be initialized with it */
+#define CODEC_TEST_SRC_VARIABLE_FPS \
+    "videotestsrc is-live=true pattern=18 ! " \
+    "video/x-raw,format=I420,width=320,height=240,framerate=15/1 ! " \
+    "capssetter join=true caps=video/x-raw,framerate=0/1"
+
+GST_START_TEST (check_raw_variable_fps_to_h265_mp4)
+{
+  codec_check_recording (CODEC_TEST_SRC_VARIABLE_FPS " ! queue",
+      KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, KMS_RECORDING_VIDEO_CODEC_H265,
+      "/tmp/check_raw_vfps_to_h265.mp4", "qtdemux", FALSE, TRUE,
+      "video/x-h265", "hvc1");
+}
+
+GST_END_TEST;
+
+GST_START_TEST (check_vp8_variable_fps_to_h265_mp4)
+{
+  codec_check_recording (CODEC_TEST_SRC_VARIABLE_FPS
+      " ! vp8enc deadline=1 keyframe-max-dist=15",
+      KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, KMS_RECORDING_VIDEO_CODEC_H265,
+      "/tmp/check_vp8_vfps_to_h265.mp4", "qtdemux", FALSE, TRUE,
+      "video/x-h265", "hvc1");
+}
+
+GST_END_TEST;
+
 /* (v) no regression: defaults are unchanged (NONE) */
 GST_START_TEST (check_default_mp4_is_h264)
 {
@@ -1502,6 +1530,8 @@ recorderendpoint_suite (void)
   tcase_add_test (tc_chain, check_raw_to_h265_mkv);
   tcase_add_test (tc_chain, check_raw_444_to_h265_mp4);
   tcase_add_test (tc_chain, check_vp8_to_h265_mp4);
+  tcase_add_test (tc_chain, check_raw_variable_fps_to_h265_mp4);
+  tcase_add_test (tc_chain, check_vp8_variable_fps_to_h265_mp4);
   tcase_add_test (tc_chain, check_default_mp4_is_h264);
   tcase_add_test (tc_chain, check_default_mp4_from_h265_transcodes_to_h264);
   tcase_add_test (tc_chain, check_default_webm_is_vp8);
