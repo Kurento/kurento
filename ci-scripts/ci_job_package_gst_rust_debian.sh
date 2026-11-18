@@ -53,6 +53,12 @@
 #/
 #/   Path to the diffs to apply to gstreamer rust
 #/
+#/ JOB_PACKAGE_NAME
+#/
+#/   Name of the Rust package (crate) to build as a Debian package.
+#/   Default: "gst-plugin-rtp".
+#/   Optional.
+#/
 #/ * Variable(s) from job Multi-Configuration ("Matrix") Project axis:
 #/
 #/ JOB_DISTRO
@@ -88,17 +94,54 @@ set -o xtrace
 # ---------
 
 # Check out the requested branch
-GST_RUST_PACKAGE="gst-plugin-rtp"
+# Use JOB_PACKAGE_NAME if set, otherwise fall back to the default package.
+GST_RUST_PACKAGE="${JOB_PACKAGE_NAME:-gst-plugin-rtp}"
 CURRENT_PWD=$PWD
 
-# Apply diff to generate deb package
+# Apply diff / metadata to generate deb package
 if [ -d xxtmpRepoxx ]; then rm -rf xxtmpRepoxx; fi
 mkdir xxtmpRepoxx
 cd xxtmpRepoxx
 git clone $JOB_GIT_REPO
 cd *
 git checkout $JOB_GIT_NAME
-git apply "$GSTREAMER_RUST_PATCH_DIR"/debian.diff
+
+# Support two patching modes:
+#   1. debian.diff  – a classic git diff applied with `git apply`
+#   2. cargo_append.toml – TOML content appended to the package's Cargo.toml
+if [[ -f "$GSTREAMER_RUST_PATCH_DIR/debian.diff" ]]; then
+    git apply "$GSTREAMER_RUST_PATCH_DIR/debian.diff"
+elif [[ -f "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml" ]]; then
+    # Locate the Cargo.toml for the target package (works for both flat and
+    # workspace-structured repositories).
+    CARGO_TOML_PATH=$(find . -maxdepth 4 -name Cargo.toml \
+        -exec grep -l "^name = \"${GST_RUST_PACKAGE}\"" {} \; | head -n 1)
+    if [[ -z "$CARGO_TOML_PATH" ]]; then
+        log "ERROR: Could not find Cargo.toml for package '${GST_RUST_PACKAGE}'"
+        exit 1
+    fi
+    log "Appending cargo_append.toml to ${CARGO_TOML_PATH}"
+    if grep -q "@DEB_GNU_ARCH_TRIPLET@" "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml"; then
+        case "${JOB_ARCH:-}" in
+            amd64)
+                DEB_GNU_ARCH_TRIPLET="x86_64-linux-gnu"
+                ;;
+            arm64)
+                DEB_GNU_ARCH_TRIPLET="aarch64-linux-gnu"
+                ;;
+            *)
+                log "ERROR: Unsupported JOB_ARCH '${JOB_ARCH:-}' for @DEB_GNU_ARCH_TRIPLET@ placeholder"
+                exit 1
+                ;;
+        esac
+        sed "s|@DEB_GNU_ARCH_TRIPLET@|$DEB_GNU_ARCH_TRIPLET|g" \
+            "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml" >> "$CARGO_TOML_PATH"
+    else
+        cat "$GSTREAMER_RUST_PATCH_DIR/cargo_append.toml" >> "$CARGO_TOML_PATH"
+    fi
+else
+    log "WARNING: No debian.diff or cargo_append.toml found in ${GSTREAMER_RUST_PATCH_DIR}, skipping patch step"
+fi
 
 
 # Arguments to kurento-buildpackage.

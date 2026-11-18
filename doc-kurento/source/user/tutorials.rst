@@ -209,6 +209,19 @@ This tutorial implements a :term:`WebRTC` *loopback* and shows how to collect We
 
 
 
+WebRTC to MoQ relay
+===================
+
+This browser tutorial publishes a WebRTC camera and microphone stream to a MoQ
+relay and subscribes to the same broadcast to play it back through Kurento.
+
+.. toctree::
+   :maxdepth: 1
+
+   Browser JavaScript </tutorials/js/tutorial-moq-relay>
+
+
+
 Chroma Filter
 =============
 
