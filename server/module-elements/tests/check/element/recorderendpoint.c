@@ -891,6 +891,20 @@ codec_has_encoder (GstElement * agnosticbin)
   return found;
 }
 
+/* libx265 hides its errors by default (x265enc log-level=none): show them, to
+ * know why the encoder cannot be initialized */
+static void
+codec_element_added_cb (GstBin * bin, GstBin * sub_bin, GstElement * element,
+    gpointer user_data)
+{
+  GstElementFactory *factory = gst_element_get_factory (element);
+
+  if (factory != NULL &&
+      g_strcmp0 (GST_OBJECT_NAME (factory), "x265enc") == 0) {
+    gst_util_set_object_arg (G_OBJECT (element), "log-level", "error");
+  }
+}
+
 /* Records ~record_ms of the source into uri. Returns TRUE on success. */
 static gboolean
 codec_record (const gchar * src_desc, KmsRecordingProfile profile,
@@ -909,6 +923,8 @@ codec_record (const gchar * src_desc, KmsRecordingProfile profile,
   rec.record_ms = RUNNING_ON_VALGRIND ? 15000 : 4000;
 
   rec.pipeline = gst_pipeline_new ("recorderendpoint-codec-test");
+  g_signal_connect (rec.pipeline, "deep-element-added",
+      G_CALLBACK (codec_element_added_cb), NULL);
   src = gst_parse_bin_from_description (src_desc, TRUE, &err);
   fail_unless (src != NULL, "Cannot create source: %s",
       err ? err->message : "?");
