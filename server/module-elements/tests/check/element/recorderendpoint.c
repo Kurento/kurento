@@ -787,6 +787,10 @@ codec_bus_cb (GstBus * bus, GstMessage * msg, gpointer user_data)
 
     gst_message_parse_error (msg, &err, &dbg);
     GST_ERROR ("Pipeline error: %s (%s)", err->message, dbg);
+    /* Always visible, also without GST_DEBUG, to diagnose CI failures */
+    g_printerr ("codec_record: pipeline error from %s: %s (%s)\n",
+        GST_MESSAGE_SRC (msg) ? GST_OBJECT_NAME (GST_MESSAGE_SRC (msg)) : "?",
+        err->message, dbg ? dbg : "no debug info");
     g_error_free (err);
     g_free (dbg);
 
