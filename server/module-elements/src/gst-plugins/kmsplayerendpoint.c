@@ -24,6 +24,7 @@
 #include <commons/kmselement.h>
 #include <commons/kmsagnosticcaps.h>
 #include "kmsplayerendpoint.h"
+#include "kmsplayerendpointtimestamps.h"
 #include <commons/kmsloop.h>
 #include <kms-elements-marshal.h>
 
@@ -501,19 +502,13 @@ kms_player_endpoint_raise_base_time (GstElement * appsink,
   return base_time;
 }
 
-/* Lowest base time that keeps the PTS of the buffers that come next (the first
- * one, which has the lowest, is "pts_orig") above the highest one pushed so
- * far. With B-frames pts_orig is ahead of the offset time, so that lead can be
- * taken into account. */
 static GstClockTime
 kms_player_endpoint_min_base_time (KmsPtsData * pts_data,
-    GstClockTime pts_orig, GstClockTime offset_time, gboolean use_lead)
+    GstClockTime pts_orig, GstClockTime dts_orig, GstClockTime offset_time,
+    gboolean use_lead)
 {
-  GstClockTime lead =
-      use_lead && pts_orig > offset_time ? pts_orig - offset_time : 0;
-  GstClockTime min_base = pts_data->last_pts + GST_MSECOND;
-
-  return min_base > lead ? min_base - lead : 0;
+  return kms_player_endpoint_calc_min_base_time (pts_data->last_pts,
+      pts_data->last_dts, pts_orig, dts_orig, offset_time, use_lead);
 }
 
 static void
@@ -621,6 +616,24 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     GST_BUFFER_DTS (buffer) = GST_BUFFER_PTS (buffer);
   }
 
+  if (self->priv->use_encoded_media) {
+    const GstSegment *segment = gst_sample_get_segment (sample);
+
+    if (segment != NULL && segment->format == GST_FORMAT_TIME &&
+        GST_CLOCK_TIME_IS_VALID (segment->start) &&
+        segment->start < G_MAXINT64 / 2) {
+      GST_BUFFER_PTS (buffer) = kms_player_endpoint_translate_to_segment (
+          GST_BUFFER_PTS (buffer), segment->start);
+      GST_BUFFER_DTS (buffer) = kms_player_endpoint_translate_to_segment (
+          GST_BUFFER_DTS (buffer), segment->start);
+    } else {
+      GST_BUFFER_PTS (buffer) = kms_player_endpoint_translate_to_segment (
+          GST_BUFFER_PTS (buffer), 0);
+      GST_BUFFER_DTS (buffer) = kms_player_endpoint_translate_to_segment (
+          GST_BUFFER_DTS (buffer), 0);
+    }
+  }
+
   pts_data->pts_handled = TRUE;
   pts_orig = GST_BUFFER_PTS (buffer);
   /* Buffers are delivered in decoding order, so with B-frames only the DTS is
@@ -648,8 +661,8 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
       /* Ensure that base_time is always greater than the last_pts
        * to avoid setting the same or less PTS for different buffers */
       base_time = MAX (base_time,
-          kms_player_endpoint_min_base_time (pts_data, pts_orig, offset_time,
-              self->priv->use_encoded_media));
+          kms_player_endpoint_min_base_time (pts_data, pts_orig, dts_orig,
+              offset_time, self->priv->use_encoded_media));
     }
     if (self->priv->use_encoded_media) {
       base_time = kms_player_endpoint_raise_base_time (GST_ELEMENT (appsink),
@@ -668,7 +681,7 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
         /* Ensure that base_time is always greater than the last_pts
          * to avoid setting the same or less PTS for different buffers */
         base_time = MAX (base_time,
-            kms_player_endpoint_min_base_time (pts_data, pts_orig,
+            kms_player_endpoint_min_base_time (pts_data, pts_orig, dts_orig,
                 offset_time, self->priv->use_encoded_media));
       }
       if (self->priv->use_encoded_media) {
