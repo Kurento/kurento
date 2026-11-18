@@ -67,6 +67,7 @@ Some practical notes:
 * **RtpEndpoint** and **WebRtcEndpoint** deliver the codec that was negotiated in the SDP. To record H.265 without transcoding, the remote peer must send H.265, and the endpoint must have negotiated it.
 * H.265 video is accepted at the recorder in any of its bitstream formats (``hvc1``, ``hev1`` or ``byte-stream``) and it is always written to the file as ``hvc1``, so it is not necessary to take care of that in the sender.
 * If you ask for ``H265`` but the source sends another codec, Kurento transcodes to H.265. This requires the *x265* encoder (part of the GStreamer *bad* plugins set) to be available in the media server.
+* **Known limitation:** when transcoding to H.265 from a source with variable framerate (as is usual with WebRTC), the framerate is unknown to the x265 encoder, so Kurento tells it to assume 30 fps. The bitrate control of x265 depends on that value, so the actual bitrate of the recording scales with *real framerate / 30* (for example, a target of 500 kbps gives about 180 kbps for a 10 fps source and about 1000 kbps for a 60 fps source).
 
 
 

@@ -537,8 +537,11 @@ check_caps_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
  *
  * Instead of adding a videorate (which would duplicate/drop frames and add
  * latency) we only rewrite the framerate field in the caps event that reaches
- * the encoder. Buffer timestamps are not touched; the default framerate is
- * only a hint for libx265 (rate control and VUI timing).
+ * the encoder. Buffer timestamps are not touched.
+ *
+ * Known limitation: libx265 rate control uses this framerate, so with it fixed
+ * to 30 the real bitrate scales with real_fps / 30 (measured: target 500 kbps
+ * gives ~180 kbps at 10 fps and ~1010 kbps at 60 fps).
  */
 #define X265_DEFAULT_FRAMERATE_N 30
 
@@ -546,6 +549,7 @@ static GstPadProbeReturn
 x265_framerate_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
   GstEvent *event = gst_pad_probe_info_get_event (info);
+  GstEvent *new_event;
   GstCaps *caps;
   GstStructure *st;
   gint num = 0, den = 1;
@@ -567,7 +571,9 @@ x265_framerate_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   caps = gst_caps_copy (caps);
   gst_caps_set_simple (caps, "framerate", GST_TYPE_FRACTION,
       X265_DEFAULT_FRAMERATE_N, 1, NULL);
-  info->data = gst_event_new_caps (caps);
+  new_event = gst_event_new_caps (caps);
+  gst_event_set_seqnum (new_event, gst_event_get_seqnum (event));
+  info->data = new_event;
   gst_caps_unref (caps);
   gst_event_unref (event);
 
@@ -624,9 +630,10 @@ kms_enc_tree_bin_configure (KmsEncTreeBin * self, const GstCaps * caps,
     gst_element_sync_state_with_parent (rate);
   }
   if (self->priv->enc_type == X265) {
+    GstPad *enc_sink;
+
     self->priv->parser =
         kms_utils_element_factory_make ("h265parse", GST_DEFAULT_NAME);
-    GstPad *enc_sink;
 
     gst_bin_add (GST_BIN (self), self->priv->parser);
     gst_element_sync_state_with_parent (self->priv->parser);
