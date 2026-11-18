@@ -554,6 +554,19 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
     return TRUE;
   }
 
+  if (self->priv->use_encoded_media &&
+      GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+    /* In encoded mode the timestamps are translated to the running time of the
+     * segments (see process_sample), which is not what the segment of the
+     * demuxer describes (its start and base would make the elements that follow
+     * clip the buffers when the segment does not start at zero or does not
+     * follow the previous one, as with the second edit of an MP4): the segment
+     * of the appsrc, that starts at zero, is the one that fits them. */
+    GST_DEBUG_OBJECT (self, "Not pushing %" GST_PTR_FORMAT, event);
+    gst_event_unref (event);
+    return TRUE;
+  }
+
   GST_DEBUG_OBJECT (self, "Pushing event %" GST_PTR_FORMAT, event);
   src = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
   sink = gst_pad_get_peer (src);
@@ -576,6 +589,7 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
   GstBuffer *buffer = NULL;
   GstPad *src, *sink;
   GstClockTime pts_orig, dts_orig, base_time, offset_time;
+  GstClockTime pts_raw, dts_raw;
   GstFlowReturn ret = GST_FLOW_OK;
   gint64 diff;
 
@@ -616,22 +630,16 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     GST_BUFFER_DTS (buffer) = GST_BUFFER_PTS (buffer);
   }
 
+  /* Only for the logs: the timestamps below are translated in encoded mode */
+  pts_raw = GST_BUFFER_PTS (buffer);
+  dts_raw = GST_BUFFER_DTS (buffer);
   if (self->priv->use_encoded_media) {
     const GstSegment *segment = gst_sample_get_segment (sample);
 
-    if (segment != NULL && segment->format == GST_FORMAT_TIME &&
-        GST_CLOCK_TIME_IS_VALID (segment->start) &&
-        segment->start < G_MAXINT64 / 2) {
-      GST_BUFFER_PTS (buffer) = kms_player_endpoint_translate_to_segment (
-          GST_BUFFER_PTS (buffer), segment->start);
-      GST_BUFFER_DTS (buffer) = kms_player_endpoint_translate_to_segment (
-          GST_BUFFER_DTS (buffer), segment->start);
-    } else {
-      GST_BUFFER_PTS (buffer) = kms_player_endpoint_translate_to_segment (
-          GST_BUFFER_PTS (buffer), 0);
-      GST_BUFFER_DTS (buffer) = kms_player_endpoint_translate_to_segment (
-          GST_BUFFER_DTS (buffer), 0);
-    }
+    GST_BUFFER_PTS (buffer) =
+        kms_player_endpoint_translate_to_segment (pts_raw, segment);
+    GST_BUFFER_DTS (buffer) =
+        kms_player_endpoint_translate_to_segment (dts_raw, segment);
   }
 
   pts_data->pts_handled = TRUE;
@@ -697,9 +705,11 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
   if (pts_data->last_dts_orig != GST_CLOCK_TIME_NONE) {
     if (dts_orig < pts_data->last_dts_orig) {
       GST_ERROR_OBJECT (appsink,
-          "Non incremental original DTS (last original DTS: %"
-          GST_TIME_FORMAT ", original DTS: %" GST_TIME_FORMAT
-          ", is preroll: %d). Not pushing",
+          "Non incremental original DTS (original DTS: %" GST_TIME_FORMAT
+          "; in the timeline, with an offset of %" GST_TIME_FORMAT " that is "
+          "not shown in the original: last %" GST_TIME_FORMAT ", current %"
+          GST_TIME_FORMAT ", is preroll: %d). Not pushing",
+          GST_TIME_ARGS (dts_raw), GST_TIME_ARGS (KMS_PLAYER_SEGMENT_BIAS),
           GST_TIME_ARGS (pts_data->last_dts_orig), GST_TIME_ARGS (dts_orig),
           is_preroll);
       goto end;
@@ -707,7 +717,7 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
       GST_DEBUG_OBJECT (appsink,
           "Original DTS equals last DTS (original DTS: %" GST_TIME_FORMAT
           ", is preroll: %d). Seems to be already pushed.",
-          GST_TIME_ARGS (dts_orig), is_preroll);
+          GST_TIME_ARGS (dts_raw), is_preroll);
       goto end;
     }
   }
@@ -719,8 +729,9 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     GST_ERROR_OBJECT (appsink,
         "Timestamps before the offset time (DTS: %" GST_TIME_FORMAT
         ", PTS: %" GST_TIME_FORMAT ", offset time: %" GST_TIME_FORMAT
-        "). Not pushing", GST_TIME_ARGS (GST_BUFFER_DTS (buffer)),
-        GST_TIME_ARGS (GST_BUFFER_PTS (buffer)), GST_TIME_ARGS (offset_time));
+        "; original timestamps, and the offset time in the timeline). Not pushing",
+        GST_TIME_ARGS (dts_raw), GST_TIME_ARGS (pts_raw),
+        GST_TIME_ARGS (offset_time));
     goto end;
   }
   GST_BUFFER_DTS (buffer) += diff;
@@ -734,7 +745,7 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
 
   GST_LOG_OBJECT (appsink,
       "Is preroll: %d, buffer: %" GST_PTR_FORMAT ", original pts %"
-      GST_TIME_FORMAT, is_preroll, buffer, GST_TIME_ARGS (pts_orig));
+      GST_TIME_FORMAT, is_preroll, buffer, GST_TIME_ARGS (pts_raw));
 
   if (pts_data->last_dts != GST_CLOCK_TIME_NONE &&
       GST_BUFFER_DTS (buffer) <= pts_data->last_dts) {

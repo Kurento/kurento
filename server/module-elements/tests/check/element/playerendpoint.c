@@ -1509,25 +1509,49 @@ GST_END_TEST;
 GST_START_TEST (check_encoded_timestamp_arithmetic)
 {
   const GstClockTime ms = GST_MSECOND;
-  GstClockTime base;
+  GstClockTime base, last;
+  GstSegment seg_video, seg_audio;
   gint64 translated;
   guint32 seed;
 
-  /* The streams are translated by the start of their segment: the same point of
-   * the timeline gets the same value in tracks with different segment starts.
-   * A buffer before the start of the segment keeps its (lower) position. */
+  /* The streams are translated to the running time of their segment: the same
+   * point of the timeline gets the same value in tracks with different segment
+   * starts. A buffer before the start of the segment keeps its (lower)
+   * position. */
+  gst_segment_init (&seg_video, GST_FORMAT_TIME);
+  seg_video.start = 80 * ms;
+  gst_segment_init (&seg_audio, GST_FORMAT_TIME);
   fail_unless_equals_uint64 (kms_player_endpoint_translate_to_segment (
-          80 * ms, 80 * ms),
-      kms_player_endpoint_translate_to_segment (0, 0));
+          80 * ms, &seg_video),
+      kms_player_endpoint_translate_to_segment (0, &seg_audio));
   fail_unless_equals_uint64 (kms_player_endpoint_translate_to_segment (
-          0, 80 * ms) + 80 * ms, KMS_PLAYER_SEGMENT_BIAS);
-  fail_unless (kms_player_endpoint_translate_to_segment (0, 21 * ms) <
-      kms_player_endpoint_translate_to_segment (21 * ms, 21 * ms));
+          0, &seg_video) + 80 * ms, KMS_PLAYER_SEGMENT_BIAS);
+  seg_audio.start = 21 * ms;
+  fail_unless (kms_player_endpoint_translate_to_segment (0, &seg_audio) <
+      kms_player_endpoint_translate_to_segment (21 * ms, &seg_audio));
   fail_unless_equals_uint64 (kms_player_endpoint_translate_to_segment (
-          GST_CLOCK_TIME_NONE, 80 * ms), GST_CLOCK_TIME_NONE);
+          GST_CLOCK_TIME_NONE, &seg_video), GST_CLOCK_TIME_NONE);
+  /* Without a segment only the constant is added */
+  fail_unless_equals_uint64 (kms_player_endpoint_translate_to_segment (
+          10 * GST_SECOND, NULL), 10 * GST_SECOND + KMS_PLAYER_SEGMENT_BIAS);
+
+  /* A second segment (the second edit of an MP4) that does not start where the
+   * first one ended (start 2 s, time and base 1 s): the timeline goes on, the
+   * raw timestamps (and "ts - start") would go back */
+  gst_segment_init (&seg_video, GST_FORMAT_TIME);
+  seg_video.start = 0;
+  seg_video.stop = GST_SECOND;
+  seg_video.time = 0;
+  seg_video.base = 0;
+  last = kms_player_endpoint_translate_to_segment (GST_SECOND - 40 * ms,
+      &seg_video);
+  seg_video.start = 2 * GST_SECOND;
+  seg_video.stop = 3 * GST_SECOND;
+  seg_video.time = GST_SECOND;
+  seg_video.base = GST_SECOND;
   translated = (gint64) kms_player_endpoint_translate_to_segment (
-      10 * GST_SECOND, 10 * GST_SECOND) - (gint64) KMS_PLAYER_SEGMENT_BIAS;
-  fail_unless_equals_int64 (translated, 0);
+      2 * GST_SECOND, &seg_video) - (gint64) last;
+  fail_unless_equals_int64 (translated, 40 * (gint64) ms);
 
   /* A stream that starts before the shared offset time (here 1 s) after a reset
    * that keeps the last timestamps (3 s): the first buffer (PTS = DTS = 0) has
@@ -1565,6 +1589,215 @@ GST_START_TEST (check_encoded_timestamp_arithmetic)
         GST_TIME_ARGS (dts), GST_TIME_ARGS (offset), GST_TIME_ARGS (last_dts),
         GST_TIME_ARGS (base));
   }
+}
+
+GST_END_TEST;
+
+/* Rewrites the edit list of every track of an MP4 (the moov atom after the mdat,
+ * as the muxer writes it by default) with two edits of 1 s each, the first one
+ * at the start of the media and the second one 2 s later: what the editors that
+ * cut without recoding generate. The demuxer sends a new segment (with a base)
+ * at the second edit. Returns FALSE if the file has another layout. */
+static guint32
+mp4_timescale (const guint8 * box)
+{
+  /* mvhd and mdhd: version and flags, creation and modification time, then the
+   * time scale */
+  return GST_READ_UINT32_BE (box + (box[8] == 1 ? 28 : 20));
+}
+
+static guint32
+mp4_track_timescale (const guint8 * data, gsize len)
+{
+  gsize off = 0;
+
+  while (off + 8 <= len) {
+    guint32 size = GST_READ_UINT32_BE (data + off);
+    const guint8 *type = data + off + 4;
+
+    if (size < 8 || off + size > len) {
+      return 0;
+    }
+    if (memcmp (type, "mdia", 4) == 0) {
+      return mp4_track_timescale (data + off + 8, size - 8);
+    } else if (memcmp (type, "mdhd", 4) == 0) {
+      return mp4_timescale (data + off);
+    }
+    off += size;
+  }
+
+  return 0;
+}
+
+static gboolean
+mp4_two_edits (const guint8 * data, gsize len, guint32 movie_ts,
+    guint32 track_ts, GByteArray * out)
+{
+  gsize off = 0;
+
+  while (off + 8 <= len) {
+    guint32 size = GST_READ_UINT32_BE (data + off);
+    const guint8 *type = data + off + 4;
+    guint32 be;
+
+    if (size < 8 || off + size > len) {
+      return FALSE;
+    }
+    if (memcmp (type, "trak", 4) == 0 || memcmp (type, "edts", 4) == 0 ||
+        memcmp (type, "moov", 4) == 0) {
+      guint32 ts = memcmp (type, "trak", 4) == 0 ?
+          mp4_track_timescale (data + off + 8, size - 8) : track_ts;
+      gsize start = out->len;
+
+      be = 0;
+      g_byte_array_append (out, (guint8 *) & be, 4);
+      g_byte_array_append (out, type, 4);
+      if (!mp4_two_edits (data + off + 8, size - 8, movie_ts, ts, out)) {
+        return FALSE;
+      }
+      GST_WRITE_UINT32_BE (out->data + start, out->len - start);
+    } else if (memcmp (type, "elst", 4) == 0) {
+      const guint8 *e = data + off + 16;
+      gboolean v1 = data[off + 8] == 1;
+      gint64 media_time = v1 ? (gint64) GST_READ_UINT64_BE (e + 8) :
+          (gint32) GST_READ_UINT32_BE (e + 4);
+      guint8 entry[20], head[16];
+      gint i;
+
+      if (track_ts == 0 || media_time < 0) {
+        return FALSE;
+      }
+      GST_WRITE_UINT32_BE (head, 16 + 2 * (v1 ? 20 : 12));
+      memcpy (head + 4, "elst", 4);
+      head[8] = v1 ? 1 : 0;
+      head[9] = head[10] = head[11] = 0;
+      GST_WRITE_UINT32_BE (head + 12, 2);
+      g_byte_array_append (out, head, 16);
+      for (i = 0; i < 2; i++) {
+        gint64 mt = media_time + i * 2 * (gint64) track_ts;
+
+        if (v1) {
+          GST_WRITE_UINT64_BE (entry, movie_ts);
+          GST_WRITE_UINT64_BE (entry + 8, mt);
+          GST_WRITE_UINT32_BE (entry + 16, 0x10000);
+        } else {
+          GST_WRITE_UINT32_BE (entry, movie_ts);
+          GST_WRITE_UINT32_BE (entry + 4, mt);
+          GST_WRITE_UINT32_BE (entry + 8, 0x10000);
+        }
+        g_byte_array_append (out, entry, v1 ? 20 : 12);
+      }
+    } else {
+      g_byte_array_append (out, data + off, size);
+    }
+    off += size;
+  }
+
+  return TRUE;
+}
+
+static gboolean
+bframes_mp4_make_two_edits (const gchar * path)
+{
+  gchar *contents = NULL;
+  gsize len, off = 0, moov_off = 0, moov_len = 0;
+  guint32 movie_ts = 0;
+  GByteArray *out;
+  gboolean ok = FALSE;
+
+  if (!g_file_get_contents (path, &contents, &len, NULL)) {
+    return FALSE;
+  }
+  while (off + 8 <= len) {
+    guint32 size = GST_READ_UINT32_BE (contents + off);
+
+    if (size < 8 || off + size > len) {
+      goto end;
+    }
+    if (memcmp (contents + off + 4, "moov", 4) == 0) {
+      moov_off = off;
+      moov_len = size;
+    }
+    off += size;
+  }
+  /* The offsets of the samples do not change only if the moov is the last atom */
+  if (moov_len == 0 || moov_off + moov_len != len) {
+    goto end;
+  }
+  /* mvhd is the first atom of moov */
+  if (memcmp (contents + moov_off + 12, "mvhd", 4) != 0) {
+    goto end;
+  }
+  movie_ts = mp4_timescale ((guint8 *) contents + moov_off + 8);
+
+  out = g_byte_array_new ();
+  g_byte_array_append (out, (guint8 *) contents, moov_off);
+  {
+    gsize start = out->len;
+    guint32 be = 0;
+
+    g_byte_array_append (out, (guint8 *) & be, 4);
+    g_byte_array_append (out, (guint8 *) "moov", 4);
+    ok = mp4_two_edits ((guint8 *) contents + moov_off + 8, moov_len - 8,
+        movie_ts, 0, out);
+    GST_WRITE_UINT32_BE (out->data + start, out->len - start);
+  }
+  if (ok) {
+    ok = g_file_set_contents (path, (gchar *) out->data, out->len, NULL);
+  }
+  g_byte_array_free (out, TRUE);
+
+end:
+  g_free (contents);
+  return ok;
+}
+
+/* An MP4 with two edits per track (a new segment, with a base, at the second
+ * one): the timestamps of the second part are still above those of the first
+ * one in the timeline, so nothing may be dropped as a non incremental
+ * timestamp, and there is no hole between both parts. */
+GST_START_TEST (check_encoded_mp4_two_edits)
+{
+  static const gchar *const files[] = { "src.mp4", NULL };
+  gchar *dir, *src;
+  BFramesStats in_v, in_a, out_v, out_a;
+
+  if (!bframes_have_elements ("check_encoded_mp4_two_edits", encoders_av)) {
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.mp4", NULL);
+  if (!bframes_generate_av_source (0, 0, TRUE, src)) {
+    g_free (src);
+    bframes_remove_tmp_dir (dir, files);
+    return;
+  }
+  fail_unless (bframes_mp4_make_two_edits (src),
+      "Cannot rewrite the edit lists of the MP4");
+
+  /* What the demuxer gives in the source: the two parts, 1 s each */
+  fail_unless (bframes_inspect_av_file (src, "qtdemux", &in_v, &in_a));
+  fail_unless (in_v.count >= 45 && in_a.count >= 90,
+      "The source has %u video and %u audio buffers", in_v.count, in_a.count);
+  fail_unless (in_v.max_pts - in_v.first_pts > 2 * GST_SECOND,
+      "The source does not have two parts");
+
+  fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a, TRUE, 0),
+      "Playback failed");
+  /* Under load the player may lose the last buffers at the EOS (a known issue
+   * that this test does not check): only a few */
+  fail_unless (out_v.count + 5 >= in_v.count && out_a.count + 5 >= in_a.count,
+      "Buffers dropped: %u of %u video, %u of %u audio", out_v.count,
+      in_v.count, out_a.count, in_a.count);
+  /* No hole between both parts (video DTS gaps are 40 ms) */
+  fail_unless (out_v.min_dts_gap > 0 &&
+      out_v.max_dts_gap <= 100 * GST_MSECOND, "DTS gaps between %"
+      G_GINT64_FORMAT " and %" G_GINT64_FORMAT " ms",
+      out_v.min_dts_gap / GST_MSECOND, out_v.max_dts_gap / GST_MSECOND);
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
 }
 
 GST_END_TEST;
@@ -1713,6 +1946,7 @@ playerendpoint_suite (void)
   tcase_add_test (tc_chain, check_encoded_bframes_av_sync);
   tcase_add_test (tc_chain, check_encoded_timestamp_arithmetic);
   tcase_add_test (tc_chain, check_encoded_bframes_av_mp4_segments);
+  tcase_add_test (tc_chain, check_encoded_mp4_two_edits);
   tcase_add_test (tc_chain, check_encoded_bframes_av_delayed_audio);
   tcase_add_test (tc_chain, check_decoded_delayed_audio_running_pipeline);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
