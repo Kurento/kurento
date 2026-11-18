@@ -25,6 +25,8 @@
 #include <glib/gstdio.h>
 #include <string.h>
 
+#include "kmsplayerendpointtimestamps.h"
+
 #include <kmstestutils.h>
 
 #define VIDEO_PATH TEST_FILES_LOCATION "/video/filter/fiwarecut.webm"
@@ -574,6 +576,7 @@ typedef struct _BFramesStats
   GstClockTime second_dts;
   GstClockTime second_pts;
   GstClockTime pts_nth;         /* PTS of the buffer number BFRAMES_NTH */
+  GstClockTime seg_start;       /* start of the segment (0 if there is none) */
   gboolean first_is_key;
   gint64 second_pts_dts;        /* PTS - DTS of the second buffer */
   GstClockTime max_pts;
@@ -596,6 +599,7 @@ bframes_stats_init (BFramesStats * stats)
   stats->second_dts = GST_CLOCK_TIME_NONE;
   stats->second_pts = GST_CLOCK_TIME_NONE;
   stats->pts_nth = GST_CLOCK_TIME_NONE;
+  stats->seg_start = 0;
   stats->max_lead = G_MININT64;
   stats->first_lead = G_MININT64;
   stats->prev_dts = GST_CLOCK_TIME_NONE;
@@ -607,8 +611,23 @@ static GstPadProbeReturn
 bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
   BFramesStats *stats = data;
-  GstBuffer *buf = GST_PAD_PROBE_INFO_BUFFER (info);
+  GstBuffer *buf;
 
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
+    GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT && stats->count == 0) {
+      const GstSegment *segment;
+
+      gst_event_parse_segment (event, &segment);
+      if (segment->format == GST_FORMAT_TIME) {
+        stats->seg_start = segment->start;
+      }
+    }
+    return GST_PAD_PROBE_OK;
+  }
+
+  buf = GST_PAD_PROBE_INFO_BUFFER (info);
   if (stats->count == 0) {
     stats->first_pts = GST_BUFFER_PTS (buf);
     stats->first_dts = GST_BUFFER_DTS (buf);
@@ -1237,8 +1256,8 @@ bframes_av_pad_added_cb (GstElement * demux, GstPad * pad, gpointer user_data)
 
 /* Demuxes an MPEG-TS with video and audio and gets the stats of both tracks */
 static gboolean
-bframes_inspect_av_file (const gchar * path, BFramesStats * video,
-    BFramesStats * audio)
+bframes_inspect_av_file (const gchar * path, const gchar * demuxer,
+    BFramesStats * video, BFramesStats * audio)
 {
   GstElement *pipeline, *src, *demux;
   BFramesAvSinks sinks;
@@ -1253,7 +1272,7 @@ bframes_inspect_av_file (const gchar * path, BFramesStats * video,
   bframes_stats_init (audio);
   pipeline = gst_pipeline_new ("inspect-av");
   src = gst_element_factory_make ("filesrc", NULL);
-  demux = gst_element_factory_make ("tsdemux", NULL);
+  demux = gst_element_factory_make (demuxer, NULL);
   sinks.video = elems[0] = gst_element_factory_make ("fakesink", NULL);
   sinks.audio = elems[1] = gst_element_factory_make ("fakesink", NULL);
   fail_unless (src != NULL && demux != NULL);
@@ -1268,8 +1287,9 @@ bframes_inspect_av_file (const gchar * path, BFramesStats * video,
     GstPad *pad = gst_element_get_static_pad (elems[i], "sink");
 
     g_object_set (elems[i], "sync", FALSE, "async", FALSE, NULL);
-    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_stats_probe,
-        stats[i], NULL);
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER |
+        GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, bframes_stats_probe, stats[i],
+        NULL);
     gst_object_unref (pad);
   }
 
@@ -1294,7 +1314,7 @@ bframes_inspect_av_file (const gchar * path, BFramesStats * video,
  * start_time (the audio audio_delay later), and the same duration. Returns FALSE (test skipped) if the encoders are not available. */
 static gboolean
 bframes_generate_av_source (GstClockTime start_time,
-    GstClockTime audio_delay, const gchar * path)
+    GstClockTime audio_delay, gboolean mp4, const gchar * path)
 {
   GstElement *pipeline;
   GstMessage *msg;
@@ -1303,16 +1323,19 @@ bframes_generate_av_source (GstClockTime start_time,
   gchar *desc;
   gboolean ok;
 
-  desc = g_strdup_printf ("mpegtsmux name=m ! filesink location=%s "
+  /* The MP4 muxer takes the stream formats that the parsers give by default
+   * (the TS one needs byte-stream and ADTS) */
+  desc = g_strdup_printf ("%s name=m ! filesink location=%s "
       "videotestsrc num-buffers=%d timestamp-offset=%" G_GUINT64_FORMAT " ! "
       "video/x-raw,format=I420,width=320,height=240,framerate=25/1 ! "
-      "x264enc bframes=3 key-int-max=25 ! h264parse ! video/x-h264,stream-format=byte-stream,alignment=au ! "
-      "m. "
+      "x264enc bframes=3 key-int-max=25 ! h264parse ! %s m. "
       "audiotestsrc num-buffers=%d samplesperbuffer=1920 "
       "timestamp-offset=%" G_GUINT64_FORMAT " ! "
-      "audio/x-raw,rate=48000,channels=1 ! avenc_aac ! aacparse ! "
-      "audio/mpeg,mpegversion=4,stream-format=adts ! m.",
-      path, AV_FRAMES, start_time, AV_FRAMES, start_time + audio_delay);
+      "audio/x-raw,rate=48000,channels=1 ! avenc_aac ! aacparse ! %s m.",
+      mp4 ? "mp4mux" : "mpegtsmux", path, AV_FRAMES, start_time,
+      mp4 ? "" : "video/x-h264,stream-format=byte-stream,alignment=au ! ",
+      AV_FRAMES, start_time + audio_delay,
+      mp4 ? "" : "audio/mpeg,mpegversion=4,stream-format=adts ! ");
   pipeline = gst_parse_launch (desc, &err);
   g_free (desc);
   if (pipeline == NULL) {
@@ -1339,11 +1362,14 @@ bframes_generate_av_source (GstClockTime start_time,
 }
 
 /* Plays the source with video with B-frames and audio. The audio starts
- * audio_delay after the video; the video DTS are lower than their PTS. */
+ * audio_delay after the video; the video DTS are lower than their PTS. With
+ * an MP4 source each track has its own segment start (edit lists), and the
+ * position of a buffer in the common timeline is its timestamp minus it. */
 static void
-bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
+bframes_check_av (GstClockTime audio_delay, guint rounds, gboolean mp4,
+    const gchar * name)
 {
-  static const gchar *const files[] = { "src.ts", NULL };
+  static const gchar *const files[] = { "src.ts", "src.mp4", NULL };
   gchar *dir, *src;
   BFramesStats in_v, in_a, out_v, out_a;
   gint64 in_offset, out_offset, in_nth, out_nth, first_gap, audio_step;
@@ -1354,19 +1380,29 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
   }
 
   dir = bframes_make_tmp_dir ();
-  src = g_build_filename (dir, "src.ts", NULL);
-  if (!bframes_generate_av_source (TS_START_TIME, audio_delay, src)) {
+  src = g_build_filename (dir, mp4 ? "src.mp4" : "src.ts", NULL);
+  if (!bframes_generate_av_source (mp4 ? 0 : TS_START_TIME, audio_delay, mp4,
+          src)) {
     g_free (src);
     bframes_remove_tmp_dir (dir, files);
     return;
   }
 
-  fail_unless (bframes_inspect_av_file (src, &in_v, &in_a));
+  fail_unless (bframes_inspect_av_file (src, mp4 ? "qtdemux" : "tsdemux",
+          &in_v, &in_a));
   fail_unless (in_v.reordered > 0, "The source has no B-frames");
   fail_unless (GST_CLOCK_TIME_IS_VALID (in_v.first_dts) &&
       in_v.first_dts < in_v.first_pts, "The first video DTS is not below PTS");
-  in_offset = (gint64) in_v.first_pts - (gint64) in_a.first_pts;
-  in_nth = (gint64) in_v.pts_nth - (gint64) in_a.pts_nth;
+  if (mp4) {
+    /* The tracks have different segment starts (the video one is the lead of
+     * its B-frames): that is what makes the raw timestamps not comparable */
+    fail_unless (in_v.seg_start != in_a.seg_start,
+        "The tracks of the source have the same segment start");
+  }
+  in_offset = ((gint64) in_v.first_pts - (gint64) in_v.seg_start) -
+      ((gint64) in_a.first_pts - (gint64) in_a.seg_start);
+  in_nth = ((gint64) in_v.pts_nth - (gint64) in_v.seg_start) -
+      ((gint64) in_a.pts_nth - (gint64) in_a.seg_start);
 
   /* Which stream gets first to the player is not deterministic: repeat */
   for (i = 0; i < rounds; i++) {
@@ -1464,7 +1500,82 @@ bframes_check_av (GstClockTime audio_delay, guint rounds, const gchar * name)
  * aligned, and must not open a gap between the first two video buffers. */
 GST_START_TEST (check_encoded_bframes_av_sync)
 {
-  bframes_check_av (0, 3, "check_encoded_bframes_av_sync");
+  bframes_check_av (0, 3, FALSE, "check_encoded_bframes_av_sync");
+}
+
+GST_END_TEST;
+
+/* Timestamp arithmetic of the encoded mode (kmsplayerendpointtimestamps.h) */
+GST_START_TEST (check_encoded_timestamp_arithmetic)
+{
+  const GstClockTime ms = GST_MSECOND;
+  GstClockTime base;
+  gint64 translated;
+  guint32 seed;
+
+  /* The streams are translated by the start of their segment: the same point of
+   * the timeline gets the same value in tracks with different segment starts.
+   * A buffer before the start of the segment keeps its (lower) position. */
+  fail_unless_equals_uint64 (kms_player_endpoint_translate_to_segment (
+          80 * ms, 80 * ms),
+      kms_player_endpoint_translate_to_segment (0, 0));
+  fail_unless_equals_uint64 (kms_player_endpoint_translate_to_segment (
+          0, 80 * ms) + 80 * ms, KMS_PLAYER_SEGMENT_BIAS);
+  fail_unless (kms_player_endpoint_translate_to_segment (0, 21 * ms) <
+      kms_player_endpoint_translate_to_segment (21 * ms, 21 * ms));
+  fail_unless_equals_uint64 (kms_player_endpoint_translate_to_segment (
+          GST_CLOCK_TIME_NONE, 80 * ms), GST_CLOCK_TIME_NONE);
+  translated = (gint64) kms_player_endpoint_translate_to_segment (
+      10 * GST_SECOND, 10 * GST_SECOND) - (gint64) KMS_PLAYER_SEGMENT_BIAS;
+  fail_unless_equals_int64 (translated, 0);
+
+  /* A stream that starts before the shared offset time (here 1 s) after a reset
+   * that keeps the last timestamps (3 s): the first buffer (PTS = DTS = 0) has
+   * to end above the last DTS, the clamp of the negative lead to zero left it 1
+   * s below */
+  base = kms_player_endpoint_calc_min_base_time (3 * GST_SECOND,
+      3 * GST_SECOND, 0, 0, GST_SECOND, TRUE);
+  fail_unless_equals_uint64 (base, 4 * GST_SECOND + ms);
+  fail_unless ((gint64) base - (gint64) GST_SECOND > 3 * (gint64) GST_SECOND);
+
+  /* With B-frames the first PTS is ahead of the offset time: the lead is
+   * taken into account, so there is no gap of the PTS lead at the start (the
+   * offset time is the DTS) */
+  base = kms_player_endpoint_calc_min_base_time (GST_SECOND, GST_SECOND - 80 * ms,
+      80 * ms, 0, 0, TRUE);
+  fail_unless_equals_uint64 (base, GST_SECOND + ms - 80 * ms);
+  /* In decoded mode neither the lead nor the DTS count */
+  base = kms_player_endpoint_calc_min_base_time (GST_SECOND, GST_SECOND,
+      80 * ms, 0, 0, FALSE);
+  fail_unless_equals_uint64 (base, GST_SECOND + ms);
+
+  /* Whatever the combination, the translated DTS is above the last one */
+  for (seed = 1; seed < 2000; seed++) {
+    GstClockTime last_dts = (seed * 31 % 5000) * ms;
+    GstClockTime last_pts = last_dts + (seed % 4) * 40 * ms;
+    GstClockTime dts = (seed * 7 % 3000) * ms;
+    GstClockTime pts = dts + (seed % 3) * 40 * ms;
+    GstClockTime offset = (seed * 13 % 3000) * ms;
+
+    base = kms_player_endpoint_calc_min_base_time (last_pts, last_dts, pts, dts,
+        offset, TRUE);
+    fail_unless ((gint64) dts + (gint64) base - (gint64) offset >
+        (gint64) last_dts, "dts %" GST_TIME_FORMAT " offset %" GST_TIME_FORMAT
+        " last %" GST_TIME_FORMAT " base %" GST_TIME_FORMAT,
+        GST_TIME_ARGS (dts), GST_TIME_ARGS (offset), GST_TIME_ARGS (last_dts),
+        GST_TIME_ARGS (base));
+  }
+}
+
+GST_END_TEST;
+
+/* MP4 (qtdemux): each track has its own segment start (the video one is 80 ms,
+ * the lead of its B-frames, the audio one is 0), so the raw timestamps of the
+ * tracks differ by 80 ms while they are aligned in the timeline. The A/V offset
+ * of the output has to be the one of the timeline, not of the raw timestamps. */
+GST_START_TEST (check_encoded_bframes_av_mp4_segments)
+{
+  bframes_check_av (0, 3, TRUE, "check_encoded_bframes_av_mp4_segments");
 }
 
 GST_END_TEST;
@@ -1473,7 +1584,8 @@ GST_END_TEST;
  * for the DTS of the video: no video may be lost, whichever track gets first */
 GST_START_TEST (check_encoded_bframes_av_delayed_audio)
 {
-  bframes_check_av (GST_SECOND, 6, "check_encoded_bframes_av_delayed_audio");
+  bframes_check_av (GST_SECOND, 6, FALSE,
+      "check_encoded_bframes_av_delayed_audio");
 }
 
 GST_END_TEST;
@@ -1496,7 +1608,7 @@ GST_START_TEST (check_decoded_delayed_audio_running_pipeline)
 
   dir = bframes_make_tmp_dir ();
   src = g_build_filename (dir, "src.ts", NULL);
-  if (!bframes_generate_av_source (TS_START_TIME, GST_SECOND, src)) {
+  if (!bframes_generate_av_source (TS_START_TIME, GST_SECOND, FALSE, src)) {
     g_free (src);
     bframes_remove_tmp_dir (dir, files);
     return;
@@ -1599,6 +1711,8 @@ playerendpoint_suite (void)
   tcase_add_test (tc_chain, check_encoded_bframes_record);
   tcase_add_test (tc_chain, check_encoded_timestamps_rebase);
   tcase_add_test (tc_chain, check_encoded_bframes_av_sync);
+  tcase_add_test (tc_chain, check_encoded_timestamp_arithmetic);
+  tcase_add_test (tc_chain, check_encoded_bframes_av_mp4_segments);
   tcase_add_test (tc_chain, check_encoded_bframes_av_delayed_audio);
   tcase_add_test (tc_chain, check_decoded_delayed_audio_running_pipeline);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
