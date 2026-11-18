@@ -171,12 +171,28 @@ echo "deb http://ddebs.ubuntu.com $UBUNTU_CODENAME main restricted universe mult
 && echo "deb http://ddebs.ubuntu.com ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
 
 # Install debug packages.
-# The debug packages repository fails very often due to bad server state.
-# Try to update, and only if it works install debug symbols.
+# The debug packages repository fails very often due to bad server state, or
+# because ddebs.ubuntu.com has not yet published dbgsym packages that match the
+# base libraries already updated in the regular Ubuntu repositories.
+# Debug symbols are optional at runtime, so if this step fails, print a visible
+# warning and continue. Only this step is allowed to fail: the packages that are
+# required to run Kurento are installed in the steps above, which do fail the
+# build on error.
 RUN \
-apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
-    kurento-dbg \
-&& rm -rf /var/lib/apt/lists/*
+{ \
+    apt-get $APT_ARGS update \
+    && apt-get $APT_ARGS install --no-install-recommends --yes \
+        kurento-dbg ; \
+} \
+|| { \
+    printf '\033[1;31m%s\033[0m\n' \
+        'WARNING: kurento-dbg could not be installed.' \
+        'This usually happens because ddebs.ubuntu.com has not yet published' \
+        'updated dbgsym packages that match the installed library versions.' \
+        'Debug symbols will be missing from this image.' \
+        'You can retry the build later, once ddebs.ubuntu.com catches up.'; \
+} \
+; rm -rf /var/lib/apt/lists/*
 
 # Expose default Kurento RPC control port.
 EXPOSE 8888

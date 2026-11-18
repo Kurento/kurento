@@ -24,6 +24,7 @@
 #include <commons/kmselement.h>
 #include <commons/kmsagnosticcaps.h>
 #include "kmsplayerendpoint.h"
+#include "kmsplayerendpointtimestamps.h"
 #include <commons/kmsloop.h>
 #include <kms-elements-marshal.h>
 
@@ -90,6 +91,10 @@ struct _KmsPlayerEndpointPrivate
   gboolean reset;
   GstClockTime base_time;
   GstClockTime base_time_preroll;
+  /* Original timestamp that is mapped to base_time (and to base_time_preroll),
+   * the same for all the streams so they keep their relative offsets */
+  GstClockTime offset_time;
+  GstClockTime offset_time_preroll;
 
   KmsPlayerStats stats;
 };
@@ -129,9 +134,16 @@ typedef struct _KmsPtsData
 
   GstClockTime base_time_preroll;
 
+  /* Highest PTS pushed so far (not necessarily the last one, since buffers
+   * with B-frames come in decoding order, so their PTS is not monotonic) */
   GstClockTime last_pts;
-  GstClockTime last_pts_orig;
+  /* DTS of the last pushed buffer (already adjusted) */
+  GstClockTime last_dts;
+  /* Original DTS of the last pushed buffer */
+  GstClockTime last_dts_orig;
   gboolean pts_handled;
+  /* The base time raise of the stream has been warned about */
+  gboolean raise_warned;
 } KmsPtsData;
 
 static void
@@ -150,7 +162,8 @@ kms_pts_data_new ()
   data->base_time = GST_CLOCK_TIME_NONE;
   data->offset_time = GST_CLOCK_TIME_NONE;
   data->last_pts = GST_CLOCK_TIME_NONE;
-  data->last_pts_orig = GST_CLOCK_TIME_NONE;
+  data->last_dts = GST_CLOCK_TIME_NONE;
+  data->last_dts_orig = GST_CLOCK_TIME_NONE;
   data->pts_handled = FALSE;
 
   return data;
@@ -160,7 +173,8 @@ static void
 kms_pts_data_reset (KmsPtsData * data)
 {
   data->base_time = GST_CLOCK_TIME_NONE;
-  data->last_pts_orig = GST_CLOCK_TIME_NONE;
+  data->last_dts_orig = GST_CLOCK_TIME_NONE;
+  data->raise_warned = FALSE;
 }
 
 static void
@@ -391,9 +405,34 @@ kms_player_endpoint_generate_base_time (KmsPlayerEndpoint * self)
   return base_time;
 }
 
+/* Margin kept below the base time for the video DTS, which with B-frames is
+ * lower than the PTS (the decoding goes some frames ahead of the display).
+ * In encoded mode the base time is never below it, so DTS does not go below
+ * zero (which would need the fallback of
+ * kms_player_endpoint_raise_base_time) in the usual case of a video with
+ * B-frames that starts at the same time as the audio, whichever of them sets
+ * the timestamp offset. */
+#define KMS_PLAYER_DTS_MARGIN (500 * GST_MSECOND)
+
+/* In encoded mode, the base time and the original timestamp that is mapped to
+ * it are shared by all the streams of the player. The first buffer that gets
+ * here sets both, so the streams keep the offset that they have in the source,
+ * even if only one of them has B-frames (and so a DTS lower than its PTS).
+ *
+ * Note that a stream that starts before the one that set the offset gets
+ * timestamps behind the running time when the base time is not high enough to
+ * hold the difference (see kms_player_endpoint_raise_base_time): the offset
+ * between streams is kept at the cost of some lag, which is not a problem for
+ * the encoded consumers (recorder, WebRTC), that do not drop late buffers.
+ *
+ * In decoded mode there are no B-frames in the output, and consumers such as
+ * mixers do drop late buffers, so each stream uses as offset its own first
+ * timestamp (with the shared base time), as it has always been done. */
 static GstClockTime
 kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
-    GstClockTime * base_time_in, gboolean is_preroll)
+    GstClockTime * base_time_in, GstClockTime * offset_time_in,
+    GstClockTime offset_time_candidate, GstClockTime * offset_time_out,
+    gboolean is_preroll)
 {
   GstClockTime base_time;
 
@@ -403,16 +442,73 @@ kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
     base_time = *base_time_in;
   } else {
     base_time = kms_player_endpoint_generate_base_time (self);
+    if (self->priv->use_encoded_media) {
+      base_time = MAX (base_time, KMS_PLAYER_DTS_MARGIN);
+    }
     *base_time_in = base_time;
+    if (!is_preroll && self->priv->use_encoded_media &&
+        self->priv->offset_time_preroll != GST_CLOCK_TIME_NONE) {
+      /* Only the base time is regenerated, to sync with the clock: the offset
+       * is the one of the preroll, which the buffers of all the streams
+       * already pushed have, so there is no jump between them and the next
+       * ones whichever stream gets here first */
+      *offset_time_in = self->priv->offset_time_preroll;
+    } else {
+      *offset_time_in = offset_time_candidate;
+    }
 
+    /* Note: the PlayerEndpoint tests parse the text of this message ("offset
+     * time to: ..., is preroll: ...") to check the offset; keep them in sync
+     * if it changes. */
     GST_DEBUG_OBJECT (self,
-        "Setting base time to: %" GST_TIME_FORMAT ", is preroll: %d",
-        GST_TIME_ARGS (base_time), is_preroll);
+        "Setting base time to: %" GST_TIME_FORMAT ", offset time to: %"
+        GST_TIME_FORMAT ", is preroll: %d", GST_TIME_ARGS (base_time),
+        GST_TIME_ARGS (*offset_time_in), is_preroll);
   }
+  *offset_time_out = self->priv->use_encoded_media ?
+      *offset_time_in : offset_time_candidate;
 
   BASE_TIME_UNLOCK (self);
 
   return base_time;
+}
+
+/* A stream may start before the one that set the shared offset by more than
+ * the base time (e.g. an audio that starts 1 s after the video, and gets to the
+ * player first). Its first buffers would have a negative timestamp, so the base
+ * time is raised for that stream just enough to have the first one at zero.
+ * Nothing is dropped, and the stream is shifted only by what cannot be
+ * represented. */
+static GstClockTime
+kms_player_endpoint_raise_base_time (GstElement * appsink,
+    KmsPtsData * pts_data, GstClockTime base_time, GstClockTime offset_time,
+    GstClockTime stream_offset_time)
+{
+  if (stream_offset_time < offset_time &&
+      base_time < offset_time - stream_offset_time) {
+    GstClockTime raised = offset_time - stream_offset_time;
+
+    if (!pts_data->raise_warned) {
+      pts_data->raise_warned = TRUE;
+      GST_WARNING_OBJECT (appsink,
+          "The stream starts %" GST_TIME_FORMAT " before the offset time of "
+          "the other streams, so it is shifted %" GST_TIME_FORMAT " later",
+          GST_TIME_ARGS (offset_time - stream_offset_time),
+          GST_TIME_ARGS (raised - base_time));
+    }
+    return raised;
+  }
+
+  return base_time;
+}
+
+static GstClockTime
+kms_player_endpoint_min_base_time (KmsPtsData * pts_data,
+    GstClockTime pts_orig, GstClockTime dts_orig, GstClockTime offset_time,
+    gboolean use_lead)
+{
+  return kms_player_endpoint_calc_min_base_time (pts_data->last_pts,
+      pts_data->last_dts, pts_orig, dts_orig, offset_time, use_lead);
 }
 
 static void
@@ -422,6 +518,8 @@ kms_player_endpoint_reset_base_time (KmsPlayerEndpoint * self)
   if (self->priv->reset) {
     self->priv->base_time_preroll = GST_CLOCK_TIME_NONE;
     self->priv->base_time = GST_CLOCK_TIME_NONE;
+    self->priv->offset_time_preroll = GST_CLOCK_TIME_NONE;
+    self->priv->offset_time = GST_CLOCK_TIME_NONE;
     self->priv->reset = FALSE;
   }
   BASE_TIME_UNLOCK (self);
@@ -456,6 +554,19 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
     return TRUE;
   }
 
+  if (self->priv->use_encoded_media &&
+      GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+    /* In encoded mode the timestamps are translated to the running time of the
+     * segments (see process_sample), which is not what the segment of the
+     * demuxer describes (its start and base would make the elements that follow
+     * clip the buffers when the segment does not start at zero or does not
+     * follow the previous one, as with the second edit of an MP4): the segment
+     * of the appsrc, that starts at zero, is the one that fits them. */
+    GST_DEBUG_OBJECT (self, "Not pushing %" GST_PTR_FORMAT, event);
+    gst_event_unref (event);
+    return TRUE;
+  }
+
   GST_DEBUG_OBJECT (self, "Pushing event %" GST_PTR_FORMAT, event);
   src = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
   sink = gst_pad_get_peer (src);
@@ -477,7 +588,8 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
   KmsPtsData *pts_data;
   GstBuffer *buffer = NULL;
   GstPad *src, *sink;
-  GstClockTime pts_orig, base_time, offset_time;
+  GstClockTime pts_orig, dts_orig, base_time, offset_time;
+  GstClockTime pts_raw, dts_raw;
   GstFlowReturn ret = GST_FLOW_OK;
   gint64 diff;
 
@@ -518,9 +630,32 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     GST_BUFFER_DTS (buffer) = GST_BUFFER_PTS (buffer);
   }
 
+  /* Only for the logs: the timestamps below are translated in encoded mode */
+  pts_raw = GST_BUFFER_PTS (buffer);
+  dts_raw = GST_BUFFER_DTS (buffer);
+  if (self->priv->use_encoded_media) {
+    const GstSegment *segment = gst_sample_get_segment (sample);
+
+    GST_BUFFER_PTS (buffer) =
+        kms_player_endpoint_translate_to_segment (pts_raw, segment);
+    GST_BUFFER_DTS (buffer) =
+        kms_player_endpoint_translate_to_segment (dts_raw, segment);
+  }
+
   pts_data->pts_handled = TRUE;
   pts_orig = GST_BUFFER_PTS (buffer);
+  /* Buffers are delivered in decoding order, so with B-frames only the DTS is
+   * monotonic: it is the one that has to be used to detect duplicated or
+   * out-of-order buffers. When the DTS was missing it equals the PTS. */
+  dts_orig = GST_BUFFER_DTS (buffer);
 
+  /* With B-frames the first DTS is lower than its PTS: use the lowest one as
+   * reference so the adjusted DTS never goes below the base time */
+  offset_time = MIN (pts_orig, dts_orig);
+
+  /* Note: base_time is kept above the highest PTS pushed so far, which with
+   * B-frames is some frames ahead of the last DTS, so a small gap may appear
+   * in the timestamps after a reset. It is harmless, they keep increasing. */
   if (is_preroll) {
     GST_DEBUG_OBJECT (appsink, "Preroll: reset base time");
 
@@ -528,14 +663,19 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     kms_pts_data_reset (pts_data);
     base_time =
         kms_player_endpoint_get_or_generate_base_time (self,
-        &self->priv->base_time_preroll, IS_PREROLL);
+        &self->priv->base_time_preroll, &self->priv->offset_time_preroll,
+        offset_time, &offset_time, IS_PREROLL);
     if (pts_data->last_pts != GST_CLOCK_TIME_NONE) {
       /* Ensure that base_time is always greater than the last_pts
        * to avoid setting the same or less PTS for different buffers */
-      base_time = MAX (base_time, pts_data->last_pts + GST_MSECOND);
+      base_time = MAX (base_time,
+          kms_player_endpoint_min_base_time (pts_data, pts_orig, dts_orig,
+              offset_time, self->priv->use_encoded_media));
     }
-
-    offset_time = GST_BUFFER_PTS (buffer);
+    if (self->priv->use_encoded_media) {
+      base_time = kms_player_endpoint_raise_base_time (GST_ELEMENT (appsink),
+          pts_data, base_time, offset_time, MIN (pts_orig, dts_orig));
+    }
   } else {
     base_time = pts_data->base_time;
     offset_time = pts_data->offset_time;
@@ -543,37 +683,57 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     if (base_time == GST_CLOCK_TIME_NONE) {
       base_time =
           kms_player_endpoint_get_or_generate_base_time (self,
-          &self->priv->base_time, !IS_PREROLL);
+          &self->priv->base_time, &self->priv->offset_time,
+          MIN (pts_orig, dts_orig), &offset_time, !IS_PREROLL);
       if (pts_data->last_pts != GST_CLOCK_TIME_NONE) {
         /* Ensure that base_time is always greater than the last_pts
          * to avoid setting the same or less PTS for different buffers */
-        base_time = MAX (base_time, pts_data->last_pts + GST_MSECOND);
+        base_time = MAX (base_time,
+            kms_player_endpoint_min_base_time (pts_data, pts_orig, dts_orig,
+                offset_time, self->priv->use_encoded_media));
+      }
+      if (self->priv->use_encoded_media) {
+        base_time = kms_player_endpoint_raise_base_time (GST_ELEMENT (appsink),
+            pts_data, base_time, offset_time, MIN (pts_orig, dts_orig));
       }
 
       pts_data->base_time = base_time;
-      pts_data->offset_time = offset_time = GST_BUFFER_PTS (buffer);
+      pts_data->offset_time = offset_time;
     }
   }
 
-  if (pts_data->last_pts_orig != GST_CLOCK_TIME_NONE) {
-    if (pts_orig < pts_data->last_pts_orig) {
+  if (pts_data->last_dts_orig != GST_CLOCK_TIME_NONE) {
+    if (dts_orig < pts_data->last_dts_orig) {
       GST_ERROR_OBJECT (appsink,
-          "Non incremental original PTS (last original PTS: %"
-          GST_TIME_FORMAT ", original PTS: %" GST_TIME_FORMAT
-          ", is preroll: %d). Not pushing",
-          GST_TIME_ARGS (pts_data->last_pts_orig), GST_TIME_ARGS (pts_orig),
+          "Non incremental original DTS (original DTS: %" GST_TIME_FORMAT
+          "; in the timeline, with an offset of %" GST_TIME_FORMAT " that is "
+          "not shown in the original: last %" GST_TIME_FORMAT ", current %"
+          GST_TIME_FORMAT ", is preroll: %d). Not pushing",
+          GST_TIME_ARGS (dts_raw), GST_TIME_ARGS (KMS_PLAYER_SEGMENT_BIAS),
+          GST_TIME_ARGS (pts_data->last_dts_orig), GST_TIME_ARGS (dts_orig),
           is_preroll);
       goto end;
-    } else if (pts_orig == pts_data->last_pts_orig) {
+    } else if (dts_orig == pts_data->last_dts_orig) {
       GST_DEBUG_OBJECT (appsink,
-          "Original PTS equals last PTS (original PTS: %" GST_TIME_FORMAT
+          "Original DTS equals last DTS (original DTS: %" GST_TIME_FORMAT
           ", is preroll: %d). Seems to be already pushed.",
-          GST_TIME_ARGS (pts_orig), is_preroll);
+          GST_TIME_ARGS (dts_raw), is_preroll);
       goto end;
     }
   }
 
-  diff = base_time - offset_time;
+  diff = (gint64) base_time - (gint64) offset_time;
+  if ((gint64) GST_BUFFER_DTS (buffer) + diff < 0 ||
+      (gint64) GST_BUFFER_PTS (buffer) + diff < 0) {
+    /* A stream that starts well before the one that set the offset time */
+    GST_ERROR_OBJECT (appsink,
+        "Timestamps before the offset time (DTS: %" GST_TIME_FORMAT
+        ", PTS: %" GST_TIME_FORMAT ", offset time: %" GST_TIME_FORMAT
+        "; original timestamps, and the offset time in the timeline). Not pushing",
+        GST_TIME_ARGS (dts_raw), GST_TIME_ARGS (pts_raw),
+        GST_TIME_ARGS (offset_time));
+    goto end;
+  }
   GST_BUFFER_DTS (buffer) += diff;
   GST_BUFFER_PTS (buffer) += diff;
 
@@ -585,20 +745,24 @@ process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
 
   GST_LOG_OBJECT (appsink,
       "Is preroll: %d, buffer: %" GST_PTR_FORMAT ", original pts %"
-      GST_TIME_FORMAT, is_preroll, buffer, GST_TIME_ARGS (pts_orig));
+      GST_TIME_FORMAT, is_preroll, buffer, GST_TIME_ARGS (pts_raw));
 
-  if (pts_data->last_pts != GST_CLOCK_TIME_NONE &&
-      GST_BUFFER_PTS (buffer) <= pts_data->last_pts) {
+  if (pts_data->last_dts != GST_CLOCK_TIME_NONE &&
+      GST_BUFFER_DTS (buffer) <= pts_data->last_dts) {
     GST_ERROR_OBJECT (appsink,
-        "Non incremental PTS assignment (last PTS: %"
-        GST_TIME_FORMAT ", PTS: %" GST_TIME_FORMAT
-        ", is preroll: %d). Not pushing", GST_TIME_ARGS (pts_data->last_pts),
-        GST_TIME_ARGS (GST_BUFFER_PTS (buffer)), is_preroll);
+        "Non incremental DTS assignment (last DTS: %"
+        GST_TIME_FORMAT ", DTS: %" GST_TIME_FORMAT
+        ", is preroll: %d). Not pushing", GST_TIME_ARGS (pts_data->last_dts),
+        GST_TIME_ARGS (GST_BUFFER_DTS (buffer)), is_preroll);
     goto end;
   }
 
-  pts_data->last_pts = GST_BUFFER_PTS (buffer);
-  pts_data->last_pts_orig = pts_orig;
+  pts_data->last_dts = GST_BUFFER_DTS (buffer);
+  pts_data->last_dts_orig = dts_orig;
+  if (pts_data->last_pts == GST_CLOCK_TIME_NONE ||
+      GST_BUFFER_PTS (buffer) > pts_data->last_pts) {
+    pts_data->last_pts = GST_BUFFER_PTS (buffer);
+  }
 
 push:
   src = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
@@ -1403,6 +1567,8 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   g_mutex_init (&self->priv->base_time_mutex);
   self->priv->base_time = GST_CLOCK_TIME_NONE;
   self->priv->base_time_preroll = GST_CLOCK_TIME_NONE;
+  self->priv->offset_time = GST_CLOCK_TIME_NONE;
+  self->priv->offset_time_preroll = GST_CLOCK_TIME_NONE;
 
   self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("internalpipeline");

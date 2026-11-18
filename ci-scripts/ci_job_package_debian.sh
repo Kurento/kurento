@@ -139,7 +139,10 @@ fi
 #     pass G_DEBUG="fatal-warnings", to enable breaking on code assertions.
 #   - G_MESSAGES_DEBUG: To set GLib logging categories. Used for libnice logs.
 
-DOCKER_ARGS=(--pull always --rm)
+# CAP_SYS_NICE: libnuma (used by the x265 encoder) calls set_mempolicy(), which
+# Docker's default seccomp profile denies without this capability, flooding the
+# test logs with "set_mempolicy: Operation not permitted".
+DOCKER_ARGS=(--pull always --rm --cap-add=SYS_NICE)
 if [[ -n "${JOB_ARCH:-}" ]]; then
     DOCKER_ARGS+=(--platform "linux/$JOB_ARCH")
     if [[ "$JOB_ARCH" == "arm64" ]]; then
@@ -158,6 +161,9 @@ docker run "${DOCKER_ARGS[@]}" \
     --env CK_RUN_CASE \
     --env CK_RUN_SUITE \
     --env DEB_BUILD_OPTIONS \
+    --env FLAKY_TEST_MAX_ATTEMPTS \
+    --env FLAKY_TEST_REGEX \
+    --env FLAKY_TEST_TIMEOUT \
     --env GST_DEBUG \
     --env G_DEBUG \
     --env G_MESSAGES_DEBUG \

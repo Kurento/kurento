@@ -22,6 +22,7 @@ set(KMS_ELEMENTS_HEADERS
   kmshttpendpointmethod.h
   kmshttppostendpoint.h
   kmsplayerendpoint.h
+  kmsplayerendpointtimestamps.h
   kmsselectablemixer.h
   kmsdispatcher.h
   kmsdispatcheronetomany.h

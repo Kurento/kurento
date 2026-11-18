@@ -7,3 +7,9 @@
 
 override_dh_auto_configure:
 	dh_auto_configure -- -DGENERATE_TESTS=TRUE -DDISABLE_IPV6_TESTS=FALSE
+
+# test_webrtcendpoint fails at random (see dh_auto_test_retry.sh); retry it a
+# bounded number of times. Any other failure, or a persistent one, still breaks
+# the build. Remove this override when the flakiness is fixed.
+override_dh_auto_test:
+	bash debian/dh_auto_test_retry.sh

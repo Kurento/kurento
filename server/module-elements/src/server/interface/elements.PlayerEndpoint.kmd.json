@@ -138,6 +138,15 @@
                 greatly reduces the CPU load.
               </p>
               <p>
+                Sources with B-frames (common in H.264/H.265 files made by non-realtime
+                encoders) are not recommended for real-time use of this mode, because frame
+                reordering adds latency. When the container provides decoding timestamps
+                (e.g. MP4 or MPEG-TS) such sources are passed through without dropping
+                frames. With containers or protocols that only provide presentation
+                timestamps (e.g. Matroska/WebM or RTSP) B-frames are not supported, and
+                frames may be dropped.
+              </p>
+              <p>
                 Keep in mind that if this property is enabled, the original source media MUST
                 already be in a format that is compatible with the destination target. For
                 example: Given a Pipeline that reads a file and then streams it to a WebRTC

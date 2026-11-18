@@ -206,7 +206,6 @@ function run_jq() {
             | .dependencies.\"kurento-client-elements\" = \"$VERSION_JS\"
             | .dependencies.\"kurento-client-filters\" = \"$VERSION_JS\"
             | .dependencies.\"kurento-jsonrpc\" = \"$VERSION_JS\"
-            | del(.scripts.prepare)
         " package.json
     else
         run_jq "

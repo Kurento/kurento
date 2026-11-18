@@ -150,7 +150,10 @@ digraph scripts {
     "git_default_branch.sh"
   };
   "deploy_js_http.sh";
-  "deploy_js_npm.sh";
+  "deploy_js_npm.sh" -> {
+    "check_js_package.sh"
+  };
+  "check_js_package.sh";
   "doc_deploy.sh" -> {
     "check_version.sh"
     "get_version.sh"
