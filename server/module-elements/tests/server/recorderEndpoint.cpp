@@ -572,12 +572,182 @@ static const SourceCodec AV1_SOURCE = {"AV1", "av1", "matroskamux", "mkv",
   "av1dec"
 };
 
+/* ffmpeg (libx265) writes the SEI with the x265 version as an array of NAL
+ * units in the hvcC, and the first sample of the file only has the IDR slice.
+ * These helpers build such a file with GStreamer. */
+struct SeiSource {
+  std::vector<guint8> sei;  /* SEI NAL unit, without the length */
+};
+
+#define HEVC_NAL_PREFIX_SEI 39
+
+static GstPadProbeReturn
+takeSeiProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
+{
+  SeiSource *source = static_cast<SeiSource *> (data);
+  GstBuffer *buffer = GST_PAD_PROBE_INFO_BUFFER (info);
+  GstMapInfo map;
+
+  if (!source->sei.empty () || !gst_buffer_map (buffer, &map, GST_MAP_READ) ) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  for (gsize pos = 0; pos + 6 <= map.size;) {
+    guint32 len = GST_READ_UINT32_BE (map.data + pos);
+
+    if (pos + 4 + len > map.size) {
+      break;
+    }
+
+    if (((map.data[pos + 4] >> 1) & 0x3f) == HEVC_NAL_PREFIX_SEI) {
+      source->sei.assign (map.data + pos + 4, map.data + pos + 4 + len);
+      break;
+    }
+
+    pos += 4 + len;
+  }
+
+  gst_buffer_unmap (buffer, &map);
+  return GST_PAD_PROBE_OK;
+}
+
+/* Gets the SEI that x265 writes in the first access unit */
+static bool
+getX265Sei (SeiSource &source)
+{
+  GError *err = nullptr;
+  GstElement *pipeline = gst_parse_launch ("videotestsrc num-buffers=3 "
+      "! video/x-raw,format=I420,width=320,height=240,framerate=25/1 "
+      "! x265enc option-string=info=1 ! h265parse "
+      "! video/x-h265,stream-format=hvc1,alignment=au "
+      "! fakesink name=seisink", &err);
+
+  if (pipeline == nullptr) {
+    BOOST_ERROR ("Cannot create the SEI pipeline: " << err->message);
+    g_clear_error (&err);
+    return false;
+  }
+
+  GstElement *sink = gst_bin_get_by_name (GST_BIN (pipeline), "seisink");
+  GstPad *pad = gst_element_get_static_pad (sink, "sink");
+  GstBus *bus = gst_element_get_bus (pipeline);
+
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, takeSeiProbe, &source,
+                     nullptr);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  GstMessage *msg = gst_bus_timed_pop_filtered (bus, 30 * GST_SECOND,
+                    (GstMessageType) (GST_MESSAGE_EOS | GST_MESSAGE_ERROR) );
+
+  if (msg != nullptr) {
+    gst_message_unref (msg);
+  }
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (bus);
+  gst_object_unref (pad);
+  gst_object_unref (sink);
+  gst_object_unref (pipeline);
+
+  BOOST_CHECK_MESSAGE (!source.sei.empty (), "x265 did not write a SEI");
+  return !source.sei.empty ();
+}
+
+/* Moves the SEI to the codec_data of the caps, and leaves only the slices in
+ * the access units */
+static GstPadProbeReturn
+seiToCodecDataProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
+{
+  SeiSource *source = static_cast<SeiSource *> (data);
+
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BUFFER) {
+    GstBuffer *buffer = GST_PAD_PROBE_INFO_BUFFER (info);
+    GstBuffer *out = gst_buffer_new ();
+    GstMapInfo map;
+
+    if (!gst_buffer_map (buffer, &map, GST_MAP_READ) ) {
+      gst_buffer_unref (out);
+      return GST_PAD_PROBE_OK;
+    }
+
+    for (gsize pos = 0; pos + 6 <= map.size;) {
+      guint32 len = GST_READ_UINT32_BE (map.data + pos);
+      guint type = (map.data[pos + 4] >> 1) & 0x3f;
+
+      if (pos + 4 + len > map.size) {
+        break;
+      }
+
+      if (type < 32 || type > 40) { /* not VPS, SPS, PPS, AUD, SEI... */
+        gst_buffer_append_memory (out, gst_memory_new_wrapped (
+                                    (GstMemoryFlags) 0,
+                                    g_memdup2 (map.data + pos, len + 4), len + 4, 0, len + 4,
+                                    nullptr, g_free) );
+      }
+
+      pos += 4 + len;
+    }
+
+    gst_buffer_unmap (buffer, &map);
+    gst_buffer_copy_into (out, buffer, GST_BUFFER_COPY_METADATA, 0, -1);
+    GST_PAD_PROBE_INFO_DATA (info) = out;
+    gst_buffer_unref (buffer);
+    return GST_PAD_PROBE_OK;
+  }
+
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  GstCaps *caps;
+  gst_event_parse_caps (event, &caps);
+
+  const GValue *value = gst_structure_get_value (gst_caps_get_structure (caps, 0),
+                        "codec_data");
+  GstBuffer *old = value ? gst_value_get_buffer (value) : nullptr;
+  GstMapInfo map;
+
+  if (old == nullptr || !gst_buffer_map (old, &map, GST_MAP_READ) ) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  /* Add an hvcC array of SEI NAL units: type, number of NAL units, size, data */
+  std::vector<guint8> hvcc (map.data, map.data + map.size);
+
+  gst_buffer_unmap (old, &map);
+  hvcc[22]++;
+  hvcc.push_back (0x80 | HEVC_NAL_PREFIX_SEI);
+  hvcc.push_back (0);
+  hvcc.push_back (1);
+  hvcc.push_back (source->sei.size () >> 8);
+  hvcc.push_back (source->sei.size () & 0xff);
+  hvcc.insert (hvcc.end (), source->sei.begin (), source->sei.end () );
+
+  GstCaps *new_caps = gst_caps_copy (caps);
+  guint8 *copy = static_cast<guint8 *> (g_memdup2 (hvcc.data (), hvcc.size () ) );
+  GstBuffer *codec_data = gst_buffer_new_wrapped (copy, hvcc.size () );
+
+  gst_caps_set_simple (new_caps, "codec_data", GST_TYPE_BUFFER, codec_data,
+                       nullptr);
+  gst_buffer_unref (codec_data);
+  GST_PAD_PROBE_INFO_DATA (info) = gst_event_new_caps (new_caps);
+  gst_event_unref (event);
+  gst_caps_unref (new_caps);
+
+  return GST_PAD_PROBE_OK;
+}
+
 /* Generates a short encoded file with a test pattern, inside this process.
  * Returns false (with a visible SKIPPED message) if a needed GStreamer
  * element is not available. */
 static bool
-generateSource (const SourceCodec &codec, const std::string &file)
+generateSource (const SourceCodec &codec, const std::string &file,
+                bool sei_in_codec_data = false)
 {
+  SeiSource sei_source;
+
   std::string encoder, options;
 
   for (const auto &candidate : codec.encoders) {
@@ -606,7 +776,8 @@ generateSource (const SourceCodec &codec, const std::string &file)
   std::string description = "videotestsrc num-buffers=75 "
                             "! video/x-raw,format=I420,width=320,height=240,framerate=25/1 "
                             "! " + encoder + " " + options + " "
-                            "! " + codec.parser + " ! " + codec.src_muxer +
+                            "! " + codec.parser + " name=sourceparser ! " +
+                            codec.src_muxer +
                             " ! filesink location=" + file;
   GError *err = nullptr;
   GstElement *pipeline = gst_parse_launch (description.c_str (), &err);
@@ -615,6 +786,23 @@ generateSource (const SourceCodec &codec, const std::string &file)
     BOOST_ERROR ("Cannot create the source pipeline: " << err->message);
     g_clear_error (&err);
     return false;
+  }
+
+  if (sei_in_codec_data) {
+    if (!getX265Sei (sei_source) ) {
+      gst_object_unref (pipeline);
+      return false;
+    }
+
+    GstElement *parser = gst_bin_get_by_name (GST_BIN (pipeline),
+                         "sourceparser");
+    GstPad *pad = gst_element_get_static_pad (parser, "src");
+
+    gst_pad_add_probe (pad, (GstPadProbeType) (GST_PAD_PROBE_TYPE_BUFFER |
+                       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM), seiToCodecDataProbe,
+                       &sei_source, nullptr);
+    gst_object_unref (pad);
+    gst_object_unref (parser);
   }
 
   GstBus *bus = gst_element_get_bus (pipeline);
@@ -696,7 +884,7 @@ recorderElementsAvailable (const SourceCodec &codec,
 static void
 record_from_player (const SourceCodec &codec, const std::string &profile,
                     const std::string &extension, const std::string &expected_tag,
-                    bool encoded_media)
+                    bool encoded_media, bool sei_in_codec_data = false)
 {
   std::atomic<int> transcoding_events (0);
   std::atomic<int> not_transcoding_events (0);
@@ -716,7 +904,7 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   std::string src_file = getCodecTestDir () + "/source." + codec.src_extension;
 
-  if (!generateSource (codec, src_file) ) {
+  if (!generateSource (codec, src_file, sei_in_codec_data) ) {
     removeCodecTestDir ();
     return;
   }
@@ -826,6 +1014,22 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
                        "Recording too short: " << dur << " s of " <<
                        source_seconds << " s (a keyframe interval can be lost)");
 
+  if (std::string (codec.name) == "H265" && programAvailable ("ffmpeg") ) {
+    /* The file must start with a whole keyframe, or the first GOP cannot be
+     * decoded (ffprobe does not notice it) */
+    std::string flags = probe (uri, "-select_streams v:0 -show_entries "
+                               "packet=flags -of csv=p=0 -read_intervals %+#1");
+
+    BOOST_CHECK_MESSAGE (flags.find ('K') != std::string::npos,
+                         "The first sample is not a keyframe: " << flags);
+
+    std::string errors = exec ("ffmpeg -v error -i " + uri +
+                               " -f null - 2>&1");
+
+    BOOST_CHECK_MESSAGE (errors.empty (), "The recording cannot be decoded "
+                         "cleanly: " << errors);
+  }
+
   if (encoded_media) {
     BOOST_CHECK_EQUAL (transcoding_events.load (), 0);
     /* Not only "no TRANSCODING": the state must have been reported */
@@ -847,6 +1051,20 @@ static void
 record_h265_mkv_from_player ()
 {
   record_from_player (H265_SOURCE, "MKV_VIDEO_ONLY", "mkv", "", true);
+}
+
+/* The SEI of the first access unit is in the hvcC (as libx265/ffmpeg writes
+ * it), and the first sample has only the IDR slice */
+static void
+record_h265_sei_mp4_from_player ()
+{
+  record_from_player (H265_SOURCE, "MP4_VIDEO_ONLY", "mp4", "hvc1", true, true);
+}
+
+static void
+record_h265_sei_mkv_from_player ()
+{
+  record_from_player (H265_SOURCE, "MKV_VIDEO_ONLY", "mkv", "", true, true);
 }
 
 /* VP9 and AV1: every container of the support matrix, with encoded media
@@ -1001,6 +1219,8 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &video_codec_unknown_value ), 0, /* timeout */ 10);
   test->add (BOOST_TEST_CASE ( &record_h265_mp4_from_player ), 0, /* timeout */ 40);
   test->add (BOOST_TEST_CASE ( &record_h265_mkv_from_player ), 0, /* timeout */ 40);
+  test->add (BOOST_TEST_CASE ( &record_h265_sei_mp4_from_player ), 0, /* timeout */ 40);
+  test->add (BOOST_TEST_CASE ( &record_h265_sei_mkv_from_player ), 0, /* timeout */ 40);
 
 #define ADD_CASE(NAME, EXT) \
   test->add (BOOST_TEST_CASE ( &record_##NAME##_##EXT##_passthrough ), 0, 40); \

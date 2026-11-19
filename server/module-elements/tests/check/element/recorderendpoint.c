@@ -991,23 +991,98 @@ codec_record (const gchar * src_desc, KmsRecordingProfile profile,
   return !rec.error;
 }
 
+typedef struct _CodecCount
+{
+  guint frames;
+  gboolean first_seen;
+  gboolean first_is_delta;
+  gboolean first_has_irap;
+} CodecCount;
+
 static void
 codec_count_probe_free (gpointer data)
 {
-  g_slice_free (guint, data);
+  g_slice_free (CodecCount, data);
+}
+
+/* TRUE if the hvc1 access unit has an IRAP slice (IDR, CRA or BLA) */
+static gboolean
+codec_hvc1_au_has_irap (GstBuffer * buffer, guint nal_length_size)
+{
+  GstMapInfo map;
+  gboolean irap = FALSE;
+  gsize pos = 0;
+
+  if (!gst_buffer_map (buffer, &map, GST_MAP_READ)) {
+    return FALSE;
+  }
+
+  while (pos + nal_length_size + 2 <= map.size) {
+    guint32 len = 0;
+    guint i, type;
+
+    for (i = 0; i < nal_length_size; i++) {
+      len = (len << 8) | map.data[pos + i];
+    }
+    pos += nal_length_size;
+    if (len < 2 || pos + len > map.size) {
+      break;
+    }
+    type = (map.data[pos] >> 1) & 0x3f;
+    if (type >= 16 && type <= 21) {
+      irap = TRUE;
+      break;
+    }
+    pos += len;
+  }
+
+  gst_buffer_unmap (buffer, &map);
+  return irap;
 }
 
 static GstPadProbeReturn
 codec_count_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
-  (*(guint *) data)++;
+  CodecCount *count = data;
+
+  if (!count->first_seen) {
+    GstBuffer *buffer = GST_PAD_PROBE_INFO_BUFFER (info);
+    GstCaps *caps = gst_pad_get_current_caps (pad);
+    GstStructure *st = caps ? gst_caps_get_structure (caps, 0) : NULL;
+    const gchar *format = st ? gst_structure_get_string (st, "stream-format")
+        : NULL;
+
+    count->first_seen = TRUE;
+    count->first_is_delta = GST_BUFFER_FLAG_IS_SET (buffer,
+        GST_BUFFER_FLAG_DELTA_UNIT);
+    count->first_has_irap = TRUE;       /* only checked for hvc1 */
+
+    if (g_strcmp0 (format, "hvc1") == 0) {
+      const GValue *cdata = gst_structure_get_value (st, "codec_data");
+      GstBuffer *cbuf = cdata ? gst_value_get_buffer (cdata) : NULL;
+      guint8 byte = 0;
+
+      /* hvcC: the length size minus one is in the 2 LSB of byte 21 */
+      if (cbuf != NULL && gst_buffer_get_size (cbuf) > 21 &&
+          gst_buffer_extract (cbuf, 21, &byte, 1) == 1) {
+        count->first_has_irap = codec_hvc1_au_has_irap (buffer,
+            (byte & 3) + 1);
+      }
+    }
+    if (caps != NULL) {
+      gst_caps_unref (caps);
+    }
+  }
+  count->frames++;
+
   return GST_PAD_PROBE_OK;
 }
 
 /* Demuxes the recorded file and returns the caps of the video track
  * (caller owns the result) plus the number of video frames. */
 static GstStructure *
-codec_inspect_file (const gchar * path, const gchar * demuxer, guint * frames)
+codec_inspect_file (const gchar * path, const gchar * demuxer,
+    CodecCount * result)
 {
   GstElement *pipeline, *demux, *sink;
   GstPad *pad;
@@ -1016,7 +1091,7 @@ codec_inspect_file (const gchar * path, const gchar * demuxer, guint * frames)
   GstMessage *msg;
   GstBus *bus;
   gchar *desc;
-  guint *count = g_slice_new0 (guint);
+  CodecCount *count = g_slice_new0 (CodecCount);
 
   desc = g_strdup_printf ("filesrc location=%s ! %s name=d "
       "d.video_0 ! fakesink name=sink sync=false", path, demuxer);
@@ -1044,7 +1119,7 @@ codec_inspect_file (const gchar * path, const gchar * demuxer, guint * frames)
     st = gst_structure_copy (gst_caps_get_structure (caps, 0));
     gst_caps_unref (caps);
   }
-  *frames = *count;
+  *result = *count;
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
   /* the probe data is released with the pad */
@@ -1065,7 +1140,8 @@ codec_check_recording (const gchar * src_desc, KmsRecordingProfile profile,
 {
   gboolean transcoding = FALSE, encoder = FALSE;
   GstStructure *st;
-  guint frames = 0;
+  CodecCount count = { 0, };
+  guint frames;
 
   fail_unless (codec_record (src_desc, profile, codec, path, link_late,
           &transcoding, &encoder), "Recording failed");
@@ -1073,7 +1149,8 @@ codec_check_recording (const gchar * src_desc, KmsRecordingProfile profile,
   fail_unless_equals_int (transcoding, expect_transcoding);
   fail_unless_equals_int (encoder, expect_transcoding);
 
-  st = codec_inspect_file (path, demuxer, &frames);
+  st = codec_inspect_file (path, demuxer, &count);
+  frames = count.frames;
   fail_unless (st != NULL, "No caps in recorded video track");
   GST_INFO ("Recorded video track: %" GST_PTR_FORMAT, st);
 
@@ -1083,6 +1160,11 @@ codec_check_recording (const gchar * src_desc, KmsRecordingProfile profile,
         expected_stream_format);
   }
   fail_unless (frames >= 15, "Too few frames recorded: %u", frames);
+  /* The file must start with a complete keyframe, or the first GOP cannot be
+   * decoded */
+  fail_if (count.first_is_delta, "The first recorded frame is not a keyframe");
+  fail_unless (count.first_has_irap,
+      "The first recorded frame has no IDR/IRAP slice");
 
   if (g_strcmp0 (expected_media_type, "video/x-h265") == 0) {
     /* main profile (4:2:0 8 bit), not main-444 */
