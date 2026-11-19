@@ -238,12 +238,19 @@ end:
 }
 
 /* H265 from MP4/MKV files made with libx265 (ffmpeg) has the SEI with the
- * x265 version in the hvcC, as another NAL array. With that, h265parse puts
- * the SEI in the first access unit, and when a keyframe with all headers is
- * requested at the same time (what happens when the first consumer is linked)
- * it inserts the VPS/SPS/PPS in the middle of the SEI NAL: the first keyframe
- * is corrupt and is lost by the next parser (a recorder in H265 starts without
- * IDR). Only parameter sets are needed in the codec_data of the parser. */
+ * x265 version in the hvcC, as another NAL array. h265parse (gst-plugins-bad
+ * 1.24, gsth265parse.c) processes the codec_data NAL units in set_caps and,
+ * for a SEI, stores its position in the frame (sei_pos) pointing inside the
+ * codec_data. set_caps does not reset it, so when VPS/SPS/PPS are inserted in
+ * the first frame (keyframe request with all headers, which happens when the
+ * first consumer is linked, or config-interval) that stale position is used as
+ * the insertion point and splits the NAL of the IDR: the first keyframe is
+ * corrupt and the next parser drops it (a recorder in H265 starts without
+ * IDR).
+ * Any SEI array left in the hvcC sets sei_pos, so it is not possible to keep
+ * only the useful ones (HDR, ...): they are all removed, and the parameter
+ * sets are what the parser needs. Remove this when GStreamer resets sei_pos in
+ * set_caps. */
 static GstPadProbeReturn
 h265_codec_data_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
