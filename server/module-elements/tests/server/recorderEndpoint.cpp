@@ -576,7 +576,7 @@ static const SourceCodec AV1_SOURCE = {"AV1", "av1", "matroskamux", "mkv",
  * units in the hvcC, and the first sample of the file only has the IDR slice.
  * These helpers build such a file with GStreamer. */
 struct SeiSource {
-  std::vector<guint8> sei;  /* SEI NAL unit, without the length */
+  std::vector<std::vector<guint8>> sei;  /* SEI NAL units, without the length */
 };
 
 #define HEVC_NAL_PREFIX_SEI 39
@@ -600,8 +600,7 @@ takeSeiProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
     }
 
     if (((map.data[pos + 4] >> 1) & 0x3f) == HEVC_NAL_PREFIX_SEI) {
-      source->sei.assign (map.data + pos + 4, map.data + pos + 4 + len);
-      break;
+      source->sei.emplace_back (map.data + pos + 4, map.data + pos + 4 + len);
     }
 
     pos += 4 + len;
@@ -611,16 +610,23 @@ takeSeiProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
   return GST_PAD_PROBE_OK;
 }
 
+/* HDR10 static metadata that x265 writes as SEI (mastering display and
+ * content light level), when asked to */
+#define HDR_X265_OPTIONS "info=1:hdr10=1:hdr10-opt=0:" \
+  "master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)" \
+  "L(10000000,1):max-cll=1000,400"
+
 /* Gets the SEI that x265 writes in the first access unit */
 static bool
-getX265Sei (SeiSource &source)
+getX265Sei (SeiSource &source, bool hdr)
 {
   GError *err = nullptr;
-  GstElement *pipeline = gst_parse_launch ("videotestsrc num-buffers=3 "
-      "! video/x-raw,format=I420,width=320,height=240,framerate=25/1 "
-      "! x265enc option-string=info=1 ! h265parse "
+  GstElement *pipeline = gst_parse_launch ((std::string ("videotestsrc "
+      "num-buffers=3 ! video/x-raw,format=I420,width=320,height=240,"
+      "framerate=25/1 ! x265enc option-string=") +
+      (hdr ? HDR_X265_OPTIONS : "info=1") + " ! h265parse "
       "! video/x-h265,stream-format=hvc1,alignment=au "
-      "! fakesink name=seisink", &err);
+      "! fakesink name=seisink").c_str (), &err);
 
   if (pipeline == nullptr) {
     BOOST_ERROR ("Cannot create the SEI pipeline: " << err->message);
@@ -719,11 +725,14 @@ seiToCodecDataProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
   gst_buffer_unmap (old, &map);
   hvcc[22]++;
   hvcc.push_back (0x80 | HEVC_NAL_PREFIX_SEI);
-  hvcc.push_back (0);
-  hvcc.push_back (1);
   hvcc.push_back (source->sei.size () >> 8);
   hvcc.push_back (source->sei.size () & 0xff);
-  hvcc.insert (hvcc.end (), source->sei.begin (), source->sei.end () );
+
+  for (const auto &nal : source->sei) {
+    hvcc.push_back (nal.size () >> 8);
+    hvcc.push_back (nal.size () & 0xff);
+    hvcc.insert (hvcc.end (), nal.begin (), nal.end () );
+  }
 
   GstCaps *new_caps = gst_caps_copy (caps);
   guint8 *copy = static_cast<guint8 *> (g_memdup2 (hvcc.data (), hvcc.size () ) );
@@ -744,7 +753,7 @@ seiToCodecDataProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
  * element is not available. */
 static bool
 generateSource (const SourceCodec &codec, const std::string &file,
-                bool sei_in_codec_data = false)
+                bool sei_in_codec_data = false, bool hdr = false)
 {
   SeiSource sei_source;
 
@@ -789,7 +798,7 @@ generateSource (const SourceCodec &codec, const std::string &file,
   }
 
   if (sei_in_codec_data) {
-    if (!getX265Sei (sei_source) ) {
+    if (!getX265Sei (sei_source, hdr) ) {
       gst_object_unref (pipeline);
       return false;
     }
@@ -884,7 +893,8 @@ recorderElementsAvailable (const SourceCodec &codec,
 static void
 record_from_player (const SourceCodec &codec, const std::string &profile,
                     const std::string &extension, const std::string &expected_tag,
-                    bool encoded_media, bool sei_in_codec_data = false)
+                    bool encoded_media, bool sei_in_codec_data = false,
+                    bool hdr = false)
 {
   std::atomic<int> transcoding_events (0);
   std::atomic<int> not_transcoding_events (0);
@@ -904,7 +914,7 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   std::string src_file = getCodecTestDir () + "/source." + codec.src_extension;
 
-  if (!generateSource (codec, src_file, sei_in_codec_data) ) {
+  if (!generateSource (codec, src_file, sei_in_codec_data, hdr) ) {
     removeCodecTestDir ();
     return;
   }
@@ -1030,6 +1040,20 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
                          "cleanly: " << errors);
   }
 
+  if (hdr) {
+    /* The HDR10 metadata that was only in the hvcC must be in the file */
+    std::string side_data = probe (uri, "-select_streams v:0 -show_streams "
+                                   "-show_frames -read_intervals %+#1 "
+                                   "-of default=noprint_wrappers=1");
+
+    BOOST_CHECK_MESSAGE (side_data.find ("Mastering display metadata") !=
+                         std::string::npos, "No mastering display metadata "
+                         "in the recording: " << side_data);
+    BOOST_CHECK_MESSAGE (side_data.find ("Content light level") !=
+                         std::string::npos, "No content light level "
+                         "in the recording: " << side_data);
+  }
+
   if (encoded_media) {
     BOOST_CHECK_EQUAL (transcoding_events.load (), 0);
     /* Not only "no TRANSCODING": the state must have been reported */
@@ -1065,6 +1089,22 @@ static void
 record_h265_sei_mkv_from_player ()
 {
   record_from_player (H265_SOURCE, "MKV_VIDEO_ONLY", "mkv", "", true, true);
+}
+
+/* Same, with the HDR10 SEI (mastering display and content light level) in
+ * the hvcC: they must not be lost */
+static void
+record_h265_hdr_mp4_from_player ()
+{
+  record_from_player (H265_SOURCE, "MP4_VIDEO_ONLY", "mp4", "hvc1", true, true,
+                      true);
+}
+
+static void
+record_h265_hdr_mkv_from_player ()
+{
+  record_from_player (H265_SOURCE, "MKV_VIDEO_ONLY", "mkv", "", true, true,
+                      true);
 }
 
 /* VP9 and AV1: every container of the support matrix, with encoded media
@@ -1221,6 +1261,8 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &record_h265_mkv_from_player ), 0, /* timeout */ 40);
   test->add (BOOST_TEST_CASE ( &record_h265_sei_mp4_from_player ), 0, /* timeout */ 40);
   test->add (BOOST_TEST_CASE ( &record_h265_sei_mkv_from_player ), 0, /* timeout */ 40);
+  test->add (BOOST_TEST_CASE ( &record_h265_hdr_mp4_from_player ), 0, /* timeout */ 40);
+  test->add (BOOST_TEST_CASE ( &record_h265_hdr_mkv_from_player ), 0, /* timeout */ 40);
 
 #define ADD_CASE(NAME, EXT) \
   test->add (BOOST_TEST_CASE ( &record_##NAME##_##EXT##_passthrough ), 0, 40); \
