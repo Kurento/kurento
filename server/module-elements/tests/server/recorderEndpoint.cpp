@@ -814,7 +814,17 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   float dur = atof (probe (uri, "-show_entries format=duration -of "
                            "default=noprint_wrappers=1:nokey=1").c_str () );
-  BOOST_CHECK_GE (dur, 2.0);
+  /* The source lasts 3 s and, with passthrough, a recording
+   * starts at a keyframe: if the first one is missed, the file can lose up to
+   * one keyframe interval (the slowest source, av1enc, has one every 1.2 s).
+   * Anything shorter than that is a real loss of data. */
+  const float source_seconds = 3.0; /* 75 frames at 25 fps */
+  const float max_keyframe_interval = 1.2;
+  const float margin = 0.2;
+
+  BOOST_CHECK_MESSAGE (dur >= source_seconds - max_keyframe_interval - margin,
+                       "Recording too short: " << dur << " s of " <<
+                       source_seconds << " s (a keyframe interval can be lost)");
 
   if (encoded_media) {
     BOOST_CHECK_EQUAL (transcoding_events.load (), 0);
