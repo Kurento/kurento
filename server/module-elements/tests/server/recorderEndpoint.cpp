@@ -753,7 +753,8 @@ seiToCodecDataProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
  * element is not available. */
 static bool
 generateSource (const SourceCodec &codec, const std::string &file,
-                bool sei_in_codec_data = false, bool hdr = false)
+                bool sei_in_codec_data = false, bool hdr = false,
+                bool long_source = false)
 {
   SeiSource sei_source;
 
@@ -782,7 +783,12 @@ generateSource (const SourceCodec &codec, const std::string &file,
     }
   }
 
-  std::string description = "videotestsrc num-buffers=75 "
+  if (long_source && encoder == "x265enc") {
+    options += ":keyint=25:min-keyint=25";  /* a keyframe every second */
+  }
+
+  std::string description = std::string ("videotestsrc num-buffers=") +
+                            (long_source ? "150 " : "75 ") +
                             "! video/x-raw,format=I420,width=320,height=240,framerate=25/1 "
                             "! " + encoder + " " + options + " "
                             "! " + codec.parser + " name=sourceparser ! " +
@@ -894,7 +900,7 @@ static void
 record_from_player (const SourceCodec &codec, const std::string &profile,
                     const std::string &extension, const std::string &expected_tag,
                     bool encoded_media, bool sei_in_codec_data = false,
-                    bool hdr = false)
+                    bool hdr = false, bool late_link = false)
 {
   std::atomic<int> transcoding_events (0);
   std::atomic<int> not_transcoding_events (0);
@@ -914,7 +920,7 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   std::string src_file = getCodecTestDir () + "/source." + codec.src_extension;
 
-  if (!generateSource (codec, src_file, sei_in_codec_data, hdr) ) {
+  if (!generateSource (codec, src_file, sei_in_codec_data, hdr, late_link) ) {
     removeCodecTestDir ();
     return;
   }
@@ -961,9 +967,18 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
     eos_cv.notify_all ();
   });
 
-  player->connect (recorder, video);
-  recorder->record ();
-  player->play ();
+  if (late_link) {
+    /* The recorder is linked to a player that is already playing: the first
+     * access unit of the stream has already gone through the agnosticbin */
+    player->play ();
+    g_usleep (2500000);
+    player->connect (recorder, video);
+    recorder->record ();
+  } else {
+    player->connect (recorder, video);
+    recorder->record ();
+    player->play ();
+  }
 
   /* Record until the whole file has been played (it is not safe to assume a
    * fixed time: the machine may be loaded) */
@@ -1105,6 +1120,22 @@ record_h265_hdr_mkv_from_player ()
 {
   record_from_player (H265_SOURCE, "MKV_VIDEO_ONLY", "mkv", "", true, true,
                       true);
+}
+
+/* The recorder is linked 2.5 s after the player starts: the HDR10 SEI must be
+ * in every keyframe, because the MP4 muxer only keeps the in-band SEI */
+static void
+record_h265_hdr_mp4_late_link_from_player ()
+{
+  record_from_player (H265_SOURCE, "MP4_VIDEO_ONLY", "mp4", "hvc1", true, true,
+                      true, true);
+}
+
+static void
+record_h265_hdr_mkv_late_link_from_player ()
+{
+  record_from_player (H265_SOURCE, "MKV_VIDEO_ONLY", "mkv", "", true, true,
+                      true, true);
 }
 
 /* VP9 and AV1: every container of the support matrix, with encoded media
@@ -1263,6 +1294,8 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &record_h265_sei_mkv_from_player ), 0, /* timeout */ 40);
   test->add (BOOST_TEST_CASE ( &record_h265_hdr_mp4_from_player ), 0, /* timeout */ 40);
   test->add (BOOST_TEST_CASE ( &record_h265_hdr_mkv_from_player ), 0, /* timeout */ 40);
+  test->add (BOOST_TEST_CASE ( &record_h265_hdr_mp4_late_link_from_player ), 0, /* timeout */ 60);
+  test->add (BOOST_TEST_CASE ( &record_h265_hdr_mkv_late_link_from_player ), 0, /* timeout */ 60);
 
 #define ADD_CASE(NAME, EXT) \
   test->add (BOOST_TEST_CASE ( &record_##NAME##_##EXT##_passthrough ), 0, 40); \

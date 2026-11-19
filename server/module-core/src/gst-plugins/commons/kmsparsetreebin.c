@@ -174,7 +174,7 @@ typedef struct
   GPtrArray *prefix_sei;        /* GBytes, NAL units without length prefix */
   GPtrArray *suffix_sei;
   guint nal_length_size;
-  gboolean pending;             /* TRUE until the SEI are inserted in an AU */
+  gboolean active;              /* TRUE if the SEI must be inserted in the AUs */
 } H265SeiData;
 
 static H265SeiData *
@@ -287,6 +287,33 @@ end:
   return result;
 }
 
+/* TRUE if the AU (NAL units with length prefix) has an IRAP slice (types 16
+ * to 23: BLA, IDR, CRA) */
+static gboolean
+h265_au_is_irap (const guint8 * data, gsize size, guint nls)
+{
+  gsize pos = 0;
+
+  while (pos + nls + 2 <= size) {
+    gsize n = 0;
+    guint k, type;
+
+    for (k = 0; k < nls; k++) {
+      n = (n << 8) | data[pos + k];
+    }
+    if (n < 2 || n > size - pos - nls) {
+      return FALSE;
+    }
+    type = HEVC_NAL_TYPE (data[pos + nls]);
+    if (type >= 16 && type <= 23) {
+      return TRUE;
+    }
+    pos += nls + n;
+  }
+
+  return FALSE;
+}
+
 static gboolean
 h265_au_contains_nal (const guint8 * data, gsize size, guint nls,
     GBytes * nal)
@@ -326,8 +353,9 @@ h265_append_nals (guint8 * out, gsize * out_size, GPtrArray * nals,
     const guint8 *nal_data = g_bytes_get_data (nal, &len);
     guint k;
 
-    if (h265_au_contains_nal (au, au_size, nls, nal)) {
-      continue;
+    if (len >= ((guint64) 1 << (8 * nls)) ||
+        h265_au_contains_nal (au, au_size, nls, nal)) {
+      continue;                 /* it does not fit in the length, or is there */
     }
     for (k = 0; k < nls; k++) {
       out[*out_size + k] = (len >> (8 * (nls - 1 - k))) & 0xff;
@@ -339,7 +367,7 @@ h265_append_nals (guint8 * out, gsize * out_size, GPtrArray * nals,
 }
 
 /* Inserts the SEI that were in the hvcC in the AU (hvc1/hev1, NAL units with
- * length prefix): prefix SEI after the AUD and the parameter sets that the AU
+ * length prefix), only if it is an IRAP: prefix SEI after the AUD and the parameter sets that the AU
  * may already have and before the slices, suffix SEI at the end. A SEI that
  * the AU already has is not repeated. Returns the new buffer, or NULL if the
  * AU cannot be parsed or there is nothing to insert. */
@@ -355,6 +383,10 @@ h265_insert_sei (GstBuffer * buffer, H265SeiData * data)
 
   if (!gst_buffer_map (buffer, &map, GST_MAP_READ)) {
     return NULL;
+  }
+
+  if (!h265_au_is_irap (map.data, map.size, nls)) {
+    goto end;
   }
 
   /* Skip the NAL units that must go before the SEI */
@@ -419,9 +451,13 @@ end:
  * IDR).
  * Any SEI array left in the hvcC sets sei_pos, so they are all removed from
  * the codec_data, and the SEI NAL units are inserted in-band in the first
- * access unit after the caps (where h265parse knows how to handle them, and
- * where it gets the HDR metadata from for the caps of the muxers). Remove this
- * when GStreamer resets sei_pos in set_caps. */
+ * IRAP access unit (where h265parse knows how to handle them, and where it
+ * gets the HDR metadata from for the caps of the muxers; every IRAP and not
+ * only the first one, because a consumer can be linked later and the muxers of
+ * some containers, like MP4, only keep the in-band SEI). The SEI is only
+ * inserted in streams with alignment=au, hvc1/hev1; if a SEI does not fit in
+ * the NAL length of the hvcC it is not inserted. Remove this when GStreamer
+ * resets sei_pos in set_caps. */
 static GstPadProbeReturn
 h265_codec_data_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user)
 {
@@ -431,14 +467,13 @@ h265_codec_data_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user)
     GstBuffer *buffer = gst_pad_probe_info_get_buffer (info);
     GstBuffer *new_buffer;
 
-    if (!data->pending) {
+    if (!data->active) {
       return GST_PAD_PROBE_OK;
     }
-    data->pending = FALSE;
 
     new_buffer = h265_insert_sei (buffer, data);
     if (new_buffer != NULL) {
-      GST_DEBUG_OBJECT (pad, "SEI from the codec_data inserted in the first AU");
+      GST_LOG_OBJECT (pad, "SEI from the codec_data inserted in an IRAP AU");
       GST_PAD_PROBE_INFO_DATA (info) = new_buffer;
       gst_buffer_unref (buffer);
     }
@@ -453,6 +488,11 @@ h265_codec_data_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user)
       return GST_PAD_PROBE_OK;
     }
 
+    /* New caps: forget the SEI of the previous ones */
+    g_ptr_array_set_size (data->prefix_sei, 0);
+    g_ptr_array_set_size (data->suffix_sei, 0);
+    data->active = FALSE;
+
     gst_event_parse_caps (event, &caps);
     st = gst_caps_get_structure (caps, 0);
     if (g_strcmp0 (gst_structure_get_name (st), "video/x-h265") != 0) {
@@ -464,15 +504,11 @@ h265_codec_data_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user)
       return GST_PAD_PROBE_OK;
     }
 
-    /* New caps: forget the SEI of the previous ones */
-    g_ptr_array_set_size (data->prefix_sei, 0);
-    g_ptr_array_set_size (data->suffix_sei, 0);
-    data->pending = FALSE;
-
     clean = hvcc_keep_only_parameter_sets (gst_value_get_buffer (value), data);
     if (clean != NULL) {
       GstCaps *new_caps = gst_caps_copy (caps);
       const gchar *format = gst_structure_get_string (st, "stream-format");
+      const gchar *alignment = gst_structure_get_string (st, "alignment");
 
       GST_DEBUG_OBJECT (pad, "Remove the NAL arrays that are not VPS/SPS/PPS "
           "from the codec_data");
@@ -480,9 +516,15 @@ h265_codec_data_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user)
           NULL);
       gst_buffer_unref (clean);
 
-      /* In-band insertion is only done for NAL units with length prefix */
-      data->pending = (data->prefix_sei->len + data->suffix_sei->len) > 0 &&
-          (g_strcmp0 (format, "hvc1") == 0 || g_strcmp0 (format, "hev1") == 0);
+      /* In-band insertion is only done for whole AUs with NAL units with
+       * length prefix */
+      data->active = (data->prefix_sei->len + data->suffix_sei->len) > 0 &&
+          (g_strcmp0 (format, "hvc1") == 0 || g_strcmp0 (format, "hev1") == 0) &&
+          (alignment == NULL || g_strcmp0 (alignment, "au") == 0);
+      if (!data->active) {
+        GST_INFO_OBJECT (pad, "The SEI of the codec_data is lost: only the AUs "
+            "of hvc1/hev1 are supported to insert it in-band");
+      }
 
       GST_PAD_PROBE_INFO_DATA (info) = gst_event_new_caps (new_caps);
       gst_event_unref (event);
