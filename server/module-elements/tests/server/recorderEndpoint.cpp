@@ -754,7 +754,7 @@ seiToCodecDataProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
 static bool
 generateSource (const SourceCodec &codec, const std::string &file,
                 bool sei_in_codec_data = false, bool hdr = false,
-                bool long_source = false)
+                int frames = 75)
 {
   SeiSource sei_source;
 
@@ -783,12 +783,12 @@ generateSource (const SourceCodec &codec, const std::string &file,
     }
   }
 
-  if (long_source && encoder == "x265enc") {
+  if (frames > 75 && encoder == "x265enc") {
     options += ":keyint=25:min-keyint=25";  /* a keyframe every second */
   }
 
   std::string description = std::string ("videotestsrc num-buffers=") +
-                            (long_source ? "300 " : "75 ") +
+                            std::to_string (frames) + " " +
                             "! video/x-raw,format=I420,width=320,height=240,framerate=25/1 "
                             "! " + encoder + " " + options + " "
                             "! " + codec.parser + " name=sourceparser ! " +
@@ -920,7 +920,14 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   std::string src_file = getCodecTestDir () + "/source." + codec.src_extension;
 
-  if (!generateSource (codec, src_file, sei_in_codec_data, hdr, late_link) ) {
+  /* 6 s of source, or 12 s when the recorder is linked late (see below):
+   * with a short source, a loaded machine can make the recorder lose a
+   * sizeable part of it */
+  const int source_frames = late_link ? 300 : 150;
+  const gulong late_link_delay_us = 2500000;
+
+  if (!generateSource (codec, src_file, sei_in_codec_data, hdr,
+                       source_frames) ) {
     removeCodecTestDir ();
     return;
   }
@@ -984,19 +991,21 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
     /* The recorder is linked to a player that is already playing: the first
      * access unit of the stream has already gone through the agnosticbin */
     player->play ();
-    g_usleep (2500000);
+    g_usleep (late_link_delay_us);
     player->connect (recorder, video);
     recorder->record ();
-
-    /* Do not rely on a fixed time: wait until the recorder is really
-     * receiving media (the source lasts 12 s, so there are keyframes left) */
-    std::unique_lock<std::mutex> lock (flow_mutex);
-    BOOST_CHECK_MESSAGE (flow_cv.wait_for (lock, std::chrono::seconds (15),
-    [&] { return flowing; }), "The recorder did not receive media");
   } else {
     player->connect (recorder, video);
     recorder->record ();
     player->play ();
+  }
+
+  /* Do not rely on a fixed time: wait until the recorder is really
+   * receiving media (the source is long enough to have keyframes left) */
+  {
+    std::unique_lock<std::mutex> lock (flow_mutex);
+    BOOST_CHECK_MESSAGE (flow_cv.wait_for (lock, std::chrono::seconds (15),
+    [&] { return flowing; }), "The recorder did not receive media");
   }
 
   /* Record until the whole file has been played (it is not safe to assume a
@@ -1064,11 +1073,13 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
 
   float dur = atof (probe (uri, "-show_entries format=duration -of "
                            "default=noprint_wrappers=1:nokey=1").c_str () );
-  /* The source lasts 3 s and, with passthrough, a recording
-   * starts at a keyframe: if the first one is missed, the file can lose up to
-   * one keyframe interval (the slowest source, av1enc, has one every 1.2 s).
-   * Anything shorter than that is a real loss of data. */
-  const float source_seconds = 3.0; /* 75 frames at 25 fps */
+  /* With passthrough, a recording starts at a keyframe: if the first one is
+   * missed, the file can lose up to one keyframe interval (the slowest
+   * source, av1enc, has one every 1.2 s). Anything shorter than that is a
+   * real loss of data. The threshold formula is unchanged: only the source
+   * is longer, so a loaded machine has more margin to deliver it. */
+  const float source_seconds = source_frames / 25.0f -  /* 25 fps */
+                               (late_link ? late_link_delay_us / 1e6f : 0.0f);
   const float max_keyframe_interval = 1.2;
   const float margin = 0.2;
 
