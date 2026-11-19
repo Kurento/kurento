@@ -788,7 +788,7 @@ generateSource (const SourceCodec &codec, const std::string &file,
   }
 
   std::string description = std::string ("videotestsrc num-buffers=") +
-                            (long_source ? "150 " : "75 ") +
+                            (long_source ? "300 " : "75 ") +
                             "! video/x-raw,format=I420,width=320,height=240,framerate=25/1 "
                             "! " + encoder + " " + options + " "
                             "! " + codec.parser + " name=sourceparser ! " +
@@ -967,6 +967,19 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
     eos_cv.notify_all ();
   });
 
+  std::mutex flow_mutex;
+  std::condition_variable flow_cv;
+  bool flowing = false;
+
+  sigc::connection conn_flow =
+    recorder->signalMediaFlowInStateChanged.connect ([&] (MediaFlowInStateChanged event) {
+    if (event.getState ()->getValue () == MediaFlowState::FLOWING) {
+      std::unique_lock<std::mutex> lock (flow_mutex);
+      flowing = true;
+      flow_cv.notify_all ();
+    }
+  });
+
   if (late_link) {
     /* The recorder is linked to a player that is already playing: the first
      * access unit of the stream has already gone through the agnosticbin */
@@ -974,6 +987,12 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
     g_usleep (2500000);
     player->connect (recorder, video);
     recorder->record ();
+
+    /* Do not rely on a fixed time: wait until the recorder is really
+     * receiving media (the source lasts 12 s, so there are keyframes left) */
+    std::unique_lock<std::mutex> lock (flow_mutex);
+    BOOST_CHECK_MESSAGE (flow_cv.wait_for (lock, std::chrono::seconds (15),
+    [&] { return flowing; }), "The recorder did not receive media");
   } else {
     player->connect (recorder, video);
     recorder->record ();
@@ -988,7 +1007,24 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
     [&] { return eos; }), "The player did not reach the end of the stream");
   }
 
-  g_usleep (500000);
+  /* The recorder may still be draining its queues when the player reaches
+   * the end of the stream (machine loaded): wait until the file has not
+   * grown for a while instead of a fixed time. Muxers that write at the end
+   * just keep the same size, so this only adds the stability period. */
+  {
+    std::string current = recorder->getUri ();
+    std::string path = current.substr (std::string ("file://").size () );
+    struct stat st_wait;
+    off_t last_size = -1;
+    int stable = 0;
+
+    for (int i = 0; i < 150 && stable < 5; i++) {
+      g_usleep (200000);
+      off_t size = ::stat (path.c_str (), &st_wait) == 0 ? st_wait.st_size : 0;
+      stable = (size == last_size) ? stable + 1 : 0;
+      last_size = size;
+    }
+  }
 
   recorder->stopAndWait ();
 
@@ -1000,6 +1036,7 @@ record_from_player (const SourceCodec &codec, const std::string &profile,
   conn_player.disconnect ();
   conn_recorder.disconnect ();
   conn_eos.disconnect ();
+  conn_flow.disconnect ();
 
   std::string player_id = player->getId ();
 

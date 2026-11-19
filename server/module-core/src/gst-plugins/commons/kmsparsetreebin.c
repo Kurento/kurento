@@ -367,10 +367,11 @@ h265_append_nals (guint8 * out, gsize * out_size, GPtrArray * nals,
 }
 
 /* Inserts the SEI that were in the hvcC in the AU (hvc1/hev1, NAL units with
- * length prefix), only if it is an IRAP: prefix SEI after the AUD and the parameter sets that the AU
- * may already have and before the slices, suffix SEI at the end. A SEI that
- * the AU already has is not repeated. Returns the new buffer, or NULL if the
- * AU cannot be parsed or there is nothing to insert. */
+ * length prefix), only if it is an IRAP: prefix SEI after the AUD and the
+ * parameter sets that the AU may already have and before the slices, suffix
+ * SEI at the end. A SEI that the AU already has is not repeated. Returns the
+ * new buffer, or NULL if the AU cannot be parsed or there is nothing to
+ * insert. */
 static GstBuffer *
 h265_insert_sei (GstBuffer * buffer, H265SeiData * data)
 {
@@ -521,7 +522,8 @@ h265_codec_data_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user)
       data->active = (data->prefix_sei->len + data->suffix_sei->len) > 0 &&
           (g_strcmp0 (format, "hvc1") == 0 || g_strcmp0 (format, "hev1") == 0) &&
           (alignment == NULL || g_strcmp0 (alignment, "au") == 0);
-      if (!data->active) {
+      if (!data->active &&
+          (data->prefix_sei->len + data->suffix_sei->len) > 0) {
         GST_INFO_OBJECT (pad, "The SEI of the codec_data is lost: only the AUs "
             "of hvc1/hev1 are supported to insert it in-band");
       }
