@@ -27,6 +27,7 @@ namespace kurento
 
 class MediaPipeline;
 class MediaProfileSpecType;
+class RecorderVideoCodec;
 class RecorderEndpointImpl;
 
 void Serialize (std::shared_ptr<RecorderEndpointImpl> &object,
@@ -40,7 +41,8 @@ public:
 
   RecorderEndpointImpl (const boost::property_tree::ptree &conf,
                         std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
-                        std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream);
+                        std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream,
+                        std::shared_ptr<RecorderVideoCodec> videoCodec);
 
   virtual ~RecorderEndpointImpl ();
 

@@ -19,6 +19,7 @@
 #include "MediaPipeline.hpp"
 #include "MediaProfileSpecType.hpp"
 #include "GapsFixMethod.hpp"
+#include "RecorderVideoCodec.hpp"
 #include <RecorderEndpointImplFactory.hpp>
 #include "RecorderEndpointImpl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
@@ -71,89 +72,126 @@ check_support_for_ksr ()
   return supported;
 }
 
+static KmsRecordingProfile
+getRecordingProfile (MediaProfileSpecType::type type)
+{
+  switch (type) {
+  case MediaProfileSpecType::WEBM:
+    return KMS_RECORDING_PROFILE_WEBM;
+  case MediaProfileSpecType::MP4:
+    return KMS_RECORDING_PROFILE_MP4;
+  case MediaProfileSpecType::MKV:
+    return KMS_RECORDING_PROFILE_MKV;
+  case MediaProfileSpecType::WEBM_VIDEO_ONLY:
+    return KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY;
+  case MediaProfileSpecType::WEBM_AUDIO_ONLY:
+    return KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY;
+  case MediaProfileSpecType::MKV_VIDEO_ONLY:
+    return KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY;
+  case MediaProfileSpecType::MKV_AUDIO_ONLY:
+    return KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY;
+  case MediaProfileSpecType::MP4_VIDEO_ONLY:
+    return KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY;
+  case MediaProfileSpecType::MP4_AUDIO_ONLY:
+    return KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY;
+  case MediaProfileSpecType::JPEG_VIDEO_ONLY:
+    return KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY;
+  case MediaProfileSpecType::KURENTO_SPLIT_RECORDER:
+    return KMS_RECORDING_PROFILE_KSR;
+  case MediaProfileSpecType::FLV:
+    return KMS_RECORDING_PROFILE_FLV;
+  }
+
+  return KMS_RECORDING_PROFILE_NONE;
+}
+
+/* Maps the API enum to the internal one; DEFAULT maps to NONE, which means
+ * "default codec of the container". */
+static KmsRecordingVideoCodec
+getRecordingVideoCodec (RecorderVideoCodec::type type, const char **name)
+{
+  switch (type) {
+  case RecorderVideoCodec::DEFAULT:
+    *name = "DEFAULT";
+    return KMS_RECORDING_VIDEO_CODEC_NONE;
+  case RecorderVideoCodec::H264:
+    *name = "H264";
+    return KMS_RECORDING_VIDEO_CODEC_H264;
+  case RecorderVideoCodec::H265:
+    *name = "H265";
+    return KMS_RECORDING_VIDEO_CODEC_H265;
+  case RecorderVideoCodec::VP8:
+    *name = "VP8";
+    return KMS_RECORDING_VIDEO_CODEC_VP8;
+  case RecorderVideoCodec::VP9:
+    *name = "VP9";
+    return KMS_RECORDING_VIDEO_CODEC_VP9;
+  case RecorderVideoCodec::AV1:
+    *name = "AV1";
+    return KMS_RECORDING_VIDEO_CODEC_AV1;
+  }
+
+  throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
+                          "Unknown video codec");
+}
+
+/* Checks the container x codec combination. It must be called before creating
+ * the element, so that no GStreamer element is created for a rejected request. */
+static void
+checkVideoCodec (std::shared_ptr<MediaProfileSpecType> mediaProfile,
+                 std::shared_ptr<RecorderVideoCodec> videoCodec)
+{
+  const char *codecName;
+  KmsRecordingVideoCodec codec;
+
+  if (!videoCodec) {
+    return;
+  }
+
+  codec = getRecordingVideoCodec (videoCodec->getValue (), &codecName);
+
+  if (!kms_recording_profile_supports_video_codec (
+          getRecordingProfile (mediaProfile->getValue () ), codec) ) {
+    throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
+                            std::string ("Video codec ") + codecName +
+                            " is not supported by media profile " +
+                            mediaProfile->getString () +
+                            " (see the RecorderEndpoint documentation for the"
+                            " valid container and codec combinations)");
+  }
+}
+
 RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     &conf,
     std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
     std::shared_ptr<MediaProfileSpecType> mediaProfile,
-    bool stopOnEndOfStream) : UriEndpointImpl (conf,
+    bool stopOnEndOfStream,
+    std::shared_ptr<RecorderVideoCodec> videoCodec) : UriEndpointImpl (conf,
           std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
 {
   g_object_set (G_OBJECT (getGstreamerElement() ), "accept-eos",
                 stopOnEndOfStream, NULL);
 
-  switch (mediaProfile->getValue() ) {
-  case MediaProfileSpecType::WEBM:
-    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_WEBM, NULL);
-    GST_INFO ("Set WEBM profile");
-    break;
+  if (videoCodec && videoCodec->getValue () != RecorderVideoCodec::DEFAULT) {
+    const char *codecName;
+    KmsRecordingVideoCodec codec =
+      getRecordingVideoCodec (videoCodec->getValue (), &codecName);
 
-  case MediaProfileSpecType::MP4:
-    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_MP4, NULL);
-    GST_INFO ("Set MP4 profile");
-    break;
-
-  case MediaProfileSpecType::MKV:
-    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_MKV, NULL);
-    GST_INFO ("Set MKV profile");
-    break;
-
-  case MediaProfileSpecType::WEBM_VIDEO_ONLY:
-    g_object_set ( G_OBJECT (element), "profile",
-                   KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY, NULL);
-    GST_INFO ("Set WEBM VIDEO ONLY profile");
-    break;
-
-  case MediaProfileSpecType::WEBM_AUDIO_ONLY:
-    g_object_set ( G_OBJECT (element), "profile",
-                   KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY, NULL);
-    GST_INFO ("Set WEBM AUDIO ONLY profile");
-    break;
-
-  case MediaProfileSpecType::MKV_VIDEO_ONLY:
-    g_object_set ( G_OBJECT (element), "profile",
-                   KMS_RECORDING_PROFILE_MKV_VIDEO_ONLY, NULL);
-    GST_INFO ("Set MKV VIDEO ONLY profile");
-    break;
-
-  case MediaProfileSpecType::MKV_AUDIO_ONLY:
-    g_object_set ( G_OBJECT (element), "profile",
-                   KMS_RECORDING_PROFILE_MKV_AUDIO_ONLY, NULL);
-    GST_INFO ("Set MKV AUDIO ONLY profile");
-    break;
-
-  case MediaProfileSpecType::MP4_VIDEO_ONLY:
-    g_object_set ( G_OBJECT (element), "profile",
-                   KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, NULL);
-    GST_INFO ("Set MP4 VIDEO ONLY profile");
-    break;
-
-  case MediaProfileSpecType::MP4_AUDIO_ONLY:
-    g_object_set ( G_OBJECT (element), "profile",
-                   KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY, NULL);
-    GST_INFO ("Set MP4 AUDIO ONLY profile");
-    break;
-
-  case MediaProfileSpecType::JPEG_VIDEO_ONLY:
-    g_object_set ( G_OBJECT (element), "profile",
-                   KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY, NULL);
-    GST_INFO ("Set JPEG profile");
-    break;
-
-  case MediaProfileSpecType::KURENTO_SPLIT_RECORDER:
-    if (!RecorderEndpointImpl::support_ksr) {
-      throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
-                              "Kurento Split Recorder not supported");
-    }
-
-    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_KSR, NULL);
-    GST_INFO ("Set KSR profile");
-    break;
-    
-  case MediaProfileSpecType::FLV:
-    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_FLV, NULL);
-    GST_INFO ("Set FLV profile");
-    break;
+    /* IMPORTANT: "video-codec" must be set BEFORE "profile"; once the profile
+     * is set, the element ignores any later change of the video codec. */
+    g_object_set (G_OBJECT (element), "video-codec", codec, NULL);
+    GST_INFO ("Set video codec: %s", codecName);
   }
+
+  if (mediaProfile->getValue () == MediaProfileSpecType::KURENTO_SPLIT_RECORDER
+      && !RecorderEndpointImpl::support_ksr) {
+    throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
+                            "Kurento Split Recorder not supported");
+  }
+
+  g_object_set (G_OBJECT (element), "profile",
+                getRecordingProfile (mediaProfile->getValue () ), NULL);
+  GST_INFO ("Set %s profile", mediaProfile->getString ().c_str () );
 
   GapsFixMethod gapsFix;
   if (getConfigValue<GapsFixMethod, RecorderEndpoint> (
@@ -330,10 +368,13 @@ RecorderEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, const std::string &uri,
     std::shared_ptr<MediaProfileSpecType> mediaProfile,
-    bool stopOnEndOfStream) const
+    bool stopOnEndOfStream,
+    std::shared_ptr<RecorderVideoCodec> videoCodec) const
 {
+  checkVideoCodec (mediaProfile, videoCodec);
+
   return new RecorderEndpointImpl (conf, mediaPipeline, uri, mediaProfile,
-                                   stopOnEndOfStream);
+                                   stopOnEndOfStream, videoCodec);
 }
 
 RecorderEndpointImpl::StaticConstructor RecorderEndpointImpl::staticConstructor;

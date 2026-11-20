@@ -56,6 +56,7 @@ typedef enum
 struct _KmsEncTreeBinPrivate
 {
   GstElement *enc;
+  GstElement *parser;           /* Only used by encoders that need one (x265) */
   EncoderType enc_type;
   RembEventManager *remb_manager;
 
@@ -264,6 +265,14 @@ kms_enc_tree_bin_set_encoder_type (KmsEncTreeBin * self)
   g_free (name);
 }
 
+static gboolean
+kms_enc_tree_bin_caps_are_h265 (const GstCaps * caps)
+{
+  return gst_caps_get_size (caps) > 0 &&
+      g_strcmp0 (gst_structure_get_name (gst_caps_get_structure (caps, 0)),
+      "video/x-h265") == 0;
+}
+
 static void
 kms_enc_tree_bin_create_encoder_for_caps (KmsEncTreeBin * self,
     const GstCaps * caps, GstStructure * codec_configs)
@@ -287,8 +296,25 @@ kms_enc_tree_bin_create_encoder_for_caps (KmsEncTreeBin * self,
   }
 
   encoder_factory = NULL;
-  filtered_list =
-      gst_element_factory_list_filter (encoder_list, caps, GST_PAD_SRC, FALSE);
+
+  /* x265enc can only produce stream-format=byte-stream, but muxers request
+   * hvc1. Ignore the bitstream-format fields to find the encoder; a parser
+   * after the encoder converts to whatever format is requested downstream. */
+  if (kms_enc_tree_bin_caps_are_h265 (caps)) {
+    GstStructure *structure;
+    GstCaps *caps_copy;
+
+    structure = gst_structure_copy (gst_caps_get_structure (caps, 0));
+    gst_structure_remove_fields (structure, "stream-format", "alignment",
+        "profile", "level", "tier", NULL);
+    caps_copy = gst_caps_new_full (structure, NULL);
+    filtered_list = gst_element_factory_list_filter (encoder_list, caps_copy,
+        GST_PAD_SRC, FALSE);
+    gst_caps_unref (caps_copy);
+  } else {
+    filtered_list = gst_element_factory_list_filter (encoder_list, caps,
+        GST_PAD_SRC, FALSE);
+  }
 
   for (l = filtered_list; l != NULL && encoder_factory == NULL; l = l->next) {
     encoder_factory = GST_ELEMENT_FACTORY (l->data);
@@ -502,6 +528,58 @@ check_caps_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   return GST_PAD_PROBE_OK;
 }
 
+/*
+ * x265enc cannot be initialized when the input caps have a variable framerate
+ * (framerate=0/1, or no framerate at all): libx265 fails with "Frame rate
+ * numerator and denominator must be specified". WebRTC/RTP sources usually
+ * negotiate exactly that. The other encoders used here (x264enc, openh264enc,
+ * vp9enc, av1enc) accept it, so only x265 needs this.
+ *
+ * Instead of adding a videorate (which would duplicate/drop frames and add
+ * latency) we only rewrite the framerate field in the caps event that reaches
+ * the encoder. Buffer timestamps are not touched.
+ *
+ * Known limitation: libx265 rate control uses this framerate, so with it fixed
+ * to 30 the real bitrate scales with real_fps / 30 (measured: target 500 kbps
+ * gives ~180 kbps at 10 fps and ~1010 kbps at 60 fps).
+ */
+#define X265_DEFAULT_FRAMERATE_N 30
+
+static GstPadProbeReturn
+x265_framerate_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+  GstEvent *new_event;
+  GstCaps *caps;
+  GstStructure *st;
+  gint num = 0, den = 1;
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  gst_event_parse_caps (event, &caps);
+  st = gst_caps_get_structure (caps, 0);
+
+  if (gst_structure_get_fraction (st, "framerate", &num, &den) && num != 0) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  GST_INFO ("Variable framerate in caps, using %d/1 for x265enc: %"
+      GST_PTR_FORMAT, X265_DEFAULT_FRAMERATE_N, caps);
+
+  caps = gst_caps_copy (caps);
+  gst_caps_set_simple (caps, "framerate", GST_TYPE_FRACTION,
+      X265_DEFAULT_FRAMERATE_N, 1, NULL);
+  new_event = gst_event_new_caps (caps);
+  gst_event_set_seqnum (new_event, gst_event_get_seqnum (event));
+  info->data = new_event;
+  gst_caps_unref (caps);
+  gst_event_unref (event);
+
+  return GST_PAD_PROBE_OK;
+}
+
 static gboolean
 kms_enc_tree_bin_configure (KmsEncTreeBin * self, const GstCaps * caps,
     GstStructure * codec_configs)
@@ -551,10 +629,27 @@ kms_enc_tree_bin_configure (KmsEncTreeBin * self, const GstCaps * caps,
   if (rate) {
     gst_element_sync_state_with_parent (rate);
   }
+  if (self->priv->enc_type == X265) {
+    GstPad *enc_sink;
+
+    self->priv->parser =
+        kms_utils_element_factory_make ("h265parse", GST_DEFAULT_NAME);
+
+    gst_bin_add (GST_BIN (self), self->priv->parser);
+    gst_element_sync_state_with_parent (self->priv->parser);
+
+    enc_sink = gst_element_get_static_pad (self->priv->enc, "sink");
+    gst_pad_add_probe (enc_sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        x265_framerate_probe, NULL, NULL);
+    g_object_unref (enc_sink);
+  }
+
   // FIXME: This is a hack to avoid an error on x264enc that does not work
   // properly with some raw formats, this should be fixed in gstreamer
-  // but until this is done this hack makes it work
-  if (self->priv->enc_type == X264) {
+  // but until this is done this hack makes it work.
+  // x265enc also needs it: otherwise videoconvert may negotiate 4:4:4 and the
+  // result would be an H265 main-444 stream that most players cannot decode.
+  if (self->priv->enc_type == X264 || self->priv->enc_type == X265) {
     GstCaps *filter_caps = gst_caps_from_string ("video/x-raw,format=I420");
     GstPad *sink;
 
@@ -583,6 +678,9 @@ kms_enc_tree_bin_configure (KmsEncTreeBin * self, const GstCaps * caps,
   if (self->priv->enc_type == X264) {
     gst_element_link_many (convert, mediator, capsfilter, queue,
         self->priv->enc, output_tee, NULL);
+  } else if (self->priv->enc_type == X265) {
+    gst_element_link_many (convert, mediator, capsfilter, queue,
+        self->priv->enc, self->priv->parser, output_tee, NULL);
   } else {
     gst_element_link_many (convert, mediator, queue, self->priv->enc,
         output_tee, NULL);

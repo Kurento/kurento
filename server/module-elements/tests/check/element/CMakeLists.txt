@@ -23,10 +23,12 @@ target_include_directories(test_recorderendpoint PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.0_INCLUDE_DIRS}
                            ${gstreamer-check-1.0_INCLUDE_DIRS}
+                           ${gstreamer-pbutils-1.0_INCLUDE_DIRS}
                            "${PROJECT_SOURCE_DIR}/3rdparty/valgrind/include")
 target_link_libraries(test_recorderendpoint
                       ${gstreamer-1.0_LIBRARIES}
                       ${gstreamer-check-1.0_LIBRARIES}
+                      ${gstreamer-pbutils-1.0_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES})
 
 add_test_program(test_playerendpoint playerendpoint.c)

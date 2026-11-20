@@ -97,6 +97,7 @@ enum
   PROP_DVR,
   PROP_PROFILE,
   PROP_GAPS_FIX,
+  PROP_VIDEO_CODEC,
   N_PROPERTIES
 };
 
@@ -138,6 +139,7 @@ typedef struct _KmsRecorderStats
 struct _KmsRecorderEndpointPrivate
 {
   KmsRecordingProfile profile;
+  KmsRecordingVideoCodec video_codec;
   KmsRecorderGapsFixMethod gaps_fix;
   GstClockTime paused_time;
   GstClockTime paused_start;
@@ -1399,6 +1401,7 @@ kms_recorder_endpoint_create_base_media_muxer (KmsRecorderEndpoint * self)
   } else {
     mux = KMS_BASE_MEDIA_MUXER (kms_av_muxer_new
         (KMS_BASE_MEDIA_MUXER_PROFILE, self->priv->profile,
+            KMS_BASE_MEDIA_MUXER_VIDEO_CODEC, self->priv->video_codec,
             KMS_BASE_MEDIA_MUXER_URI, KMS_URI_ENDPOINT (self)->uri, NULL));
   }
 
@@ -1446,7 +1449,19 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
       break;
     case PROP_PROFILE:{
       if (self->priv->profile == KMS_RECORDING_PROFILE_NONE) {
-        self->priv->profile = g_value_get_enum (value);
+        KmsRecordingProfile profile = g_value_get_enum (value);
+
+        if (profile != KMS_RECORDING_PROFILE_NONE &&
+            !kms_recording_profile_supports_video_codec (profile,
+                self->priv->video_codec)) {
+          GST_ERROR_OBJECT (self,
+              "Video codec %d is not supported by profile %d, "
+              "using the default codec of the profile",
+              self->priv->video_codec, profile);
+          self->priv->video_codec = KMS_RECORDING_VIDEO_CODEC_NONE;
+        }
+
+        self->priv->profile = profile;
 
         if (self->priv->profile != KMS_RECORDING_PROFILE_NONE) {
           kms_recorder_endpoint_new_media_muxer (self);
@@ -1460,6 +1475,22 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
     case PROP_GAPS_FIX:
       self->priv->gaps_fix = g_value_get_enum (value);
       break;
+    case PROP_VIDEO_CODEC:{
+      KmsRecordingVideoCodec codec = g_value_get_enum (value);
+
+      /* The codec selects the muxer chain, which is built when the profile
+       * is set, so it has to be configured before the profile (once). */
+      if (self->priv->profile != KMS_RECORDING_PROFILE_NONE) {
+        GST_ERROR_OBJECT (self,
+            "Video codec must be configured before the profile, ignoring");
+      } else if (self->priv->video_codec != KMS_RECORDING_VIDEO_CODEC_NONE) {
+        GST_ERROR_OBJECT (self, "Video codec can only be configured once");
+      } else {
+        self->priv->video_codec = codec;
+      }
+
+      break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -1486,6 +1517,10 @@ kms_recorder_endpoint_get_property (GObject * object, guint property_id,
       g_value_set_enum (value, self->priv->gaps_fix);
       break;
     }
+    case PROP_VIDEO_CODEC:{
+      g_value_set_enum (value, self->priv->video_codec);
+      break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -1504,16 +1539,20 @@ kms_recorder_endpoint_get_caps_from_profile (KmsRecorderEndpoint * self,
   switch (type) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
       cprof =
-          kms_recording_profile_create_profile (self->priv->profile, FALSE,
-          TRUE);
+          kms_recording_profile_create_profile_with_codec (self->priv->profile,
+          self->priv->video_codec, FALSE, TRUE);
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
       cprof =
-          kms_recording_profile_create_profile (self->priv->profile, TRUE,
-          FALSE);
+          kms_recording_profile_create_profile_with_codec (self->priv->profile,
+          self->priv->video_codec, TRUE, FALSE);
       break;
     default:
       return NULL;
+  }
+
+  if (cprof == NULL) {
+    return NULL;
   }
 
   profiles = gst_encoding_container_profile_get_profiles (cprof);
@@ -1531,6 +1570,18 @@ kms_recorder_endpoint_get_caps_from_profile (KmsRecorderEndpoint * self,
   }
 
   gst_encoding_profile_unref (cprof);
+
+  if (caps != NULL && type == KMS_ELEMENT_PAD_TYPE_VIDEO &&
+      self->priv->video_codec == KMS_RECORDING_VIDEO_CODEC_H265) {
+    /* H265 can be recorded without transcoding from any bitstream format:
+     * the muxer chain has an h265parse that outputs the hvc1/au that the
+     * muxers require. hvc1 goes first so that it is preferred. */
+    gst_caps_unref (caps);
+    caps = gst_caps_from_string ("video/x-h265, "
+        "stream-format=(string){ hvc1, hev1, byte-stream }, "
+        "alignment=(string){ au, nal }");
+  }
+
   return caps;
 }
 
@@ -1986,6 +2037,14 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
       "Gaps fix method", "The method used to fix gaps in the stream",
       KMS_TYPE_RECORDER_GAPS_FIX_METHOD, DEFAULT_GAPS_FIX, G_PARAM_READWRITE);
 
+  obj_properties[PROP_VIDEO_CODEC] = g_param_spec_enum ("video-codec",
+      "Video codec",
+      "Video codec stored in the recording; NONE uses the default codec of "
+      "the profile. Must be set before the profile (it is ignored otherwise), "
+      "only once, and must be supported by the profile",
+      KMS_TYPE_RECORDING_VIDEO_CODEC, KMS_RECORDING_VIDEO_CODEC_NONE,
+      G_PARAM_READWRITE);
+
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
 
@@ -2118,6 +2177,7 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
       g_object_unref);
 
   self->priv->profile = DEFAULT_RECORDING_PROFILE;
+  self->priv->video_codec = KMS_RECORDING_VIDEO_CODEC_NONE;
   self->priv->gaps_fix = DEFAULT_GAPS_FIX;
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
