@@ -22,12 +22,6 @@
 #include <gst/check/gstcheck.h>
 #include <gst/sdp/gstsdpmessage.h>
 
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
 #include <kmstestutils.h>
 
 #include <commons/kmselementpadtype.h>
@@ -54,54 +48,6 @@ G_DEFINE_QUARK (ANSWERER_RECEIVES_AUDIO, answerer_receives_audio);
 
 #define SDES_30_BYTES_KEY "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5"
 #define SDES_46_BYTES_KEY "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NQ=="
-
-/* Whether this host has a usable IPv6 address: one that is up and is neither
- * loopback (::1), unspecified nor link-local (fe80::/10, which needs a scope
- * ID). Containers without IPv6 networking (Docker default) only have ::1, or
- * nothing at all. */
-static gboolean
-has_usable_ipv6 (void)
-{
-  struct ifaddrs *ifaddr = NULL, *ifa;
-  gboolean found = FALSE;
-
-  if (getifaddrs (&ifaddr) != 0) {
-    return FALSE;
-  }
-
-  for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-    const struct in6_addr *a;
-
-    if (ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_INET6 ||
-        (ifa->ifa_flags & IFF_UP) == 0) {
-      continue;
-    }
-
-    a = &((struct sockaddr_in6 *) ifa->ifa_addr)->sin6_addr;
-
-    if (IN6_IS_ADDR_LOOPBACK (a) || IN6_IS_ADDR_UNSPECIFIED (a) ||
-        IN6_IS_ADDR_LINKLOCAL (a)) {
-      continue;
-    }
-
-    found = TRUE;
-    break;
-  }
-
-  freeifaddrs (ifaddr);
-
-  return found;
-}
-
-/* Skip (visibly) an IPv6 test case when there is no usable IPv6 address. */
-#define SKIP_IF_NO_IPV6() \
-  G_STMT_START { \
-    if (!has_usable_ipv6 ()) { \
-      g_printerr ("SKIPPED: %s: this host has no usable IPv6 address " \
-          "(only loopback or link-local)\n", G_STRFUNC); \
-      return; \
-    } \
-  } G_STMT_END
 
 static gboolean
 print_timedout_pipeline (gpointer data)
@@ -233,6 +179,7 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
 {
   GstElement *sink;
   GstPad *sinkpad;
+  GstPadLinkReturn ret;
 
   if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
     GST_DEBUG_OBJECT (pad, "Connecting audio stream");
@@ -246,8 +193,17 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
   }
 
   sinkpad = gst_element_get_static_pad (sink, "sink");
-  gst_pad_link (pad, sinkpad);
+  ret = gst_pad_link (pad, sinkpad);
   g_object_unref (sinkpad);
+  /* This runs in a streaming thread when the first RTP packet arrives, so a
+   * failure would otherwise only show up as a test timeout. */
+  if (ret != GST_PAD_LINK_OK) {
+    GST_ERROR_OBJECT (pad, "Cannot link to the sink: %s",
+        gst_pad_link_get_name (ret));
+    g_printerr ("ERROR: cannot link %s to its sink: %s\n", GST_PAD_NAME (pad),
+        gst_pad_link_get_name (ret));
+  }
+  fail_unless (ret == GST_PAD_LINK_OK, "Cannot link the src pad to the sink");
   gst_element_sync_state_with_parent (sink);
 }
 
@@ -554,6 +510,13 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (fakesink_answerer), "handoff",
       G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
 
+  /* The sinks must be in the pipeline before the src pads are requested: the
+   * pads are linked from the streaming thread as soon as the first RTP packet
+   * arrives, and linking to an element without parent fails with
+   * GST_PAD_LINK_WRONG_HIERARCHY. */
+  gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
+      NULL);
+
   g_object_set_qdata (G_OBJECT (offerer), audio_sink_quark (),
       fakesink_offerer);
   g_signal_connect (offerer, "pad-added",
@@ -577,14 +540,9 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   /* Add elements */
   gst_bin_add_many (GST_BIN (pipeline), offerer, answerer, NULL);
 
-  /* Session creation. The pipeline is NOT started yet: if it were, the
-   * answerer would start sending SRTP media as soon as it processes the offer,
-   * possibly before the offerer has processed the answer and knows the remote
-   * key. The first packets of the answerer would then reach the offerer
-   * without a usable key, and the offerer may discard that SSRC for good, so
-   * it would never receive any media and the test would hang until timeout. (In
-   * the failing runs the offerer got no packets at all, while the answerer got
-   * thousands, and only the SRTP rounds failed.) */
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  /* Session creation */
   g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
   GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
   g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
@@ -606,12 +564,6 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
-
-  gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
-      NULL);
-
-  /* Start the media only now that both sides are fully negotiated */
-  gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   id = g_timeout_add_seconds (3, print_timedout_pipeline, pipeline);
 
@@ -684,7 +636,6 @@ GST_END_TEST;
 #ifndef DISABLE_IPV6_TESTS
 GST_START_TEST (test_opus_sendrecv_ipv6)
 {
-  SKIP_IF_NO_IPV6 ();
   do_opus_tests (TRUE);
 }
 GST_END_TEST;
