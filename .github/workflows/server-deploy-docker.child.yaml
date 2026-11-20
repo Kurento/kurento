@@ -121,8 +121,11 @@ jobs:
   # The AddressSanitizer image compiles Kurento from source, which takes far
   # longer than the rest of the images (>16 min on amd64 and >25 min on emulated
   # arm64, measured on loaded machines). It lives in its own job, with its own
-  # timeout, so that it cannot cut the main deploy; and `continue-on-error`
-  # makes the result of this job not count in the result of the workflow.
+  # timeout, so that it cannot cut the main deploy. A job that reaches its
+  # `timeout-minutes` is concluded as "cancelled", and it is not documented that
+  # `continue-on-error` neutralizes that. So the ASan step has its own, shorter
+  # limit (and `continue-on-error`): when it is hit, the step is marked as
+  # failed (not the job), the job never reaches its own limit and ends in success.
   build-asan:
     if: ${{ inputs.buildAsan }}
     # Needs the main images: the ASan image is built on top of them.
@@ -170,6 +173,8 @@ jobs:
           path: "artifacts/"
 
       - name: "Run job script (AddressSanitizer)"
+        timeout-minutes: 100
+        continue-on-error: true
         env:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"
