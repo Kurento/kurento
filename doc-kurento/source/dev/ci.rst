@@ -62,3 +62,18 @@ Until ``arm64`` runners are available, the default value of the ``jobArchs`` inp
 An ``amd64``-only run publishes the Debian repositories without ``arm64`` packages. For Docker images, the tag without architecture suffix (e.g. ``dev-pr-<N>``, ``latest``) is created pointing only to the architectures that were requested in ``jobArchs``, so an ``amd64``-only run never mixes in older ``-arm64`` images.
 
 The ARM64 emulation (QEMU, ``docker run --platform``) is kept in the scripts. It is harmless on a native runner, where the requested platform matches the host. Note that C/C++ tests are skipped in arm64 builds (``DEB_BUILD_OPTIONS=nocheck``).
+
+
+
+Docker images published by CI
+=============================
+
+The *server-deploy-docker* workflow (``server-deploy-docker.child.yaml``) publishes to Docker Hub, for each architecture in ``jobArchs``, these images of ``kurento/kurento-media-server``: the main image (``<tag>-<arch>``), the one with the extra modules (``kurento-media-server-extras``) and, with ``buildAsan`` enabled, the image with AddressSanitizer (tag suffix ``-asan``). The tags without architecture suffix are multi-arch manifests that point to the requested architectures.
+
+The AddressSanitizer image is built in its own job (``build-asan``), after the ``build`` job of the main and extras images, and not as a step of it. This image compiles Kurento from source (``docker/kurento-media-server-asan/``), which takes much longer than the rest (more than 16 minutes on amd64 and more than 25 on emulated arm64, and more on loaded machines). When it shared the job with the main images, the 30 minutes time limit of the job cut it, and the whole run was marked as cancelled even though the packages and the main images were already published. Now ``build-asan`` is a separate job with ``timeout-minutes: 120``, and its step "Run job script (AddressSanitizer)" has its own limit (``timeout-minutes: 100``) and ``continue-on-error: true``. The reason is that a job which reaches its time limit is concluded by GitHub as *cancelled*, and it is not documented that ``continue-on-error`` of a job neutralizes that; a step that reaches its limit is just marked as failed, so the job never gets to its own limit. If the ASan image fails or runs out of time, that step is shown as failed (a warning), the job and the run stay in success, and the ``-asan`` images are not published or updated: check that step after a run to know if they were.
+
+Other things to keep in mind:
+
+- ``build-asan`` is skipped entirely if ``build`` fails in any architecture, also in the architectures that were fine.
+- The architectures run one after another (``max-parallel: 1``), so in the worst case the ASan job adds up to 100 minutes per architecture to the duration of the run, holding the self-hosted runners.
+- The multi-arch manifest ``<tag>-asan`` is created by the leg that finishes last, from the ``<tag>-asan-<arch>`` images that exist at that moment. If the ASan build of one architecture fails, an older ``-asan-<arch>`` image from a previous run can remain in the manifest, mixed with the new image of the other architecture.
