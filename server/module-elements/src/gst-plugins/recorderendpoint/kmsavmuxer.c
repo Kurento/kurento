@@ -248,8 +248,30 @@ kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
       return;
     }
 
-    if (!gst_element_link_pads (self->priv->videosrc, "src", self->priv->mux,
-            pad_name)) {
+    if (KMS_BASE_MEDIA_MUXER_GET_VIDEO_CODEC (self) ==
+        KMS_RECORDING_VIDEO_CODEC_H265) {
+      /* The recorder accepts H265 in any bitstream format (hvc1, hev1 or
+       * byte-stream). A parser is not a transcoder: it only repackages the
+       * stream so the muxer always gets hvc1, which is what MP4 players
+       * (Safari/QuickTime) require. */
+      GstElement *parser = kms_utils_element_factory_make ("h265parse",
+          OBJECT_NAME);
+      GstElement *filter = kms_utils_element_factory_make ("capsfilter",
+          OBJECT_NAME);
+      GstCaps *caps = gst_caps_from_string ("video/x-h265, "
+          "stream-format=(string)hvc1, alignment=(string)au");
+
+      g_object_set (filter, "caps", caps, NULL);
+      gst_caps_unref (caps);
+      gst_bin_add_many (GST_BIN (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self)),
+          parser, filter, NULL);
+
+      if (!gst_element_link_many (self->priv->videosrc, parser, filter, NULL) ||
+          !gst_element_link_pads (filter, "src", self->priv->mux, pad_name)) {
+        GST_ERROR_OBJECT (self, "Could not link H265 parser to the muxer");
+      }
+    } else if (!gst_element_link_pads (self->priv->videosrc, "src",
+            self->priv->mux, pad_name)) {
       GST_ERROR_OBJECT (self,
           "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
           self->priv->videosrc, self->priv->mux);

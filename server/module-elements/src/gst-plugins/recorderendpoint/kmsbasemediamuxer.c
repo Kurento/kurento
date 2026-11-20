@@ -46,6 +46,7 @@ enum
   PROP_0,
   PROP_URI,
   PROP_PROFILE,
+  PROP_VIDEO_CODEC,
   N_PROPERTIES
 };
 
@@ -323,6 +324,9 @@ kms_base_media_muxer_set_property (GObject * object, guint property_id,
     case PROP_PROFILE:
       self->profile = g_value_get_enum (value);
       break;
+    case PROP_VIDEO_CODEC:
+      self->video_codec = g_value_get_enum (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -345,6 +349,9 @@ kms_base_media_muxer_get_property (GObject * object, guint property_id,
       break;
     case PROP_PROFILE:
       g_value_set_enum (value, self->profile);
+      break;
+    case PROP_VIDEO_CODEC:
+      g_value_set_enum (value, self->video_codec);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -380,6 +387,12 @@ kms_base_media_muxer_class_init (KmsBaseMediaMuxerClass * klass)
       g_param_spec_enum (KMS_BASE_MEDIA_MUXER_PROFILE, "Recording profile",
       "The profile used to encapsulate media", KMS_TYPE_RECORDING_PROFILE,
       KMA_BASE_MEDIA_MUXER_DEFAULT_RECORDING_PROFILE,
+      (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
+
+  obj_properties[PROP_VIDEO_CODEC] =
+      g_param_spec_enum (KMS_BASE_MEDIA_MUXER_VIDEO_CODEC, "Video codec",
+      "The video codec stored in the file (NONE: default of the profile)",
+      KMS_TYPE_RECORDING_VIDEO_CODEC, KMS_RECORDING_VIDEO_CODEC_NONE,
       (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 
   g_object_class_install_properties (objclass, N_PROPERTIES, obj_properties);

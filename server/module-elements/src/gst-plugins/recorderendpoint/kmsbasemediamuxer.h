@@ -49,6 +49,7 @@ G_BEGIN_DECLS
 #define KMS_BASE_MEDIA_MUXER_VIDEO_APPSRC "video-appsrc"
 #define KMS_BASE_MEDIA_MUXER_AUDIO_APPSRC "audio-appsrc"
 #define KMS_BASE_MEDIA_MUXER_PROFILE "profile"
+#define KMS_BASE_MEDIA_MUXER_VIDEO_CODEC "video-codec"
 #define KMS_BASE_MEDIA_MUXER_SINK "sink"
 #define KMS_BASE_MEDIA_MUXER_URI "uri"
 
@@ -62,6 +63,8 @@ G_BEGIN_DECLS
   (KMS_BASE_MEDIA_MUXER ((elem))->uri)
 #define KMS_BASE_MEDIA_MUXER_GET_PROFILE(elem) \
   (KMS_BASE_MEDIA_MUXER ((elem))->profile)
+#define KMS_BASE_MEDIA_MUXER_GET_VIDEO_CODEC(elem) \
+  (KMS_BASE_MEDIA_MUXER ((elem))->video_codec)
 typedef struct _KmsBaseMediaMuxer KmsBaseMediaMuxer;
 typedef struct _KmsBaseMediaMuxerClass KmsBaseMediaMuxerClass;
 typedef struct _KmsBaseMediaMuxerPrivate KmsBaseMediaMuxerPrivate;
@@ -75,6 +78,7 @@ struct _KmsBaseMediaMuxer
   GRecMutex mutex;
   gchar *uri;
   KmsRecordingProfile profile;
+  KmsRecordingVideoCodec video_codec;
 };
 
 struct _KmsBaseMediaMuxerClass
