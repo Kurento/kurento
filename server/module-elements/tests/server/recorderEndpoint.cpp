@@ -685,10 +685,13 @@ seiToCodecDataProbe (GstPad *, GstPadProbeInfo *info, gpointer data)
       }
 
       if (type < 32 || type > 40) { /* not VPS, SPS, PPS, AUD, SEI... */
+        /* The destroy callback receives user_data, not the wrapped pointer */
+        gpointer copy = g_memdup2 (map.data + pos, len + 4);
+
         gst_buffer_append_memory (out, gst_memory_new_wrapped (
                                     (GstMemoryFlags) 0,
-                                    g_memdup2 (map.data + pos, len + 4), len + 4, 0, len + 4,
-                                    nullptr, g_free) );
+                                    copy, len + 4, 0, len + 4,
+                                    copy, g_free) );
       }
 
       pos += 4 + len;
