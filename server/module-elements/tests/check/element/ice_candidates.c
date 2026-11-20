@@ -16,6 +16,7 @@
  */
 
 #include <gst/check/gstcheck.h>
+#include <nice/agent.h>
 #include "webrtcendpoint/kmsicecandidate.h"
 
 static void
@@ -152,6 +153,174 @@ GST_START_TEST (test_expr)
 
 GST_END_TEST;
 
+/*
+ * Candidates that cannot be parsed, or that carry out-of-range values, must be
+ * rejected (NULL), and must never crash the process.
+ * One of them is the one sent by an ESP32, which uses a negative priority:
+ * https://github.com/Kurento/kurento/issues/143
+ */
+GST_START_TEST (test_invalid_candidates)
+{
+  static const gchar *invalid[] = {
+    /* Negative priority that a signed 32-bit integer cannot hold */
+    "candidate:remote1 2 UDP -2147483649 192.168.66.55 54631 typ prflx",
+    "candidate:remote1 2 UDP -99999999999 192.168.66.55 54631 typ prflx",
+    "candidate:remote1 2 UDP -0 192.168.66.55 54631 typ prflx",
+    "candidate:remote1 2 UDP - 192.168.66.55 54631 typ prflx",
+    /* Priority does not fit in 32 bits */
+    "candidate:1 1 UDP 4294967296 192.168.1.183 55079 typ host",
+    "candidate:1 1 UDP 9999999999 192.168.1.183 55079 typ host",
+    /* Port out of range */
+    "candidate:1 1 UDP 2013266431 192.168.1.183 65536 typ host",
+    "candidate:1 1 UDP 2013266431 192.168.1.183 99999999999999999999 typ host",
+    "candidate:1 1 UDP 2013266431 192.168.1.183 -5 typ host",
+    /* Related port out of range */
+    "candidate:1 1 UDP 2013266431 192.168.1.183 55079 typ srflx raddr 10.0.0.1 rport 65536",
+    /* Unsupported component */
+    "candidate:1 3 UDP 2013266431 192.168.1.183 55079 typ host",
+    "candidate:1 0 UDP 2013266431 192.168.1.183 55079 typ host",
+    /* Unknown type, unknown transport */
+    "candidate:1 1 UDP 2013266431 192.168.1.183 55079 typ bogus",
+    "candidate:1 1 SCTP 2013266431 192.168.1.183 55079 typ host",
+    /* Garbage */
+    "",
+    "candidate:",
+    "a=candidate:1 1 UDP 2013266431 192.168.1.183 55079 typ host",
+    "not a candidate at all",
+    NULL
+  };
+  guint i;
+
+  for (i = 0; invalid[i] != NULL; i++) {
+    KmsIceCandidate *cand;
+
+    GST_DEBUG ("Invalid candidate: '%s'", invalid[i]);
+    cand = kms_ice_candidate_new (invalid[i], "test", 1, "8");
+    fail_unless (cand == NULL, "Candidate should be rejected: '%s'",
+        invalid[i]);
+  }
+
+  /* A NULL candidate string must not crash either */
+  fail_unless (kms_ice_candidate_new (NULL, "test", 1, "8") == NULL);
+}
+
+GST_END_TEST;
+
+/*
+ * libnice formats its guint32 priority with "%d", so priorities >= 2^31 come
+ * out as negative numbers. They must be accepted with the real value.
+ */
+GST_START_TEST (test_negative_priority)
+{
+  KmsIceCandidate *cand;
+  gchar *sdp_line;
+
+  /* Candidate from issue #143: 2^32 - 43452938 = 4251514358 */
+  cand = kms_ice_candidate_new
+      ("candidate:remote1 2 UDP -43452938 192.168.66.55 54631 typ prflx",
+      "test", 1, "8");
+  fail_if (cand == NULL);
+  check_candidate (cand, "test", "192.168.66.55", 54631, 4, "8", "remote1",
+      4251514358u, KMS_ICE_PROTOCOL_UDP, KMS_ICE_CANDIDATE_TYPE_PRFLX,
+      KMS_ICE_TCP_CANDIDATE_TYPE_NONE, NULL, -1);
+  /* The string is normalized, so that it is valid for anyone downstream */
+  sdp_line = kms_ice_candidate_get_sdp_line (cand);
+  fail_unless_equals_string (sdp_line,
+      "a=candidate:remote1 2 UDP 4251514358 192.168.66.55 54631 typ prflx");
+  g_free (sdp_line);
+  g_object_unref (cand);
+
+  /* Limits: -1 -> 2^32-1, -2^31 -> 2^31 */
+  cand = kms_ice_candidate_new
+      ("candidate:1 1 UDP -1 192.168.1.1 5000 typ host raddr 10.0.0.1 rport 1",
+      "test", 1, "8");
+  fail_if (cand == NULL);
+  fail_unless_equals_uint64 (kms_ice_candidate_get_priority (cand),
+      4294967295u);
+  g_object_unref (cand);
+
+  cand = kms_ice_candidate_new
+      ("candidate:1 1 UDP -2147483648 192.168.1.1 5000 typ host", "test", 1,
+      "8");
+  fail_if (cand == NULL);
+  fail_unless_equals_uint64 (kms_ice_candidate_get_priority (cand),
+      2147483648u);
+  g_object_unref (cand);
+}
+
+GST_END_TEST;
+
+/*
+ * Reproduces the flow of a peer-reflexive remote candidate: libnice reports a
+ * NiceCandidate with a priority >= 2^31, KMS turns it into an SDP string with
+ * nice_agent_generate_local_candidate_sdp() and parses it back.
+ */
+GST_START_TEST (test_libnice_candidate_roundtrip)
+{
+  NiceAgent *agent;
+  NiceCandidate *ncand;
+  KmsIceCandidate *cand;
+  gchar *str, *kms_str;
+
+  agent = nice_agent_new (g_main_context_default (), NICE_COMPATIBILITY_RFC5245);
+  ncand = nice_candidate_new (NICE_CANDIDATE_TYPE_PEER_REFLEXIVE);
+  ncand->component_id = 2;
+  ncand->transport = NICE_CANDIDATE_TRANSPORT_UDP;
+  ncand->priority = 4251514358u;
+  g_strlcpy (ncand->foundation, "remote1", sizeof (ncand->foundation));
+  fail_unless (nice_address_set_from_string (&ncand->addr, "192.168.66.55"));
+  nice_address_set_port (&ncand->addr, 54631);
+  ncand->base_addr = ncand->addr;
+
+  str = nice_agent_generate_local_candidate_sdp (agent, ncand);
+  GST_DEBUG ("libnice SDP: %s", str);
+  /* Same conversion as kms_ice_nice_agent_get_candidate_sdp_string() */
+  kms_str = g_strconcat (SDP_CANDIDATE_ATTR, ":", str + SDP_CANDIDATE_ATTR_LEN,
+      NULL);
+
+  cand = kms_ice_candidate_new (kms_str, "", 0, "8");
+  fail_if (cand == NULL, "Candidate from libnice rejected: '%s'", kms_str);
+  fail_unless_equals_uint64 (kms_ice_candidate_get_priority (cand),
+      ncand->priority);
+  fail_unless (kms_ice_candidate_get_candidate_type (cand) ==
+      KMS_ICE_CANDIDATE_TYPE_PRFLX);
+
+  g_object_unref (cand);
+  g_free (kms_str);
+  g_free (str);
+  nice_candidate_free (ncand);
+  g_object_unref (agent);
+}
+
+GST_END_TEST;
+
+/*
+ * Setting an invalid value in the "candidate" property of an already-parsed
+ * object must not leave dangling pointers (double free on finalize).
+ */
+GST_START_TEST (test_reset_candidate_property)
+{
+  KmsIceCandidate *cand;
+  gchar *foundation;
+
+  cand = g_object_new (KMS_TYPE_ICE_CANDIDATE, "candidate",
+      "candidate:4 1 UDP 2013266431 192.168.1.183 55079 typ relay raddr 127.0.0.1 rport 9999",
+      "sdp-mid", "test", NULL);
+
+  g_object_set (cand, "candidate",
+      "candidate:5 3 UDP 2013266431 192.168.1.184 55080 typ host", NULL);
+  g_object_set (cand, "candidate",
+      "candidate:6 1 UDP -2147483649 192.168.1.185 55081 typ prflx", NULL);
+
+  /* Reading from it must be safe */
+  foundation = kms_ice_candidate_get_foundation (cand);
+  g_free (foundation);
+
+  g_object_unref (cand);
+}
+
+GST_END_TEST;
+
 static Suite *
 ice_candidates_suite (void)
 {
@@ -160,6 +329,10 @@ ice_candidates_suite (void)
 
   suite_add_tcase (s, tc_chain);
   tcase_add_test (tc_chain, test_expr);
+  tcase_add_test (tc_chain, test_negative_priority);
+  tcase_add_test (tc_chain, test_libnice_candidate_roundtrip);
+  tcase_add_test (tc_chain, test_invalid_candidates);
+  tcase_add_test (tc_chain, test_reset_candidate_property);
 
   return s;
 }

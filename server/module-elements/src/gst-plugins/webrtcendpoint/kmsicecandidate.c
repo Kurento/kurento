@@ -18,6 +18,7 @@
 #include "kmsicecandidate.h"
 #include <gio/gio.h>
 #include <gst/gst.h>
+#include <errno.h>
 #include <stdlib.h>
 
 #define GST_CAT_DEFAULT kmsicecandidate
@@ -55,7 +56,7 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
   "(?<foundation>(" ICE_CHAR_ATTR_EXPR "){1,32})" \
   " (?<componentid>(" DIGIT_ATTR_EXPR "){1,5})" \
   " (?<transport>(udp|UDP|tcp|TCP))" \
-  " (?<priority>(" DIGIT_ATTR_EXPR "){1,10})" \
+  " (?<priority>-?(" DIGIT_ATTR_EXPR "){1,10})" \
   " (?<addr>[A-Za-z0-9.:-]+)" \
   " (?<port>[0-9]+)" \
   " typ (?<type>(host|srflx|prflx|relay))" \
@@ -93,13 +94,57 @@ struct _KmsIceCandidatePrivate
   gboolean is_valid;
 };
 
+/*
+ * Parse an unsigned decimal string that comes from the regular expression.
+ * Fails if the value does not fit in [0, max].
+ */
+static gboolean
+parse_uint_in_range (const gchar * str, guint64 max, guint64 * value)
+{
+  gchar *endptr = NULL;
+  guint64 val;
+
+  if (str == NULL || *str == '\0') {
+    return FALSE;
+  }
+
+  errno = 0;
+  val = g_ascii_strtoull (str, &endptr, 10);
+  if (errno != 0 || endptr == str || *endptr != '\0' || val > max) {
+    return FALSE;
+  }
+
+  *value = val;
+  return TRUE;
+}
+
+/*
+ * Parses 'self->priv->candidate' and, only if everything is valid, stores the
+ * results in the private fields. On failure the parsed fields (foundation, ip,
+ * port, etc.) are left untouched: none is freed or modified, so the object can
+ * never end up with dangling pointers. Note that the caller (set_property) has
+ * already replaced 'priv->candidate' with the new string before parsing.
+ */
 static gboolean
 kms_ice_candidate_update_values (KmsIceCandidate * self)
 {
   GRegex *regex;
-  GMatchInfo *match_info;
+  GMatchInfo *match_info = NULL;
+  gchar *foundation = NULL, *ip = NULL, *related_addr = NULL;
   gchar *tmp = NULL;
+  gchar *new_candidate = NULL, *resolved_ip = NULL;
+  gint prio_start = -1, prio_end = -1;
+  guint64 port = 0, priority = 0, related_port = 0;
+  KmsIceComponent component;
+  KmsIceProtocol protocol;
+  KmsIceCandidateType type;
+  KmsIceTcpCandidateType tcp_type;
   gboolean ret = FALSE;
+
+  if (self->priv->candidate == NULL) {
+    GST_WARNING_OBJECT (self, "Cannot parse a NULL candidate");
+    return FALSE;
+  }
 
   regex = g_regex_new (CANDIDATE_EXPR, 0, 0, NULL);
   g_regex_match (regex, self->priv->candidate, 0, &match_info);
@@ -109,94 +154,131 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
     goto end;
   }
 
-  g_free (self->priv->foundation);
-  g_free (self->priv->ip);
-  g_free (self->priv->related_addr);
-
   tmp = g_match_info_fetch_named (match_info, "port");
-  self->priv->port = (guint)strtoul(tmp, NULL, 10);
+  if (!parse_uint_in_range (tmp, G_MAXUINT16, &port)) {
+    GST_WARNING_OBJECT (self, "Invalid ICE candidate port '%s' in '%s'",
+        GST_STR_NULL (tmp), self->priv->candidate);
+    goto end;
+  }
   g_free (tmp);
 
-  self->priv->foundation = g_match_info_fetch_named (match_info, "foundation");
-
   tmp = g_match_info_fetch_named (match_info, "priority");
-  self->priv->priority = (guint)strtoul(tmp, NULL, 10);
+  if (tmp != NULL && tmp[0] == '-') {
+    /* RFC 5245 defines the priority as an unsigned 32-bit integer, so a
+     * negative value is not valid on the wire. However, libnice (0.1.21)
+     * formats its guint32 priority with "%d" when generating the candidate
+     * SDP string (agent.c, _generate_candidate_sdp), so every priority with
+     * the high bit set is printed as a negative number. This happens e.g. with
+     * peer-reflexive candidates discovered from STUN checks of clients that
+     * send a PRIORITY attribute >= 2^31 (ESP32). Such strings come back to
+     * us from our own libnice agent, so recover the real value (modulo 2^32)
+     * instead of dropping the candidate, and normalize the string.
+     * Values that a signed 32-bit integer cannot hold are still rejected. */
+    guint64 magnitude = 0;
+
+    if (!parse_uint_in_range (tmp + 1, (guint64) G_MAXINT32 + 1, &magnitude)
+        || magnitude == 0) {
+      GST_WARNING_OBJECT (self, "Invalid ICE candidate priority '%s' in '%s'",
+          tmp, self->priv->candidate);
+      goto end;
+    }
+    priority = G_MAXUINT32 - magnitude + 1;
+
+    if (g_match_info_fetch_named_pos (match_info, "priority", &prio_start,
+            &prio_end)) {
+      gchar *prio_str = g_strdup_printf ("%" G_GUINT64_FORMAT, priority);
+
+      new_candidate = g_strdup_printf ("%.*s%s%s", prio_start,
+          self->priv->candidate, prio_str, self->priv->candidate + prio_end);
+      g_free (prio_str);
+    }
+  } else if (!parse_uint_in_range (tmp, G_MAXUINT32, &priority)) {
+    GST_WARNING_OBJECT (self, "Invalid ICE candidate priority '%s' in '%s'",
+        GST_STR_NULL (tmp), self->priv->candidate);
+    goto end;
+  }
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "componentid");
   if (g_strcmp0 (tmp, "1") == 0) {
-    self->priv->component = KMS_ICE_COMPONENT_RTP;
+    component = KMS_ICE_COMPONENT_RTP;
   } else if (g_strcmp0 (tmp, "2") == 0) {
-    self->priv->component = KMS_ICE_COMPONENT_RTCP;
+    component = KMS_ICE_COMPONENT_RTCP;
   } else {
-    GST_ERROR_OBJECT (self, "Unsupported ICE candidate component %s", tmp);
+    GST_ERROR_OBJECT (self, "Unsupported ICE candidate component %s",
+        GST_STR_NULL (tmp));
     goto end;
   }
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "transport");
   if (g_strcmp0 (tmp, "TCP") == 0 || g_strcmp0 (tmp, "tcp") == 0) {
-    self->priv->protocol = KMS_ICE_PROTOCOL_TCP;
+    protocol = KMS_ICE_PROTOCOL_TCP;
   } else if (g_strcmp0 (tmp, "UDP") == 0 || g_strcmp0 (tmp, "udp") == 0) {
-    self->priv->protocol = KMS_ICE_PROTOCOL_UDP;
+    protocol = KMS_ICE_PROTOCOL_UDP;
   } else {
-    GST_ERROR_OBJECT (self, "Unsupported protocol %s", tmp);
+    GST_ERROR_OBJECT (self, "Unsupported protocol %s", GST_STR_NULL (tmp));
     goto end;
   }
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "type");
   if (g_strcmp0 (tmp, "host") == 0) {
-    self->priv->type = KMS_ICE_CANDIDATE_TYPE_HOST;
+    type = KMS_ICE_CANDIDATE_TYPE_HOST;
   } else if (g_strcmp0 (tmp, "srflx") == 0) {
-    self->priv->type = KMS_ICE_CANDIDATE_TYPE_SRFLX;
+    type = KMS_ICE_CANDIDATE_TYPE_SRFLX;
   } else if (g_strcmp0 (tmp, "prflx") == 0) {
-    self->priv->type = KMS_ICE_CANDIDATE_TYPE_PRFLX;
+    type = KMS_ICE_CANDIDATE_TYPE_PRFLX;
   } else if (g_strcmp0 (tmp, "relay") == 0) {
-    self->priv->type = KMS_ICE_CANDIDATE_TYPE_RELAY;
+    type = KMS_ICE_CANDIDATE_TYPE_RELAY;
   } else {
-    GST_ERROR_OBJECT (self, "Unsupported ICE candidate type %s", tmp);
+    GST_ERROR_OBJECT (self, "Unsupported ICE candidate type %s",
+        GST_STR_NULL (tmp));
     goto end;
   }
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "tcptype");
   if (g_strcmp0 (tmp, "active") == 0) {
-    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE;
+    tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE;
   } else if (g_strcmp0 (tmp, "passive") == 0) {
-    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_PASSIVE;
+    tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_PASSIVE;
   } else if (g_strcmp0 (tmp, "so") == 0) {
-    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_SO;
+    tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_SO;
   } else {
-    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_NONE;
+    tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_NONE;
   }
   g_free (tmp);
 
   tmp = g_match_info_fetch_named (match_info, "raddr");
   if (tmp != NULL && g_strcmp0 (tmp, "") != 0) {
-    self->priv->related_addr = tmp;
+    related_addr = tmp;
   } else {
-    self->priv->related_addr = NULL;
     g_free (tmp);
   }
 
   tmp = g_match_info_fetch_named (match_info, "rport");
   if (tmp != NULL && g_strcmp0 (tmp, "") != 0) {
-    self->priv->related_port = (gint)strtol(tmp, NULL, 10);
+    if (!parse_uint_in_range (tmp, G_MAXUINT16, &related_port)) {
+      GST_WARNING_OBJECT (self,
+          "Invalid ICE candidate related port '%s' in '%s'", tmp,
+          self->priv->candidate);
+      goto end;
+    }
   } else {
-    self->priv->related_port = -1;
+    related_port = G_MAXUINT64;  /* Not provided */
   }
 
-  self->priv->ip = g_match_info_fetch_named (match_info, "addr");
+  foundation = g_match_info_fetch_named (match_info, "foundation");
+  ip = g_match_info_fetch_named (match_info, "addr");
 
-  if (g_str_has_suffix (self->priv->ip, ".local")) {
+  if (g_str_has_suffix (ip, ".local")) {
     // The IP is actually an mDNS address, try to resolve it.
     // https://datatracker.ietf.org/doc/draft-ietf-rtcweb-mdns-ice-candidates/
 
     GError *err = NULL;
     GResolver *resolver = g_resolver_get_default ();
-    GList *addresses = g_resolver_lookup_by_name (resolver, self->priv->ip,
-        NULL, &err);
+    GList *addresses = g_resolver_lookup_by_name (resolver, ip, NULL, &err);
     g_object_unref (resolver);
 
     if (err) {
@@ -206,21 +288,58 @@ kms_ice_candidate_update_values (KmsIceCandidate * self)
       goto end;
     }
 
+    if (addresses == NULL) {
+      GST_DEBUG_OBJECT (self, "Ignore foreign mDNS candidate: no addresses");
+      goto end;
+    }
+
     // Set the resolved address
-    GInetAddress *address = (GInetAddress *) g_list_nth_data (addresses, 0);
-    gchar *resolved_ip = g_inet_address_to_string (address);
-    GST_INFO_OBJECT (self, "mDNS address (%s) resolved: %s", self->priv->ip,
-        resolved_ip);
-    kms_ice_candidate_set_address (self, resolved_ip);
-    g_free (resolved_ip);
+    GInetAddress *address = (GInetAddress *) addresses->data;
+    resolved_ip = g_inet_address_to_string (address);
+    GST_INFO_OBJECT (self, "mDNS address (%s) resolved: %s", ip, resolved_ip);
 
     g_resolver_free_addresses (addresses);
+  }
+
+  /* Everything is valid: commit the results */
+  g_free (self->priv->foundation);
+  g_free (self->priv->ip);
+  g_free (self->priv->related_addr);
+
+  self->priv->foundation = foundation;
+  self->priv->ip = ip;
+  self->priv->related_addr = related_addr;
+  foundation = ip = related_addr = NULL;
+
+  self->priv->port = (guint) port;
+  self->priv->priority = (guint) priority;
+  self->priv->component = component;
+  self->priv->protocol = protocol;
+  self->priv->type = type;
+  self->priv->tcp_type = tcp_type;
+  self->priv->related_port =
+      (related_port == G_MAXUINT64) ? -1 : (gint) related_port;
+
+  if (new_candidate != NULL) {
+    g_free (self->priv->candidate);
+    self->priv->candidate = new_candidate;
+    new_candidate = NULL;
+  }
+
+  if (resolved_ip != NULL) {
+    // Replace the mDNS name with the resolved address in the candidate string
+    kms_ice_candidate_set_address (self, resolved_ip);
   }
 
   ret = TRUE;
 
 end:
   g_free (tmp);
+  g_free (new_candidate);
+  g_free (resolved_ip);
+  g_free (foundation);
+  g_free (ip);
+  g_free (related_addr);
 
   g_match_info_free (match_info);
   g_regex_unref (regex);
