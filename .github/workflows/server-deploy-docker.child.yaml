@@ -28,7 +28,7 @@ on:
         type: "string"
         default: '["amd64", "arm64"]'
       buildAsan:
-        description: "buildAsan: Whether to also build an image with AddressSanitizer"
+        description: "buildAsan: Whether to also build an image with AddressSanitizer (in its own job, whose failure or timeout does not fail this workflow)"
         required: false
         type: "boolean"
         default: false
@@ -118,8 +118,58 @@ jobs:
         working-directory: "docker/kurento-media-server-extras/"
         run: "ci_job_deploy_docker.sh"
 
+  # The AddressSanitizer image compiles Kurento from source, which takes far
+  # longer than the rest of the images (>16 min on amd64 and >25 min on emulated
+  # arm64, measured on loaded machines). It lives in its own job, with its own
+  # timeout, so that it cannot cut the main deploy; and `continue-on-error`
+  # makes the result of this job not count in the result of the workflow.
+  build-asan:
+    if: ${{ inputs.buildAsan }}
+    # Needs the main images: the ASan image is built on top of them.
+    needs: ["build"]
+    continue-on-error: true
+    runs-on: ["self-hosted", "${{ inputs.runnerGroup }}", "${{ matrix.jobArch }}"]
+    strategy:
+      # Run each configuration sequentially.
+      # Docker login & build fails if ran multiple times in parallel.
+      max-parallel: 1
+      matrix:
+        # Select only the *first* distro to use as base for Docker images.
+        # The point of Docker is to abstract the base system, so there is no
+        # need to publish Docker images with different versions of Ubuntu.
+        jobDistro: [ "${{ fromJSON(inputs.jobDistros)[0] }}" ]
+        jobArch: ${{ fromJSON(inputs.jobArchs) }}
+    timeout-minutes: 120
+    steps:
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
+
+      # Action: https://github.com/docker/setup-qemu-action
+      - name: "Set up QEMU for multi-arch builds"
+        uses: "docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1" # v4.4.0
+
+      # Action: https://github.com/docker/setup-buildx-action
+      - name: "Set up Docker Buildx"
+        uses: "docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069" # v4.4.1
+        with:
+          driver-opts: network=host
+
+      - name: "Configure the environment for ci-scripts/"
+        working-directory: "ci-scripts/"
+        run: |
+          echo "$PWD" >>$GITHUB_PATH
+          echo "KURENTO_SCRIPTS_HOME=$PWD" >>$GITHUB_ENV
+          echo "JOB_TIMESTAMP=$(date --utc +%Y%m%d%H%M%S)" >>$GITHUB_ENV
+
+      # Action: https://github.com/actions/download-artifact
+      - name: "Copy artifacts from previous jobs"
+        id: "copy-artifacts"
+        uses: "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333" # v8.0.2
+        with:
+          path: "artifacts/"
+
       - name: "Run job script (AddressSanitizer)"
-        if: ${{ inputs.buildAsan }}
         env:
           JOB_DISTRO: "${{ matrix.jobDistro }}"
           JOB_RELEASE: "${{ inputs.jobRelease }}"

@@ -62,3 +62,12 @@ Until ``arm64`` runners are available, the default value of the ``jobArchs`` inp
 An ``amd64``-only run publishes the Debian repositories without ``arm64`` packages. For Docker images, the tag without architecture suffix (e.g. ``dev-pr-<N>``, ``latest``) is created pointing only to the architectures that were requested in ``jobArchs``, so an ``amd64``-only run never mixes in older ``-arm64`` images.
 
 The ARM64 emulation (QEMU, ``docker run --platform``) is kept in the scripts. It is harmless on a native runner, where the requested platform matches the host. Note that C/C++ tests are skipped in arm64 builds (``DEB_BUILD_OPTIONS=nocheck``).
+
+
+
+Docker images published by CI
+=============================
+
+The *server-deploy-docker* workflow (``server-deploy-docker.child.yaml``) publishes to Docker Hub, for each architecture in ``jobArchs``, these images of ``kurento/kurento-media-server``: the main image (``<tag>-<arch>``), the one with the extra modules (``kurento-media-server-extras``) and, with ``buildAsan`` enabled, the image with AddressSanitizer (tag suffix ``-asan``). The tags without architecture suffix are multi-arch manifests that point to the requested architectures.
+
+The AddressSanitizer image is built in its own job (``build-asan``), after the ``build`` job of the main and extras images, and not as a step of it. This image compiles Kurento from source (``docker/kurento-media-server-asan/``), which takes much longer than the rest (more than 16 minutes on amd64 and more than 25 on emulated arm64, and more on loaded machines). When it shared the job with the main images, the 30 minutes time limit of the job cut it, and the whole run was marked as cancelled even though the packages and the main images were already published. Now ``build-asan`` has its own ``timeout-minutes`` (120) and ``continue-on-error: true``: if the ASan image fails or runs out of time, the job is reported as failed, but it does not change the result of the workflow. After a run, check that job to know if the ``-asan`` images were published.
