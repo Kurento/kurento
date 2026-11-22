@@ -23,6 +23,7 @@
 #include <objects/WebRtcEndpointImpl.hpp>
 #include <IceCandidate.hpp>
 #include <mutex>
+#include <thread>
 #include <condition_variable>
 #include <ModuleManager.hpp>
 #include <KurentoException.hpp>
@@ -180,9 +181,20 @@ static void
 releaseWebRtc (std::shared_ptr<WebRtcEndpointImpl> &ep)
 {
   std::string id = ep->getId();
+  std::weak_ptr<WebRtcEndpointImpl> weak (ep);
 
   ep.reset();
   MediaSet::getMediaSet ()->release (id);
+
+  // The endpoint is destroyed asynchronously. Many test cases connect signal
+  // handlers that capture local variables of the test function by reference;
+  // if the endpoint outlives the test function, a late event (e.g. an ICE
+  // candidate found) would run such handler on a dead stack frame and corrupt
+  // memory in whichever test runs next. Wait until the endpoint is gone, which
+  // guarantees that no more handlers can be invoked.
+  for (int i = 0; i < 1000 && !weak.expired (); i++) {
+    std::this_thread::sleep_for (std::chrono::milliseconds (10));
+  }
 }
 
 static std::shared_ptr <MediaElementImpl>
