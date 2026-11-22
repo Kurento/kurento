@@ -179,6 +179,7 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
 {
   GstElement *sink;
   GstPad *sinkpad;
+  GstPadLinkReturn ret;
 
   if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
     GST_DEBUG_OBJECT (pad, "Connecting audio stream");
@@ -192,8 +193,17 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
   }
 
   sinkpad = gst_element_get_static_pad (sink, "sink");
-  gst_pad_link (pad, sinkpad);
+  ret = gst_pad_link (pad, sinkpad);
   g_object_unref (sinkpad);
+  /* This runs in a streaming thread when the first RTP packet arrives, so a
+   * failure would otherwise only show up as a test timeout. */
+  if (ret != GST_PAD_LINK_OK) {
+    GST_ERROR_OBJECT (pad, "Cannot link to the sink: %s",
+        gst_pad_link_get_name (ret));
+    g_printerr ("ERROR: cannot link %s to its sink: %s\n", GST_PAD_NAME (pad),
+        gst_pad_link_get_name (ret));
+  }
+  fail_unless (ret == GST_PAD_LINK_OK, "Cannot link the src pad to the sink");
   gst_element_sync_state_with_parent (sink);
 }
 
@@ -500,6 +510,13 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (fakesink_answerer), "handoff",
       G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
 
+  /* The sinks must be in the pipeline before the src pads are requested: the
+   * pads are linked from the streaming thread as soon as the first RTP packet
+   * arrives, and linking to an element without parent fails with
+   * GST_PAD_LINK_WRONG_HIERARCHY. */
+  gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
+      NULL);
+
   g_object_set_qdata (G_OBJECT (offerer), audio_sink_quark (),
       fakesink_offerer);
   g_signal_connect (offerer, "pad-added",
@@ -547,9 +564,6 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
-
-  gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
-      NULL);
 
   id = g_timeout_add_seconds (3, print_timedout_pipeline, pipeline);
 

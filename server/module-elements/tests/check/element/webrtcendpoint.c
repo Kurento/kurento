@@ -340,6 +340,7 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
 {
   GstElement *sink;
   GstPad *sinkpad;
+  GstPadLinkReturn ret;
 
   if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
     GST_DEBUG_OBJECT (pad, "Connecting audio stream");
@@ -353,8 +354,17 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
   }
 
   sinkpad = gst_element_get_static_pad (sink, "sink");
-  gst_pad_link (pad, sinkpad);
+  ret = gst_pad_link (pad, sinkpad);
   g_object_unref (sinkpad);
+  /* Runs in a streaming thread: report the failure now instead of as a
+   * test timeout later. */
+  if (ret != GST_PAD_LINK_OK) {
+    GST_ERROR_OBJECT (pad, "Cannot link to the sink: %s",
+        gst_pad_link_get_name (ret));
+    g_printerr ("ERROR: cannot link %s to its sink: %s\n", GST_PAD_NAME (pad),
+        gst_pad_link_get_name (ret));
+  }
+  fail_unless (ret == GST_PAD_LINK_OK, "Cannot link the src pad to the sink");
   gst_element_sync_state_with_parent (sink);
 }
 
