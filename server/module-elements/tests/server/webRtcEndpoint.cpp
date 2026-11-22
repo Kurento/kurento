@@ -145,7 +145,7 @@ GF::~GF()
 
 static void
 exchange_candidate (IceCandidateFound event,
-                    std::shared_ptr <WebRtcEndpointImpl> peer, bool useIpv6)
+                    std::weak_ptr <WebRtcEndpointImpl> weakPeer, bool useIpv6)
 {
   bool isIpv6 = event.getCandidate()->getCandidate().substr (
                   CAND_PREFIX.length() ).find (":") != std::string::npos;
@@ -156,6 +156,8 @@ exchange_candidate (IceCandidateFound event,
 
   BOOST_TEST_MESSAGE ("Offerer: adding candidate " +
                       event.getCandidate()->getCandidate() );
+  std::shared_ptr <WebRtcEndpointImpl> peer = weakPeer.lock ();
+
   if (peer != nullptr) {
     peer->addIceCandidate (event.getCandidate() );
   }
@@ -186,14 +188,19 @@ releaseWebRtc (std::shared_ptr<WebRtcEndpointImpl> &ep)
   ep.reset();
   MediaSet::getMediaSet ()->release (id);
 
-  // The endpoint is destroyed asynchronously. Many test cases connect signal
-  // handlers that capture local variables of the test function by reference;
-  // if the endpoint outlives the test function, a late event (e.g. an ICE
-  // candidate found) would run such handler on a dead stack frame and corrupt
-  // memory in whichever test runs next. Wait until the endpoint is gone, which
-  // guarantees that no more handlers can be invoked.
-  for (int i = 0; i < 1000 && !weak.expired (); i++) {
+  // The endpoint is destroyed asynchronously, and event handlers can still be
+  // invoked until then. Handlers that capture variables of the test function
+  // by reference would run on a dead stack frame if the endpoint outlived the
+  // test function, and corrupt memory in whichever test runs next. Wait until
+  // the endpoint is gone: signal handlers are invoked holding a strong
+  // reference to it, so once it has expired no handler can be running or
+  // start. Every endpoint must be released before the test function returns.
+  for (int i = 0; i < 300 && !weak.expired (); i++) {
     std::this_thread::sleep_for (std::chrono::milliseconds (10));
+  }
+
+  if (!weak.expired ()) {
+    BOOST_ERROR ("WebRtcEndpoint " + id + " was not destroyed after release");
   }
 }
 
@@ -264,12 +271,17 @@ ice_state_changes (bool useIpv6)
   webRtcEpOfferer->setName ("offerer");
   webRtcEpAnswerer->setName ("answerer");
 
-  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  std::weak_ptr <WebRtcEndpointImpl> weakOfferer (webRtcEpOfferer);
+  std::weak_ptr <WebRtcEndpointImpl> weakAnswerer (webRtcEpAnswerer);
+
+  webRtcEpOfferer->signalIceCandidateFound.connect ([weakAnswerer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([weakOfferer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakOfferer, useIpv6);
   });
 
   webRtcEpOfferer->signalIceComponentStateChanged.connect ([&] (
@@ -767,33 +779,44 @@ connectWebrtcEndpoints (std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer,
                         std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer,
                         bool useIpv6)
 {
-  std::atomic<bool> conn_state_changed (false);
-  std::condition_variable cv;
-  std::mutex mtx;
-  std::unique_lock<std::mutex> lck (mtx);
+  // This function returns before the endpoints are released, so the handlers
+  // must not capture its local variables by reference: the state they share
+  // with this function is kept alive by shared_ptr, and the peers are
+  // captured as weak_ptr.
+  struct State {
+    std::atomic<bool> conn_state_changed {false};
+    std::condition_variable cv;
+    std::mutex mtx;
+  };
+  std::shared_ptr <State> state = std::make_shared <State> ();
+  std::unique_lock<std::mutex> lck (state->mtx);
+  std::weak_ptr <WebRtcEndpointImpl> weakOfferer (webRtcEpOfferer);
+  std::weak_ptr <WebRtcEndpointImpl> weakAnswerer (webRtcEpAnswerer);
 
-  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  webRtcEpOfferer->signalIceCandidateFound.connect ([weakAnswerer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([weakOfferer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakOfferer, useIpv6);
   });
 
-  webRtcEpOfferer->signalIceGatheringDone.connect ([&] (
+  webRtcEpOfferer->signalIceGatheringDone.connect ([] (
   IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Offerer: Gathering done");
   });
 
-  webRtcEpAnswerer->signalIceGatheringDone.connect ([&] (
+  webRtcEpAnswerer->signalIceGatheringDone.connect ([] (
   IceGatheringDone event) {
     BOOST_TEST_MESSAGE ("Answerer: Gathering done");
   });
 
-  webRtcEpAnswerer->signalConnectionStateChanged.connect ([&] (
+  webRtcEpAnswerer->signalConnectionStateChanged.connect ([state] (
   ConnectionStateChanged event) {
-    conn_state_changed = true;
-    cv.notify_one();
+    state->conn_state_changed = true;
+    state->cv.notify_one();
   });
 
   std::string offer = webRtcEpOfferer->generateOffer ();
@@ -812,13 +835,13 @@ connectWebrtcEndpoints (std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer,
   webRtcEpOfferer->gatherCandidates ();
   webRtcEpAnswerer->gatherCandidates ();
 
-  if (!cv.wait_for (lck, std::chrono::seconds (TIMEOUT), [&] () {
-  return conn_state_changed.load();
+  if (!state->cv.wait_for (lck, std::chrono::seconds (TIMEOUT), [&] () {
+  return state->conn_state_changed.load();
   }) ) {
     BOOST_ERROR ("Error waiting for connection state change");
   }
 
-  if (!conn_state_changed) {
+  if (!state->conn_state_changed) {
     BOOST_ERROR ("Not conn state chagned");
   }
 
@@ -990,6 +1013,9 @@ check_exchange_candidates_on_sdp ()
       ConnectionState::CONNECTED) {
     BOOST_ERROR ("Connection must be connected");
   }
+
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
 }
 
 static void
