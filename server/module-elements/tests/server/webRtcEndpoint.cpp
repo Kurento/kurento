@@ -200,7 +200,15 @@ releaseWebRtc (std::shared_ptr<WebRtcEndpointImpl> &ep)
   }
 
   if (!weak.expired ()) {
-    BOOST_ERROR ("WebRtcEndpoint " + id + " was not destroyed after release");
+    // Returning would let the test function end while handlers connected to
+    // this endpoint may still run on its dead stack frame. That would corrupt
+    // memory and make some later, unrelated test case crash, so this failure
+    // is not recoverable: report it clearly and abort the process.
+    std::cerr << "FATAL: WebRtcEndpoint " << id
+              << " was not destroyed 3 s after release; aborting the test"
+              << " process because its signal handlers could still run on"
+              << " a dead stack frame" << std::endl;
+    std::abort ();
   }
 }
 
@@ -326,12 +334,17 @@ dtls_connection_state_changes (bool useIpv6)
   webRtcEpOfferer->setName ("offerer");
   webRtcEpAnswerer->setName ("answerer");
 
-  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  std::weak_ptr <WebRtcEndpointImpl> weakOfferer (webRtcEpOfferer);
+  std::weak_ptr <WebRtcEndpointImpl> weakAnswerer (webRtcEpAnswerer);
+
+  webRtcEpOfferer->signalIceCandidateFound.connect ([weakAnswerer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([weakOfferer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakOfferer, useIpv6);
   });
 
 //  webRtcEpOfferer->signalOnIceComponentStateChanged.connect ([&] (
@@ -434,12 +447,17 @@ dtls_quick_connection_dtls_client_test (bool useIpv6)
   webRtcEpOfferer->setName ("offerer");
   webRtcEpAnswerer->setName ("answerer");
 
-  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  std::weak_ptr <WebRtcEndpointImpl> weakOfferer (webRtcEpOfferer);
+  std::weak_ptr <WebRtcEndpointImpl> weakAnswerer (webRtcEpAnswerer);
+
+  webRtcEpOfferer->signalIceCandidateFound.connect ([weakAnswerer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([weakOfferer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakOfferer, useIpv6);
   });
 
   webRtcEpOfferer->signalDtlsConnectionStateChange.connect ([&] (
@@ -544,12 +562,17 @@ dtls_quick_connection_dtls_server_test (bool useIpv6)
   webRtcEpOfferer->setName ("offerer");
   webRtcEpAnswerer->setName ("answerer");
 
-  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  std::weak_ptr <WebRtcEndpointImpl> weakOfferer (webRtcEpOfferer);
+  std::weak_ptr <WebRtcEndpointImpl> weakAnswerer (webRtcEpAnswerer);
+
+  webRtcEpOfferer->signalIceCandidateFound.connect ([weakAnswerer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([weakOfferer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakOfferer, useIpv6);
     //answerer_candidates.push_back (event);
   });
 
@@ -711,12 +734,17 @@ media_state_changes (bool useIpv6)
 
   src->connect (webRtcEpOfferer);
 
-  webRtcEpOfferer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpAnswerer, useIpv6);
+  std::weak_ptr <WebRtcEndpointImpl> weakOfferer (webRtcEpOfferer);
+  std::weak_ptr <WebRtcEndpointImpl> weakAnswerer (webRtcEpAnswerer);
+
+  webRtcEpOfferer->signalIceCandidateFound.connect ([weakAnswerer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakAnswerer, useIpv6);
   });
 
-  webRtcEpAnswerer->signalIceCandidateFound.connect ([&] (IceCandidateFound event) {
-    exchange_candidate (event, webRtcEpOfferer, useIpv6);
+  webRtcEpAnswerer->signalIceCandidateFound.connect ([weakOfferer, useIpv6] (
+  IceCandidateFound event) {
+    exchange_candidate (event, weakOfferer, useIpv6);
   });
 
   webRtcEpOfferer->signalIceGatheringDone.connect ([&] (
