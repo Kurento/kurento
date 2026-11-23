@@ -130,12 +130,7 @@ if [[ -n "${KMS_UID:-}" && "$KMS_UID" != "$RUN_UID" ]]; then
         --gid "$KMS_UID" \
         kurento
 
-    # Run KMS as a child PID; normally, Docker best practices dictate that
-    # the main process should run as PID 1. However this is OK as `runuser`
-    # monitors and wraps the child process, passing through all input/output
-    # and any incoming signal.
-    # See: https://unix.stackexchange.com/questions/269254/why-does-util-linux-runuser-su-fork/269330#269330
-    exec runuser --user kurento --group kurento -- /usr/bin/kurento-media-server "$*"
+    exec setpriv --reuid=kurento --regid=kurento --init-groups --inh-caps=-all --bounding-set=-all --no-new-privs -- /usr/bin/kurento-media-server "$*"
 else
     echo "[Docker entrypoint] Start Kurento Media Server, UID: $RUN_UID"
 
