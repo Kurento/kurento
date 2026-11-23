@@ -63,10 +63,24 @@ static KmsIceCandidate *
 kms_ice_nice_agent_create_candidate_from_nice (NiceAgent * nice_agent,
     NiceCandidate * nice_cand, const char *stream_id)
 {
-  gchar *cand_str = kms_ice_nice_agent_get_candidate_sdp_string (nice_agent,
+  gchar *cand_str;
+  KmsIceCandidate *candidate;
+
+  if (nice_cand == NULL) {
+    return NULL;
+  }
+
+  cand_str = kms_ice_nice_agent_get_candidate_sdp_string (nice_agent,
       nice_cand);
-  KmsIceCandidate *candidate =
-      kms_ice_candidate_new (cand_str, "", 0, stream_id);
+  candidate = kms_ice_candidate_new (cand_str, "", 0, stream_id);
+
+  if (candidate == NULL) {
+    // The only warning for an invalid libnice candidate: callers just
+    // ignore the NULL result.
+    GST_WARNING_OBJECT (nice_agent,
+        "Invalid candidate from libnice, ignoring it: '%s', stream_id: %s, "
+        "component_id: %u", cand_str, stream_id, nice_cand->component_id);
+  }
 
   g_free (cand_str);
 
@@ -114,6 +128,11 @@ kms_ice_nice_agent_new_candidate_full (NiceAgent * agent,
       kms_ice_nice_agent_create_candidate_from_nice (agent, candidate,
           stream_id_str);
 
+  if (kms_candidate == NULL) {
+    g_free (stream_id_str);
+    return;
+  }
+
   GST_LOG_OBJECT (self,
       "[IceCandidateFound] local: '%s', stream_id: %u, component_id: %u",
       kms_ice_candidate_get_candidate (kms_candidate), candidate->stream_id,
@@ -140,6 +159,11 @@ kms_ice_nice_agent_new_remote_candidate_full (NiceAgent * agent,
   KmsIceCandidate *kms_candidate =
       kms_ice_nice_agent_create_candidate_from_nice (agent, candidate,
           stream_id_str);
+
+  if (kms_candidate == NULL) {
+    g_free (stream_id_str);
+    return;
+  }
 
   GST_DEBUG_OBJECT (self,
       "[AddIceCandidate] Found peer-reflexive remote: '%s'",
@@ -314,12 +338,6 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
       lcandidate, stream_id_str);
 
   if (!local_candidate) {
-    gchar *cand_str =
-        kms_ice_nice_agent_get_candidate_sdp_string (agent, lcandidate);
-    GST_WARNING_OBJECT (self,
-        "Invalid local candidate: '%s', stream_id: %u, component_id: %u",
-        cand_str, stream_id, component_id);
-    g_free (cand_str);
     goto end;
   }
 
@@ -327,12 +345,6 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
       rcandidate, stream_id_str);
 
   if (!remote_candidate) {
-    gchar *cand_str =
-        kms_ice_nice_agent_get_candidate_sdp_string (agent, rcandidate);
-    GST_WARNING_OBJECT (self,
-        "Invalid remote candidate: '%s', stream_id: %u, component_id: %u",
-        cand_str, stream_id, component_id);
-    g_free (cand_str);
     goto end;
   }
 
@@ -680,7 +692,9 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
   ret =
       kms_ice_nice_agent_create_candidate_from_nice (nice_agent->priv->agent,
       nice_cand, stream_id);
-  nice_candidate_free (nice_cand);
+  if (nice_cand != NULL) {
+    nice_candidate_free (nice_cand);
+  }
 
   return ret;
 }
