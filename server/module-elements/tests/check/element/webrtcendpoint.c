@@ -404,6 +404,23 @@ connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
       (GClosureNotify) kms_connect_data_destroy, 0);
 }
 
+/* The software AV1 encoder (aom) defaults to cpu-used=0, its slowest and
+ * highest-quality setting: ~3 fps at 320x240 on one core, so negotiating and
+ * getting the first frames through can take longer than the check timeout
+ * when the machine is loaded. These tests only check the RTP/WebRTC plumbing,
+ * not encoding quality, so use the fastest setting. */
+static GstElement *
+create_video_encoder (const gchar * video_enc_name)
+{
+  GstElement *enc = gst_element_factory_make (video_enc_name, NULL);
+
+  if (enc != NULL && g_str_equal (video_enc_name, "av1enc")) {
+    g_object_set (enc, "cpu-used", 8, NULL);
+  }
+
+  return enc;
+}
+
 static void
 test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
     gchar * codec, gboolean bundle,
@@ -419,7 +436,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
-  GstElement *video_enc = gst_element_factory_make (video_enc_name, NULL);
+  GstElement *video_enc = create_video_encoder (video_enc_name);
   GstElement *sender = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *receiver = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
@@ -601,9 +618,9 @@ test_video_sendrecv (const gchar * video_enc_name,
   GstElement *videotestsrc_answerer =
       gst_element_factory_make ("videotestsrc", NULL);
   GstElement *video_enc_offerer =
-      gst_element_factory_make (video_enc_name, NULL);
+      create_video_encoder (video_enc_name);
   GstElement *video_enc_answerer =
-      gst_element_factory_make (video_enc_name, NULL);
+      create_video_encoder (video_enc_name);
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *fakesink_offerer = gst_element_factory_make ("fakesink", NULL);
@@ -956,7 +973,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   GstElement *audio_enc = gst_element_factory_make (audio_enc_name, NULL);
 
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
-  GstElement *video_enc = gst_element_factory_make (video_enc_name, NULL);
+  GstElement *video_enc = create_video_encoder (video_enc_name);
 
   GstElement *sender = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *receiver = gst_element_factory_make ("webrtcendpoint", NULL);
@@ -1143,9 +1160,9 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   GstElement *videotestsrc_answerer =
       gst_element_factory_make ("videotestsrc", NULL);
   GstElement *video_enc_offerer =
-      gst_element_factory_make (video_enc_name, NULL);
+      create_video_encoder (video_enc_name);
   GstElement *video_enc_answerer =
-      gst_element_factory_make (video_enc_name, NULL);
+      create_video_encoder (video_enc_name);
 
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
@@ -1357,9 +1374,9 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   GstElement *videotestsrc_answerer =
       gst_element_factory_make ("videotestsrc", NULL);
   GstElement *video_enc_offerer =
-      gst_element_factory_make (video_enc_name, NULL);
+      create_video_encoder (video_enc_name);
   GstElement *video_enc_answerer =
-      gst_element_factory_make (video_enc_name, NULL);
+      create_video_encoder (video_enc_name);
 
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
