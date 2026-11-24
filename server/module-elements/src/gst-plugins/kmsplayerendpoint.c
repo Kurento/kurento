@@ -1095,8 +1095,9 @@ kms_player_endpoint_play_late_sinks (gpointer data)
     return G_SOURCE_REMOVE;
   }
 
-  /* The pipeline could have left PLAYING since the message was posted (e.g. a
-   * seek with flush): then the sinks are not late, they are waiting for it */
+  /* Shortcut: the pipeline could have left PLAYING since the message was
+   * posted (e.g. a seek with flush), then the sinks are not late, they are
+   * waiting for it. The state is checked again for each sink. */
   GST_OBJECT_LOCK (self->priv->pipeline);
   current = GST_STATE (self->priv->pipeline);
   pending = GST_STATE_PENDING (self->priv->pipeline);
@@ -1116,8 +1117,11 @@ kms_player_endpoint_play_late_sinks (gpointer data)
         current = GST_STATE (sink);
         GST_OBJECT_UNLOCK (sink);
         if (current < GST_STATE_PLAYING) {
+          /* Not a plain sync: the pipeline could have gone back to preroll
+           * since the check above (a seek with flush, or a pause and a
+           * resume), and the helper keeps the sink in PAUSED then */
           GST_DEBUG_OBJECT (sink, "Late sink, bringing it to PLAYING");
-          gst_element_sync_state_with_parent (sink);
+          kms_player_endpoint_sync_sink_state (self, sink);
         }
         g_value_reset (&item);
         break;
