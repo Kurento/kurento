@@ -1,12 +1,27 @@
 #!/usr/bin/env bash
 # Checked with ShellCheck (https://www.shellcheck.net/)
 
-#/ Deploy JavaScript packages with NPM.
+#/ Prepare JavaScript packages for publishing with NPM.
 #/
-#/ Before publishing, 'check_js_package.sh' verifies that the package installs
-#/ from its packed tarball. Set the environment variable
+#/ This script does NOT publish anything. Publishing is done by a separate CI
+#/ job that uses NPM trusted publishing (OIDC), which only works in runners
+#/ hosted by GitHub; see 'publish_js_npm.sh'. This script applies the same
+#/ rules than the publishing script to decide if the package would be published
+#/ (not a development version; version greater than the published one), checks
+#/ the package, and leaves the verified tarball in the directory given by the
+#/ environment variable NPM_TARBALL_DIR.
+#/
+#/ Before leaving the tarball, 'check_js_package.sh' verifies that the package
+#/ installs from it. Set the environment variable
 #/ CHECK_JS_PACKAGE_SKIP_INSTALL=true to skip the actual installation (e.g. when
 #/ the package dependencies are not yet published in the registry).
+#/
+#/ Environment variables
+#/ =====================
+#/
+#/ NPM_TARBALL_DIR
+#/
+#/   Directory where the verified tarball is left. Required.
 
 
 
@@ -36,6 +51,11 @@ command -v npm >/dev/null || {
     log "ERROR: 'npm' is not installed; please install it"
     exit 1
 }
+
+if [[ -z "${NPM_TARBALL_DIR:-}" ]]; then
+    log "ERROR: NPM_TARBALL_DIR is not set"
+    exit 1
+fi
 
 
 
@@ -71,26 +91,26 @@ fi
 
 
 
+# Fix package.json
+# ================
+
+# Apply the same auto-corrections that `npm publish` would do implicitly (e.g.
+# repository.url, references to git repositories), so the package that gets
+# checked is the one that gets published.
+npm pkg fix
+
+
+
 # Check the package
 # =================
 
 # Make sure that the package can be installed from the tarball that is about to
-# be published, before actually publishing it.
+# be published, before actually publishing it. The verified tarball is the one
+# that gets uploaded to the registry later, by `publish_js_npm.sh`.
+CHECK_ARGS=(--keep-tarball "$NPM_TARBALL_DIR")
 if [[ "${CHECK_JS_PACKAGE_SKIP_INSTALL:-false}" == "true" ]]; then
-    "$SELF_DIR/check_js_package.sh" --skip-install
-else
-    "$SELF_DIR/check_js_package.sh"
+    CHECK_ARGS+=(--skip-install)
 fi
+"$SELF_DIR/check_js_package.sh" "${CHECK_ARGS[@]}"
 
-
-
-# Deploy
-# ======
-
-log "Deploying to NPM: ${projectName}@${localVersion}"
-
-# The NPM access token should be available in an environment variable
-# named as given here. Note this is a static string: no var expansion done.
-# shellcheck disable=SC2016
-NPM_CONFIG_USERCONFIG=<(echo '//registry.npmjs.org/:_authToken=${KURENTO_NPM_TOKEN}') \
-npm publish
+log "Package ready to publish: ${projectName}@${localVersion}"

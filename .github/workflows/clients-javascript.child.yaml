@@ -24,11 +24,20 @@ on:
         required: false
         type: "string"
         default: "dev"
+      npmGroup:
+        description: "npmGroup: Group of the NPM package; 'libs' are published before 'client', which depends on them"
+        required: false
+        type: "string"
+        default: "libs"
       runnerGroup:
         description: "runnerGroup: Set of runners where the workflow jobs should be run"
         required: false
         type: "string"
         default: "Linux"
+    outputs:
+      npmTarball:
+        description: "npmTarball: 'true' if a verified NPM tarball was uploaded as artifact, to be published by the calling workflow"
+        value: ${{ jobs.build.outputs.npmTarball }}
 
 defaults:
   run:
@@ -38,6 +47,8 @@ jobs:
   build:
     runs-on: ["self-hosted", "${{ inputs.runnerGroup }}", "amd64"]
     timeout-minutes: 30
+    outputs:
+      npmTarball: ${{ steps.npm.outputs.found }}
     steps:
       # Action: https://github.com/actions/checkout
       - name: "Checkout"
@@ -68,8 +79,11 @@ jobs:
           echo "${{ secrets.KURENTOCI_PRIVATE_SSH_KEY }}" >"$GIT_SSH_KEY_PATH"
           chmod 0400 "$GIT_SSH_KEY_PATH"
 
-          # Env vars used by `deploy_js_npm.sh`.
-          echo "KURENTO_NPM_TOKEN=${{ secrets.KURENTO_NPM_TOKEN }}" >>$GITHUB_ENV
+          # Directory where `ci_job_deploy_js.sh` leaves the verified NPM tarball.
+          # NPM packages are not published here, but by a job of the calling
+          # workflow that runs in a GitHub-hosted runner (NPM trusted publishing).
+          # Note: No need to clean, $RUNNER_TEMP/ is deleted after each run.
+          echo "NPM_TARBALL_PATH=$RUNNER_TEMP/npm-tarballs" >>$GITHUB_ENV
 
           # Env vars used by the Maven settings.xml file.
           echo "KURENTO_MAVEN_SONATYPE_USERNAME=${{ secrets.KURENTO_MAVEN_SONATYPE_USERNAME }}" >>$GITHUB_ENV
@@ -107,3 +121,30 @@ jobs:
       - name: "Run job script (deploy)"
         working-directory: "${{ env.WORKING_DIRECTORY }}"
         run: "ci_job_deploy_js.sh"
+
+      - name: "Find the NPM tarball"
+        id: npm
+        run: |
+          # Only release runs can publish to NPM, whatever the package versions.
+          if [[ "${{ inputs.jobRelease }}" != "true" ]]; then
+            echo "found=false" >>"$GITHUB_OUTPUT"
+            echo "Not a release run (jobRelease=false): no NPM package to publish"
+          elif compgen -G "$NPM_TARBALL_PATH/*.tgz" >/dev/null; then
+            echo "found=true" >>"$GITHUB_OUTPUT"
+            # Artifact names cannot contain slashes.
+            SLUG="$(echo "${{ inputs.directory }}" | sed 's|[^A-Za-z0-9]|-|g')"
+            echo "artifact=npm-${{ inputs.npmGroup }}-$SLUG" >>"$GITHUB_OUTPUT"
+          else
+            echo "found=false" >>"$GITHUB_OUTPUT"
+            echo "No NPM package to publish from this job"
+          fi
+
+      # Action: https://github.com/actions/upload-artifact
+      - name: "Upload the NPM tarball"
+        if: ${{ steps.npm.outputs.found == 'true' }}
+        uses: "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9" # v7.0.2
+        with:
+          name: "${{ steps.npm.outputs.artifact }}"
+          path: "${{ env.NPM_TARBALL_PATH }}/*.tgz"
+          if-no-files-found: "error"
+          retention-days: 7

@@ -26,6 +26,7 @@ jobs:
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "browser/kurento-utils-js/"
+      npmGroup: "final"
       runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
@@ -67,12 +68,30 @@ jobs:
       runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
+  # NPM packages are not published by the jobs that call the child workflow
+  # (self-hosted runners), but by the `publish-npm-*` jobs below, which run in
+  # GitHub-hosted runners because NPM trusted publishing doesn't support
+  # self-hosted runners. Each child job uploads its verified NPM tarball as an
+  # artifact named "npm-<npmGroup>-<directory>", if there is something to publish.
+  #
+  # The `client` package has to be built after its dependencies (kurento-client-*,
+  # kurento-jsonrpc) are published in NPM, because the build resolves them from
+  # the registry.
   client:
-    needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
+    needs: ["module-core", "module-elements", "module-filters", "jsonrpc", "publish-npm-libs"]
+    # The publish job is skipped (not failed) if there is nothing to publish.
+    if: >-
+      ${{ !cancelled()
+      && needs.module-core.result == 'success'
+      && needs.module-elements.result == 'success'
+      && needs.module-filters.result == 'success'
+      && needs.jsonrpc.result == 'success'
+      && contains(fromJSON('["success", "skipped"]'), needs.publish-npm-libs.result) }}
     uses: "./.github/workflows/clients-javascript.child.yaml"
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "clients/javascript/client/"
+      npmGroup: "final"
       runnerGroup: ${{ inputs.runnerGroup }}
     secrets: inherit
 
@@ -81,6 +100,7 @@ jobs:
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-examples/chroma/"
+      npmGroup: "final"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
       runnerGroup: ${{ inputs.runnerGroup }}
@@ -93,6 +113,7 @@ jobs:
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-examples/datachannelexample/"
+      npmGroup: "final"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
       runnerGroup: ${{ inputs.runnerGroup }}
@@ -103,6 +124,7 @@ jobs:
     with:
       jobRelease: ${{ inputs.jobRelease }}
       directory: "server/module-extras/video-sampler/"
+      npmGroup: "final"
       genModuleEnable: true
       genModuleServerVersion: "${{ inputs.jobServerVersion }}"
       runnerGroup: ${{ inputs.runnerGroup }}
@@ -122,3 +144,111 @@ jobs:
   # they are supposed to be a learning resource, not a ready-to-use application.
   #tutorials-js:
   #tutorials-node:
+
+
+  # Publishing to NPM with trusted publishing (OIDC): no NPM token is used.
+  # https://docs.npmjs.com/trusted-publishers
+  #
+  # NPM identifies the workflow by the file that contains these jobs, so the
+  # trusted publisher of each package must be configured in npmjs.com with the
+  # workflow filename "clients-javascript.parent.yaml" and the environment
+  # "npm-publish". Do not rename this file or the environment without updating
+  # that configuration.
+  #
+  # The environment "npm-publish" has required reviewers, which have to approve
+  # the job before it starts. The jobs are skipped, with no approval needed, if
+  # no job produced a package to publish (e.g. development builds).
+  publish-npm-libs:
+    needs: ["module-core", "module-elements", "module-filters", "jsonrpc"]
+    # No partial releases: nothing is published if any of these builds fails.
+    if: >-
+      ${{ !cancelled()
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && contains(needs.*.outputs.npmTarball, 'true') }}
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+    environment: "npm-publish"
+    permissions:
+      contents: "read"
+      id-token: "write"
+    steps:
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: "ci-scripts"
+
+      # Action: https://github.com/actions/setup-node
+      - name: "Setup Node"
+        uses: "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1" # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: "Update npm"
+        # Trusted publishing requires npm >= 11.5.1, which is the exact version
+        # used here. To update it: change it in both publish jobs and, if the
+        # minimum changes, in `ci-scripts/publish_js_npm.sh`; test it with
+        # `npm publish --dry-run` before.
+        run: "npm install --global npm@11.5.1"
+
+      # Action: https://github.com/actions/download-artifact
+      - name: "Download the NPM tarballs"
+        uses: "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333" # v8.0.2
+        with:
+          pattern: "npm-libs-*"
+          merge-multiple: true
+          path: "npm-tarballs"
+
+      - name: "Publish to NPM"
+        run: "ci-scripts/publish_js_npm.sh npm-tarballs"
+
+  publish-npm-final:
+    needs: ["client", "kurento-utils-js", "module-chroma", "module-datachannelexample", "module-videosampler"]
+    # No partial releases: nothing is published unless `client` has run
+    # successfully (it is skipped if its dependencies could not be published),
+    # and no build of this group has failed.
+    if: >-
+      ${{ !cancelled()
+      && needs.client.result == 'success'
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && contains(needs.*.outputs.npmTarball, 'true') }}
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+    environment: "npm-publish"
+    permissions:
+      contents: "read"
+      id-token: "write"
+    steps:
+      # Action: https://github.com/actions/checkout
+      - name: "Checkout"
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: "ci-scripts"
+
+      # Action: https://github.com/actions/setup-node
+      - name: "Setup Node"
+        uses: "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1" # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: "Update npm"
+        # Trusted publishing requires npm >= 11.5.1, which is the exact version
+        # used here. To update it: change it in both publish jobs and, if the
+        # minimum changes, in `ci-scripts/publish_js_npm.sh`; test it with
+        # `npm publish --dry-run` before.
+        run: "npm install --global npm@11.5.1"
+
+      # Action: https://github.com/actions/download-artifact
+      - name: "Download the NPM tarballs"
+        uses: "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333" # v8.0.2
+        with:
+          pattern: "npm-final-*"
+          merge-multiple: true
+          path: "npm-tarballs"
+
+      - name: "Publish to NPM"
+        run: "ci-scripts/publish_js_npm.sh npm-tarballs"

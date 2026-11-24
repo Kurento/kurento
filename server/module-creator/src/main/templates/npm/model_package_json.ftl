@@ -3,15 +3,23 @@
 <#if api_js.npmGit??>
   <#assign bowerGit=api_js.npmGit>
 </#if>
+<#-- Optional: URL of the repository to declare in package.json. npm requires it
+     to match the repository that publishes the package (trusted publishing and
+     provenance). If not set, `npmGit` is used. -->
+<#if api_js.npmRepository??>
+  <#assign repositoryUrl=api_js.npmRepository>
+<#elseif bowerGit??>
+  <#assign repositoryUrl=bowerGit>
+</#if>
 package.json
 {
   "name": "${node_name}",
   "version": "${module.version}",
   "description": "${api_js.npmDescription}",
-<#if bowerGit??>
+<#if repositoryUrl??>
   "repository": {
     "type": "git",
-    "url": "${bowerGit}"
+    "url": "${repositoryUrl}"
   },
 </#if>
 <#if node_name != "kurento-client-core"

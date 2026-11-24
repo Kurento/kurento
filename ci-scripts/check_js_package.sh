@@ -21,6 +21,13 @@
 #/   available yet from the registry (e.g. not yet published).
 #/
 #/   Optional. Default: Disabled.
+#/
+#/ --keep-tarball <Directory>
+#/
+#/   After all checks pass, copy the verified tarball into this directory, so
+#/   it can be published later exactly as it was checked.
+#/
+#/   Optional. Default: Disabled.
 
 
 
@@ -37,10 +44,20 @@ trap_add 'log "==================== END ===================="' EXIT
 set -o xtrace
 
 CFG_SKIP_INSTALL="false"
+CFG_KEEP_TARBALL_DIR=""
 while [[ $# -gt 0 ]]; do
     case "${1-}" in
         --skip-install)
             CFG_SKIP_INSTALL="true"
+            ;;
+        --keep-tarball)
+            if [[ -n "${2-}" ]]; then
+                CFG_KEEP_TARBALL_DIR="$2"
+                shift
+            else
+                log "ERROR: --keep-tarball expects <Directory>"
+                exit 1
+            fi
             ;;
         *)
             log "ERROR: Unknown argument '${1-}'"
@@ -117,8 +134,16 @@ done
 # Install in a clean project
 # ==========================
 
+function keep_tarball {
+    [[ -n "$CFG_KEEP_TARBALL_DIR" ]] || return 0
+    mkdir -p "$CFG_KEEP_TARBALL_DIR"
+    cp "$TARBALL" "$CFG_KEEP_TARBALL_DIR/"
+    log "Verified tarball kept in: $CFG_KEEP_TARBALL_DIR/$TARBALL_NAME"
+}
+
 if [[ "$CFG_SKIP_INSTALL" == "true" ]]; then
     log "Skip installing the tarball (--skip-install)"
+    keep_tarball
     exit 0
 fi
 
@@ -126,7 +151,7 @@ mkdir "$WORK_DIR/project"
 pushd "$WORK_DIR/project"
 npm init --yes >/dev/null
 # Don't expose publishing credentials to the install scripts of dependencies.
-env -u KURENTO_NPM_TOKEN -u NPM_TOKEN -u NODE_AUTH_TOKEN \
+env -u NPM_TOKEN -u NODE_AUTH_TOKEN \
     -u KURENTO_MAVEN_SONATYPE_USERNAME -u KURENTO_MAVEN_SONATYPE_PASSWORD \
     -u KURENTO_MAVEN_DOWNLOAD_USERNAME -u KURENTO_MAVEN_DOWNLOAD_PASSWORD \
     -u KURENTO_MAVEN_UPLOAD_USERNAME -u KURENTO_MAVEN_UPLOAD_PASSWORD \
@@ -135,3 +160,4 @@ env -u KURENTO_NPM_TOKEN -u NPM_TOKEN -u NODE_AUTH_TOKEN \
 popd
 
 log "Package '$TARBALL_NAME' installs correctly"
+keep_tarball
