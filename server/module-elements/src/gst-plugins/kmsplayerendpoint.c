@@ -353,8 +353,7 @@ kms_player_endpoint_dispose (GObject * object)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (object);
 
-  g_clear_object (&self->priv->loop);
-
+  /* The sync handler of the bus uses the loop: remove it first */
   if (self->priv->pipeline != NULL) {
     GstBus *bus;
 
@@ -367,6 +366,8 @@ kms_player_endpoint_dispose (GObject * object)
     gst_object_unref (GST_OBJECT (self->priv->pipeline));
     self->priv->pipeline = NULL;
   }
+
+  g_clear_object (&self->priv->loop);
 
   /* clean up as possible. May be called multiple times */
 
@@ -1021,6 +1022,124 @@ appsink_event_query_probe (GstPad * pad, GstPadProbeInfo * info, gpointer elemen
   return GST_PAD_PROBE_OK;
 }
 
+/* Brings a sink that has just been added to the internal pipeline to the state
+ * of the pipeline, but not to PLAYING before the pipeline has started to play.
+ *
+ * gst_element_sync_state_with_parent() uses the target state of the parent, so
+ * a sink added while the pipeline is still prerolling (the pads of the demuxer
+ * appear then) would go to PLAYING with a base time that the pipeline has not
+ * set yet. The sink (sync=TRUE) would find all the buffers late, and would push
+ * them without waiting for the clock: the initial burst of the first buffers of
+ * the file (up to a second of media) that the consumers have to absorb at once.
+ * Kept in PAUSED, the sink takes part in the preroll of the pipeline, that sets
+ * it to PLAYING with the base time of the pipeline when it is ready (a live
+ * source does not preroll, and its pipeline is already PLAYING when its pads
+ * appear). */
+static void
+kms_player_endpoint_sync_sink_state (KmsPlayerEndpoint * self,
+    GstElement * sink)
+{
+  GstElement *pipeline = self->priv->pipeline;
+  GstState current, pending, target;
+
+  GST_OBJECT_LOCK (pipeline);
+  current = GST_STATE (pipeline);
+  pending = GST_STATE_PENDING (pipeline);
+  target = GST_STATE_TARGET (pipeline);
+  GST_OBJECT_UNLOCK (pipeline);
+
+  if (target == GST_STATE_VOID_PENDING) {
+    target = pending != GST_STATE_VOID_PENDING ? pending : current;
+  }
+
+  if (current == GST_STATE_PLAYING || target != GST_STATE_PLAYING) {
+    gst_element_sync_state_with_parent (sink);
+    return;
+  }
+
+  GST_DEBUG_OBJECT (sink, "Pipeline is not PLAYING yet, waiting for it in "
+      "PAUSED");
+  gst_element_set_state (sink, GST_STATE_PAUSED);
+
+  /* The pipeline could have reached PLAYING before the sink was set to PAUSED.
+   * Note that this is not enough: while the pipeline goes from PAUSED to
+   * PLAYING its state is still PAUSED until it has set the state of all its
+   * children, and the bin ignores the async messages of a sink that is added
+   * (or lowered to PAUSED) in that window, so nobody would bring it to
+   * PLAYING. That case is covered by the state changed message that the
+   * pipeline posts when it commits PLAYING, see
+   * kms_player_endpoint_play_late_sinks(), which is always after the state of
+   * the pipeline has been written. */
+  GST_OBJECT_LOCK (pipeline);
+  current = GST_STATE (pipeline);
+  GST_OBJECT_UNLOCK (pipeline);
+  if (current == GST_STATE_PLAYING) {
+    gst_element_sync_state_with_parent (sink);
+  }
+}
+
+/* Brings to PLAYING the sinks of the internal pipeline that have been left
+ * behind it (see kms_player_endpoint_sync_sink_state()). It runs in the loop
+ * thread, not in the one that posted the message of the state change, which
+ * may hold the state lock of the pipeline. */
+static gboolean
+kms_player_endpoint_play_late_sinks (gpointer data)
+{
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
+  GstIterator *it;
+  GValue item = G_VALUE_INIT;
+  gboolean done = FALSE;
+  GstState current, pending;
+
+  if (self->priv->pipeline == NULL) {
+    return G_SOURCE_REMOVE;
+  }
+
+  /* Shortcut: the pipeline could have left PLAYING since the message was
+   * posted (e.g. a seek with flush), then the sinks are not late, they are
+   * waiting for it. The state is checked again for each sink. */
+  GST_OBJECT_LOCK (self->priv->pipeline);
+  current = GST_STATE (self->priv->pipeline);
+  pending = GST_STATE_PENDING (self->priv->pipeline);
+  GST_OBJECT_UNLOCK (self->priv->pipeline);
+  if (current != GST_STATE_PLAYING || pending != GST_STATE_VOID_PENDING) {
+    return G_SOURCE_REMOVE;
+  }
+
+  it = gst_bin_iterate_sinks (GST_BIN (self->priv->pipeline));
+  while (!done) {
+    switch (gst_iterator_next (it, &item)) {
+      case GST_ITERATOR_OK:{
+        GstElement *sink = g_value_get_object (&item);
+        GstState current;
+
+        GST_OBJECT_LOCK (sink);
+        current = GST_STATE (sink);
+        GST_OBJECT_UNLOCK (sink);
+        if (current < GST_STATE_PLAYING) {
+          /* Not a plain sync: the pipeline could have gone back to preroll
+           * since the check above (a seek with flush, or a pause and a
+           * resume), and the helper keeps the sink in PAUSED then */
+          GST_DEBUG_OBJECT (sink, "Late sink, bringing it to PLAYING");
+          kms_player_endpoint_sync_sink_state (self, sink);
+        }
+        g_value_reset (&item);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      default:
+        done = TRUE;
+        break;
+    }
+  }
+  g_value_unset (&item);
+  gst_iterator_free (it);
+
+  return G_SOURCE_REMOVE;
+}
+
 static void
 kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
     KmsPlayerEndpoint * self)
@@ -1086,7 +1205,7 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
 
   g_object_unref (sinkpad);
 
-  gst_element_sync_state_with_parent (appsink);
+  kms_player_endpoint_sync_sink_state (self, appsink);
 }
 
 static void
@@ -1443,6 +1562,16 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
         kms_player_endpoint_emit_EOS_signal, g_object_ref (self),
         g_object_unref);
+  } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_STATE_CHANGED) {
+    GstState new_state;
+
+    gst_message_parse_state_changed (msg, NULL, &new_state, NULL);
+    if (GST_MESSAGE_SRC (msg) == GST_OBJECT_CAST (self->priv->pipeline) &&
+        new_state == GST_STATE_PLAYING) {
+      kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+          kms_player_endpoint_play_late_sinks, g_object_ref (self),
+          g_object_unref);
+    }
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
     if (g_str_has_prefix (GST_OBJECT_NAME (msg->src), "decodebin")) {
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
