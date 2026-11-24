@@ -112,6 +112,12 @@ export PUSH_IMAGES="yes"
 BUILD_ARGS=""
 BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
+# Invalidate the cached Docker layers that install the Kurento packages
+# whenever the Apt repository changes. Otherwise, BuildKit would reuse a layer
+# with an older package, because neither the Dockerfile nor the other build
+# arguments change between two builds of the same repository name.
+KMS_APT_STATE="$("$BASEPATH/get_apt_repo_state.sh" "$DOCKER_KMS_VERSION" "$JOB_DISTRO")"
+BUILD_ARGS+=" KMS_APT_STATE=$KMS_APT_STATE"
 KMS_VERSION_TAG=$(echo $DOCKER_KMS_VERSION | tr '/' '_')
 
 # Match the tag suffix logic from container_build_multiarch.sh
