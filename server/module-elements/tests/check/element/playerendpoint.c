@@ -586,7 +586,7 @@ typedef struct _BFramesStats
   GstElement *pipeline;         /* if set, track max_lead */
   gint64 max_lead;              /* max of PTS - running time of the pipeline */
   gint64 first_lead;            /* the same, of the first buffer */
-  gint64 arrival0;              /* monotonic time (us) of the first buffer */
+  gint64 arrival0;              /* monotonic time (us) of the 2nd buffer */
   GstClockTime ts0;             /* its timestamp (DTS, or PTS if none) */
   gint64 max_ahead;             /* max of (media time - time since the first
                                  * buffer): >0 is delivered faster than real
@@ -639,10 +639,13 @@ bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
         GST_BUFFER_DTS (buf) : GST_BUFFER_PTS (buf);
     gint64 now = g_get_monotonic_time ();
 
-    if (stats->count == 0) {
+    /* The reference is the second buffer: the first one goes through the
+     * preroll and may be delayed by the negotiation or by a loaded machine,
+     * which would make the following ones look as if they were ahead */
+    if (stats->count == 1) {
       stats->arrival0 = now;
       stats->ts0 = ts;
-    } else {
+    } else if (stats->count > 1) {
       stats->max_ahead = MAX (stats->max_ahead,
           ((gint64) ts - (gint64) stats->ts0) -
           (now - stats->arrival0) * GST_USECOND);
@@ -1896,36 +1899,45 @@ GST_END_TEST;
  * before the pipeline has a valid base time, or the first buffers come out as a
  * burst (up to a second of media at once) that the elements downstream, such as
  * the leaky queue in front of an encoder that is still starting, cannot
- * absorb. The first buffer is the preroll one, so the reference is it. */
-#define BURST_MAX_AHEAD (150 * GST_MSECOND)
+ * absorb. The reference is the second buffer, see bframes_stats_probe(). */
+#define BURST_MAX_AHEAD (100 * GST_MSECOND)
 
-static void
+/* Returns an error message (to be freed) or NULL. The temporary files are not
+ * removed here, so the test can do it before it fails. */
+static gchar *
 burst_check_play (const gchar * src, gboolean encoded, const gchar * name)
 {
   BFramesStats out_v, out_a;
   guint i;
 
-  /* The burst is a race: repeat */
-  for (i = 0; i < 5; i++) {
-    fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a, encoded, 0),
-        "Playback failed");
-    fail_unless (out_v.count > 0 && out_a.count > 0,
-        "A track without buffers");
+  /* The burst is a race: repeat (a failure shows in the first one with the
+   * burst, the test has to be well below the timeout of the suite) */
+  for (i = 0; i < 2; i++) {
+    if (!bframes_play (src, 0, NULL, &out_v, &out_a, encoded, 0)) {
+      return g_strdup_printf ("%s: playback failed", name);
+    }
+    if (out_v.count == 0 || out_a.count == 0) {
+      return g_strdup_printf ("%s: a track without buffers", name);
+    }
     fprintf (stderr, "%s: media delivered ahead of real time: video %"
         G_GINT64_FORMAT " ms, audio %" G_GINT64_FORMAT " ms\n", name,
         out_v.max_ahead / GST_MSECOND, out_a.max_ahead / GST_MSECOND);
-    fail_unless (out_v.max_ahead < BURST_MAX_AHEAD &&
-        out_a.max_ahead < BURST_MAX_AHEAD,
-        "%s: initial burst: video %" G_GINT64_FORMAT " ms, audio %"
-        G_GINT64_FORMAT " ms of media delivered ahead of real time", name,
-        out_v.max_ahead / GST_MSECOND, out_a.max_ahead / GST_MSECOND);
+    if (out_v.max_ahead >= BURST_MAX_AHEAD ||
+        out_a.max_ahead >= BURST_MAX_AHEAD) {
+      return g_strdup_printf ("%s: initial burst: video %" G_GINT64_FORMAT
+          " ms, audio %" G_GINT64_FORMAT " ms of media delivered ahead of "
+          "real time", name, out_v.max_ahead / GST_MSECOND,
+          out_a.max_ahead / GST_MSECOND);
+    }
   }
+
+  return NULL;
 }
 
 GST_START_TEST (check_no_initial_burst)
 {
   static const gchar *const files[] = { "src.ts", NULL };
-  gchar *dir, *src;
+  gchar *dir, *src, *error;
 
   if (!bframes_have_elements ("check_no_initial_burst", encoders_av)) {
     return;
@@ -1939,11 +1951,14 @@ GST_START_TEST (check_no_initial_burst)
     return;
   }
 
-  burst_check_play (src, TRUE, "ENCODED");
-  burst_check_play (src, FALSE, "DECODED");
+  error = burst_check_play (src, TRUE, "ENCODED");
+  if (error == NULL) {
+    error = burst_check_play (src, FALSE, "DECODED");
+  }
 
   g_free (src);
   bframes_remove_tmp_dir (dir, files);
+  fail_unless (error == NULL, "%s", error);
 }
 
 GST_END_TEST;
