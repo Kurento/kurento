@@ -38,9 +38,19 @@ APT_REPO_URL="${APT_REPO_URL:-http://ubuntu.openvidu.io}"
 
 URL="$APT_REPO_URL/$REPO_NAME/dists/$DISTRO/Release"
 
+# Use curl if available, otherwise wget (the only one required on the runners).
+fetch() {
+    if command -v curl >/dev/null; then
+        curl --fail --silent --show-error --location --connect-timeout 10 \
+            --retry 3 --retry-delay 2 --max-time 30 "$1"
+    else
+        wget --quiet --output-document=- --connect-timeout=10 --timeout=30 \
+            --tries=4 --waitretry=2 "$1"
+    fi
+}
+
 if STATE="$(
-    curl --fail --silent --show-error --location \
-        --retry 3 --retry-delay 2 --max-time 30 "$URL" \
+    fetch "$URL" \
     | sha256sum | cut --delimiter=' ' --fields=1
 )" && [[ "$STATE" =~ ^[0-9a-f]{64}$ ]] \
 && [[ "$STATE" != "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" ]]; then
