@@ -586,6 +586,11 @@ typedef struct _BFramesStats
   GstElement *pipeline;         /* if set, track max_lead */
   gint64 max_lead;              /* max of PTS - running time of the pipeline */
   gint64 first_lead;            /* the same, of the first buffer */
+  gint64 arrival0;              /* monotonic time (us) of the first buffer */
+  GstClockTime ts0;             /* its timestamp (DTS, or PTS if none) */
+  gint64 max_ahead;             /* max of (media time - time since the first
+                                 * buffer): >0 is delivered faster than real
+                                 * time */
   gchar offset_preroll[40];     /* offset time of the player, in the preroll */
   gchar offset_play[40];        /* and when playing (empty: none) */
 } BFramesStats;
@@ -602,6 +607,7 @@ bframes_stats_init (BFramesStats * stats)
   stats->seg_start = 0;
   stats->max_lead = G_MININT64;
   stats->first_lead = G_MININT64;
+  stats->max_ahead = G_MININT64;
   stats->prev_dts = GST_CLOCK_TIME_NONE;
   stats->min_dts_gap = G_MAXINT64;
   stats->max_dts_gap = G_MININT64;
@@ -628,6 +634,20 @@ bframes_stats_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   }
 
   buf = GST_PAD_PROBE_INFO_BUFFER (info);
+  if (GST_BUFFER_DTS_IS_VALID (buf) || GST_BUFFER_PTS_IS_VALID (buf)) {
+    GstClockTime ts = GST_BUFFER_DTS_IS_VALID (buf) ?
+        GST_BUFFER_DTS (buf) : GST_BUFFER_PTS (buf);
+    gint64 now = g_get_monotonic_time ();
+
+    if (stats->count == 0) {
+      stats->arrival0 = now;
+      stats->ts0 = ts;
+    } else {
+      stats->max_ahead = MAX (stats->max_ahead,
+          ((gint64) ts - (gint64) stats->ts0) -
+          (now - stats->arrival0) * GST_USECOND);
+    }
+  }
   if (stats->count == 0) {
     stats->first_pts = GST_BUFFER_PTS (buf);
     stats->first_dts = GST_BUFFER_DTS (buf);
@@ -1871,6 +1891,63 @@ GST_START_TEST (check_decoded_delayed_audio_running_pipeline)
 
 GST_END_TEST;
 
+/* The buffers that the player delivers keep the pace of the media from the
+ * very first one: the sinks of its internal pipeline must not push anything
+ * before the pipeline has a valid base time, or the first buffers come out as a
+ * burst (up to a second of media at once) that the elements downstream, such as
+ * the leaky queue in front of an encoder that is still starting, cannot
+ * absorb. The first buffer is the preroll one, so the reference is it. */
+#define BURST_MAX_AHEAD (150 * GST_MSECOND)
+
+static void
+burst_check_play (const gchar * src, gboolean encoded, const gchar * name)
+{
+  BFramesStats out_v, out_a;
+  guint i;
+
+  /* The burst is a race: repeat */
+  for (i = 0; i < 5; i++) {
+    fail_unless (bframes_play (src, 0, NULL, &out_v, &out_a, encoded, 0),
+        "Playback failed");
+    fail_unless (out_v.count > 0 && out_a.count > 0,
+        "A track without buffers");
+    fprintf (stderr, "%s: media delivered ahead of real time: video %"
+        G_GINT64_FORMAT " ms, audio %" G_GINT64_FORMAT " ms\n", name,
+        out_v.max_ahead / GST_MSECOND, out_a.max_ahead / GST_MSECOND);
+    fail_unless (out_v.max_ahead < BURST_MAX_AHEAD &&
+        out_a.max_ahead < BURST_MAX_AHEAD,
+        "%s: initial burst: video %" G_GINT64_FORMAT " ms, audio %"
+        G_GINT64_FORMAT " ms of media delivered ahead of real time", name,
+        out_v.max_ahead / GST_MSECOND, out_a.max_ahead / GST_MSECOND);
+  }
+}
+
+GST_START_TEST (check_no_initial_burst)
+{
+  static const gchar *const files[] = { "src.ts", NULL };
+  gchar *dir, *src;
+
+  if (!bframes_have_elements ("check_no_initial_burst", encoders_av)) {
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.ts", NULL);
+  if (!bframes_generate_av_source (TS_START_TIME, 0, FALSE, src)) {
+    g_free (src);
+    bframes_remove_tmp_dir (dir, files);
+    return;
+  }
+
+  burst_check_play (src, TRUE, "ENCODED");
+  burst_check_play (src, FALSE, "DECODED");
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
+}
+
+GST_END_TEST;
+
 #ifdef ENABLE_EXPERIMENTAL_TESTS
 
 GST_START_TEST (check_set_encoded_media)
@@ -1949,6 +2026,7 @@ playerendpoint_suite (void)
   tcase_add_test (tc_chain, check_encoded_mp4_two_edits);
   tcase_add_test (tc_chain, check_encoded_bframes_av_delayed_audio);
   tcase_add_test (tc_chain, check_decoded_delayed_audio_running_pipeline);
+  tcase_add_test (tc_chain, check_no_initial_burst);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
   tcase_add_test (tc_chain, check_set_encoded_media);
 #endif

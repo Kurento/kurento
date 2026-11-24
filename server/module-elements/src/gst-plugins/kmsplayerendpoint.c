@@ -1021,6 +1021,49 @@ appsink_event_query_probe (GstPad * pad, GstPadProbeInfo * info, gpointer elemen
   return GST_PAD_PROBE_OK;
 }
 
+/* Brings a sink that has just been added to the internal pipeline to the state
+ * of the pipeline, but not to PLAYING before the pipeline has started to play.
+ *
+ * gst_element_sync_state_with_parent() uses the target state of the parent, so
+ * a sink added while the pipeline is still prerolling (the pads of the demuxer
+ * appear then) would go to PLAYING with a base time that the pipeline has not
+ * set yet. The sink (sync=TRUE) would find all the buffers late, and would push
+ * them without waiting for the clock: the initial burst of the first buffers of
+ * the file (up to a second of media) that the consumers have to absorb at once.
+ * Kept in PAUSED, the sink takes part in the preroll of the pipeline, that sets
+ * it to PLAYING with the base time of the pipeline when it is ready (a live
+ * source does not preroll, and its pipeline is already PLAYING when its pads
+ * appear). */
+static void
+kms_player_endpoint_sync_sink_state (KmsPlayerEndpoint * self,
+    GstElement * sink)
+{
+  GstElement *pipeline = self->priv->pipeline;
+  GstState current, target;
+
+  gst_element_get_state (pipeline, &current, NULL, 0);
+  target = GST_STATE_TARGET (pipeline);
+  if (target == GST_STATE_VOID_PENDING) {
+    target = current;
+  }
+
+  if (current == GST_STATE_PLAYING || target != GST_STATE_PLAYING) {
+    gst_element_sync_state_with_parent (sink);
+    return;
+  }
+
+  GST_DEBUG_OBJECT (sink, "Pipeline is not PLAYING yet, waiting for it in "
+      "PAUSED");
+  gst_element_set_state (sink, GST_STATE_PAUSED);
+
+  /* The pipeline could have started to play just now, after it has set the
+   * state of its children but before the sink was set to PAUSED */
+  gst_element_get_state (pipeline, &current, NULL, 0);
+  if (current == GST_STATE_PLAYING) {
+    gst_element_sync_state_with_parent (sink);
+  }
+}
+
 static void
 kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
     KmsPlayerEndpoint * self)
@@ -1086,7 +1129,7 @@ kms_player_endpoint_uridecodebin_pad_added (GstElement * element, GstPad * pad,
 
   g_object_unref (sinkpad);
 
-  gst_element_sync_state_with_parent (appsink);
+  kms_player_endpoint_sync_sink_state (self, appsink);
 }
 
 static void
