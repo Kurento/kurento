@@ -145,6 +145,10 @@ export PUSH_IMAGES="yes"
 BUILD_ARGS=""
 BUILD_ARGS+=" UBUNTU_CODENAME=$JOB_DISTRO"
 BUILD_ARGS+=" KMS_VERSION=$DOCKER_KMS_VERSION"
+# Invalidate the cached Docker layers that install packages and build Kurento
+# whenever the Apt repository changes (see `ci_job_deploy_docker.sh`).
+KMS_APT_STATE="$("$BASEPATH/get_apt_repo_state.sh" "$DOCKER_KMS_VERSION" "$JOB_DISTRO")"
+BUILD_ARGS+=" KMS_APT_STATE=$KMS_APT_STATE"
 BUILD_ARGS+=" KMS_IMAGE=$DOCKER_KMS_IMAGE"
 BUILD_ARGS+=" GCC_VERSION=$DOCKER_GCC_VERSION"
 export BUILD_ARGS

@@ -117,6 +117,17 @@ RUN \
 echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$KMS_VERSION $UBUNTU_CODENAME main" \
     >/etc/apt/sources.list.d/kurento.list
 
+# Cache-busting argument for all layers that install packages from the Kurento
+# repository. The CI job sets it to a digest of the Apt repository state, so
+# that these layers are rebuilt whenever new packages are published, instead of
+# reusing a cached layer that contains an older version of the packages.
+# NOTE: Must be declared *after* the layers that are safe to cache (base tools,
+# repository key and repository line), and *before* the first layer that
+# installs something from the Kurento repository.
+# NOTE: BuildKit exposes every declared ARG to the `RUN` instructions that
+# follow, so a different value makes all of them miss the cache.
+ARG KMS_APT_STATE="unset"
+
 # Install GStremer Rust rtp plugins (custom build for kurento, needed for AV1 RTP support)
 RUN \ 
 apt-get $APT_ARGS update  \

@@ -117,6 +117,12 @@ gpg --no-default-keyring \
     --recv-keys 234821A61B67740F89BFD669FC8A16625AFA7A83 && \
     echo "deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/${KMS_VERSION} ${UBUNTU_CODENAME} main" >/etc/apt/sources.list.d/kurento.list
 
+# Cache-busting argument. The CI job sets it to a digest of the Apt repository
+# state, so that the layers below (which install packages from the Kurento
+# repository and build Kurento from source) are rebuilt whenever new packages
+# are published, instead of reusing a stale cached layer.
+ARG KMS_APT_STATE="unset"
+
 # Install development tools.
 RUN \
 apt-get $APT_ARGS update && apt-get $APT_ARGS install --no-install-recommends --yes \
