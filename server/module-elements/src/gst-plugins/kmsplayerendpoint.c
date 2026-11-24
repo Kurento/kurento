@@ -353,8 +353,7 @@ kms_player_endpoint_dispose (GObject * object)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (object);
 
-  g_clear_object (&self->priv->loop);
-
+  /* The sync handler of the bus uses the loop: remove it first */
   if (self->priv->pipeline != NULL) {
     GstBus *bus;
 
@@ -367,6 +366,8 @@ kms_player_endpoint_dispose (GObject * object)
     gst_object_unref (GST_OBJECT (self->priv->pipeline));
     self->priv->pipeline = NULL;
   }
+
+  g_clear_object (&self->priv->loop);
 
   /* clean up as possible. May be called multiple times */
 
@@ -1088,8 +1089,19 @@ kms_player_endpoint_play_late_sinks (gpointer data)
   GstIterator *it;
   GValue item = G_VALUE_INIT;
   gboolean done = FALSE;
+  GstState current, pending;
 
   if (self->priv->pipeline == NULL) {
+    return G_SOURCE_REMOVE;
+  }
+
+  /* The pipeline could have left PLAYING since the message was posted (e.g. a
+   * seek with flush): then the sinks are not late, they are waiting for it */
+  GST_OBJECT_LOCK (self->priv->pipeline);
+  current = GST_STATE (self->priv->pipeline);
+  pending = GST_STATE_PENDING (self->priv->pipeline);
+  GST_OBJECT_UNLOCK (self->priv->pipeline);
+  if (current != GST_STATE_PLAYING || pending != GST_STATE_VOID_PENDING) {
     return G_SOURCE_REMOVE;
   }
 
