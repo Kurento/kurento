@@ -125,7 +125,11 @@ jobs:
       - name: "Find the NPM tarball"
         id: npm
         run: |
-          if compgen -G "$NPM_TARBALL_PATH/*.tgz" >/dev/null; then
+          # Only release runs can publish to NPM, whatever the package versions.
+          if [[ "${{ inputs.jobRelease }}" != "true" ]]; then
+            echo "found=false" >>"$GITHUB_OUTPUT"
+            echo "Not a release run (jobRelease=false): no NPM package to publish"
+          elif compgen -G "$NPM_TARBALL_PATH/*.tgz" >/dev/null; then
             echo "found=true" >>"$GITHUB_OUTPUT"
             # Artifact names cannot contain slashes.
             SLUG="$(echo "${{ inputs.directory }}" | sed 's|[^A-Za-z0-9]|-|g')"
