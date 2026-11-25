@@ -23,6 +23,7 @@
 #include <iostream>
 #include "version.hpp"
 #include <glib/gstdio.h>
+#include <glib-unix.h>
 #include <ftw.h>
 
 #include <boost/log/utility/setup/common_attributes.hpp>
@@ -73,29 +74,22 @@ createTransportFromConfig (boost::property_tree::ptree &config)
   return transport;
 }
 
-static void
-signal_handler (int signo)
+/* Runs in the context of the main loop (not in a signal handler context), so it
+ * is safe to call any GLib function from here. */
+static gboolean
+terminate_cb (gpointer user_data)
 {
   static unsigned int __terminated = 0;
+  int signo = GPOINTER_TO_INT (user_data);
 
-  switch (signo) {
-  case SIGINT:
-  case SIGTERM:
-    if (__terminated == 0) {
-      GST_DEBUG ("Terminating.");
-      loop->quit ();
-    }
-
-    __terminated = 1;
-    break;
-
-  case SIGPIPE:
-    GST_DEBUG ("Ignore sigpipe signal");
-    break;
-
-  default:
-    break;
+  if (__terminated == 0) {
+    GST_DEBUG ("Terminating (signal %d).", signo);
+    loop->quit ();
   }
+
+  __terminated = 1;
+
+  return G_SOURCE_CONTINUE;
 }
 
 static void
@@ -116,7 +110,6 @@ kms_init_dependencies (int *argc, char ***argv)
 int
 main (int argc, char **argv)
 {
-  struct sigaction signalAction {};
   std::shared_ptr<Transport> transport;
   boost::property_tree::ptree config;
   std::string confFile;
@@ -230,12 +223,14 @@ main (int argc, char **argv)
     exit (1);
   }
 
-  /* Install our signal handler */
-  signalAction.sa_handler = signal_handler;
+  /* SIGINT and SIGTERM are handled from the main loop: calling
+   * g_main_loop_quit() from an asynchronous signal handler is not
+   * async-signal-safe (it takes the GMainContext mutex) and can deadlock. */
+  g_unix_signal_add (SIGINT, terminate_cb, GINT_TO_POINTER (SIGINT));
+  g_unix_signal_add (SIGTERM, terminate_cb, GINT_TO_POINTER (SIGTERM));
 
-  sigaction(SIGINT, &signalAction, nullptr);
-  sigaction(SIGTERM, &signalAction, nullptr);
-  sigaction(SIGPIPE, &signalAction, nullptr);
+  /* Writing to a closed socket must not kill the server */
+  signal (SIGPIPE, SIG_IGN);
 
   GST_INFO ("Kurento Media Server version: %s", get_version () );
 
