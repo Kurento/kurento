@@ -398,6 +398,18 @@ kms_player_endpoint_generate_base_time (KmsPlayerEndpoint * self)
   GstClockTime base_time;
 
   clock = gst_element_get_clock (GST_ELEMENT (self));
+  if (clock == NULL) {
+    /* The player has not got the clock of its pipeline yet: the samples can
+     * arrive before the pipeline of the player has gone to PLAYING (the
+     * internal pipeline runs on its own, and the sinks that are kept in PAUSED
+     * are released as soon as it is PLAYING, see
+     * kms_player_endpoint_sync_sink_state()). The running time of the element
+     * is zero until then, so that is the base time that the streams must
+     * start from. */
+    GST_DEBUG_OBJECT (self, "No clock yet, using a base time of zero");
+    return 0;
+  }
+
   base_time =
       gst_clock_get_time (clock) -
       gst_element_get_base_time (GST_ELEMENT (self));
