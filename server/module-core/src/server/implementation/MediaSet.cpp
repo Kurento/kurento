@@ -108,7 +108,14 @@ MediaSet::deleteMediaSet()
 
   GST_INFO ("Destroying mediaSet");
 
+  /* Destroying the MediaSet joins the threads of its worker pool. A worker may
+   * be blocked waiting for the global mutex (for example in the slot connected
+   * to signalEmpty above), so the mutex MUST NOT be held while joining the
+   * threads, or the server deadlocks on shutdown. */
+  auto toDelete = std::move (mediaSet);
   mediaSet.reset();
+  lock.unlock();
+  toDelete.reset();
 }
 
 void MediaSet::doGarbageCollection ()
