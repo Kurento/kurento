@@ -144,6 +144,9 @@ typedef struct _KmsPtsData
   gboolean pts_handled;
   /* The base time raise of the stream has been warned about */
   gboolean raise_warned;
+  /* Sequence number of the last FLUSH_STOP processed by the appsink, 0 if none
+   * (the sequence numbers of the events are never 0) */
+  guint32 flush_seqnum;
 } KmsPtsData;
 
 static void
@@ -836,11 +839,38 @@ appsink_new_event_cb (GstAppSink *appsink, gpointer user_data)
 {
   GstEvent *event;
   GstMiniObject *obj;
+  KmsPtsData *pts_data;
+  gboolean default_handling = FALSE;
 
   obj = gst_app_sink_pull_object (appsink);
   if (GST_IS_EVENT (obj)) {
     event = GST_EVENT (obj);
-    return process_event (appsink, GST_APP_SRC(user_data), event);
+    pts_data =
+        (KmsPtsData *) g_object_get_qdata (G_OBJECT (appsink), pts_quark ());
+
+    /* When the callback reports an event as handled, the appsink does not
+     * pass it to its parent class (GstBaseSink). The base sink needs the
+     * FLUSH_STOP to leave its flushing state: without it, after a flushing
+     * seek it rejects every buffer and the demuxer ends with "Internal data
+     * flow problem" / "Internal data stream error". And it needs the SEGMENT
+     * that follows (it has the same sequence number, the one of the seek) to
+     * get the running time of the buffers right: the flush resets it, and the
+     * buffers come with the timestamps of the new position, so the sink would
+     * hold them for as long as the position. The player has already forwarded
+     * the event to the appsrc (see process_event), the sink gets to process it
+     * as well. Any other segment is not passed (that is how it always was). */
+    if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
+      default_handling = TRUE;
+      pts_data->flush_seqnum = GST_EVENT_SEQNUM (event);
+    } else if (GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT &&
+        pts_data->flush_seqnum != 0 &&
+        GST_EVENT_SEQNUM (event) == pts_data->flush_seqnum) {
+      default_handling = TRUE;
+      pts_data->flush_seqnum = 0;
+    }
+
+    return process_event (appsink, GST_APP_SRC(user_data), event) &&
+        !default_handling;
   }
   return FALSE;
 }
