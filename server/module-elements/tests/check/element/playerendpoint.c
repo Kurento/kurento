@@ -593,6 +593,9 @@ typedef struct _BFramesStats
                                  * time */
   gchar offset_preroll[40];     /* offset time of the player, in the preroll */
   gchar offset_play[40];        /* and when playing (empty: none) */
+  guint out_of_segment;         /* buffers before the start of the segment (only
+                                 * when seeking, see bframes_segment_probe) */
+  guint no_segment;             /* buffers with no segment (idem) */
 } BFramesStats;
 
 static void
@@ -860,7 +863,17 @@ typedef struct _BFramesPlayback
   guint video_seen;
   gboolean seek_called;
   gboolean seek_ok;
+  guint out_of_segment;         /* buffers before the start of their segment */
+  guint no_segment;             /* buffers with no segment event before */
 } BFramesPlayback;
+
+/* Per pad data of bframes_segment_probe() */
+typedef struct _BFramesSegmentData
+{
+  BFramesPlayback *play;
+  gboolean has_segment;
+  GstClockTime start;
+} BFramesSegmentData;
 
 static gboolean
 bframes_bus_cb (GstBus * bus, GstMessage * msg, gpointer user_data)
@@ -969,6 +982,39 @@ bframes_seek_cb (gpointer user_data)
   return FALSE;
 }
 
+/* The elements that follow the player (an encoder, a muxer) clip the buffers
+ * that are before the start of the segment, and need a segment to get the
+ * buffers: check both at the output of the player, also after a seek. */
+static GstPadProbeReturn
+bframes_segment_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  BFramesSegmentData *sd = data;
+
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
+    GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+      const GstSegment *segment;
+
+      gst_event_parse_segment (event, &segment);
+      sd->has_segment = segment->format == GST_FORMAT_TIME;
+      sd->start = segment->start;
+    } else if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
+      sd->has_segment = FALSE;
+    }
+  } else {
+    GstBuffer *buf = GST_PAD_PROBE_INFO_BUFFER (info);
+
+    if (!sd->has_segment) {
+      g_atomic_int_inc (&sd->play->no_segment);
+    } else if (GST_BUFFER_PTS_IS_VALID (buf) && GST_BUFFER_PTS (buf) < sd->start) {
+      g_atomic_int_inc (&sd->play->out_of_segment);
+    }
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
 /* Calls set-position (from the main loop, as the server does it from another
  * thread than the streaming ones) once the video has delivered some buffers */
 static GstPadProbeReturn
@@ -1002,9 +1048,17 @@ bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
 
   gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_stats_probe,
       is_audio ? &play->out_audio : &play->out, NULL);
-  if (!is_audio && play->seek_position >= 0) {
-    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_seek_probe,
-        play, NULL);
+  if (play->seek_position >= 0) {
+    BFramesSegmentData *sd = g_new0 (BFramesSegmentData, 1);
+
+    sd->play = play;
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER |
+        GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, bframes_segment_probe, sd,
+        g_free);
+    if (!is_audio) {
+      gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_seek_probe,
+          play, NULL);
+    }
   }
 
   if (play->recorder != NULL && !is_audio) {
@@ -1155,6 +1209,8 @@ bframes_play_seek (const gchar * src_path, KmsRecordingProfile profile,
 
   *out = play.out;
   out->pipeline = NULL;
+  out->out_of_segment = play.out_of_segment;
+  out->no_segment = play.no_segment;
   if (out_audio != NULL) {
     *out_audio = play.out_audio;
     out_audio->pipeline = NULL;
@@ -2051,7 +2107,13 @@ seek_check_play (const gchar * src, gboolean encoded, const gchar * name)
     return g_strdup_printf ("%s: %u audio buffers, expected about 65", name,
         out_a.count);
   }
-  /* The timestamps are rebased: they never go back or repeat */
+  /* The segment that the elements after the player get is the one that fits
+   * the timestamps of the player, also after the seek (they would clip them) */
+  if (out_v.out_of_segment > 0 || out_v.no_segment > 0) {
+    return g_strdup_printf ("%s: %u buffers before the start of the segment, "
+        "%u without segment", name, out_v.out_of_segment, out_v.no_segment);
+  }
+
   if (out_v.min_dts_gap <= 0) {
     return g_strdup_printf ("%s: video DTS go back or repeat (min gap %"
         G_GINT64_FORMAT " ms)", name, out_v.min_dts_gap / GST_MSECOND);
