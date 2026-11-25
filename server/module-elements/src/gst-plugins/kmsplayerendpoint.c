@@ -559,7 +559,8 @@ kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
 }
 
 static gboolean
-process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
+process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
+    gboolean seek_segment)
 {
   GstPad *src;
   GstPad *sink;
@@ -570,7 +571,7 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
     return TRUE;
   }
 
-  if (self->priv->use_encoded_media &&
+  if (self->priv->use_encoded_media && !seek_segment &&
       GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
     /* In encoded mode the timestamps are translated to the running time of the
      * segments (see process_sample), which is not what the segment of the
@@ -581,6 +582,35 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
     GST_DEBUG_OBJECT (self, "Not pushing %" GST_PTR_FORMAT, event);
     gst_event_unref (event);
     return TRUE;
+  }
+
+  if (seek_segment && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+    /* The FLUSH_STOP that precedes this segment (it is forwarded to the pad
+     * that follows the appsrc, see below) removes the segment of that pad, so
+     * a new one is needed, or the data flows without segment. It is not the
+     * one of the demuxer: that one starts at the new position, but the player
+     * gives the buffers the timestamps of its own timeline (see
+     * process_sample), which goes on from where it was. The elements that
+     * follow (e.g. an encoder or a muxer) clip what is before the start of the
+     * segment, that is, they would drop the whole stream. Use the same start
+     * as the first segment of the stream (zero), without stop (the timeline
+     * of the player is not the one of the file). The sink of the player keeps
+     * the original one, to compute the running time. */
+    const GstSegment *orig;
+    GstSegment segment;
+    GstEvent *new_event;
+
+    gst_event_parse_segment (event, &orig);
+    gst_segment_copy_into (orig, &segment);
+    segment.start = 0;
+    segment.time = 0;
+    segment.base = 0;
+    segment.position = 0;
+    segment.stop = GST_CLOCK_TIME_NONE;
+    new_event = gst_event_new_segment (&segment);
+    gst_event_set_seqnum (new_event, GST_EVENT_SEQNUM (event));
+    gst_event_unref (event);
+    event = new_event;
   }
 
   GST_DEBUG_OBJECT (self, "Pushing event %" GST_PTR_FORMAT, event);
@@ -869,7 +899,8 @@ appsink_new_event_cb (GstAppSink *appsink, gpointer user_data)
       pts_data->flush_seqnum = 0;
     }
 
-    return process_event (appsink, GST_APP_SRC(user_data), event) &&
+    return process_event (appsink, GST_APP_SRC(user_data), event,
+        default_handling && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) &&
         !default_handling;
   }
   return FALSE;
