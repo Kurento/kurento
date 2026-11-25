@@ -150,6 +150,10 @@ F::stop_server ()
   const int timeout_ms = 10000;
   pid_t ret = 0;
 
+  if (pid <= 0) {
+    return;
+  }
+
   kill (pid, SIGINT);
 
   // Bounded wait: never block forever if the server does not terminate
@@ -164,11 +168,13 @@ F::stop_server ()
   }
 
   if (ret == 0) {
+    const pid_t killed_pid = pid;
+
     kill (pid, SIGKILL);
-    ret = waitpid (pid, &status, 0);
+    waitpid (pid, &status, 0);
     pid = -1;
     boost::filesystem::remove_all (configDir);
-    BOOST_ERROR ("Media server (pid " << ret << ") did not exit within "
+    BOOST_ERROR ("Media server (pid " << killed_pid << ") did not exit within "
         << timeout_ms / 1000 << " s after SIGINT, killed with SIGKILL");
     return;
   }
