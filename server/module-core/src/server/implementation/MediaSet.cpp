@@ -74,6 +74,9 @@ void
 MediaSet::deleteMediaSet()
 {
   std::condition_variable_any cv;
+  /* Captured by reference by the slot below, which may still be running when
+   * the pipelines are gone: it must outlive the destruction of the MediaSet. */
+  bool empty = false;
   std::unique_lock <std::recursive_mutex> lock (mutex);
 
   if (!mediaSet) {
@@ -83,8 +86,6 @@ MediaSet::deleteMediaSet()
   auto pipes = mediaSet->getPipelines();
 
   if (!pipes.empty() ) {
-    bool empty = false;
-
     auto sig = mediaSet->signalEmpty.connect ([&cv, &empty] () {
       std::unique_lock <std::recursive_mutex> lock (mutex);
       empty = true;
@@ -108,7 +109,13 @@ MediaSet::deleteMediaSet()
 
   GST_INFO ("Destroying mediaSet");
 
-  mediaSet.reset();
+  /* Destroying the MediaSet joins the threads of its worker pool. A worker may
+   * be blocked waiting for the global mutex (for example in the slot connected
+   * to signalEmpty above), so the mutex MUST NOT be held while joining the
+   * threads, or the server deadlocks on shutdown. */
+  auto toDelete = std::move (mediaSet);
+  lock.unlock();
+  toDelete.reset();
 }
 
 void MediaSet::doGarbageCollection ()

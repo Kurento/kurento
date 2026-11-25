@@ -34,6 +34,8 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <unistd.h>
 #include <gst/gst.h>
 
 #include <errno.h>
@@ -144,11 +146,40 @@ F::start_server ()
 void
 F::stop_server ()
 {
-  int status;
+  int status = 0;
+  const int timeout_ms = 10000;
+  pid_t ret = 0;
+
+  if (pid <= 0) {
+    return;
+  }
 
   kill (pid, SIGINT);
 
-  if (pid != waitpid (pid, &status, 0) ) {
+  // Bounded wait: never block forever if the server does not terminate
+  for (int elapsed = 0; elapsed < timeout_ms; elapsed += 50) {
+    ret = waitpid (pid, &status, WNOHANG);
+
+    if (ret != 0) {
+      break;
+    }
+
+    usleep (50 * 1000);
+  }
+
+  if (ret == 0) {
+    const pid_t killed_pid = pid;
+
+    kill (pid, SIGKILL);
+    waitpid (pid, &status, 0);
+    pid = -1;
+    boost::filesystem::remove_all (configDir);
+    BOOST_ERROR ("Media server (pid " << killed_pid << ") did not exit within "
+        << timeout_ms / 1000 << " s after SIGINT, killed with SIGKILL");
+    return;
+  }
+
+  if (ret != pid) {
     BOOST_FAIL ("Error waiting for child process");
   }
 

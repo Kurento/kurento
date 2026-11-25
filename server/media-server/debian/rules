@@ -7,3 +7,8 @@
 
 override_dh_auto_configure:
 	dh_auto_configure -- -DGENERATE_TESTS=TRUE
+
+# Bound the duration of every test, so a hung test fails the build instead of
+# blocking the job until the CI timeout.
+override_dh_auto_test:
+	dh_auto_test -- "ARGS+=--timeout 1200"
