@@ -144,8 +144,9 @@ typedef struct _KmsPtsData
   gboolean pts_handled;
   /* The base time raise of the stream has been warned about */
   gboolean raise_warned;
-  /* Sequence number of the last FLUSH_STOP processed by the appsink, 0 if none
-   * (the sequence numbers of the events are never 0) */
+  /* A FLUSH_STOP has been processed by the appsink and its SEGMENT (the one of
+   * the seek) has not arrived yet, and the sequence number of that FLUSH_STOP */
+  gboolean flush_pending;
   guint32 flush_seqnum;
 } KmsPtsData;
 
@@ -558,6 +559,30 @@ kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
   return gst_element_set_state (self->priv->pipeline, state);
 }
 
+/* The FLUSH_STOP that follows a seek (it is forwarded to the pad that follows
+ * the appsrc, see process_event) removes the segment of that pad, so a new one
+ * is needed, or the data flows without segment. It is not the one of the
+ * demuxer: that one starts at the new position, but the player gives the
+ * buffers the timestamps of its own timeline (see process_sample), which goes
+ * on from where it was. The elements that follow (e.g. an encoder or a muxer)
+ * clip what is before the start of the segment, that is, they would drop the
+ * whole stream. Use the same segment as the first one of the stream: from zero,
+ * without stop (the timeline of the player is not the one of the file) and at
+ * normal rate (it is the only one that the timeline of the player supports).
+ * The sink of the player keeps the original one, to compute the running time. */
+static GstEvent *
+kms_player_endpoint_new_seek_segment (GstEvent * from)
+{
+  GstSegment segment;
+  GstEvent *event;
+
+  gst_segment_init (&segment, GST_FORMAT_TIME);
+  event = gst_event_new_segment (&segment);
+  gst_event_set_seqnum (event, GST_EVENT_SEQNUM (from));
+
+  return event;
+}
+
 static gboolean
 process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
     gboolean seek_segment)
@@ -585,30 +610,8 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
   }
 
   if (seek_segment && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
-    /* The FLUSH_STOP that precedes this segment (it is forwarded to the pad
-     * that follows the appsrc, see below) removes the segment of that pad, so
-     * a new one is needed, or the data flows without segment. It is not the
-     * one of the demuxer: that one starts at the new position, but the player
-     * gives the buffers the timestamps of its own timeline (see
-     * process_sample), which goes on from where it was. The elements that
-     * follow (e.g. an encoder or a muxer) clip what is before the start of the
-     * segment, that is, they would drop the whole stream. Use the same start
-     * as the first segment of the stream (zero), without stop (the timeline
-     * of the player is not the one of the file). The sink of the player keeps
-     * the original one, to compute the running time. */
-    const GstSegment *orig;
-    GstSegment segment;
-    GstEvent *new_event;
+    GstEvent *new_event = kms_player_endpoint_new_seek_segment (event);
 
-    gst_event_parse_segment (event, &orig);
-    gst_segment_copy_into (orig, &segment);
-    segment.start = 0;
-    segment.time = 0;
-    segment.base = 0;
-    segment.position = 0;
-    segment.stop = GST_CLOCK_TIME_NONE;
-    new_event = gst_event_new_segment (&segment);
-    gst_event_set_seqnum (new_event, GST_EVENT_SEQNUM (event));
     gst_event_unref (event);
     event = new_event;
   }
@@ -619,7 +622,18 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
   g_object_unref (src);
 
   if (sink != NULL) {
+    GstEvent *fresh = NULL;
+
+    /* Right after the FLUSH_STOP and from the same thread, so nothing that the
+     * appsrc had queued reaches the pad without segment */
+    if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
+      fresh = kms_player_endpoint_new_seek_segment (event);
+    }
+
     gst_pad_send_event (sink, event);
+    if (fresh != NULL) {
+      gst_pad_send_event (sink, fresh);
+    }
     g_object_unref (sink);
   }
 
@@ -891,12 +905,19 @@ appsink_new_event_cb (GstAppSink *appsink, gpointer user_data)
      * as well. Any other segment is not passed (that is how it always was). */
     if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
       default_handling = TRUE;
+      pts_data->flush_pending = TRUE;
       pts_data->flush_seqnum = GST_EVENT_SEQNUM (event);
     } else if (GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT &&
-        pts_data->flush_seqnum != 0 &&
-        GST_EVENT_SEQNUM (event) == pts_data->flush_seqnum) {
+        pts_data->flush_pending) {
+      /* The first segment after the flush is the one of the seek, whatever
+       * its sequence number (it is the same one in the demuxers tried) */
+      if (GST_EVENT_SEQNUM (event) != pts_data->flush_seqnum) {
+        GST_DEBUG_OBJECT (appsink, "The segment after the flush has another "
+            "sequence number (%u) than the flush (%u)",
+            GST_EVENT_SEQNUM (event), pts_data->flush_seqnum);
+      }
       default_handling = TRUE;
-      pts_data->flush_seqnum = 0;
+      pts_data->flush_pending = FALSE;
     }
 
     return process_event (appsink, GST_APP_SRC(user_data), event,

@@ -861,6 +861,8 @@ typedef struct _BFramesPlayback
   gint64 seek_position;         /* set-position to call (ns), <0: none */
   guint seek_after;             /* video buffers to wait for before seeking */
   guint video_seen;
+  guint seek_source;            /* idle of the seek */
+  gboolean seek_ran;            /* the idle has run (and is gone) */
   gboolean seek_called;
   gboolean seek_ok;
   guint out_of_segment;         /* buffers before the start of their segment */
@@ -976,6 +978,7 @@ bframes_seek_cb (gpointer user_data)
 
   GST_DEBUG ("Seeking to %" GST_TIME_FORMAT,
       GST_TIME_ARGS (play->seek_position));
+  play->seek_ran = TRUE;
   g_signal_emit_by_name (play->player, "set-position", play->seek_position,
       &ret);
   play->seek_ok = ret;
@@ -1024,7 +1027,7 @@ bframes_seek_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   if (g_atomic_int_add (&play->video_seen, 1) + 1 == play->seek_after) {
     play->seek_called = TRUE;
-    g_idle_add (bframes_seek_cb, play);
+    play->seek_source = g_idle_add (bframes_seek_cb, play);
   }
 
   return GST_PAD_PROBE_OK;
@@ -1092,14 +1095,14 @@ bframes_play_seek (const gchar * src_path, KmsRecordingProfile profile,
     guint seek_after)
 {
   BFramesPlayback play = { 0, };
-
-  play.seek_position = seek_position;
-  play.seek_after = seek_after;
   GstBus *bus;
   gchar *uri, *padname = NULL;
   guint watch_id;
   GstDebugLevel prev_threshold;
   GstCheckLogFilter *log_filter;
+
+  play.seek_position = seek_position;
+  play.seek_after = seek_after;
 
   bframes_stats_init (&play.out);
   bframes_stats_init (&play.out_audio);
@@ -1179,6 +1182,9 @@ bframes_play_seek (const gchar * src_path, KmsRecordingProfile profile,
 
   if (play.timeout_id != 0) {
     g_source_remove (play.timeout_id);
+  }
+  if (play.seek_source != 0 && !play.seek_ran) {
+    g_source_remove (play.seek_source);
   }
   gst_element_set_state (play.pipeline, GST_STATE_NULL);
   gst_object_unref (play.pipeline);
