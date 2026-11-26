@@ -96,10 +96,15 @@ fi
 # BEGIN in-place Docker container commands.
 docker run --pull always --rm -i \
     --env DOCKER_KMS_VERSION="$DOCKER_KMS_VERSION" \
+    --mount type=bind,src="$BASEPATH",dst=/ci-scripts,readonly \
     "ubuntu:$JOB_DISTRO" /bin/bash <<'DOCKERCOMMANDS'
 
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
+
+# Load common functions (e.g. `apt_update_retry`).
+# This is a clean container, so the host's functions are not available.
+source /ci-scripts/bash.conf.sh
 
 # Trace all commands
 set -o xtrace
@@ -115,7 +120,7 @@ source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 echo "# Install required tools"
 # =============================
 
-apt-get update ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     build-essential \
     ca-certificates \
     cmake \
@@ -127,7 +132,7 @@ apt-get update ; apt-get install --no-install-recommends --yes \
 echo "# Install Kurento Media Server"
 # ===================================
 
-apt-get update ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     gnupg
 
 # Add Kurento repository key for apt-get.
@@ -142,11 +147,11 @@ deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$DOCKER_
 EOF
 
 # Install Kurento Media Server.
-apt-get update ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     kurento-media-server
 
 # Install Kurento Media Server development packages.
-apt-get update ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     kurento-media-server-dev
 
 
@@ -155,7 +160,7 @@ echo "# Install debug symbols"
 # ============================
 
 # Add Ubuntu debug repository key for apt-get.
-apt-get update ; apt-get install --yes ubuntu-dbgsym-keyring \
+apt_update_retry ; apt_retry apt-get install --yes ubuntu-dbgsym-keyring \
 || apt-key adv \
     --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622

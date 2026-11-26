@@ -326,6 +326,9 @@ if [[ "$CFG_INSTALL_KURENTO" == "true" ]]; then
     fi
 fi
 
+# Apt arguments (e.g. proxy) for the `apt-get update` run by `apt_retry`.
+APT_RETRY_UPDATE_ARGS=("${APT_ARGS[@]}")
+
 # If requested, install local package files
 if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     log "Install package files from '$CFG_INSTALL_FILES_DIR'"
@@ -333,7 +336,7 @@ if [[ "$CFG_INSTALL_FILES" == "true" ]]; then
     if ls -f $(find "$CFG_INSTALL_FILES_DIR" -name '*.*deb') >/dev/null 2>&1; then
         dpkg --install $(find "$CFG_INSTALL_FILES_DIR" -name '*.*deb') || {
             log "Try to install remaining dependencies"
-            apt-get update ; apt-get "${APT_ARGS[@]}" install --fix-broken --yes
+            apt_update_retry "${APT_ARGS[@]}" ; apt_retry apt-get "${APT_ARGS[@]}" install --fix-broken --yes
         }
     else
         log "No '.deb' package files are present!"
@@ -357,7 +360,7 @@ log "Install build dependencies"
 (
     export DEBIAN_FRONTEND=noninteractive
 
-    apt-get update ; mk-build-deps --install --remove \
+    apt_update_retry "${APT_ARGS[@]}" ; apt_retry mk-build-deps --install --remove \
         --tool="apt-get ${APT_ARGS[*]} -o Debug::pkgProblemResolver=yes --target-release 'a=$DISTRIB_CODENAME-backports' --no-install-recommends --yes" \
         ./debian/control
 )
