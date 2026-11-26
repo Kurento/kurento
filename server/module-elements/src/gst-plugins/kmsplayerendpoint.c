@@ -559,30 +559,6 @@ kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
   return gst_element_set_state (self->priv->pipeline, state);
 }
 
-/* The FLUSH_STOP that follows a seek (it is forwarded to the pad that follows
- * the appsrc, see process_event) removes the segment of that pad, so a new one
- * is needed, or the data flows without segment. It is not the one of the
- * demuxer: that one starts at the new position, but the player gives the
- * buffers the timestamps of its own timeline (see process_sample), which goes
- * on from where it was. The elements that follow (e.g. an encoder or a muxer)
- * clip what is before the start of the segment, that is, they would drop the
- * whole stream. Use the same segment as the first one of the stream: from zero,
- * without stop (the timeline of the player is not the one of the file) and at
- * normal rate (it is the only one that the timeline of the player supports).
- * The sink of the player keeps the original one, to compute the running time. */
-static GstEvent *
-kms_player_endpoint_new_seek_segment (GstEvent * from)
-{
-  GstSegment segment;
-  GstEvent *event;
-
-  gst_segment_init (&segment, GST_FORMAT_TIME);
-  event = gst_event_new_segment (&segment);
-  gst_event_set_seqnum (event, GST_EVENT_SEQNUM (from));
-
-  return event;
-}
-
 static gboolean
 process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
     gboolean seek_segment)
@@ -609,11 +585,37 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
     return TRUE;
   }
 
-  if (seek_segment && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
-    GstEvent *new_event = kms_player_endpoint_new_seek_segment (event);
+  if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
+    /* The flush goes through the appsrc, not around it (to the pad that
+     * follows): the appsrc drops what it has queued from before the seek, its
+     * streaming task stops (the FLUSH_START unlocks it) and, with the
+     * FLUSH_STOP, restarts after pushing the FLUSH_STOP downstream and a new
+     * segment, from zero and without stop (the timeline of the player is not
+     * the one of the file), all of it serialized with the buffers by the
+     * streaming thread of the appsrc. So nothing from before the seek gets to
+     * the elements that follow after the flush, nor without a segment. The
+     * segment of the demuxer is not forwarded, see below. The FLUSH_START is
+     * not seen by the callback of the appsink, the one of the flush is sent
+     * here. */
+    GstEvent *start = gst_event_new_flush_start ();
 
+    gst_event_set_seqnum (start, GST_EVENT_SEQNUM (event));
+    GST_DEBUG_OBJECT (self, "Flushing %s: %" GST_PTR_FORMAT,
+        GST_ELEMENT_NAME (appsrc), event);
+    gst_element_send_event (GST_ELEMENT (appsrc), start);
+    gst_element_send_event (GST_ELEMENT (appsrc), event);
+    return TRUE;
+  }
+
+  if (seek_segment && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+    /* The segment of a flushing seek starts at the new position, but the
+     * player gives the buffers the timestamps of its own timeline, that goes on
+     * from where it was: the elements that follow (e.g. an encoder or a muxer)
+     * would clip them all. The appsrc has sent its own after the flush. The
+     * sink of the player does process it, to compute the running time. */
+    GST_DEBUG_OBJECT (self, "Not pushing seek %" GST_PTR_FORMAT, event);
     gst_event_unref (event);
-    event = new_event;
+    return TRUE;
   }
 
   GST_DEBUG_OBJECT (self, "Pushing event %" GST_PTR_FORMAT, event);
@@ -622,18 +624,7 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
   g_object_unref (src);
 
   if (sink != NULL) {
-    GstEvent *fresh = NULL;
-
-    /* Right after the FLUSH_STOP and from the same thread, so nothing that the
-     * appsrc had queued reaches the pad without segment */
-    if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
-      fresh = kms_player_endpoint_new_seek_segment (event);
-    }
-
     gst_pad_send_event (sink, event);
-    if (fresh != NULL) {
-      gst_pad_send_event (sink, fresh);
-    }
     g_object_unref (sink);
   }
 

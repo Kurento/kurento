@@ -1056,7 +1056,8 @@ bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
 
     sd->play = play;
     gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER |
-        GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, bframes_segment_probe, sd,
+        GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM | GST_PAD_PROBE_TYPE_EVENT_FLUSH,
+        bframes_segment_probe, sd,
         g_free);
     if (!is_audio) {
       gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_seek_probe,
