@@ -96,10 +96,15 @@ fi
 # BEGIN in-place Docker container commands.
 docker run --pull always --rm -i \
     --env DOCKER_KMS_VERSION="$DOCKER_KMS_VERSION" \
+    --mount type=bind,src="$BASEPATH",dst=/ci-scripts,readonly \
     "ubuntu:$JOB_DISTRO" /bin/bash <<'DOCKERCOMMANDS'
 
 # Bash options for strict error checking
 set -o errexit -o errtrace -o pipefail -o nounset
+
+# Load common functions (e.g. `apt_update_retry`).
+# This is a clean container, so the host's functions are not available.
+source /ci-scripts/bash.conf.sh
 
 # Trace all commands
 set -o xtrace

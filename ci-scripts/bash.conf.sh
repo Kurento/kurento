@@ -105,8 +105,13 @@ if [[ "${1:-}" =~ ^(-h|--help)$ ]]; then usage; fi
 #
 # This function retries while `apt-get update` exits with an error, or while its
 # output has "Failed to fetch" errors or "Some index files failed to download".
-# Waits grow linearly between attempts, up to a maximum. After the last attempt
-# fails, an error is logged and the function returns non-zero.
+# Waits grow linearly between attempts, up to a maximum.
+#
+# If all attempts fail, a WARNING is logged and the function returns 0, which
+# is the same as plain `apt-get update` when its result is ignored; this
+# tolerates optional or flaky repositories (e.g. Ubuntu ddebs), and a later
+# `apt-get install` still fails if the indexes it needs are really missing.
+# With APT_UPDATE_STRICT=true, an ERROR is logged and it returns 1 instead.
 #
 # Extra arguments are passed to `apt-get`, e.g.: `apt_update_retry -qq`.
 #
@@ -115,12 +120,14 @@ if [[ "${1:-}" =~ ^(-h|--help)$ ]]; then usage; fi
 # * APT_UPDATE_DELAY: Seconds to wait after the first failure (default: 15).
 #   The wait grows by the same amount in each attempt (15, 30, 45, ...).
 # * APT_UPDATE_DELAY_MAX: Maximum wait between attempts (default: 60).
+# * APT_UPDATE_STRICT: If "true", fail when all attempts fail (default: false).
 #
 # Usage: replace `apt-get update` with `apt_update_retry`.
 function apt_update_retry {
     local MAX="${APT_UPDATE_RETRIES:-5}"
     local DELAY="${APT_UPDATE_DELAY:-15}"
     local DELAY_MAX="${APT_UPDATE_DELAY_MAX:-60}"
+    local STRICT="${APT_UPDATE_STRICT:-false}"
     local OUT; OUT="$(mktemp)"
     local N=1 RC WAIT
 
@@ -130,7 +137,7 @@ function apt_update_retry {
         apt-get update "$@" 2>&1 | tee "$OUT" || RC="${PIPESTATUS[0]}"
 
         if ((RC == 0)) && ! grep -qE \
-            '^(E|W): Failed to fetch|Some index files failed to download|Mirror sync in progress' \
+            '^(E|W): Failed to fetch|Some index files failed to download' \
             "$OUT"; then
             rm -f "$OUT"
             return 0
@@ -138,14 +145,19 @@ function apt_update_retry {
 
         if ((N >= MAX)); then
             rm -f "$OUT"
-            log "ERROR: 'apt-get update' failed after $MAX attempts"
-            return 1
+            if [[ "$STRICT" == "true" ]]; then
+                log "ERROR: 'apt-get update' failed after $MAX attempts"
+                return 1
+            fi
+            log "WARNING: 'apt-get update' failed after $MAX attempts; continuing, indexes may be incomplete"
+            return 0
         fi
 
         WAIT=$((DELAY * N))
         if ((WAIT > DELAY_MAX)); then WAIT="$DELAY_MAX"; fi
         log "WARNING: 'apt-get update' failed (attempt $N of $MAX, exit code $RC); retrying in $WAIT seconds"
-        sleep "$WAIT"
+        # Don't leave the temporary file behind if interrupted while waiting.
+        sleep "$WAIT" || { rm -f "$OUT"; return 1; }
         N=$((N + 1))
     done
 }
