@@ -144,6 +144,10 @@ typedef struct _KmsPtsData
   gboolean pts_handled;
   /* The base time raise of the stream has been warned about */
   gboolean raise_warned;
+  /* A FLUSH_STOP has been processed by the appsink and its SEGMENT (the one of
+   * the seek) has not arrived yet, and the sequence number of that FLUSH_STOP */
+  gboolean flush_pending;
+  guint32 flush_seqnum;
 } KmsPtsData;
 
 static void
@@ -555,8 +559,11 @@ kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
   return gst_element_set_state (self->priv->pipeline, state);
 }
 
+/* drop_seek_segment: the event is the segment that follows a flushing seek, it
+ * is not forwarded (the appsrc sends its own after the flush) */
 static gboolean
-process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
+process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
+    gboolean drop_seek_segment)
 {
   GstPad *src;
   GstPad *sink;
@@ -567,7 +574,7 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
     return TRUE;
   }
 
-  if (self->priv->use_encoded_media &&
+  if (self->priv->use_encoded_media && !drop_seek_segment &&
       GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
     /* In encoded mode the timestamps are translated to the running time of the
      * segments (see process_sample), which is not what the segment of the
@@ -576,6 +583,46 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event)
      * follow the previous one, as with the second edit of an MP4): the segment
      * of the appsrc, that starts at zero, is the one that fits them. */
     GST_DEBUG_OBJECT (self, "Not pushing %" GST_PTR_FORMAT, event);
+    gst_event_unref (event);
+    return TRUE;
+  }
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
+    /* The flush goes through the appsrc, not around it (to the pad that
+     * follows): the appsrc drops what it has queued from before the seek, its
+     * streaming task stops (the FLUSH_START unlocks it) and, with the
+     * FLUSH_STOP, restarts after pushing the FLUSH_STOP downstream and a new
+     * segment, from zero and without stop (the timeline of the player is not
+     * the one of the file), all of it serialized with the buffers by the
+     * streaming thread of the appsrc. So nothing from before the seek gets to
+     * the elements that follow after the flush, nor without a segment. The
+     * segment of the demuxer is not forwarded, see below. The FLUSH_START is
+     * not seen by the callback of the appsink, the one of the flush is sent
+     * here. */
+    GstEvent *start = gst_event_new_flush_start ();
+    GstEvent *stop = gst_event_new_flush_stop (FALSE);
+
+    /* Without reset of the running time: the flush crosses the shared
+     * MediaPipeline, whose elements would otherwise reset their start time
+     * (RESET_TIME of the agnosticbin). The appsink of the player gets its own
+     * copy of the original event, that resets the time of the internal one. */
+    gst_event_set_seqnum (start, GST_EVENT_SEQNUM (event));
+    gst_event_set_seqnum (stop, GST_EVENT_SEQNUM (event));
+    GST_DEBUG_OBJECT (self, "Flushing %s: %" GST_PTR_FORMAT,
+        GST_ELEMENT_NAME (appsrc), stop);
+    gst_element_send_event (GST_ELEMENT (appsrc), start);
+    gst_element_send_event (GST_ELEMENT (appsrc), stop);
+    gst_event_unref (event);
+    return TRUE;
+  }
+
+  if (drop_seek_segment && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+    /* The segment of a flushing seek starts at the new position, but the
+     * player gives the buffers the timestamps of its own timeline, that goes on
+     * from where it was: the elements that follow (e.g. an encoder or a muxer)
+     * would clip them all. The appsrc has sent its own after the flush. The
+     * sink of the player does process it, to compute the running time. */
+    GST_DEBUG_OBJECT (self, "Not pushing seek %" GST_PTR_FORMAT, event);
     gst_event_unref (event);
     return TRUE;
   }
@@ -836,11 +883,46 @@ appsink_new_event_cb (GstAppSink *appsink, gpointer user_data)
 {
   GstEvent *event;
   GstMiniObject *obj;
+  KmsPtsData *pts_data;
+  gboolean default_handling = FALSE;
 
   obj = gst_app_sink_pull_object (appsink);
   if (GST_IS_EVENT (obj)) {
     event = GST_EVENT (obj);
-    return process_event (appsink, GST_APP_SRC(user_data), event);
+    pts_data =
+        (KmsPtsData *) g_object_get_qdata (G_OBJECT (appsink), pts_quark ());
+
+    /* When the callback reports an event as handled, the appsink does not
+     * pass it to its parent class (GstBaseSink). The base sink needs the
+     * FLUSH_STOP to leave its flushing state: without it, after a flushing
+     * seek it rejects every buffer and the demuxer ends with "Internal data
+     * flow problem" / "Internal data stream error". And it needs the SEGMENT
+     * that follows (it has the same sequence number, the one of the seek) to
+     * get the running time of the buffers right: the flush resets it, and the
+     * buffers come with the timestamps of the new position, so the sink would
+     * hold them for as long as the position. The player has already forwarded
+     * the event to the appsrc (see process_event), the sink gets to process it
+     * as well. Any other segment is not passed (that is how it always was). */
+    if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
+      default_handling = TRUE;
+      pts_data->flush_pending = TRUE;
+      pts_data->flush_seqnum = GST_EVENT_SEQNUM (event);
+    } else if (GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT &&
+        pts_data->flush_pending) {
+      /* The first segment after the flush is the one of the seek, whatever
+       * its sequence number (it is the same one in the demuxers tried) */
+      if (GST_EVENT_SEQNUM (event) != pts_data->flush_seqnum) {
+        GST_DEBUG_OBJECT (appsink, "The segment after the flush has another "
+            "sequence number (%u) than the flush (%u)",
+            GST_EVENT_SEQNUM (event), pts_data->flush_seqnum);
+      }
+      default_handling = TRUE;
+      pts_data->flush_pending = FALSE;
+    }
+
+    return process_event (appsink, GST_APP_SRC(user_data), event,
+        default_handling && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) &&
+        !default_handling;
   }
   return FALSE;
 }

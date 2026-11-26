@@ -593,6 +593,9 @@ typedef struct _BFramesStats
                                  * time */
   gchar offset_preroll[40];     /* offset time of the player, in the preroll */
   gchar offset_play[40];        /* and when playing (empty: none) */
+  guint out_of_segment;         /* buffers before the start of the segment (only
+                                 * when seeking, see bframes_segment_probe) */
+  guint no_segment;             /* buffers with no segment (idem) */
 } BFramesStats;
 
 static void
@@ -855,7 +858,24 @@ typedef struct _BFramesPlayback
   gboolean player_eos;
   gboolean stopped;
   guint timeout_id;
+  gint64 seek_position;         /* set-position to call (ns), <0: none */
+  guint seek_after;             /* video buffers to wait for before seeking */
+  guint video_seen;
+  guint seek_source;            /* idle of the seek */
+  gboolean seek_ran;            /* the idle has run (and is gone) */
+  gboolean seek_called;
+  gboolean seek_ok;
+  guint out_of_segment;         /* buffers before the start of their segment */
+  guint no_segment;             /* buffers with no segment event before */
 } BFramesPlayback;
+
+/* Per pad data of bframes_segment_probe() */
+typedef struct _BFramesSegmentData
+{
+  BFramesPlayback *play;
+  gboolean has_segment;
+  GstClockTime start;
+} BFramesSegmentData;
 
 static gboolean
 bframes_bus_cb (GstBus * bus, GstMessage * msg, gpointer user_data)
@@ -950,6 +970,69 @@ bframes_drop_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   return GST_PAD_PROBE_OK;
 }
 
+static gboolean
+bframes_seek_cb (gpointer user_data)
+{
+  BFramesPlayback *play = user_data;
+  gboolean ret = FALSE;
+
+  GST_DEBUG ("Seeking to %" GST_TIME_FORMAT,
+      GST_TIME_ARGS (play->seek_position));
+  play->seek_ran = TRUE;
+  g_signal_emit_by_name (play->player, "set-position", play->seek_position,
+      &ret);
+  play->seek_ok = ret;
+  return FALSE;
+}
+
+/* The elements that follow the player (an encoder, a muxer) clip the buffers
+ * that are before the start of the segment, and need a segment to get the
+ * buffers: check both at the output of the player, also after a seek. */
+static GstPadProbeReturn
+bframes_segment_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  BFramesSegmentData *sd = data;
+
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
+    GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+      const GstSegment *segment;
+
+      gst_event_parse_segment (event, &segment);
+      sd->has_segment = segment->format == GST_FORMAT_TIME;
+      sd->start = segment->start;
+    } else if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
+      sd->has_segment = FALSE;
+    }
+  } else {
+    GstBuffer *buf = GST_PAD_PROBE_INFO_BUFFER (info);
+
+    if (!sd->has_segment) {
+      g_atomic_int_inc (&sd->play->no_segment);
+    } else if (GST_BUFFER_PTS_IS_VALID (buf) && GST_BUFFER_PTS (buf) < sd->start) {
+      g_atomic_int_inc (&sd->play->out_of_segment);
+    }
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
+/* Calls set-position (from the main loop, as the server does it from another
+ * thread than the streaming ones) once the video has delivered some buffers */
+static GstPadProbeReturn
+bframes_seek_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  BFramesPlayback *play = data;
+
+  if (g_atomic_int_add (&play->video_seen, 1) + 1 == play->seek_after) {
+    play->seek_called = TRUE;
+    play->seek_source = g_idle_add (bframes_seek_cb, play);
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
     gpointer user_data)
@@ -968,6 +1051,19 @@ bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
 
   gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_stats_probe,
       is_audio ? &play->out_audio : &play->out, NULL);
+  if (play->seek_position >= 0) {
+    BFramesSegmentData *sd = g_new0 (BFramesSegmentData, 1);
+
+    sd->play = play;
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER |
+        GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM | GST_PAD_PROBE_TYPE_EVENT_FLUSH,
+        bframes_segment_probe, sd,
+        g_free);
+    if (!is_audio) {
+      gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, bframes_seek_probe,
+          play, NULL);
+    }
+  }
 
   if (play->recorder != NULL && !is_audio) {
     gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
@@ -994,9 +1090,10 @@ bframes_player_pad_added_cb (GstElement * player, GstPad * pad,
  * NULL. The recorder and the player are started one right after the other, as
  * the clients do. */
 static gboolean
-bframes_play (const gchar * src_path, KmsRecordingProfile profile,
+bframes_play_seek (const gchar * src_path, KmsRecordingProfile profile,
     const gchar * out_path, BFramesStats * out, BFramesStats * out_audio,
-    gboolean encoded, guint wait_before_play)
+    gboolean encoded, guint wait_before_play, gint64 seek_position,
+    guint seek_after)
 {
   BFramesPlayback play = { 0, };
   GstBus *bus;
@@ -1004,6 +1101,9 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   guint watch_id;
   GstDebugLevel prev_threshold;
   GstCheckLogFilter *log_filter;
+
+  play.seek_position = seek_position;
+  play.seek_after = seek_after;
 
   bframes_stats_init (&play.out);
   bframes_stats_init (&play.out_audio);
@@ -1086,6 +1186,10 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
   }
   gst_element_set_state (play.pipeline, GST_STATE_NULL);
   gst_object_unref (play.pipeline);
+  /* Only now: no probe can register the idle of the seek any more */
+  if (play.seek_source != 0 && !play.seek_ran) {
+    g_source_remove (play.seek_source);
+  }
   g_source_remove (watch_id);
   g_main_loop_unref (play.loop);
   gst_check_remove_log_filter (log_filter);
@@ -1105,14 +1209,30 @@ bframes_play (const gchar * src_path, KmsRecordingProfile profile,
         play.error, play.player_eos, play.stopped);
     return FALSE;
   }
+  if (seek_position >= 0 && (!play.seek_called || !play.seek_ok)) {
+    fprintf (stderr, "Seek failed: called=%d ok=%d\n", play.seek_called,
+        play.seek_ok);
+    return FALSE;
+  }
 
   *out = play.out;
   out->pipeline = NULL;
+  out->out_of_segment = play.out_of_segment;
+  out->no_segment = play.no_segment;
   if (out_audio != NULL) {
     *out_audio = play.out_audio;
     out_audio->pipeline = NULL;
   }
   return TRUE;
+}
+
+static gboolean
+bframes_play (const gchar * src_path, KmsRecordingProfile profile,
+    const gchar * out_path, BFramesStats * out, BFramesStats * out_audio,
+    gboolean encoded, guint wait_before_play)
+{
+  return bframes_play_seek (src_path, profile, out_path, out, out_audio,
+      encoded, wait_before_play, -1, 0);
 }
 
 static gchar *
@@ -1963,6 +2083,159 @@ GST_START_TEST (check_no_initial_burst)
 
 GST_END_TEST;
 
+/* setPosition (a flushing seek) while playing: the playback goes on from the
+ * new position (only what is left of the file is delivered), without errors,
+ * and the timestamps keep increasing across the seek. The source lasts 3 s: it
+ * seeks to the second 2 after the 10th video buffer. */
+#define SEEK_AFTER_BUFFERS 10
+#define SEEK_POSITION (2 * GST_SECOND)
+
+static gchar *
+seek_check_play (const gchar * src, gboolean encoded, const gchar * name)
+{
+  BFramesStats out_v, out_a;
+
+  if (!bframes_play_seek (src, 0, NULL, &out_v, &out_a, encoded, 0,
+          SEEK_POSITION, SEEK_AFTER_BUFFERS)) {
+    return g_strdup_printf ("%s: playback or seek failed", name);
+  }
+  fprintf (stderr, "%s: seek: video %u buffers, audio %u buffers, video DTS "
+      "gaps %" G_GINT64_FORMAT " to %" G_GINT64_FORMAT " ms\n", name,
+      out_v.count, out_a.count, out_v.min_dts_gap / GST_MSECOND,
+      out_v.max_dts_gap / GST_MSECOND);
+  /* Video: the 25 buffers of the second 2 to the end follow the ones played
+   * before the seek, the ones in between (50) are skipped. Audio (AAC, 1024
+   * samples per buffer: 47 per second, 141 in the file) is checked with wide
+   * margins, it is only to see that it follows and does not start over. */
+  if (out_v.count < SEEK_AFTER_BUFFERS + 15 || out_v.count > AV_FRAMES - 15) {
+    return g_strdup_printf ("%s: %u video buffers, expected about %u", name,
+        out_v.count, SEEK_AFTER_BUFFERS + 25);
+  }
+  if (out_a.count < 35 || out_a.count > 100) {
+    return g_strdup_printf ("%s: %u audio buffers, expected about 65", name,
+        out_a.count);
+  }
+  /* The segment that the elements after the player get is the one that fits
+   * the timestamps of the player, also after the seek (they would clip them) */
+  if (out_v.out_of_segment > 0 || out_v.no_segment > 0) {
+    return g_strdup_printf ("%s: %u buffers before the start of the segment, "
+        "%u without segment", name, out_v.out_of_segment, out_v.no_segment);
+  }
+
+  if (out_v.min_dts_gap <= 0) {
+    return g_strdup_printf ("%s: video DTS go back or repeat (min gap %"
+        G_GINT64_FORMAT " ms)", name, out_v.min_dts_gap / GST_MSECOND);
+  }
+  /* The same for the audio (its buffers are 21 ms or 20 ms long, a gap of the
+   * seek is as small as the video one) */
+  if (out_a.min_dts_gap <= 0) {
+    return g_strdup_printf ("%s: audio DTS go back or repeat (min gap %"
+        G_GINT64_FORMAT " ms)", name, out_a.min_dts_gap / GST_MSECOND);
+  }
+  if (out_a.max_dts_gap > GST_SECOND) {
+    return g_strdup_printf ("%s: audio DTS jump of %" G_GINT64_FORMAT " ms",
+        name, out_a.max_dts_gap / GST_MSECOND);
+  }
+  /* ...and they do not wait for the position of the seek (2 s) as if the
+   * running time was not reset, the gap is only what the seek takes */
+  if (out_v.max_dts_gap > GST_SECOND) {
+    return g_strdup_printf ("%s: video DTS jump of %" G_GINT64_FORMAT " ms",
+        name, out_v.max_dts_gap / GST_MSECOND);
+  }
+
+  return NULL;
+}
+
+GST_START_TEST (check_set_position)
+{
+  static const gchar *const files[] = { "src.mp4", NULL };
+  gchar *dir, *src, *error;
+
+  if (!bframes_have_elements ("check_set_position", encoders_av)) {
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.mp4", NULL);
+  if (!bframes_generate_av_source (0, 0, TRUE, src)) {
+    g_free (src);
+    bframes_remove_tmp_dir (dir, files);
+    return;
+  }
+
+  error = seek_check_play (src, TRUE, "MP4 ENCODED");
+  if (error == NULL) {
+    error = seek_check_play (src, FALSE, "MP4 DECODED");
+  }
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
+  fail_unless (error == NULL, "%s", error);
+}
+
+GST_END_TEST;
+
+static const gchar *const encoders_webm[] = { "vp8enc", "opusenc", "webmmux",
+  NULL
+};
+
+/* The same with a WebM (VP8 and Opus) */
+GST_START_TEST (check_set_position_webm)
+{
+  static const gchar *const files[] = { "src.webm", NULL };
+  gchar *dir, *src, *desc, *error;
+  GError *err = NULL;
+  GstElement *gen;
+  GstMessage *msg;
+  GstBus *bus;
+  gboolean ok;
+
+  if (!bframes_have_elements ("check_set_position_webm", encoders_webm)) {
+    return;
+  }
+
+  dir = bframes_make_tmp_dir ();
+  src = g_build_filename (dir, "src.webm", NULL);
+  desc = g_strdup_printf ("webmmux name=m ! filesink location=%s "
+      "videotestsrc num-buffers=%d ! "
+      "video/x-raw,format=I420,width=320,height=240,framerate=25/1 ! "
+      "vp8enc keyframe-max-dist=25 deadline=1 ! m. "
+      "audiotestsrc num-buffers=%d samplesperbuffer=1920 ! "
+      "audio/x-raw,rate=48000,channels=1 ! opusenc ! m.", src, AV_FRAMES,
+      AV_FRAMES);
+  gen = gst_parse_launch (desc, &err);
+  g_free (desc);
+  fail_unless (gen != NULL, "Cannot build the source pipeline: %s",
+      err ? err->message : "?");
+  bus = gst_element_get_bus (gen);
+  gst_element_set_state (gen, GST_STATE_PLAYING);
+  msg = gst_bus_timed_pop_filtered (bus, 60 * GST_SECOND,
+      GST_MESSAGE_EOS | GST_MESSAGE_ERROR);
+  ok = msg != NULL && GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS;
+  if (msg != NULL) {
+    gst_message_unref (msg);
+  }
+  gst_element_set_state (gen, GST_STATE_NULL);
+  gst_object_unref (bus);
+  gst_object_unref (gen);
+  if (!ok) {
+    g_free (src);
+    bframes_remove_tmp_dir (dir, files);
+    fail ("Cannot generate the source");
+  }
+
+  error = seek_check_play (src, TRUE, "WEBM ENCODED");
+  if (error == NULL) {
+    error = seek_check_play (src, FALSE, "WEBM DECODED");
+  }
+
+  g_free (src);
+  bframes_remove_tmp_dir (dir, files);
+  fail_unless (error == NULL, "%s", error);
+}
+
+GST_END_TEST;
+
 #ifdef ENABLE_EXPERIMENTAL_TESTS
 
 GST_START_TEST (check_set_encoded_media)
@@ -2042,6 +2315,8 @@ playerendpoint_suite (void)
   tcase_add_test (tc_chain, check_encoded_bframes_av_delayed_audio);
   tcase_add_test (tc_chain, check_decoded_delayed_audio_running_pipeline);
   tcase_add_test (tc_chain, check_no_initial_burst);
+  tcase_add_test (tc_chain, check_set_position);
+  tcase_add_test (tc_chain, check_set_position_webm);
 #ifdef ENABLE_EXPERIMENTAL_TESTS
   tcase_add_test (tc_chain, check_set_encoded_media);
 #endif
