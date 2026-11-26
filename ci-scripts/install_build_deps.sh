@@ -29,7 +29,7 @@ log "Install build dependencies"
 (
     export DEBIAN_FRONTEND=noninteractive
 
-    apt_update_retry ; mk-build-deps --install --remove \
+    apt_update_retry ; apt_retry mk-build-deps --install --remove \
         --tool="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --no-remove --yes" \
         ./debian/control
 )

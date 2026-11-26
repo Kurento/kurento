@@ -120,7 +120,7 @@ source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 echo "# Install required tools"
 # =============================
 
-apt_update_retry ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     build-essential \
     ca-certificates \
     cmake \
@@ -132,7 +132,7 @@ apt_update_retry ; apt-get install --no-install-recommends --yes \
 echo "# Install Kurento Media Server"
 # ===================================
 
-apt_update_retry ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     gnupg
 
 # Add Kurento repository key for apt-get.
@@ -147,11 +147,11 @@ deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$DOCKER_
 EOF
 
 # Install Kurento Media Server.
-apt_update_retry ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     kurento-media-server
 
 # Install Kurento Media Server development packages.
-apt_update_retry ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     kurento-media-server-dev
 
 
@@ -160,7 +160,7 @@ echo "# Install debug symbols"
 # ============================
 
 # Add Ubuntu debug repository key for apt-get.
-apt_update_retry ; apt-get install --yes ubuntu-dbgsym-keyring \
+apt_update_retry ; apt_retry apt-get install --yes ubuntu-dbgsym-keyring \
 || apt-key adv \
     --keyserver hkp://keyserver.ubuntu.com:80 \
     --recv-keys F2EDC64DC5AEE1F6B9C621F0C8CAB6595FDFF622

@@ -73,7 +73,7 @@ export DEBIAN_FRONTEND=noninteractive
 source /etc/upstream-release/lsb-release 2>/dev/null || source /etc/lsb-release
 
 # Add Kurento repository key for apt-get.
-apt_update_retry ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     gnupg
 # Add Kurento repository key for apt-get.
 gpg -k
@@ -87,5 +87,5 @@ deb [signed-by=/etc/apt/keyrings/kurento.gpg] http://ubuntu.openvidu.io/$CFG_SER
 EOF
 
 # Install package.
-apt_update_retry ; apt-get install --no-install-recommends --yes \
+apt_update_retry ; apt_retry apt-get install --no-install-recommends --yes \
     "$CFG_SERVER_PACKAGE"
