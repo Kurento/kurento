@@ -134,7 +134,8 @@ function apt_update_retry {
     while true; do
         RC=0
         # Show the output as it comes, and keep a copy to inspect it.
-        apt-get update "$@" 2>&1 | tee "$OUT" || RC="${PIPESTATUS[0]}"
+        # LC_ALL=C: Apt messages are localized, and they are matched below.
+        LC_ALL=C apt-get update "$@" 2>&1 | tee "$OUT" || RC="${PIPESTATUS[0]}"
 
         if ((RC == 0)) && ! grep -qE \
             '^(E|W): Failed to fetch|Some index files failed to download' \
@@ -176,11 +177,16 @@ function apt_update_retry {
 # exit code of the last attempt (this is always a failure, unlike
 # `apt_update_retry`, because an installation that failed cannot be ignored).
 #
+# The command runs with `LC_ALL=C` (only for it) so that the error messages can be
+# recognized in any system language.
+#
+# If the `apt_update_retry` that runs before a retry fails (only possible with
+# APT_UPDATE_STRICT=true), that failure is returned.
+#
 # Environment variables (all optional):
 # * APT_RETRY_ATTEMPTS: Number of attempts (default: 3).
 # * APT_UPDATE_DELAY, APT_UPDATE_DELAY_MAX: Same as in `apt_update_retry`; the
 #   wait before the n-th retry is n * APT_UPDATE_DELAY, up to the maximum.
-#
 # * APT_RETRY_UPDATE_ARGS: Optional Bash array with arguments for the
 #   `apt-get update` that runs before each retry (e.g. the Apt proxy options).
 #
@@ -196,7 +202,8 @@ function apt_retry {
     while true; do
         RC=0
         # Show the output as it comes, and keep a copy to inspect it.
-        "$@" 2>&1 | tee "$OUT" || RC="${PIPESTATUS[0]}"
+        # LC_ALL=C: Apt messages are localized, and they are matched below.
+        LC_ALL=C "$@" 2>&1 | tee "$OUT" || RC="${PIPESTATUS[0]}"
 
         if ((RC == 0)); then
             rm -f "$OUT"
@@ -221,7 +228,10 @@ function apt_retry {
         if ((WAIT > DELAY_MAX)); then WAIT="$DELAY_MAX"; fi
         log "WARNING: package download failed (attempt $N of $MAX, exit code $RC); updating indexes and retrying in $WAIT seconds"
         sleep "$WAIT" || { rm -f "$OUT"; return 1; }
-        apt_update_retry ${APT_RETRY_UPDATE_ARGS[@]+"${APT_RETRY_UPDATE_ARGS[@]}"}
+        # Check the result explicitly: errexit is disabled inside this function
+        # when it is called from an `if` or `||` context.
+        apt_update_retry ${APT_RETRY_UPDATE_ARGS[@]+"${APT_RETRY_UPDATE_ARGS[@]}"} \
+            || { RC=$?; rm -f "$OUT"; return "$RC"; }
         N=$((N + 1))
     done
 }
