@@ -89,3 +89,63 @@ function trap_add {
 # Extracts and prints text from special comments in the script header.
 function usage { grep '^#/' "${BASH_SOURCE[-1]}" | cut -c 4-; exit 0; }
 if [[ "${1:-}" =~ ^(-h|--help)$ ]]; then usage; fi
+
+
+
+# Apt utilities
+# =============
+
+# Run `apt-get update` with bounded retries.
+#
+# Apt can fail transiently when a mirror is being synchronized: indexes with
+# an unexpected size ("Mirror sync in progress?"), indexes that fail to
+# download, etc. Plain `apt-get update` may then exit successfully, or the
+# caller may ignore the exit code, and the following `apt-get install` would run
+# with incomplete indexes.
+#
+# This function retries while `apt-get update` exits with an error, or while its
+# output has "Failed to fetch" errors or "Some index files failed to download".
+# Waits grow linearly between attempts, up to a maximum. After the last attempt
+# fails, an error is logged and the function returns non-zero.
+#
+# Extra arguments are passed to `apt-get`, e.g.: `apt_update_retry -qq`.
+#
+# Environment variables (all optional):
+# * APT_UPDATE_RETRIES: Number of attempts (default: 5).
+# * APT_UPDATE_DELAY: Seconds to wait after the first failure (default: 15).
+#   The wait grows by the same amount in each attempt (15, 30, 45, ...).
+# * APT_UPDATE_DELAY_MAX: Maximum wait between attempts (default: 60).
+#
+# Usage: replace `apt-get update` with `apt_update_retry`.
+function apt_update_retry {
+    local MAX="${APT_UPDATE_RETRIES:-5}"
+    local DELAY="${APT_UPDATE_DELAY:-15}"
+    local DELAY_MAX="${APT_UPDATE_DELAY_MAX:-60}"
+    local OUT; OUT="$(mktemp)"
+    local N=1 RC WAIT
+
+    while true; do
+        RC=0
+        # Show the output as it comes, and keep a copy to inspect it.
+        apt-get update "$@" 2>&1 | tee "$OUT" || RC="${PIPESTATUS[0]}"
+
+        if ((RC == 0)) && ! grep -qE \
+            '^(E|W): Failed to fetch|Some index files failed to download|Mirror sync in progress' \
+            "$OUT"; then
+            rm -f "$OUT"
+            return 0
+        fi
+
+        if ((N >= MAX)); then
+            rm -f "$OUT"
+            log "ERROR: 'apt-get update' failed after $MAX attempts"
+            return 1
+        fi
+
+        WAIT=$((DELAY * N))
+        if ((WAIT > DELAY_MAX)); then WAIT="$DELAY_MAX"; fi
+        log "WARNING: 'apt-get update' failed (attempt $N of $MAX, exit code $RC); retrying in $WAIT seconds"
+        sleep "$WAIT"
+        N=$((N + 1))
+    done
+}

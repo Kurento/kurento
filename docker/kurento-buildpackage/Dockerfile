@@ -64,9 +64,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Configure Apt:
 # * Disable installation of recommended and suggested packages
+# * Retry failed downloads. Note that this does not cover indexes with a wrong
+#   size due to a mirror being synchronized; CI scripts use `apt_update_retry`
+#   (from `bash.conf.sh`) for that.
 RUN \
 echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/00recommends \
-&& echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends
+&& echo 'APT::Install-Suggests "false";' >>/etc/apt/apt.conf.d/00recommends \
+&& echo 'Acquire::Retries "5";' >/etc/apt/apt.conf.d/80retries
 
 # Install a basic set of packages
 # * gnupg, iproute2, zip: Tools used by various CI scripts.
