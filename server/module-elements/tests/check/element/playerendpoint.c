@@ -1184,11 +1184,12 @@ bframes_play_seek (const gchar * src_path, KmsRecordingProfile profile,
   if (play.timeout_id != 0) {
     g_source_remove (play.timeout_id);
   }
+  gst_element_set_state (play.pipeline, GST_STATE_NULL);
+  gst_object_unref (play.pipeline);
+  /* Only now: no probe can register the idle of the seek any more */
   if (play.seek_source != 0 && !play.seek_ran) {
     g_source_remove (play.seek_source);
   }
-  gst_element_set_state (play.pipeline, GST_STATE_NULL);
-  gst_object_unref (play.pipeline);
   g_source_remove (watch_id);
   g_main_loop_unref (play.loop);
   gst_check_remove_log_filter (log_filter);
@@ -2124,6 +2125,16 @@ seek_check_play (const gchar * src, gboolean encoded, const gchar * name)
   if (out_v.min_dts_gap <= 0) {
     return g_strdup_printf ("%s: video DTS go back or repeat (min gap %"
         G_GINT64_FORMAT " ms)", name, out_v.min_dts_gap / GST_MSECOND);
+  }
+  /* The same for the audio (its buffers are 21 ms or 20 ms long, a gap of the
+   * seek is as small as the video one) */
+  if (out_a.min_dts_gap <= 0) {
+    return g_strdup_printf ("%s: audio DTS go back or repeat (min gap %"
+        G_GINT64_FORMAT " ms)", name, out_a.min_dts_gap / GST_MSECOND);
+  }
+  if (out_a.max_dts_gap > GST_SECOND) {
+    return g_strdup_printf ("%s: audio DTS jump of %" G_GINT64_FORMAT " ms",
+        name, out_a.max_dts_gap / GST_MSECOND);
   }
   /* ...and they do not wait for the position of the seek (2 s) as if the
    * running time was not reset, the gap is only what the seek takes */
