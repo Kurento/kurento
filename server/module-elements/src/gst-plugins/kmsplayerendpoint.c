@@ -559,9 +559,11 @@ kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
   return gst_element_set_state (self->priv->pipeline, state);
 }
 
+/* drop_seek_segment: the event is the segment that follows a flushing seek, it
+ * is not forwarded (the appsrc sends its own after the flush) */
 static gboolean
 process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
-    gboolean seek_segment)
+    gboolean drop_seek_segment)
 {
   GstPad *src;
   GstPad *sink;
@@ -572,7 +574,7 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
     return TRUE;
   }
 
-  if (self->priv->use_encoded_media && !seek_segment &&
+  if (self->priv->use_encoded_media && !drop_seek_segment &&
       GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
     /* In encoded mode the timestamps are translated to the running time of the
      * segments (see process_sample), which is not what the segment of the
@@ -598,16 +600,23 @@ process_event  (GstAppSink * appsink, GstAppSrc * appsrc, GstEvent * event,
      * not seen by the callback of the appsink, the one of the flush is sent
      * here. */
     GstEvent *start = gst_event_new_flush_start ();
+    GstEvent *stop = gst_event_new_flush_stop (FALSE);
 
+    /* Without reset of the running time: the flush crosses the shared
+     * MediaPipeline, whose elements would otherwise reset their start time
+     * (RESET_TIME of the agnosticbin). The appsink of the player gets its own
+     * copy of the original event, that resets the time of the internal one. */
     gst_event_set_seqnum (start, GST_EVENT_SEQNUM (event));
+    gst_event_set_seqnum (stop, GST_EVENT_SEQNUM (event));
     GST_DEBUG_OBJECT (self, "Flushing %s: %" GST_PTR_FORMAT,
-        GST_ELEMENT_NAME (appsrc), event);
+        GST_ELEMENT_NAME (appsrc), stop);
     gst_element_send_event (GST_ELEMENT (appsrc), start);
-    gst_element_send_event (GST_ELEMENT (appsrc), event);
+    gst_element_send_event (GST_ELEMENT (appsrc), stop);
+    gst_event_unref (event);
     return TRUE;
   }
 
-  if (seek_segment && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+  if (drop_seek_segment && GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
     /* The segment of a flushing seek starts at the new position, but the
      * player gives the buffers the timestamps of its own timeline, that goes on
      * from where it was: the elements that follow (e.g. an encoder or a muxer)
