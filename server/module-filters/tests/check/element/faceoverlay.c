@@ -188,6 +188,16 @@ GST_START_TEST (player_with_filter)
   GstBus *bus;
   GstStructure *imageSt;
   gchar *padname;
+  GstCheckLogFilter *log_filter;
+
+  /* At the EOS the player flushes the src pad of its appsrc from another
+   * thread, which may make GStreamer complain about "Got data flow before
+   * segment event". It is a known race of the player that this test does not
+   * check, so do not let gstcheck turn that message (and only that one) into
+   * a failure. */
+  log_filter = gst_check_add_log_filter ("GStreamer", G_LOG_LEVEL_WARNING,
+      g_regex_new ("Got data flow before segment event", 0, 0, NULL), NULL,
+      NULL, NULL);
 
   loop = g_main_loop_new (NULL, FALSE);
   pipeline = gst_pipeline_new ("pipeline_live_stream");
@@ -252,6 +262,7 @@ GST_START_TEST (player_with_filter)
   gst_object_unref (GST_OBJECT (pipeline));
   g_source_remove (bus_watch_id);
   g_main_loop_unref (loop);
+  gst_check_remove_log_filter (log_filter);
 }
 
 GST_END_TEST static Suite *
