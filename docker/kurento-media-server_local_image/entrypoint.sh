@@ -130,7 +130,13 @@ if [[ -n "${KMS_UID:-}" && "$KMS_UID" != "$RUN_UID" ]]; then
         --gid "$KMS_UID" \
         kurento
 
-    exec setpriv --reuid=kurento --regid=kurento --init-groups --inh-caps=-all --bounding-set=-all --no-new-privs -- /usr/bin/kurento-media-server "$*"
+    # Run Kurento as the specified user ID using `setpriv` in order to keep the Docker container's ulimit.
+    # (This was previously done with `runuser`, but that tool uses ulimits from PAM instead of ulimits from Docker.)
+    KMS_HOME="$(getent passwd kurento | cut -d: -f6)"
+    exec env HOME="$KMS_HOME" USER=kurento LOGNAME=kurento \
+        setpriv --reuid=kurento --regid=kurento --init-groups \
+        --inh-caps=-all --no-new-privs \
+        -- /usr/bin/kurento-media-server "$*"
 else
     echo "[Docker entrypoint] Start Kurento Media Server, UID: $RUN_UID"
 
