@@ -32,6 +32,65 @@
 
 #define LATENCY 150             //ms
 
+/* Input timing correction.
+ *
+ * Each adder is a live audiomixer whose output advances with the pipeline
+ * clock; any input buffer that ends before the current output position is
+ * silently dropped (GstAudioAggregator). If an input's timestamps fall behind
+ * the clock by more than LATENCY (e.g. the jitterbuffer re-anchors after the
+ * remote sender stalls), every following buffer of that input is dropped and
+ * the input disappears from the mix for the rest of the session.
+ *
+ * To avoid that, the end running time of each input buffer is compared against
+ * the clock. When an input stays more than INPUT_TIMING_LATE_THRESHOLD behind
+ * for longer than INPUT_TIMING_GRACE, a pad offset is applied so that the
+ * least-late buffer of that window lands INPUT_TIMING_TARGET behind the clock;
+ * typical buffers land later (by their jitter), and since lateness is measured
+ * at the end of a buffer, its start is one buffer duration further behind. The
+ * target is small so that, with the adder latency of LATENCY, there is room for
+ * that jitter before the adder starts dropping buffers. The input is then mixed
+ * at its arrival time instead of being lost. Buffers keep arriving in real
+ * time, only their timestamps are behind, so a large offset does not buffer or
+ * delay anything: a sender that stalled for 15 s is compensated by an offset of
+ * about 15 s.
+ * INPUT_TIMING_MAX_OFFSET is only a sanity bound. If the offset needed to
+ * compensate an input exceeds it, the offset is limited to the bound, the input
+ * keeps being dropped by the adder, and a warning is logged. That warning is
+ * not repeated until the offset changes or a new stream (or a flush) starts.
+ * The offset only affects audio, so a corrected input is shifted against its
+ * own video.
+ *
+ * If a corrected input later jumps ahead of the clock by more than
+ * INPUT_TIMING_EARLY_THRESHOLD (the sender caught up, so its timestamps are
+ * now on time but the old offset is still applied), the offset is reduced
+ * immediately, on the first such buffer, so that this buffer lands
+ * INPUT_TIMING_TARGET behind the clock; there is no grace period in this
+ * direction. For live, jitter-buffered inputs, buffers arrive in real time and
+ * their timestamps are contiguous, so an early reading can only come from a
+ * forward jump that persists, there is no transient outlier to filter. The
+ * buffer that triggers the reduction is passed. If the reduction is clamped at
+ * 0 and the buffer is still early, it is passed as well: without an offset
+ * there is nothing left to reduce.
+ *
+ * Before that buffer arrives, audiorate may fill the jump with gap buffers
+ * (silence) that are stamped from the old position up to the new one and, with
+ * the old offset, are in the future. One of them at the head of the adder pad
+ * would block the input until its time comes (and the leaky queue behind it
+ * would discard the audio that follows). They carry only silence, so gap
+ * buffers that measure as early while an offset is applied are dropped. This
+ * is the only place where the probe drops data. With the immediate reduction,
+ * the old and the new timing both map to about the current clock minus
+ * INPUT_TIMING_TARGET, so practically no audio is lost on catch-up.
+ *
+ * Gap buffers are measured for that drop check, but they do not take part in
+ * the LATE/offset logic. The measurement restarts when an input stops sending
+ * for longer than INPUT_TIMING_GRACE or a new stream starts. */
+#define INPUT_TIMING_LATE_THRESHOLD (LATENCY * GST_MSECOND)
+#define INPUT_TIMING_EARLY_THRESHOLD (500 * GST_MSECOND)
+#define INPUT_TIMING_TARGET (20 * GST_MSECOND)
+#define INPUT_TIMING_GRACE (500 * GST_MSECOND)
+#define INPUT_TIMING_MAX_OFFSET (3600 * GST_SECOND)
+
 #define KMS_AUDIO_MIXER_LOCK(mixer) \
   (g_rec_mutex_lock (&(mixer)->priv->mutex))
 
@@ -518,12 +577,286 @@ kms_audio_mixer_finalize (GObject * object)
   G_OBJECT_CLASS (kms_audio_mixer_parent_class)->finalize (object);
 }
 
+typedef enum
+{
+  INPUT_TIMING_ON_TIME,
+  INPUT_TIMING_LATE
+} KmsAudioMixerInputTimingState;
+
+typedef struct _KmsAudioMixerInputTiming
+{
+  gchar *padname;
+  gchar *stream_id;
+  KmsAudioMixerInputTimingState state;
+  GstClockTime state_since;     /* clock running time the state started */
+  GstClockTime last_buffer;     /* clock running time of the last buffer */
+  /* Lateness closest to the clock seen since the state started, so a single
+   * outlier never drives the correction */
+  GstClockTimeDiff mildest_lateness;
+  gboolean clamp_logged;        /* the "still late" warning was already emitted */
+} KmsAudioMixerInputTiming;
+
+static void
+input_timing_reset (KmsAudioMixerInputTiming * timing)
+{
+  timing->state = INPUT_TIMING_ON_TIME;
+  timing->state_since = GST_CLOCK_TIME_NONE;
+  timing->last_buffer = GST_CLOCK_TIME_NONE;
+  timing->mildest_lateness = 0;
+}
+
+static KmsAudioMixerInputTiming *
+kms_audio_mixer_input_timing_new (const gchar * padname)
+{
+  KmsAudioMixerInputTiming *timing = g_slice_new0 (KmsAudioMixerInputTiming);
+
+  timing->padname = g_strdup (padname);
+  input_timing_reset (timing);
+
+  return timing;
+}
+
+static void
+kms_audio_mixer_input_timing_free (gpointer data)
+{
+  KmsAudioMixerInputTiming *timing = data;
+
+  g_free (timing->padname);
+  g_free (timing->stream_id);
+  g_slice_free (KmsAudioMixerInputTiming, timing);
+}
+
+static GstPadProbeReturn
+input_timing_event (GstPad * pad, GstEvent * event,
+    KmsAudioMixerInputTiming * timing)
+{
+  switch (GST_EVENT_TYPE (event)) {
+    case GST_EVENT_STREAM_START:{
+      const gchar *stream_id = NULL;
+
+      /* Changing the offset re-sends the same STREAM_START; only a new source
+       * must not inherit the correction of the previous one */
+      gst_event_parse_stream_start (event, &stream_id);
+      if (g_strcmp0 (stream_id, timing->stream_id) != 0) {
+        g_free (timing->stream_id);
+        timing->stream_id = g_strdup (stream_id);
+        gst_pad_set_offset (pad, 0);
+        input_timing_reset (timing);
+        timing->clamp_logged = FALSE;
+      }
+      break;
+    }
+    case GST_EVENT_FLUSH_STOP:
+      input_timing_reset (timing);
+      timing->clamp_logged = FALSE;
+      break;
+    default:
+      break;
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
+/* Returns the lateness of the end of @buffer against the clock, taking the pad
+ * offset into account, or FALSE when it can not be measured */
+static gboolean
+input_timing_measure (GstPad * pad, GstBuffer * buffer, GstClockTime * now,
+    GstClockTimeDiff * lateness)
+{
+  GstClockTime clock_time, base_time, position, running_time;
+  GstElement *element;
+  GstEvent *event;
+  GstSegment segment;
+  GstClock *clock;
+
+  /* Sticky events are stored without the pad offset applied */
+  event = gst_pad_get_sticky_event (pad, GST_EVENT_SEGMENT, 0);
+  if (event == NULL) {
+    return FALSE;
+  }
+  gst_event_copy_segment (event, &segment);
+  gst_event_unref (event);
+
+  if (segment.format != GST_FORMAT_TIME) {
+    return FALSE;
+  }
+
+  position = GST_BUFFER_PTS (buffer);
+  if (GST_BUFFER_DURATION_IS_VALID (buffer)) {
+    position += GST_BUFFER_DURATION (buffer);
+  }
+
+  running_time =
+      gst_segment_to_running_time (&segment, GST_FORMAT_TIME, position);
+  if (!GST_CLOCK_TIME_IS_VALID (running_time)) {
+    return FALSE;
+  }
+
+  element = gst_pad_get_parent_element (pad);
+  if (element == NULL) {
+    return FALSE;
+  }
+
+  clock = gst_element_get_clock (element);
+  base_time = gst_element_get_base_time (element);
+  gst_object_unref (element);
+
+  if (clock == NULL) {
+    return FALSE;
+  }
+
+  clock_time = gst_clock_get_time (clock);
+  gst_object_unref (clock);
+
+  if (!GST_CLOCK_TIME_IS_VALID (base_time) || clock_time < base_time) {
+    return FALSE;
+  }
+
+  *now = clock_time - base_time;
+  *lateness = GST_CLOCK_DIFF (running_time + gst_pad_get_offset (pad), *now);
+
+  return TRUE;
+}
+
+static GstPadProbeReturn
+input_timing_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  KmsAudioMixerInputTiming *timing = user_data;
+  KmsAudioMixerInputTimingState state;
+  GstClockTimeDiff lateness;
+  GstClockTime now;
+  GstBuffer *buffer;
+  gint64 offset, new_offset, desired_offset;
+
+  if (GST_PAD_PROBE_INFO_TYPE (info) & (GST_PAD_PROBE_TYPE_EVENT_BOTH |
+          GST_PAD_PROBE_TYPE_EVENT_FLUSH)) {
+    return input_timing_event (pad, GST_PAD_PROBE_INFO_EVENT (info), timing);
+  }
+
+  buffer = GST_PAD_PROBE_INFO_BUFFER (info);
+  if (buffer == NULL || !GST_BUFFER_PTS_IS_VALID (buffer)) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_GAP)) {
+    /* Gap buffers do not drive the state machine, but an early one can occur:
+     * when an input with a large offset catches up, audiorate fills the jump
+     * of the PTS with silence stamped from the old position up to the new one,
+     * and with the old offset applied most of it is in the future. Such a
+     * buffer at the head of the adder pad would block the input, and it only
+     * carries silence, so drop it. The real buffer that follows reduces the
+     * offset. */
+    if (gst_pad_get_offset (pad) > 0
+        && input_timing_measure (pad, buffer, &now, &lateness)
+        && lateness < -(GstClockTimeDiff) INPUT_TIMING_EARLY_THRESHOLD) {
+      GST_DEBUG_OBJECT (pad, "Audio input %s: dropping early gap buffer, %"
+          GST_STIME_FORMAT " ahead of the mixer clock", timing->padname,
+          GST_STIME_ARGS (-lateness));
+      return GST_PAD_PROBE_DROP;
+    }
+    return GST_PAD_PROBE_OK;
+  }
+
+  if (!input_timing_measure (pad, buffer, &now, &lateness)) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  /* The input stopped sending for a while: start measuring again */
+  if (GST_CLOCK_TIME_IS_VALID (timing->last_buffer)
+      && (now < timing->last_buffer
+          || now - timing->last_buffer > INPUT_TIMING_GRACE)) {
+    input_timing_reset (timing);
+  }
+  timing->last_buffer = now;
+
+  offset = gst_pad_get_offset (pad);
+
+  if (offset > 0
+      && lateness < -(GstClockTimeDiff) INPUT_TIMING_EARLY_THRESHOLD) {
+    /* Caught up: reduce the offset right away and pass this buffer */
+    new_offset = CLAMP (offset + lateness - (gint64) INPUT_TIMING_TARGET, 0,
+        (gint64) INPUT_TIMING_MAX_OFFSET);
+    input_timing_reset (timing);
+    timing->last_buffer = now;
+    timing->clamp_logged = FALSE;
+    GST_WARNING_OBJECT (pad, "Audio input %s is %" GST_STIME_FORMAT
+        " ahead of the mixer clock, changing its offset from %"
+        GST_STIME_FORMAT " to %" GST_STIME_FORMAT, timing->padname,
+        GST_STIME_ARGS (-lateness), GST_STIME_ARGS (offset),
+        GST_STIME_ARGS (new_offset));
+    /* The SEGMENT event is re-sent with the new offset before this buffer */
+    gst_pad_set_offset (pad, new_offset);
+    return GST_PAD_PROBE_OK;
+  }
+
+  if (lateness > (GstClockTimeDiff) INPUT_TIMING_LATE_THRESHOLD) {
+    state = INPUT_TIMING_LATE;
+  } else {
+    state = INPUT_TIMING_ON_TIME;
+  }
+
+  if (state != timing->state) {
+    timing->state = state;
+    timing->state_since = now;
+    timing->mildest_lateness = lateness;
+    return GST_PAD_PROBE_OK;
+  }
+
+  if (state == INPUT_TIMING_ON_TIME) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  timing->mildest_lateness = MIN (timing->mildest_lateness, lateness);
+
+  if (now - timing->state_since < INPUT_TIMING_GRACE) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  desired_offset = offset + timing->mildest_lateness -
+      (gint64) INPUT_TIMING_TARGET;
+  new_offset = CLAMP (desired_offset, 0, (gint64) INPUT_TIMING_MAX_OFFSET);
+  lateness = timing->mildest_lateness;
+  input_timing_reset (timing);
+  timing->last_buffer = now;
+
+  if (new_offset != offset) {
+    timing->clamp_logged = FALSE;
+  }
+
+  if (desired_offset > (gint64) INPUT_TIMING_MAX_OFFSET
+      && !timing->clamp_logged) {
+    timing->clamp_logged = TRUE;
+    GST_WARNING_OBJECT (pad, "Audio input %s is still %" GST_STIME_FORMAT
+        " late against the mixer clock, its offset is limited to %"
+        GST_STIME_FORMAT " and its audio is being dropped", timing->padname,
+        GST_STIME_ARGS (desired_offset - new_offset +
+            (gint64) INPUT_TIMING_TARGET),
+        GST_STIME_ARGS ((gint64) INPUT_TIMING_MAX_OFFSET));
+  }
+
+  if (new_offset == offset) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  GST_WARNING_OBJECT (pad, "Audio input %s is %" GST_STIME_FORMAT
+      " late against the mixer clock, changing its offset from %"
+      GST_STIME_FORMAT " to %" GST_STIME_FORMAT, timing->padname,
+      GST_STIME_ARGS (lateness), GST_STIME_ARGS (offset),
+      GST_STIME_ARGS (new_offset));
+
+  /* The SEGMENT event is re-sent with the new offset before this buffer */
+  gst_pad_set_offset (pad, new_offset);
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
     gpointer data)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (data);
   GstElement *audiorate, *agnosticbin;
+  GstPad *audiorate_src;
   gchar *padname;
   gint id;
 
@@ -545,6 +878,15 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
 
   audiorate = kms_utils_element_factory_make ("audiorate", PLUGIN_NAME);
   g_object_set (audiorate, "skip-to-first", TRUE, NULL);
+
+  /* The offset set on audiorate's src pad applies to every adder fed by this
+   * input */
+  audiorate_src = gst_element_get_static_pad (audiorate, "src");
+  gst_pad_add_probe (audiorate_src, GST_PAD_PROBE_TYPE_BUFFER |
+      GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM | GST_PAD_PROBE_TYPE_EVENT_FLUSH,
+      input_timing_probe, kms_audio_mixer_input_timing_new (padname),
+      kms_audio_mixer_input_timing_free);
+  gst_object_unref (audiorate_src);
 
   agnosticbin = kms_utils_element_factory_make ("agnosticbin", PLUGIN_NAME);
   g_object_set_qdata_full (G_OBJECT (agnosticbin), key_sink_pad_name_quark (),
