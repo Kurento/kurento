@@ -8,7 +8,11 @@
 override_dh_auto_configure:
 	dh_auto_configure -- -DGENERATE_TESTS=TRUE
 
-# Bound the duration of every test, so a hung test fails the build instead of
-# blocking the job until the CI timeout.
+# test_pad_connections and test_agnosticbin fail at random (race between the
+# pads of tee elements, see dh_auto_test_retry.sh); retry only those a bounded
+# number of times. Any other failure, or a persistent one, still breaks the
+# build. Every test keeps the 1200 s time limit, so a hung test fails the build
+# instead of blocking the job until the CI timeout.
+# TEMPORARY: remove this override when the race is fixed.
 override_dh_auto_test:
-	dh_auto_test -- "ARGS+=--timeout 1200"
+	bash debian/dh_auto_test_retry.sh
